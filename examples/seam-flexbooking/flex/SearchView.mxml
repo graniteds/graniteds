@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AbstractView
+	xmlns="*"
+	xmlns:st="*"
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	currentState="{hotels &amp;&amp; hotels.length &gt; 0 ? 'searchResults' : ''}">
+
+	<mx:Metadata>
+		[Name("mainSearchView")]
+	</mx:Metadata>
+
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import mx.collections.ArrayCollection;
+		
+			import org.granite.tide.events.TideUIEvent;
+			import org.granite.tide.events.TideUIConversationEvent;
+
+			private const P1:String =
+				"State in Seam is contextual. When you click \"Find Hotels\", the " +
+				"application retrieves a list of hotels from the database and caches " +
+				"it in the session context. When you navigate to one of the hotel " +
+				"records by clicking the \"View Hotel\" link, a conversation begins. " +
+				"The conversation is attached to a particular tab, in a particular " +
+				"browser window. You can navigate to multiple hotels using \"open " +
+				"in new tab\" or \"open in new window\" in your web browser. Each " +
+				"window will execute in the context of a different conversation. " +
+				"The application keeps state associated with your hotel booking in " +
+				"the conversation context, which ensures that the concurrent " +
+				"conversations do not interfere with each other.";
+			
+			[In] [Bindable]
+			public var hotels:ArrayCollection;
+			
+			[In("#{hotelSearch.nextPageAvailable}")] [Bindable]
+			public var nextPageAvailable:Boolean;
+			
+	        [In] [Bindable]
+	        public var bookings:ArrayCollection = new ArrayCollection();
+			
+			private function fixDataGridHeight(dg:DataGrid):void {
+				if (dg && dg.dataProvider)
+					dg.height = dg.measureHeightOfItems(0, dg.dataProvider.length) + dg.headerHeight + 4;
+			}
+			
+			protected function shortDate(item:Object, column:DataGridColumn):String {
+				return (item[column.dataField] is Date ? shortDateFormatter.format(item[column.dataField] as Date) : "");
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:VBox id="sidebar" top="21" width="209" styleName="mainSidebar">
+		<mx:Text styleName="h2" width="100%" text="State management in Seam"/>
+		<mx:Text styleName="p" width="100%" text="{P1}"/>
+	</mx:VBox>
+
+	<mx:VBox id="content" left="210" width="548" styleName="mainContent">
+		<mx:Repeater id="messages" dataProvider="{statusMessages.messages}">
+			<mx:Text text="{messages.currentItem.summary}" styleName="viewMessage" width="100%" />
+		</mx:Repeater>
+
+		<mx:VBox id="searchQuery" styleName="searchQuery">
+			<mx:Text styleName="h1" width="100%" text="Search Hotels"/>
+			<mx:HBox>
+				<mx:TextInput id="searchString"
+					change="dispatchEvent(new TideUIEvent('findHotels', searchString.text, pageSize.selectedItem))"/>
+				<mx:Button label="Find Hotels" styleName="redButton"
+					click="dispatchEvent(new TideUIEvent('findHotels', searchString.text, pageSize.selectedItem))" />
+			</mx:HBox>
+			<mx:HBox>
+				<mx:Label text="Maximum results:" />
+				<mx:ComboBox id="pageSize" selectedIndex="1"
+					change="dispatchEvent(new TideUIEvent('findHotels', searchString.text, pageSize.selectedItem))">
+					<mx:dataProvider>
+						<mx:Array>
+							<mx:Number>5</mx:Number>
+							<mx:Number>10</mx:Number>
+							<mx:Number>20</mx:Number>
+						</mx:Array>
+	                </mx:dataProvider>
+				</mx:ComboBox>
+			</mx:HBox>
+		</mx:VBox>
+
+		<mx:Text styleName="h1" width="100%" text="Current Hotel Bookings" />
+		<mx:ViewStack id="currentBookings" creationPolicy="all" resizeToContent="true" width="100%"
+			selectedIndex="{bookings == null || bookings.length == 0 ? 0 : 1}">
+			<mx:VBox width="100%">
+				<mx:Text text="No Bookings Found" styleName="p" />
+			</mx:VBox>
+			<mx:VBox width="100%">
+				<mx:DataGrid id="bookingsDg" dataProvider="{bookings}" width="100%" verticalScrollPolicy="off"
+					sortableColumns="false" variableRowHeight="true" updateComplete="fixDataGridHeight(bookingsDg)">
+					<mx:columns>
+		                <mx:DataGridColumn dataField="name" headerText="Name" wordWrap="true" width="100" />
+		                <mx:DataGridColumn dataField="address" headerText="Address" wordWrap="true" width="100" />
+		                <mx:DataGridColumn dataField="cityState" headerText="City" wordWrap="true" width="100" />
+		                <mx:DataGridColumn dataField="checkinDate" headerText="Check In" wordWrap="true" width="120"
+		                	labelFunction="shortDate" />
+		                <mx:DataGridColumn dataField="checkoutDate" headerText="Check Out" wordWrap="true" width="120"
+		                	labelFunction="shortDate" />
+		                <mx:DataGridColumn dataField="id" headerText="#" wordWrap="true" width="40"/>
+		                <mx:DataGridColumn headerText="Action" wordWrap="true">
+		                	<mx:itemRenderer>
+		                		<mx:Component>
+		                			<mx:LinkButton label="Cancel" color="#0000ff" fontWeight="normal" textDecoration="underline"
+		                				click="dispatchEvent(new TideUIEvent('cancelBooking', data))">
+			                			<mx:Script>
+			                				<![CDATA[
+			                					import org.granite.tide.events.TideUIEvent;
+			                				]]>
+			                			</mx:Script>
+		                			</mx:LinkButton>
+		                		</mx:Component>
+		                	</mx:itemRenderer>
+		                </mx:DataGridColumn>
+					</mx:columns>
+				</mx:DataGrid>
+			</mx:VBox>
+		</mx:ViewStack>
+		
+		<mx:Text styleName="h1" width="100%" text="Workspaces" visible="{conversationList.length &gt; 0}"/>
+		<mx:VBox styleName="workspaces" width="100%" visible="{conversationList.length &gt; 0}">
+			<mx:Repeater id="entry" dataProvider="{conversationList}">
+				<mx:HBox styleName="workspace" width="100%">
+					<mx:LinkButton styleName="blueLink" textAlign="left" width="100%" label="{entry.currentItem.description}"
+						click="dispatchEvent(new TideUIConversationEvent(event.target.getRepeaterItem().id, 'restoreConversationView'))" />
+					<mx:Text paddingRight="4"
+						text="{timeFormatter.format(entry.currentItem.startDatetime)}-{timeFormatter.format(entry.currentItem.lastDatetime)}" />
+				</mx:HBox>
+			</mx:Repeater>
+		</mx:VBox>
+
+	</mx:VBox>
+
+	<st:states>
+		<mx:State name="searchResults">
+			<mx:AddChild relativeTo="{searchQuery}" position="after">
+				<mx:VBox id="searchResult" styleName="searchResult" width="100%">
+					<mx:DataGrid id="searchResultDg" dataProvider="{hotels}" width="100%" verticalScrollPolicy="off"
+						sortableColumns="false" updateComplete="fixDataGridHeight(searchResultDg)">
+						<mx:columns>
+			                <mx:DataGridColumn dataField="name" headerText="Name" wordWrap="true" width="130" />
+			                <mx:DataGridColumn dataField="address" headerText="Address" wordWrap="true" width="130" />
+			                <mx:DataGridColumn dataField="cityState" headerText="City, State" wordWrap="true" width="130"/>
+			                <mx:DataGridColumn dataField="zip" headerText="Zip" wordWrap="true" width="53" />
+			                <mx:DataGridColumn headerText="Action" wordWrap="true">
+			                	<mx:itemRenderer>
+			                		<mx:Component>
+			                			<mx:LinkButton label="View" color="#0000ff" fontWeight="normal" textDecoration="underline"
+			                				click="dispatchEvent(new TideUIConversationEvent(null, 'selectHotel', data))">
+				                			<mx:Script>
+				                				<![CDATA[
+				                					import org.granite.tide.events.TideUIConversationEvent;
+				                				]]>
+				                			</mx:Script>
+			                			</mx:LinkButton>
+			                		</mx:Component>
+			                	</mx:itemRenderer>
+			                </mx:DataGridColumn>
+						</mx:columns>
+					</mx:DataGrid>
+					<mx:LinkButton label="More results" styleName="blueLink" visible="{nextPageAvailable}"
+						click="dispatchEvent(new TideUIEvent('nextPageHotels'))" paddingLeft="-3"/>
+				</mx:VBox>
+			</mx:AddChild>
+		</mx:State>
+	</st:states>
+	
+</AbstractView>

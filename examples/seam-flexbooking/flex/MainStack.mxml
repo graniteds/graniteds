@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Canvas xmlns="*" xmlns:mx="http://www.adobe.com/2006/mxml">
+
+	<mx:Metadata>
+		[Name("mainView")]
+	</mx:Metadata>
+
+	<mx:Script>
+		<![CDATA[
+			import mx.core.Container;
+
+            import org.granite.tide.seam.Seam;
+            import org.granite.tide.seam.Context;
+            import org.granite.tide.events.TideContextEvent;
+
+			[Bindable]
+            protected var ctx:Context = Seam.getInstance().getSeamContext();
+
+	        [Observer("showSearchView")]
+	        public function showSearchView(event:TideContextEvent):void {
+				showView("search", event.params.length == 0 || Boolean(event.params[0]));
+	        }
+
+	        [Observer("showHotelView")]
+	        public function showHotelView(event:TideContextEvent):void {
+				event.context.mainHotelView = hotel;
+				showView("hotel", event.params.length == 0 || Boolean(event.params[0]));
+	        }
+
+	        [Observer("showBookView")]
+	        public function showBookView(event:TideContextEvent):void {
+				event.context.mainBookView = book;
+				showView("book", event.params.length == 0 || Boolean(event.params[0]));
+	        }
+
+	        [Observer("showSettingsView")]
+	        public function showSettingsView(clearMessages:Boolean = true):void {
+				showView("settings", clearMessages);
+	        }
+			
+			private function showView(name:String, clearMessages:Boolean = true):void {
+				if (clearMessages)
+					ctx.statusMessages.clearMessages();
+				views.selectedChild = this[name] as Container;
+			}
+
+	        [Observer("restoreConversationView")]
+	        public function restoreConversationView(event:TideContextEvent):void {
+				event.context.mainBookView = book;
+				event.context.mainHotelView = hotel;				
+				event.context.conversation.getDescription();	// Resync with server conversation
+				
+				ctx.statusMessages.clearMessages();
+				
+				var view:AbstractView = (event.context.hotelBookingCtl.isBooking() ? book : hotel);
+				view.restoreState(event);
+				views.selectedChild = view;
+	        }
+		]]>
+	</mx:Script>
+
+	<mx:Canvas width="100%" height="114" styleName="mainBg"/>
+	<mx:Canvas top="96" width="210" height="102" styleName="mainSidebarBg"/>
+ 	<mx:Canvas top="75" left="210" width="548" height="20" styleName="mainContentBg"/>
+ 	<mx:Canvas top="95" left="210" width="548" height="100" styleName="mainContentMaskBg"/>
+	
+	<mx:ViewStack id="views" top="89" resizeToContent="true" creationPolicy="all">
+		<SearchView id="search" />
+		<HotelView id="hotel" />
+		<BookView id="book" />
+		<SettingsView id="settings" />
+	</mx:ViewStack>
+
+</mx:Canvas>

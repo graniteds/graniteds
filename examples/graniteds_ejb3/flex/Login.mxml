@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<mx:Panel
+    title="Login"
+    horizontalAlign="center"
+    verticalGap="0"
+    paddingTop="8"
+    paddingBottom="8"
+    titleIcon="@Embed('network.png')"
+    xmlns:mx="http://www.adobe.com/2006/mxml">
+
+    <mx:Script>
+    <![CDATA[
+        [Bindable]
+        public var onCredentialsSet:Function = null;
+        [Bindable]
+        public var loginMessage:String = "";
+        [Bindable]
+        public var loggedIn:Boolean = false;
+    ]]>
+    </mx:Script>
+
+    <mx:Text htmlText="&lt;i&gt;(Type in user/user or admin/admin)&lt;/i&gt;" textAlign="center"/>
+
+    <mx:Form>
+        <mx:FormItem label="Username">
+            <mx:TextInput id="username"/>
+        </mx:FormItem>
+        <mx:FormItem label="Password">
+            <mx:TextInput id="password" displayAsPassword="true"
+                enter="onCredentialsSet(username.text, password.text)"/>
+        </mx:FormItem>
+    </mx:Form>
+
+    <mx:Text text="{loginMessage}" textAlign="center"/>
+
+    <mx:Button label="Login" click="onCredentialsSet(username.text, password.text)"/>
+</mx:Panel>

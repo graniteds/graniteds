@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.graniteds.examples.tide_seam.poms</groupId>
+    <artifactId>master</artifactId>
+    <version>2.2.0.SP1</version>
+  </parent>
+
+  <groupId>org.graniteds.examples.tide_seam.poms</groupId>
+  <artifactId>jee</artifactId>
+  <version>2.2.0.SP1</version>
+  <packaging>pom</packaging>
+
+  <properties>
+    <version.jboss.embedded>beta3.SP12</version.jboss.embedded>
+  </properties>
+
+  <modules>
+    <module>jeeTest</module>
+  </modules>
+
+  <build>
+    <plugins>
+      <!-- EJB related configuration -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-ejb-plugin</artifactId>
+        <configuration>
+          <ejbVersion>3.0</ejbVersion>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <!-- Testing -->
+      <!-- Enable elegant testing solution -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.graniteds.examples.tide_seam.poms.jee</groupId>
+                  <artifactId>jeeTest</artifactId>
+                  <version>2.2.0.SP1</version>
+                  <type>jar</type>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.graniteds.examples.tide_seam.poms.jee</groupId>
+            <artifactId>jeeTest</artifactId>
+            <version>2.2.0.SP1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <childDelegation>true</childDelegation>
+          <useSystemClassLoader>true</useSystemClassLoader>
+          <argLine>-Dsun.lang.ClassLoader.allowArraySyntax=true</argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <!-- Test -->
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <classifier>jdk15</classifier>
+    </dependency>
+    <dependency>
+      <groupId>javax.el</groupId>
+      <artifactId>el-api</artifactId>
+      <version>1.2</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jboss.embedded</groupId>
+      <artifactId>jboss-embedded-all</artifactId>
+      <version>${version.jboss.embedded}</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.embedded</groupId>
+          <artifactId>jboss-embedded</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.microcontainer</groupId>
+          <artifactId>jboss-deployers-client-spi</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.microcontainer</groupId>
+          <artifactId>jboss-deployers-core-spi</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.embedded</groupId>
+      <artifactId>hibernate-all</artifactId>
+      <version>${version.jboss.embedded}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.embedded</groupId>
+      <artifactId>thirdparty-all</artifactId>
+      <version>${version.jboss.embedded}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.embedded</groupId>
+      <artifactId>jboss-embedded</artifactId>
+      <version>${version.jboss.embedded}</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.microcontainer</groupId>
+          <artifactId>jboss-deployers-client-spi</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.faces</groupId>
+      <artifactId>jsf-api</artifactId>
+      <version>1.2_04-p02</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <artifactId>jsf-impl</artifactId>
+      <groupId>javax.faces</groupId>
+      <version>1.2_04-p02</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>

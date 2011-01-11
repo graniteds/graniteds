@@ -1,0 +1,223 @@
+Application {
+	color: #362f2d;
+	fontSize: 13;
+	backgroundColor: #dbd4c6;
+	verticalGap: 0;
+	horizontalGap: 0;
+	paddingBottom: 0;
+	paddingLeft: 0;
+	paddingRight: 0;
+	paddingTop: 0;
+	themeColor: #f7941d;
+}
+Label {
+	fontWeight: normal;
+	paddingLeft: -2;
+	paddingTop: 2;
+}
+TextInput {
+    backgroundImage: Embed(source='input.bg.gif');
+	backgroundSize: "100%";
+	fontSize: 13;
+	borderStyle: solid;
+	paddingBottom: 1;
+	paddingLeft: 3;
+	paddingRight: 3;
+	paddingTop: 1;
+}
+FormItemLabel {
+	fontWeight: bold;
+}
+ComboBox {
+	cornerRadius: 0;
+}
+DataGrid {
+	horizontalGridLines: true;
+	horizontalGridLineColor: #e0e0e0;
+	headerColors: #ffffff, #faf2e1;
+}
+DataGridHeader {
+	baseline: 20;
+}
+.document {
+	backgroundImage: Embed(source='bg.gif');
+	backgroundSize: "100%";
+	verticalGap: 0;
+	horizontalAlign: center;
+	borderStyle: solid;
+	borderColor: #c3bbb6;
+	borderThickness: 1;
+	borderSides: bottom;
+}
+.header {
+	backgroundImage: Embed(source='hdr.bg.gif');
+	backgroundSize: "100%";
+}
+.headerLinks {
+	horizontalGap: 2;
+    backgroundAlpha: 0;
+}
+.headerLabel {
+	color: #c7b299;
+	fontFamily: Verdana;
+	fontSize: 10;
+	fontWeight: bold;
+}
+.headerLink {
+    color: #c7b299;
+    textRollOverColor: #c7b299;
+    textSelectedColor: #c7b299;
+	fontFamily: Verdana;
+	fontSize: 10;
+	fontWeight: bold;
+	cornerRadius: 0;
+	paddingLeft: 0;
+	paddingTop: 2;
+	paddingRight: 0;
+	paddingBottom: 0;
+	skin: ClassReference(null);
+}
+.headerSeparator {
+	backgroundColor: #c7b299;
+}
+.container {
+}
+.homeBg {
+	backgroundImage: Embed(source='hdr.ad.jpg');
+}
+.mainBg {
+	backgroundImage: Embed(source='hdr.bar.jpg');
+}
+.homeSidebarBg, .mainSidebarBg {
+	backgroundImage: Embed(source='sdb.bg.gif');
+}
+.homeSidebar, .mainSidebar {
+	backgroundColor: #ffffff;
+	paddingTop: 3;
+	paddingBottom: 30;
+	paddingLeft: 12;
+	paddingRight: 12;
+}
+.homeContentBg, .mainContentBg {
+	backgroundImage: Embed(source='cnt.bg.gif');
+	backgroundSize: "100%";
+}
+.homeContentMaskBg, .mainContentMaskBg {
+	backgroundColor: #ffffff;
+}
+.homeContent, .mainContent {
+	backgroundColor: #ffffff;
+	paddingBottom: 30;
+	paddingLeft: 15;
+	paddingRight: 15;
+}
+.h1 {
+	fontFamily: "Trebuchet MS";
+	fontSize: 18;
+	paddingBottom: 6;
+}
+.h2 {
+	fontWeight: bold;
+	paddingBottom: -2;
+}
+.p {
+	paddingBottom: 10;
+}
+.verticalForm {
+	verticalGap: 1;
+	horizontalGap: 0;
+	paddingBottom: 10;
+}
+.verticalFormMessage, .formMessage, .viewMessage {
+	fontWeight: bold;
+	textAlign: center;
+	color: #808080;
+}
+.verticalFormMessage {
+	paddingTop: 6;
+	paddingBottom: -8;
+}
+.formMessage {
+	paddingTop: -8;
+	paddingBottom: 4;
+	color: #600000;
+}
+.searchQuery {
+}
+.searchResult {
+	paddingTop: 12;
+}
+.gridItemLabel {
+	horizontalAlign: right;
+}
+.gridLabel {
+	fontWeight: bold;
+	color: #404040;
+}
+.gridValue {
+}
+.viewMessage {
+	paddingTop: 8;
+	color: #600000;
+}
+.bulletList {
+	verticalGap: 1;
+	horizontalGap: 0;
+}
+.bulletListItem {
+	 color: #808080;
+	 paddingLeft: -18;
+}
+.redButton {
+	cornerRadius: 0;
+    paddingLeft: 3;
+    paddingRight: 3;
+    paddingTop: 2;
+    paddingBottom: 2;
+    fillAlphas: 1, 1, 1, 1;
+    fillColors: #bb0000, #880000, #cc0000, #990000;
+    color: #ffffff;
+    textRollOverColor: #ffffff;
+    textSelectedColor: #ffffff;
+    borderColor: #990000;
+    themeColor: #990000;
+    fontSize: 13;
+    fontWeight: bold;
+}
+.blueLink {
+    rollOverColor: #ffffff;
+    selectionColor: #ffffff;
+    color: #0000ff;
+    textRollOverColor: #0000ff;
+    textSelectedColor: #0000ff;
+    fontSize: 13;
+    fontWeight: normal;
+    textDecoration: underline;
+}
+.workspaces {
+	borderThickness: 1;
+	borderColor: #c0c0c0;
+	borderStyle: solid;
+	borderSides: bottom;
+	verticalGap: 0;
+}
+.workspace {
+	borderThickness: 1;
+	borderColor: #c0c0c0;
+	borderStyle: solid;
+	borderSides: top, left, right;
+}
+.footer {
+	borderStyle: solid;
+	borderColor: #c3bbb6;
+	borderThickness: 1;
+	borderSides: top;
+	backgroundColor: #ffffff;
+}
+.footerLabel {
+	paddingBottom: 15;
+	paddingTop: 15;
+	paddingRight: 15;
+	paddingLeft: 15;
+	textAlign: right;
+}

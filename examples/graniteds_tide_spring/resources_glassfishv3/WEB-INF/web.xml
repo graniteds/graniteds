@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+
+    <display-name>GraniteDS Tide Spring</display-name>
+    <description>GraniteDS Tide Spring Example Application</description>
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            /WEB-INF/conf/applicationContext.xml,
+            /WEB-INF/conf/applicationContextSecurity.xml
+        </param-value>
+    </context-param>
+    
+     <!-- Spring listener -->
+     <listener>
+      	<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+     </listener>
+
+     <!-- Spring listener for web-scopes (request, session) -->
+     <listener>
+     	<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+     </listener>	
+
+	<servlet>
+	    <servlet-name>dispatcher</servlet-name>
+	    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	    <load-on-startup>1</load-on-startup>
+	</servlet>	
+	<servlet-mapping>
+	    <servlet-name>dispatcher</servlet-name>
+	    <url-pattern>/graniteamf/*</url-pattern>
+	</servlet-mapping>	
+
+    <servlet>
+        <servlet-name>GravityServlet</servlet-name>
+		<servlet-class>org.granite.gravity.servlet3.GravityAsyncServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GravityServlet</servlet-name>
+        <url-pattern>/gravityamf/*</url-pattern>
+    </servlet-mapping>
+
+
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+</web-app>

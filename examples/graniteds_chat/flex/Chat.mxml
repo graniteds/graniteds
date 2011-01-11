@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" xmlns="*" layout="vertical" verticalAlign="middle"
+  backgroundGradientColors="[#0e2e7d, #6479ab]">
+
+  <mx:Script>
+    <![CDATA[
+        import mx.events.ValidationResultEvent;
+        import mx.messaging.events.MessageEvent;
+        import mx.messaging.messages.AsyncMessage;
+        import mx.utils.StringUtil;
+
+        import org.granite.gravity.Consumer;
+        import org.granite.gravity.Producer;
+
+
+        [Bindable] private var nickname:String = "Anonymous";
+        [Bindable] private var connected:Boolean = false;
+
+        private var consumer:Consumer = null;
+        private var producer:Producer = null;
+
+        private var linesCount:int = 0;
+        private var msgIndex:int = 1;
+
+        private function connect():void {
+            nickname = iNickname.text;
+            if (nicknameValidator.validate().type === ValidationResultEvent.VALID) {
+
+                consumer = new Consumer();
+                consumer.destination = "gravity";
+                consumer.topic = "discussion";
+                consumer.subscribe();
+                consumer.addEventListener(MessageEvent.MESSAGE, messageHandler);
+
+                producer = new Producer();
+                producer.destination = "gravity";
+                producer.topic = "discussion";
+                var msg:AsyncMessage = new AsyncMessage();
+                msg.body = '[' + nickname + ' has just connected]';
+                producer.send(msg);
+
+                connected = true;
+            }
+        }
+
+        private function disconnect():void {
+            consumer.disconnect();
+            consumer = null;
+
+            producer.disconnect();
+            producer = null;
+
+            linesCount = 0
+            msgIndex = 1;
+            vMessages.text = "";
+            connected = false;
+        }
+
+        private function messageHandler(event:MessageEvent):void {
+            var msg:AsyncMessage = event.message as AsyncMessage;
+            var message:String = msg.body as String;
+
+            if (linesCount >= 20) {
+                var eol:int = vMessages.text.indexOf('\r');
+                vMessages.text = vMessages.text.substring(eol + 1);
+            }
+
+            vMessages.text += '\r' + message;
+            linesCount++;
+        }
+
+        private function send():void {
+            var message:String = StringUtil.trim(iNewMessage.text);
+            if (message.length > 0) {
+                var msg:AsyncMessage = new AsyncMessage();
+                msg.body = '[' + nickname + ' #' + (msgIndex++) + '] ' + message;
+                producer.send(msg);
+            }
+            iNewMessage.text = "";
+        }
+    ]]>
+  </mx:Script>
+
+  <mx:StringValidator id="nicknameValidator" source="{iNickname}" property="text" minLength="4" maxLength="12" />
+
+  <mx:ViewStack id="chatViewStack" selectedIndex="{connected ? 1 : 0}" resizeToContent="true">
+
+    <mx:Panel id="connectingView" title="GDS Gravity Chat" verticalAlign="middle" horizontalAlign="center"
+      paddingTop="8" paddingBottom="8" titleIcon="@Embed('network.png')">
+      <mx:Form>
+        <mx:FormItem label="Nickname" required="true">
+          <mx:TextInput id="iNickname" text="{nickname}" enter="connect()"/>
+        </mx:FormItem>
+      </mx:Form>
+      <mx:ControlBar height="42" horizontalAlign="right">
+        <mx:Button id="bConnect" label="Connect" click="connect()" />
+      </mx:ControlBar>
+    </mx:Panel>
+
+    <mx:Panel id="connectedView" title="{nickname} - GDS Gravity Chat" verticalAlign="middle" horizontalAlign="center"
+      titleIcon="@Embed('network.png')">
+      <mx:TextArea id="vMessages" width="400" height="300" editable="false" wordWrap="false">
+      </mx:TextArea>
+      <mx:ControlBar height="42">
+        <mx:TextInput id="iNewMessage" enter="send()" width="100%"/>
+        <mx:Button id="bSend" label="Send" click="send()" />
+        <mx:Button id="bDisconnect" label="Quit" click="disconnect()" />
+      </mx:ControlBar>
+    </mx:Panel>
+
+  </mx:ViewStack>
+
+</mx:Application>

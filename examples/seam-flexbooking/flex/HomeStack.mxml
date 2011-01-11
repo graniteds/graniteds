@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Canvas xmlns="*" xmlns:mx="http://www.adobe.com/2006/mxml">
+
+	<mx:Metadata>
+		[Name("homeView")]
+	</mx:Metadata>
+
+	<mx:Script>
+		<![CDATA[
+			import mx.core.Container;
+		
+            import org.granite.tide.seam.Seam;
+            import org.granite.tide.seam.Context;
+
+			[Bindable]
+            protected var ctx:Context = Seam.getInstance().getSeamContext();
+
+	        [Observer("showLoginView")]
+	        public function showLoginView(clearMessages:Boolean = true):void {
+				showView("login", clearMessages);
+	        }
+		
+	        [Observer("showRegisterView")]
+	        public function showRegisterView(clearMessages:Boolean = true):void {
+				showView("register", clearMessages);
+	        }
+			
+			private function showView(name:String, clearMessages:Boolean = true):void {
+				if (clearMessages)
+					ctx.statusMessages.clearMessages();
+				views.selectedChild = this[name] as Container;
+			}
+		]]>
+	</mx:Script>
+
+	<mx:Canvas width="100%" height="228" styleName="homeBg"/>
+	<mx:Canvas top="207" width="210" height="102" styleName="homeSidebarBg"/>
+ 	<mx:Canvas top="183" left="210" width="548" height="20" styleName="homeContentBg"/>
+ 	<mx:Canvas top="203" left="210" width="548" height="100" styleName="homeContentMaskBg"/>
+	
+	<mx:ViewStack id="views" top="199" resizeToContent="true" creationPolicy="all">
+		<LoginView id="login" />
+		<RegisterView id="register" />
+	</mx:ViewStack>
+
+</mx:Canvas>

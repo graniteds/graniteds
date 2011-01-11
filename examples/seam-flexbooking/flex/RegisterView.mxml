@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AbstractView
+	xmlns="*"
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:vd="org.granite.validators.*"
+	xmlns:tv="org.granite.tide.validators.*"
+	xmlns:tsv="org.granite.tide.seam.validators.*"
+	hide="resetForm(registerForm)">
+
+	<mx:Metadata>
+		[Name("homeRegisterView")]
+	</mx:Metadata>
+
+	<mx:Script>
+		<![CDATA[
+			import org.jboss.seam.example.booking.User;		
+			import org.granite.validators.CompareStringValidator;
+			import org.granite.tide.events.TideUIEvent;
+		
+			private const P1:String =
+				"Robust applications need data validation in several different places. Seam " +
+				"integrates Hibernate Validator, a set of annotations for expressing data model " +
+				"constraints in your domain model classes. Then, these constraints are applied " +
+				"almost completely transparently at three levels of the application: by Seam " +
+				"when the user first enters data, by EJB before persisting data to the database, " +
+				"and, if you use Hibernate to generate your database schema, by the database " +
+				"constraints themselves. Multi-layer validation hardens your application and " +
+				"protects your data. Even better, it's self-documenting, and easy to change " +
+				"when your business rules change.";
+			
+			private function doRegister():void {
+				if (validateForm(registerForm))
+					dispatchEvent(new TideUIEvent('register', realname.text, username.text, password.text, verify.text));
+			}
+		]]>
+	</mx:Script>
+
+	<mx:VBox id="sidebar" top="21" width="209" styleName="homeSidebar">
+		<mx:Text styleName="h2" width="100%" text="Integrated multi-layer validation"/>
+		<mx:Text styleName="p" width="100%" text="{P1}"/>
+	</mx:VBox>
+	
+	<mx:VBox id="content" left="210" width="548" styleName="homeContent">
+		<mx:Text styleName="h1" width="100%" text="Register"/>
+		<mx:VBox horizontalAlign="center" width="100%">
+			<mx:Form id="registerForm">
+				<mx:FormItem label="Username:" required="true">
+					<mx:TextInput id="username"/>
+				</mx:FormItem>
+				<mx:FormItem label="Real Name:" required="true">
+					<mx:TextInput id="realname"/>
+				</mx:FormItem>
+				<mx:FormItem label="Password:" required="true">
+					<mx:TextInput id="password" displayAsPassword="true" />
+				</mx:FormItem>
+				<mx:FormItem label="Verify Password:" required="true">
+					<mx:TextInput id="verify" displayAsPassword="true" />
+				</mx:FormItem>
+			</mx:Form>
+
+			<mx:Repeater id="messages" dataProvider="{statusMessages.messages}">
+				<mx:Text text="{messages.currentItem.summary}" styleName="formMessage" width="100%" />
+			</mx:Repeater>
+
+			<mx:HBox>
+				<mx:Button label="Register" styleName="redButton" click="doRegister()" />
+				<mx:Button label="Cancel" styleName="redButton" click="dispatchEvent(new TideUIEvent('showLoginView'))" />
+			</mx:HBox>
+		</mx:VBox>
+	</mx:VBox>
+
+	<tsv:TideControlValidator source="{username}" property="text" required="true"/>
+	<mx:StringValidator source="{realname}" property="text" required="true"/>
+	<mx:StringValidator source="{password}" property="text" required="true"/>
+	<tsv:TideControlValidator source="{verify}" property="text" required="true"/>
+
+</AbstractView>

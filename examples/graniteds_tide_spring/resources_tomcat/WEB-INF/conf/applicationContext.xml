@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  Copyright 2007, Sualeh Fatehi <sualeh@hotmail.com>
+  
+  This work is licensed under the Creative Commons Attribution 3.0 License. 
+  To view a copy of this license, visit 
+  http://creativecommons.org/licenses/by/3.0/ 
+  or send a letter to 
+  Creative Commons
+  171 Second Street, Suite 300, San Francisco, California, 94105, USA.
+-->
+<beans
+  	xmlns="http://www.springframework.org/schema/beans"
+  	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  	xmlns:aop="http://www.springframework.org/schema/aop"
+  	xmlns:tx="http://www.springframework.org/schema/tx"
+  	xmlns:context="http://www.springframework.org/schema/context"
+  	xmlns:graniteds="http://www.graniteds.org/config"
+  	xsi:schemaLocation="
+    	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+       	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+       	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+       	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+       	http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.1.0/granite-config-2.1.xsd">
+
+  	
+  	<!-- Annotation scan -->
+  	<context:component-scan base-package="test.granite.spring.service" />
+  
+  	<tx:annotation-driven transaction-manager="transactionManager"/>
+  
+  	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
+
+  	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>
+    
+  	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    	<property name="driverClassName">
+      		<value>org.hsqldb.jdbcDriver</value>
+    	</property>
+    	<property name="url">
+      		<value>jdbc:hsqldb:mem:graniteds-tide-spring</value>
+    	</property>
+    	<property name="username">
+      		<value>sa</value>
+    	</property>
+    	<property name="password">
+      		<value></value>
+    	</property>
+  	</bean>
+
+  	<bean id="transactionManager"
+    	class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+    	<property name="sessionFactory" ref="sessionFactory" />
+    	<property name="dataSource" ref="dataSource" />
+  	</bean>
+
+  	<bean id="sessionFactory"
+    	class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+    	<property name="dataSource" ref="dataSource" />
+    	<property name="hibernateProperties">
+	      	<props>
+	        	<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+	        	<prop key="hibernate.show_sql">false</prop>
+	        	<prop key="hibernate.hbm2ddl.auto">update</prop>
+	      	</props>
+    	</property>
+		<property name="eventListeners">
+			<map>
+				<entry key="post-insert"><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></entry>
+				<entry key="post-delete"><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></entry>
+				<entry key="post-update"><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></entry>
+			</map>
+		</property>
+		<property name="annotatedClasses">
+      		<list>
+        		<value>test.granite.spring.entity.AbstractEntity</value>
+        		<value>test.granite.spring.entity.Address</value>
+        		<value>test.granite.spring.entity.Contact</value>
+        		<value>test.granite.spring.entity.Country</value>
+        		<value>test.granite.spring.entity.Person</value>
+      		</list>
+     	</property>
+  	</bean>
+  	
+  	<graniteds:flex-filter url-pattern="/*" tide="true">
+  		<graniteds:tide-annotations>
+  	    	<graniteds:value>org.springframework.stereotype.Controller</graniteds:value>
+  		</graniteds:tide-annotations>
+  	</graniteds:flex-filter>
+  	
+  	<graniteds:tide-identity/>
+    
+    <graniteds:messaging-destination id="addressBookTopic" no-local="true" session-selector="true"/>
+    
+</beans>

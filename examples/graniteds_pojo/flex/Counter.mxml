@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<mx:Application
+    xmlns:mx="http://www.adobe.com/2006/mxml"
+    xmlns="*"
+    layout="vertical"
+    backgroundGradientColors="[#0e2e7d, #6479ab]"
+    verticalAlign="middle"
+    creationComplete="srv.getCounter()">
+
+    <mx:RemoteObject id="srv" showBusyCursor="true" destination="pojo" />
+
+    <mx:Panel title="Just a Counter (Session Scope)" verticalAlign="middle"
+        horizontalAlign="center" paddingTop="8" paddingBottom="8" titleIcon="@Embed('network.png')">
+        <mx:Label text="{srv.getCounter.lastResult}" />
+        <mx:Button label="Go" click="srv.getCounter()"/>
+        <mx:Text htmlText="&lt;i&gt;(try to reload window)&lt;/i&gt;"/>
+    </mx:Panel>
+
+</mx:Application>

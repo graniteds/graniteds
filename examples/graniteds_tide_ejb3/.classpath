@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/graniteds/lib/ejb3-persistence.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-annotations-ejb3.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-ejb3x.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate-annotations.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar"/>
+	<classpathentry kind="lib" path="/graniteds/build/granite.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

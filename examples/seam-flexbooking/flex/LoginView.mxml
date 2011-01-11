@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AbstractView xmlns="*" xmlns:mx="http://www.adobe.com/2006/mxml">
+
+	<mx:Metadata>
+		[Name("homeLoginView")]
+	</mx:Metadata>
+
+	<mx:Script>
+		<![CDATA[
+			import org.granite.tide.events.TideUIEvent;
+		
+			private const P1:String =
+				"This sample application demonstrates how easy it is to develop stateful web " +
+				"applications using JBoss Seam. Just register, login, and book a room to see " +
+				"Seam in action. Throughout the application you'll see popup links like the " +
+				"ones at the bottom of this page. Click them to see how the application works " +
+				"under the hood.";
+
+			private const P2:String =
+				"Note: Please do NOT enter personal information or your credit card number in " +
+				"this sample application.";
+		]]>
+	</mx:Script>
+	
+	<mx:VBox id="sidebar" top="21" width="209" styleName="homeSidebar">
+		<mx:VBox id="verticalForm" width="100%" styleName="verticalForm">
+			<mx:Label text="Login Name" />
+			<mx:TextInput id="username" width="100%" />
+
+			<mx:Label text="Password" />
+			<mx:TextInput id="password" displayAsPassword="true" width="100%"
+				enter="dispatchEvent(new TideUIEvent('login', username.text, password.text))"/>
+
+			<mx:Repeater id="messages" dataProvider="{statusMessages.messages}">
+				<mx:Text text="{messages.currentItem.summary}" styleName="verticalFormMessage" width="100%" />
+			</mx:Repeater>
+		</mx:VBox>
+		
+		<mx:VBox width="100%" horizontalAlign="center">
+			<mx:Button label="Account Login" styleName="redButton"
+				click="dispatchEvent(new TideUIEvent('login', username.text, password.text))" />
+			<mx:LinkButton label="Register New User" styleName="blueLink"
+				click="dispatchEvent(new TideUIEvent('showRegisterView'))" />
+		</mx:VBox>
+		
+		<mx:VBox width="100%" styleName="bulletList">
+			<mx:Text text="Or use a demo account:" width="100%" />
+			<mx:Text htmlText="&lt;li&gt;gavin/foobar&lt;/li&gt;" width="100%" styleName="bulletListItem"/>
+			<mx:Text htmlText="&lt;li&gt;demo/demo&lt;/li&gt;" width="100%" styleName="bulletListItem"/>
+		</mx:VBox>
+	</mx:VBox>
+
+	<mx:VBox id="content" left="210" width="548" styleName="homeContent">
+		<mx:Text styleName="h1" width="100%" text="About this example application"/>
+		<mx:Text styleName="p" width="100%" text="{P1}"/>
+		<mx:Text styleName="p" width="100%" text="{P2}"/>
+	</mx:VBox>
+
+</AbstractView>

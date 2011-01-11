@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:TextInput xmlns:mx="http://www.adobe.com/2006/mxml">
+	<mx:Metadata>[Name]</mx:Metadata>
+	
+	<mx:Script>
+		<![CDATA[
+			public var triggered:Boolean = false;
+			
+			[Observer]
+			public function eventHandler(event:MyEvent):void {
+				triggered = true;
+			}	
+		]]>
+	</mx:Script>
+</mx:TextInput>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="resources"/>
+	<classpathentry kind="lib" path="/graniteds/lib/ejb3-persistence.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-annotations-ejb3.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-ejb3x.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate-validator.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-el.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate-annotations.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jsf-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/dom4j.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate-entitymanager.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jta.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/el-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-container.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-common.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/commons-collections.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate-commons-annotations.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/cglib.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hsqldb.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jnpserver.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-embedded-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/build/granite.jar"/>
+	<classpathentry kind="lib" path="/graniteds/build/granite-hibernate.jar"/>
+	<classpathentry kind="lib" path="/graniteds/build/granite-seam21.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-seam.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
+	<classpathentry kind="lib" path="/graniteds/lib/javassist.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/graniteds"/>
+	<classpathentry kind="lib" path="/graniteds/lib/javax.servlet.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AbstractView xmlns="*" xmlns:mx="http://www.adobe.com/2006/mxml">
+
+	<mx:Metadata>
+		[Name("mainHotelView", scope="conversation")]
+	</mx:Metadata>
+
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+		
+			import org.granite.tide.events.TideUIEvent;
+			import org.granite.tide.events.TideUIConversationEvent;
+
+			import org.jboss.seam.example.booking.Hotel;
+		
+			private const P1:String =
+				"Keeping conversational state in memory in the middle tier is a great way to " +
+			    "improve your application's scalability. It saves hitting the database every " +
+			    "time we refresh a page, to re-read the data we were just looking at five " +
+			    "seconds ago. By using Seam's conversation context, we get a natural cache " +
+			    "of data associated with the what the user is currently doing. By nature, " +
+			    "this cache has a more efficient eviction policy than the MRU-type algorithms " + 
+			    "used by a typical second-level data cache in an O/R mapping engine like " +
+			    "Hibernate (at least for some kinds of data). Of course, you should use " +
+			    "a clever combination of second-level caching and conversational data " +
+			    "caching to achieve the best performance for your application.";
+			
+			[In] [Bindable]
+			public var hotel:Hotel;
+		]]>
+	</mx:Script>
+	
+	<mx:VBox id="sidebar" top="21" width="209" styleName="mainSidebar">
+		<mx:Text styleName="h2" width="100%" text="Don't kill your database"/>
+		<mx:Text styleName="p" width="100%" text="{P1}"/>
+	</mx:VBox>
+
+	<mx:VBox id="content" left="210" width="548" styleName="mainContent">
+		<mx:Repeater id="messages" dataProvider="{statusMessages.messages}">
+			<mx:Text text="{messages.currentItem.summary}" styleName="viewMessage" width="100%" />
+		</mx:Repeater>
+
+		<mx:Text styleName="h1" width="100%" text="Hotel View"/>
+		<mx:VBox horizontalAlign="center" width="100%">
+			<mx:Form>
+				<mx:FormItem label="Name:">
+					<mx:Text text="{hotel.name}" />
+				</mx:FormItem>
+				<mx:FormItem label="Address:">
+					<mx:Text text="{hotel.address}" />
+				</mx:FormItem>
+				<mx:FormItem label="City:">
+					<mx:Text text="{hotel.city}" />
+				</mx:FormItem>
+				<mx:FormItem label="State:">
+					<mx:Text text="{hotel.state}" />
+				</mx:FormItem>
+				<mx:FormItem label="Zip:">
+					<mx:Text text="{hotel.zip}" />
+				</mx:FormItem>
+				<mx:FormItem label="Country:">
+					<mx:Text text="{hotel.country}" />
+				</mx:FormItem>
+				<mx:FormItem label="Nightly rate:">
+					<mx:Text text="{priceFormatter.format(hotel.price)} $" />
+				</mx:FormItem>
+			</mx:Form>
+
+			<mx:HBox>
+				<mx:Button label="Book Hotel" styleName="redButton" click="dispatchEvent(new TideUIEvent('bookHotel'))" />
+				<mx:Button label="Back to Search" styleName="redButton" click="dispatchEvent(new TideUIEvent('cancelHotel'))" />
+			</mx:HBox>
+		</mx:VBox>
+
+		<mx:Text styleName="h1" width="100%" text="Workspaces"/>
+		<mx:VBox styleName="workspaces" width="100%">
+			<mx:Repeater id="entry" dataProvider="{conversationList}">
+				<mx:HBox styleName="workspace" width="100%">
+					<mx:LinkButton styleName="blueLink" label="{entry.currentItem.description}"
+						click="dispatchEvent(new TideUIConversationEvent(event.target.getRepeaterItem().id, 'restoreConversationView'))" />
+					<mx:Text width="100%" text="{entry.currentItem.id === tideContext.conversationId ? '[current]' : ''}"/>
+					<mx:Text paddingRight="4"
+						text="{timeFormatter.format(entry.currentItem.startDatetime)}-{timeFormatter.format(entry.currentItem.lastDatetime)}" />
+				</mx:HBox>
+			</mx:Repeater>
+		</mx:VBox>
+	</mx:VBox>
+	
+</AbstractView>

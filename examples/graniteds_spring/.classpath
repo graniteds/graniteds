@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/graniteds/lib/ejb3-persistence.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-aop.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-beans.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-context.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-core.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-orm.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-tx.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-core-2.0.4.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-core-tiger-2.0.4.jar"/>
+	<classpathentry kind="lib" path="/graniteds/build/granite.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

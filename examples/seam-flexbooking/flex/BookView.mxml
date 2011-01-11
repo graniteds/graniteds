@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AbstractView
+	xmlns="*"
+	xmlns:st="*"
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:tv="org.granite.tide.validators.*"
+	xmlns:tsv="org.granite.tide.seam.validators.*">
+
+	<mx:Metadata>
+		[Name("mainBookView", scope="conversation")]
+	</mx:Metadata>
+
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import org.granite.tide.events.TideUIEvent;
+			import org.granite.tide.events.TideUIConversationEvent;
+			import org.granite.tide.events.TideContextEvent;
+
+			import org.jboss.seam.example.booking.Hotel;
+			import org.jboss.seam.example.booking.Booking;
+		
+			private const P1:String =
+				"As you can see, Seam makes it easy to work in multiple windows or multiple " +
+				"browser tabs. But you can even switch between multiple tasks inside a " +
+				"single browser tab! The \"Workspaces\" section showcases this advanced feature.";
+			
+			private const ROOM_PREFERENCE:ArrayCollection = new ArrayCollection(["One king-size bed", "Two double beds", "Three beds"]);
+			private const MONTHS:Array = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+			private const YEARS:Array = [2009, 2010, 2011, 2012, 2013];
+			
+			[In] [Bindable]
+			public var hotel:Hotel;
+			
+			[In] [Bindable]
+			public var booking:Booking;
+			
+			override public function restoreState(event:TideContextEvent):void {
+				super.restoreState(event);
+				if (event.context.hotelBookingCtl.isBookingConfirm())
+					currentState = "confirm";
+				else
+					currentState = "";
+			}
+			
+			protected function confirmBooking():void {
+				if (validateForm(bookForm)) {
+					booking.checkinDate = checkinDate.selectedDate;
+					booking.checkoutDate = checkoutDate.selectedDate;
+					booking.beds = beds.selectedIndex;
+					booking.smoking = smoking.selected;
+					booking.creditCard = creditCard.text;
+					booking.creditCardName = creditCardName.text;
+					booking.creditCardExpiryMonth = creditCardExpiryMonth.selectedIndex;
+					booking.creditCardExpiryYear = int(creditCardExpiryYear.selectedItem);
+					dispatchEvent(new TideUIEvent("checkBook"));
+				}
+			}
+			
+			[Observer("showConfirmState")]
+			public function showConfirmState(event:TideContextEvent):void {
+				currentState = "confirm";
+			}
+			
+			[Observer("showReviseState")]
+			public function showReviseState(event:TideContextEvent):void {
+				currentState = "";
+			}
+			
+			[Observer("resetBookView")]
+			public function resetBookView(event:TideContextEvent):void {
+				currentState = "";
+				resetForm(bookForm, checkinDate, checkoutDate);
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:VBox id="sidebar" top="21" width="209" styleName="mainSidebar">
+		<mx:Text styleName="h2" width="100%" text="Workspace management"/>
+		<mx:Text styleName="p" width="100%" text="{P1}"/>
+	</mx:VBox>
+
+	<mx:VBox id="content" left="210" width="548" styleName="mainContent">
+		<mx:Repeater id="messages" dataProvider="{statusMessages.messages}">
+			<mx:Text text="{messages.currentItem.summary}" styleName="viewMessage" width="100%" />
+		</mx:Repeater>
+
+		<mx:Text styleName="h1" width="100%" text="Book Hotel"/>
+		<mx:VBox horizontalAlign="center" width="100%">
+			<mx:Form id="bookForm">
+				<mx:FormItem label="Name:">
+					<mx:Text text="{hotel.name}" />
+				</mx:FormItem>
+				<mx:FormItem label="Address:">
+					<mx:Text text="{hotel.address}" />
+				</mx:FormItem>
+				<mx:FormItem label="City:">
+					<mx:Text text="{hotel.city}" />
+				</mx:FormItem>
+				<mx:FormItem label="State:">
+					<mx:Text text="{hotel.state}" />
+				</mx:FormItem>
+				<mx:FormItem label="Zip:">
+					<mx:Text text="{hotel.zip}" />
+				</mx:FormItem>
+				<mx:FormItem label="Country:">
+					<mx:Text text="{hotel.country}" />
+				</mx:FormItem>
+				<mx:FormItem label="Nightly rate:">
+					<mx:Text text="{priceFormatter.format(hotel.price)} $" />
+				</mx:FormItem>
+				
+				<mx:FormItem id="fiCheckinDate" label="Check In Date:" required="true">
+					<mx:DateField id="checkinDate" selectedDate="{booking.checkinDate}"
+						yearNavigationEnabled="true" width="172" />
+				</mx:FormItem>
+				<mx:FormItem id="fiCheckoutDate" label="Check Out Date:" required="true">
+					<mx:DateField id="checkoutDate" selectedDate="{booking.checkoutDate}"
+						yearNavigationEnabled="true" width="172" />
+				</mx:FormItem>
+				<mx:FormItem id="fiBeds" label="Room Preference:">
+					<mx:ComboBox id="beds" dataProvider="{ROOM_PREFERENCE}" selectedIndex="{booking.beds}" />
+				</mx:FormItem>
+				<mx:FormItem id="fiSmoking" label="Smoking Preference:" direction="horizontal">
+					<mx:RadioButton groupName="smoking" id="smoking" label="Smoking" selected="{booking.smoking}"/>
+					<mx:RadioButton groupName="smoking" id="nonSmoking" label="Non Smoking" selected="{!booking.smoking}" />
+				</mx:FormItem>
+				<mx:FormItem id="fiCreditCard" label="Credit Card #:" required="true">
+					<mx:TextInput id="creditCard" text="{booking.creditCard}" />
+				</mx:FormItem>
+				<mx:FormItem id="fiCreditCardName" label="Credit Card Name:" required="true">
+					<mx:TextInput id="creditCardName" text="{booking.creditCardName}" />
+				</mx:FormItem>
+				<mx:FormItem id="fiCreditCardExpiry" label="Credit Card Expirity:" direction="horizontal">
+					<mx:ComboBox id="creditCardExpiryMonth" dataProvider="{MONTHS}"
+						selectedIndex="{booking.creditCardExpiryMonth}" />
+					<mx:ComboBox id="creditCardExpiryYear" dataProvider="{YEARS}"
+						selectedItem="{booking.creditCardExpiryYear != 0 ? booking.creditCardExpiryYear : 2009}" />
+				</mx:FormItem>
+			</mx:Form>
+
+			<mx:HBox>
+				<mx:Button id="process" label="Process" styleName="redButton" click="confirmBooking()"/>
+				<mx:Button id="cancel" label="Cancel" styleName="redButton" click="dispatchEvent(new TideUIEvent('cancelHotel'))" />
+			</mx:HBox>
+		</mx:VBox>
+
+		<mx:Text styleName="h1" width="100%" text="Workspaces"/>
+		<mx:VBox styleName="workspaces" width="100%">
+			<mx:Repeater id="entry" dataProvider="{conversationList}">
+				<mx:HBox styleName="workspace" width="100%">
+					<mx:LinkButton styleName="blueLink" label="{entry.currentItem.description}"
+						click="dispatchEvent(new TideUIConversationEvent(event.target.getRepeaterItem().id, 'restoreConversationView'))" />
+					<mx:Text width="100%" text="{entry.currentItem.id === tideContext.conversationId ? '[current]' : ''}"/>
+					<mx:Text paddingRight="4"
+						text="{timeFormatter.format(entry.currentItem.startDatetime)}-{timeFormatter.format(entry.currentItem.lastDatetime)}" />
+				</mx:HBox>
+			</mx:Repeater>
+		</mx:VBox>
+	</mx:VBox>
+
+	<tsv:TideControlValidator source="{checkinDate}" property="selectedDate"/>
+	<tsv:TideControlValidator source="{checkoutDate}" property="selectedDate"/>
+	
+	<tv:TideInputValidator required="true"
+	    source="{creditCardName}" property="text" 
+	    entity="{booking}" entityProperty="creditCardName"/>
+
+	<tv:TideInputValidator required="true"
+	    source="{creditCard}" property="text" 
+	    entity="{booking}" entityProperty="creditCard"/>
+	
+	<st:states>
+		<mx:State name="confirm">
+			<mx:RemoveChild target="{fiCheckinDate}" />
+			<mx:RemoveChild target="{fiCheckoutDate}" />
+			<mx:RemoveChild target="{fiBeds}" />
+			<mx:RemoveChild target="{fiSmoking}" />
+			<mx:RemoveChild target="{fiCreditCard}" />
+			<mx:RemoveChild target="{fiCreditCardName}" />
+			<mx:RemoveChild target="{fiCreditCardExpiry}" />
+
+			<mx:RemoveChild target="{process}" />
+
+			<mx:AddChild relativeTo="{bookForm}" position="lastChild">
+				<mx:FormItem label="Total Payment:">
+					<mx:Text text="{priceFormatter.format(booking.total)} $" />
+				</mx:FormItem>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{bookForm}" position="lastChild">
+				<mx:FormItem label="Check In Date:">
+					<mx:Text text="{dateFormatter.format(booking.checkinDate)}" />
+				</mx:FormItem>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{bookForm}" position="lastChild">
+				<mx:FormItem label="Check Out Date:">
+					<mx:Text text="{dateFormatter.format(booking.checkoutDate)}" />
+				</mx:FormItem>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{bookForm}" position="lastChild">
+				<mx:FormItem label="Room Preference:">
+					<mx:Text text="{ROOM_PREFERENCE.getItemAt(booking.beds)}" />
+				</mx:FormItem>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{bookForm}" position="lastChild">
+				<mx:FormItem label="Smoking Preference:">
+					<mx:Text text="{booking.smoking ? 'Smoking' : 'Non Smoking'}" />
+				</mx:FormItem>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{bookForm}" position="lastChild">
+				<mx:FormItem label="Credit Card #:">
+					<mx:Text text="{booking.creditCard}" />
+				</mx:FormItem>
+			</mx:AddChild>
+
+			<mx:AddChild relativeTo="{cancel}" position="before">
+				<mx:Button label="Confirm" styleName="redButton" click="dispatchEvent(new TideUIEvent('confirmBook'))"/>
+			</mx:AddChild>
+			<mx:AddChild relativeTo="{cancel}" position="before">
+				<mx:Button label="Revise" styleName="redButton" click="dispatchEvent(new TideUIEvent('reviseBook'))"/>
+			</mx:AddChild>
+		</mx:State>
+	</st:states>
+
+</AbstractView>
