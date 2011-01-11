@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<!--
+ ! @author Rafique Anwar
+ !-->
+<project name="graniteds-builder-maven" default="deploy.GDS.gen"
+         xmlns:artifact="urn:maven-artifact-ant"
+         xmlns:openpgp="antlib:org.apache.commons.openpgp.ant">
+
+  <!--import file="../../graniteds/build.xml" /-->
+
+  <property file="../../graniteds/project.properties"/>
+  <property file="../../graniteds/maven/auth.properties"/>
+
+  <!-- TODO: change the version before releasing, defined in ../project.properties file-->
+  <property name="release.version" value="${GDS_VERSION}"/>
+
+  <property name="maven.central.repo.id" value="maven-central"/>
+  <property name="maven.central.repo.url" value="http://repo1.maven.org/maven2/"/>
+
+  <property name="remote.repo.id" value="granite.repo"/>
+  <property name="remote.repo.url" value="http://oss.sonatype.org/service/local/staging/deploy/maven2/"/>
+
+  <property name="remote.repo.user" value="${username}"/>
+  <property name="remote.repo.password" value="${password}"/>
+
+  <target name="load.poms">
+    <echo message="GraniteDS Release Version: ${release.version}"/>
+    <delete dir="${build.pom.dir}"/>
+    <copy todir="${build.pom.dir}">
+      <fileset includes="*.pom.xml" dir="."/>
+    </copy>
+
+    <replace dir="${build.pom.dir}" summary="true" value="${release.version}">
+      <include name="**/*.xml"/>
+      <replacetoken>${ganiteds.version}</replacetoken>
+    </replace>
+
+    <artifact:pom id="granite-gen-root" file="${build.pom.dir}/root-gen.pom.xml"/>
+    <artifact:pom id="granite-generator-share" file="${build.pom.dir}/generator-share.pom.xml"/>
+    <artifact:pom id="granite-generator" file="${build.pom.dir}/generator.pom.xml"/>
+  </target>
+
+  <path id="maven-ant-tasks.classpath" path="../../graniteds/lib/maven-ant-tasks.jar"/>
+  <typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="urn:maven-artifact-ant"
+           classpathref="maven-ant-tasks.classpath"/>
+
+  <property name="build.pom.dir" value="../build/poms"/>
+
+  <target name="install.granite-gen-root.local" depends="load.poms">
+    <artifact:install pomRefId="granite-gen-root"/>
+  </target>
+
+  <target name="install.to.repo" depends="load.poms">
+    <artifact:install pomRefId="granite-gen-root"/>
+    <artifact:install pomRefId="granite-generator-share" file="../lib/granite-generator-share.jar">
+        <attach file="../../graniteds/build/sources/java/granite-generator-share-sources.jar" classifier="sources"/>
+        <attach file="../../graniteds/build/docs/javadocs/granite-generator-share-javadoc.jar" classifier="javadoc"/>
+    </artifact:install>
+	
+    <artifact:install pomRefId="granite-generator" file="../lib/granite-generator.jar">
+        <attach file="../build/sources/java/granite-generator-sources.jar" classifier="sources"/>
+        <attach file="../build/docs/javadocs/granite-generator-javadoc.jar" classifier="javadoc"/>
+    </artifact:install>
+  </target>
+
+  <target name="load.wagon">
+    <artifact:install-provider artifactid="wagon-http" version="1.0-beta-6">
+      <remoterepository id="${maven.central.repo.id}" url="${maven.central.repo.url}"/>
+    </artifact:install-provider>
+  </target>
+
+  <target name="deploy.GDS.gen" depends="load.poms, load.wagon, sign.GDS.artifacts">
+    <artifact:deploy file="${build.pom.dir}/root-gen.pom.xml">
+      <artifact:remoterepository id="${remote.repo.id}" url="${remote.repo.url}">
+        <artifact:authentication username="${remote.repo.user}" password="${remote.repo.password}"/>
+      </artifact:remoterepository>
+      <pom file="${build.pom.dir}/root-gen.pom.xml"/>
+      <attach file="${build.pom.dir}/root-gen.pom.xml.asc" type="pom.asc"/>
+    </artifact:deploy>
+
+    <artifact:deploy pomRefId="granite-generator-share" file="../../graniteds/build/granite-generator-share.jar">
+      <artifact:remoterepository id="${remote.repo.id}" url="${remote.repo.url}">
+        <artifact:authentication username="${remote.repo.user}" password="${remote.repo.password}"/>
+      </artifact:remoterepository>
+      <attach file="../../graniteds/build/granite-generator-share.jar.asc" type="jar.asc"/>
+      <attach file="${build.pom.dir}/generator-share.pom.xml.asc" type="pom.asc"/>
+      <attach file="../../graniteds/build/sources/java/granite-generator-share-sources.jar" classifier="sources"/>
+      <attach file="../../graniteds/build/sources/java/granite-generator-share-sources.jar.asc"
+              classifier="sources" type="jar.asc"/>
+      <attach file="../../graniteds/build/docs/javadoc/granite-generator-share-javadoc.jar" classifier="javadoc"/>
+      <attach file="../../graniteds/build/docs/javadoc/granite-generator-share-javadoc.jar.asc"
+              classifier="javadoc" type="jar.asc"/>
+    </artifact:deploy>
+
+    <artifact:deploy pomRefId="granite-generator" file="../lib/granite-generator.jar">
+      <artifact:remoterepository id="${remote.repo.id}" url="${remote.repo.url}">
+        <artifact:authentication username="${remote.repo.user}" password="${remote.repo.password}"/>
+      </artifact:remoterepository>
+      <attach file="../lib/granite-generator.jar.asc" type="jar.asc"/>
+      <attach file="${build.pom.dir}/generator.pom.xml.asc" type="pom.asc"/>
+      <attach file="../build/sources/java/granite-generator-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/java/granite-generator-sources.jar.asc" classifier="sources" type="jar.asc"/>
+      <attach file="../build/docs/javadoc/granite-generator-javadoc.jar" classifier="javadoc"/>
+      <attach file="../build/docs/javadoc/granite-generator-javadoc.jar.asc" classifier="javadoc" type="jar.asc"/>
+    </artifact:deploy>
+  </target>
+
+  <target name="sign.GDS.artifacts" depends="load.poms">
+    <path id="openpgpg-tasks.classpath">
+        <fileset dir="../../graniteds/lib">
+          <include name="commons-openpgp*.jar"/>
+          <include name="bcpg-*.jar"/>
+          <include name="bcprov-*.jar"/>
+        </fileset>
+    </path>
+    <!--
+       This is clue from https://svn.apache.org/repos/asf/ant/ivy/core/trunk/build-release.xml
+       For some reason, if we use the openpgp:signer task here directly, the bouncycastle security
+       provider cannot be loaded. If we launch it as a forked process everything works fine !?!
+     -->
+    <java classname="org.apache.tools.ant.launch.Launcher"
+          fork="true">
+      <classpath>
+        <fileset dir="${ant.home}" includes="**/*.jar"/>
+        <path refid="openpgpg-tasks.classpath"/>
+      </classpath>
+      <arg line="-f maven-deploy-generator.xml"/>
+      <arg line="sign.GDS.artifacts.internal"/>
+    </java>
+  </target>
+
+  <target name="sign.GDS.artifacts.internal">
+    <taskdef resource="org/apache/commons/openpgp/ant/antlib.xml" uri="antlib:org.apache.commons.openpgp.ant"/>
+    <openpgp:signer secring="${pgp.gnupg.folder}/secring.gpg" pubring="${pgp.gnupg.folder}/pubring.gpg"
+                    keyid="${pgp.keyId}" password="${pgp.password}" asciiarmor="true">
+      <fileset dir="../build">
+        <include name="**/*.pom.xml"/>
+        <include name="**/*.swc"/>
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="../lib">
+        <include name="**/granite-*.jar"/>
+      </fileset>
+    </openpgp:signer>
+  </target>
+</project>

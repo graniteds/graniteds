@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd ">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.graniteds</groupId>
+    <artifactId>granite-gen-root</artifactId>
+    <version>${ganiteds.version}</version>
+  </parent>
+
+  <groupId>org.graniteds</groupId>
+  <artifactId>granite-generator</artifactId>
+  <version>${ganiteds.version}</version>
+  <packaging>jar</packaging>
+  <name>GraniteDS Generator</name>
+
+  <url>http://www.graniteds.org</url>
+  <licenses>
+    <license>
+      <name>LGPL</name>
+      <url>http://www.gnu.org/licenses/lgpl.html</url>
+    </license>
+  </licenses>
+  <scm>
+    <url>https://granite.svn.sourceforge.net/svnroot/granite/graniteds_builder/tags/${ganiteds.version}</url>
+  </scm>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.graniteds</groupId>
+      <artifactId>granite-generator-share</artifactId>
+      <version>${ganiteds.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+      <version>1.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.persistence</groupId>
+      <artifactId>persistence-api</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.jdo</groupId>
+      <artifactId>jdo2-api</artifactId>
+      <version>2.3-20090302111651</version>
+    </dependency>
+    <dependency>
+      <groupId>antlr</groupId>
+      <artifactId>antlr</artifactId>
+      <version>2.7.7</version>
+    </dependency>
+  </dependencies>
+</project>
