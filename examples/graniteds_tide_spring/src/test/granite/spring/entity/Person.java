@@ -59,7 +59,6 @@ public class Person extends AbstractEntity implements NamedEntity {
     private String firstName;
 
     @Basic
-    @Length(min=5, max=50)
     private String lastName;
 
     @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="person")
