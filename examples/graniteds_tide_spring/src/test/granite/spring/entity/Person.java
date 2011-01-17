@@ -35,7 +35,6 @@ import javax.persistence.OneToOne;
 import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
 import org.hibernate.annotations.Cascade;
 
-import org.hibernate.validator.Length;
 import test.granite.spring.entity.types.NamedEntity;
 
 /**
