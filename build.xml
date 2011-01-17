@@ -1417,6 +1417,7 @@
         <copy todir="build/${eclipse.projectDescription.name}">
             <fileset dir=".">
                 <include name="**"/>
+                <exclude name=".git/**"/>
                 <exclude name="*.zip"/>
                 <exclude name="classes/**"/>
                 <exclude name="build/**"/>
