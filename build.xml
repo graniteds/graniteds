@@ -1418,6 +1418,7 @@
             <fileset dir=".">
                 <include name="**"/>
                 <exclude name=".git/**"/>
+				<exclude name="**/.gitignore" />
                 <exclude name="*.zip"/>
                 <exclude name="classes/**"/>
                 <exclude name="build/**"/>
