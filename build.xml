@@ -1395,6 +1395,7 @@
             <arg line="-templates-path '${FLEX_HOME}/asdoc/templates'"/>
             <arg line="-main-title 'Granite Data Services API Documentation (${GDS_VERSION})'" />
             <arg line="-window-title 'Granite Data Services API Documentation - ${GDS_VERSION}'" />
+        	<arg line="-define=CONFIG::debugging,false" />
         </exec>
     </target>
 
