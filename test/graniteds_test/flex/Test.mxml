@@ -123,6 +123,7 @@
  				ts.addTest(new TestMergeMap2());
  				ts.addTest(new TestMergeMap3());
 				ts.addTest(new TestSpringRetryAfterFault());
+				ts.addTest(new TestSpringIdentity());
  				ts.addTest(new TestEjbClientPagedQuery());
  				ts.addTest(new TestEjbServerPagedQuery());
  				ts.addTest(new TestSeamClientPagedQuery());

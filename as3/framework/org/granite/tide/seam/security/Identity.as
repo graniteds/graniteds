@@ -185,7 +185,7 @@ package org.granite.tide.seam.security {
             	return false;
             }
             if (resultHandler != null) {
-                var event:TideResultEvent = new TideResultEvent(TideResultEvent.RESULT, _context, false, false, null, has);
+                var event:TideResultEvent = new TideResultEvent(TideResultEvent.RESULT, _context, false, false, null, null, has);
                 resultHandler(event, roleName);
             }
             return (has as Boolean);
@@ -234,7 +234,7 @@ package org.granite.tide.seam.security {
             }
             
             if (resultHandler != null) {
-                var event:TideResultEvent = new TideResultEvent(TideResultEvent.RESULT, _context, false, false, null, cache[action]);
+                var event:TideResultEvent = new TideResultEvent(TideResultEvent.RESULT, _context, false, false, null, null, cache[action]);
                 resultHandler(event, target, action);
             }
             return (cache[action] as Boolean);
