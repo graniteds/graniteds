@@ -196,6 +196,9 @@ package org.granite.tide.collections {
 			handleResult({ resultList: new ArrayCollection(), resultCount: 0, firstResult: 0, maxResults: _max });
 			_initializing = true;
 			_initSent = false;
+			clearLocalIndex();
+			_first = 0;
+			_last = _first+_max;
 		}
     	
     	
@@ -247,13 +250,9 @@ package org.granite.tide.collections {
 			
 			if (_fullRefresh) {
 				log.debug("full refresh");
-			
-			    // Force complete refresh after changing sorting or filtering
-			    if (localIndex != null) {
-			        for (var i:int = 0; i < localIndex.length; i++)
-			            stopTrackUpdates(localIndex[i]);
-			    }
-    			localIndex = null;
+				
+				clearLocalIndex();
+
     			_fullRefresh = false;
     			if (_filterRefresh) {
     			    _first = 0;
@@ -268,6 +267,15 @@ package org.granite.tide.collections {
 			return true;
 		}
 		
+		private function clearLocalIndex():void {
+			// Force complete refresh after changing sorting or filtering
+			if (localIndex != null) {
+				for (var i:int = 0; i < localIndex.length; i++)
+					stopTrackUpdates(localIndex[i]);
+			}
+			localIndex = null;
+		}
+
 		
 		private function refreshHandler(event:Event):void {
 			fullRefresh();
