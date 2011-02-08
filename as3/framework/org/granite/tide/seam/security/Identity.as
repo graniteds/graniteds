@@ -149,6 +149,7 @@ package org.granite.tide.seam.security {
          */  
         public function logout():void {
             loggedIn = false;
+			username = null;
             
             clearSecurityCache();
             
