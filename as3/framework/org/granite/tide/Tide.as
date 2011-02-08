@@ -1921,78 +1921,84 @@ package org.granite.tide {
 		 *  @param op remote operation
 		 *  @param tideResponder Tide responder for the remote call
 		 */
-        public function fault(sourceContext:BaseContext, sourceModulePrefix:String, info:Object, componentName:String = null, operation:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            log.error("fault {0}", info);
-            var faultEvent:FaultEvent = info as FaultEvent;
-
+		public function fault(sourceContext:BaseContext, sourceModulePrefix:String, info:Object, componentName:String = null, operation:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
+			log.error("fault {0}", info);
+			var faultEvent:FaultEvent = info as FaultEvent;
+			
 			var context:BaseContext = extractContext(sourceContext, faultEvent, true);
-            
-            var emsg:ErrorMessage = faultEvent.message is ErrorMessage ? faultEvent.message as ErrorMessage : null;
-            var m:ErrorMessage = emsg;
-            do {
-            	if (m && m.faultCode && m.faultCode.search("Server.Security.") == 0) {
-                	emsg = m;
-                	break;
-                }
-                if (m && (m.rootCause is FaultEvent || m.rootCause is ChannelFaultEvent))
-                	m = m.rootCause.rootCause as ErrorMessage;
-                else if (m)
-                	m = m.rootCause as ErrorMessage;
-            }
-            while (m);
-            
-            var saveModulePrefix:String = _currentModulePrefix;
-            _currentModulePrefix = sourceModulePrefix;
-
-            context.meta_fault(componentName, operation, emsg);
-
-            var handled:Boolean = false;
-            if (tideResponder) {
-            	var fault:Fault = null;
-            	if (emsg != null && emsg !== faultEvent.message) {
-            		fault = new Fault(emsg.faultCode, emsg.faultString, emsg.faultDetail);
-            		fault.message = faultEvent.fault.message;
-            		fault.rootCause = faultEvent.fault.rootCause;
-            	}
-            	else
-            		fault = faultEvent.fault;
-                var event:TideFaultEvent = new TideFaultEvent(TideFaultEvent.FAULT, context, false, true, info.token, componentResponder, fault);
-                tideResponder.fault(event);
-                if (event.isDefaultPrevented())
-                	handled = true;
-            }
-
-			if (!handled) {
-            	var _exceptionHandlers:Array = getContext().allByType(IExceptionHandler, true);
-	            if (emsg != null) {
-	            	// Lookup for a suitable exception handler
-    	            for each (var handler:IExceptionHandler in _exceptionHandlers) {
-        	            if (handler.accepts(emsg)) {
-            	            handler.handle(context, emsg);
-                	        handled = true;
-                    	    break;
-	                    }
-    	            }
-        	        if (!handled)
-            	        log.error("Unhandled fault: " + emsg.faultCode + ": " + emsg.faultDetail);
-	            }
-    	        else if (_exceptionHandlers.length > 0 && faultEvent.message is ErrorMessage) {
-    	        	// Handle fault with default exception handler
-        	        _exceptionHandlers[0].handler(context, faultEvent.message as ErrorMessage);
-            	}
-	            else {
-    	            log.error("Unknown fault: " + faultEvent.toString());
-        	        Alert.show("Unknown fault: " + faultEvent.toString());
-	            }
+			
+			var emsg:ErrorMessage = faultEvent.message is ErrorMessage ? faultEvent.message as ErrorMessage : null;
+			var m:ErrorMessage = emsg;
+			do {
+				if (m && m.faultCode && m.faultCode.search("Server.Security.") == 0) {
+					emsg = m;
+					break;
+				}
+				if (m && (m.rootCause is FaultEvent || m.rootCause is ChannelFaultEvent))
+					m = m.rootCause.rootCause as ErrorMessage;
+				else if (m)
+					m = m.rootCause as ErrorMessage;
 			}
-            
-            _currentModulePrefix = saveModulePrefix;
-            
-            if (!handled && !_logoutInProgress)
-            	context.raiseEvent(CONTEXT_FAULT, info.message);
-            
-            tryLogout();
-        }
+			while (m);
+			
+			var saveModulePrefix:String = _currentModulePrefix;
+			_currentModulePrefix = sourceModulePrefix;
+			
+			context.meta_fault(componentName, operation, emsg);
+			
+			var handled:Boolean = false;
+			var fault:Fault = null;
+			if (emsg != null && emsg !== faultEvent.message) {
+				fault = new Fault(emsg.faultCode, emsg.faultString, emsg.faultDetail);
+				fault.message = faultEvent.fault.message;
+				fault.rootCause = faultEvent.fault.rootCause;
+			}
+			else
+				fault = faultEvent.fault;
+			var event:TideFaultEvent = new TideFaultEvent(TideFaultEvent.FAULT, context, false, true, info.token, componentResponder, fault);
+			if (tideResponder) {
+				tideResponder.fault(event);
+				if (event.isDefaultPrevented())
+					handled = true;
+			}
+			
+			if (!handled) {
+				var _exceptionHandlers:Array = getContext().allByType(IExceptionHandler, true);
+				if (emsg != null) {
+					// Lookup for a suitable exception handler
+					for each (var handler:IExceptionHandler in _exceptionHandlers) {
+						if (handler.accepts(emsg)) {
+							if (handler is IExtendedExceptionHandler)
+								IExtendedExceptionHandler(handler).handleEx(context, emsg, event);
+							else
+								handler.handle(context, emsg);
+							handled = true;
+							break;
+						}
+					}
+					if (!handled)
+						log.error("Unhandled fault: " + emsg.faultCode + ": " + emsg.faultDetail);
+				}
+				else if (_exceptionHandlers.length > 0 && faultEvent.message is ErrorMessage) {
+					// Handle fault with default exception handler
+					if (_exceptionHandlers[0] is IExtendedExceptionHandler)
+						IExtendedExceptionHandler(_exceptionHandlers[0]).handleEx(context, faultEvent.message as ErrorMessage, event);
+					else
+						_exceptionHandlers[0].handle(context, faultEvent.message as ErrorMessage);
+				}
+				else {
+					log.error("Unknown fault: " + faultEvent.toString());
+					Alert.show("Unknown fault: " + faultEvent.toString());
+				}
+			}
+			
+			_currentModulePrefix = saveModulePrefix;
+			
+			if (!handled && !_logoutInProgress)
+				context.raiseEvent(CONTEXT_FAULT, info.message);
+			
+			tryLogout();
+		}
         
         
 		/**
