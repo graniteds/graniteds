@@ -2048,7 +2048,7 @@ package org.granite.tide {
     	    
     	    // Another hack to force non public Out properties to be bindable
     	    for each (var out:XML in record.typeDescription.variable) {
-    	    	if (out.metadata && out.metadata.@name == 'Out' && out.@uri) {
+    	    	if (out.metadata && out.metadata.(@name == 'Out') && out.@uri) {
 	    	    	record.typeDescription.appendChild(<accessor name={out.@name} access="readwrite" type={out.@type}>
 					    <metadata name="Bindable">
 					      <arg key="event" value="propertyChange"/>
