@@ -20,34 +20,234 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 -->
 
-<project name="graniteds-test-impl" default="deploy">
-
-    <property name="Name" value="GraniteDS Tests"/>
-    <property name="example.name" value="graniteds-test"/>
+<project name="graniteds-test" default="tests" basedir=".">
 	
-	<property name="seam.lib" value="yes"/>
-	<property name="gds-hibernate.lib" value="yes"/>
-	<property name="gds-seam.lib" value="yes"/>
+    <!--
+     ! Properties: EDIT THE 'test/env.properties' FILE TO REFLECT YOUR ENVIRONMENT.
+     !-->
+	<dirname property="gds.dir" file="../." />
 
-	<property name="exploded.ear.packaging" value="yes"/>
+    <property file="env.properties"/>
+	<property name="gds.lib" value="${gds.dir}/lib"/>
+	<property name="gds.build" value="${gds.dir}/build"/>
 	
-	<property name="flex.application" value="Test"/>
-	<property name="flex.src" value="flex"/>
-	<property name="flex.context.root" value="graniteds-test"/>
-	<fileset id="entity.path" dir="classes">
-        <include name="org/granite/tide/test/entity/**/*.class"/>
-    </fileset>
-	<fileset id="service.path" dir="classes">
-        <include name="org/granite/tide/forbidden/**/*.class"/>
-        <include name="org/granite/tide/test/action/**/*.class"/>
-    </fileset>
-	<property name="flex.use.tide" value="true"/>
-    
-	<condition property="main.build" value="../build.xml" else="../graniteds/test/build.xml">
-		<available file="../build.xml"/>
-	</condition>
-    <import file="${main.build}" />
+	<!--
+     ! Build Message.
+     !-->
+    <echo message="==============================================================================="/>
+    <echo message="  Testing ${Name}"/>
+    <echo message="  "/>
+    <echo message="  $FLEX_HOME = ${FLEX_HOME}"/>
+    <echo message="  "/>
+    <echo message="  $gds.dir = ${gds.dir}"/>
+    <echo message="  $gds.lib = ${gds.lib}"/>
+    <echo message="  $gds.build = ${gds.build}"/>
+    <echo message="==============================================================================="/>
 
-	<fail unless="FLEX_HOME" message="You must set the 'FLEX_HOME' property in env.properties"/>
+    <!--
+     ! Flex SDK tasks (mxmlc, compc, html-wrapper, flexunit).
+     !-->
+    <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
 	
+	<taskdef resource="flexUnitTasks.tasks" classpath="lib/flexUnitTasks-4.1.0.jar"/>
+	
+	<!--
+	 ! Jar dependencies (used conditionally).
+	 !-->
+	<path id="main.jar">
+		<fileset dir="${gds.lib}">
+			<include name="javax.servlet.jar"/>
+		</fileset>
+	</path>
+	<path id="granite.jar">
+		<fileset dir="${gds.build}">
+			<include name="granite.jar"/>
+		</fileset>
+	</path>
+	<path id="log4j.jar">
+		<fileset dir="${gds.lib}">
+			<include name="log4j.jar"/>
+		</fileset>
+	</path>
+	<path id="hibernate.jar">
+		<fileset dir="${gds.lib}">
+			<include name="ejb3-persistence.jar"/>
+			<include name="hibernate3.jar"/>
+			<include name="hibernate-annotations.jar"/>
+			<include name="hibernate-commons-annotations.jar"/>
+			<include name="dom4j.jar"/>
+			<include name="antlr-2.7.7.jar"/>
+			<include name="asm-1.5.3.jar"/>
+			<include name="cglib-2.1_3.jar"/>
+			<include name="jta.jar"/>
+			<include name="commons-collections.jar"/>
+		</fileset>
+	</path>
+	<path id="hibernate-validator.jar">
+		<fileset dir="${gds.lib}">
+			<include name="hibernate-validator.jar"/>
+			<include name="hibernate-commons-annotations.jar"/>
+			<include name="slf4j-api.jar"/>
+			<include name="slf4j-jboss-logging.jar"/>
+		</fileset>
+	</path>
+	<path id="granite-hibernate.jar">
+		<fileset dir="${gds.build}">
+			<include name="granite-hibernate.jar"/>
+		</fileset>
+	</path>
+	<path id="seam.jar">
+		<fileset dir="${gds.lib}">
+			<include name="dom4j.jar"/>
+			<include name="javassist-3.6.jar"/>
+			<include name="jboss-seam.jar"/>
+			<include name="jboss-seam21.jar"/>
+			<include name="jboss-el.jar"/>
+			<include name="el-api.jar"/>
+			<include name="jsf-api.jar"/>
+		</fileset>
+	</path>
+	<path id="granite-seam.jar">
+		<fileset dir="${gds.build}">
+			<include name="granite-seam21.jar"/>
+		</fileset>
+	</path>
+	
+	<path id="gds.classpath">
+		<pathelement location="${gds.lib}/junit-4.4.jar"/>
+		<path refid="main.jar"/>
+	    <path refid="hibernate.jar"/>
+	    <path refid="hibernate-validator.jar"/>
+	    <path refid="seam.jar"/>
+	    <path refid="granite.jar"/>
+	    <path refid="granite-hibernate.jar"/>
+	    <path refid="granite-seam.jar"/>
+	</path>
+
+	
+    <!--
+     ! Compile Java sources (unless this script is launched from Eclipse).
+     !-->
+    <target name="build.javac" description="Compile Java sources">
+    	<mkdir dir="classes"/>
+        <javac destdir="classes" srcdir="java" classpathref="gds.classpath" debug="true"
+            target="1.5" source="1.5"/>
+        <copy todir="classes">
+            <fileset dir="resources">
+                <include name="*.xml"/>
+                <include name="*.properties"/>
+                <include name="WEB-INF/**"/>
+                <include name="META-INF/**"/>
+            </fileset>
+        </copy>
+    </target>
+	
+	<target name="tests.java" depends="build.javac" description="Run Java tests">
+		<mkdir dir="test-reports/java"/>
+		
+		<junit printsummary="yes" showoutput="true">
+			<classpath>
+				<path refid="gds.classpath"/>
+				<pathelement path="classes"/>
+			</classpath>
+			
+			<formatter type="xml"/>
+			
+			<batchtest todir="test-reports/java" fork="true">
+				<fileset dir="java">
+			    	<include name="**/*Test.java"/>
+			    	<exclude name="**/Abstract*.java"/>
+			    </fileset>
+			</batchtest>
+		</junit>
+		
+		<junitreport todir="test-reports/java">
+		  	<fileset dir="./test-reports/java">
+		    	<include name="TEST-*.xml"/>
+		  	</fileset>
+		  	<report todir="test-reports/java"/>
+		</junitreport>	
+	</target>
+	
+    <!--
+     ! Build swf (if swf is out of date).
+     !-->
+    <target name="build.mxmlc" description="Build Flex tests swf">
+    	<mkdir dir="swf"/>
+        <mxmlc
+            output="swf/tests.swf"
+        	file="flex/TestRunner.mxml"
+            use-network="false"
+            debug="true"
+            incremental="true">
+
+            <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
+
+            <source-path path-element="${FLEX_HOME}/frameworks"/>
+            <source-path path-element="flex"/>
+        	
+        	<!-- Standard annotations -->
+			<keep-as3-metadata name="Bindable"/>
+		    <keep-as3-metadata name="Managed"/>
+		    <keep-as3-metadata name="ChangeEvent"/>
+		    <keep-as3-metadata name="NonCommittingChangeEvent"/>
+		    <keep-as3-metadata name="Transient"/>
+
+        	<!-- Tide annotations -->
+        	<keep-as3-metadata name="Id"/>
+        	<keep-as3-metadata name="Version"/>
+        	<keep-as3-metadata name="Name"/>
+        	<keep-as3-metadata name="In"/>
+        	<keep-as3-metadata name="Inject"/>
+        	<keep-as3-metadata name="Out"/>
+        	<keep-as3-metadata name="Produces"/>
+        	<keep-as3-metadata name="ManagedEvent"/>
+        	<keep-as3-metadata name="Observer"/>
+        	<keep-as3-metadata name="PostConstruct"/>
+        	<keep-as3-metadata name="Destroy"/>
+        	<keep-as3-metadata name="Test"/>
+        	<keep-as3-metadata name="Suite"/>
+        	<keep-as3-metadata name="RunWith"/>
+
+        	<!-- All granite-essentials.swc classes are included in the output swf -->
+            <compiler.include-libraries dir="${gds.build}" append="true">
+                <include name="granite-essentials.swc" />
+            </compiler.include-libraries>
+
+        	<!-- Actually used only granite.swc classes are included in the output swf -->
+        	<compiler.library-path dir="${gds.build}" append="true">
+        		<include name="granite.swc"/>
+        	</compiler.library-path>
+        	
+        	<compiler.library-path dir="libs" append="true">
+        		<include name="flexunit*-4.1.0.swc"/>
+        	</compiler.library-path>
+            
+            <compiler.headless-server>true</compiler.headless-server>
+        </mxmlc>
+    </target>
+	
+	<target name="tests.flex" depends="build.mxmlc" description="Run Flex tests">
+		<mkdir dir="test-reports/flex"/>
+		<flexunit swf="swf/tests.swf" todir="test-reports/flex" headless="true" localTrusted="true" verbose="true"/>
+		
+		<junitreport todir="test-reports/flex">
+		  	<fileset dir="./test-reports/flex">
+		    	<include name="TEST-*.xml"/>
+		  	</fileset>
+		  	<report todir="test-reports/flex"/>
+		</junitreport>	
+	</target>
+	
+	<target name="tests" depends="tests.java,tests.flex" description="Run tests"/>
+	
+    <!--
+     ! Clean.
+     !-->
+    <target name="clean">
+    	<delete dir="classes"/>
+    	<delete dir="swf"/>
+    	<delete dir="test-reports"/>
+    </target>
+
 </project>

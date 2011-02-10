@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml"
+		  xmlns:framework="org.granite.test.tide.framework.*"
+		  layout="absolute" width="400" height="300">
+	<mx:Metadata>[Name]</mx:Metadata>
+	
+	<framework:MyInput id="input1"/>
+	<framework:MyInput/>
+	
+</mx:Panel>

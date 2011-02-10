@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
+	<classpathentry kind="src" path="java"/>
 	<classpathentry kind="lib" path="/graniteds/lib/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-annotations-ejb3.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-ejb3x.jar"/>

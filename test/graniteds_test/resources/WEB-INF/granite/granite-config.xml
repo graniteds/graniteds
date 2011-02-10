@@ -25,7 +25,7 @@
 
 <granite-config scan="true">
 
-	<class-getter type="org.granite.tide.test.TestClassGetter"/>
+	<class-getter type="org.granite.test.tide.TestClassGetter"/>
     
    <!--
     ! Use Seam based security service.
@@ -39,7 +39,7 @@
         <tide-component instance-of="org.jboss.seam.security.Identity"/>
         <tide-component instance-of="org.jboss.seam.framework.Home"/>
         <tide-component instance-of="org.jboss.seam.framework.Query"/>
-        <tide-component type="org\.granite\.tide\.test\..*"/>
+        <tide-component type="org\.granite\.test\.tide\.seam\.action\..*"/>
     </tide-components>
 
 </granite-config>

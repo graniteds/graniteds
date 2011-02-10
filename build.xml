@@ -1452,5 +1452,16 @@
             javacchome="${JAVACC_HOME}"
         />
     </target>
+	
+	<!--
+	 ! Run tests
+	 !-->
+	<target name="tests">
+		<ant dir="test/graniteds_test" antfile="build.xml" target="tests">
+			<property name="gds.dir" value="${basedir}"/>
+			<property name="FLEX_HOME" value="${FLEX_HOME_TESTS}"/>
+			<property name="FLEX_TASKS_JAR" value="${FLEX_HOME_TESTS}/ant/lib/flexTasks.jar"/>
+		</ant>
+	</target>
 
 </project>
