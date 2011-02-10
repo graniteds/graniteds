@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Ce fichier est généré automatiquement par Flash Builder pour compiler les classes FlexUnit et n'est pas destiné à être modifié.
+Cliquez sur l'icône d'actualisation dans la vue "Résultat des tests unitaires FlexUnit" pour regénérer ce fichier. -->
+
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600">
+	<fx:Script>
+		<![CDATA[
+			import org.granite.test.tide.framework.TestComponentModules;
+			import org.granite.test.tide.data.TestMergeEntityCollection;
+			import org.granite.test.tide.seam.SuiteSeam;
+			import org.granite.test.tide.data.TestDirtyCheckEntityEnum;
+			import org.granite.test.tide.framework.TestTypedInjection3;
+			import org.granite.test.tide.framework.MyComponent3;
+			import org.granite.test.tide.framework.TestTypedInjection2;
+			import org.granite.test.util.TestBasicMapGDS470;
+			import org.granite.test.math.TestBigDecimal;
+			import org.granite.test.tide.data.TestMergeEntityConversation;
+			import org.granite.test.tide.data.TestMergeConflictEntity;
+			import org.granite.test.tide.data.TestCollectionEnumGDS588;
+			import org.granite.test.tide.seam.TestSeamMergeEntityLazy;
+			import org.granite.test.tide.framework.TestComponentObservers4;
+			import org.granite.test.tide.seam.TestSeamMergeEntityColl;
+			import org.granite.test.tide.seam.TestSeamInjectedCall;
+			import org.granite.test.tide.framework.TestSimpleComponent;
+			import org.granite.test.tide.seam.TestSeamMergeCollectionChange;
+			import org.granite.test.tide.data.TestEntityRefs;
+			import org.granite.test.tide.framework.TestComponentScan;
+			import org.granite.test.tide.data.TestMergeContexts;
+			import org.granite.test.tide.seam.TestSeamDestroyConversationGDS719;
+			import org.granite.test.tide.seam.TestSeamSimpleCall;
+			import org.granite.test.tide.framework.TestTypedLookup;
+			import org.granite.test.tide.data.TestDestroyContext;
+			import org.granite.test.tide.data.TestMergeLazyEntity2;
+			import org.granite.test.tide.framework.TestComponentEventScope;
+			import org.granite.test.tide.data.TestMergeConflictEntityConversation;
+			import org.granite.test.tide.framework.TestComponentInjectionForum7129;
+			import org.granite.test.tide.framework.TestComponentOutjectionGDS481;
+			import org.granite.test.tide.framework.TestAnnotatedComponent;
+			import org.granite.test.tide.seam.TestSeamMergeCollection;
+			import org.granite.test.tide.framework.TestComponentInjectionForum4314;
+			import org.granite.test.tide.seam.TestSeamMergeArray;
+			import org.granite.test.tide.data.TestDirtyCheckEntityGDS614;
+			import org.granite.test.tide.data.TestDirtyCheckEntityEmbedded;
+			import org.granite.test.tide.framework.TestComponentInOut;
+			import org.granite.test.tide.spring.TestSpringServerPagedQuery;
+			import org.granite.test.tide.seam.TestSeamMergeCollectionAdd;
+			import org.granite.test.tide.data.TestResetEntityGDS668;
+			import org.granite.test.tide.data.TestMergeEntityMap;
+			import org.granite.test.tide.framework.TestUIComponentModules;
+			import org.granite.test.tide.seam.TestSeamMergeCollectionUpdate;
+			import org.granite.test.tide.data.TestMergeMap;
+			import org.granite.test.tide.data.TestMergeCollection;
+			import org.granite.test.tide.seam.TestSeamOutjectedEntityCall;
+			import org.granite.test.tide.seam.TestSeamInjectedCallGDS508;
+			import org.granite.test.tide.seam.TestSeamOutjectedCall;
+			import org.granite.test.tide.data.TestResetEntityGDS667;
+			import org.granite.test.tide.framework.TestComponentObservers2;
+			import org.granite.test.tide.framework.TestComponentObservers;
+			import org.granite.test.tide.framework.TestComponentObservers3;
+			import org.granite.test.tide.framework.TestComponentNestedConversations;
+			import org.granite.test.util.TestCollectionEnumExtGDS588;
+			import org.granite.test.tide.data.TestResetEntityGDS453;
+			import org.granite.test.tide.spring.TestGrailsPagedQuery;
+			import org.granite.test.tide.spring.SuiteSpring;
+			import org.granite.test.tide.data.TestMergeCollectionOfEntities;
+			import org.granite.test.util.SuiteUtil;
+			import org.granite.test.math.TestLong;
+			import org.granite.test.tide.seam.TestSeamConversationScope2;
+			import org.granite.test.tide.framework.TestComponentTideModules;
+			import org.granite.test.tide.framework.TestComponentProduces;
+			import org.granite.test.tide.framework.TestTypedRemoteInjection;
+			import org.granite.test.tide.seam.TestSeamConversationScope;
+			import org.granite.test.tide.framework.TestComponentTideModules2;
+			import org.granite.test.tide.framework.TestComponentOutjectionForum3853;
+			import org.granite.test.tide.seam.TestSeamClientConversation;
+			import org.granite.test.tide.data.TestMergeEntityConversation4;
+			import org.granite.test.tide.data.TestMergeEntityConversation3;
+			import org.granite.test.tide.data.TestMergeEntityConversation2;
+			import org.granite.test.tide.data.TestResetEntityEnum;
+			import org.granite.test.tide.seam.TestSeamInjectedEntityCall;
+			import org.granite.test.tide.framework.TestComponentSubcontextsGDS627;
+			import org.granite.test.tide.framework.TestComponentInjectionGDS482;
+			import org.granite.test.tide.seam.TestSeamMergeEntityLazyVersion;
+			import org.granite.test.tide.spring.TestSpringRetryAfterFault;
+			import org.granite.test.tide.framework.TestComponentInjectionGDS480;
+			import org.granite.test.tide.framework.TestComponentSubcontexts4;
+			import org.granite.test.tide.data.TestMergeEntityArray;
+			import org.granite.test.tide.framework.TestComponentSubcontexts3;
+			import org.granite.test.tide.seam.TestSeamIdentityGDS746;
+			import org.granite.test.tide.seam.TestSeamClientPagedQuery;
+			import org.granite.test.math.TestBigInteger;
+			import org.granite.test.tide.data.SuiteData;
+			import org.granite.test.tide.framework.TestUIComponent;
+			import org.granite.test.tide.framework.TestComponentSubcontexts2;
+			import org.granite.test.tide.data.TestMergeDirtyEntity;
+			import org.granite.test.tide.framework.TestComponentNestedConversations2;
+			import org.granite.test.tide.framework.TestComponentObserversGDS549;
+			import org.granite.test.math.SuiteMath;
+			import org.granite.test.tide.seam.TestSeamContextUpdatedAfterFault;
+			import org.granite.test.tide.framework.TestComponentNoName;
+			import org.granite.test.tide.framework.TestComponentOutjectionGDS745;
+			import org.granite.test.tide.spring.TestSpringClientPagedQuery;
+			import org.granite.test.tide.seam.TestSeamContextCleanAfterFault2;
+			import org.granite.test.tide.data.TestMergeEntityEmbedded;
+			import org.granite.test.tide.framework.TestUIComponentGDS781b;
+			import org.granite.test.tide.framework.TestComponentConversations2;
+			import org.granite.test.tide.ejb.SuiteEjb;
+			import org.granite.test.math.TestMutableBigInteger;
+			import org.granite.test.tide.spring.TestSpringPagedQueryController;
+			import org.granite.test.tide.ejb.TestEjbClientPagedQuery;
+			import org.granite.test.tide.cdi.TestCdiInjectedEntityCall;
+			import org.granite.test.tide.framework.TestComponentInjection2;
+			import org.granite.test.tide.framework.MyComponentConversation3;
+			import org.granite.test.tide.framework.TestComponentInjection3;
+			import org.granite.test.tide.seam.TestSeamServerPagedQuery;
+			import org.granite.test.tide.framework.TestTypedInjection;
+			import org.granite.test.tide.framework.SuiteFramework;
+			import org.granite.test.tide.data.TestMergeLazyEntity;
+			import org.granite.test.tide.ejb.TestEjbServerPagedQuery;
+			import org.granite.test.tide.data.TestMergeEntityXML;
+			import org.granite.test.tide.framework.TestComponentModules2;
+			import org.granite.test.tide.seam.TestSeamMergeCollectionOut;
+			import org.granite.test.tide.cdi.TestCdiInjectedCall;
+			import org.granite.test.tide.framework.TestComponentOutjectionGDS449;
+			import org.granite.test.tide.framework.TestUIComponentGDS781;
+			import org.granite.test.tide.seam.TestSeamContextCleanAfterFault;
+			import org.granite.test.tide.framework.TestComponentSubcontextsGDS555;
+			import org.granite.test.tide.framework.TestComponentSubcontexts;
+			import org.granite.test.tide.framework.TestComponentInjection;
+			import org.granite.test.tide.data.TestResetEntityEnum2;
+			import org.granite.test.tide.data.TestDirtyCheckEntityBigNumber;
+			import org.granite.test.tide.framework.TestComponentProduces2;
+			import org.granite.test.tide.data.TestMergeMap2;
+			import org.granite.test.tide.data.TestMergeMap3;
+			import org.granite.test.tide.seam.TestSeamCreateConversation;
+			import org.granite.test.tide.seam.TestSeamDestroyConversation;
+			import org.granite.test.tide.framework.TestComponentInjectionGDS477;
+			import org.granite.test.tide.data.TestMergeCollection3;
+			import org.granite.test.tide.data.TestMergeCollection2;
+			import org.granite.test.tide.data.TestMergeCollection5;
+			import org.granite.test.tide.data.TestMergeCollection4;
+			import org.granite.test.tide.data.TestMergeCollectionOfElementsGDS501;
+			import org.granite.test.tide.framework.TestComponentInjectionGDS471;
+			import org.granite.test.tide.framework.TestComponentNoName2;
+			import org.granite.test.tide.data.TestDirtyCheckEntity;
+			import org.granite.test.tide.cdi.SuiteCdi;
+			import org.granite.test.tide.seam.TestSeamMergeEntity;
+			import org.granite.test.tide.framework.TestComponentInjectionGDS676;
+			import org.granite.test.tide.framework.TestComponentOutjection;
+			import org.granite.test.tide.framework.TestComponentOutjectionGDS427;
+			import org.granite.test.tide.framework.TestComponentConversations;
+			import org.granite.test.tide.seam.TestSeamMergeEntityLazyRef;
+			import org.granite.test.tide.data.TestResetEntityBigNumber;
+			
+			private var org_granite_test_tide_framework_TestComponentModules_obj:org.granite.test.tide.framework.TestComponentModules;
+			
+			
+			private var org_granite_test_tide_data_TestMergeEntityCollection_obj:org.granite.test.tide.data.TestMergeEntityCollection;
+			
+			
+			private var org_granite_test_tide_seam_SuiteSeam_obj:org.granite.test.tide.seam.SuiteSeam;
+			
+			
+			private var org_granite_test_tide_data_TestDirtyCheckEntityEnum_obj:org.granite.test.tide.data.TestDirtyCheckEntityEnum;
+			
+			
+			private var org_granite_test_tide_framework_TestTypedInjection3_obj:org.granite.test.tide.framework.TestTypedInjection3;
+			
+			
+			private var org_granite_test_tide_framework_MyComponent3_obj:org.granite.test.tide.framework.MyComponent3;
+			
+			
+			private var org_granite_test_tide_framework_TestTypedInjection2_obj:org.granite.test.tide.framework.TestTypedInjection2;
+			
+			
+			private var org_granite_test_util_TestBasicMapGDS470_obj:org.granite.test.util.TestBasicMapGDS470;
+			
+			
+			private var org_granite_test_math_TestBigDecimal_obj:org.granite.test.math.TestBigDecimal;
+			
+			
+			private var org_granite_test_tide_data_TestMergeEntityConversation_obj:org.granite.test.tide.data.TestMergeEntityConversation;
+			
+			
+			private var org_granite_test_tide_data_TestMergeConflictEntity_obj:org.granite.test.tide.data.TestMergeConflictEntity;
+			
+			
+			private var org_granite_test_tide_data_TestCollectionEnumGDS588_obj:org.granite.test.tide.data.TestCollectionEnumGDS588;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeEntityLazy_obj:org.granite.test.tide.seam.TestSeamMergeEntityLazy;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentObservers4_obj:org.granite.test.tide.framework.TestComponentObservers4;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeEntityColl_obj:org.granite.test.tide.seam.TestSeamMergeEntityColl;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamInjectedCall_obj:org.granite.test.tide.seam.TestSeamInjectedCall;
+			
+			
+			private var org_granite_test_tide_framework_TestSimpleComponent_obj:org.granite.test.tide.framework.TestSimpleComponent;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeCollectionChange_obj:org.granite.test.tide.seam.TestSeamMergeCollectionChange;
+			
+			
+			private var org_granite_test_tide_data_TestEntityRefs_obj:org.granite.test.tide.data.TestEntityRefs;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentScan_obj:org.granite.test.tide.framework.TestComponentScan;
+			
+			
+			private var org_granite_test_tide_data_TestMergeContexts_obj:org.granite.test.tide.data.TestMergeContexts;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamDestroyConversationGDS719_obj:org.granite.test.tide.seam.TestSeamDestroyConversationGDS719;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamSimpleCall_obj:org.granite.test.tide.seam.TestSeamSimpleCall;
+			
+			
+			private var org_granite_test_tide_framework_TestTypedLookup_obj:org.granite.test.tide.framework.TestTypedLookup;
+			
+			
+			private var org_granite_test_tide_data_TestDestroyContext_obj:org.granite.test.tide.data.TestDestroyContext;
+			
+			
+			private var org_granite_test_tide_data_TestMergeLazyEntity2_obj:org.granite.test.tide.data.TestMergeLazyEntity2;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentEventScope_obj:org.granite.test.tide.framework.TestComponentEventScope;
+			
+			
+			private var org_granite_test_tide_data_TestMergeConflictEntityConversation_obj:org.granite.test.tide.data.TestMergeConflictEntityConversation;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInjectionForum7129_obj:org.granite.test.tide.framework.TestComponentInjectionForum7129;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentOutjectionGDS481_obj:org.granite.test.tide.framework.TestComponentOutjectionGDS481;
+			
+			
+			private var org_granite_test_tide_framework_TestAnnotatedComponent_obj:org.granite.test.tide.framework.TestAnnotatedComponent;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeCollection_obj:org.granite.test.tide.seam.TestSeamMergeCollection;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInjectionForum4314_obj:org.granite.test.tide.framework.TestComponentInjectionForum4314;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeArray_obj:org.granite.test.tide.seam.TestSeamMergeArray;
+			
+			
+			private var org_granite_test_tide_data_TestDirtyCheckEntityGDS614_obj:org.granite.test.tide.data.TestDirtyCheckEntityGDS614;
+			
+			
+			private var org_granite_test_tide_data_TestDirtyCheckEntityEmbedded_obj:org.granite.test.tide.data.TestDirtyCheckEntityEmbedded;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInOut_obj:org.granite.test.tide.framework.TestComponentInOut;
+			
+			
+			private var org_granite_test_tide_spring_TestSpringServerPagedQuery_obj:org.granite.test.tide.spring.TestSpringServerPagedQuery;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeCollectionAdd_obj:org.granite.test.tide.seam.TestSeamMergeCollectionAdd;
+			
+			
+			private var org_granite_test_tide_data_TestResetEntityGDS668_obj:org.granite.test.tide.data.TestResetEntityGDS668;
+			
+			
+			private var org_granite_test_tide_data_TestMergeEntityMap_obj:org.granite.test.tide.data.TestMergeEntityMap;
+			
+			
+			private var org_granite_test_tide_framework_TestUIComponentModules_obj:org.granite.test.tide.framework.TestUIComponentModules;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeCollectionUpdate_obj:org.granite.test.tide.seam.TestSeamMergeCollectionUpdate;
+			
+			
+			private var org_granite_test_tide_data_TestMergeMap_obj:org.granite.test.tide.data.TestMergeMap;
+			
+			
+			private var org_granite_test_tide_data_TestMergeCollection_obj:org.granite.test.tide.data.TestMergeCollection;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamOutjectedEntityCall_obj:org.granite.test.tide.seam.TestSeamOutjectedEntityCall;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamInjectedCallGDS508_obj:org.granite.test.tide.seam.TestSeamInjectedCallGDS508;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamOutjectedCall_obj:org.granite.test.tide.seam.TestSeamOutjectedCall;
+			
+			
+			private var org_granite_test_tide_data_TestResetEntityGDS667_obj:org.granite.test.tide.data.TestResetEntityGDS667;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentObservers2_obj:org.granite.test.tide.framework.TestComponentObservers2;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentObservers_obj:org.granite.test.tide.framework.TestComponentObservers;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentObservers3_obj:org.granite.test.tide.framework.TestComponentObservers3;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentNestedConversations_obj:org.granite.test.tide.framework.TestComponentNestedConversations;
+			
+			
+			private var org_granite_test_util_TestCollectionEnumExtGDS588_obj:org.granite.test.util.TestCollectionEnumExtGDS588;
+			
+			
+			private var org_granite_test_tide_data_TestResetEntityGDS453_obj:org.granite.test.tide.data.TestResetEntityGDS453;
+			
+			
+			private var org_granite_test_tide_spring_TestGrailsPagedQuery_obj:org.granite.test.tide.spring.TestGrailsPagedQuery;
+			
+			
+			private var org_granite_test_tide_spring_SuiteSpring_obj:org.granite.test.tide.spring.SuiteSpring;
+			
+			
+			private var org_granite_test_tide_data_TestMergeCollectionOfEntities_obj:org.granite.test.tide.data.TestMergeCollectionOfEntities;
+			
+			
+			private var org_granite_test_util_SuiteUtil_obj:org.granite.test.util.SuiteUtil;
+			
+			
+			private var org_granite_test_math_TestLong_obj:org.granite.test.math.TestLong;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamConversationScope2_obj:org.granite.test.tide.seam.TestSeamConversationScope2;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentTideModules_obj:org.granite.test.tide.framework.TestComponentTideModules;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentProduces_obj:org.granite.test.tide.framework.TestComponentProduces;
+			
+			
+			private var org_granite_test_tide_framework_TestTypedRemoteInjection_obj:org.granite.test.tide.framework.TestTypedRemoteInjection;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamConversationScope_obj:org.granite.test.tide.seam.TestSeamConversationScope;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentTideModules2_obj:org.granite.test.tide.framework.TestComponentTideModules2;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentOutjectionForum3853_obj:org.granite.test.tide.framework.TestComponentOutjectionForum3853;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamClientConversation_obj:org.granite.test.tide.seam.TestSeamClientConversation;
+			
+			
+			private var org_granite_test_tide_data_TestMergeEntityConversation4_obj:org.granite.test.tide.data.TestMergeEntityConversation4;
+			
+			
+			private var org_granite_test_tide_data_TestMergeEntityConversation3_obj:org.granite.test.tide.data.TestMergeEntityConversation3;
+			
+			
+			private var org_granite_test_tide_data_TestMergeEntityConversation2_obj:org.granite.test.tide.data.TestMergeEntityConversation2;
+			
+			
+			private var org_granite_test_tide_data_TestResetEntityEnum_obj:org.granite.test.tide.data.TestResetEntityEnum;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamInjectedEntityCall_obj:org.granite.test.tide.seam.TestSeamInjectedEntityCall;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentSubcontextsGDS627_obj:org.granite.test.tide.framework.TestComponentSubcontextsGDS627;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInjectionGDS482_obj:org.granite.test.tide.framework.TestComponentInjectionGDS482;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeEntityLazyVersion_obj:org.granite.test.tide.seam.TestSeamMergeEntityLazyVersion;
+			
+			
+			private var org_granite_test_tide_spring_TestSpringRetryAfterFault_obj:org.granite.test.tide.spring.TestSpringRetryAfterFault;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInjectionGDS480_obj:org.granite.test.tide.framework.TestComponentInjectionGDS480;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentSubcontexts4_obj:org.granite.test.tide.framework.TestComponentSubcontexts4;
+			
+			
+			private var org_granite_test_tide_data_TestMergeEntityArray_obj:org.granite.test.tide.data.TestMergeEntityArray;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentSubcontexts3_obj:org.granite.test.tide.framework.TestComponentSubcontexts3;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamIdentityGDS746_obj:org.granite.test.tide.seam.TestSeamIdentityGDS746;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamClientPagedQuery_obj:org.granite.test.tide.seam.TestSeamClientPagedQuery;
+			
+			
+			private var org_granite_test_math_TestBigInteger_obj:org.granite.test.math.TestBigInteger;
+			
+			
+			private var org_granite_test_tide_data_SuiteData_obj:org.granite.test.tide.data.SuiteData;
+			
+			
+			private var org_granite_test_tide_framework_TestUIComponent_obj:org.granite.test.tide.framework.TestUIComponent;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentSubcontexts2_obj:org.granite.test.tide.framework.TestComponentSubcontexts2;
+			
+			
+			private var org_granite_test_tide_data_TestMergeDirtyEntity_obj:org.granite.test.tide.data.TestMergeDirtyEntity;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentNestedConversations2_obj:org.granite.test.tide.framework.TestComponentNestedConversations2;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentObserversGDS549_obj:org.granite.test.tide.framework.TestComponentObserversGDS549;
+			
+			
+			private var org_granite_test_math_SuiteMath_obj:org.granite.test.math.SuiteMath;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamContextUpdatedAfterFault_obj:org.granite.test.tide.seam.TestSeamContextUpdatedAfterFault;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentNoName_obj:org.granite.test.tide.framework.TestComponentNoName;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentOutjectionGDS745_obj:org.granite.test.tide.framework.TestComponentOutjectionGDS745;
+			
+			
+			private var org_granite_test_tide_spring_TestSpringClientPagedQuery_obj:org.granite.test.tide.spring.TestSpringClientPagedQuery;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamContextCleanAfterFault2_obj:org.granite.test.tide.seam.TestSeamContextCleanAfterFault2;
+			
+			
+			private var org_granite_test_tide_data_TestMergeEntityEmbedded_obj:org.granite.test.tide.data.TestMergeEntityEmbedded;
+			
+			
+			private var org_granite_test_tide_framework_TestUIComponentGDS781b_obj:org.granite.test.tide.framework.TestUIComponentGDS781b;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentConversations2_obj:org.granite.test.tide.framework.TestComponentConversations2;
+			
+			
+			private var org_granite_test_tide_ejb_SuiteEjb_obj:org.granite.test.tide.ejb.SuiteEjb;
+			
+			
+			private var org_granite_test_math_TestMutableBigInteger_obj:org.granite.test.math.TestMutableBigInteger;
+			
+			
+			private var org_granite_test_tide_spring_TestSpringPagedQueryController_obj:org.granite.test.tide.spring.TestSpringPagedQueryController;
+			
+			
+			private var org_granite_test_tide_ejb_TestEjbClientPagedQuery_obj:org.granite.test.tide.ejb.TestEjbClientPagedQuery;
+			
+			
+			private var org_granite_test_tide_cdi_TestCdiInjectedEntityCall_obj:org.granite.test.tide.cdi.TestCdiInjectedEntityCall;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInjection2_obj:org.granite.test.tide.framework.TestComponentInjection2;
+			
+			
+			private var org_granite_test_tide_framework_MyComponentConversation3_obj:org.granite.test.tide.framework.MyComponentConversation3;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInjection3_obj:org.granite.test.tide.framework.TestComponentInjection3;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamServerPagedQuery_obj:org.granite.test.tide.seam.TestSeamServerPagedQuery;
+			
+			
+			private var org_granite_test_tide_framework_TestTypedInjection_obj:org.granite.test.tide.framework.TestTypedInjection;
+			
+			
+			private var org_granite_test_tide_framework_SuiteFramework_obj:org.granite.test.tide.framework.SuiteFramework;
+			
+			
+			private var org_granite_test_tide_data_TestMergeLazyEntity_obj:org.granite.test.tide.data.TestMergeLazyEntity;
+			
+			
+			private var org_granite_test_tide_ejb_TestEjbServerPagedQuery_obj:org.granite.test.tide.ejb.TestEjbServerPagedQuery;
+			
+			
+			private var org_granite_test_tide_data_TestMergeEntityXML_obj:org.granite.test.tide.data.TestMergeEntityXML;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentModules2_obj:org.granite.test.tide.framework.TestComponentModules2;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeCollectionOut_obj:org.granite.test.tide.seam.TestSeamMergeCollectionOut;
+			
+			
+			private var org_granite_test_tide_cdi_TestCdiInjectedCall_obj:org.granite.test.tide.cdi.TestCdiInjectedCall;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentOutjectionGDS449_obj:org.granite.test.tide.framework.TestComponentOutjectionGDS449;
+			
+			
+			private var org_granite_test_tide_framework_TestUIComponentGDS781_obj:org.granite.test.tide.framework.TestUIComponentGDS781;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamContextCleanAfterFault_obj:org.granite.test.tide.seam.TestSeamContextCleanAfterFault;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentSubcontextsGDS555_obj:org.granite.test.tide.framework.TestComponentSubcontextsGDS555;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentSubcontexts_obj:org.granite.test.tide.framework.TestComponentSubcontexts;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInjection_obj:org.granite.test.tide.framework.TestComponentInjection;
+			
+			
+			private var org_granite_test_tide_data_TestResetEntityEnum2_obj:org.granite.test.tide.data.TestResetEntityEnum2;
+			
+			
+			private var org_granite_test_tide_data_TestDirtyCheckEntityBigNumber_obj:org.granite.test.tide.data.TestDirtyCheckEntityBigNumber;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentProduces2_obj:org.granite.test.tide.framework.TestComponentProduces2;
+			
+			
+			private var org_granite_test_tide_data_TestMergeMap2_obj:org.granite.test.tide.data.TestMergeMap2;
+			
+			
+			private var org_granite_test_tide_data_TestMergeMap3_obj:org.granite.test.tide.data.TestMergeMap3;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamCreateConversation_obj:org.granite.test.tide.seam.TestSeamCreateConversation;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamDestroyConversation_obj:org.granite.test.tide.seam.TestSeamDestroyConversation;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInjectionGDS477_obj:org.granite.test.tide.framework.TestComponentInjectionGDS477;
+			
+			
+			private var org_granite_test_tide_data_TestMergeCollection3_obj:org.granite.test.tide.data.TestMergeCollection3;
+			
+			
+			private var org_granite_test_tide_data_TestMergeCollection2_obj:org.granite.test.tide.data.TestMergeCollection2;
+			
+			
+			private var org_granite_test_tide_data_TestMergeCollection5_obj:org.granite.test.tide.data.TestMergeCollection5;
+			
+			
+			private var org_granite_test_tide_data_TestMergeCollection4_obj:org.granite.test.tide.data.TestMergeCollection4;
+			
+			
+			private var org_granite_test_tide_data_TestMergeCollectionOfElementsGDS501_obj:org.granite.test.tide.data.TestMergeCollectionOfElementsGDS501;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInjectionGDS471_obj:org.granite.test.tide.framework.TestComponentInjectionGDS471;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentNoName2_obj:org.granite.test.tide.framework.TestComponentNoName2;
+			
+			
+			private var org_granite_test_tide_data_TestDirtyCheckEntity_obj:org.granite.test.tide.data.TestDirtyCheckEntity;
+			
+			
+			private var org_granite_test_tide_cdi_SuiteCdi_obj:org.granite.test.tide.cdi.SuiteCdi;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeEntity_obj:org.granite.test.tide.seam.TestSeamMergeEntity;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentInjectionGDS676_obj:org.granite.test.tide.framework.TestComponentInjectionGDS676;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentOutjection_obj:org.granite.test.tide.framework.TestComponentOutjection;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentOutjectionGDS427_obj:org.granite.test.tide.framework.TestComponentOutjectionGDS427;
+			
+			
+			private var org_granite_test_tide_framework_TestComponentConversations_obj:org.granite.test.tide.framework.TestComponentConversations;
+			
+			
+			private var org_granite_test_tide_seam_TestSeamMergeEntityLazyRef_obj:org.granite.test.tide.seam.TestSeamMergeEntityLazyRef;
+			
+			
+			private var org_granite_test_tide_data_TestResetEntityBigNumber_obj:org.granite.test.tide.data.TestResetEntityBigNumber;
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Placer ici les éléments non visuels (services et objets de valeur, par exemple). -->
+	</fx:Declarations>
+</s:Application>
