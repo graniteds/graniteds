@@ -30,12 +30,13 @@
     <property file="env.properties"/>
 	<property name="gds.lib" value="${gds.dir}/lib"/>
 	<property name="gds.build" value="${gds.dir}/build"/>
+	<property name="gds.test" value="${gds.dir}/test/graniteds_test"/>
 	
 	<!--
      ! Build Message.
      !-->
     <echo message="==============================================================================="/>
-    <echo message="  Testing ${Name}"/>
+    <echo message="  Testing GraniteDS ${GDS_VERSION}"/>
     <echo message="  "/>
     <echo message="  $FLEX_HOME = ${FLEX_HOME}"/>
     <echo message="  "/>
@@ -173,18 +174,17 @@
      ! Build swf (if swf is out of date).
      !-->
     <target name="build.mxmlc" description="Build Flex tests swf">
-    	<mkdir dir="swf"/>
+    	<mkdir dir="${gds.test}/swf"/>
         <mxmlc
-            output="swf/tests.swf"
-        	file="flex/TestRunner.mxml"
+            output="${gds.test}/swf/tests.swf"
+        	file="${gds.test}/flex/TestRunner.mxml"
             use-network="false"
-            debug="true"
-            incremental="true">
+            debug="true">
 
             <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
 
             <source-path path-element="${FLEX_HOME}/frameworks"/>
-            <source-path path-element="flex"/>
+            <source-path path-element="${gds.test}/flex"/>
         	
         	<!-- Standard annotations -->
 			<keep-as3-metadata name="Bindable"/>
@@ -219,7 +219,7 @@
         		<include name="granite.swc"/>
         	</compiler.library-path>
         	
-        	<compiler.library-path dir="libs" append="true">
+        	<compiler.library-path dir="${gds.test}/libs" append="true">
         		<include name="flexunit*-4.1.0.swc"/>
         	</compiler.library-path>
             
@@ -228,14 +228,14 @@
     </target>
 	
 	<target name="tests.flex" depends="build.mxmlc" description="Run Flex tests">
-		<mkdir dir="test-reports/flex"/>
-		<flexunit swf="swf/tests.swf" todir="test-reports/flex" headless="true" localTrusted="true" verbose="true"/>
+		<mkdir dir="${gds.test}/test-reports/flex"/>
+		<flexunit swf="${gds.test}/swf/tests.swf" todir="${gds.test}/test-reports/flex" headless="true" localTrusted="true" verbose="true"/>
 		
-		<junitreport todir="test-reports/flex">
-		  	<fileset dir="./test-reports/flex">
+		<junitreport todir="${gds.test}/test-reports/flex">
+		  	<fileset dir="${gds.test}/test-reports/flex">
 		    	<include name="TEST-*.xml"/>
 		  	</fileset>
-		  	<report todir="test-reports/flex"/>
+		  	<report todir="${gds.test}/test-reports/flex"/>
 		</junitreport>	
 	</target>
 	
