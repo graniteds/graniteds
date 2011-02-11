@@ -38,7 +38,7 @@
     <echo message="==============================================================================="/>
     <echo message="  Testing GraniteDS ${GDS_VERSION}"/>
     <echo message="  "/>
-    <echo message="  $FLEX_HOME = ${FLEX_HOME}"/>
+    <echo message="  $FLEX_HOME = ${FLEX_HOME_TESTS}"/>
     <echo message="  "/>
     <echo message="  $gds.dir = ${gds.dir}"/>
     <echo message="  $gds.lib = ${gds.lib}"/>
@@ -48,7 +48,7 @@
     <!--
      ! Flex SDK tasks (mxmlc, compc, html-wrapper, flexunit).
      !-->
-    <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
+    <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME_TESTS}/ant/lib/flexTasks.jar" />
 	
 	<taskdef resource="flexUnitTasks.tasks" classpath="lib/flexUnitTasks-4.1.0.jar"/>
 	
@@ -181,9 +181,9 @@
             use-network="false"
             debug="true">
 
-            <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml"/>
+            <load-config filename="${FLEX_HOME_TESTS}/frameworks/flex-config.xml"/>
 
-            <source-path path-element="${FLEX_HOME}/frameworks"/>
+            <source-path path-element="${FLEX_HOME_TESTS}/frameworks"/>
             <source-path path-element="${gds.test}/flex"/>
         	
         	<!-- Standard annotations -->
