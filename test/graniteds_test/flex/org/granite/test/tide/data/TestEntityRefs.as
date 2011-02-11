@@ -28,6 +28,7 @@ package org.granite.test.tide.data
         
         private var contactsNew:ArrayCollection;
         
+		[Ignore("Test cannot be reproduced reliably due to unpredictable GC")]
         [Test(async)]
         public function testEntityRefs():void {
         	Tide.getInstance().setComponentRemoteSync("person", Tide.SYNC_BIDIRECTIONAL);
@@ -67,7 +68,7 @@ package org.granite.test.tide.data
         	person1.version = 1;
 			var contactsNew1:ArrayCollection = new ArrayCollection();
 			person1.contacts = contactsNew1;
-			_ctx.meta_mergeExternal(person1);	// Clear dirty cache of person
+			_ctx.meta_mergeExternalData(person1);	// Clear dirty cache of person
 			
 			System.gc();	// Force gc to clear refs on contact, works only in debug player
 			
@@ -101,7 +102,7 @@ package org.granite.test.tide.data
 			person3.version = 3;
 			var contacts3:ArrayCollection = new ArrayCollection();
 			person3.contacts = contacts3;
-			_ctx.meta_mergeExternal(person3);
+			_ctx.meta_mergeExternalData(person3);
 			
 			Assert.assertEquals("Contacts bound", "person", _ctx.meta_getReference(contactsNew).path);
 			Assert.assertEquals("Contact unbound", "person", _ctx.meta_getReference(contact2).path);

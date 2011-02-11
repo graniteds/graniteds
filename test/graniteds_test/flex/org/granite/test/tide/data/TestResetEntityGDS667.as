@@ -23,6 +23,7 @@ package org.granite.test.tide.data
         }
         
         
+		[Ignore("GDS-667 Complex fix: RESET event does not include all content")]
         [Test]
         public function testResetEntityGDS667():void {
 			var p:Person = new Person();

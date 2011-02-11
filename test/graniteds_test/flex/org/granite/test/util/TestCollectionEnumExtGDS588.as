@@ -30,6 +30,7 @@ package org.granite.test.util {
     
     public class TestCollectionEnumExtGDS588
     {
+		[Ignore("GDS-588 TODO Fixed only when using Tide")]
         [Test]
         public function testCollectionEnumExtGDS588():void {
         	var sal1:Salutation = Salutation.Mr;

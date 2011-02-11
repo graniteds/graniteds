@@ -24,6 +24,7 @@ package org.granite.test.tide.data
         public var ctxDirty:Boolean;
         public var personDirty:Boolean;
         
+		[Ignore("GDS-819 TODO")]
         [Test]
         public function testDirtyCheckEntityEmbedded():void {
         	var person:Person4 = new Person4();

@@ -31,6 +31,7 @@ package org.granite.test.tide.cdi
 			MockCdi.getInstance().addComponents([HelloComponent]);
         }
         
+		[Ignore("TODO Improve CDI support")]
         [Test(async)]
         public function testInjectedCall():void {
 			var helloComponent:HelloComponent = _ctx.byType(HelloComponent) as HelloComponent;

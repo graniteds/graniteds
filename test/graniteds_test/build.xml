@@ -50,7 +50,7 @@
      !-->
     <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME_TESTS}/ant/lib/flexTasks.jar" />
 	
-	<taskdef resource="flexUnitTasks.tasks" classpath="lib/flexUnitTasks-4.1.0.jar"/>
+	<taskdef resource="flexUnitTasks.tasks" classpath="${gds.test}/lib/flexUnitTasks-4.1.0.jar"/>
 	
 	<!--
 	 ! Jar dependencies (used conditionally).
@@ -206,6 +206,7 @@
         	<keep-as3-metadata name="PostConstruct"/>
         	<keep-as3-metadata name="Destroy"/>
         	<keep-as3-metadata name="Test"/>
+        	<keep-as3-metadata name="Ignore"/>
         	<keep-as3-metadata name="Suite"/>
         	<keep-as3-metadata name="RunWith"/>
 
