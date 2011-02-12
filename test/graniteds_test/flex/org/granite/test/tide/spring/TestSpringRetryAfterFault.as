@@ -27,7 +27,7 @@ package org.granite.test.tide.spring
         }
         
         
-        [Test(async)]
+        [Test("Retry after fault", async)]
         public function testSpringRetryAfterFault():void {
 			_ctx.testComponent.testOperation("toto", testRemoteCallResult, Async.asyncHandler(this, testRemoteCallFault, 1000));
         }
