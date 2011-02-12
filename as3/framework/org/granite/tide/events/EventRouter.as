@@ -147,6 +147,9 @@ package org.granite.tide.events {
 		 *  @param event client-side event
 		 */
         public function afterDispatch(contextEvent:TideContextEvent):void {
+			if (!contextEvent.context.meta_isGlobal())
+				return;
+			
         	if (contextEvent.params == null || contextEvent.params.length == 0 || !(contextEvent.params[0] is AbstractTideEvent))
         		return;
         	

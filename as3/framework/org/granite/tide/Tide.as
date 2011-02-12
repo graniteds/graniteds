@@ -1058,21 +1058,18 @@ package org.granite.tide {
 		 *  @param params params array
 		 */
 		public function invokeObservers(context:BaseContext, modulePrefix:String, type:String, params:Array):void {
-			var interceptors:Array = null;
 			var interceptor:IEventInterceptor = null;
 		    var localEvent:TideContextEvent = null;
 		    
-			if (context.meta_isGlobal()) {
-				interceptors = context.allByType(IEventInterceptor);
-				if (interceptors != null) {
-					for each (interceptor in interceptors) {
-		        		if (localEvent == null)
-		        			localEvent = new TideContextEvent(type, context, params);
-						interceptor.beforeDispatch(localEvent);
-						if (localEvent.isDefaultPrevented()) {
-							log.debug("Event {0} prevented by interceptor {1}", localEvent.toString(), getQualifiedClassName(interceptor));
-							return;
-						}
+			var interceptors:Array = context.allByType(IEventInterceptor);
+			if (interceptors != null) {
+				for each (interceptor in interceptors) {
+	        		if (localEvent == null)
+	        			localEvent = new TideContextEvent(type, context, params);
+					interceptor.beforeDispatch(localEvent);
+					if (localEvent.isDefaultPrevented()) {
+						log.debug("Event {0} prevented by interceptor {1}", localEvent.toString(), getQualifiedClassName(interceptor));
+						return;
 					}
 				}
 			}
