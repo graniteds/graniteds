@@ -91,7 +91,11 @@
             <xs:documentation></xs:documentation>
         </xs:annotation>
     </xs:element>
-    
+    <xs:element name="exception-log-levels" type="graniteds:multiValuedProperty">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
     <xs:element name="amf3-message-interceptor" type="xs:string">
         <xs:annotation>
             <xs:documentation></xs:documentation>

@@ -69,7 +69,30 @@ public class ExtendedServiceExceptionHandler extends DefaultServiceExceptionHand
     public ExtendedServiceExceptionHandler(boolean logException) {
     	super(logException);
     }
-
+    @Override
+	public ServiceException handleInvocationException(ServiceInvocationContext context, Throwable e) {
+	        
+	    	//if (getLogException()) {		    	
+		   //         log.debug(e, "Could not process remoting message: %s", context.getMessage());		  
+	    	//}
+	    	ServiceException serviceException=getServiceException(context, e);
+	    	Map<String,String> loglevels=GraniteContext.getCurrentInstance().getGraniteConfig().getExceptionLogLevels();
+	    	String level=loglevels.get(serviceException.getCode());
+	    	if(level!=null && level.equalsIgnoreCase("warn"))
+	    		log.warn(e, "Could not process remoting message: %s", context.getMessage());	
+	    	else
+	    	if(level!=null && level.equalsIgnoreCase("debug"))
+	    		log.debug(e, "Could not process remoting message: %s", context.getMessage());
+	    	else
+	    	if(level!=null && level.equalsIgnoreCase("none"))
+    			return serviceException;
+	    	else
+	    	if(level!=null && level.equalsIgnoreCase("fatal"))
+    			log.fatal(e, "Could not process remoting message: %s", context.getMessage());
+	    	else
+	    		log.error(e, "Could not process remoting message: %s", context.getMessage());
+	        return serviceException;
+	    }
     @Override
     protected ServiceException getServiceException(Message request, Destination destination, String method, Throwable t) {
         if (t == null)

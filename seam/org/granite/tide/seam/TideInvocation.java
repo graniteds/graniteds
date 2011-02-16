@@ -32,12 +32,7 @@ import org.granite.tide.invocation.ContextUpdate;
  */
 public class TideInvocation {
     
-    private static ThreadLocal<TideInvocation> invocation = new ThreadLocal<TideInvocation>() {
-        @Override
-        protected TideInvocation initialValue() {
-            return new TideInvocation();
-        }
-    };
+    private static ThreadLocal<TideInvocation> invocation = new ThreadLocal<TideInvocation>();
     
     public static TideInvocation get() {
         return invocation.get();
