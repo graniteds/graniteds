@@ -40,20 +40,20 @@ package org.granite.tide.data {
     import mx.utils.ObjectUtil;
     
     import org.granite.collections.IMap;
-    import org.granite.util.Enum;
+    import org.granite.collections.IPersistentCollection;
     import org.granite.math.BigNumber;
     import org.granite.meta;
-    import org.granite.collections.IPersistentCollection;
     import org.granite.tide.BaseContext;
-    import org.granite.tide.Tide;
+    import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IExpression;
-    import org.granite.tide.EntityDescriptor;
-    import org.granite.tide.IWrapper;
     import org.granite.tide.IPropertyHolder;
+    import org.granite.tide.IWrapper;
+    import org.granite.tide.Tide;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
+    import org.granite.util.Enum;
 
 
     use namespace meta;
@@ -148,7 +148,7 @@ package org.granite.tide.data {
             var val:Object, saveval:*;
             
             var entityDesc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(entity);
-            if (!entityDesc.versionPropertyName || isNaN(Object(entity)[entityDesc.versionPropertyName])) {
+            if (!entityDesc.versionPropertyName) {
                 for each (p in cinfo.properties) {
                     if (p == entityDesc.versionPropertyName || p == "meta_dirty" || p == "uid")
                         continue;
@@ -292,26 +292,27 @@ package org.granite.tide.data {
             
             if (diff) {
                 var oldDirtyEntity:Boolean = isEntityChanged(entity, propName, oldValue);
-                
                 var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(entity);
-                if (desc.versionPropertyName && !isNaN(Object(entity)[desc.versionPropertyName])) {
+				
+                if (desc.versionPropertyName) {
+					var version:Number = isNaN(entity[desc.versionPropertyName])?-1:entity[desc.versionPropertyName];
                     var save:Object = _savedProperties[entity];
                     var unsaved:Boolean = !save;
                     
-                    if (unsaved || save[desc.versionPropertyName] != Object(entity)[desc.versionPropertyName]) {
+                    if (unsaved || save[desc.versionPropertyName] != version) {
                         save = new Object();
-                        save.version = Object(entity)[desc.versionPropertyName];
+                        save.version = version;
                         _savedProperties[entity] = save;
                         save[propName] = oldValue;
                         if (unsaved)
                         	_dirtyCount++;
                     }
                     
-                    if (save && save[desc.versionPropertyName] == Object(entity)[desc.versionPropertyName]) {
+                    if (save &&	save[desc.versionPropertyName] == version) {
                     	if (!save.hasOwnProperty(propName))
                         	save[propName] = oldValue;
 	                    
-	                    if (save[propName] === newValue || (save[propName] is BigNumber && save[propName].equals(newValue))) {
+	                    if (save[propName] === newValue || (save[propName] is BigNumber && save[propName].equals(newValue)) || (isEmpty(save[propName]) && isEmpty(newValue))) {
 	                        delete save[propName];
 	                        var count:int = 0;
 	                        for (var p:Object in save)
