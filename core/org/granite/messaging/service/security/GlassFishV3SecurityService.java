@@ -22,6 +22,7 @@ package org.granite.messaging.service.security;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Map;
 
@@ -46,6 +47,36 @@ import org.granite.messaging.webapp.HttpGraniteContext;
  * @author Franck WOLFF
  */
 public class GlassFishV3SecurityService extends AbstractSecurityService {
+    
+    private static Method authenticate = null;
+    static {
+    	// GlassFish V3.0
+    	try {
+    		authenticate = Realm.class.getMethod("authenticate", String.class, String.class);
+    	}
+    	catch (NoSuchMethodException e) {
+    	}
+    	// GlassFish V3.1+
+    	try {
+    		authenticate = Realm.class.getMethod("authenticate", String.class, char[].class);
+    	}
+    	catch (NoSuchMethodException e) {
+    	}
+    	if (authenticate == null)
+    		throw new ExceptionInInitializerError("Could not find any supported Realm.authenticate method");
+
+    }
+    
+    private static Principal authenticate(Realm realm, String username, String password) {
+    	try {
+	    	if (authenticate.getParameterTypes()[1].equals(String.class))
+	    		return (Principal)authenticate.invoke(realm, username, password);
+	    	return (Principal)authenticate.invoke(realm, username, password.toCharArray());
+    	}
+    	catch (Exception e) {
+    		throw new RuntimeException(e);
+    	}
+    }
 
     private final Field requestField;
     private Engine engine = null;
@@ -102,7 +133,8 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
 
         Request request = getRequest(httpRequest);
         Realm realm = request.getContext().getRealm();
-        Principal principal = realm.authenticate(decoded[0], decoded[1]);
+
+        Principal principal = authenticate(realm, decoded[0], decoded[1]);
         if (principal == null)
             throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
         
