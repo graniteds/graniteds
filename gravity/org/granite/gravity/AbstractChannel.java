@@ -270,7 +270,7 @@ public abstract class AbstractChannel implements Channel {
 			log.warn(e, "Could not send messages to channel: %s (retrying later)", this);
 			
 			GravityConfig gravityConfig = getGravity().getGravityConfig();
-			if (messages != null && gravityConfig.isRetryOnError()) {
+			if (gravityConfig.isRetryOnError()) {
 				receivedQueueLock.lock();
 				try {
 					if (receivedQueue.size() + messages.size() > gravityConfig.getMaxMessagesQueuedPerChannel()) {
