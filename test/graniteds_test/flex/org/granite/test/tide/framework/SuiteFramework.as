@@ -17,6 +17,7 @@ package org.granite.test.tide.framework
 	import org.granite.test.tide.framework.TestComponentInjectionGDS480;
 	import org.granite.test.tide.framework.TestComponentInjectionGDS482;
 	import org.granite.test.tide.framework.TestComponentInjectionGDS676;
+	import org.granite.test.tide.framework.TestComponentInjectionGDS844;
 	import org.granite.test.tide.framework.TestComponentModules;
 	import org.granite.test.tide.framework.TestComponentModules2;
 	import org.granite.test.tide.framework.TestComponentNestedConversations;
@@ -27,6 +28,7 @@ package org.granite.test.tide.framework
 	import org.granite.test.tide.framework.TestComponentObservers2;
 	import org.granite.test.tide.framework.TestComponentObservers3;
 	import org.granite.test.tide.framework.TestComponentObservers4;
+	import org.granite.test.tide.framework.TestComponentObservers5;
 	import org.granite.test.tide.framework.TestComponentObserversGDS549;
 	import org.granite.test.tide.framework.TestComponentOutjection;
 	import org.granite.test.tide.framework.TestComponentOutjectionForum3853;
@@ -76,6 +78,7 @@ package org.granite.test.tide.framework
 		public var test14:org.granite.test.tide.framework.TestComponentInjectionGDS480;
 		public var test15:org.granite.test.tide.framework.TestComponentInjectionGDS482;
 		public var test16:org.granite.test.tide.framework.TestComponentInjectionGDS676;
+		public var test16b:org.granite.test.tide.framework.TestComponentInjectionGDS844;
 		public var test17:org.granite.test.tide.framework.TestComponentInOut;
 		public var test18:org.granite.test.tide.framework.TestComponentModules;
 		public var test19:org.granite.test.tide.framework.TestComponentModules2;
@@ -87,6 +90,7 @@ package org.granite.test.tide.framework
 		public var test25:org.granite.test.tide.framework.TestComponentObservers2;
 		public var test26:org.granite.test.tide.framework.TestComponentObservers3;
 		public var test27:org.granite.test.tide.framework.TestComponentObservers4;
+		public var test27b:org.granite.test.tide.framework.TestComponentObservers5;
 		public var test28:org.granite.test.tide.framework.TestComponentObserversGDS549;
 		public var test29:org.granite.test.tide.framework.TestComponentOutjection;
 		public var test30:org.granite.test.tide.framework.TestComponentOutjectionForum3853;

@@ -28,7 +28,6 @@ package org.granite.test.tide.seam
         }
         
         [Test(async)]
-        [Test(async)]
         public function testSeamIdentityGDS746():void {
         	_ctx.identity.loggedIn = true;
         	var async:Function = Async.asyncHandler(this, hasRoleResult, 1000);
