@@ -79,6 +79,9 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
 		HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
 		BeanManager manager = (BeanManager)context.getServletContext().getAttribute(BeanManager.class.getName());
 		if (manager != null)
+			return manager;		
+		manager = (BeanManager)context.getServletContext().getAttribute("org.jboss.weld.environment.servlet.javax.enterprise.inject.spi.BeanManager");
+		if (manager != null)
 			return manager;
 		
 		InitialContext ic = null;
