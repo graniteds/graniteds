@@ -1089,93 +1089,93 @@ package org.granite.tide {
 		    if (observerNames == null) {
 		    	if (type.indexOf("org.granite.tide") != 0)
 		    		log.debug("no observer found for type: " + type);
-		        return;
 		    }
-		    
-		    var names:Array = observerNames.toArray();
-		    
-			var saveModulePrefix0:String = _currentModulePrefix;
-			
-		    var currentParams:Array = null;
-		    for each (var o:Object in names) {
-		    	if (observerNames.getItemIndex(o) < 0)
-		    		continue;
-		    	
-		    	var localOnly:Boolean = o.localOnly;
-		    	var currentEvent:Event;
-		    	var observerModulePrefix:String = getModulePrefix(o.name);
-		    	if (modulePrefix != "" && (observerModulePrefix == "" || 
-		    		((!localOnly && modulePrefix.indexOf(observerModulePrefix) != 0) || (localOnly && modulePrefix != observerModulePrefix)))) {
-		    		// Ignore events from other modules
-		    		continue;
-		    	}
-		    	
-				var saveModulePrefix:String = _currentModulePrefix;
-				_currentModulePrefix = observerModulePrefix;
-		    	
-		        var component:Object = context.meta_getInstance(o.name, o.create, !o.create);
-		        if (component != null) {
-		        	var local:Boolean = true;
-		        	var targetContext:Object = context.meta_getContext(o.name, component);
-	            	if (!context.meta_isGlobal() && targetContext !== context) {
-	            		if (localOnly) {
-	            			// Ignore events from conversation conversation context if we don't observe bubbled events
-	            			continue;
-	            		}
-	            		
-	            		// If this is an observer for a event coming from a conversation context,
-	            		// we have to convert the event parameters that are entities to the global context  
-                    	var targetParams:Array = new Array();
-	            		for (var i:int = 0; i < params.length; i++) {
-	            			if (params[i] is IEntity)
-	            				targetParams.push(targetContext.meta_getCachedObject(params[i]));
-	            			else if (params[i] is Event) {
-								var clonedEvent:Object = null;
-								if (params[i] is IExternalizable)
-									clonedEvent = ObjectUtil.copy(params[i]);
-								else
-		            				clonedEvent = params[i].clone();
-								
-					            var cinfo:Object = ObjectUtil.getClassInfo(clonedEvent, null, { includeReadOnly: false, includeTransient: false });
-					            for each (var p:String in cinfo.properties) {
-					                var val:Object = clonedEvent[p];
-					                if (val is IEntity)
-					                	clonedEvent[p] = targetContext.meta_getCachedObject(val);
-					            }
-								
-								targetParams.push(clonedEvent);
-	            			}
-	            			else if (params[i] is DisplayObject || params[i] is Class || params[i] is Function)
-	            				targetParams.push(params[i]);
-	            			else
-	            				targetParams.push(ObjectUtil.copy(params[i]));
-	            		}
-		            	local = false;
-		            	currentParams = targetParams;
-	            	}
-	            	else
-			    		currentParams = params;
-					
-		            if (o.event) {
-		            	if (local) {
-		            		if (localEvent == null)
-		            			localEvent = new TideContextEvent(type, context, currentParams);
-		            		currentEvent = localEvent;
-		                }
-		                else
-		            		currentEvent = new TideContextEvent(type, context, currentParams);
-		                
-		                component[o.methodName].call(component, currentEvent);
-		            }
-		            else // slice required by Franck Wolff
-		                component[o.methodName].apply(component, currentParams.slice(0, o.argumentsCount));
-		        }
-		        
-	            _currentModulePrefix = saveModulePrefix;
-		    }
-		    
-		    _currentModulePrefix = saveModulePrefix0;
-	    
+			else {
+			    var names:Array = observerNames.toArray();
+			    
+				var saveModulePrefix0:String = _currentModulePrefix;
+				
+			    var currentParams:Array = null;
+			    for each (var o:Object in names) {
+			    	if (observerNames.getItemIndex(o) < 0)
+			    		continue;
+			    	
+			    	var localOnly:Boolean = o.localOnly;
+			    	var currentEvent:Event;
+			    	var observerModulePrefix:String = getModulePrefix(o.name);
+			    	if (modulePrefix != "" && (observerModulePrefix == "" || 
+			    		((!localOnly && modulePrefix.indexOf(observerModulePrefix) != 0) || (localOnly && modulePrefix != observerModulePrefix)))) {
+			    		// Ignore events from other modules
+			    		continue;
+			    	}
+			    	
+					var saveModulePrefix:String = _currentModulePrefix;
+					_currentModulePrefix = observerModulePrefix;
+			    	
+			        var component:Object = context.meta_getInstance(o.name, o.create, !o.create);
+			        if (component != null) {
+			        	var local:Boolean = true;
+			        	var targetContext:Object = context.meta_getContext(o.name, component);
+		            	if (!context.meta_isGlobal() && targetContext !== context) {
+		            		if (localOnly) {
+		            			// Ignore events from conversation conversation context if we don't observe bubbled events
+		            			continue;
+		            		}
+		            		
+		            		// If this is an observer for a event coming from a conversation context,
+		            		// we have to convert the event parameters that are entities to the global context  
+	                    	var targetParams:Array = new Array();
+		            		for (var i:int = 0; i < params.length; i++) {
+		            			if (params[i] is IEntity)
+		            				targetParams.push(targetContext.meta_getCachedObject(params[i]));
+		            			else if (params[i] is Event) {
+									var clonedEvent:Object = null;
+									if (params[i] is IExternalizable)
+										clonedEvent = ObjectUtil.copy(params[i]);
+									else
+			            				clonedEvent = params[i].clone();
+									
+						            var cinfo:Object = ObjectUtil.getClassInfo(clonedEvent, null, { includeReadOnly: false, includeTransient: false });
+						            for each (var p:String in cinfo.properties) {
+						                var val:Object = clonedEvent[p];
+						                if (val is IEntity)
+						                	clonedEvent[p] = targetContext.meta_getCachedObject(val);
+						            }
+									
+									targetParams.push(clonedEvent);
+		            			}
+		            			else if (params[i] is DisplayObject || params[i] is Class || params[i] is Function)
+		            				targetParams.push(params[i]);
+		            			else
+		            				targetParams.push(ObjectUtil.copy(params[i]));
+		            		}
+			            	local = false;
+			            	currentParams = targetParams;
+		            	}
+		            	else
+				    		currentParams = params;
+						
+			            if (o.event) {
+			            	if (local) {
+			            		if (localEvent == null)
+			            			localEvent = new TideContextEvent(type, context, currentParams);
+			            		currentEvent = localEvent;
+			                }
+			                else
+			            		currentEvent = new TideContextEvent(type, context, currentParams);
+			                
+			                component[o.methodName].call(component, currentEvent);
+			            }
+			            else // slice required by Franck Wolff
+			                component[o.methodName].apply(component, currentParams.slice(0, o.argumentsCount));
+			        }
+			        
+		            _currentModulePrefix = saveModulePrefix;
+			    }
+			    
+			    _currentModulePrefix = saveModulePrefix0;
+			}
+	    	
 			if (interceptors != null) {
 				for each (interceptor in interceptors)
 					interceptor.afterDispatch(localEvent);
