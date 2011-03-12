@@ -1324,7 +1324,7 @@ package org.granite.tide {
                 else {
                 	params = new Array();
                 	for each (o in TideUIEvent(event).params) {
-                		if (ObjectUtil.isSimple(o) || o is Class || o is IUIComponent)
+                		if (ObjectUtil.isSimple(o) || o is Class || o is Function || o is DisplayObject)
                 			params.push(o);
                 		else
                 			params.push(ctx.meta_mergeExternal(ObjectUtil.copy(o), null)); 

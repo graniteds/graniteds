@@ -1145,7 +1145,7 @@ package org.granite.tide {
 								
 								targetParams.push(clonedEvent);
 	            			}
-	            			else if (params[i] is DisplayObject)
+	            			else if (params[i] is DisplayObject || params[i] is Class || params[i] is Function)
 	            				targetParams.push(params[i]);
 	            			else
 	            				targetParams.push(ObjectUtil.copy(params[i]));
