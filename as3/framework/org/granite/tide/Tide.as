@@ -1926,9 +1926,11 @@ package org.granite.tide {
 			
 			var emsg:ErrorMessage = faultEvent.message is ErrorMessage ? faultEvent.message as ErrorMessage : null;
 			var m:ErrorMessage = emsg;
+			var extendedData:Object = emsg ? emsg.extendedData : null;
 			do {
 				if (m && m.faultCode && m.faultCode.search("Server.Security.") == 0) {
 					emsg = m;
+					extendedData = emsg ? emsg.extendedData : null;
 					break;
 				}
 				if (m && (m.rootCause is FaultEvent || m.rootCause is ChannelFaultEvent))
@@ -1952,7 +1954,7 @@ package org.granite.tide {
 			}
 			else
 				fault = faultEvent.fault;
-			var event:TideFaultEvent = new TideFaultEvent(TideFaultEvent.FAULT, context, false, true, info.token, componentResponder, fault);
+			var event:TideFaultEvent = new TideFaultEvent(TideFaultEvent.FAULT, context, false, true, info.token, componentResponder, fault, extendedData);
 			if (tideResponder) {
 				tideResponder.fault(event);
 				if (event.isDefaultPrevented())

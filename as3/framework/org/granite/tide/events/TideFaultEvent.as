@@ -21,11 +21,12 @@
 package org.granite.tide.events {
 
     import flash.events.Event;
+    
     import mx.rpc.AsyncToken;
     import mx.rpc.Fault;
-
+    
     import org.granite.tide.BaseContext;
-	import org.granite.tide.rpc.ComponentResponder;
+    import org.granite.tide.rpc.ComponentResponder;
     
 
     /**
@@ -40,6 +41,7 @@ package org.granite.tide.events {
         public var asyncToken:AsyncToken;
 		public var componentResponder:ComponentResponder;
         public var fault:Fault;
+		public var extendedData:Object;
 
         public function TideFaultEvent(type:String,
                                       context:BaseContext,
@@ -47,15 +49,17 @@ package org.granite.tide.events {
                                       cancelable:Boolean = false,
                                       asyncToken:AsyncToken = null,
 									  componentResponder:ComponentResponder = null,
-                                      fault:Fault = null) {
+                                      fault:Fault = null,
+									  extendedData:Object = null) {
             super(type, context, bubbles, cancelable);
             this.asyncToken = asyncToken;
 			this.componentResponder = componentResponder;
             this.fault = fault;
+			this.extendedData = extendedData;
         }
 
         override public function clone():Event {
-            return new TideFaultEvent(type, context, bubbles, cancelable, asyncToken, componentResponder, fault);
+            return new TideFaultEvent(type, context, bubbles, cancelable, asyncToken, componentResponder, fault, extendedData);
         }
 		
 		public function retry():AsyncToken {
