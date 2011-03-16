@@ -37,25 +37,27 @@ public class GraniteMBeanInitializer {
 	private static final Logger log = Logger.getLogger(GraniteMBeanInitializer.class);
 
 	public static void registerMBeans(ServletContext context, ServletGraniteConfig gConfig, ServletServicesConfig sConfig) {
+		String appName = ServletGraniteConfig.getConfig(context).getMBeanContextName();
         try {
-            ObjectName name = new ObjectName("org.granite:type=GraniteConfig,context=" + context.getServletContextName());
+            ObjectName name = new ObjectName("org.graniteds:type=GraniteDS,app=" + appName);
 	        log.info("Registering MBean: %s", name);
             OpenMBean mBean = OpenMBean.createMBean(gConfig);
         	MBeanServerLocator.getInstance().register(mBean, name);
         }
         catch (Exception e) {
-        	log.error(e, "Could not register GraniteConfig MBean for context: %s", context.getServletContextName());
+        	log.error(e, "Could not register GraniteDS MBean for context: %s", appName);
         }
 	}	
 
 	public static void unregisterMBeans(ServletContext context) {
+		String appName = ServletGraniteConfig.getConfig(context).getMBeanContextName();
         try {
-            ObjectName name = new ObjectName("org.granite:type=GraniteConfig,context=" + context.getServletContextName());
+            ObjectName name = new ObjectName("org.graniteds:type=GraniteDS,app=" + appName);
 	        log.info("Unregistering MBean: %s", name);
         	MBeanServerLocator.getInstance().unregister(name);
         }
         catch (Exception e) {
-        	log.error(e, "Could not unregister GraniteConfig MBean for context: %s", context.getServletContextName());
+        	log.error(e, "Could not unregister GraniteDS MBean for context: %s", appName);
         }
 	}	
 }
