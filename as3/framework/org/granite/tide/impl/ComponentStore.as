@@ -521,7 +521,9 @@ package org.granite.tide.impl {
 								throw new Error("Typed observer method should have one parameter: " + method.name);
 		                	eventTypes = "$TideEvent$" + Parameter(method.parameters[0]).type.name;
 						}
-						else if (method.parameters.length == 1 && Parameter(method.parameters[0]).type.isSubclassOf(EVENT_TYPE)) {
+						else if (method.parameters.length == 1 
+								&& Parameter(method.parameters[0]).type.getClass() != TideContextEvent 
+								&& Parameter(method.parameters[0]).type.isSubclassOf(EVENT_TYPE)) {
 							eventTypes = "$TideEvent$" + Parameter(method.parameters[0]).type.name + "@" + eventTypes; 
 						}
 		                var eventTypeArray:Array = eventTypes.split(",");
