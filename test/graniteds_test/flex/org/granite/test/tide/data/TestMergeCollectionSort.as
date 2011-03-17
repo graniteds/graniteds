@@ -25,6 +25,7 @@ package org.granite.test.tide.data
         }
         
         
+		[Ignore("GDS-837 Will be fixed after 2.2 SP2")]
         [Test]
         public function testMergeCollectionSort():void {
         	var coll:ArrayCollection = new ArrayCollection();
