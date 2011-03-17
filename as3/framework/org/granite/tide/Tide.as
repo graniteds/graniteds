@@ -1166,6 +1166,10 @@ package org.granite.tide {
 			                
 			                component[o.methodName].call(component, currentEvent);
 			            }
+						else if (o.type != null && currentParams.length == 1) {
+							if (currentParams[0].type == o.type)
+								component[o.methodName].apply(component, currentParams);
+						}
 			            else // slice required by Franck Wolff
 			                component[o.methodName].apply(component, currentParams.slice(0, o.argumentsCount));
 			        }

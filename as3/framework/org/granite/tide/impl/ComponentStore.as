@@ -427,6 +427,8 @@ package org.granite.tide.impl {
 		}
 
 
+		private static const EVENT_TYPE:Type = Type.forClass(Event); 
+		
 		/**
 		 *  @private
 		 * 	Internal implementation of component registration
@@ -518,6 +520,9 @@ package org.granite.tide.impl {
 							if (method.parameters.length != 1)
 								throw new Error("Typed observer method should have one parameter: " + method.name);
 		                	eventTypes = "$TideEvent$" + Parameter(method.parameters[0]).type.name;
+						}
+						else if (method.parameters.length == 1 && Parameter(method.parameters[0]).type.isSubclassOf(EVENT_TYPE)) {
+							eventTypes = "$TideEvent$" + Parameter(method.parameters[0]).type.name + "@" + eventTypes; 
 						}
 		                var eventTypeArray:Array = eventTypes.split(",");
 		                for each (var eventType:String in eventTypeArray)
@@ -634,6 +639,12 @@ package org.granite.tide.impl {
 		 */
         public function internalAddEventObserver(eventType:String, name:String, m:Method, remote:Boolean, create:Boolean, localOnly:Boolean):void {
         	var methodName:Object = m.name;
+			var type:String = null;
+			var idx:int = eventType.lastIndexOf("@");
+			if (idx > 0) {
+				type = eventType.substring(idx+1);
+				eventType = eventType.substring(0, idx);
+			}
         	var uri:String = m.uri;
         	if (uri)
         		methodName = new QName(uri, methodName);
@@ -660,6 +671,7 @@ package org.granite.tide.impl {
                 	name: name, 
                 	methodName: methodName, 
                     event: (p.length == 1 && Parameter(p[0]).type.getClass() == TideContextEvent),
+					type: type,
                     argumentsCount: p.length,
                     create: create,
                     localOnly: localOnly
