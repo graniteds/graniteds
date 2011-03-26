@@ -41,8 +41,14 @@ package org.granite.tide.validators {
         private var _value:Object;
         private var _message:String;
 
-        public function InvalidValue() {
+        public function InvalidValue(rootBean:Object = null, bean:Object = null, beanClass:String = null, path:String = null, value:Object = null, message:String = null) {
             super();
+			_rootBean = rootBean;
+			_bean = bean;
+			_beanClass = beanClass;
+			_path = path;
+			_value = value;
+			_message = message;
         }
 
 		public function get rootBean():Object {

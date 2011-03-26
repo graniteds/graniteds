@@ -66,9 +66,9 @@ package org.granite.tide.seam.validators {
 		
         override protected function doValidation(value:Object):Array {
 			if (value is String)
-				return super.doValidation(value);
+				return super.doValidation();
 			
-            var results:Array = [];
+			var results:Array = [];
             
             var fromServer:Boolean = false;
             var messages:ArrayCollection = null;
