@@ -68,7 +68,7 @@ package org.granite.tide.seam.validators {
 			if (value is String)
 				return super.doValidation(value);
 			
-            var results:Array = [];
+			var results:Array = [];
             
             var fromServer:Boolean = false;
             var messages:ArrayCollection = null;
