@@ -1034,12 +1034,13 @@ package org.granite.tide {
     		if (descriptor == null)
     			return;
     		
+			var value:Object = meta_getInstance(name, false);
 			for each (var typeName:String in descriptor.types) {
 				var ips:Array = _tide.getInjectionPoints(typeName);
 				if (ips != null) {
 					for each (var ip:Array in ips) {
 						var comp:Object = meta_getInstance(String(ip[0]), false);
-						if (comp != null)
+						if (comp != null && comp[ip[1]] === value)
 							comp[ip[1]] = null;
 					}
 				}
@@ -1323,7 +1324,7 @@ package org.granite.tide {
                 else {
                 	params = new Array();
                 	for each (o in TideUIEvent(event).params) {
-                		if (ObjectUtil.isSimple(o) || o is Class || o is IUIComponent)
+                		if (ObjectUtil.isSimple(o) || o is Class || o is Function || o is DisplayObject)
                 			params.push(o);
                 		else
                 			params.push(ctx.meta_mergeExternal(ObjectUtil.copy(o), null)); 

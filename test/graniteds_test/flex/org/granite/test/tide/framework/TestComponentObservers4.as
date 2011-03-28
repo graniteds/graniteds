@@ -16,7 +16,7 @@ package org.granite.test.tide.framework
             Tide.resetInstance();
             _ctx = Tide.getInstance().getContext();
             Tide.getInstance().initApplication();
-            Tide.getInstance().addComponents([MyComponentManagedEvent1, MyComponentManagedEvent2]);
+            Tide.getInstance().addComponents([MyComponentManagedEvent1, MyComponentManagedEvent2, MyComponentObserver2]);
         }
         
         
@@ -26,5 +26,13 @@ package org.granite.test.tide.framework
         	
         	Assert.assertTrue("Component 2 triggered", _ctx.myComponentManagedEvent2.triggered);
         }
+		
+		[Test]
+		public function testComponentObserverGNLI6():void {
+			_ctx.myComponentObserver2.dispatch();
+			
+			Assert.assertTrue("Untyped observer 1 triggered", _ctx.myComponentObserver2.triggered1);
+			Assert.assertFalse("Untyped observer 2 not triggered", _ctx.myComponentObserver2.triggered2);
+		}
     }
 }

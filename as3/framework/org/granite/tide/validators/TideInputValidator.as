@@ -20,13 +20,12 @@
 
 package org.granite.tide.validators {
     
-    import mx.logging.Log;
-    import mx.logging.ILogger;
-
-    import mx.validators.Validator;
-    import mx.validators.ValidationResult;
     import mx.data.utils.Managed;
-
+    import mx.logging.ILogger;
+    import mx.logging.Log;
+    import mx.validators.ValidationResult;
+    import mx.validators.Validator;
+    
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.events.TideValidatorEvent;
@@ -98,10 +97,9 @@ package org.granite.tide.validators {
             if (em == null)
                 em = _entityManager;
             
-			if (value is String)
-				return super.doValidation(value);
-			
-            var results:Array = [];
+			var results:Array = value is String ? super.doValidation(value) : [];
+			if (results.length > 0)
+            	return results;
             
             if (value is TideValidatorEvent) {
                 if (TideValidatorEvent(value).type == TideValidatorEvent.INVALID 

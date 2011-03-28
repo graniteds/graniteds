@@ -1,34 +1,6 @@
 package org.granite.test.tide.seam
 {
-	import org.granite.test.tide.seam.TestSeamClientConversation;
-	import org.granite.test.tide.seam.TestSeamClientPagedQuery;
-	import org.granite.test.tide.seam.TestSeamContextCleanAfterFault;
-	import org.granite.test.tide.seam.TestSeamContextCleanAfterFault2;
-	import org.granite.test.tide.seam.TestSeamContextUpdatedAfterFault;
-	import org.granite.test.tide.seam.TestSeamConversationScope;
-	import org.granite.test.tide.seam.TestSeamConversationScope2;
-	import org.granite.test.tide.seam.TestSeamCreateConversation;
-	import org.granite.test.tide.seam.TestSeamDestroyConversation;
-	import org.granite.test.tide.seam.TestSeamDestroyConversationGDS719;
-	import org.granite.test.tide.seam.TestSeamIdentityGDS746;
-	import org.granite.test.tide.seam.TestSeamInjectedCall;
-	import org.granite.test.tide.seam.TestSeamInjectedCallGDS508;
-	import org.granite.test.tide.seam.TestSeamInjectedEntityCall;
-	import org.granite.test.tide.seam.TestSeamMergeArray;
-	import org.granite.test.tide.seam.TestSeamMergeCollection;
-	import org.granite.test.tide.seam.TestSeamMergeCollectionAdd;
-	import org.granite.test.tide.seam.TestSeamMergeCollectionChange;
-	import org.granite.test.tide.seam.TestSeamMergeCollectionOut;
-	import org.granite.test.tide.seam.TestSeamMergeCollectionUpdate;
-	import org.granite.test.tide.seam.TestSeamMergeEntity;
-	import org.granite.test.tide.seam.TestSeamMergeEntityColl;
-	import org.granite.test.tide.seam.TestSeamMergeEntityLazy;
-	import org.granite.test.tide.seam.TestSeamMergeEntityLazyRef;
-	import org.granite.test.tide.seam.TestSeamMergeEntityLazyVersion;
-	import org.granite.test.tide.seam.TestSeamOutjectedCall;
-	import org.granite.test.tide.seam.TestSeamOutjectedEntityCall;
-	import org.granite.test.tide.seam.TestSeamServerPagedQuery;
-	import org.granite.test.tide.seam.TestSeamSimpleCall;
+	import org.granite.test.tide.seam.*;
 	
 	[Suite]
 	[RunWith("org.flexunit.runners.Suite")]
@@ -63,6 +35,9 @@ package org.granite.test.tide.seam
 		public var test27:org.granite.test.tide.seam.TestSeamOutjectedEntityCall;
 		public var test28:org.granite.test.tide.seam.TestSeamServerPagedQuery;
 		public var test29:org.granite.test.tide.seam.TestSeamSimpleCall;
+		public var test30:org.granite.test.tide.seam.TestSeamInputValidator;
+		public var test31:org.granite.test.tide.seam.TestSeamControlValidator;
+		public var test32:org.granite.test.tide.seam.TestSeamEntityValidator;
 		
 	}
 }

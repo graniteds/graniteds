@@ -51,6 +51,10 @@ package org.granite.test.tide.seam
         protected function buildInitializerResponse(call:InvocationCall, entity:Object, propertyName:String):AbstractEvent {
             return null;
         }
+		
+		protected function buildValidationResponse(call:InvocationCall, entity:Object, propertyName:String, value:Object):AbstractEvent {
+			return null;
+		}
         
         
         private function timerHandler(event:TimerEvent):void {
@@ -67,6 +71,12 @@ package org.granite.test.tide.seam
                 var propertyName:String = _args[1];
                 re = buildInitializerResponse(_args[2] as InvocationCall, entity, propertyName);
             }
+			else if (_operation == "validateObject") {
+				var ventity:Object = _args[0];
+				var vpropertyName:String = _args[1];
+				var value:Object = _args[2];
+				re = buildValidationResponse(_args[3] as InvocationCall, ventity, vpropertyName, value);
+			}
             
             var resp:IResponder = null;
             if (re is FaultEvent) {
@@ -79,13 +89,14 @@ package org.granite.test.tide.seam
             }
         }
         
-        protected function buildFault(faultCode:String):FaultEvent {
-            var emsg:ErrorMessage = new ErrorMessage();
+        protected function buildFault(faultCode:String, extendedData:Object = null):FaultEvent {
+            var emsg:ErrorMessage = new ErrorMessage();			
             emsg.faultCode = faultCode;
+			emsg.extendedData = extendedData;
             return new FaultEvent(FaultEvent.FAULT, false, true, null, this, emsg);
         }
         
-        protected function buildResult(result:Object = null, results:Array = null):ResultEvent {
+        protected function buildResult(result:Object = null, results:Array = null, messages:ArrayCollection = null, keyedMessages:Object = null):ResultEvent {
             var msg:AcknowledgeMessage = new AcknowledgeMessage();
             var res:InvocationResult = new InvocationResult();
             res.result = result;
@@ -107,7 +118,8 @@ package org.granite.test.tide.seam
                 }
             }
             res.events = new ArrayCollection();
-            res.messages = new ArrayCollection();
+            res.messages = messages != null ? messages : new ArrayCollection();
+			res.keyedMessages = keyedMessages;
             return new ResultEvent(ResultEvent.RESULT, false, false, res, this, msg);
         }
     }

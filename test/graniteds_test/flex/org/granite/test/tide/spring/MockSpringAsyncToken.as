@@ -82,9 +82,10 @@ package org.granite.test.tide.spring
             }
         }
         
-        protected function buildFault(faultCode:String, faultString:String = ""):FaultEvent {
+        protected function buildFault(faultCode:String, faultString:String = "", extendedData:Object = null):FaultEvent {
             var emsg:ErrorMessage = new ErrorMessage();
             emsg.faultCode = faultCode;
+			emsg.extendedData = extendedData;
 			var fault:Fault = new Fault(faultCode, faultString);
             return new FaultEvent(FaultEvent.FAULT, false, true, fault, this, emsg);
         }
