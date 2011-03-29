@@ -645,7 +645,7 @@
         <taskdef name="gas3" classname="org.granite.generator.ant.AntJavaAs3Task">
         	<!--classpath>
         		<fileset dir="E:/java/builder/plugins">
-        			<include name="org.granite.builder_2.2.0.SP1.jar"/>
+        			<include name="org.granite.builder_2.2.0.SP2.jar"/>
         		</fileset>
         		<fileset dir="C:/java/workspace34/graniteds_builder/lib">
         			<include name="*.jar"/>
