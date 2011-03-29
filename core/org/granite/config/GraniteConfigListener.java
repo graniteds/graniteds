@@ -185,34 +185,35 @@ public class GraniteConfigListener implements ServletContextListener {
         	}
     	}
     	else if (graniteConfig.getSecurityService() == null) {
-    		String securityServiceClass = null;
+    		String securityServiceClassName = null;
     		// Try auto-detect
     		try {
     			ClassUtil.forName("org.mortbay.jetty.Request");
-    			securityServiceClass = "org.granite.messaging.service.security.Jetty6SecurityService";
+    			securityServiceClassName = "org.granite.messaging.service.security.Jetty6SecurityService";
     		}
     		catch (ClassNotFoundException e1) {
     			try {
     				ClassUtil.forName("weblogic.servlet.security.ServletAuthentication");
-        			securityServiceClass = "org.granite.messaging.service.security.WebLogicSecurityService";
+    				securityServiceClassName = "org.granite.messaging.service.security.WebLogicSecurityService";
     			}
     			catch (ClassNotFoundException e2) {
         			try {
-        				ClassUtil.forName("weblogic.servlet.security.ServletAuthentication");
-            			securityServiceClass = "org.granite.messaging.service.security.WebLogicSecurityService";
+        				ClassUtil.forName("com.sun.appserv.server.LifecycleEvent");
+            			securityServiceClassName = "org.granite.messaging.service.security.GlassFishV3SecurityService";
         			}
         			catch (ClassNotFoundException e3) {
-            			securityServiceClass = "org.granite.messaging.service.security.Tomcat7SecurityService";
+        				securityServiceClassName = "org.granite.messaging.service.security.Tomcat7SecurityService";
         			}
     			}
         		try {
-        			graniteConfig.setSecurityService(ClassUtil.newInstance(securityServiceClass, SecurityService.class));
+        			graniteConfig.setSecurityService((SecurityService)ClassUtil.newInstance(securityServiceClassName));
             	}
             	catch (Exception e) {
             		throw new ServletException("Could not setup security service", e);
             	}
     		}
     	}
+
         
         if (!flexFilter.amf3MessageInterceptor().equals(AMF3MessageInterceptor.class)) {
         	try {
