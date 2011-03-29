@@ -185,6 +185,7 @@ public class DefaultExternalizer implements Externalizer {
                     if (!allFieldNames.contains(field.getName()) &&
                         !Modifier.isTransient(field.getModifiers()) &&
                         !Modifier.isStatic(field.getModifiers()) &&
+                        !isPropertyIgnored(field) &&
                         !field.isAnnotationPresent(IgnoredProperty.class)) {
 
                     	boolean found = false;
@@ -240,6 +241,10 @@ public class DefaultExternalizer implements Externalizer {
         }
 
         return fields;
+    }
+    
+    protected boolean isPropertyIgnored(Field field) {
+    	return false;
     }
 
     protected <T> Constructor<T> findDefaultConstructor(Class<T> clazz) {
