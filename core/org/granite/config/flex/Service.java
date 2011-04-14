@@ -66,6 +66,14 @@ public class Service {
         return destinations;
     }
 
+    public void addDestination(Destination destination) {
+    	destinations.put(destination.getId(), destination);
+    }
+
+    public void removeDestination(String destination) {
+    	destinations.remove(destination);
+    }
+
     public Adapter findAdapterById(String id) {
         return adapters.get(id);
     }
@@ -73,9 +81,18 @@ public class Service {
     public Adapter getDefaultAdapter() {
         return defaultAdapter;
     }
+
+    public Map<String, Adapter> getAdapters()
+    {
+        return adapters;
+    }
     
     public void addAdapter(Adapter adapter) {
     	adapters.put(adapter.getId(), adapter);
+    }
+
+    public void removeAdapter(String adapter) {
+    	adapters.remove(adapter);
     }
 
     public static Service forElement(XMap element) {

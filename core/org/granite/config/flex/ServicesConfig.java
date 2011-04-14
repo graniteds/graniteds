@@ -226,6 +226,11 @@ public class ServicesConfig implements ScannedItemHandler {
         services.put(service.getId(), service);
     }
 
+    public void removeService(String service)
+    {
+        services.remove(service);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Channels.
 
@@ -237,6 +242,11 @@ public class ServicesConfig implements ScannedItemHandler {
         channels.put(channel.getId(), channel);
     }
 
+    public void removeChannel(String channel)
+    {
+        channels.remove(channel);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Factories.
 
@@ -246,6 +256,11 @@ public class ServicesConfig implements ScannedItemHandler {
 
     public void addFactory(Factory factory) {
         factories.put(factory.getId(), factory);
+    }
+
+    public void removeFactory(String factory)
+    {
+        factories.remove(factory);
     }
 
     ///////////////////////////////////////////////////////////////////////////
