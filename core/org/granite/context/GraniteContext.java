@@ -51,7 +51,7 @@ public abstract class GraniteContext {
         return instance.get();
     }
 
-    protected static void setCurrentInstance(GraniteContext context) {
+    public static void setCurrentInstance(GraniteContext context) {
         instance.set(context);
     }
 
