@@ -90,8 +90,9 @@
 
 
   <target name="install.granite-root.local" depends="load.poms">
-    <artifact:install pomRefId="granite-root"/>
-    <artifact:install pomRefId="granite-root-swc"/>
+    <artifact:install pomRefId="granite-core" file="../build/granite.jar">
+      <attach file="../build/sources/java/granite-sources.jar" classifier="sources"/>
+    </artifact:install>
   </target>
 
   <target name="install.to.repo" depends="load.poms">
