@@ -23,7 +23,6 @@ package org.granite.messaging.service;
 import flex.messaging.messages.RemotingMessage;
 
 import org.granite.config.flex.Destination;
-import org.granite.config.flex.DestinationRemoveListener;
 import org.granite.context.GraniteContext;
 
 import java.util.Collections;
@@ -34,7 +33,7 @@ import java.util.Set;
 /**
  * @author Franck WOLFF
  */
-public class SimpleServiceFactory extends ServiceFactory implements DestinationRemoveListener {
+public class SimpleServiceFactory extends ServiceFactory {
 
     private static final long serialVersionUID = 1L;
     
@@ -51,7 +50,6 @@ public class SimpleServiceFactory extends ServiceFactory implements DestinationR
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);
 
-        destination.addRemoveListener(this);
         Map<String, Object> cache = getCache(destination);
         
         String key = SimpleServiceInvoker.class.getName() + '.' + destination.getId();
@@ -67,13 +65,6 @@ public class SimpleServiceFactory extends ServiceFactory implements DestinationR
         }
         return service;
     }
-    
-    public void destinationRemoved(Destination destination) throws ServiceException {
-        synchronized (invalidKeys) {
-        	invalidKeys.add(SimpleServiceInvoker.class.getName() + '.' + destination.getId());
-        }
-    }
-    
     
     private Map<String, Object> getCache(Destination destination) throws ServiceException {
         GraniteContext context = GraniteContext.getCurrentInstance();

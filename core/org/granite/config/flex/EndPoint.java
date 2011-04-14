@@ -27,8 +27,8 @@ import org.granite.util.XMap;
  */
 public class EndPoint {
 
-    private final String uri;
-    private final String className;
+    protected String uri;
+    protected String className;
 
     public EndPoint(String uri, String className) {
         this.uri = uri;

@@ -30,13 +30,13 @@ public class Channel {
     private static final String LEGACY_XML = "serialization/legacy-xml";
     private static final String LEGACY_COLLECTION = "serialization/legacy-collection";
 
-    private final String id;
-    private final String className;
-    private final EndPoint endPoint;
-    private final XMap properties;
+    protected String id;
+    protected String className;
+    protected EndPoint endPoint;
+    protected XMap properties;
 
-    private final boolean legacyXml;
-    private final boolean legacyCollection;
+    protected boolean legacyXml;
+    protected boolean legacyCollection;
 
     public Channel(String id, String className, EndPoint endPoint, XMap properties) {
         this.id = id;

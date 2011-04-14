@@ -27,9 +27,9 @@ import org.granite.util.XMap;
  */
 public class Adapter {
 
-    private final String id;
-    private final String className;
-    private final XMap properties;
+    protected String id;
+    protected String className;
+    protected XMap properties;
 
     public Adapter(String id, String className, XMap properties) {
         this.id = id;

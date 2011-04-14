@@ -34,9 +34,9 @@ public class Factory {
         XMap.EMPTY_XMAP
     );
 
-    private final String id;
-    private final String className;
-    private final XMap properties;
+    protected String id;
+    protected String className;
+    protected XMap properties;
 
     public Factory(String id, String className, XMap properties) {
         this.id = id;

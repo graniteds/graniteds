@@ -30,12 +30,12 @@ import org.granite.util.XMap;
  */
 public class Service {
 
-    private final String id;
-    private final String className;
-    private final String messageTypes;
-    private final Map<String, Adapter> adapters;
-    private final Adapter defaultAdapter;
-    private final Map<String, Destination> destinations;
+    protected String id;
+    protected String className;
+    protected String messageTypes;
+    protected Map<String, Adapter> adapters;
+    protected Adapter defaultAdapter;
+    protected Map<String, Destination> destinations;
 
 
     public Service(String id, String className, String messageTypes, Adapter defaultAdapter, Map<String, Adapter> adapters, Map<String, Destination> destinations) {

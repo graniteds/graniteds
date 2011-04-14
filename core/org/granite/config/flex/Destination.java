@@ -38,17 +38,14 @@ public class Destination implements Serializable {
 
     private static final String SECURIZER_PROPERTY_KEY = "securizer";
 
-    private final String id;
-    private final List<String> channelRefs;
-    private final XMap properties;
-    private final List<String> roles;
-    private final Adapter adapter;
-    private final Class<?> scannedClass;
-    private final DestinationSecurizer securizer;
-    
-    private DestinationRemoveListener removeListener;
+    protected String id;
+    protected List<String> channelRefs;
+    protected XMap properties;
+    protected List<String> roles;
+    protected Adapter adapter;
+    protected Class<?> scannedClass;
+    protected DestinationSecurizer securizer;
 
-    
     public Destination(String id, List<String> channelRefs, XMap properties, List<String> roles, Adapter adapter, Class<?> scannedClass) {
         this.id = id;
         this.channelRefs = new ArrayList<String>(channelRefs);
@@ -67,16 +64,6 @@ public class Destination implements Serializable {
         } else
             this.securizer = null;
     }
-    
-    public void addRemoveListener(DestinationRemoveListener listener) {
-    	this.removeListener = listener;
-    }
-    
-    public void remove() {
-    	if (removeListener != null)
-    		removeListener.destinationRemoved(this);
-    }
-    
 
     public String getId() {
         return id;
