@@ -20,6 +20,8 @@
 
 package org.granite.util;
 
+import org.granite.context.GraniteContext;
+
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
@@ -87,20 +89,19 @@ public abstract class ClassUtil {
     public static Class<?> forName(String type) throws ClassNotFoundException {
     	try {
     		return ClassUtil.class.getClassLoader().loadClass(type);
-    	}
-    	catch (ClassNotFoundException e) {
-    		return Thread.currentThread().getContextClassLoader().loadClass(type);
-    	}
+        } catch (ClassNotFoundException e) {
+            try {
+                return Thread.currentThread().getContextClassLoader().loadClass(type);
+            } catch (ClassNotFoundException e2) {
+                GraniteContext gc = GraniteContext.getCurrentInstance();
+                return gc.forName(type);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Class<T> forName(String type, Class<T> cast) throws ClassNotFoundException {
-    	try {
-    		return (Class<T>)ClassUtil.class.getClassLoader().loadClass(type);
-    	}
-    	catch (ClassNotFoundException e) {
-    		return (Class<T>)Thread.currentThread().getContextClassLoader().loadClass(type);
-    	}
+        return (Class<T>)ClassUtil.forName(type);
     }
 
     public static Constructor<?> getConstructor(String type, Class<?>[] paramTypes)

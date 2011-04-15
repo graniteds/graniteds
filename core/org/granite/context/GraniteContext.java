@@ -70,6 +70,11 @@ public abstract class GraniteContext {
     public AMFContext getAMFContext() {
         return amfContext;
     }
+
+    public Class<?> forName(String type) throws ClassNotFoundException
+    {
+        throw new ClassNotFoundException(type);
+    }
     
     public abstract Object getSessionLock();
 
