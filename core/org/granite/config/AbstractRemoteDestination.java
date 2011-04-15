@@ -94,7 +94,7 @@ public class AbstractRemoteDestination {
     	else
     		service = services.get(0);
     	
-    	service.getDestinations().put(source, buildDestination());
+    	service.addDestination(buildDestination());
     	
     	log.info("Registered remote destination %s", source);
     }

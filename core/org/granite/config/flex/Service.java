@@ -60,39 +60,43 @@ public class Service {
     }
 
     public Destination findDestinationById(String id) {
-        return destinations.get(id);
-    }
-    public Map<String, Destination> getDestinations() {
-        return destinations;
+        synchronized (destinations) {
+            return destinations.get(id);
+        }
     }
 
     public void addDestination(Destination destination) {
-    	destinations.put(destination.getId(), destination);
+        synchronized (destinations) {
+            destinations.put(destination.getId(), destination);
+        }
     }
 
-    public void removeDestination(String destination) {
-    	destinations.remove(destination);
+    public Destination removeDestination(String destination) {
+        synchronized (destinations) {
+            return destinations.remove(destination);
+        }
     }
 
     public Adapter findAdapterById(String id) {
-        return adapters.get(id);
+        synchronized (adapters) {
+            return adapters.get(id);
+        }
     }
 
     public Adapter getDefaultAdapter() {
         return defaultAdapter;
     }
 
-    public Map<String, Adapter> getAdapters()
-    {
-        return adapters;
-    }
-    
     public void addAdapter(Adapter adapter) {
-    	adapters.put(adapter.getId(), adapter);
+        synchronized (adapters) {
+            adapters.put(adapter.getId(), adapter);
+        }
     }
 
-    public void removeAdapter(String adapter) {
-    	adapters.remove(adapter);
+    public Adapter removeAdapter(String adapter) {
+        synchronized (adapters) {
+            return adapters.remove(adapter);
+        }
     }
 
     public static Service forElement(XMap element) {

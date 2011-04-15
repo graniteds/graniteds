@@ -117,7 +117,7 @@ public class AbstractMessagingDestination {
 			}
     	}
     	
-    	service.getDestinations().put(id, buildDestination(adapter));
+    	service.addDestination(buildDestination(adapter));
     	
     	log.info("Registered messaging destination %s", id);
     }

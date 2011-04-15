@@ -183,7 +183,7 @@ public class FlexFilter extends AbstractFilter {
         		destination = new Destination("seam", channelIds, new XMap(), tideRoles, null, null);
         		destination.getProperties().put("factory", factory.getId());
         		destination.getProperties().put("validator-name", "tideValidator");
-        		service.getDestinations().put(destination.getId(), destination);
+        		service.addDestination(destination);
         		servicesConfig.addService(service);
         	}
         	

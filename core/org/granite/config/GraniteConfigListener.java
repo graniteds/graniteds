@@ -185,35 +185,34 @@ public class GraniteConfigListener implements ServletContextListener {
         	}
     	}
     	else if (graniteConfig.getSecurityService() == null) {
-    		String securityServiceClassName = null;
+    		String securityServiceClass = null;
     		// Try auto-detect
     		try {
     			ClassUtil.forName("org.mortbay.jetty.Request");
-    			securityServiceClassName = "org.granite.messaging.service.security.Jetty6SecurityService";
+    			securityServiceClass = "org.granite.messaging.service.security.Jetty6SecurityService";
     		}
     		catch (ClassNotFoundException e1) {
     			try {
     				ClassUtil.forName("weblogic.servlet.security.ServletAuthentication");
-    				securityServiceClassName = "org.granite.messaging.service.security.WebLogicSecurityService";
+        			securityServiceClass = "org.granite.messaging.service.security.WebLogicSecurityService";
     			}
     			catch (ClassNotFoundException e2) {
         			try {
-        				ClassUtil.forName("com.sun.appserv.server.LifecycleEvent");
-            			securityServiceClassName = "org.granite.messaging.service.security.GlassFishV3SecurityService";
+        				ClassUtil.forName("weblogic.servlet.security.ServletAuthentication");
+            			securityServiceClass = "org.granite.messaging.service.security.WebLogicSecurityService";
         			}
         			catch (ClassNotFoundException e3) {
-        				securityServiceClassName = "org.granite.messaging.service.security.Tomcat7SecurityService";
+            			securityServiceClass = "org.granite.messaging.service.security.Tomcat7SecurityService";
         			}
     			}
         		try {
-        			graniteConfig.setSecurityService((SecurityService)ClassUtil.newInstance(securityServiceClassName));
+        			graniteConfig.setSecurityService(ClassUtil.newInstance(securityServiceClass, SecurityService.class));
             	}
             	catch (Exception e) {
             		throw new ServletException("Could not setup security service", e);
             	}
     		}
     	}
-
         
         if (!flexFilter.amf3MessageInterceptor().equals(AMF3MessageInterceptor.class)) {
         	try {
@@ -274,7 +273,7 @@ public class GraniteConfigListener implements ServletContextListener {
 	        		destination.getProperties().put("entity-manager-jndi-name", flexFilter.entityManagerJndiName());
 	        	if (!("".equals(flexFilter.validatorClassName())))
 	        		destination.getProperties().put("validator-class-name", flexFilter.validatorClassName());
-	        	service.getDestinations().put(flexFilter.type(), destination);
+	        	service.addDestination(destination);
 	        	servicesConfig.addService(service);
         	}
             

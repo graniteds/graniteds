@@ -160,7 +160,7 @@ public class ServicesConfig implements ScannedItemHandler {
             
             Destination destination = new Destination(anno.id(), channelIds, props, roles, null, clazz);
             
-            service.getDestinations().put(destination.getId(), destination);
+            service.addDestination(destination);
         }
     }
 
@@ -210,57 +210,74 @@ public class ServicesConfig implements ScannedItemHandler {
     // Services.
 
     public Service findServiceById(String id) {
-        return services.get(id);
+        synchronized (services) {
+            return services.get(id);
+        }
     }
 
     public List<Service> findServicesByMessageType(String messageType) {
-        List<Service> services = new ArrayList<Service>();
-        for (Service service : this.services.values()) {
-            if (messageType.equals(service.getMessageTypes()))
-                services.add(service);
+        synchronized (services) {
+            List<Service> services = new ArrayList<Service>();
+            for (Service service : this.services.values()) {
+                if (messageType.equals(service.getMessageTypes()))
+                    services.add(service);
+            }
+            return services;
         }
-        return services;
     }
 
     public void addService(Service service) {
-        services.put(service.getId(), service);
+        synchronized (services) {
+            services.put(service.getId(), service);
+        }
     }
 
-    public void removeService(String service)
-    {
-        services.remove(service);
+    public void removeService(String service) {
+        synchronized (services) {
+            services.remove(service);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // Channels.
 
     public Channel findChannelById(String id) {
-        return channels.get(id);
+        synchronized (channels) {
+            return channels.get(id);
+        }
     }
 
     public void addChannel(Channel channel) {
-        channels.put(channel.getId(), channel);
+        synchronized (channels) {
+            channels.put(channel.getId(), channel);
+        }
     }
 
-    public void removeChannel(String channel)
-    {
-        channels.remove(channel);
+    public void removeChannel(String channel) {
+        synchronized (channels) {
+            channels.remove(channel);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // Factories.
 
     public Factory findFactoryById(String id) {
-        return factories.get(id);
+        synchronized (factories) {
+            return factories.get(id);
+        }
     }
 
     public void addFactory(Factory factory) {
-        factories.put(factory.getId(), factory);
+        synchronized (factories) {
+            factories.put(factory.getId(), factory);
+        }
     }
 
-    public void removeFactory(String factory)
-    {
-        factories.remove(factory);
+    public Factory removeFactory(String factory) {
+        synchronized (factories) {
+            return factories.remove(factory);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -277,14 +294,14 @@ public class ServicesConfig implements ScannedItemHandler {
         return null;
     }
 
-    public List<Destination> findDestinationsByMessageType(String messageType) {
+    /*public List<Destination> findDestinationsByMessageType(String messageType) {
         List<Destination> destinations = new ArrayList<Destination>();
         for (Service service : services.values()) {
             if (messageType.equals(service.getMessageTypes()))
                 destinations.addAll(service.getDestinations().values());
         }
         return destinations;
-    }
+    }*/
 
     ///////////////////////////////////////////////////////////////////////////
     // Static helper.
@@ -350,7 +367,7 @@ public class ServicesConfig implements ScannedItemHandler {
                 }
             }
      		if(service!=null){
-     			Destination dest=service.getDestinations().remove(anno.id());
+     			Destination dest = service.removeDestination(anno.id());
      		}else{
      			log.info("Service NOT Found!!");
      		}
