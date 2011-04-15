@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
+import org.granite.messaging.service.MainFactory;
 
 /**
  * @author Franck WOLFF
@@ -40,6 +41,7 @@ public abstract class GraniteContext {
     private final GraniteConfig graniteConfig;
     private final ServicesConfig servicesConfig;
     private final AMFContext amfContext;
+    private MainFactory mainFactory;
 
     public GraniteContext(GraniteConfig graniteConfig, ServicesConfig servicesConfig) {
         this.servicesConfig = servicesConfig;
@@ -75,6 +77,16 @@ public abstract class GraniteContext {
     {
         throw new ClassNotFoundException(type);
     }
+
+    public MainFactory getMainFactory()
+    {
+        if(mainFactory == null)
+        {
+            mainFactory = new MainFactory();
+        }
+        return mainFactory;
+    }
+
     
     public abstract Object getSessionLock();
 

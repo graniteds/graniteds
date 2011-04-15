@@ -131,7 +131,8 @@ public abstract class AMF3MessageProcessor {
         Message response = null;
         try {
             // Execute method on service.
-            ServiceFactory factory = ServiceFactory.getFactoryInstance(request);
+            GraniteContext context = GraniteContext.getCurrentInstance();
+            ServiceFactory factory = context.getMainFactory().getFactoryInstance(request);
             ServiceInvoker<?> service = factory.getServiceInstance(request);
             Object result = service.invoke(request);
 

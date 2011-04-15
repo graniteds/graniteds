@@ -49,10 +49,7 @@ import org.granite.messaging.amf.io.util.DefaultClassGetter;
 import org.granite.messaging.amf.io.util.JavaClassDescriptor;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
-import org.granite.messaging.service.DefaultMethodMatcher;
-import org.granite.messaging.service.ExceptionConverter;
-import org.granite.messaging.service.MethodMatcher;
-import org.granite.messaging.service.ServiceInvocationListener;
+import org.granite.messaging.service.*;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.tide.TideComponentMatcher;
 import org.granite.scan.ScannedItem;
@@ -427,7 +424,6 @@ public class GraniteConfig implements ScannedItemHandler {
     public Map<String, String> getAs3DescriptorsByInstanceOf() {
     	return as3DescriptorsByInstanceOf;
     }
-    
     
     public Class<? extends JavaClassDescriptor> getJavaDescriptor(String type) {
         return getElementByType(type, JC_DESCRIPTOR_FACTORY, javaDescriptorsByType, javaDescriptorsByInstanceOf, null, null);
