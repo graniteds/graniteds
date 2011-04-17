@@ -20,6 +20,9 @@
 
 package org.granite.tide.ejb;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -65,7 +68,7 @@ public class EjbServiceContext extends TideServiceContext  {
     public static final String CAPITALIZED_DESTINATION_ID = "{capitalized.component.name}";
     public static final String DESTINATION_ID = "{component.name}";
     
-    private final transient Map<String, EjbComponent> ejbLookupCache = new ConcurrentHashMap<String, EjbComponent>();
+    private transient Map<String, EjbComponent> ejbLookupCache = new ConcurrentHashMap<String, EjbComponent>();
     private final Set<String> remoteObservers = new HashSet<String>();
     
     private final String lookup;
@@ -344,5 +347,14 @@ public class EjbServiceContext extends TideServiceContext  {
     	finally {
     		AbstractContext.remove();
     	}
+    }
+    
+    private void writeObject(ObjectOutputStream out) throws IOException {
+    	out.defaultWriteObject(); 
+    }
+    
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    	in.defaultReadObject();
+    	ejbLookupCache = new ConcurrentHashMap<String, EjbComponent>();
     }
 }

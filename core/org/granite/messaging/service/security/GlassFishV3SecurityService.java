@@ -40,6 +40,7 @@ import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.connector.Request;
 import org.granite.context.GraniteContext;
+import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
 
 
@@ -47,20 +48,28 @@ import org.granite.messaging.webapp.HttpGraniteContext;
  * @author Franck WOLFF
  */
 public class GlassFishV3SecurityService extends AbstractSecurityService {
+	
+	private static final Logger log = Logger.getLogger(GlassFishV3SecurityService.class);
     
     private static Method authenticate = null;
     static {
     	// GlassFish V3.0
     	try {
     		authenticate = Realm.class.getMethod("authenticate", String.class, String.class);
+    		log.info("Detected GlassFish v3.0 authentication");
     	}
     	catch (NoSuchMethodException e) {
+    	}
+    	catch (NoSuchMethodError e) {
     	}
     	// GlassFish V3.1+
-    	try {
+    	if (authenticate == null) try {
     		authenticate = Realm.class.getMethod("authenticate", String.class, char[].class);
+    		log.info("Detected GlassFish v3.1+ authentication");
     	}
     	catch (NoSuchMethodException e) {
+    	}
+    	catch (NoSuchMethodError e) {
     	}
     	if (authenticate == null)
     		throw new ExceptionInInitializerError("Could not find any supported Realm.authenticate method");

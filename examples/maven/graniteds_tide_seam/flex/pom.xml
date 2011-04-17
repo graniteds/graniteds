@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.graniteds.examples.tide_seam.poms</groupId>
     <artifactId>flex</artifactId>
-    <version>2.2.0.SP1</version>
+    <version>2.2.0.SP2</version>
   </parent>
 
   <groupId>org.graniteds.examples.tide_seam</groupId>
   <artifactId>flex</artifactId>
-  <version>2.2.0.SP1</version>
+  <version>2.2.0.SP2</version>
   <packaging>swf</packaging>
 
   <build>
@@ -60,7 +60,7 @@
     <dependency>
       <groupId>org.graniteds.examples.tide_seam</groupId>
       <artifactId>core</artifactId>
-      <version>2.2.0.SP1</version>
+      <version>2.2.0.SP2</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

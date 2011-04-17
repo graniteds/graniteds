@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.graniteds.examples.tide_seam.poms</groupId>
     <artifactId>jee</artifactId>
-    <version>2.2.0.SP1</version>
+    <version>2.2.0.SP2</version>
   </parent>
 
   <groupId>org.graniteds.examples.tide_seam</groupId>
   <artifactId>war</artifactId>
-  <version>2.2.0.SP1</version>
+  <version>2.2.0.SP2</version>
   <packaging>war</packaging>
 
   <build>
@@ -51,14 +51,14 @@
     <dependency>
       <groupId>org.graniteds.examples.tide_seam</groupId>
       <artifactId>core</artifactId>
-      <version>2.2.0.SP1</version>
+      <version>2.2.0.SP2</version>
       <type>ejb</type>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.graniteds.examples.tide_seam</groupId>
       <artifactId>flex</artifactId>
-      <version>2.2.0.SP1</version>
+      <version>2.2.0.SP2</version>
       <type>swf</type>
     </dependency>
   </dependencies>

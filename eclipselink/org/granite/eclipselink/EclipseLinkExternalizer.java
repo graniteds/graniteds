@@ -23,6 +23,7 @@ package org.granite.eclipselink;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -137,6 +138,11 @@ public class EclipseLinkExternalizer extends DefaultExternalizer {
             }
         }
     }
+    
+    @Override
+	protected boolean isPropertyIgnored(Field field) {
+		return field.getName().equals("_persistence_fetchGroup");
+	}
     
     
     protected IndirectContainer newIndirectCollection(AbstractExternalizablePersistentCollection value, Type target) {
