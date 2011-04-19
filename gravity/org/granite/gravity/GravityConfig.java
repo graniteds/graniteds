@@ -69,8 +69,9 @@ public class GravityConfig implements GraniteConfigReloadListener {
     private final ChannelFactory channelFactory;
 	
 	public GravityConfig(GraniteConfig graniteConfig, ChannelFactory channelFactory) {
-		
-		parseConfig(graniteConfig.getGravityConfig());
+
+        if(graniteConfig != null)
+		    parseConfig(graniteConfig.getGravityConfig());
 		
 		this.channelFactory = channelFactory;
 	}

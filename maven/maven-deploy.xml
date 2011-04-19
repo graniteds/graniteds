@@ -93,7 +93,10 @@
     <artifact:install pomRefId="granite-core" file="../build/granite.jar">
       <attach file="../build/sources/java/granite-sources.jar" classifier="sources"/>
     </artifact:install>
-  </target>
+    <artifact:install pomRefId="granite-swc" file="../build/granite.swc">
+      <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
+    </artifact:install> 
+ </target>
 
   <target name="install.to.repo" depends="load.poms">
     <artifact:install pomRefId="granite-root" file="${build.pom.dir}/root.pom.xml">
