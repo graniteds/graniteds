@@ -27,9 +27,6 @@ import org.granite.config.flex.ServicesConfig;
 import org.granite.messaging.service.MainFactory;
 import org.granite.messaging.service.SimpleMainFactory;
 
-/**
- * @author Franck WOLFF
- */
 public abstract class AbstractGraniteContext implements GraniteContext {
 
     private final GraniteConfig graniteConfig;

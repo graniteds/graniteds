@@ -33,9 +33,6 @@ import org.granite.util.XMap;
 
 import flex.messaging.messages.RemotingMessage;
 
-/**
- * @author Franck WOLFF
- */
 public interface ServiceFactory extends Serializable {
 
     public void configure(XMap properties) throws ServiceException;
