@@ -32,13 +32,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 
-import org.granite.config.flex.Channel;
-import org.granite.config.flex.Destination;
-import org.granite.config.flex.EndPoint;
-import org.granite.config.flex.Factory;
-import org.granite.config.flex.Service;
-import org.granite.config.flex.ServicesConfig;
-import org.granite.config.flex.ServletServicesConfig;
+import org.granite.config.flex.*;
 import org.granite.config.servlet3.FlexFilter;
 import org.granite.jmx.GraniteMBeanInitializer;
 import org.granite.logging.Logger;
@@ -225,8 +219,8 @@ public class GraniteConfigListener implements ServletContextListener {
         
         Channel channel = servicesConfig.findChannelById("graniteamf");
         if (channel == null) {
-        	channel = new Channel("graniteamf", "mx.messaging.channels.AMFChannel", 
-        		new EndPoint("http://{server.name}:{server.port}/{context.root}/graniteamf/amf", "flex.messaging.endpoints.AMFEndpoint"), 
+        	channel = new SimpleChannel("graniteamf", "mx.messaging.channels.AMFChannel",
+        		new SimpleEndPoint("http://{server.name}:{server.port}/{context.root}/graniteamf/amf", "flex.messaging.endpoints.AMFEndpoint"),
         		new XMap());
         	servicesConfig.addChannel(channel);
         }
@@ -253,19 +247,19 @@ public class GraniteConfigListener implements ServletContextListener {
         if (flexFilter.tide()) {
         	Factory factory = servicesConfig.findFactoryById("tide-" + flexFilter.type() + "-factory");
         	if (factory == null) {
-        		factory = new Factory("tide-" + flexFilter.type() + "-factory", 
+        		factory = new SimpleFactory("tide-" + flexFilter.type() + "-factory",
         			flexFilter.factoryClass().getName(), factoryProperties);
         		servicesConfig.addFactory(factory);
         	}
         	
         	Service service = servicesConfig.findServiceById("granite-service");
         	if (service == null) {
-        		service = new Service("granite-service", "flex.messaging.services.RemotingService", 
+        		service = new SimpleService("granite-service", "flex.messaging.services.RemotingService",
         				"flex.messaging.messages.RemotingMessage", null, null, new HashMap<String, Destination>());
 	        	List<String> channelIds = new ArrayList<String>();
 	        	channelIds.add("graniteamf");
 	        	List<String> tideRoles = flexFilter.tideRoles().length == 0 ? null : Arrays.asList(flexFilter.tideRoles());
-	        	Destination destination = new Destination(flexFilter.type(), channelIds, new XMap(), tideRoles, null, null);
+	        	Destination destination = new SimpleDestination(flexFilter.type(), channelIds, new XMap(), tideRoles, null, null);
 	        	destination.getProperties().put("factory", "tide-" + flexFilter.type() + "-factory");
 	        	if (!("".equals(flexFilter.entityManagerFactoryJndiName())))
 	        		destination.getProperties().put("entity-manager-factory-jndi-name", flexFilter.entityManagerFactoryJndiName());
@@ -283,10 +277,10 @@ public class GraniteConfigListener implements ServletContextListener {
         	log.info("Registered Tide service factory and destination");
         }
         else {
-        	Factory factory = new Factory(flexFilter.type() + "-factory", flexFilter.factoryClass().getName(), factoryProperties);
+        	Factory factory = new SimpleFactory(flexFilter.type() + "-factory", flexFilter.factoryClass().getName(), factoryProperties);
         	servicesConfig.addFactory(factory);
         	
-        	Service service = new Service("granite-service", "flex.messaging.services.RemotingService", 
+        	Service service = new SimpleService("granite-service", "flex.messaging.services.RemotingService",
         		"flex.messaging.messages.RemotingMessage", null, null, new HashMap<String, Destination>());
         	servicesConfig.addService(service);
             

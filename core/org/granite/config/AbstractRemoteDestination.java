@@ -26,9 +26,12 @@ import java.util.List;
 
 import org.granite.config.flex.Channel;
 import org.granite.config.flex.Destination;
-import org.granite.config.flex.EndPoint;
 import org.granite.config.flex.Service;
 import org.granite.config.flex.ServicesConfig;
+import org.granite.config.flex.SimpleChannel;
+import org.granite.config.flex.SimpleDestination;
+import org.granite.config.flex.SimpleEndPoint;
+import org.granite.config.flex.SimpleService;
 import org.granite.logging.Logger;
 import org.granite.util.XMap;
 
@@ -78,8 +81,8 @@ public class AbstractRemoteDestination {
     public void initServices(ServicesConfig servicesConfig) {
     	Channel channel = servicesConfig.findChannelById("graniteamf");
     	if (channel == null) {
-    		channel = new Channel("graniteamf", "mx.messaging.channels.AMFChannel",
-    				new EndPoint("http://{server.name}:{server.port}/{context.root}/graniteamf/amf", "flex.messaging.endpoints.AMFEndpoint"),
+    		channel = new SimpleChannel("graniteamf", "mx.messaging.channels.AMFChannel",
+    				new SimpleEndPoint("http://{server.name}:{server.port}/{context.root}/graniteamf/amf", "flex.messaging.endpoints.AMFEndpoint"),
     				new XMap());
     		servicesConfig.addChannel(channel);
     	}
@@ -87,7 +90,7 @@ public class AbstractRemoteDestination {
     	List<Service> services = servicesConfig.findServicesByMessageType("flex.messaging.messages.RemotingMessage");
     	Service service = null;
     	if (services == null || services.isEmpty()) {
-    		service = new Service("granite-service", "flex.messaging.services.RemotingService", "flex.messaging.messages.RemotingMessage", 
+    		service = new SimpleService("granite-service", "flex.messaging.services.RemotingService", "flex.messaging.messages.RemotingMessage",
     				null, null, new HashMap<String, Destination>());
     		servicesConfig.addService(service);
     	}
@@ -102,7 +105,7 @@ public class AbstractRemoteDestination {
 	protected Destination buildDestination() {
     	List<String> channelIds = new ArrayList<String>();
     	channelIds.add("graniteamf");
-    	Destination destination = new Destination(source, channelIds, new XMap(), roles, null, null);
+    	Destination destination = new SimpleDestination(source, channelIds, new XMap(), roles, null, null);
     	return destination;
 	}
 }

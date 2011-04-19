@@ -34,6 +34,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ServiceException;
@@ -72,7 +73,7 @@ public class SeamInterceptor implements AMF3MessageInterceptor {
 			log.trace("Pre processing of request message: %s", amfReqMessage);
 
 		try {
-			GraniteContext context = GraniteContext.getCurrentInstance();
+			GraniteContext context = GraniteManager.getCurrentInstance();
 			
 			if (context instanceof HttpGraniteContext) {
 	            log.debug("Creating custom HttpServletRequest wrapper");
@@ -102,7 +103,7 @@ public class SeamInterceptor implements AMF3MessageInterceptor {
 			if (log.isTraceEnabled())
 				log.trace("Post processing of response message: %s", amfReqMessage);
 
-			if (GraniteContext.getCurrentInstance() instanceof HttpGraniteContext) {
+			if (GraniteManager.getCurrentInstance() instanceof HttpGraniteContext) {
 				try {
 					//Now time to set back the headers, always has one body
 					importHeaders(amfRespMessage);

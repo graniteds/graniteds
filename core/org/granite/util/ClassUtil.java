@@ -21,6 +21,7 @@
 package org.granite.util;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -93,7 +94,7 @@ public abstract class ClassUtil {
             try {
                 return Thread.currentThread().getContextClassLoader().loadClass(type);
             } catch (ClassNotFoundException e2) {
-                GraniteContext gc = GraniteContext.getCurrentInstance();
+                GraniteContext gc = GraniteManager.getCurrentInstance();
                 return gc.forName(type);
             }
         }

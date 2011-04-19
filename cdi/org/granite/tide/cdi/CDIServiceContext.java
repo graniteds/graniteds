@@ -45,6 +45,7 @@ import javax.servlet.http.HttpSession;
 
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.messaging.service.ServiceInvocationContext;
@@ -103,7 +104,7 @@ public class CDIServiceContext extends TideServiceContext {
         if (getSessionId() != null)
             userEvents = tideUserEvents.getUserEvents(getSessionId());
         else {
-            GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+            GraniteContext graniteContext = GraniteManager.getCurrentInstance();
             if (graniteContext instanceof HttpGraniteContext) {
                 HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
                 if (session != null)
@@ -478,7 +479,7 @@ public class CDIServiceContext extends TideServiceContext {
         if (updates == null)
             return;
         
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
         
         // Restore context
         for (ContextUpdate update : updates) {
@@ -517,8 +518,8 @@ public class CDIServiceContext extends TideServiceContext {
         if (nothing)
             return resultsMap;
         
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
+        ClassGetter classGetter = GraniteManager.getCurrentInstance().getGraniteConfig().getClassGetter();
         
         for (Map.Entry<ContextResult, Boolean> me : getResultsEval().entrySet()) {
             if (!me.getValue())

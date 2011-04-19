@@ -27,7 +27,7 @@ import java.lang.reflect.TypeVariable;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.util.StringUtil;
@@ -47,7 +47,7 @@ public class DefaultMethodMatcher implements MethodMatcher {
         String methodName,
         Object[] params) throws NoSuchMethodException {
 
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
         Converters converters = config.getConverters();
 
         Class<?> serviceClass = service.getClass();

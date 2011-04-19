@@ -28,7 +28,7 @@ import org.granite.config.flex.ServicesConfig;
 /**
  * @author William DRAI
  */
-public class SimpleGraniteContext extends GraniteContext {
+public class SimpleGraniteContext extends AbstractGraniteContext {
 
     private Map<String, Object> applicationMap;
 
@@ -39,7 +39,7 @@ public class SimpleGraniteContext extends GraniteContext {
         Map<String, Object> applicationMap) {
 
         SimpleGraniteContext graniteContext = new SimpleGraniteContext(graniteConfig, servicesConfig, applicationMap);
-        setCurrentInstance(graniteContext);
+        GraniteManager.setCurrentInstance(graniteContext);
         return graniteContext;
     }
 

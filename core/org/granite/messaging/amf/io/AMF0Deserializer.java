@@ -23,7 +23,7 @@ import java.util.TimeZone;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.AMF0Body;
 import org.granite.messaging.amf.AMF0Message;
@@ -305,7 +305,7 @@ public class AMF0Deserializer {
      * @return the AMF3 decoded object
      */
     protected Object readAMF3Data() throws IOException {
-        ObjectInput amf3 = GraniteContext.getCurrentInstance().getGraniteConfig().newAMF3Deserializer(rawInputStream);
+        ObjectInput amf3 = GraniteManager.getCurrentInstance().getGraniteConfig().newAMF3Deserializer(rawInputStream);
         try {
             return amf3.readObject();
         } catch (ClassNotFoundException e) {

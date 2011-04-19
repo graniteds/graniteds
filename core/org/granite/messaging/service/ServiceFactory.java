@@ -36,57 +36,11 @@ import flex.messaging.messages.RemotingMessage;
 /**
  * @author Franck WOLFF
  */
-public abstract class ServiceFactory implements Serializable {
+public interface ServiceFactory extends Serializable {
 
-	private static final long serialVersionUID = 1L;
+    public void configure(XMap properties) throws ServiceException;
 
-	private static final Logger log = Logger.getLogger(ServiceFactory.class);
+    public ServiceInvoker<?> getServiceInstance(RemotingMessage request) throws ServiceException;
 
-    private ServiceExceptionHandler serviceExceptionHandler;
-
-    public void configure(XMap properties) throws ServiceException {
-
-        log.debug(">> Configuring factory with: %s", properties);
-
-        // service exception handler
-        String sServiceExceptionHandler = properties.get("service-exception-handler");
-    	String enableLogging = properties.get("enable-exception-logging");
-        if (sServiceExceptionHandler != null) {
-            try {
-            	if (Boolean.TRUE.toString().equals(enableLogging) || Boolean.FALSE.toString().equals(enableLogging))
-                    this.serviceExceptionHandler = (ServiceExceptionHandler)ClassUtil.newInstance(sServiceExceptionHandler.trim(), 
-                    		new Class<?>[] { boolean.class }, new Object[] { Boolean.valueOf(enableLogging) });
-            	else
-            		this.serviceExceptionHandler = (ServiceExceptionHandler)ClassUtil.newInstance(sServiceExceptionHandler.trim());
-            } catch (Exception e) {
-                throw new ServiceException("Could not instantiate service exception handler: " + sServiceExceptionHandler, e);
-            }
-        }
-        else {
-        	if (Boolean.TRUE.toString().equals(enableLogging) || Boolean.FALSE.toString().equals(enableLogging))
-        		this.serviceExceptionHandler = new DefaultServiceExceptionHandler(Boolean.valueOf(enableLogging));
-        	else
-        		this.serviceExceptionHandler = new DefaultServiceExceptionHandler();
-        }
-
-        log.debug("<< Configuring factory done: %s", this);
-    }
-
-    public abstract ServiceInvoker<?> getServiceInstance(RemotingMessage request) throws ServiceException;
-
-    public ServiceExceptionHandler getServiceExceptionHandler() {
-        return serviceExceptionHandler;
-    }
-
-    @Override
-    public String toString() {
-        return toString(null);
-    }
-
-    public String toString(String append) {
-        return super.toString() + " {" +
-            (append != null ? append : "") +
-            "\n  serviceExceptionHandler: " + serviceExceptionHandler +
-        "\n}";
-    }
+    public ServiceExceptionHandler getServiceExceptionHandler();
 }

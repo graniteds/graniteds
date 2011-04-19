@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.AMF0Body;
 import org.granite.messaging.amf.AMF0Header;
@@ -529,7 +529,7 @@ public class AMF0Serializer {
 
     private void writeAMF3Data(AMF3Object data) throws IOException {
         dataOutputStream.writeByte(AMF0Body.DATA_TYPE_AMF3_OBJECT);
-        ObjectOutput amf3 = GraniteContext.getCurrentInstance().getGraniteConfig().newAMF3Serializer(rawOutputStream);
+        ObjectOutput amf3 = GraniteManager.getCurrentInstance().getGraniteConfig().newAMF3Serializer(rawOutputStream);
         amf3.writeObject(data.getValue());
     }
 

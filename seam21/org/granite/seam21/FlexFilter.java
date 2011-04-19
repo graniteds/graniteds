@@ -36,10 +36,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Channel;
 import org.granite.config.flex.Destination;
-import org.granite.config.flex.EndPoint;
 import org.granite.config.flex.Factory;
 import org.granite.config.flex.Service;
 import org.granite.config.flex.ServicesConfig;
+import org.granite.config.flex.SimpleChannel;
+import org.granite.config.flex.SimpleDestination;
+import org.granite.config.flex.SimpleEndPoint;
+import org.granite.config.flex.SimpleFactory;
+import org.granite.config.flex.SimpleService;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ExceptionConverter;
@@ -158,8 +162,8 @@ public class FlexFilter extends AbstractFilter {
         
         Channel channel = servicesConfig.findChannelById("graniteamf");
         if (channel == null) {
-        	channel = new Channel("graniteamf", "mx.messaging.channels.AMFChannel", 
-        		new EndPoint("http://{server.name}:{server.port}/{context.root}/graniteamf/amf", "flex.messaging.endpoints.AMFEndpoint"), 
+        	channel = new SimpleChannel("graniteamf", "mx.messaging.channels.AMFChannel",
+        		new SimpleEndPoint("http://{server.name}:{server.port}/{context.root}/graniteamf/amf", "flex.messaging.endpoints.AMFEndpoint"),
         		new XMap());
         	servicesConfig.addChannel(channel);
         }
@@ -167,20 +171,20 @@ public class FlexFilter extends AbstractFilter {
         if (tide) {
         	Factory factory = servicesConfig.findFactoryById("tide-seam-factory");
         	if (factory == null) {
-        		factory = new Factory("tide-seam-factory", "org.granite.tide.seam.SeamServiceFactory", new XMap());
+        		factory = new SimpleFactory("tide-seam-factory", "org.granite.tide.seam.SeamServiceFactory", new XMap());
         		servicesConfig.addFactory(factory);
         	}
         	
         	Service service = servicesConfig.findServiceById("granite-service");
         	if (service == null) {
-        		service = new Service("granite-service", "flex.messaging.services.RemotingService", 
+        		service = new SimpleService("granite-service", "flex.messaging.services.RemotingService",
         			"flex.messaging.messages.RemotingMessage", null, null, new HashMap<String, Destination>());
         	}
         	Destination destination = servicesConfig.findDestinationById("flex.messaging.messages.RemotingMessage", "seam");
         	if (destination == null) {
         		List<String> channelIds = new ArrayList<String>();
         		channelIds.add("graniteamf");
-        		destination = new Destination("seam", channelIds, new XMap(), tideRoles, null, null);
+        		destination = new SimpleDestination("seam", channelIds, new XMap(), tideRoles, null, null);
         		destination.getProperties().put("factory", factory.getId());
         		destination.getProperties().put("validator-name", "tideValidator");
         		service.addDestination(destination);
@@ -190,10 +194,10 @@ public class FlexFilter extends AbstractFilter {
         	log.info("Registered Tide/Seam service factory and destination");
         }
         else {
-        	Factory factory = new Factory("seam-factory", "org.granite.seam.SeamServiceFactory", new XMap());
+        	Factory factory = new SimpleFactory("seam-factory", "org.granite.seam.SeamServiceFactory", new XMap());
         	servicesConfig.addFactory(factory);
         	
-        	Service service = new Service("granite-service", "flex.messaging.services.RemotingService", 
+        	Service service = new SimpleService("granite-service", "flex.messaging.services.RemotingService",
         		"flex.messaging.messages.RemotingMessage", null, null, new HashMap<String, Destination>());
         	servicesConfig.addService(service);
             

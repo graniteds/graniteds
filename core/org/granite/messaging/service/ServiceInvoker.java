@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.security.RemotingDestinationSecurizer;
 
@@ -55,7 +55,7 @@ public abstract class ServiceInvoker<T extends ServiceFactory> implements Serial
         this.serviceExceptionHandler = factory.getServiceExceptionHandler();
 
         ServiceInvocationListener invocationListener =
-            GraniteContext.getCurrentInstance().getGraniteConfig().getInvocationListener();
+            GraniteManager.getCurrentInstance().getGraniteConfig().getInvocationListener();
         if (invocationListener != null) {
             this.invocationListeners = new ArrayList<ServiceInvocationListener>();
             this.invocationListeners.add(invocationListener);
@@ -87,7 +87,7 @@ public abstract class ServiceInvoker<T extends ServiceFactory> implements Serial
 
     public final Object invoke(RemotingMessage request) throws ServiceException {
 
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
 
         String methodName = request.getOperation();
         Object[] args = (Object[])request.getBody();

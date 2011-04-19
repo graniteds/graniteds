@@ -79,7 +79,7 @@ public class ServletServicesConfig {
 
             try {
                 GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(context);
-                ServicesConfig servicesConfig = new ServicesConfig(is, configuration, graniteConfig.getScan());
+                ServicesConfig servicesConfig = new SimpleServicesConfig(is, configuration, graniteConfig.getScan());
                 
                 servletServicesConfig = loadConfig(context, servicesConfig);
             }

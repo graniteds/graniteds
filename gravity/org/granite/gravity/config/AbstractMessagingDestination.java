@@ -29,9 +29,13 @@ import org.granite.config.AbstractFrameworkGraniteConfig;
 import org.granite.config.flex.Adapter;
 import org.granite.config.flex.Channel;
 import org.granite.config.flex.Destination;
-import org.granite.config.flex.EndPoint;
 import org.granite.config.flex.Service;
 import org.granite.config.flex.ServicesConfig;
+import org.granite.config.flex.SimpleAdapter;
+import org.granite.config.flex.SimpleChannel;
+import org.granite.config.flex.SimpleDestination;
+import org.granite.config.flex.SimpleEndPoint;
+import org.granite.config.flex.SimpleService;
 import org.granite.logging.Logger;
 import org.granite.util.XMap;
 
@@ -90,8 +94,8 @@ public class AbstractMessagingDestination {
     public void initServices(ServicesConfig servicesConfig) {
     	Channel channel = servicesConfig.findChannelById("gravityamf");
     	if (channel == null) {
-    		channel = new Channel("gravityamf", "org.granite.gravity.channels.GravityChannel",
-    				new EndPoint("http://{server.name}:{server.port}/{context.root}/gravityamf/amf", "flex.messaging.endpoints.AMFEndpoint"),
+    		channel = new SimpleChannel("gravityamf", "org.granite.gravity.channels.GravityChannel",
+    				new SimpleEndPoint("http://{server.name}:{server.port}/{context.root}/gravityamf/amf", "flex.messaging.endpoints.AMFEndpoint"),
     				new XMap());
     		servicesConfig.addChannel(channel);
     	}
@@ -103,7 +107,7 @@ public class AbstractMessagingDestination {
     		adapter = buildAdapter();
     		Map<String, Adapter> adapters = new HashMap<String, Adapter>();
     		adapters.put(adapter.getId(), adapter);
-    		service = new Service("gravity-service", "flex.messaging.services.MessagingService", "flex.messaging.messages.AsyncMessage", 
+    		service = new SimpleService("gravity-service", "flex.messaging.services.MessagingService", "flex.messaging.messages.AsyncMessage",
     				adapter, adapters, new HashMap<String, Destination>());
     		servicesConfig.addService(service);
     	}
@@ -123,13 +127,13 @@ public class AbstractMessagingDestination {
     }
 	
 	protected Adapter buildAdapter() {
-		return new Adapter("simple-adapter", "org.granite.gravity.adapters.SimpleServiceAdapter", new XMap());
+		return new SimpleAdapter("simple-adapter", "org.granite.gravity.adapters.SimpleServiceAdapter", new XMap());
 	}
 	
 	protected Destination buildDestination(Adapter adapter) {
     	List<String> channelIds = new ArrayList<String>();
     	channelIds.add("gravityamf");
-    	Destination destination = new Destination(id, channelIds, new XMap(), roles, adapter, null);
+    	Destination destination = new SimpleDestination(id, channelIds, new XMap(), roles, adapter, null);
     	destination.getProperties().put("no-local", String.valueOf(noLocal));
     	destination.getProperties().put("session-selector", String.valueOf(sessionSelector));
     	return destination;

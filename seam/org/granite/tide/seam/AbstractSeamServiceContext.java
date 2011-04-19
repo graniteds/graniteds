@@ -35,6 +35,7 @@ import javax.servlet.http.HttpSession;
 
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceInvocationContext;
@@ -110,7 +111,7 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
         if (getSessionId() != null)
             userEvents = TideUserEvents.instance().getUserEvents(getSessionId());
         else {
-            GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+            GraniteContext graniteContext = GraniteManager.getCurrentInstance();
             if (graniteContext instanceof HttpGraniteContext) {
                 HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
                 if (session != null)
@@ -524,7 +525,7 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
         if (updates == null)
             return;
         
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
         
         // Restore context
         for (ContextUpdate update : updates) {
@@ -605,7 +606,7 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
 	                        if (bean != null && path.length == 1 && dmsFieldNames != null && dmsFieldNames.contains(path[0])) {
 	                        	Field field = org.granite.util.Reflections.getField(bean.getClass(), path[0]);
 	                        	field.setAccessible(true);
-	                            value = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters().convert(update.getValue(), field.getType());
+	                            value = GraniteManager.getCurrentInstance().getGraniteConfig().getConverters().convert(update.getValue(), field.getType());
 	                            // Merge entities into current persistent context if needed
 	                            value = mergeExternal(value, previous);
 	                        	Reflections.set(field, bean, value);
@@ -624,7 +625,7 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
 	                        			// Ignore
 	                        		}
 	                        	}
-	                            value = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters().convert(update.getValue(), type);
+	                            value = GraniteManager.getCurrentInstance().getGraniteConfig().getConverters().convert(update.getValue(), type);
 	                            // Merge entities into current persistent context if needed
 	                            value = mergeExternal(value, previous);
 	                            Reflections.invoke(setter, bean, value);
@@ -719,8 +720,8 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
             return resultsMap;
         
         List<String> exprs = new ArrayList<String>();
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
+        ClassGetter classGetter = GraniteManager.getCurrentInstance().getGraniteConfig().getClassGetter();
         
         SeamInitializer.instance();
         

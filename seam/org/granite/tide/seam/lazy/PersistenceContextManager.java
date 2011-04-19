@@ -25,7 +25,7 @@ import java.io.Serializable;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.tide.TidePersistenceManager;
 import org.jboss.seam.Entity;
@@ -53,7 +53,7 @@ public class PersistenceContextManager implements TidePersistenceManager  {
 	 */
 	public Object attachEntity(Object entity, String[] propertyNames) {
 		Object attachedEntity = null;
-        ClassGetter getter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        ClassGetter getter = GraniteManager.getCurrentInstance().getGraniteConfig().getClassGetter();
 		
 		//the get is called to give the children a chance to override and
 		//use the implemented method

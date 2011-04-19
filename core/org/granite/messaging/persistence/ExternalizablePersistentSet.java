@@ -29,7 +29,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.granite.config.GraniteConfig;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.util.ClassUtil;
 
@@ -69,7 +69,7 @@ public class ExternalizablePersistentSet extends AbstractExternalizablePersisten
         	else
         		set = new HashSet(content.length);
 
-            GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+            GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
             Converters converters = config.getConverters();
 			Type[] typeArguments = null;
 			if (target instanceof ParameterizedType)

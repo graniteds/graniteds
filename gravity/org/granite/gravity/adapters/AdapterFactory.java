@@ -30,6 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.granite.config.flex.Adapter;
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
@@ -74,7 +75,7 @@ public class AdapterFactory implements Serializable {
     }
 
     public ServiceAdapter getServiceAdapter(String messageType, String destinationId) throws ServiceException {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
 
         log.debug(">> Finding serviceAdapter for messageType: %s and destinationId: %s", messageType, destinationId);
 

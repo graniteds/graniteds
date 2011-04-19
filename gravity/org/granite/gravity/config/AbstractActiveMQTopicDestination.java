@@ -22,6 +22,7 @@ package org.granite.gravity.config;
 
 import org.granite.config.flex.Adapter;
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.SimpleAdapter;
 import org.granite.util.XMap;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Scope;
@@ -83,7 +84,7 @@ public class AbstractActiveMQTopicDestination extends AbstractJmsTopicDestinatio
 	
 	@Override
 	protected Adapter buildAdapter() {
-		return new Adapter("activemq-adapter", "org.granite.gravity.adapters.ActiveMQServiceAdapter", new XMap());
+		return new SimpleAdapter("activemq-adapter", "org.granite.gravity.adapters.ActiveMQServiceAdapter", new XMap());
 	}
 	
 	@Override

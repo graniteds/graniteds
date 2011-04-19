@@ -35,7 +35,7 @@ import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -61,7 +61,7 @@ public class AcegiSecurityService extends AbstractSecurityService {
     public void login(Object credentials) {
         List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials));
 
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext) GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = context.getRequest();
 
         String user = decodedCredentials.get(0);
@@ -120,7 +120,7 @@ public class AcegiSecurityService extends AbstractSecurityService {
     }
 
     public void logout() {
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         context.getSession().invalidate();
         SecurityContextHolder.getContext().setAuthentication(null);
         SecurityContextHolder.clearContext();
@@ -152,7 +152,7 @@ public class AcegiSecurityService extends AbstractSecurityService {
     }
 
     protected Authentication getAuthentication() {
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = context.getRequest();
         Authentication authentication = 
             (Authentication) httpRequest.getSession().getAttribute(SPRING_AUTHENTICATION_TOKEN);

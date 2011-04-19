@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.granite.config.GraniteConfig;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 
@@ -42,7 +42,7 @@ public abstract class JavaClassDescriptor {
     protected final List<Property> properties;
 
     protected JavaClassDescriptor(Class<?> type) {
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
         this.type = type;
         this.name = getClassName(type);
         this.externalizer = config.getExternalizer(type.getName());
@@ -64,7 +64,7 @@ public abstract class JavaClassDescriptor {
     public static String getClassName(Class<?> clazz) {
         if (Map.class.isAssignableFrom(clazz) &&
             !Externalizable.class.isAssignableFrom(clazz) &&
-            GraniteContext.getCurrentInstance().getGraniteConfig().getExternalizer(clazz.getName()) == null)
+            GraniteManager.getCurrentInstance().getGraniteConfig().getExternalizer(clazz.getName()) == null)
             return "";
         return clazz.getName();
     }

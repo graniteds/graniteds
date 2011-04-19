@@ -33,12 +33,13 @@ import javax.servlet.http.HttpSession;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
-import org.granite.context.GraniteContext;
+import org.granite.context.AbstractGraniteContext;
+import org.granite.context.GraniteManager;
 
 /**
  * @author Franck WOLFF
  */
-public class HttpGraniteContext extends GraniteContext {
+public class HttpGraniteContext extends AbstractGraniteContext {
 
 	private static final String SESSION_LOCK_KEY = HttpGraniteContext.class.getName() + ".LOCK";
 	
@@ -60,7 +61,7 @@ public class HttpGraniteContext extends GraniteContext {
         HttpServletResponse response) {
 
         HttpGraniteContext graniteContext = new HttpGraniteContext(graniteConfig, servicesConfig, context, request, response);
-        setCurrentInstance(graniteContext);
+        GraniteManager.setCurrentInstance(graniteContext);
         return graniteContext;
     }
 

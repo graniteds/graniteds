@@ -22,6 +22,7 @@ package org.granite.gravity.config;
 
 import org.granite.config.flex.Adapter;
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.SimpleAdapter;
 import org.granite.util.XMap;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Scope;
@@ -91,7 +92,7 @@ public class AbstractJmsTopicDestination extends AbstractMessagingDestination {
 	
 	@Override
 	protected Adapter buildAdapter() {
-		return new Adapter("jms-adapter", "org.granite.gravity.adapters.JMSServiceAdapter", new XMap());
+		return new SimpleAdapter("jms-adapter", "org.granite.gravity.adapters.JMSServiceAdapter", new XMap());
 	}
 	
 	@Override

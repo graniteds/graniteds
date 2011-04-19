@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
@@ -45,7 +46,7 @@ public class AMFMessageServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            GraniteContext context = GraniteContext.getCurrentInstance();
+            GraniteContext context = GraniteManager.getCurrentInstance();
             if (context == null)
                 throw new ServletException(
                     "No GraniteContext (" + AMFMessageFilter.class.getName() + " not configured in web.xml ?)");

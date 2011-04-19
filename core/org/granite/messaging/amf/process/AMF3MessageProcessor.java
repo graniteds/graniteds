@@ -24,6 +24,7 @@ import javax.servlet.http.HttpSession;
 
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceFactory;
@@ -47,7 +48,7 @@ public abstract class AMF3MessageProcessor {
     private static final Logger log = Logger.getLogger(AMF3MessageProcessor.class);
 
     public static Message process(Message request) {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         AMF3MessageInterceptor interceptor = context.getGraniteConfig().getAmf3MessageInterceptor();
         
         Message response = null;
@@ -82,7 +83,7 @@ public abstract class AMF3MessageProcessor {
 
         Message response = null;
         if (request.isSecurityOperation()) {
-            GraniteContext context = GraniteContext.getCurrentInstance();
+            GraniteContext context = GraniteManager.getCurrentInstance();
             GraniteConfig config = context.getGraniteConfig();
 
             if (!config.hasSecurityService())
@@ -131,7 +132,7 @@ public abstract class AMF3MessageProcessor {
         Message response = null;
         try {
             // Execute method on service.
-            GraniteContext context = GraniteContext.getCurrentInstance();
+            GraniteContext context = GraniteManager.getCurrentInstance();
             ServiceFactory factory = context.getMainFactory().getFactoryInstance(request);
             ServiceInvoker<?> service = factory.getServiceInstance(request);
             Object result = service.invoke(request);

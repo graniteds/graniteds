@@ -27,7 +27,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.mortbay.jetty.HttpConnection;
 import org.mortbay.jetty.Request;
@@ -53,7 +53,7 @@ public class Jetty6SecurityService extends AbstractSecurityService {
     public void login(Object credentials) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials);
 
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
         Request request = httpRequest instanceof Request ? (Request)httpRequest : HttpConnection.getCurrentConnection().getRequest();
         UserRealm realm = request.getUserRealm();
@@ -76,7 +76,7 @@ public class Jetty6SecurityService extends AbstractSecurityService {
 
         startAuthorization(context);
 
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
 
         boolean reauth = false;
@@ -130,7 +130,7 @@ public class Jetty6SecurityService extends AbstractSecurityService {
 
 
     public void logout() throws SecurityServiceException {
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
         Request request = httpRequest instanceof Request ? (Request)httpRequest : HttpConnection.getCurrentConnection().getRequest();
         UserRealm realm = request.getUserRealm();

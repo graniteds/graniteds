@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.webapp.HttpGraniteContext;
 
 import weblogic.servlet.security.ServletAuthentication;
@@ -48,7 +48,7 @@ public class WebLogicSecurityService extends AbstractSecurityService {
     public void login(Object credentials) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials);
 
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = context.getRequest();
         HttpServletResponse httpResponse = context.getResponse();
 
@@ -70,7 +70,7 @@ public class WebLogicSecurityService extends AbstractSecurityService {
         startAuthorization(context);
 
         if (context.getDestination().isSecured()) {
-            HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+            HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
             HttpServletRequest httpRequest = graniteContext.getRequest();
 
             Principal principal = httpRequest.getUserPrincipal();
@@ -108,7 +108,7 @@ public class WebLogicSecurityService extends AbstractSecurityService {
     }
 
     public void logout() throws SecurityServiceException {
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
         
         // Make sure we invalidate current HTTP session.

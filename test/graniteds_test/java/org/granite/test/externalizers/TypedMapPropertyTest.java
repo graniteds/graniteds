@@ -16,7 +16,7 @@ public class TypedMapPropertyTest extends AbstractExternalizerTest {
 
 	@Test
 	public void testMap() throws Exception {
-		GraniteContext gc = GraniteContext.getCurrentInstance();
+		GraniteContext gc = GraniteManager.getCurrentInstance();
 		
 		Entity1 entity = new Entity1();
 		Map<String, String[]> map = new HashMap<String, String[]>();

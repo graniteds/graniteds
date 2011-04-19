@@ -29,6 +29,7 @@ import javax.naming.NamingException;
 
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.util.XMap;
 
@@ -37,7 +38,7 @@ import flex.messaging.messages.RemotingMessage;
 /**
  * @author Franck WOLFF
  */
-public class EjbServiceFactory extends ServiceFactory {
+public class EjbServiceFactory extends SimpleServiceFactory {
 
     private static final long serialVersionUID = 1L;
 
@@ -99,7 +100,7 @@ public class EjbServiceFactory extends ServiceFactory {
 
     @Override
     public ServiceInvoker<?> getServiceInstance(RemotingMessage request) throws ServiceException {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
 
         String destinationId = request.getDestination();
         String key = getUniqueKey(destinationId);
@@ -152,7 +153,7 @@ public class EjbServiceFactory extends ServiceFactory {
     }
     
     public void removeFromCache(String destinationId) {
-    	GraniteContext context = GraniteContext.getCurrentInstance();
+    	GraniteContext context = GraniteManager.getCurrentInstance();
     	String key = getUniqueKey(destinationId);
     	// Synchronize on unique key.
     	synchronized (key) {

@@ -34,6 +34,7 @@ import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.context.SimpleGraniteContext;
 import org.granite.gravity.adapters.AdapterFactory;
 import org.granite.gravity.adapters.ServiceAdapter;
@@ -438,7 +439,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
         AMF3MessageInterceptor interceptor = null;
         if (!skipInterceptor)
-        	interceptor = GraniteContext.getCurrentInstance().getGraniteConfig().getAmf3MessageInterceptor();
+        	interceptor = GraniteManager.getCurrentInstance().getGraniteConfig().getAmf3MessageInterceptor();
         
         Message reply = null;
         
@@ -479,7 +480,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         }
         
         if (reply != null) {
-	        GraniteContext context = GraniteContext.getCurrentInstance();
+	        GraniteContext context = GraniteManager.getCurrentInstance();
 	        if (context instanceof HttpGraniteContext) {
 	            HttpSession session = ((HttpGraniteContext)context).getRequest().getSession(false);
 	            if (session != null)
@@ -494,14 +495,14 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     // Other Public API methods.
 
     public GraniteContext initThread() {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         if (context == null)
             context = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, applicationMap);
         return context;
     }
     
     public void releaseThread() {
-    	GraniteContext.release();
+    	GraniteManager.release();
 	}
 
 	public Message publishMessage(AsyncMessage message) {
@@ -532,7 +533,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     }
 
     private Message handleSecurityMessage(CommandMessage message) {
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
 
         Message response = null;
 
@@ -589,7 +590,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
     private Message handleSubscribeMessage(CommandMessage message) {
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
 
         // Get and check destination.
         Destination destination = context.getServicesConfig().findDestinationById(
@@ -691,7 +692,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     
     private Message handlePublishMessage(AsyncMessage message, Channel channel) {
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
 
         // Get and check destination.
         Destination destination = context.getServicesConfig().findDestinationById(

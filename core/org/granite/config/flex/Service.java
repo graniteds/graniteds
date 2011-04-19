@@ -1,124 +1,26 @@
-/*
-  GRANITE DATA SERVICES
-  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
-
-  This file is part of Granite Data Services.
-
-  Granite Data Services is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version.
-
-  Granite Data Services is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, see <http://www.gnu.org/licenses/>.
-*/
-
 package org.granite.config.flex;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.granite.util.XMap;
-
-/**
- * @author Franck WOLFF
- */
-public class Service {
-
-    protected String id;
-    protected String className;
-    protected String messageTypes;
-    protected Map<String, Adapter> adapters;
-    protected Adapter defaultAdapter;
-    protected Map<String, Destination> destinations;
+public interface Service {
 
 
-    public Service(String id, String className, String messageTypes, Adapter defaultAdapter, Map<String, Adapter> adapters, Map<String, Destination> destinations) {
-        this.id = id;
-        this.className = className;
-        this.messageTypes = messageTypes;
-        this.defaultAdapter = defaultAdapter;
-        this.adapters = adapters;
-        this.destinations = destinations;
-    }
+    public String getId();
 
-    public String getId() {
-        return id;
-    }
+    public String getClassName();
 
-    public String getClassName() {
-        return className;
-    }
+    public String getMessageTypes();
 
-    public String getMessageTypes() {
-        return messageTypes;
-    }
+    public Destination findDestinationById(String id);
 
-    public Destination findDestinationById(String id) {
-        synchronized (destinations) {
-            return destinations.get(id);
-        }
-    }
+    public void addDestination(Destination destination);
 
-    public void addDestination(Destination destination) {
-        synchronized (destinations) {
-            destinations.put(destination.getId(), destination);
-        }
-    }
+    public Destination removeDestination(String destination);
 
-    public Destination removeDestination(String destination) {
-        synchronized (destinations) {
-            return destinations.remove(destination);
-        }
-    }
+    public Adapter findAdapterById(String id);
 
-    public Adapter findAdapterById(String id) {
-        synchronized (adapters) {
-            return adapters.get(id);
-        }
-    }
 
-    public Adapter getDefaultAdapter() {
-        return defaultAdapter;
-    }
+    public Adapter getDefaultAdapter();
 
-    public void addAdapter(Adapter adapter) {
-        synchronized (adapters) {
-            adapters.put(adapter.getId(), adapter);
-        }
-    }
+    public void addAdapter(Adapter adapter);
 
-    public Adapter removeAdapter(String adapter) {
-        synchronized (adapters) {
-            return adapters.remove(adapter);
-        }
-    }
-
-    public static Service forElement(XMap element) {
-        String id = element.get("@id");
-        String className = element.get("@class");
-        String messageTypes = element.get("@messageTypes");
-
-        Adapter defaultAdapter = null;
-        Map<String, Adapter> adaptersMap = new HashMap<String, Adapter>();
-        for (XMap adapter : element.getAll("adapters/adapter-definition")) {
-            Adapter ad = Adapter.forElement(adapter);
-            if (Boolean.TRUE.toString().equals(adapter.get("@default")))
-                defaultAdapter = ad;
-            adaptersMap.put(ad.getId(), ad);
-        }
-
-        Map<String, Destination> destinations = new HashMap<String, Destination>();
-        for (XMap destinationElt : element.getAll("destination")) {
-            Destination destination = Destination.forElement(destinationElt, defaultAdapter, adaptersMap);
-            destinations.put(destination.getId(), destination);
-        }
-
-        return new Service(id, className, messageTypes, defaultAdapter, adaptersMap, destinations);
-    }
+    public Adapter removeAdapter(String adapter);
 }

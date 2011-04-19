@@ -23,6 +23,7 @@ package org.granite.tide.cdi;
 import javax.enterprise.inject.Produces;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.messaging.webapp.HttpGraniteContext;
@@ -37,7 +38,7 @@ public class TideGravity {
     
     @Produces
     public Gravity getGravity() {
-    	GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+    	GraniteContext graniteContext = GraniteManager.getCurrentInstance();
     	if (graniteContext == null || !(graniteContext instanceof HttpGraniteContext))
     		throw new RuntimeException("Gravity not found: not in a GraniteDS HTTP context");
     	

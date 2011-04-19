@@ -24,6 +24,10 @@ import flex.messaging.messages.RemotingMessage;
 
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
+import org.granite.logging.Logger;
+import org.granite.util.ClassUtil;
+import org.granite.util.XMap;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,41 +37,75 @@ import java.util.Set;
 /**
  * @author Franck WOLFF
  */
-public class SimpleServiceFactory extends ServiceFactory {
+public class SimpleServiceFactory implements ServiceFactory {
 
     private static final long serialVersionUID = 1L;
-    
-    private Set<String> invalidKeys = new HashSet<String>();
-    
 
-    @Override
+    private static final Logger log = Logger.getLogger(SimpleServiceFactory.class);
+
+    private ServiceExceptionHandler serviceExceptionHandler;
+
+    private Set<String> invalidKeys = new HashSet<String>();
+
+
+    public void configure(XMap properties) throws ServiceException {
+
+        log.debug(">> Configuring factory with: %s", properties);
+
+        // service exception handler
+        String sServiceExceptionHandler = properties.get("service-exception-handler");
+        String enableLogging = properties.get("enable-exception-logging");
+        if (sServiceExceptionHandler != null) {
+            try {
+                if (Boolean.TRUE.toString().equals(enableLogging) || Boolean.FALSE.toString().equals(enableLogging))
+                    this.serviceExceptionHandler = (ServiceExceptionHandler) ClassUtil.newInstance(sServiceExceptionHandler.trim(),
+                            new Class<?>[]{boolean.class}, new Object[]{Boolean.valueOf(enableLogging)});
+                else
+                    this.serviceExceptionHandler = (ServiceExceptionHandler) ClassUtil.newInstance(sServiceExceptionHandler.trim());
+            } catch (Exception e) {
+                throw new ServiceException("Could not instantiate service exception handler: " + sServiceExceptionHandler, e);
+            }
+        } else {
+            if (Boolean.TRUE.toString().equals(enableLogging) || Boolean.FALSE.toString().equals(enableLogging))
+                this.serviceExceptionHandler = new DefaultServiceExceptionHandler(Boolean.valueOf(enableLogging));
+            else
+                this.serviceExceptionHandler = new DefaultServiceExceptionHandler();
+        }
+
+        log.debug("<< Configuring factory done: %s", this);
+    }
+
     public ServiceInvoker<?> getServiceInstance(RemotingMessage request) throws ServiceException {
         String messageType = request.getClass().getName();
         String destinationId = request.getDestination();
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);
 
         Map<String, Object> cache = getCache(destination);
-        
+
         String key = SimpleServiceInvoker.class.getName() + '.' + destination.getId();
         if (invalidKeys.contains(key)) {
-        	cache.remove(key);
-        	invalidKeys.remove(key);
+            cache.remove(key);
+            invalidKeys.remove(key);
         }
-        
-        SimpleServiceInvoker service = (SimpleServiceInvoker)cache.get(key);
+
+        SimpleServiceInvoker service = (SimpleServiceInvoker) cache.get(key);
         if (service == null) {
             service = new SimpleServiceInvoker(destination, this);
             cache.put(key, service);
         }
         return service;
     }
-    
+
+    public ServiceExceptionHandler getServiceExceptionHandler() {
+        return serviceExceptionHandler;
+    }
+
     private Map<String, Object> getCache(Destination destination) throws ServiceException {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         String scope = destination.getProperties().get("scope");
 
         Map<String, Object> cache = null;
@@ -79,7 +117,19 @@ public class SimpleServiceFactory extends ServiceFactory {
             cache = Collections.synchronizedMap(context.getApplicationMap());
         else
             throw new ServiceException("Illegal scope in destination: " + destination);
-        
+
         return cache;
+    }
+
+    @Override
+    public String toString() {
+        return toString(null);
+    }
+
+    public String toString(String append) {
+        return super.toString() + " {" +
+                (append != null ? append : "") +
+                "\n  serviceExceptionHandler: " + serviceExceptionHandler +
+                "\n}";
     }
 }

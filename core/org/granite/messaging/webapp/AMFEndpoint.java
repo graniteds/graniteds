@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.amf.io.AMF0Deserializer;
@@ -98,7 +98,7 @@ public class AMFEndpoint {
 	        throw new ServletException(e);
 	    }
 	    finally {
-	        GraniteContext.release();
+	        GraniteManager.release();
 	    }
 	}
 }

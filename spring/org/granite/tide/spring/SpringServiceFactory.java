@@ -26,11 +26,12 @@ import javax.servlet.ServletContext;
 
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ExtendedServiceExceptionHandler;
 import org.granite.messaging.service.ServiceException;
-import org.granite.messaging.service.ServiceFactory;
 import org.granite.messaging.service.ServiceInvoker;
+import org.granite.messaging.service.SimpleServiceFactory;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.tide.TideServiceInvoker;
 import org.granite.tide.data.PersistenceExceptionConverter;
@@ -45,7 +46,7 @@ import flex.messaging.messages.RemotingMessage;
 /**
  * @author Sebastien Deleuze
  */
-public class SpringServiceFactory extends ServiceFactory {
+public class SpringServiceFactory extends SimpleServiceFactory {
 
     private static final long serialVersionUID = 1L;
     
@@ -66,7 +67,7 @@ public class SpringServiceFactory extends ServiceFactory {
         else
             super.configure(properties);
         
-        GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+        GraniteContext graniteContext = GraniteManager.getCurrentInstance();
         try {
         	graniteContext.getGraniteConfig().registerExceptionConverter(PersistenceExceptionConverter.class);
         }
@@ -82,7 +83,7 @@ public class SpringServiceFactory extends ServiceFactory {
     	String messageType = request.getClass().getName();
         String destinationId = request.getDestination();
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         Map<String, Object> cache = context.getSessionMap();
         Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
         if (destination == null)
@@ -95,7 +96,7 @@ public class SpringServiceFactory extends ServiceFactory {
     }
 
     private ServiceInvoker<?> getServiceInvoker(Map<String, Object> cache, Destination destination, String key) {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         synchronized (context.getSessionLock()) {
             ServiceInvoker<?> invoker = (ServiceInvoker<?>)cache.get(key);
             if (invoker == null) {

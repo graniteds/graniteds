@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.util.ClassGetter;
@@ -119,7 +120,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     			// Special handling for Grails controllers
     			handler = springContext.getBean("mainSimpleController");
     		}
-    		HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+    		HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
     		@SuppressWarnings("unchecked")
     		Map<String, Object> requestMap = (args[3] != null && args[3] instanceof Object[] && ((Object[])args[3]).length >= 1 && ((Object[])args[3]).length <= 2 && ((Object[])args[3])[0] instanceof Map) 
     			? (Map<String, Object>)((Object[])args[3])[0] 
@@ -186,7 +187,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 	        for (int i = 0; i < interceptorNames.length; i++)
 	            interceptors[j++] = (HandlerInterceptor)webContext.getBean(interceptorNames[i]);
 	        
-			HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+			HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
 			
 			graniteContext.getRequestMap().put(HandlerInterceptor.class.getName(), interceptors);
 			
@@ -212,7 +213,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     	if (componentName != null && context.getBean() instanceof HandlerAdapter) {
 			component = findComponent(componentName, componentClass);
 			
-			HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+			HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
 			
 	    	Map<Object, Object> modelMap = null;
 	    	if (result instanceof ModelAndView) {
@@ -314,7 +315,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     @Override
     public void postCallFault(ServiceInvocationContext context, Throwable t, String componentName, Class<?> componentClass) {
     	if (componentName != null && context.getBean() instanceof HandlerAdapter) {
-			HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+			HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
 			
 			Object component = findComponent(componentName, componentClass);
 			
@@ -423,7 +424,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		}
 		
 		private Object getBindValue(boolean request, Class<?> requiredType) {
-			GraniteContext context = GraniteContext.getCurrentInstance();
+			GraniteContext context = GraniteManager.getCurrentInstance();
 			TidePersistenceManager pm = SpringMVCServiceContext.this.getTidePersistenceManager(true);
 			ClassGetter classGetter = context.getGraniteConfig().getClassGetter();
 			Object value = request ? wrapper.getRequestValue(getObjectName()) : wrapper.getBindValue(getObjectName());

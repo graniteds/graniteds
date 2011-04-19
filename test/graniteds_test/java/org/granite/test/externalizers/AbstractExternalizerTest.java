@@ -21,6 +21,6 @@ public class AbstractExternalizerTest {
 	
 	@After
 	public void after() throws Exception {
-		GraniteContext.release();
+		GraniteManager.release();
 	}
 }

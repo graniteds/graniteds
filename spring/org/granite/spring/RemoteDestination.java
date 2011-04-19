@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.granite.config.AbstractRemoteDestination;
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.SimpleDestination;
 import org.granite.util.XMap;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -55,7 +56,7 @@ public class RemoteDestination extends AbstractRemoteDestination implements Init
     	props.put("factory", "spring-factory");
     	props.put("source", getSource());
     	Class<?> beanClass = context.getType(getSource());
-    	Destination destination = new Destination(getSource(), channelIds, props, getRoles(), null, beanClass);
+    	Destination destination = new SimpleDestination(getSource(), channelIds, props, getRoles(), null, beanClass);
     	return destination;
 	}
 }
