@@ -38,6 +38,7 @@ import org.granite.context.GraniteManager;
 import org.granite.context.SimpleGraniteContext;
 import org.granite.gravity.adapters.AdapterFactory;
 import org.granite.gravity.adapters.ServiceAdapter;
+import org.granite.gravity.adapters.SimpleAdapterFactory;
 import org.granite.gravity.security.GravityDestinationSecurizer;
 import org.granite.gravity.security.GravityInvocationContext;
 import org.granite.jmx.MBeanServerLocator;
@@ -122,7 +123,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     	log.info("Starting Gravity...");
         synchronized (this) {
         	if (!started) {
-	            adapterFactory = new AdapterFactory(this);
+	            adapterFactory = new SimpleAdapterFactory(this);
 	            internalStart();
 	            serverChannel = new ServerChannel(this, gravityConfig, ServerChannel.class.getName());
 	            started = true;
