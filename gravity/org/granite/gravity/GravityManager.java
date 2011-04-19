@@ -75,7 +75,7 @@ public class GravityManager {
 	            if (flexFilterClass != null)
 	            	configureServices(context, flexFilterClass);
 		
-		        GravityConfig gravityConfig = new GravityConfig(graniteConfig, channelFactory);
+		        GravityConfig gravityConfig = new SimpleGravityConfig(graniteConfig, channelFactory);
 		        channelFactory.init(gravityConfig, servletConfig);
 		        
 		        String gravityFactory = gravityConfig.getGravityFactory();
