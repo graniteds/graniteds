@@ -22,6 +22,7 @@ package org.granite.tide.data {
     import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.events.IEventDispatcher;
+    import flash.utils.ByteArray;
     import flash.utils.Dictionary;
     import flash.utils.getQualifiedClassName;
     
@@ -40,20 +41,20 @@ package org.granite.tide.data {
     import mx.utils.ObjectUtil;
     
     import org.granite.collections.IMap;
-    import org.granite.util.Enum;
+    import org.granite.collections.IPersistentCollection;
     import org.granite.math.BigNumber;
     import org.granite.meta;
-    import org.granite.collections.IPersistentCollection;
     import org.granite.tide.BaseContext;
-    import org.granite.tide.Tide;
+    import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IExpression;
-    import org.granite.tide.EntityDescriptor;
-    import org.granite.tide.IWrapper;
     import org.granite.tide.IPropertyHolder;
+    import org.granite.tide.IWrapper;
+    import org.granite.tide.Tide;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
+    import org.granite.util.Enum;
 
 
     use namespace meta;
@@ -170,14 +171,20 @@ package org.granite.tide.data {
                     val = (p == propName ? value : entity[p]);
                     saveval = save ? save[p] : null;
                     var o:Object;
-                    if (save && ((val && (ObjectUtil.isSimple(val) || val is Enum || val is IEntity))
-                    	|| (saveval && (ObjectUtil.isSimple(saveval) || saveval is Enum || saveval is IEntity)))) {
-                        if (saveval !== undefined && val !== save[p]) {
+                    if (save && ((val && (ObjectUtil.isSimple(val) || val is ByteArray))
+                    	|| (saveval && (ObjectUtil.isSimple(saveval) || saveval is ByteArray)))) {
+                        if (saveval !== undefined && ObjectUtil.compare(val, save[p]) != 0) {
                             dirty = true;
                             break;
                         }
                     }
-                    else if (save && (val is BigNumber || saveval is BigNumber)) {
+					else if (save && (val is IEntity || saveval is IEntity)) {
+						if (saveval !== undefined && val !== save[p]) {
+							dirty = true;
+							break;
+						}
+					}
+                    else if (save && (val is BigNumber || saveval is BigNumber || val is Enum || saveval is Enum)) {
                     	if (saveval !== undefined && ((!val && saveval) || !val.equals(saveval))) {
                     		dirty = true;
                     		break;
@@ -264,6 +271,24 @@ package org.granite.tide.data {
 //        }
 
 
+		private function isSame(val1:*, val2:*):Boolean {
+			if (ObjectUtil.isSimple(val1) && ObjectUtil.isSimple(val2))
+				return ObjectUtil.compare(val1, val2, 0) == 0;
+			else if (val1 is ByteArray && val2 is ByteArray)
+				return ObjectUtil.compare(val1, val2, 0) == 0;
+			else if ((val1 is BigNumber && val2 is BigNumber) || (val1 is Enum && val2 is Enum))
+				return val1.equals(val2);
+			else {
+				var n:* = val1 is IWrapper ? val1.object : val1;
+				var o:* = val2 is IWrapper ? val2.object : val2;
+				if (n is IUID && o is IUID)
+					return n.uid === o.uid;
+				else
+					return n === o;
+			}
+			return val1 === val2;
+		}
+		
         /**
          *  @private 
          *  Interceptor for managed entity setters
@@ -276,19 +301,7 @@ package org.granite.tide.data {
         public function setEntityProperty(entity:IEntity, propName:String, oldValue:*, newValue:*):void {
             var oldDirty:Boolean = _dirtyCount > 0;
             
-            var diff:Boolean = false;
-            if (ObjectUtil.isSimple(newValue) && ObjectUtil.isSimple(oldValue))
-            	diff = ObjectUtil.compare(newValue, oldValue, 0) != 0;
-            else if (newValue is BigNumber && oldValue is BigNumber)
-            	diff = !newValue.equals(oldValue);
-            else {
-            	var n:* = newValue is IWrapper ? newValue.object : newValue;
-            	var o:* = oldValue is IWrapper ? oldValue.object : oldValue;
-            	if (n is IUID && o is IUID)
-            		diff = n.uid !== o.uid;
-            	else
-            		diff = n !== o;
-            }
+            var diff:Boolean = !isSame(oldValue, newValue);
             
             if (diff) {
                 var oldDirtyEntity:Boolean = isEntityChanged(entity, propName, oldValue);
@@ -311,7 +324,7 @@ package org.granite.tide.data {
                     	if (!save.hasOwnProperty(propName))
                         	save[propName] = oldValue;
 	                    
-	                    if (save[propName] === newValue || (save[propName] is BigNumber && save[propName].equals(newValue))) {
+	                    if (isSame(save[propName], newValue)) {
 	                        delete save[propName];
 	                        var count:int = 0;
 	                        for (var p:Object in save)
@@ -366,7 +379,7 @@ package org.granite.tide.data {
                 if (((event.kind == CollectionEventKind.ADD && save[i].kind == CollectionEventKind.REMOVE)
                     || (event.kind == CollectionEventKind.REMOVE && save[i].kind == CollectionEventKind.ADD))
                     && event.items.length == 1 && save[i].items.length == 1 
-					&& event.items[0] === save[i].items[0] && event.location == save[i].location) {
+					&& isSame(event.items[0], save[i].items[0]) && event.location == save[i].location) {
                     save.splice(i, 1);
                     if (save.length == 0) {
                         delete _savedProperties[event.target];
@@ -383,8 +396,8 @@ package org.granite.tide.data {
 				else if (event.kind == CollectionEventKind.REPLACE && save[i].kind == CollectionEventKind.REPLACE
 					&& event.items.length == 1 && save[i].items.length == 1
 					&& event.location == save[i].location
-					&& event.items[0].oldValue == save[i].items[0].newValue
-					&& event.items[0].newValue == save[i].items[0].oldValue) {
+					&& isSame(event.items[0].oldValue, save[i].items[0].newValue)
+					&& isSame(event.items[0].newValue, save[i].items[0].oldValue)) {
 					save.splice(i, 1);
 					if (save.length == 0) {
 						delete _savedProperties[event.target];
