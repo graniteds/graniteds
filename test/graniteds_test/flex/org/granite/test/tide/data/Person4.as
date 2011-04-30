@@ -13,14 +13,12 @@ package org.granite.test.tide.data {
     import mx.collections.ListCollectionView;
     
     import org.granite.meta;
-    import org.granite.ns.tide;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IPropertyHolder;
 	import org.granite.test.tide.AbstractEntity;
     import org.granite.util.Enum;
 
     use namespace meta;
-    use namespace tide;
 
     [Managed]
     [RemoteClass(alias="org.granite.tide.test.Person4")]
