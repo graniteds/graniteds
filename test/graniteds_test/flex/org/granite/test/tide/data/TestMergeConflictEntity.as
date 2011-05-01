@@ -70,6 +70,7 @@ package org.granite.test.tide.data
         	_ctx.meta_mergeExternalData(person2, null, "S2");
         	
         	Assert.assertEquals("Conflicts after merge", 1, _conflicts.conflicts.length);
+			Assert.assertTrue("Person dirty after merge", _ctx.meta_isEntityChanged(person));
         	
         	_conflicts.conflicts[0].acceptClient();
         	

@@ -23,8 +23,8 @@ package org.granite.tide.data {
     import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.events.IEventDispatcher;
-    import flash.utils.Dictionary;
     import flash.utils.ByteArray;
+    import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
     import flash.utils.getQualifiedClassName;
     import flash.utils.getQualifiedSuperclassName;
@@ -39,8 +39,10 @@ package org.granite.tide.data {
     import mx.collections.ListCollectionView;
     import mx.controls.Alert;
     import mx.core.Application;
-    import mx.core.IUID;
     import mx.core.IUIComponent;
+    import mx.core.IUID;
+    import mx.data.IManaged;
+    import mx.data.utils.Managed;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.FlexEvent;
@@ -51,43 +53,41 @@ package org.granite.tide.data {
     import mx.logging.Log;
     import mx.messaging.events.ChannelFaultEvent;
     import mx.messaging.messages.ErrorMessage;
-    import mx.rpc.remoting.mxml.RemoteObject;
     import mx.rpc.AbstractOperation;
     import mx.rpc.AsyncToken;
     import mx.rpc.events.FaultEvent;
     import mx.rpc.events.ResultEvent;
+    import mx.rpc.remoting.mxml.RemoteObject;
     import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
     import mx.utils.UIDUtil;
     import mx.utils.object_proxy;
     import mx.validators.ValidationResult;
-    import mx.data.IManaged;
-    import mx.data.utils.Managed;
     
     import org.granite.collections.BasicMap;
     import org.granite.collections.IMap;
     import org.granite.collections.IPersistentCollection;
     import org.granite.collections.UIDWeakSet;
     import org.granite.events.SecurityEvent;
-    import org.granite.meta;
-    import org.granite.util.Enum;
     import org.granite.math.BigNumber;
-	import org.granite.reflect.Type;
+    import org.granite.meta;
+    import org.granite.reflect.Type;
     import org.granite.tide.BaseContext;
+    import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IContextManager;
-    import org.granite.tide.Tide;
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IExpression;
-    import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IPropertyHolder;
+    import org.granite.tide.Tide;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
+    import org.granite.tide.data.events.TideDataConflictsEvent;
     import org.granite.tide.events.IConversationEvent;
     import org.granite.tide.events.TideEvent;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideResultEvent;
-    import org.granite.tide.data.events.TideDataConflictsEvent;
+    import org.granite.util.Enum;
 
 
     use namespace flash_proxy;
@@ -116,7 +116,7 @@ package org.granite.tide.data {
         private var _entitiesByUID:UIDWeakSet = new UIDWeakSet();
         private var _entityReferences:Dictionary = new Dictionary(true);
         private var _dirtyCheckContext:DirtyCheckContext = null;
-        private var _collectionListeners:Dictionary = new Dictionary(true);
+        private var _trackingListeners:Dictionary = new Dictionary(true);
 		private var _merging:Boolean = false;
         private var _resolvingConflict:Boolean = false;
         
@@ -146,8 +146,8 @@ package org.granite.tide.data {
         	_entityReferences = new Dictionary(true);
             _dirtyCheckContext.clear();
             
-            for (var obj:Object in _collectionListeners) {
-            	switch (_collectionListeners[obj]) {
+            for (var obj:Object in _trackingListeners) {
+            	switch (_trackingListeners[obj]) {
             	case "entityCollection":
             		IEventDispatcher(obj).removeEventListener(CollectionEvent.COLLECTION_CHANGE, entityCollectionChangeHandler);
             		break;
@@ -160,9 +160,12 @@ package org.granite.tide.data {
             	case "map":
                     IEventDispatcher(obj).removeEventListener(CollectionEvent.COLLECTION_CHANGE, _context.meta_mapChangeHandler);
                     break;
+				case "entityEmbedded":
+					IEventDispatcher(obj).removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, entityEmbeddedChangeHandler);
+					break;
                 }
             }
-            _collectionListeners = new Dictionary(true);
+            _trackingListeners = new Dictionary(true);
         }
                 
         /**
@@ -390,7 +393,6 @@ package org.granite.tide.data {
             return null;
         }
         
-        
         /**
          *  @private
          *  Init references array for an object
@@ -554,7 +556,7 @@ package org.granite.tide.data {
                 else if (obj is Enum) {
                 	next = Enum.normalize(obj as Enum);
                 }
-                else if (!ObjectUtil.isSimple(obj) && !(obj is BigNumber) && !(obj is XML) && !(obj is ByteArray)) {
+                else if (!ObjectUtil.isSimple(obj) && !(obj is BigNumber || obj is XML || obj is ByteArray)) {
                     next = mergeEntity(obj, previous, expr, parent);
                 	addRef = true;
                 }
@@ -715,11 +717,11 @@ package org.granite.tide.data {
                 	else if (desc.mergeGDS20)
                 		dest.meta_merge(_context, obj);
                 	else
-                		EntityManager.defaultMerge(_context, obj, dest, _mergeUpdate, expr);
+                		EntityManager.defaultMerge(_context, obj, dest, _mergeUpdate, expr, parent);
                 }
             }
             else
-                EntityManager.defaultMerge(_context, obj, dest, _mergeUpdate, expr);
+                EntityManager.defaultMerge(_context, obj, dest, _mergeUpdate, expr, parent);
             
             if (previous && obj !== previous && previous is IUID && _dirtyCheckContext.isSaved(previous)) {
                 var pce:PropertyChangeEvent = new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, 
@@ -732,6 +734,9 @@ package org.granite.tide.data {
 			
 			if (dest != null)
 				log.debug("mergeEntity result: {0}", BaseContext.toString(dest));
+			
+			// Keep notified of collection updates to notify the server at next remote call
+			addTrackingListeners(previous, parent);
             
             return dest;
         }
@@ -1173,20 +1178,20 @@ package org.granite.tide.data {
          *  @param dest destination object
          *  @param expr current path of the entity in the context (mostly for internal use)
          */ 
-        public static function defaultMerge(em:IEntityManager, obj:Object, dest:Object, mergeUpdate:Boolean = true, expr:IExpression = null):void {
+        public static function defaultMerge(em:IEntityManager, obj:Object, dest:Object, mergeUpdate:Boolean = true, expr:IExpression = null, parent:Object = null):void {
             var cinfo:Object = ObjectUtil.getClassInfo(obj, null, { includeTransient: false });
 			var rw:Array = new Array();
             for each (var p:String in cinfo.properties) {
                 var o:Object = obj[p];
 				var d:Object = dest[p];
-                o = em.meta_mergeExternal(o, d, expr, dest, p);
+                o = em.meta_mergeExternal(o, d, expr, parent != null ? parent : dest, p);
                 if (o !== d && mergeUpdate)
                 	dest[p] = o;
 				rw.push(p);
             }
 			cinfo = ObjectUtil.getClassInfo(obj, rw, { includeReadOnly: true });
 			for each (p in cinfo.properties)
-				em.meta_mergeExternal(obj[p], dest[p], expr, dest, p);
+				em.meta_mergeExternal(obj[p], dest[p], expr, parent != null ? parent : dest, p);
         }
 
     
@@ -1287,7 +1292,7 @@ package org.granite.tide.data {
             	}
             }
             
-			if (!_merging)
+			if (!_merging || _resolvingConflict)
             	_dirtyCheckContext.setEntityProperty(entity, propName, oldValue, newValue);
         }
 
@@ -1318,29 +1323,33 @@ package org.granite.tide.data {
          *  @param parent parent object for collections
          */
         private function addTrackingListeners(previous:Object, parent:Object):void {
-        	if (_collectionListeners == null)
+        	if (_trackingListeners == null)
         		return;
         	
             if (previous != null && previous is ListCollectionView) {
                 if (parent != null) {
                     ListCollectionView(previous).addEventListener(CollectionEvent.COLLECTION_CHANGE, entityCollectionChangeHandler, false, 0, true);
-                    _collectionListeners[previous] = "entityCollection";
+                    _trackingListeners[previous] = "entityCollection";
                 }
                 else {
                     ListCollectionView(previous).addEventListener(CollectionEvent.COLLECTION_CHANGE, _context.meta_collectionChangeHandler, false, 0, true);
-                    _collectionListeners[previous] = "collection";
+                    _trackingListeners[previous] = "collection";
                 }
             }
             else if (previous != null && previous is IMap) {
                 if (parent != null) {
                     IMap(previous).addEventListener(CollectionEvent.COLLECTION_CHANGE, entityMapChangeHandler, false, 0, true);
-                    _collectionListeners[previous] = "entityMap";
+                    _trackingListeners[previous] = "entityMap";
                 }
                 else {
                     IMap(previous).addEventListener(CollectionEvent.COLLECTION_CHANGE, _context.meta_mapChangeHandler, false, 0, true);
-                    _collectionListeners[previous] = "map";
+                    _trackingListeners[previous] = "map";
                 }
             }
+			else if (previous is IEventDispatcher && !(previous is IEntity) && parent is IEntity) {
+				IEventDispatcher(previous).addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, entityEmbeddedChangeHandler, false, 0, true);
+				_trackingListeners[previous] = "entityEmbedded";
+			}
         }
 
         /**
@@ -1351,7 +1360,7 @@ package org.granite.tide.data {
          *  @param parent parent object for collections
          */
         private function removeTrackingListeners(previous:Object, parent:Object):void {
-        	if (_collectionListeners == null || previous == null || previous is XMLList)
+        	if (_trackingListeners == null || previous == null || previous is XMLList)
         		return;
         	
             if (previous is ListCollectionView) {
@@ -1366,9 +1375,29 @@ package org.granite.tide.data {
                 else
                     IMap(previous).removeEventListener(CollectionEvent.COLLECTION_CHANGE, _context.meta_mapChangeHandler);
             }
+			else if (previous is IEventDispatcher && !(previous is IEntity) && parent is IEntity) {
+				IEventDispatcher(previous).removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, entityEmbeddedChangeHandler);
+			}
             
-            delete _collectionListeners[previous];
+            delete _trackingListeners[previous];
         }
+		
+		
+		/**
+		 *  @private 
+		 *  Property event handler to save changes on embedded objects
+		 *
+		 *  @param event collection event
+		 */ 
+		private function entityEmbeddedChangeHandler(event:PropertyChangeEvent):void {
+			if (_sourceContext === _context || _context.meta_finished)
+				return;
+			
+			log.debug("embedded changed: {0} {1}", event.kind, BaseContext.toString(event.target));
+			
+			if (!_merging || _resolvingConflict)
+				_dirtyCheckContext.entityEmbeddedChangeHandler(event);
+		}
 
 
         /**
@@ -1401,7 +1430,7 @@ package org.granite.tide.data {
             
             log.debug("collection changed: {0} {1}", event.kind, BaseContext.toString(event.target));
             
-			if (!_merging)
+			if (!_merging || _resolvingConflict)
             	_dirtyCheckContext.entityCollectionChangeHandler(event);
             
             _context.meta_entityCollectionChangeHandler(event);
@@ -1452,7 +1481,7 @@ package org.granite.tide.data {
             
             log.debug("map changed: {0} {1}", event.kind, BaseContext.toString(event.target));
             
-			if (!_merging)
+			if (!_merging || _resolvingConflict)
             	_dirtyCheckContext.entityMapChangeHandler(event);
             
             _context.meta_entityMapChangeHandler(event);
