@@ -143,7 +143,7 @@ public class AsyncChannel extends AbstractChannel {
 				((AsyncContext)context.getObject()).complete();
 		}
 		catch (Exception e) {
-			log.warn(e, "Could not release asyncContext for cannel: %s", this);
+			log.warn(e, "Could not release asyncContext for channel: %s", this);
 		}
 	}
 
