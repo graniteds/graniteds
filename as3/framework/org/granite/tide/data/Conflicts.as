@@ -106,11 +106,7 @@ package org.granite.tide.data {
         	_context.meta_resetEntity(conflict.localEntity);
         	_entityManager.mergeExternal(conflict.receivedEntity, conflict.localEntity);
         	
-        	var saveResolvingConflict:Boolean = _entityManager.resolvingConflict; 
-        	_entityManager.resolvingConflict = true;
-        	_entityManager.mergeExternal(modifiedEntity, conflict.localEntity);
-        	_entityManager.resolvingConflict = saveResolvingConflict;
-        	_entityManager.resolveMergeConflicts();
+        	_entityManager.resolveMergeConflicts(modifiedEntity, conflict.localEntity, true);
         	_context.meta_tracking = saveTracking;
         }
         
@@ -123,8 +119,8 @@ package org.granite.tide.data {
         	var saveTracking:Boolean = _context.meta_tracking;
         	_context.meta_tracking = false;
         	_context.meta_resetEntity(conflict.localEntity);
-        	_entityManager.mergeExternal(conflict.receivedEntity, conflict.localEntity);
-        	_entityManager.resolveMergeConflicts();
+			
+        	_entityManager.resolveMergeConflicts(conflict.receivedEntity, conflict.localEntity, false);
         	_context.meta_tracking = saveTracking;
         }
         
