@@ -34,6 +34,7 @@ package org.granite.gravity.channels {
     import mx.utils.ObjectUtil;
     
     import org.granite.util.ClassUtil;
+    import org.granite.util.GraniteClassRegistry;
 
 	[ExcludeClass]
     /**
@@ -84,6 +85,7 @@ package org.granite.gravity.channels {
         override protected function internalQueue(messageResponder:MessageResponder, send:Boolean = true):void {
             var message:IMessage = messageResponder.message;
             if (message && !(message is CommandMessage) && message.body != null) {
+                GraniteClassRegistry.useClasses(message.destination);
             	message.headers[BYTEARRAY_BODY_HEADER] = true;
                 var data:ByteArray = new ByteArray();
                 data.writeObject(message.body);
