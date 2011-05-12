@@ -22,9 +22,6 @@ package org.granite.gravity.channels {
 
     import mx.messaging.MessageResponder;
     import mx.messaging.messages.IMessage;
-    import flash.utils.ByteArray;
-    import org.granite.util.ClassUtil;
-    import org.granite.util.GraniteClassRegistry;
 
 
 	[ExcludeClass]
@@ -32,7 +29,6 @@ package org.granite.gravity.channels {
      * @author Franck WOLFF
      */
     public class StreamMessageResponder extends MessageResponder {
-        private static const BYTEARRAY_BODY_HEADER:String = "GDS_BYTEARRAY_BODY";
 
         private var _stream:GravityStream = null;
 
@@ -42,11 +38,6 @@ package org.granite.gravity.channels {
         }
 
         internal function internalResult(ack:IMessage):void {
-            if (ack.headers[BYTEARRAY_BODY_HEADER]) {
-                GraniteClassRegistry.useClasses(ack.destination);
-	            ack.body = ByteArray(ack.body).readObject();
-                delete ack.headers[BYTEARRAY_BODY_HEADER];
-            }
             _stream.internalResult(message, ack);
         }
 

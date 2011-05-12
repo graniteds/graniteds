@@ -38,7 +38,6 @@ package org.granite.gravity.channels {
     import mx.utils.ObjectUtil;
     
     import org.granite.util.ClassUtil;
-    import org.granite.util.GraniteClassRegistry;
 
 	[ExcludeClass]
     /**
@@ -182,11 +181,8 @@ package org.granite.gravity.channels {
 	                    	error = true;
 	                    	break;
 	                    }
-                        if (response.headers[BYTEARRAY_BODY_HEADER]) {
-                            GraniteClassRegistry.useClasses(response.destination);
+	                    if (response.headers[BYTEARRAY_BODY_HEADER])
 	                        response.body = ByteArray(response.body).readObject();
-                            delete response.headers[BYTEARRAY_BODY_HEADER];
-                        }
 	                    channel.callResponder(responder, response);
 	                }
 	            }
