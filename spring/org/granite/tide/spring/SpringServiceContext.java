@@ -31,6 +31,7 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceInvocationContext;
@@ -58,7 +59,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  *  @author Sebastien Deleuze
- * 	@author William Draï
+ * 	@author William Draï¿½
  */
 public class SpringServiceContext extends TideServiceContext {
 
@@ -81,7 +82,7 @@ public class SpringServiceContext extends TideServiceContext {
 
     protected ApplicationContext getSpringContext() {
     	if (springContext == null) {
-            GraniteContext context = GraniteContext.getCurrentInstance();
+            GraniteContext context = GraniteManager.getCurrentInstance();
             ServletContext sc = ((HttpGraniteContext)context).getServletContext();
             springContext = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
     	}
@@ -99,7 +100,7 @@ public class SpringServiceContext extends TideServiceContext {
     	Object bean = null;
     	String key = COMPONENT_ATTR + componentName;
     	
-    	GraniteContext context = GraniteContext.getCurrentInstance();
+    	GraniteContext context = GraniteManager.getCurrentInstance();
     	if (context != null) {
     		bean = context.getRequestMap().get(key);
     		if (bean != null)
@@ -174,7 +175,7 @@ public class SpringServiceContext extends TideServiceContext {
     public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass) {
     	String key = COMPONENT_CLASS_ATTR + componentName;
     	Set<Class<?>> classes = null; 
-    	GraniteContext context = GraniteContext.getCurrentInstance();
+    	GraniteContext context = GraniteManager.getCurrentInstance();
     	if (context != null) {
     		classes = (Set<Class<?>>)context.getRequestMap().get(key);
     		if (classes != null)
@@ -251,12 +252,12 @@ public class SpringServiceContext extends TideServiceContext {
         if (!create)
             return null;
         
-        TidePersistenceManager pm = (TidePersistenceManager)GraniteContext.getCurrentInstance().getRequestMap().get(TidePersistenceManager.class.getName());
+        TidePersistenceManager pm = (TidePersistenceManager)GraniteManager.getCurrentInstance().getRequestMap().get(TidePersistenceManager.class.getName());
         if (pm != null)
         	return pm;
         
         pm = createPersistenceManager();
-        GraniteContext.getCurrentInstance().getRequestMap().put(TidePersistenceManager.class.getName(), pm);
+        GraniteManager.getCurrentInstance().getRequestMap().put(TidePersistenceManager.class.getName(), pm);
         return pm;
     }
     

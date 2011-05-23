@@ -25,7 +25,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.servlet.http.HttpSession;
 
 import org.granite.config.flex.Destination;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.tide.TideServiceInvoker;
 import org.granite.tide.cdi.lazy.CDIInitializer;
@@ -46,7 +46,7 @@ public class CDIServiceInvoker extends TideServiceInvoker<CDIServiceFactory> {
     
     @Override
     public void logout() {
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpSession session = context.getSession(false);
         if (session != null)
         	session.invalidate();

@@ -22,38 +22,10 @@ package org.granite.config.flex;
 
 import org.granite.util.XMap;
 
-/**
- * @author Franck WOLFF
- */
-public class Adapter {
+public interface Adapter {
+    public String getId();
 
-    private final String id;
-    private final String className;
-    private final XMap properties;
+    public String getClassName();
 
-    public Adapter(String id, String className, XMap properties) {
-        this.id = id;
-        this.className = className;
-        this.properties = properties;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public XMap getProperties() {
-        return properties;
-    }
-
-    public static Adapter forElement(XMap element) {
-        String id = element.get("@id");
-        String className = element.get("@class");
-        XMap properties = new XMap(element.getOne("properties"));
-
-        return new Adapter(id, className, properties);
-    }
+    public XMap getProperties();
 }

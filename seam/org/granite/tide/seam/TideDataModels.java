@@ -26,6 +26,7 @@ import static org.jboss.seam.annotations.Install.FRAMEWORK;
 import javax.faces.model.DataModel;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.jboss.seam.annotations.Install;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
@@ -49,7 +50,7 @@ public class TideDataModels extends DataModels {
     
     @Override
     public DataModel getDataModel(Object value) {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         if (context == null)
             return super.getDataModel(value);
         

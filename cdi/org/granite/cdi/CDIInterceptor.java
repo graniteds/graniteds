@@ -31,6 +31,7 @@ import javax.naming.NameNotFoundException;
 import javax.servlet.ServletRequestEvent;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ServiceException;
@@ -76,7 +77,7 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
     
     
     public static BeanManager lookupBeanManager() {
-		HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+		HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
 		BeanManager manager = (BeanManager)context.getServletContext().getAttribute(BeanManager.class.getName());
 		if (manager != null)
 			return manager;		
@@ -125,7 +126,7 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
 			log.trace("Pre processing of request message: %s", amf3RequestMessage);
 		
 		try {
-			GraniteContext context = GraniteContext.getCurrentInstance();
+			GraniteContext context = GraniteManager.getCurrentInstance();
 			
 			if (context instanceof HttpGraniteContext) {
 				HttpGraniteContext httpContext = ((HttpGraniteContext)context);
@@ -202,7 +203,7 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
 			if (log.isTraceEnabled())
 				log.trace("Post processing of response message: %s", amf3ResponseMessage);
 
-			GraniteContext context = GraniteContext.getCurrentInstance();
+			GraniteContext context = GraniteManager.getCurrentInstance();
 			
 			if (context instanceof HttpGraniteContext) {
 			    BeanManager beanManager = lookupBeanManager();

@@ -28,6 +28,7 @@
     <!--
      ! EDIT THE 'env.properties' FILE TO REFLECT YOUR ENVIRONMENT.
      !-->
+    <property environment="env"/>
     <property file="env.properties"/>
     <property file="project.properties"/>
     <xmlproperty prefix="eclipse" file=".project"/>

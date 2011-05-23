@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.granite.config.GraniteConfig;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.amf.io.convert.Converters;
 
 /**
@@ -53,7 +53,7 @@ public class ExternalizablePersistentList extends AbstractExternalizablePersiste
 		if (content != null) {
 			list = new ArrayList<Object>(content.length);
 			
-            GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+            GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
             Converters converters = config.getConverters();
 			Type[] typeArguments = null;
 			if (target instanceof ParameterizedType)

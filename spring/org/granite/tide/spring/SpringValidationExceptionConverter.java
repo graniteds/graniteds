@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.webapp.HttpGraniteContext;
@@ -59,7 +60,7 @@ public class SpringValidationExceptionConverter implements ExceptionConverter {
     
     public static org.granite.tide.validators.InvalidValue[] convertErrors(Errors errors) {
     	Object bean = null;
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         ServletContext sc = ((HttpGraniteContext)context).getServletContext();
         ApplicationContext springContext = WebApplicationContextUtils.getWebApplicationContext(sc);
     	

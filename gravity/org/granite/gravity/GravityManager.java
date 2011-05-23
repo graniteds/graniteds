@@ -75,7 +75,7 @@ public class GravityManager {
 	            if (flexFilterClass != null)
 	            	configureServices(context, flexFilterClass);
 		
-		        GravityConfig gravityConfig = new GravityConfig(graniteConfig, channelFactory);
+		        GravityConfig gravityConfig = new SimpleGravityConfig(graniteConfig, channelFactory);
 		        channelFactory.init(gravityConfig, servletConfig);
 		        
 		        String gravityFactory = gravityConfig.getGravityFactory();
@@ -135,8 +135,11 @@ public class GravityManager {
     public static Gravity getGravity(ServletContext context) {
     	return (Gravity)context.getAttribute(GRAVITY_KEY);
     }
-    
-    
+
+    public static void setGravity(Gravity gravity, ServletContext context) {
+        context.setAttribute(GRAVITY_KEY, gravity);
+    }
+
     private static void configureServices(ServletContext context, Class<?> flexFilterClass) throws ServletException {
         ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(context);
     	

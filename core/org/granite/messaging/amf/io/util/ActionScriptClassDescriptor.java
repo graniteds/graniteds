@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.granite.config.GraniteConfig;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.io.util.instantiator.AbstractInstantiator;
@@ -42,7 +42,7 @@ public abstract class ActionScriptClassDescriptor {
     protected final List<Property> properties;
 
     protected ActionScriptClassDescriptor(String type, byte encoding) {
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
         this.type = (type == null ? "" : type);
         this.instantiator = config.getInstantiator(type);
         this.encoding = encoding;
@@ -54,7 +54,7 @@ public abstract class ActionScriptClassDescriptor {
     private Externalizer findExternalizer() {
         if (encoding != 0x01)
             return null;
-        return GraniteContext.getCurrentInstance().getGraniteConfig().getExternalizer(type);
+        return GraniteManager.getCurrentInstance().getGraniteConfig().getExternalizer(type);
     }
 
     public String getType() {

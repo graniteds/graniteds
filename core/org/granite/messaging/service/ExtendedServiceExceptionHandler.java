@@ -29,7 +29,7 @@ import java.util.Map;
 import javax.servlet.ServletException;
 
 import org.granite.config.flex.Destination;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 
 import flex.messaging.messages.Message;
@@ -93,7 +93,7 @@ public class ExtendedServiceExceptionHandler extends DefaultServiceExceptionHand
 
         for (int i = causes.size()-1; i >= 0; i--) {
             Throwable cause = causes.get(i);
-	        for (ExceptionConverter ec : GraniteContext.getCurrentInstance().getGraniteConfig().getExceptionConverters()) {
+	        for (ExceptionConverter ec : GraniteManager.getCurrentInstance().getGraniteConfig().getExceptionConverters()) {
                 if (ec.accepts(cause, t))
                     return ec.convert(cause, detail, extendedData);
             }

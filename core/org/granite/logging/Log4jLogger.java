@@ -37,7 +37,7 @@ public class Log4jLogger extends Logger {
     // Constructor.
 
     public Log4jLogger(String name, LoggingFormatter formatter) {
-    	super(LogManager.getLogger(name), formatter);
+    	super(org.apache.log4j.Logger.getLogger(name), formatter);
     }
 
     ///////////////////////////////////////////////////////////////////////////

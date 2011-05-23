@@ -33,7 +33,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 
 import org.granite.config.GraniteConfig;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.service.ServiceException;
 import org.granite.util.ClassUtil;
 import org.hibernate.engine.SessionImplementor;
@@ -85,7 +85,7 @@ public class ProxyFactory {
             // Convert id (if necessary).
             Type identifierType = getIdentifierType(persistentClass);
             if (id == null || !identifierType.equals(id.getClass())) {
-                GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+                GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
                 id = (Serializable)config.getConverters().convert(id, identifierType);
             }
 

@@ -24,6 +24,7 @@ import javax.servlet.ServletContext;
 
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceInvoker;
 import org.granite.messaging.service.SimpleServiceFactory;
@@ -48,7 +49,7 @@ public class GuiceServiceFactory extends SimpleServiceFactory {
         super.configure(properties);
 
         // getting guice injector from container
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         ServletContext sc = ((HttpGraniteContext)context).getServletContext();
         injector = (Injector) sc.getAttribute(Injector.class.getName());
     }
@@ -58,7 +59,7 @@ public class GuiceServiceFactory extends SimpleServiceFactory {
         String messageType = request.getClass().getName();
         String destinationId = request.getDestination();
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);

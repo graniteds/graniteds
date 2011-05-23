@@ -37,6 +37,7 @@ import java.util.Map;
 
 import org.granite.config.flex.Channel;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.AMF3Constants;
 import org.granite.messaging.amf.io.convert.Converters;
@@ -67,7 +68,7 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     protected final Map<String, IndexedJavaClassDescriptor> storedClassDescriptors
     	= new HashMap<String, IndexedJavaClassDescriptor>();
 
-    protected final GraniteContext context = GraniteContext.getCurrentInstance();
+    protected final GraniteContext context = GraniteManager.getCurrentInstance();
     protected final Converters converters = context.getGraniteConfig().getConverters();
 
     protected final boolean externalizeLong

@@ -18,7 +18,7 @@ public class TypedMapTest extends AbstractExternalizerTest {
 	@Ignore("TODO check map")
 	@Test
 	public void testMap() throws Exception {
-		GraniteContext gc = GraniteContext.getCurrentInstance();
+		GraniteContext gc = GraniteManager.getCurrentInstance();
 		
 		Map<String, String[]> map = new HashMap<String, String[]>();
 		map.put("toto", new String[] { "tutu", "titi" });

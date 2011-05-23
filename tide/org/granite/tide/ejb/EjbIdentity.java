@@ -23,6 +23,7 @@ package org.granite.tide.ejb;
 import java.io.Serializable;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.webapp.HttpGraniteContext;
 
 
@@ -35,7 +36,7 @@ public class EjbIdentity implements Serializable {
     
         
     public String isLoggedIn() {
-    	GraniteContext context = GraniteContext.getCurrentInstance();
+    	GraniteContext context = GraniteManager.getCurrentInstance();
     	if (context != null && ((HttpGraniteContext)context).getRequest().getUserPrincipal() != null)
     		return ((HttpGraniteContext)context).getRequest().getUserPrincipal().getName();    	
     	return null;
@@ -43,7 +44,7 @@ public class EjbIdentity implements Serializable {
     
     
     public boolean hasRole(String role) {
-    	GraniteContext context = GraniteContext.getCurrentInstance();
+    	GraniteContext context = GraniteManager.getCurrentInstance();
     	if (context == null || !(context instanceof HttpGraniteContext))
     		return false;
     	

@@ -22,66 +22,18 @@ package org.granite.config.flex;
 
 import org.granite.util.XMap;
 
-/**
- * @author Franck WOLFF
- */
-public class Channel {
+public interface Channel {
 
-    private static final String LEGACY_XML = "serialization/legacy-xml";
-    private static final String LEGACY_COLLECTION = "serialization/legacy-collection";
+    public String getId();
 
-    private final String id;
-    private final String className;
-    private final EndPoint endPoint;
-    private final XMap properties;
+    public String getClassName() ;
 
-    private final boolean legacyXml;
-    private final boolean legacyCollection;
+    public EndPoint getEndPoint();
 
-    public Channel(String id, String className, EndPoint endPoint, XMap properties) {
-        this.id = id;
-        this.className = className;
-        this.endPoint = endPoint;
-        this.properties = properties;
-        this.legacyCollection = Boolean.TRUE.toString().equals(properties.get(LEGACY_COLLECTION));
-        this.legacyXml = Boolean.TRUE.toString().equals(properties.get(LEGACY_XML));
-    }
+    public XMap getProperties() ;
 
-    public String getId() {
-        return id;
-    }
+    public boolean isLegacyXmlSerialization() ;
 
-    public String getClassName() {
-        return className;
-    }
+    public boolean isLegacyCollectionSerialization();
 
-    public EndPoint getEndPoint() {
-        return endPoint;
-    }
-
-    public XMap getProperties() {
-        return properties;
-    }
-
-    public boolean isLegacyXmlSerialization() {
-        return legacyXml;
-    }
-
-    public boolean isLegacyCollectionSerialization() {
-        return legacyCollection;
-    }
-
-    public static Channel forElement(XMap element) {
-        String id = element.get("@id");
-        String className = element.get("@class");
-
-        XMap endPointElt = element.getOne("endpoint");
-        if (endPointElt == null)
-            throw new RuntimeException("Excepting a 'endpoint' element in 'channel-definition': " + id);
-        EndPoint endPoint = EndPoint.forElement(endPointElt);
-
-        XMap properties = new XMap(element.getOne("properties"));
-
-        return new Channel(id, className, endPoint, properties);
-    }
 }

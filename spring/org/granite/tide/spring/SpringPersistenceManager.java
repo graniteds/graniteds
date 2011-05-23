@@ -35,7 +35,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 /**
  * 	Responsible for attaching a session with the persistence mangager
  * 	@author Cameron Ingram
- * 	@author William Draï
+ * 	@author William Draï¿½
  *
  */
 public class SpringPersistenceManager implements TidePersistenceManager {

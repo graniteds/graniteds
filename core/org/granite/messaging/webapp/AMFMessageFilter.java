@@ -40,6 +40,7 @@ import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
 import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.amf.io.AMF0Deserializer;
@@ -166,7 +167,7 @@ public class AMFMessageFilter implements Filter {
 	        	}
         	}
         	
-            GraniteContext.release();
+            GraniteManager.release();
         }
     }
 

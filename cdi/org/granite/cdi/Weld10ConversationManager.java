@@ -26,7 +26,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.servlet.http.HttpSession;
 
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.util.ClassUtil;
@@ -62,7 +62,7 @@ public class Weld10ConversationManager implements CDIConversationManager {
 		    Bean<Conversation> conversationBean = (Bean<Conversation>)beanManager.getBeans(Conversation.class).iterator().next();
 		    Conversation conversation = (Conversation)beanManager.getReference(conversationBean, Conversation.class, beanManager.createCreationalContext(conversationBean)); 
 		    
-		    HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+		    HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
 		    String cid = (String)conversation.getClass().getMethod("getUnderlyingId").invoke(conversation);
 		    Object conversationContext = lookupConversationContext((WeldManager)beanManager);
 		    Object beanStore = ClassUtil.newInstance("org.jboss.weld.servlet.ConversationBeanStore", new Class<?>[] { HttpSession.class, boolean.class, String.class },

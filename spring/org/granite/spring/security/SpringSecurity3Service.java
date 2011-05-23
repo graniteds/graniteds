@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.security.AbstractSecurityContext;
 import org.granite.messaging.service.security.AbstractSecurityService;
@@ -105,7 +105,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
     public void login(Object credentials) {
         List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials));
 
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
 
         String user = decodedCredentials.get(0);
@@ -170,7 +170,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 
         startAuthorization(context);
         
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         HttpRequestResponseHolder holder = null;
@@ -225,7 +225,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
     }
 
     public void logout() {
-    	HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+    	HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
     	HttpSession session = context.getSession(false);
     	if (session != null && securityContextRepository.containsContext(context.getRequest()))    		
     		session.invalidate();

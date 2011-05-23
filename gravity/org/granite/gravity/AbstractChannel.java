@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.webapp.HttpGraniteContext;
@@ -295,7 +296,7 @@ public abstract class AbstractChannel implements Channel {
 			
 			// Cleanup serialization context (thread local)
 			try {
-				GraniteContext.release();
+				GraniteManager.release();
 			}
 			catch (Exception e) {
 				// should never happen...

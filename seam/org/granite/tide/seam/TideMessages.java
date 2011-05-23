@@ -32,6 +32,7 @@ import javax.faces.application.FacesMessage.Severity;
 import javax.faces.context.FacesContext;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.AutoCreate;
 import org.jboss.seam.annotations.Install;
@@ -65,7 +66,7 @@ public class TideMessages extends FacesMessages {
      */
     @Override
     public void add(FacesMessage facesMessage) {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         if (context == null) {
             super.add(facesMessage);
             return;
@@ -81,7 +82,7 @@ public class TideMessages extends FacesMessages {
      */
     @Override
     public void add(Severity severity, String messageTemplate, Object... params) {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         if (context == null) {
             super.add(severity, messageTemplate, params);
             return;
@@ -98,7 +99,7 @@ public class TideMessages extends FacesMessages {
      */
     @Override
     public void addToControl(String clientId, FacesMessage facesMessage) {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         if (context == null) {
             super.addToControl(clientId, facesMessage);
             return;
@@ -123,7 +124,7 @@ public class TideMessages extends FacesMessages {
      */
     @Override
     public List<FacesMessage> getCurrentMessages() {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         if (context == null)
             return super.getCurrentMessages();
         
@@ -141,7 +142,7 @@ public class TideMessages extends FacesMessages {
      */
     @Override
     public List<FacesMessage> getCurrentGlobalMessages() {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         if (context == null)
             return super.getCurrentGlobalMessages();
         
@@ -156,7 +157,7 @@ public class TideMessages extends FacesMessages {
      */
     @Override
     public List<FacesMessage> getCurrentMessagesForControl(String clientId) {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         if (context == null)
             return super.getCurrentMessagesForControl(clientId);
         
@@ -182,7 +183,7 @@ public class TideMessages extends FacesMessages {
      */
     @Override
     public void beforeRenderResponse() {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         if (context != null) {
             for (Map.Entry<String, List<FacesMessage>> entry : keyedFacesMessages.entrySet()) {
                 for (FacesMessage msg: entry.getValue())

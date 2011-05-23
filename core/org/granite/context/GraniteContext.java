@@ -20,62 +20,32 @@
 
 package org.granite.context;
 
-import java.util.Map;
-
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
+import org.granite.messaging.service.MainFactory;
 
-/**
- * @author Franck WOLFF
- */
-public abstract class GraniteContext {
+import java.util.Map;
 
-    private static ThreadLocal<GraniteContext> instance = new ThreadLocal<GraniteContext>() {
-        @Override
-        protected GraniteContext initialValue() {
-            return (null);
-        }
-    };
+public interface GraniteContext {
+    public ServicesConfig getServicesConfig();
 
-    private final GraniteConfig graniteConfig;
-    private final ServicesConfig servicesConfig;
-    private final AMFContext amfContext;
+    public GraniteConfig getGraniteConfig();
 
-    public GraniteContext(GraniteConfig graniteConfig, ServicesConfig servicesConfig) {
-        this.servicesConfig = servicesConfig;
-        this.graniteConfig = graniteConfig;
-        this.amfContext = new AMFContextImpl();
-    }
+    public AMFContext getAMFContext();
 
-    public static GraniteContext getCurrentInstance() {
-        return instance.get();
-    }
+    public Class<?> forName(String type) throws ClassNotFoundException;
 
-    protected static void setCurrentInstance(GraniteContext context) {
-        instance.set(context);
-    }
+    public MainFactory getMainFactory();
 
-    public static void release() {
-        instance.set(null);
-    }
+    public Object getSessionLock();
 
-    public ServicesConfig getServicesConfig() {
-        return servicesConfig;
-    }
+    public Map<String, String> getInitialisationMap();
 
-    public GraniteConfig getGraniteConfig() {
-        return graniteConfig;
-    }
+    public Map<String, Object> getApplicationMap();
 
-    public AMFContext getAMFContext() {
-        return amfContext;
-    }
-    
-    public abstract Object getSessionLock();
+    public Map<String, Object> getSessionMap();
 
-    public abstract Map<String, String> getInitialisationMap();
-    public abstract Map<String, Object> getApplicationMap();
-    public abstract Map<String, Object> getSessionMap();
-    public abstract Map<String, Object> getSessionMap(boolean create);
-    public abstract Map<String, Object> getRequestMap();
+    public Map<String, Object> getSessionMap(boolean create);
+
+    public Map<String, Object> getRequestMap();
 }

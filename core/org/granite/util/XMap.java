@@ -29,6 +29,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
@@ -94,6 +95,12 @@ public class XMap implements Serializable {
 			this.root = dom.newDocument(root).getDocumentElement();
 		}
 	}
+
+    public XMap(Map<String, String> dictionary) {
+        for (String key : dictionary.keySet()) {
+            put(key, (String) dictionary.get(key));
+        }
+    }
 	
 	/**
 	 * Constructs a new XMap instance from an XML input stream.

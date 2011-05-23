@@ -44,7 +44,7 @@ import oracle.toplink.essentials.indirection.ValueHolderInterface;
 
 import org.granite.collections.BasicMap;
 import org.granite.config.GraniteConfig;
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.util.ClassGetter;
@@ -107,7 +107,7 @@ public class TopLinkExternalizer extends DefaultExternalizer {
         }
         // Regural @Entity or @MappedSuperclass
         else {
-            GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+            GraniteConfig config = GraniteManager.getCurrentInstance().getGraniteConfig();
 
             Converters converters = config.getConverters();
             ClassGetter classGetter = config.getClassGetter();
@@ -185,7 +185,7 @@ public class TopLinkExternalizer extends DefaultExternalizer {
     @Override
     public void writeExternal(Object o, ObjectOutput out) throws IOException, IllegalAccessException {
 
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        ClassGetter classGetter = GraniteManager.getCurrentInstance().getGraniteConfig().getClassGetter();
         Class<?> oClass = classGetter.getClass(o);
 
         if (o instanceof TopLinkProxy) {        	

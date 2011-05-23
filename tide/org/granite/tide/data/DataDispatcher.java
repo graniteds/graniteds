@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.servlet.http.HttpSession;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
@@ -52,7 +53,7 @@ public class DataDispatcher {
     
     
 	public DataDispatcher(String topic, Class<? extends DataTopicParams> dataTopicParamsClass) {
-		GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+		GraniteContext graniteContext = GraniteManager.getCurrentInstance();
 		if (graniteContext == null || !(graniteContext instanceof HttpGraniteContext))
 			return;
 		
@@ -98,7 +99,7 @@ public class DataDispatcher {
 		}
 		
 		// Ensure that the current Gravity consumer listens about this data topic and params
-		GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+		GraniteContext graniteContext = GraniteManager.getCurrentInstance();
 		HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
 		
 		@SuppressWarnings("unchecked")

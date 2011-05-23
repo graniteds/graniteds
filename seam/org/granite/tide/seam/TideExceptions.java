@@ -24,6 +24,7 @@ import static org.jboss.seam.ScopeType.APPLICATION;
 import static org.jboss.seam.annotations.Install.FRAMEWORK;
 
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.jboss.seam.annotations.Install;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
@@ -47,7 +48,7 @@ public class TideExceptions extends Exceptions {
     
     @Override
     public void handle(Exception e) throws Exception {
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         if (context == null)
             super.handle(e);
     }

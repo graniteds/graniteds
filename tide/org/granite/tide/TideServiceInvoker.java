@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSession;
 
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.service.ServiceException;
@@ -100,7 +101,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
     private static final InvalidValue[] EMPTY_INVALID_VALUES = new InvalidValue[0];
     
     protected void initValidator() {
-    	Map<String, Object> applicationMap = GraniteContext.getCurrentInstance().getApplicationMap();
+    	Map<String, Object> applicationMap = GraniteManager.getCurrentInstance().getApplicationMap();
     	Boolean validatorNotAvailable = (Boolean)applicationMap.get(VALIDATOR_NOT_AVAILABLE);
     	validator = (EntityValidator)applicationMap.get(VALIDATOR_KEY);
     	
@@ -204,7 +205,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
     }
     
     public void logout() {
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpSession session = context.getSession(false);
         if (session != null)
             session.invalidate();
@@ -242,7 +243,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
             Object instance = tideContext.findComponent(componentName, componentClass);
             Set<Class<?>> componentClasses = instance != null ? tideContext.findComponentClasses(componentName, componentClass) : null;
             
-            GraniteContext context = GraniteContext.getCurrentInstance();
+            GraniteContext context = GraniteManager.getCurrentInstance();
             if (instance != null && componentClasses != null && context.getGraniteConfig().isComponentTideEnabled(componentName, componentClasses, instance))
                 return tideContext.adjustInvokee(instance, componentName, componentClasses);
             
@@ -274,7 +275,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
     @Override
     protected void beforeInvocation(ServiceInvocationContext context) {
         RemotingMessage message = (RemotingMessage)context.getMessage();
-        GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+        GraniteContext graniteContext = GraniteManager.getCurrentInstance();
         
         Object[] originArgs = (Object[])message.getBody();
         IInvocationCall call = (IInvocationCall)originArgs[originArgs.length-1];

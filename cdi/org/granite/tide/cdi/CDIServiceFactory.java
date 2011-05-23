@@ -28,9 +28,10 @@ import javax.enterprise.inject.spi.BeanManager;
 import org.granite.cdi.CDIInterceptor;
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
-import org.granite.messaging.service.ServiceFactory;
+import org.granite.messaging.service.SimpleServiceFactory;
 import org.granite.messaging.service.ServiceInvoker;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.tide.TideServiceInvoker;
@@ -43,7 +44,7 @@ import flex.messaging.messages.RemotingMessage;
 /**
  * @author William DRAI
  */
-public class CDIServiceFactory extends ServiceFactory {
+public class CDIServiceFactory extends SimpleServiceFactory {
 
     private static final long serialVersionUID = 1L;
 
@@ -70,7 +71,7 @@ public class CDIServiceFactory extends ServiceFactory {
         else
             super.configure(properties);
         
-        GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+        GraniteContext graniteContext = GraniteManager.getCurrentInstance();
         try {
         	graniteContext.getGraniteConfig().registerExceptionConverter(PersistenceExceptionConverter.class);
         }
@@ -109,7 +110,7 @@ public class CDIServiceFactory extends ServiceFactory {
         String messageType = request.getClass().getName();
         String destinationId = request.getDestination();
 
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);

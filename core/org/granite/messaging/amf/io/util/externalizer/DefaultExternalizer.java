@@ -42,6 +42,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.granite.collections.BasicMap;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.util.FieldProperty;
@@ -124,7 +125,7 @@ public class DefaultExternalizer implements Externalizer {
     public void writeExternal(Object o, ObjectOutput out)
         throws IOException, IllegalAccessException {
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         String instantiatorType = context.getGraniteConfig().getInstantiator(o.getClass().getName());
         if (instantiatorType != null) {
             try {
@@ -171,7 +172,7 @@ public class DefaultExternalizer implements Externalizer {
         	if (dynamicClass)
         		Introspector.flushFromCaches(clazz);
             PropertyDescriptor[] propertyDescriptors = ClassUtil.getProperties(clazz);
-            Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
+            Converters converters = GraniteManager.getCurrentInstance().getGraniteConfig().getConverters();
 
             fields = new ArrayList<Property>();
 
@@ -250,7 +251,7 @@ public class DefaultExternalizer implements Externalizer {
     protected <T> Constructor<T> findDefaultConstructor(Class<T> clazz) {
         Constructor<T> constructor = null;
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         String instantiator = context.getGraniteConfig().getInstantiator(clazz.getName());
         if (instantiator != null) {
             try {

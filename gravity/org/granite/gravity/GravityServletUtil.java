@@ -12,7 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.util.UUIDUtil;
@@ -115,6 +115,6 @@ public class GravityServletUtil {
 	}
 	
 	public static void cleanupRequest(HttpServletRequest request) {
-		GraniteContext.release();
+		GraniteManager.release();
 	}
 }

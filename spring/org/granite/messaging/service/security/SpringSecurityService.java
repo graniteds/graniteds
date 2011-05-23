@@ -28,7 +28,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -73,7 +73,7 @@ public class SpringSecurityService extends AbstractSecurityService {
     public void login(Object credentials) {
         List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials));
 
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext) GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = context.getRequest();
 
         String user = decodedCredentials.get(0);
@@ -106,7 +106,7 @@ public class SpringSecurityService extends AbstractSecurityService {
 
         startAuthorization(context);
 
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
@@ -158,7 +158,7 @@ public class SpringSecurityService extends AbstractSecurityService {
     }
 
     public void logout() {
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpSession session = context.getSession(false);
         if (session != null && session.getAttribute(HttpSessionContextIntegrationFilter.SPRING_SECURITY_CONTEXT_KEY) != null)
         	session.invalidate();
@@ -192,7 +192,7 @@ public class SpringSecurityService extends AbstractSecurityService {
     }
 
     protected SecurityContext loadSecurityContextFromSession() {
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpServletRequest request = context.getRequest();
     	return (SecurityContext)request.getSession().getAttribute(HttpSessionContextIntegrationFilter.SPRING_SECURITY_CONTEXT_KEY);
     }
@@ -200,7 +200,7 @@ public class SpringSecurityService extends AbstractSecurityService {
     protected void saveSecurityContextInSession(SecurityContext securityContext, int securityContextHashBefore) {
     	if (securityContext.hashCode() != securityContextHashBefore &&
     			!(securityContext.getAuthentication() instanceof AnonymousAuthenticationToken)) {
-	        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+	        HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
 	        HttpServletRequest request = context.getRequest();
 	        request.getSession().setAttribute(HttpSessionContextIntegrationFilter.SPRING_SECURITY_CONTEXT_KEY, securityContext);
     	}

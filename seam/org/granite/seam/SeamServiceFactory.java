@@ -22,8 +22,9 @@ package org.granite.seam;
 
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.messaging.service.ServiceException;
-import org.granite.messaging.service.ServiceFactory;
+import org.granite.messaging.service.SimpleServiceFactory;
 import org.granite.messaging.service.ServiceInvoker;
 import org.granite.util.XMap;
 import org.jboss.seam.Component;
@@ -35,7 +36,7 @@ import flex.messaging.messages.RemotingMessage;
 /**
  * @author Cameron INGRAM, Stuart Robertson
  */
-public class SeamServiceFactory extends ServiceFactory {
+public class SeamServiceFactory extends SimpleServiceFactory {
 
     private static final long serialVersionUID = 1L;
 
@@ -51,7 +52,7 @@ public class SeamServiceFactory extends ServiceFactory {
         String messageType = request.getClass().getName();
         String destinationId = request.getDestination();
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);

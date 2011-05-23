@@ -29,6 +29,7 @@ import org.granite.config.api.Configuration;
 import org.granite.config.api.internal.ConfigurationImpl;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
+import org.granite.config.flex.SimpleServicesConfig;
 import org.granite.logging.Logger;
 import org.xml.sax.SAXException;
 
@@ -67,7 +68,7 @@ public abstract class AbstractFrameworkGraniteConfig {
             path = null;
         }
         
-        this.graniteConfig = new GraniteConfig(configPath, is, null, null);
+        this.graniteConfig = new SimpleGraniteConfig(configPath, is, null, null);
         
         ServletGraniteConfig.loadConfig(servletContext, graniteConfig);
         
@@ -81,7 +82,7 @@ public abstract class AbstractFrameworkGraniteConfig {
             path = null;
         }
         
-        this.servicesConfig = new ServicesConfig(is, null, false);
+        this.servicesConfig = new SimpleServicesConfig(is, null, false);
         
         ServletServicesConfig.loadConfig(servletContext, servicesConfig);
     }

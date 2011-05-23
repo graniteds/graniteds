@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.AMF0Body;
 import org.granite.messaging.amf.AMF0Message;
@@ -45,7 +46,7 @@ public abstract class AMF0MessageProcessor {
 
         log.debug(">> Processing AMF0 request:%s", amf0RequestMessage);
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteManager.getCurrentInstance();
         AMFContextImpl amf = (AMFContextImpl)context.getAMFContext();
 
         AMF0Message amf0ResponseMessage = new AMF0Message();

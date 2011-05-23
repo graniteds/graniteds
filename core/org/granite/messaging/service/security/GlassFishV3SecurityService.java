@@ -40,6 +40,7 @@ import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.connector.Request;
 import org.granite.context.GraniteContext;
+import org.granite.context.GraniteManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
 
@@ -137,7 +138,7 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
     public void login(Object credentials) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials);
 
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext) GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = context.getRequest();
 
         Request request = getRequest(httpRequest);
@@ -161,7 +162,7 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
 
         startAuthorization(context);
 
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteManager.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
         Request request = getRequest(httpRequest);
         Session session = request.getSessionInternal();
@@ -204,7 +205,7 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
     }
 
     public void logout() throws SecurityServiceException {
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpGraniteContext context = (HttpGraniteContext)GraniteManager.getCurrentInstance();
 
         Session session = getSession(context.getRequest(), false);
         if (session != null && session.getPrincipal() != null) {
