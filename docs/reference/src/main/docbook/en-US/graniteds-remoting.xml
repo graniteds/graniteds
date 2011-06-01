@@ -1,0 +1,1673 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<chapter id="graniteds.remoting">
+	<title>Remoting and Serialization</title>
+	<para>
+	Data serialization between a Flex client application and a J2EE server may use three kinds of transfer encoding:
+	<itemizedlist>
+		<listitem>XML (HttpService)</listitem>
+		<listitem>SOAP (WebService)</listitem>
+		<listitem>AMF3 (RemoteObject)</listitem>
+	</itemizedlist>
+	</para>
+	<para>
+	According to all available benchmarks, the last option, AMF3 with <literal>RemoteObject</literal>, is the faster and most efficient. 
+	Additionally it allows to work with strongly typed objects in the Flex application and thus is more maintainable.
+	GraniteDS provides a full implementation of the AMF3 protocol and a set of adapters suitable for remote calls to POJO, EJB 3, Seam, Spring, and Guice services.
+	</para>
+	<para>
+	However, standard AMF serialization/deserialization does not provide any way, either with LiveCycle Data Services/BlazeDS or with GraniteDS, 
+	to transfer private or protected data fields. Only non-static, non-transient public fields, either those with public getter and setter or with a public declaration, 
+	are taken into account. This limitation applies to both Java and ActionScript3 classes.
+	</para>
+	<para>
+	To preserve strong and secure data encapsulation of your beans while serializing their private internal state - such as a version number in entity beans — 
+	GraniteDS provides a specific serialization mechanism called externalization. See <link linkend="remoting.externalization">corresponding section</link> for details.
+	</para>
+	
+	<formalpara>
+		<title>The AMF3 Format</title>
+		<para>
+		AMF3 is a very compact binary format for data serialization/deserialization and remote method invocation. 
+		A key feature of this format is that it preserves the entire graph of your data without duplicating identical objects (contrary to JSON for example). 
+		For example, if A1 and A2 contain a reference to the same B1, the serialization of A1 and A2 does not duplicate B1. 
+		The Flash VM will contain exactly the same data graph with only one B1 referenced by one A1 and one A2. 
+		Furthermore, there is no risk of infinite recursion if the data graph contains circular references. 
+		For example, if B1 contains the set of A# that references B1.
+		</para>
+		<para>
+		AMF3 messages are sent as a part of a AMF0 envelope and body. GraniteDS implements an AMF3 serializer/deserializer and relies on some code borrowed 
+		from the <ulink url="http://sourceforge.net/projects/openamf/">OpenAMF</ulink> project for AMF0 serialization/deserialization.
+		The AMF0 and AMF3 specifications are now public. 
+		You may download them <ulink url="http://download.macromedia.com/pub/labs/amf/amf3_spec_121207.pdf">here</ulink>. You will need a Macromedia or Adobe account.
+		</para>
+	</formalpara>
+	
+	<section id="remoting.remoteobject">
+		<title>Using the RemoteObject API</title>
+		<para>
+		<literal>RemoteObject</literal> is the standard remoting API of the Flex SDK. It can be use either declaratively in MXML or programmatically in ActionScript.
+		A <literal>RemoteObject</literal> is attached to a server-side destination, generally defined in the <literal>services-config.xml</literal> (see the <link linkend="config.remotingservices">configuration reference</link>).
+		You can also refer to the <ulink url="http://livedocs.adobe.com/flex/3/html/help.html?content=data_access_4.html">Adobe Flex SDK documentation</ulink> about <literal>RemoteObject</literal> to get some useful information.
+		</para>
+		<section id="remoting.romxml">
+			<title>RemoteObject in MXML</title>
+			<para>
+			For this example, we'll show a simple POJO destination :
+			</para>
+		
+			<programlisting role="JAVA">
+<![CDATA[public class HelloService {
+
+   	public String hello(String name) {
+   		return "Hello " + name;	
+   	}
+}]]>
+			</programlisting>
+				
+			<programlisting role="XML">
+<![CDATA[<services>
+    <service
+        id="granite-service"
+        class="flex.messaging.services.RemotingService"
+        messageTypes="flex.messaging.messages.RemotingMessage">
+        <destination id="hello">
+            <channels>
+                <channel ref="graniteamf"/>
+            </channels>
+            <properties>
+                <scope>request</scope>
+                <source>com.myapp.HelloService</source>
+            </properties>
+        </destination>
+    </service>
+</services>
+
+<channels>
+    <channel-definition id="graniteamf" class="mx.messaging.channels.AMFChannel">
+        <endpoint
+            uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+            class="flex.messaging.endpoints.AMFEndpoint"/>
+    </channel-definition>
+</channels>]]>
+	        </programlisting>
+				
+			<para>
+			This service configuration defines an AMF channel and a simple POJO destination named <emphasis>hello</emphasis> mapped to this channel and which
+			source is the Java class we have created. POJO is the default service adapter so we don't have to specify a particular service factory.
+			</para>
+				
+			<programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml">
+
+    <mx:Script>
+        import mx.rpc.events.ResultEvent;
+        import mx.rpc.events.FaultEvent;
+        import mx.controls.Alert;
+        
+        public function resultHandler(event:ResultEvent):void {
+            // Display received message
+            outputMessage.text = event.result as String;
+        }                       
+        
+        public function faultHandler(event:FaultEvent):void {
+            // Show error alert
+            Alert.show(event.fault.faultString);               
+        }
+    </mx:Script>
+	
+    <!-- Connect to a service destination.--> 
+    <mx:RemoteObject id="helloService" 
+        destination="hello"
+        result="handleResult(event);"
+        fault="handleFault(event);"/>
+	
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+	
+    <!-- Call the web service, use the text in a TextInput control as input data.--> 
+    <mx:Button click="helloService.hello(inputName.text)"/>
+	
+    <!-- Display results data in the user interface. --> 
+    <mx:Label id="outputMessage"/>
+</mx:Application>]]>
+	        </programlisting>
+			
+			<para>
+			This demonstrates a very simple remote call with basic <literal>String</literal> data types. 
+			The destination defined in the MXML <literal>RemoteObject</literal> declaration should match 
+			the destination name in <literal>services-config.xml</literal>. 
+			</para>
+			
+			<para>
+			It is very important to note that remote calls in Flex are always <emphasis>asynchronous</emphasis>. The reason is that the Flash VM is not 
+			multithreaded and remote calls should not block user interaction. 
+			Something like <literal>outputMessage.text = helloService.hello(inputName.text)</literal> will thus not work, and it is needed to attach event
+			listeners to the <literal>RemoteObject</literal> to handle the remote results and faults.		
+			</para>
+			
+			<para>
+			The actual return value of a remote call on a <literal>RemoteObject</literal> is an <literal>AsyncToken</literal> object. The MXML syntax <literal>result</literal>
+			and <literal>fault</literal> is simply a shorthand for adding listeners to this token object.
+			</para>
+			
+			<para>
+			In this short example, there was only one method in the <literal>RemoteObject</literal> so we could put the event listeners on the <literal>RemoteObject</literal>
+			itself. For services having more than one method, we would rather add a different event listener for each method :
+			</para>
+			
+			<programlisting role="XML">
+<![CDATA[<mx:RemoteObject id="helloService" 
+        destination="hello">
+    <mx:operation name="hello" 
+        result="handleResult(event);"
+        fault="handleFault(event);"/>
+    <mx:operation name="..."
+        result="..."
+        fault="..."/>
+</mx:RemoteObject>]]>
+			</programlisting>
+			
+			<para>
+			The last but interesting way of handing the remote result is to bind the <literal>AsyncToken</literal> property <literal>lastResult</literal> to some 
+			UI component in MXML.
+			The following code does the same thing than the initial example : 
+			</para>
+	        
+	        <programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml">
+
+    <!-- Connect to a service destination.--> 
+    <mx:RemoteObject id="helloService" destination="hello"/>
+    
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+    
+    <!-- Call the web service, use the text in a TextInput control as input data.--> 
+    <mx:Button click="helloService.hello(inputName.text)"/>
+    
+    <!-- Display results data in the user interface using binding on the lastResult property of AsyncToken. --> 
+    <mx:Label id="outputMessage" text="{helloService.hello.lastResult}"/>
+</mx:Application>]]>
+	        </programlisting>
+			
+			<para>
+			It is possible to use more complex data types as arguments or as result values. It is then necessary to create an equivalent ActionScript 3 class
+			for each Java data class. You can refer to the <link linkend="remoting.mapping">mapping</link> section to see how to do this in detail. Also see how
+			you can use the <link linkend="graniteds.gas3">Gas3 code generator</link> to do this for you.
+			</para>
+			
+			<programlisting role="JAVA">
+<![CDATA[package com.myapp.model;
+
+public class Person {
+
+	private String name;
+
+	public String getName() { 
+		return name; 
+	}
+	public void setName(String name) { 
+		this.name = name;
+	}
+}]]>
+	        </programlisting>
+			
+			<programlisting role="AS3">
+<![CDATA[package com.myapp.model {
+		
+	[RemoteClass(alias="com.myapp.model.Person")]
+	public class Person {
+		public var name:String;
+	}
+}]]>
+	        </programlisting>
+			
+			<programlisting role="JAVA">
+<![CDATA[public class PeopleService {
+
+   	public List<Person> findAll(Person examplePerson) {
+   		...
+   		return list;	
+   	}
+}]]>
+			</programlisting>
+				
+			<programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml">
+
+    <!-- Connect to a service destination.--> 
+    <mx:RemoteObject id="peopleService" 
+        destination="people"
+        result="handleResult(event);"
+        fault="handleFault(event);"/>
+	
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+	
+    <!-- Call the web service, use the text in a TextInput control as input data.--> 
+    <mx:Button click="peopleService.findAll(inputName.text)"/>
+	
+    <!-- Display results data in the user interface. --> 
+    <mx:DataGrid id="outputGrid" dataProvider="{peopleService.lastResult}"/>
+</mx:Application>]]>
+    		</programlisting>
+		</section>
+		
+		<section id="remoting.roactionscript">
+			<title>RemoteObject in ActionScript</title>
+			<para>
+			Using <literal>RemoteObject</literal> programmatically is necessary when called from a client controller class in a classic MVC pattern.
+			</para>
+			
+			<programlisting role="AS3">
+<![CDATA[package com.myapp.controllers {
+
+ 	import mx.rpc.events.ResultEvent;
+ 	import mx.rpc.events.FaultEvent;
+ 	import mx.rpc.remoting.mxml.RemoteObject;
+ 	import mx.controls.Alert;
+
+	public class HelloController {
+
+		private var helloService:RemoteObject;
+
+		public function HelloController():void {
+            // Initialize a remote destination
+            helloService = new RemoteObject("pojo");
+            helloService.addEventListener(ResultEvent.RESULT, resultHandler, false, 0, true);
+            helloService.addEventListener(FaultEvent.FAULT, faultHandler, false, 0, true);
+        }
+        
+        private function resultHandler(event:ResultEvent):void {
+            // Handler result
+        }                       
+        
+        private function faultHandler(event:FaultEvent):void {
+            // Handle fault
+        }
+    }
+}]]>
+    		</programlisting>
+    	</section>
+		
+		<section id="remoting.manualremoteobject">
+			<title>RemoteObject in ActionScript without services-config.xml file</title>
+			<para>
+			When there is no <literal>services-config.xml</literal> (for example when the configuration is defined in the Spring or Seam configuration files), 
+			it is necessary to manually initialize the endpoint for the <literal>RemoteObjects</literal>.
+			</para>
+		
+    		<programlisting role="AS3">
+<![CDATA[package com.myapp.controllers {
+
+ 	import mx.rpc.events.ResultEvent;
+ 	import mx.rpc.events.FaultEvent;
+ 	import mx.rpc.remoting.mxml.RemoteObject;
+ 	import mx.controls.Alert;
+
+	public class HelloController {
+
+		private var helloService:RemoteObject;
+
+ 		public function HelloController():void {
+			// Initialize a remote destination
+			helloService = new RemoteObject("hello");
+			helloService.source = "com.myapp.HelloService";
+			// Setup the channel set and endpoint for the RemoteObject 
+			helloService.channelSet = new ChannelSet();
+			helloService.channelSet.addChannel(new AMFChannel("graniteamf", 
+			     "http://{server.name}:{server.port}/myapp/graniteamf/amf"));
+			helloService.addEventListener(ResultEvent.RESULT, resultHandler, false, 0, true);
+			helloService.addEventListener(FaultEvent.FAULT, faultHandler, false, 0, true);
+		}
+        
+		private function resultHandler(event:ResultEvent):void {
+			// Handle result
+		}                       
+        
+		private function faultHandler(event:FaultEvent):void {
+			// Handle fault
+		}
+    }
+}]]>
+		  </programlisting>
+        </section>
+		
+		<section id="remoting.rohttps">
+		  <title>Using HTTPS</title>
+		  <para>
+		  Using HTTPS involves two steps :
+		  <itemizedlist>
+		      <listitem>Configure a <literal>SecureAMFChannel</literal> instead of an <literal>AMFChannel</literal> in <literal>services-config.xml</literal></listitem>
+		      <listitem>Configure a SSL endpoint in <literal>web.xml</literal></listitem>
+		  </itemizedlist>
+		  </para>
+			
+			<programlisting role="XML">
+<![CDATA[<services>
+    ...
+</services>
+
+<channels>
+    <channel-definition id="graniteamf" class="mx.messaging.channels.SecureAMFChannel">
+        <endpoint
+            uri="https://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+            class="flex.messaging.endpoints.AMFEndpoint"/>
+    </channel-definition>
+</channels>]]>
+			</programlisting>
+			
+			<programlisting role="XML">
+<![CDATA[<security-constraint>
+    <display-name>AMF access</display-name>
+    <web-resource-collection>
+        <web-resource-name>Secure AMF remoting</web-resource-name>
+        <description>Secure AMF Remoting</description>
+        <url-pattern>/graniteamf/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>role1</role-name>
+        ...
+    </auth-constraint>
+    <user-data-constraint>
+        <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+    </user-data-constraint>
+</security-constraint>]]>
+    		</programlisting>
+    	</section>
+	</section>
+	
+	<section id="remoting.tideremoting">
+		<title>Using the Tide API</title>
+        <para>
+        The Tide remoting API is an alternative to the standard <literal>RemoteObject</literal>. It can be used only programmatically in <literal>ActionScript</literal> and simplifies
+        the handling of asynchronicity by hiding <literal>AsyncToken</literal> and other internal objects. Note that Tide provides much more than just a different API, it will be detailed 
+        in the next chapters.
+        </para>
+        
+        <note>
+        <para>
+        This section describes the usage of the Tide API with a standard AMF provider. When the Tide API is used in conjunction with GraniteDS and Tide-enabled server framework adapters,
+        there are some specificities that are described in the chapters concerning each framework integration (<link linkend="ejb3.tide">EJB3</link>, <link linkend="spring.tide">Spring</link>,
+        <link linkend="seam2.tide">Seam 2</link>, <link linkend="cdi.tide">CDI</link>).
+        </para>
+        </note>
+        
+        <section id="remoting.tidebasic">
+            <title>Basic remoting</title>
+            <para>
+            Let's see the same hello example with Tide. Note the usage of the Tide context object which reprensents the client application container.                      
+            </para>
+	        
+	        <programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml">
+    <mx:Script>
+        import org.granite.tide.Tide;
+        import org.granite.tide.Context;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        
+        private var tideContext:Context = Tide.getInstance().getContext();
+        
+        private function hello(name:String):void {
+            // tideContext.helloService implicitly creates a proxy for the remote destination named helloService
+            tideContext.helloService.hello(name, resultHandler, faultHandler);
+        }
+        
+        private function resultHandler(event:TideResultEvent):void {
+            outputMessage.text = event.result as String;
+        }                       
+        
+        private function faultHandler(event:TideFaultEvent):void {
+            // Handle fault
+        }
+    </mx:Script>
+    
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+    
+    <!-- Call the web service, use the text in a TextInput control as input data.--> 
+    <mx:Button click="hello(inputName.text)"/>
+    
+    <!-- Result message. --> 
+    <mx:Label id="outputMessage"/>
+</mx:Application>]]>
+	        </programlisting>
+	    </section>
+        
+        <section id="remoting.tidebasicdi">
+            <title>Basic remoting with dependency injection</title>
+            <para>
+            This example can be cleaned up by using the dependency injection feature of the Tide framework (see <link linkend="tide.remoting">here</link> for more details).
+            Basically you can inject a client proxy for a remote destination with the annotation <literal>[In]</literal>.
+            </para>
+	        
+	        <programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Tide.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.Tide;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        
+        [In]
+        public var helloService:Component;
+        
+        private function hello(name:String):void {
+            helloService.hello(name, resultHandler, faultHandler);
+        }
+        
+        private function resultHandler(event:TideResultEvent):void {
+            outputMessage.text = event.result as String;
+        }                       
+        
+        private function faultHandler(event:TideFaultEvent):void {
+            // Handle fault
+        }
+    </mx:Script>
+    
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+    
+    <!-- Call the web service, use the text in a TextInput control as input data.--> 
+    <mx:Button click="hello(inputName.text)"/>
+    
+    <!-- Result message. --> 
+    <mx:Label id="outputMessage"/>
+</mx:Application>]]>
+	        </programlisting>
+	    </section>
+        
+        <section id="remoting.tideresponder">
+            <title>Using the ITideResponder Interface</title>
+            <para>
+            In some cases, you may need to pass some value to the result/fault handler to be able to distinguish different calls on the same method. 
+            You can then implement the <literal>ITideResponder</literal> interface or use the default <literal>TideResponder</literal> implementation that is able to hold a token object:
+            </para>
+	        
+	        <programlisting role="AS3">
+<![CDATA[public function call():void {
+    var responder1:TideResponder = new TideResponder(helloResult, helloFault, "firstCall");
+    var responder2:TideResponder = new TideResponder(helloResult, helloFault, "secondCall");
+    tideContext.helloWorld.sayHello("Jimi", responder1);
+    tideContext.helloWorld.sayHello("Jimi", responder2);
+}
+
+private function helloResult(event:TideResultEvent, token:Object):void {
+    if (token == "firstCall")
+        Alert.show(event.result);
+}]]>
+	        </programlisting>
+	
+	        <para>
+	        In this case, the <literal>Alert</literal> will show up only once for the first call.
+	        </para>
+        </section>
+                
+        <section id="remoting.tideasync">
+            <title>Simplifying asynchronous interactions</title>
+            <para>
+            The <literal>ITideResponder</literal> interface has another important use : it makes possible to provide a return object that will be merged 
+            with the server result. It greatly helps working with the asynchronous nature of Flex remoting by limiting the need for result handlers.
+            </para>
+	
+	        <programlisting role="AS3">
+<![CDATA[private var products:ArrayCollection = new ArrayCollection();
+
+public function call():void {
+    tideContext.productService.findAllProducts(
+        new TideResponder(resultHandler, null, null, products)
+    );
+}
+
+private function resultHandler(event:TideResultEvent):void {
+   trace("Assert result was merged: " + (event.result === products));
+}]]>
+	        </programlisting>
+	        
+	        <programlisting role="XML">
+<![CDATA[<mx:DataGrid dataProvider="{products}">
+   ...
+</mx:DataGrid>]]>
+	        </programlisting>
+	        
+	        <para>
+	        The result of the remote call will be merged in the provided products collection instance. 
+	        It is thus mandatory to provide a non null object instance, and this kind of merge will work with real objects and collections but not 
+	        with simple types (such as <literal>String</literal>, <literal>Number</literal>, ...), ...
+	        </para>
+        </section>
+                
+        <section id="remoting.tideserviceinit">
+            <title>Service Initializer</title>
+            <para>
+            Tide remoting can be used without needing the standard <literal>services-config.xml</literal> Flex configuration file. 
+            In this case, it is necessary to manually define the remoting channels.
+            </para>
+            <para>
+            The easiest way is to setup the built-in default <literal>DefaultServiceInitializer</literal> component implementation in the Tide context, 
+            for example in the <literal>creationComplete</literal> of the main application.
+            </para>
+	            
+	        <programlisting role="AS3">
+Tide.getInstance().addComponentWithFactory("serviceInitializer", DefaultServiceInitializer, 
+    { contextRoot: "/context-root" }
+);
+	        </programlisting>
+	        
+	        <para>
+	        It is also possible to define <literal>serverName</literal>, <literal>serverPort</literal> and the url mappings for Granite AMF remoting 
+	        and for Gravity push <literal>graniteUrlMapping</literal> and <literal>gravityUrlMapping</literal>.
+	        </para>
+	        
+	        <para>
+	        Tide additionally provides a built-in <literal>DefaultSecureServiceInitializer</literal> with the same options to setup a <literal>https</literal> channel.
+	        </para>
+	        
+	        <para>
+	        Finally you can completely customize the channel initialization by providing your own implementation of <literal>IServiceInitializer</literal>. 
+	        It has only one method <literal>initialize</literal> that is called for all <literal>RemoteObject</literal>s or <literal>Consumer</literal>s of the application.
+	        </para>
+	    </section>
+        
+        <section id="remoting.tideintercept">
+            <title>Message Interceptors</title>
+            <para>
+            If you need some common behaviour for all remote calls, such as showing/hiding a wait screen at each call or setting custom headers, 
+            you can implement a message interceptor that will be called before and after each call.
+            </para>
+	
+	        <programlisting role="AS3">
+public class MyMessageInterceptor implements IMessageInterceptor {
+    public function before(msg:IMessage):void {
+        showWaitScreen();
+        msg.headers['customHeader'] = 'test';
+    }
+
+    public function after(msg:IMessage):void {
+        var customHeader:String = msg.headers['customHeader'] as String;
+        hideWaitScreen();
+    }
+}
+	        </programlisting>
+        </section>
+        
+        <section id="remoting.tideexception">
+            <title>Global Exception Handling</title>
+            <para>
+            The server exceptions can be handled on the client-side by defining a fault callback on each remote call. It works fine but it is very tedious 
+            and you can always forget a case, in which case the error will be either ignored or result in a Flex error popup that is not very elegant.
+            </para>
+            <para>
+            To help dealing with server exceptions, it is possible to define common handlers for particular fault codes on the client-side, 
+            and exception converters on the server-side, to convert server exceptions to common fault codes.
+            </para>
+            <para>
+            On the server, you have to define an <literal>ExceptionConverter</literal> class. For example we could write a converter to handle the JPA 
+            <literal>EntityNotFoundException</literal> (in fact there is already a built-in converter for all JPA exceptions):
+            </para>
+            <programlisting role="JAVA">
+<![CDATA[public class EntityNotFoundExceptionConverter implements ExceptionConverter {
+
+    public static final String ENTITY_NOT_FOUND = "Persistence.EntityNotFound";
+    
+    public boolean accepts(Throwable t, Throwable finalException) {
+        return t.getClass().equals(javax.persistence.EntityNotFoundException.class);
+    }
+
+    public ServiceException convert(
+        Throwable t, String detail, Map<String, Object> extendedData) {
+
+        ServiceException se = new ServiceException(
+            ENTITY_NOT_FOUND, t.getMessage(), detail, t
+        );
+        se.getExtendedData().putAll(extendedData);
+        return se;
+    }
+}]]>
+            </programlisting>
+            
+            <para>
+            This class will intercept all <literal>EntityNotFound</literal> exceptions on the server-side, and convert it to a 
+            proper <literal>ENTITY_NOT_FOUND</literal> fault event.
+            </para>
+
+            <para>
+            The argument <literal>finalException</literal> contains the deepest throwable in the error and can be used to check if some higher level 
+            exception converter should be used to handle the exception. For example, the <literal>HibernateExceptionConverter</literal> checks 
+            if the exception is wrapped in a <literal>PersistenceException</literal>, in which case it lets the JPA 
+            <literal>PersistenceExceptionConverter</literal> accept the exception.
+            </para>
+            
+            <para>
+            This exception converter has to be declared on the GDS server config :
+            <itemizedlist>
+                <listitem>
+                When using <literal>scan="true"</literal> in <literal>granite-config.xml</literal>, ensure that there is a 
+                <literal>META-INF/granite-config.properties</literal> file (even empty) in the jar containing the exception converter class 
+                (same principle than the <literal>seam.properties</literal> file to specify which jars need to be scanned in JBoss Seam 2.x).
+                </listitem>
+                <listitem>
+				When not using automatic scan, you can add this in <literal>granite-config.xml</literal> :
+				<programlisting>
+<![CDATA[<exception-converters>
+  <exception-converter type="com.myapp.custom.MyExceptionConverter"/>
+</exception-converters>]]>
+				</programlisting>
+                </listitem>
+            </itemizedlist>
+            
+            On the Flex side, you then have to define an exception handler class:
+            </para>
+            
+            <programlisting role="AS3">
+public class EntityNotFoundExceptionHandler implements IExceptionHandler {
+
+    public function accepts(emsg:ErrorMessage):Boolean {
+        return emsg.faultCode == "Persistence.EntityNotFound";
+    }
+
+    public function handle(context:BaseContext, emsg:ErrorMessage):void {
+        Alert.show("Entity not found: " + emsg.message);
+    }
+}
+            </programlisting>
+            
+            <para>
+            ... and register it as an exception handler for the Tide context in a static initializer block to be sure it is registered before anything else happens.
+            </para>
+            
+            <programlisting role="XML">
+<![CDATA[<mx:Application>
+    <mx:Script>
+        Tide.getInstance().addExceptionHandler(EntityNotFoundExceptionHandler);
+    </mx:Script>
+</mx:Application>]]>
+            </programlisting>
+        </section>
+                
+        <section id="remoting.tidemisc">
+            <title>Miscellaneous Features</title>
+            <para>
+            There are a few other features that are useful when working with remote services :
+            
+            <itemizedlist>
+                <listitem>
+                The static property <literal>Tide.showBusyCursor</literal> can enable or disable the busy mouse cursor during execution of remote calls.
+                </listitem>
+                <listitem>
+                <literal>Tide.busy</literal> is a bindable property that can be used to determine if there is currently a remote call in progress.
+                </listitem>
+                <listitem>
+                <literal>Tide.disconnected</literal> is a bindable property that can be used to determine is the network connection is currently broken. 
+                If becomes false when a network error is detected and set to true after each successful call.
+                </listitem>
+            </itemizedlist>
+            </para>
+        </section>
+	</section>
+	
+	<section id="remoting.mapping">
+		<title>Mapping Java and AS3 objects</title>
+		<para>
+		When using typed objects, it's necessary to create an ActionScript 3 class for each Java class that will be marshalled between Flex and Java.
+		However due to the differences of data types in the ActionScript 3 and Java languages, data conversions are done during serialization/deserialization.
+		GraniteDS follows the standard conversions specified in the Adobe Flex SDK documentation <ulink url="http://livedocs.adobe.com/flex/3/html/data_access_4.html#244138">here</ulink>,
+		with an important exception : GDS will neither convert AS3 <literal>String</literal> to Java numeric types or <literal>boolean</literal>, 
+		nor AS3 numeric types or <literal>boolean</literal> to <literal>String</literal>. 
+		You must use AS3 numeric types for Java numeric types and AS3 boolean type for Java boolean types; either primitive or boxed boolean.
+		</para>
+		
+		<para>
+		Starting with GraniteDS 2.2, <literal>long</literal>, <literal>Long</literal>, <literal>BigInteger</literal> and <literal>BigDecimal</literal> values 
+		may by converted to their respective ActionScript 3 equivalent (see <link linkend="graniteds.bignumber">Big Number Implementations</link> for details).
+		</para>
+	</section>
+	
+	<section id="remoting.externalization">
+		<title>Externalizers and AS3 Code Generation</title>
+		<para>
+		In some cases it can be necessary to serialize private fields of a Java class (for example the <literal>@Version</literal> field of a JPA entity).
+		Due to the limited capabilities of the ActionScript 3 reflection API than cannot access private fields, it is necessary to create 
+		an externalizable AS3 class (implementing <literal>flash.utils.IExternalizable</literal> and its corresponding externalizable Java class.
+		In both classes you have to implement two methods <literal>readExternal</literal> and <literal>writeExternal</literal> that read and write
+		data to the network stream in the exact same order. This is extremely tedious and unmaintainable, so GraniteDS provides a specific mechanism 
+		to handle this almost transparently :
+        <itemizedlist>
+            <listitem>
+            On the Java side, GraniteDS can simulate an externalizable class by using Java reflection, so there is no need to implement the
+            interface <literal>java.io.Externalizable</literal> manually. You just have to configure which classes should be processed.
+            </listitem>
+            <listitem>
+            On the Flex side, the Gas3 generator can automatically generate the <literal>writeExternal</literal> and <literal>readExternal</literal> methods.
+            </listitem>
+        </itemizedlist>
+        By means of these two combined mechanisms, it's possible to serialize any kind of object with minimal effort. 
+		</para>
+		
+		<section id="remoting.extjpaexample">
+    	   <title>Example of a JPA entity and its corresponding AS3 beans</title>
+		   <para>
+		   Let's say we have a basic entity bean that represents a person. The following code shows its implementation using JPA annotations:
+		   </para>
+			
+		  <programlisting role="Java">
+package com.myapp.entity;
+
+import java.io.Serializable;
+
+import javax.persistence.Basic;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Version;
+
+@Entity
+public class Person implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id @GeneratedValue
+    private Integer id;
+
+    @Version
+    private Integer version;
+
+    @Basic
+    private String firstName;
+
+    @Basic
+    private String lastName;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+}
+			</programlisting>
+			
+			<para>
+	        This simple entity bean has one <emphasis>read-only</emphasis> property (<literal>id</literal>), 
+	        one <emphasis>completely private property</emphasis> (<literal>version</literal>) and two <emphasis>read/write</emphasis> properties (<literal>firstName</literal>, 
+	        <literal>lastName</literal>). With standard serialization, we would not be able to send the <literal>id</literal> and <literal>version</literal> fields to 
+	        the Flex client code. One solution would be to make them public with getters and setters, but this would obviously expose these fields to manual 
+	        and erroneous modifications. Another solution would be to make the person bean implement <literal>java.io.Externalizable</literal> instead of 
+	        <literal>java.io.Serializable</literal>, but it would require implementing and maintaining the <literal>readExternal</literal> and <literal>writeExternal</literal> methods. 
+	        This is at least an annoyance, a source of errors, and might even be impossible if you do not have access to the source code to the Java entities.
+	        </para>
+	        
+	        <para>
+	        With GraniteDS automated externalization and without any modification made to our bean, we may serialize all properties of the <literal>Person</literal> class, 
+	        private or not. Furthermore, thanks to the Gas3 code generator, we do not even have to write the ActionScript 3 bean by ourselves. 
+	        Here is a sample generated bean implementation:
+	        </para>
+	        
+	        <programlisting role="AS3">
+<![CDATA[/**
+ * Generated by Gas3 v2.2.0 (Granite Data Services).
+ *
+ * WARNING: DO NOT CHANGE THIS FILE. IT MAY BE OVERWRITTEN EACH TIME YOU USE
+ * THE GENERATOR. INSTEAD, EDIT THE INHERITED CLASS (Person.as).
+ */
+
+package com.myapp.entity {
+
+    import flash.utils.IDataInput;
+    import flash.utils.IDataOutput;
+    import flash.utils.IExternalizable;
+    import org.granite.collections.IPersistentCollection;
+    import org.granite.meta;
+
+    use namespace meta;
+
+    [Bindable]
+    public class PersonBase implements IExternalizable {
+
+        private var __initialized:Boolean = true;
+        private var __detachedState:String = null;
+
+        private var _firstName:String;
+        private var _id:Number;
+        private var _lastName:String;
+        private var _version:Number;
+
+        meta function isInitialized(name:String = null):Boolean {
+            if (!name)
+                return __initialized;
+
+            var property:* = this[name];
+            return (
+                (!(property is Person) || (property as Person).meta::isInitialized()) &&
+                (!(property is IPersistentCollection) ||
+                  (property as IPersistentCollection).isInitialized())
+            );
+        }
+
+        public function set firstName(value:String):void {
+            _firstName = value;
+        }
+        public function get firstName():String {
+            return _firstName;
+        }
+
+        public function get id():Number {
+            return _id;
+        }
+
+        public function set lastName(value:String):void {
+            _lastName = value;
+        }
+        public function get lastName():String {
+            return _lastName;
+        }
+
+        public function readExternal(input:IDataInput):void {
+            __initialized = input.readObject() as Boolean;
+            __detachedState = input.readObject() as String;
+            if (meta::isInitialized()) {
+                _firstName = input.readObject() as String;
+                _id = function(o:*):Number {
+                    return (o is Number ? o as Number : Number.NaN) } (input.readObject());
+                _lastName = input.readObject() as String;
+                _version = function(o:*):Number {
+                    return (o is Number ? o as Number : Number.NaN) } (input.readObject());
+            }
+            else {
+                _id = function(o:*):Number {
+                    return (o is Number ? o as Number : Number.NaN) } (input.readObject());
+            }
+        }
+
+        public function writeExternal(output:IDataOutput):void {
+            output.writeObject(__initialized);
+            output.writeObject(__detachedState);
+            if (meta::isInitialized()) {
+                output.writeObject(_firstName);
+                output.writeObject(_id);
+                output.writeObject(_lastName);
+                output.writeObject(_version);
+            }
+            else {
+                output.writeObject(_id);
+            }
+        }
+    }
+}]]>
+	        </programlisting>
+	        
+	        <para>
+	        This AS3 bean reproduces all properties found in the Java entity, public and private and even includes two extra properties, 
+	        (<literal>__initialized</literal> and <literal>__detachedState</literal>), that correspond the the JPA internal state for lazy loading. Note that these 
+	        two fields are present because the Gas3 generator has detected that our class is a JPA entity annotated with <literal>@Entity</literal>.
+	        For simple Java beans, these two fields would not be present, but this shows that the pluggable externalizer mechanism in GraniteDS allows to do a lot
+	        more than simply serializing public data and value objects.
+	        </para>
+	        <para>
+	        Note that property accessors (<literal>get</literal>/<literal>set</literal>) are exactly the same as
+	        those found in the Java entity bean, and while all fields are serialized between the client and the server, 
+	        only <literal>firstName</literal> and <literal>lastName</literal> are modifiable in ActionScript 3 and <literal>id</literal> is kept read-only.
+	        </para>
+	        <note><para>
+	        With the externalizer mechanism in GraniteDS, serializing data between Flex and Java is almost as powerful and flexible as pure Java serialization 
+	        between a Java client and a Java server.
+	        </para></note>
+        </section>
+                
+        <section id="remoting.extconfig">
+            <title>Standard Configuration</title>
+            <para>
+            In order to externalize the <literal>Person.java</literal> entity bean, we must tell GraniteDS which classes we want to externalize
+            with a special rule in the <literal>granite-config.xml</literal> file:
+            </para>
+	        
+	        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.1.0/granite-config.dtd">
+
+<granite-config>
+    <class-getter type="org.granite.hibernate.HibernateClassGetter"/>
+
+    <externalizers>
+        <externalizer type="org.granite.hibernate.HibernateExternalizer">
+            <include type="com.myapp.entity.Person"/>
+        </externalizer>
+    </externalizers>
+</granite-config>]]>
+	        </programlisting>
+	        
+	        <para>
+	        This instructs GraniteDS to externalize all classes named <literal>com.myapp.entity.Person</literal> by using the <literal>org.granite.hibernate.HibernateExternalizer</literal>. 
+	        Note that the <literal>HibernateClassGetter</literal> configuration is necessary to detect Hibernate proxies (lazy-initialized beans). See more about this feature in the <link linkend="remoting.jpa">JPA and lazy initialization</link> section.
+	        </para>
+	        
+	        <para>
+	        If you use an abstract entity bean as a parent to all your entity beans you could use this declaration, but note that <literal>type</literal> in the example above 
+	        is replaced by <literal>instance-of</literal>:
+	        </para>
+	        
+	        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.1.0/granite-config.dtd">
+
+<granite-config>
+    <class-getter type="org.granite.hibernate.HibernateClassGetter"/>
+
+    <externalizers>
+        <externalizer type="org.granite.hibernate.HibernateExternalizer">
+            <include instance-of="com.myapp.entity.AbstractEntity"/>
+        </externalizer>
+    </externalizers>
+</granite-config>]]>
+	        </programlisting>
+	        
+	        <para>
+	        This will avoid the need of writing externalization instructions for all your beans, and all instances of <literal>AbstractEntity</literal> 
+	        will be automatically externalized.
+	        </para>
+	        <para>
+	        You may also use an <literal>annotated-with</literal> attribute as follows:
+	        </para>
+	        
+	        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.1.0/granite-config.dtd">
+
+<granite-config>
+    <class-getter type="org.granite.hibernate.HibernateClassGetter"/>
+
+    <externalizers>
+        <externalizer type="org.granite.hibernate.HibernateExternalizer">
+            <include annotated-with="javax.persistence.Entity"/>
+            <include annotated-with="javax.persistence.MappedSuperclass"/>
+            <include annotated-with="javax.persistence.Embeddable"/>
+        </externalizer>
+    </externalizers>
+</granite-config>]]>
+	        </programlisting>
+	        
+	        <para>
+	        Of course, you may mix these different attributes as you want.
+	        Note, however, that there are precedence rules for these three configuration options: <literal>type</literal> has precedence over <literal>annotated-with</literal> 
+	        and <literal>annotated-with</literal> has precedence over <literal>instance-of</literal>. 
+	        Playing with rule precedence provides a way to override general rules with more specific rules for particular classes.
+	        </para>
+        </section>
+                
+        <section id="remoting.extscan">
+            <title>Autoscan Configuration</title>
+            <para>
+            Instead of configuring externalizers with the above method, you may use the autoscan feature:
+            </para>
+	       
+	        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.1.0/granite-config.dtd">
+
+<granite-config scan="true"/>]]>
+	        </programlisting>
+	        
+	        <para>
+	        With this very short configuration, GraniteDS will scan at startup all classes available in the classpath, 
+	        actually all classes found in the classloader of the <literal>GraniteConfig</literal> class, and discover all externalizers 
+	        (classes that implements the GDS <literal>Externalizer</literal> interface). The matching rule are defined implicitly by each externalizer,
+	        for example the Hibernate externalizer is defined to match all classes annotated with <literal>@Entity</literal>.
+	        </para>
+        </section>
+        
+        <section id="remoting.extbuiltin">
+            <title>Built-in Externalizers</title>
+			<para>
+            GraniteDS comes with a set of built-in externalizers for the most usual kinds of Java classes:
+            
+            <itemizedlist>
+                <listitem>
+                <literal>org.granite.messaging.amf.io.util.externalizer.DefaultExternalizer</literal>: this externalizer may be used with any POJO bean.
+                </listitem>
+                <listitem>
+                <literal>org.granite.messaging.amf.io.util.externalizer.EnumExternalizer</literal>: this externalizer may be used with Java <literal>enum</literal> types. When autoscan is enabled, it will be automatically used for all <literal>enum</literal> types.
+                </listitem>
+                <listitem>
+                <literal>org.granite.hibernate.HibernateExternalizer</literal>: This externalizer may be used with all JPA/Hibernate entities (i.e., all classes annotated with <literal>@Entity</literal>, <literal>@MappedSuperclass</literal> or <literal>@Embeddable</literal> annotations). Include <literal>granite-hibernate.jar</literal> in your classpath in order to use this feature.
+                </listitem>
+                <listitem>
+                <literal>org.granite.toplink.TopLinkExternalizer</literal>: this externalizer may be used with all JPA/TopLink entities (i.e., all classes annotated with <literal>@Entity</literal>, <literal>@MappedSuperclass</literal> or <literal>@Embeddable</literal> annotations). Include <literal>granite-toplink.jar</literal> in your classpath in order to use this feature.
+                </listitem>
+                <listitem>
+                <literal>org.granite.eclipselink.EclipseLinkExternalizer</literal>: this externalizer will be used with the new version of TopLink (renamed EclipseLink). Include <literal>granite-eclipselink.jar</literal> in your classpath in order to use this feature.
+                </listitem>
+                <listitem>
+                <literal>org.granite.openjpa.OpenJpaExternalizer</literal>: this externalizer may be used with all JPA/OpenJPA (formerly WebLogic Kodo) entities (mainly in WebLogic environments). Include <literal>granite-openjpa.jar</literal> in your classpath in order to use this feature.
+                </listitem>
+                <listitem>
+                <literal>org.granite.datanucleus.DataNucleusExternalizer</literal>: this externalizer may be used with all JPA/DataNucleus entities. Include <literal>granite-datanucleus.jar</literal> in your classpath in order to use this feature.
+                </listitem>
+                <listitem>
+                <literal>org.granite.tide.cdi.TideEventExternalizer</literal>: this externalizer externalizes classes annotated with the <literal>TideEvent</literal> annotation.
+                </listitem>
+                <listitem>
+                <literal>org.granite.messaging.amf.io.util.externalizer.LongExternalizer</literal>: externalizes Java <literal>long</literal> or <literal>Long</literal> values.
+                </listitem>
+                <listitem>
+                <literal>org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer</literal>: externalizes Java <literal>BigInteger</literal> values.
+                </listitem>
+                <listitem>
+                <literal>org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer</literal>: externalizes Java <literal>BigDecimal</literal> values.
+                </listitem>
+            </itemizedlist>
+            </para>
+        </section>
+        
+        <section id="remoting.extcustom">
+            <title>Custom Externalizers</title>
+            <para>            
+            It is easy to write your own externalizer, you have to implement the <literal>org.granite.messaging.amf.io.util.externalizer.Externalizer</literal> interface, 
+            or extend the <literal>DefaultExternalizer</literal> class. There is no particular use case for this extension; it mostly depends on your specific needs 
+            and you should look at the standard externalizer implementations to figure out how to write your custom code.
+            </para>
+	        
+	        <para>
+	        If you use autoscan configuration, make sure your class is packaged in a jar accessible via the <literal>GraniteConfig</literal> class loader 
+	        (<literal>granite.jar</literal> classpath), put a <literal>META-INF/granite-config.properties</literal> in your jar, even empty, 
+	        and put relevant code in the accept method to define which classes your externalizer should process:
+	        </para>
+	        
+	        <programlisting role="JAVA">
+<![CDATA[public int accept(Class<?> clazz) {
+    return clazz.isAnnotationPresent(MySpecialAnnotation.class) ? 1 : -1;
+}]]>
+	        </programlisting>
+	
+	        <para>
+	        You may, of course, use any kind of conditional expression, based on annotations, inheritance, etc. 
+	        The returned value is a numeric weight used when GDS tries to figure out what externalizer it should use when it encounters a 
+	        Java bean at serialization time: -1 means "do not use this externalizer", 0 or more means "use this externalizer if there is no
+	        other externalizer that returns a superior weight for this bean". <literal>DefaultExternalizer</literal> has a weight of 0, 
+	        <literal>EnumExternalizer</literal> and the built-in JPA externalizers a weight of 1. 
+	        If your class would normally be externalized by the <literal>HibernateExternalizer</literal>, you may, for example, 
+	        use a weight of 2 when you want to replace the default serialization for some particular entities.
+	        </para>
+	        
+	        <note><para>
+	        Creating your own externalizer generally means that you also need to write a corresponding template for the Gas3 generator with matching 
+	        implementations of <literal>readExternal</literal> and <literal>writeExternal</literal>.
+	        </para></note>
+        </section>
+        
+        <section id="remoting.extmisc">
+            <title>@ExternalizedBean and @ExternalizedProperty</title>
+            <para>
+            Two standard annotations are available that give you more control over the externalization process:
+            
+            <itemizedlist>
+                <listitem>
+                <literal>@ExternalizedBean</literal>: This class annotation may be used to instruct GDS to externalize the annotated bean 
+                with the <literal>DefaultExternalizer</literal> or any other externalizer specified in the type attribute. 
+                For example, you could annotate a Java class with:                
+                </listitem>
+            </itemizedlist>
+            </para>
+	            
+	        <programlisting role="JAVA">
+@ExternalizedBean(type=path.to.MyExternalizer.class)
+public class MyExternalizedBean {
+    ...
+}
+	        </programlisting>
+	            
+	        <para>
+	        <itemizedlist>
+	            <listitem>
+	            <literal>@ExternalizedProperty</literal>: This method annotation may be used on a public getter when you want to externalize a property 
+	            with no corresponding field (i.e., a computed property). For example:                
+	            </listitem>
+	        </itemizedlist>
+	        </para>
+	        
+	        <programlisting role="JAVA">
+public class MyBean {
+
+    private int value;
+
+    ...
+
+    @ExternalizedProperty
+    public int getSquare() {
+        return value * value;
+    }
+}
+	        </programlisting>
+	        
+	        <para>
+	        Of course, this annotation will only be used if the <literal>MyBean</literal> class is configured for externalization. 
+	        Note that externalized properties are always read only: a <literal>setSquare(...)</literal> will never be used in the Flex to Java serialization. 
+	        Note also that Gas3 uses this annotation when it generates ActionScript3 bean so you'll find an extra <literal>square</literal> member field 
+	        in your generated <literal>MyBean.as</literal>.
+	        </para> 
+        </section>
+	</section>
+	
+	<section id="remoting.jpa">
+	   <title>JPA and Lazy Initialization</title>
+	   <para>
+	   In many Java EE applications, persistence is done by using a JPA provider (such as Hibernate). The application directly persists and fetch Java
+	   entities, so this could seem natural to transfer these same objects to the Flex layer instead of adding a extra conversion layer with data transfer objects.
+	   However this is not as simple as it seems, in particular when using the lazy loading feature of JPA (and most applications using JPA should use lazy loading).
+	   </para>
+	   <para>
+	   Classic AMF providers will either throw exceptions during serialization (because the lazy loaded associations are not available at this time), or
+	   load the complete object graph and thus limit the applicability of lazy loading (when using patterns such as <emphasis>Open Session in View</emphasis>).
+	   </para>
+	   
+	   <para>
+	   GraniteDS on the other hand is able to reliably serialize JPA entities with its externalizer mechanism (even detached objects outside of a JPA session) 
+	   and supports both kinds of associations: <emphasis>proxy</emphasis> (single-valued associations) and <emphasis>collections</emphasis> 
+	   (such as <literal>List</literal>, <literal>Set</literal>, <literal>Bag</literal> and <literal>Map</literal>).
+	   As described in the previous section, it provides built-in support for Hibernate, TopLink/EclipseLink, OpenJPA and DataNucleus.
+	   </para>
+	   
+	   <note>
+	   <para>
+	   It is important to note that as a JPA detached entity can be reliably serialized between Flex and Java, it's perfectly possible (and even 
+	   recommended) to directly persist or merge entities sent from the Flex application without any intermediate layer.
+	   </para>
+	   </note>
+	   
+	   <section id="remoting.jpasingle">
+	       <title>Single-Valued Associations (proxied or weaved associations)</title>
+	       <para>
+           In your JPA entity bean, you may have a single-valued association like this:
+           </para>
+	       
+	       <programlisting role="JAVA">
+@Entity
+public class MyEntity {
+
+    @Id @GeneratedValue
+    private Integer id;
+
+    @OneToOne(fetch=FetchType.LAZY)
+    private MyOtherEntity other;
+
+    // Skipped code...
+}
+
+@Entity
+public class MyOtherEntity {
+
+    @Id @GeneratedValue
+    private Integer id;
+
+    // Skipped code...
+}
+	        </programlisting>
+	        
+	        <para>
+	        If you load a large collection of <literal>MyEntity</literal> and do not need other references, this kind of declaration prevents 
+	        unnecessary performance and memory overload (please refer to Hibernate documention in order to actually fetch these references when you need them). 
+	        With GDS, you can keep those uninitialized references as is. For example:
+	        </para>
+	        
+	        <programlisting role="AS3">
+<![CDATA[[Bindable]
+[RemoteClass(alias="path.to.MyEntity"]
+public class MyEntity {
+
+    private var __initialized:Boolean = true;
+    private var __detachedState:String = null;
+
+    private var _id:Number;
+    private var _other:MyOtherEntity;
+
+    meta function isInitialized(name:String = null):Boolean {
+        if (!name)
+            return __initialized;
+
+        var property:* = this[name];
+        return (
+            (!(property is Welcome) || (property as Welcome).meta::isInitialized()) &&
+            (!(property is IPersistentCollection) ||
+              (property as IPersistentCollection).isInitialized())
+        );
+    }
+
+    // Skipped code...
+
+    public override function readExternal(input:IDataInput):void {
+        __initialized = input.readObject() as Boolean;
+        __detachedState = input.readObject() as String;
+        if (meta::isInitialized()) {
+            _id = function(o:*):Number {
+                return (o is Number ? o as Number : Number.NaN) } (input.readObject());
+            _other = input.readObject() as MyOtherEntity;
+            // read remaining MyEntity fields...
+        }
+        else
+            _id = function(o:*):Number {
+                return (o is Number ? o as Number : Number.NaN) } (input.readObject());
+    }
+}
+
+[Bindable]
+[RemoteClass(alias="path.to.MyOtherEntity"]
+public class MyOtherEntity {
+
+    private var __initialized:Boolean = true;
+    private var __detachedState:String = null;
+
+    private var _id:Number;
+
+    // Skipped code...
+
+    public override function readExternal(input:IDataInput):void {
+        __initialized = input.readObject() as Boolean;
+        __detachedState = input.readObject() as String;
+        if (meta::isInitialized()) {
+            _id = input.readObject() as int;
+            // read remaining MyOtherEntity fields...
+        }
+        else
+            _id = input.readObject() as int;
+    }
+}]]>
+	        </programlisting>
+	        
+	        <para>
+	        When Flex deserializes your collection of <literal>MyEntity</literal>'s with lazy loaded <literal>MyOtherEntity</literal> references, 
+	        it reads a <literal>initialized</literal> flag set to <literal>true</literal> when it encounters a <literal>MyEntity</literal> instance 
+	        since <literal>MyEntity</literal>'s are all initialized; so it reads all <literal>MyEntity</literal> fields including the <literal>_other</literal> one. 
+	        When it deserializes a <literal>MyOtherEntity</literal> instance referenced by a <literal>MyEntity</literal>, 
+	        it reads a <literal>initialized</literal> flag set to <literal>false</literal> since <literal>MyOtherEntity</literal> is lazy loaded, 
+	        so it only reads the <literal>MyOtherEntity</literal> <literal>id</literal>. 
+	        Informations put in <literal>__initialized</literal>, <literal>__detachedState</literal> and <literal>_id</literal> are sufficient 
+	        to restore a correct <literal>HibernateProxy</literal> instances when you give back <literal>MyEntity</literal> objects to the server for update.
+	        </para>
+	   </section>
+
+        <section id="remoting.jpacoll">
+            <title>Collections (List, Set, Bag, Map)</title>
+            <para>
+            GDS also provides a way to keep uninitialized collections as is. When the externalizer encounters an uninitialized collection, 
+            it does not try to serialize its content and marks it as uninitialized. This information is kept in ActionScript 3 beans and 
+            when this bean is sent back to the server (e.g., for an update), the externalizer restores a lazy initialized collection in Java. 
+            This gives you a good control over serialization depth, as you do not face the risk of serializing the entire graph of your data, 
+            and prevents faulty updates (i.e., an empty collection is saved and deletes database data while it was only uninitialized).
+            </para>
+	        
+	        <para>
+	        For example, in this persistent set:
+	        </para>
+	        
+	        <programlisting role="JAVA">
+<![CDATA[package com.myapp.entity;
+
+import java.util.HashSet;
+import java.util.Set;
+
+...
+import javax.persistence.CascadeType;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+
+@Entity
+public class Person extends AbstractEntity {
+    ...
+    @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="person")
+    private Set<Contact> contacts = new HashSet<Contact>();
+    ...
+    public Set<Contact> getContacts() {
+        return contacts;
+    }
+    public void setContacts(Set<Contact> contacts) {
+        this.contacts = contacts;
+    }
+}
+
+        // code for Contact skipped...]]>
+	        </programlisting>
+	        
+	        <programlisting role="JAVA">
+<![CDATA[package com.myapp.entity {
+
+    ...
+    import mx.collections.ListCollectionView;
+
+    [Bindable]
+    [RemoteClass(alias="test.granite.ejb3.entity.Person")]
+    public class Person implements IExternalizable {
+
+        ...
+        private var _contacts:ListCollectionView;
+        ...
+        public function set contacts(value:ListCollectionView):void {
+            _contacts = value;
+        }
+        public function get contacts():ListCollectionView{
+            return _contacts;
+        }
+        ...
+        public override function readExternal(input:IDataInput):void {
+            ...
+            _contacts = input.readObject() as ListCollectionView;
+            ...
+        }
+        public override function writeExternal(output:IDataOutput):void {
+            ...
+            output.writeObject(_contacts);
+            ...
+        }
+
+        // code for Contact skipped...]]>
+	        </programlisting>
+	
+	        <para>
+	        The actual, persistence aware, <literal>mx.collections.ListCollectionView</literal> implementation is part of a GDS Flex library 
+	        (<literal>granite-essentials.swc</literal>) that contains all AS3 classes you need in order to use the lazy loaded collections feature.
+	        </para>
+	        
+	        <para>
+	        If GDS encounters an uninitialized <literal>Set</literal>, it is serialized as a <literal>org.granite.persistence.PersistentSet</literal> 
+	        that contains some extra data indicating its intitialization state.
+	        </para>
+	
+	        <para>
+	        Other persistent collections, such as <literal>List</literal>, <literal>Bag</literal>, and <literal>Map</literal>, are handled in a similar manner. 
+	        Please download <literal>graniteds-***.zip</literal> and look at the <literal>examples/granite_ejb3</literal> sample project for a more advanced data model.
+	        </para>
+	
+	        <para>
+	        GDS/JPA uses <literal>mx.core.IUID</literal> for all entity beans. See a long Hibernate discussion here about equals/hashCode/collection problems 
+	        and the use of UUIDs. This is only an implementation choice and you are free to code whatever you want.
+	        </para>
+		   
+	       <note>
+	       <para>
+	       <orderedlist>
+	           <listitem>
+	           With standard configuration (<literal>scan</literal> set to <literal>false</literal>), you must use the appropriate class getter together with the persistence externalizer 
+	           (eg. <literal>org.granite.openjpa.OpenJpaClassGetter</literal> with <literal>org.granite.openjpa.OpenJpaExternalizer</literal>).
+	           </listitem>
+	           <listitem>
+	           With all persistence externalizers, provided that you have added the relevant jar to your application classpath, 
+	           you may use the auto scan feature: &lt;granite-config scan="true"&gt; without anything else (no class getter or externalizer configuration): 
+	           your entities will be automatically externalized according to the underlying JPA engine.
+	           </listitem>
+	           <listitem>
+	           If you put many persistence externalizers libraries in the same application, only the one corresponding to your JPA provider will be active.
+	           This can be useful to build portable application between Java EE servers. If you bundle both <literal>granite-hibernate.jar</literal> and <literal>granite-eclipselink.jar</literal>,
+	           the application should work under both JBoss (which bundles Hibernate) and GlassFish 3 (which bundles EclipseLink).       
+	           </listitem>
+	       </orderedlist>
+	       </para>
+           </note>
+        </section>
+	</section>
+	
+	<section id="remoting.security">
+		<title>Securing Remote Destinations</title>
+		<para>
+		Security in Flex applications cannot rely on standard <literal>web-app</literal> <literal>security-constraints</literal> configured in <literal>web.xml</literal>. 
+		Generally, you have only one <literal>channel-definition</literal>, equivalent to a <literal>url-pattern</literal> in <literal>web.xml</literal>, 
+		and multiple destinations. So, the security must be destination-based rather than URL-pattern based, and Java EE standard configuration in <literal>web.xml</literal> 
+		does not provide anything like that.
+        </para>
+        
+        <para>
+        With a configured <literal>SecurityService</literal>, you will be able to use <literal>RemoteObject</literal>'s <literal>setCredentials</literal>, 
+        <literal>setRemoteCredentials</literal> and <literal>logout</literal> methods.
+        </para>
+        
+        <para>
+        Another important feature in security is to be able to create and expose a <literal>java.security.Principal</literal> to, for example, 
+        an EJB3 session bean backend so role-based security can be used.
+        </para>
+        
+        <para>
+        At this time, GraniteDS provides security service implementations for Tomcat5+, Jetty6+, GlassFish V2+ and V3 and WebLogic 10+ servers. 
+        Because JBoss comes with Tomcat by default but may be configured to use Jetty instead, Tomcat or Jetty security services may work as well with JBoss.
+        For a complete example of a JBoss/Tomcat security service, please download and install <literal>graniteds-***.zip</literal>, 
+        read the <literal>examples/README.txt</literal> file and test the <literal>examples/granite_ejb3</literal> sample.
+        </para>
+        
+        <para>
+        When you are using Java Enterprise frameworks such as Seam or Spring together with GraniteDS, you may use specific Seam Security or 
+        Spring Security implementations instead of the previous container-based services: please refer to <link linkend="graniteds.seam2">Seam Services</link> 
+        or <link linkend="graniteds.spring">Spring Services</link> for more information.
+        </para>
+        
+        <section id="remoting.secconfig">
+            <title>Configuration</title>
+            <para>
+            To enable security, you simply put this kind of declaration in your <literal>granite-config.xml</literal> file:            
+            </para>
+	        
+	        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.1.0/granite-config.dtd">
+<granite-config>
+    ...
+    <security type="org.granite.messaging.service.security.TomcatSecurityService"/>
+    <!--
+    Alternatively:
+    <security type="org.granite.messaging.service.security.Jetty6SecurityService"/>
+    Or
+    <security type="org.granite.messaging.service.security.GlassFishSecurityService"/>
+    Or
+    <security type="org.granite.messaging.service.security.GlassFishV3SecurityService"/>
+    Or
+    <security type="org.granite.messaging.service.security.WebLogicSecurityService"/>
+    -->
+</granite-config>]]>
+	        </programlisting>
+	
+	        <para>
+	        Generally there is no need to pass additional parameters, but <literal>TomcatSecurityService</literal> accepts one optional parameter 
+	        for its internal <literal>server.findService()</literal> advanced utility, otherwise, the first available service is used by default:
+	        </para>
+	
+	        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.1.0/granite-config.dtd">
+<granite-config>
+    ...
+    <security type="org.granite.messaging.service.security.TomcatSecurityService">
+        <param name="service" value="your-tomcat-service-name-here"/>
+    </security>
+</granite-config>]]>        
+	        </programlisting>
+	        
+	        <para>
+	        You may now use role-based security on destination in your <literal>services-config.xml</literal> file:
+	        </para>
+	
+	        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<services-config>
+    <services>
+        <service id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <destination id="person">
+                <channels>
+                    <channel ref="my-graniteamf"/>
+                </channels>
+                <properties>
+                    <scope>session</scope>
+                    <source>com.myapp.PersonService</source>
+                </properties>
+                <security>
+                    <security-constraint>
+                        <auth-method>Custom</auth-method>
+                        <roles>
+                            <role>user</role>
+                            <role>admin</role>
+                        </roles>
+                    </security-constraint>
+                </security>
+            </destination>
+
+            <destination id="restrictedPerson">
+                <channels>
+                    <channel ref="my-graniteamf"/>
+                </channels>
+                <properties>
+                    <scope>session</scope>
+                    <source>com.myapp.RestrictedPersonService</source>
+                </properties>
+                <security>
+                    <security-constraint>
+                        <auth-method>Custom</auth-method>
+                        <roles>
+                            <role>admin</role>
+                        </roles>
+                    </security-constraint>
+                </security>
+            </destination>
+        </service>
+    </services>
+    ...
+</services-config>]]>
+	        </programlisting>
+	        
+	        <para>
+	        Here, the <literal>person</literal> destination can be used by authenticated users with <literal>user</literal> or <literal>admin</literal> roles, 
+	        while the <literal>restrictedPerson</literal> destination can only be used by authenticated users with the <literal>admin</literal> role.
+	        </para>
+	        
+	        <para>
+	        Please refer to Tomcat and JBoss documentation for setting up your users/roles configuration.
+	        </para>
+	    </section>
+
+        <section id="remoting.secro">
+            <title>SecureRemoteObject</title>
+            <para>
+            When using the <literal>RemoteObject</literal> API, the simplest way to use security in your Flex application is to use the 
+            <literal>org.granite.rpc.remoting.mxml.SecureRemoteObject</literal> class. 
+            This class brings advanced event-based security support as shown here:            
+            </para>
+	
+	        <programlisting role="AS3">
+...
+import org.granite.rpc.remoting.mxml.SecureRemoteObject;
+import org.granite.events.SecurityEvent;
+...
+private var srv:SecureRemoteObject = null;
+...
+public function init():void {
+    srv = new SecureRemoteObject("mydestination");
+    srv.addEventListener(SecurityEvent.ALL, onSecurityEvent);
+    ...
+}
+
+public function onSecurityEvent(event:SecurityEvent):void {
+    switch (event.type) {
+    case SecurityEvent.INVALID_CREDENTIALS:
+        // show message "wrong username or pasword"
+        break;
+    case SecurityEvent.NOT_LOGGED_IN:
+        srv.logout(); // reset remote object
+        // show login panel...
+        break;
+    case SecurityEvent.SESSION_EXPIRED:
+        srv.logout(); // reset remote object
+        // show login panel...
+        break;
+    case SecurityEvent.ACCESS_DENIED:
+        // show message "you don't have rights..."
+        break;
+    }
+}
+
+public function onCredentialsSet(username:String, password:String):void {
+    srv.setCredentials(username, password);
+    ...
+}
+
+public function doLogout():void {
+    srv.logout();
+    ...
+}
+...
+	        </programlisting>
+	        
+	        <para>
+	        Note that you must compile your MXML/AS3 classes with the <literal>granite.swc</literal> library in order to use <literal>SecureRemoteObject</literal>.        
+	        </para>
+        </section>
+        
+        <section id="remoting.secdestination">
+            <title>Fine-grained Per-destination Security</title>
+            <para>
+            You may write and configure a specific <literal>RemoteDestinationSecurizer</literal> in order to add fine grained security checks for specific actions. 
+            </para>
+	        
+	        <programlisting role="JAVA">
+public interface RemotingDestinationSecurizer extends DestinationSecurizer {
+
+    public void canExecute(ServiceInvocationContext context)
+        throws SecurityServiceException;
+}
+	        </programlisting>
+	
+	        <para>
+	        You then have to tell GraniteDS where to use your securizer:
+	        </para>
+	
+	        <programlisting role="XML">
+<![CDATA[<services-config>
+    <services>
+        <service ...>
+            <destination id="restrictedDestination">
+                ...
+                <properties>
+                    <securizer>path.to.MyDestinationSecurizer</securizer>
+                </properties>
+            </destination>
+        </service>
+    </services>
+    ...
+</services-config>]]>
+	        </programlisting>
+	           
+	        <para>
+	        Note that securizers, if any, are always called before the standard <literal>SecurityService.authorize()</literal> method.        
+	        </para>
+	   </section>
+	</section>
+</chapter>
