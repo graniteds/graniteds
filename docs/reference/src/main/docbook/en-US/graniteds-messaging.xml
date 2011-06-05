@@ -1,0 +1,833 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<chapter id="graniteds.messaging">
+	<title>Messaging (Gravity)</title>
+	<para>
+	Granite Data Services provides a messaging feature, code name <emphasis>Gravity</emphasis>, implemented as a 
+	<ulink url="http://en.wikipedia.org/wiki/Comet_(programming)">Comet</ulink>-like service with AMF3 data polling over HTTP 
+	(producer/consumer based architecture). This implementation is freely based on the <ulink url="http://cometd.com/bayeux/Bayeux">Bayeux</ulink> 
+	protocol specification (1.0draft1 at this time) and adapted from the Jetty 6.1.x implementation of a comet server.
+	</para>
+
+    <para>
+    For a basic sample of GDS/Gravity, download <literal>graniteds-***.zip</literal> and import the <literal>examples/graniteds_chat</literal> as a new project in Eclipse.
+	</para>
+	
+	<section id="messaging.example">
+	   <title>Example Usage with Consumer/Producer</title>
+	   <para>
+	   GraniteDS messaging relies on two main AS3 components on the Flex side: <literal>org.granite.gravity.Consumer</literal> 
+	   and <literal>org.granite.gravity.Producer</literal>. These classes reproduce almost exactly the original Adobe Flex 
+	   <ulink url="http://livedocs.adobe.com/flex/201/langref/mx/messaging/Consumer.html"><literal>Consumer</literal></ulink> 
+	   and <ulink url="http://livedocs.adobe.com/flex/201/langref/mx/messaging/Producer.html"><literal>Producer</literal></ulink> with the specific
+	   internal implementation of GraniteDS. 
+	   The only differences are that you must use <literal>topic</literal> instead of <literal>subtopic</literal> due to a change introduced in Flex 3.
+	   </para>
+	   
+	   <para>
+       Here is a quick example of GDS <literal>Consumer</literal>/<literal>Producer</literal> usage:
+	   </para>
+	   
+	   <programlisting role="AS3">
+<![CDATA[...
+import org.granite.gravity.Consumer;
+import org.granite.gravity.Producer;
+...
+private var consumer:Consumer = null;
+private var producer:Producer = null;
+
+private function connect():void {
+    consumer = new Consumer();
+    consumer.destination = "gravity";
+    consumer.topic = "discussion";
+    consumer.subscribe();
+    consumer.addEventListener(MessageEvent.MESSAGE, messageHandler);
+
+    producer = new Producer();
+    producer.destination = "gravity";
+    producer.topic = "discussion";
+}
+
+private function disconnect():void {
+    consumer.unsubscribe();
+    consumer.disconnect();
+    consumer = null;
+
+    producer.disconnect();
+    producer = null;
+}
+
+private function messageHandler(event:MessageEvent):void {
+    var msg:AsyncMessage = event.message as AsyncMessage;    
+    trace("Received message: " + (msg.body as String));
+}
+
+private function send(message:String):void {
+    var msg:AsyncMessage = new AsyncMessage();
+    msg.body = message;
+    producer.send(msg);
+}
+...]]>
+	   </programlisting>
+	   
+	   <para>
+	   In this code, the producer sends <literal>String</literal> messages, which could of course be of any type, and the producer receives 
+	   <literal>String</literal> messages as well. These <literal>Strings</literal> are sent in <literal>AsyncMessage</literal> envelopes, 
+	   which is the only envelope type allowed in GDS.
+	   </para>
+	</section>
+	
+    <section id="messaging.selectors">
+        <title>Topics and Selectors</title>
+        <para>
+        By default all messages sent by a producer are transmitted to all subscribed consumers. In most cases you will want to more finely control how the 
+        messages are routed. There are two main ways of doing this: the easiest is the topic and the most advanced is by using selectors.
+        </para>
+        <para>
+        Topics are a way to divide the destination in many parts. When a producer sends a message on a particular topic, only the consumers attached to this
+        topic will receive the message. For example, if you have a destination for quotes, you could have a topic for each country:
+        </para>
+        <programlisting role="AS3">
+var producer:Producer = new Producer();
+producer.destination = "quotes";
+producer.topic = "/germany";
+producer.send(message);
+
+var consumerGermany:Consumer = new Consumer();
+consumerGermany.destination = "quotes";
+consumerGermany.topic = "/germany";
+consumerGermany.subscribe();
+
+var consumerFrance:Consumer = new Consumer();
+consumerFrance.destination = "quotes";
+consumerFrance.topic = "/france";
+consumerFrance.subscribe();
+        </programlisting>
+        <para>
+        Here only <literal>consumerGermany</literal> will receive the messages published by the producer. Note the slash (/) to start the name of the topic.
+        You can define more sections for the topic name and use wildcards (*) and (**) to match a part of the topic. For example you could define a hierarchy
+        <literal>/europe/germany</literal>, <literal>/europe/france</literal>, <literal>/america/US</literal>, and define a consumer for the topic 
+        <literal>/europe/*</literal> that will receive only messages for Germany and France. Finally a consumer with <literal>/**</literal> will receive
+        everything, whatever topic is used by the producer.
+        </para>
+        <note><para>
+        The JMS adapter currently does not support this filtering by topic because many JMS providers do not have this concept. The ActiveMQ adapter however
+        does support it. 
+        </para></note>
+        <para>
+        Topics are a simple way of filtering the message, but in some cases you may want to use more sophisticated rules to route the messages from producers
+        to consumers. Gravity uses the concept of message selectors from JMS to do this. It works by defining a SQL-like select string that will define
+        the criteria that a consumer wants on the message headers.
+        </para> 
+        <para>
+        A consumer can specify its message selector before it subscribes to the destination:
+        </para>
+        <programlisting role="AS3">
+var consumerFrance:Consumer = new Consumer();
+consumerFrance.destination = "quotes";
+consumerFrance.selector = "COUNTRY = 'France'";
+consumerFrance.subscribe();
+        </programlisting>
+        <para>
+        This consumer will receive all messages that have a header named <literal>COUNTRY</literal> with the value <literal>France</literal>.
+        Many header values can be combined in the selector with AND and OR, and you can use operators. See 
+        <ulink url="http://download.oracle.com/javaee/1.4/api/javax/jms/Message.html">JMS documentation</ulink> for details.
+        </para>
+    </section>
+    
+	<section id="messaging.configuration">
+	   <title>Common Configuration</title>
+	   <para>
+	   There are three main steps to configure Gravity in an application:
+	   <itemizedlist>
+	       <listitem>
+	       Declare the Gravity servlet implementation for your target server in <literal>web.xml</literal>
+	       </listitem>
+	       <listitem>
+	       Declare a messaging service and destination in <literal>services-config.xml</literal>, mapped to a specific channel 
+	       definition of type  <literal>GravityChannel</literal>
+	       </listitem>
+	   </itemizedlist>
+	   </para>
+	   
+	   <programlisting role="XML">
+<![CDATA[<web-app version="2.4" ...>
+    ...
+    <listener>
+        <listener-class>org.granite.config.GraniteConfigListener</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>GravityServlet</servlet-name>
+        <servlet-class>org.granite.gravity.tomcat.GravityTomcatServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GravityServlet</servlet-name>
+        <url-pattern>/gravityamf/*</url-pattern>
+    </servlet-mapping>
+    ...
+</web-app>]]>
+	   </programlisting>
+	   
+	   <para>
+	   This declaration is the one specific to the Tomcat application server. See below for all available Gravity servlet implementations.
+	   </para>
+	   
+	   <note><para>
+	   The servlet listener definition is important to ensure proper startup and shutdown of the Gravity services, in particular cleanup of used resources.
+	   </para></note>
+	   
+	   <programlisting role="AS3">
+<![CDATA[<services-config>
+    <services>
+        <service id="messaging-service"
+            class="flex.messaging.services.MessagingService"
+            messageTypes="flex.messaging.messages.AsyncMessage">
+            <adapters>
+                <adapter-definition
+                    id="default"
+                    class="org.granite.gravity.adapters.SimpleServiceAdapter"
+                    default="true"/>
+            </adapters>
+
+            <destination id="topic">
+                <channels>
+                    <channel ref="my-gravityamf"/>
+                </channels>
+            </destination>
+        </service>
+    </services>
+
+    <channels>
+        <channel-definition
+            id="my-gravityamf"
+            class="org.granite.gravity.channels.GravityChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/gravityamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+</services-config>]]>
+	   </programlisting>
+	   
+	   <para>
+	   Here, we define a <literal>GravityChannel</literal> (<literal>my-gravityamf</literal>) and we use it in the destination named <literal>topic</literal>. 
+	   See above destination usage in <link linkend="messaging.example">Consumer/Producer usage</link>.
+	   </para>
+	   <para>
+	   The topic we have defined uses the default Gravity adapter <literal>SimpleServiceAdapter</literal> that is a simple fast in-memory message bus. If you need
+	   more advanced features such as persistent messages or clustering, you should consider using a dedicated messaging implementation such as 
+	   <ulink url="http://activemq.apache.org/">Apache ActiveMQ</ulink>.
+	   </para>
+	   <para>
+	   The simple adapter exposes two configuration properties:
+	   <itemizedlist>
+	       <listitem>
+	       <literal>no-local</literal>: default is <literal>true</literal>, if set to <literal>false</literal> the client producing messages will receive their
+	       own messages 
+	       </listitem>
+	       <listitem>
+	       <literal>session-selector</literal>: this is an advanced option and instructs Gravity to store the message selector string in the user session. This allows
+	       the server part of the application to override the selector string defined by the Flex <literal>Consumer</literal>.
+	       The selector is stored and read from the session attribute named <literal>org.granite.gravity.selector.{destinationId}</literal>.
+	       </listitem>
+	   </itemizedlist>
+	   </para>
+	   
+	   <section id="messaging.configappserver">
+	       <title>Supported Application Servers</title>
+	       <para>
+	       GraniteDS provides a generic servlet implementation that can work in any compliant servlet container. However it will use blocking IO and 
+	       thus will provide relatively limited scalability.
+	       </para>
+	       <para>
+	       Before the release of the Servlet 3.0 specification, there was no standard way of writing asynchronous non blocking servlets and each server provided
+	       its own specific API (for example Tomcat <literal>CometProcessor</literal> or Jetty continuations).
+	       GraniteDS thus provides implementations of non blocking messaging for the most popular application servers.
+	       </para>
+	       <para>
+	       Here is the table of the supported implementations:
+            <informaltable>
+                <tgroup cols="3">
+                    <colspec colnum="1" colwidth="1*" />
+                    <colspec colnum="2" colwidth="2*" />
+                    <colspec colnum="3" colwidth="2*" />
+                    <thead>
+                        <row>
+                            <entry>Application server</entry>
+                            <entry>Servlet class</entry>
+                            <entry>Specific notes</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Tomcat 6.0.18+</entry>
+                            <entry><literal>org.granite.gravity.tomcat.GravityTomcatServlet</literal></entry>
+                            <entry>Only with APR/NIO enabled (APR highly recommended)</entry>
+                        </row>
+                        <row>
+                            <entry>JBoss 4.2.x</entry>
+                            <entry><literal>org.granite.gravity.tomcat.GravityTomcatServlet</literal></entry>
+                            <entry>APR/NIO, disable <literal>CommonHeadersFilter</literal></entry>
+                        </row>
+                        <row>
+                            <entry>Jetty 6.1.x</entry>
+                            <entry><literal>org.granite.gravity.jetty.GravityJettyServlet</literal></entry>
+                            <entry>Jetty 7 not supported, Jetty 8 using Servlet 3 API</entry>
+                        </row>
+                        <row>
+                            <entry>JBoss 5+</entry>
+                            <entry><literal>org.granite.gravity.jbossweb.GravityJBossWebServlet</literal></entry>
+                            <entry>Only with APR/NIO enabled (APR highly recommended)</entry>
+                        </row>
+                        <row>
+                            <entry>GlassFish 3.x</entry>
+                            <entry><literal>org.granite.gravity.async.GravityAsyncServlet</literal></entry>
+                            <entry>Using Servlet 3.0</entry>
+                        </row>
+                        <row>
+                            <entry>Tomcat 7.x / Jetty 8.x</entry>
+                            <entry><literal>org.granite.gravity.async.GravityAsyncServlet</literal></entry>
+                            <entry>Using Servlet 3.0</entry>
+                        </row>
+                        <row>
+                            <entry>Any other</entry>
+                            <entry><literal>org.granite.gravity.generic.GravityGenericServlet</literal></entry>
+                            <entry>Using blocking I/O (no asynchronous support)</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </informaltable>
+            </para>
+	   </section>
+	   
+	   <section id="messaging.configadvanced">
+	       <title>Advanced Configuration</title>
+	       <para>
+	       Whichever Gravity servlet implementation is used in your application, the advanced configuration is done in <literal>granite-config.xml</literal>. 
+	       Here is a sample Gravity configuration with all default options:
+	       </para>
+		   
+		   <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.1.0/granite-config.dtd">
+
+<granite-config>
+
+    <gravity
+        factory="org.granite.gravity.DefaultGravityFactory"
+        channel-idle-timeout-millis="1800000"
+        long-polling-timeout-millis="20000"
+        reconnect-interval-millis="30000"
+        reconnect-max-attempts="60">
+        
+        <thread-pool
+            core-pool-size="5"
+            maximum-pool-size="20"
+            keep-alive-time-millis="10000"
+            queue-capacity="2147483647" />
+        
+    </gravity>
+
+</granite-config>]]>
+		   </programlisting>
+		   
+		   <para>
+	        This &lt;gravity&gt; section is purely optional and you may omit it if you accept default values.
+	        </para>
+	        <para>
+	        Some explanations about these options:
+	        <itemizedlist>
+	            <listitem>
+	            <literal>channel-idle-timeout-millis</literal>: the elapsed time after which an idle channel (pure producer or dead client) 
+	            may be silently unsubcribed and removed by Gravity. Default is 30 minutes.
+	            </listitem>
+	            <listitem>
+	            <literal>long-polling-timeout-millis</literal>: the elapsed time after which an idle connect request is closed, asking the client to reconnect. 
+	            Default is 20 seconds. Note that setting this value isn't supported in Tomcat/APR configurations.
+	            </listitem>
+	            <listitem>
+	            <literal>thread-pool</literal> attributes: all options are standard parameters for the Gravity <literal>ThreadPoolExecutor</literal> instance.
+	            </listitem>
+	        </itemizedlist>
+	
+	        All other configuration options are for advanced use only and you should keep default values.	   
+	        </para>
+       </section>
+        
+        <section id="messaging.configtomcat">
+            <title>Tomcat and JBoss/Tomcat Specific Configuration Tips</title>
+            <para>
+            GraniteDS messaging for Tomcat relies on the <literal>org.apache.catalina.CometProcessor</literal> interface. 
+            In order to enable Comet support in Tomcat, you must configure an <ulink url="http://tomcat.apache.org/tomcat-6.0-doc/aio.html">APR or NIO connector</ulink>.
+            </para>
+            <para>
+            At least for now, APR is the simplest to configure and the most reliable. 
+            To configure APR, see documentation <ulink url="http://tomcat.apache.org/tomcat-6.0-doc/apr.html">here</ulink>. 
+            In Windows®, it's simply a matter of downloading a native <ulink url="http://tomcat.heanet.ie/native/">dll</ulink> and putting it 
+            in your <literal>WINDOWS/system32</literal> directory – while other and better configurations are possible.
+            For more recent versions of Tomcat such as the one embedded in JBoss 5 or 6, you will need the latest APR library, 
+            see <ulink src="http://tomcat.apache.org/download-native.cgi">here</ulink>.
+            </para>
+            
+            <para>
+            For JBoss 4.2.*, you must comment out a specific filter in the default global <literal>web.xml</literal> 
+            (<literal>&lt;JBOSS_HOME&gt;/server/default/deploy/jboss-web.deployer/conf/web.xml</literal>):
+            </para>
+	            
+	        <programlisting role="XML">
+<![CDATA[...
+<!-- Comment this out!
+<filter>
+  <filter-name>CommonHeadersFilter</filter-name>
+  <filter-class>org.jboss.web.tomcat.filters.ReplyHeaderFilter</filter-class>
+  <init-param>
+    <param-name>X-Powered-By</param-name>
+    <param-value>...</param-value>
+  </init-param>
+</filter>
+
+<filter-mapping>
+  <filter-name>CommonHeadersFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+-->
+...]]>
+	        </programlisting>
+	        
+	        <para>
+	        See above for Tomcat configuration.
+	        </para>
+	        <para>
+	        For JBoss 5+ servers, you must use a specific servlet. JBoss 5 implements its own version of Tomcat, named JBossWeb:
+	        </para>
+	
+	        <programlisting role="XML">
+<![CDATA[<web-app version="2.4" ...>
+    ...
+    <servlet>
+        <servlet-name>GravityServlet</servlet-name>
+        <servlet-class>org.granite.gravity.jbossweb.GravityJBossWebServlet</servlet-class>
+        ... (see Tomcat configuration above for options)
+    </servlet>
+    ...
+</web-app>]]>
+	        </programlisting>
+	        
+	        <para>
+	        Note that you do not need to comment out the <literal>CommonHeadersFilter</literal> with JBoss 5, but you still need to enable APR.
+	        </para>
+	    </section>
+	</section>
+	
+	<section id="messaging.jms">
+		<title>Integration with JMS</title>
+		<para>
+		The GraniteDS JMS adapter configuration follows as closely as possible the standard Adobe Flex configuration for the JMS adapter. 
+		See <ulink url="http://livedocs.adobe.com/blazeds/1/blazeds_devguide/jms_messaging_1.html">here</ulink>.
+		</para>
+		<para>
+		Here is a sample configuration for a default JBoss installation with a brief description of the different options:
+		</para>
+		
+		<programlisting role="XML">
+<![CDATA[<adapters>
+  <adapter-definition id="jms" class="org.granite.gravity.adapters.JMSServiceAdapter"/>
+</adapters>
+
+<destination id="chat-jms">
+  <properties>
+    <jms>
+      <destination-type>Topic</destination-type>
+      <!-- Optional: forces usage of simple text messages
+      <message-type>javax.jms.TextMessage</message-type>
+      -->
+      <connection-factory>ConnectionFactory</connection-factory>
+      <destination-jndi-name>topic/testTopic</destination-jndi-name>
+      <destination-name>TestTopic</destination-name>
+      <acknowledge-mode>AUTO_ACKNOWLEDGE</acknowledge-mode>
+      <transacted-sessions>false</transacted-sessions>
+      <!-- Optional JNDI environment. Specify the external JNDI configuration to access 
+        a remote JMS provider. Sample for a remote JBoss server.
+      -->
+      <initial-context-environment>
+        <property>
+          <name>Context.SECURITY_PRINCIPAL</name>
+          <value>guest</value>
+        </property>
+        <property>
+          <name>Context.SECURITY_CREDENTIALS</name>
+          <value>guest</value>
+        </property>
+        <property>
+          <name>Context.PROVIDER_URL</name>
+          <value>http://my.host.com:1099</value>
+        </property>
+        <property>
+          <name>Context.INITIAL_CONTEXT_FACTORY</name>
+          <value>org.jnp.interfaces.NamingContextFactory</value>
+        </property>
+        <property>
+          <name>Context.URL_PKG_PREFIXES</name>
+          <value>org.jboss.naming:org.jnp.interfaces</value>
+        </property>
+      </initial-context-environment>
+    </jms>
+    ...
+  </properties>
+  ...
+  <adapter ref="jms"/>
+</destination>]]>
+		</programlisting>
+		
+		<para>
+        Comments on configuration options:
+        
+        <itemizedlist>
+            <listitem>
+            <literal>destination-type</literal> must be <literal>Topic</literal> for the moment. Queues may be supported later.
+            </listitem>
+            <listitem>
+            <literal>message-type</literal> may be forced to simple text messages by specifying <literal>javax.jms.TextMessage</literal>.            
+            </listitem>
+            <listitem>
+            <literal>connection-factory</literal> and <literal>destination-jndi-name</literal> are the JNDI names respectively of the JMS <literal>ConnectionFactory</literal> and of the JMS topic.
+            </listitem>
+            <listitem>
+            <literal>destination-name</literal> is just a label but still required.
+            </listitem>
+            <listitem>
+            <literal>acknowledge-mode</literal> can have the standard values accepted by any JMS provider: <literal>AUTO_ACKNOWLEDGE</literal>, 
+            <literal>CLIENT_ACKNOWLEDGE</literal>, and <literal>DUPS_OK_ACKNOWLEDGE</literal>.
+            </listitem>
+            <listitem>
+            <literal>transacted-sessions</literal> allows the use of transactions in sessions when set to <literal>true</literal>.
+            </listitem>
+            <listitem>
+            <literal>initial-context-environment</literal>: The <literal>initial-context</literal> parameters allow to access a remote JMS server 
+            by setting the JNDI context options.
+            </listitem>
+        </itemizedlist>
+		</para>
+		
+		<note><para>
+		The JMS headers are always copied between Flex and JMS messages
+		</para></note>
+		
+		<note><para>
+		Durable subscriptions are not yet supported
+		</para></note>
+	</section>
+	
+	<section id="messaging.activemq">
+		<title>Using an Embedded ActiveMQ</title>
+		<para>
+        In the case of a simple Tomcat/Jetty installation without JMS provider, or to allow Flex-to-Flex interactions with advanced capabilities 
+        such as durable messages, Gravity can be integrated with an embedded <literal>Apache ActiveMQ</literal> instance.
+        </para>
+        
+        <para>
+        To enable ActiveMQ, just put the <literal>activemq-xx.jar</literal> in your <literal>WEB-INF/lib</literal> directory. 
+        The necessary topic will be lazily created on first use, except if the property <literal>create-broker</literal> is set to <literal>false</literal>. 
+        The uri of the created ActiveMQ broker will be <literal>vm://adapterId</literal>.
+        </para>
+        
+        <para>
+        Here is a sample configuration:
+        </para>
+        
+        <programlisting role="XML">
+<![CDATA[<adapters>
+  <adapter-definition
+    id="activemq"
+    class="org.granite.gravity.adapters.ActiveMQServiceAdapter"/>
+</adapters>
+
+<destination id="chat-activemq">
+  <properties>
+    <jms>
+      <destination-type>Topic</destination-type>
+      <!-- Optional: forces usage of simple text messages
+      <message-type>javax.jms.TextMessage</message-type>
+      -->
+      <connection-factory>ConnectionFactory</connection-factory>
+      <destination-jndi-name>topic/testTopic</destination-jndi-name>
+      <destination-name>TestTopic</destination-name>
+      <acknowledge-mode>AUTO_ACKNOWLEDGE</acknowledge-mode>
+      <transacted-sessions>false</transacted-sessions>
+    </jms>
+    
+    <server>
+      <durable>true</durable>
+      <file-store-root>/var/activemq/data</file-store-root>
+      <create-broker>true</create-broker>
+      <wait-for-start>false</wait-for-start>
+    </server>
+  </properties>
+  ...
+  <adapter ref="activemq"/>
+</destination>]]>
+        </programlisting>
+        
+        <para>
+        Comments on configuration options:
+        <itemizedlist>
+            <listitem>
+            The main parameters (<literal>&lt;jms&gt;...&lt;/jms&gt;</literal>) are identical to those used in the default JMS configuration. 
+            See <link linkend="messaging.jms">above</link>.
+            </listitem>
+            <listitem>
+            <literal>durable</literal>, if set to <literal>true</literal>, allows for durable messages, stored in the filesystem. 
+            The data store directory of ActiveMQ can be specified by the <literal>file-store-root</literal> parameter.
+            </listitem>
+            <listitem>
+            <literal>create-broker</literal> is optional, as well as the dependant <literal>wait-for-start</literal> attribute. 
+            When <literal>create-broker</literal> is <literal>false</literal>, creation of the broker is not automatic and has to be done by the application itself. 
+            In this case, <literal>wait-for-start</literal> set to <literal>true</literal> tells the <literal>ActiveMQConnectionFactory</literal> 
+            to wait for the effective creation of the broker. Please refer to the ActiveMQ documentation for more details on these options.
+            </listitem>
+        </itemizedlist>
+        </para>
+	</section>
+    
+    <section id="messaging.servertoclient">
+       <title>Server to Client Publishing</title>
+       <para>
+       There are mostly two kinds of requirements for messaging: client-to-client interactions, that can be easily handled by 
+       the <literal>Consumer</literal>/<literal>Producer</literal> pattern, and server-to-client push that can be done with either the low-level 
+       <literal>Gravity</literal> API or directly using the JMS API when the JMS adapter is used. 
+       </para>
+       
+       <formalpara>
+            <title>Server to Client Messaging with the Low-level Gravity API</title>
+            <para>
+            If you use the <literal>SimpleAdapter</literal>, the message sending will have to be done at a lower level and you will need 
+            a compilation dependency on the <literal>Gravity</literal> API. 
+            It's also possible but not recommended to use this low-level API with the JMS and ActiveMQ adapters.
+            </para>
+            <para>
+            It first requires to get the <literal>Gravity</literal> object from the <literal>ServletContext</literal>. 
+            It is set as an attribute named <literal>org.granite.gravity.Gravity</literal>.
+            </para>
+            <para>
+            Then you can send messages of type <literal>flex.messaging.messages.Message</literal> by calling the method <literal>gravity.publish(message);</literal>.
+            </para>
+        </formalpara>
+        
+        <programlisting role="JAVA">
+Gravity gravity = GravityManager.getGravity(servletContext);
+AsyncMessage message = new AsyncMessage();
+message.setDestination("my-gravity-destination");
+message.setHeader(AsyncMessage.SUBTOPIC_HEADER, "my-topic");
+message.setBody("Message content");
+gravity.publishMessage(message);
+        </programlisting>
+        
+        <para>
+        It you need to simulate a publish from the client subscribed in the current session, you can get the <literal>clientId</literal> 
+        in the session attribute named <literal>org.granite.gravity.channel.clientId.{destination}</literal> and set it in the message.
+        </para>
+        
+        <formalpara>
+            <title>Server to Client Messaging with JMS</title>
+            <para>
+            Sending messages from the server to Flex clients simply consists of sending JMS messages to the corresponding JMS topic. 
+            Text messages are received as simple text on the Flex side, object messages are serialized in AMF3 and deserialized and received as ActionScript 3 objects. 
+            The <literal>Gravity</literal> messaging channel supports lazily loaded collections and objects, exactly as the Granite remoting channel.
+            </para>
+        </formalpara>
+        
+        <para>
+        Here is an example on an EJB3 sending a message:
+        </para>
+        
+        <programlisting role="JAVA">
+@Stateless
+@Local(Test.class)
+public class TestBean implements Test {
+
+    @Resource
+    SessionContext ctx;
+
+    @Resource(mappedName="java:/ConnectionFactory")
+    ConnectionFactory jmsConnectionFactory;
+
+    @Resource(mappedName="topic/testTopic")
+    Topic jmsTopic;
+
+
+    public TestBean() {
+       super();
+    }
+
+    public void notifyClient(Object object) {
+        try {
+            Connection connection = jmsConnectionFactory.createConnection();
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            javax.jms.Message jmsMessage = session.createObjectMessage(person);
+            MessageProducer producer = session.createProducer(jmsTopic);
+            producer.send(jmsMessage);
+            session.close();
+            connection.close();
+        }
+        catch (Exception e) {
+            log.error("Could not publish notification", e);
+        }
+    }
+}
+        </programlisting>
+        
+        <para>
+        Here is an example on a Seam 2 component sending a message:
+        </para>
+        
+        <programlisting role="JAVA">
+@Stateless
+@Local(Test.class)
+@Name("test")
+public class TestBean implements Test {
+
+    private static Logger log = Logger.getLogger(TestBean.class.getName());
+
+    @In
+    private TopicPublisher testTopicPublisher;   
+    @In 
+    private TopicSession topicSession;
+  
+    public void notifyClient(Serializable object) {
+        try {
+            testTopicPublisher.publish(topicSession.createObjectMessage(object));
+        } 
+        catch (Exception e) {
+            log.error("Could not publish notification", e);
+        }
+    }
+}
+        </programlisting>
+        
+        <formalpara>
+            <title>Server to Client Messaging with Embedded ActiveMQ</title>
+            <para>
+            The only difference with standard JMS is that you can get a <literal>ConnectionFactory</literal> more easily. 
+            Also ActiveMQ supports subtopics. The name of the topic is built with the following rule:
+            <itemizedlist>
+                <listitem>
+                Without subtopic, the name of the ActiveMQ destination should be the same as defined in the <literal>jms/destination-name</literal> configuration parameter.
+                </listitem>
+                <listitem>
+                With subtopic, the name is the concatenation of the <literal>destination-name</literal> parameter with the <literal>subtopic</literal>. 
+                Wildcards are supported in the <literal>subtopic</literal> following Flex convention and are converted to the ActiveMQ format 
+                (see <ulink url="http://activemq.apache.org/wildcards.html">here</ulink>), meaning that <literal>toto.**</literal> is converted to 
+                <literal>toto.&gt;</literal>.
+                </listitem>
+            </itemizedlist>
+            </para>
+        </formalpara>
+
+        <programlisting role="JAVA">
+public class Test throws JMSException {
+    // adapterId should be the id of the JMS adapter as defined in services-config.xml
+    ConnectionFactory f = new ActiveMQConnectionFactory("vm://adapterId");
+    Connection connection = jmsConnectionFactory.createConnection();
+    Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+    ActiveMQTopic activeMQTopic= new ActiveMQTopic("destination");
+    javax.jms.Message jmsMessage = session.createObjectMessage(person);
+    MessageProducer producer = session.createProducer(activeMQTopic);
+    producer.send(jmsMessage);
+
+    session.close();
+    connection.close();
+}
+        </programlisting>
+    </section>
+	
+	<section id="messaging.security">
+		<title>Securing Messaging Destinations</title>
+		<para>
+		Securing messaging destination is very similar to security remoting destinations (see <link linkend="remoting.security">here</link>) and most concepts
+		apply to messaging services as well as remoting services.
+		</para>
+		<para>
+		You can for example setup role-based security on a Gravity destination with the following definition in <literal>services-config.xml</literal>:
+		</para>
+		
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<services-config>
+    <services>
+        <service id="messaging-service"
+            class="flex.messaging.services.MessagingService"
+            messageTypes="flex.messaging.messages.AsyncMessage">
+            <adapters>
+                <adapter-definition
+                    id="default"
+                    class="org.granite.gravity.adapters.SimpleServiceAdapter"
+                    default="true"/>
+            </adapters>
+            
+            <destination id="restrictedTopic">
+                <channels>
+                    <channel ref="my-gravityamf"/>
+                </channels>
+                <security>
+                    <security-constraint>
+                        <auth-method>Custom</auth-method>
+                        <roles>
+                            <role>admin</role>
+                        </roles>
+                    </security-constraint>
+                </security>
+            </destination>
+        </service>
+    </services>
+    ...
+</services-config>]]>
+        </programlisting>
+        
+        <para>
+        In this case, only users with the role <literal>admin</literal> will be able to subscribe to the topic <literal>restrictedTopic</literal>.
+        </para>
+        
+        <formalpara>
+            <title>Fine-grained Per-destination Security</title>
+            <para>
+            You may write and configure a specific <literal>GravityDestinationSecurizer</literal> in order to add fine grained security checks for specific actions.
+            In particular you can control who can subscribe or publish messages to a particular topic.  
+            </para>
+        </formalpara>
+        
+        <programlisting role="JAVA">
+public interface GravityDestinationSecurizer extends DestinationSecurizer {
+
+    public void canSubscribe(GravityInvocationContext context)
+        throws SecurityServiceException;
+    public void canPublish(GravityInvocationContext context)
+        throws SecurityServiceException;
+}
+        </programlisting>
+
+        <para>
+        You then have to tell GraniteDS where to use your securizer:
+        </para>
+
+        <programlisting role="XML">
+<![CDATA[<services-config>
+    <services>
+        <service ...>
+            <destination id="restrictedDestination">
+                ...
+                <properties>
+                    <securizer>path.to.MyDestinationSecurizer</securizer>
+                </properties>
+            </destination>
+        </service>
+    </services>
+    ...
+</services-config>]]>
+        </programlisting>
+	</section>
+</chapter>

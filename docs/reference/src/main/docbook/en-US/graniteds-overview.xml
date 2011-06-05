@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE preface PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<preface>
+	<title>Project Overview</title>
+	<para>
+	<emphasis>Granite Data Services</emphasis> (GraniteDS) is a comprehensive development and integration platform for building Flex / Java EE RIA 
+	applications. The framework is completely open source and released under the LGPL v2 license.
+	</para>
+
+	<para>
+	Integration and features stack :
+	
+	<imagedata align="center" fileref="images/stack.jpg"/>
+	</para>
+	
+	<para>
+	GDS has been designed to be lightweight, robust, fast, and highly extensible.
+	</para>
+	
+	<para>
+	The main features of GraniteDS are :
+	<itemizedlist>
+	   <listitem>
+	   An implementation of the <link linkend="graniteds.remoting">Flex remoting</link> protocol and of the AMF3 data format, with out-of-the-box adapters for all usual Java frameworks.
+	   
+	   </listitem>
+	</itemizedlist>
+	</para>
+	
+	<formalpara>
+		<title>Who We Are</title>
+		<para>
+		The core development team is Franck Wolff and William Draï, two engineers from Granite Data Services.
+		</para>
+		
+		<para>
+		Many people have contributed to GraniteDS by giving ideas, patches or new features. If you feel you should be listed below, please email <ulink url="http://www.graniteds.org/confluence/display/~fwolff">me</ulink>.
+		</para>
+		
+		<formalpara id="overview.spring">
+			<title>Spring Integration</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Igor SAZHNEV: Initial Spring service factory implementation and Java Enum externalizer.
+					</listitem>
+					<listitem>
+					Francisco PEREDO: Acegi security support and Spring/Acegi/EJB 3 sample application.
+					</listitem>
+					<listitem>
+					Sébastien DELEUZE (aka Bouiaw): Spring 2 security service.
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+		<formalpara id="overview.seam">
+			<title>Seam 2 Integration</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Cameron INGRAM, Venkat DANDA and Stuart ROBERTSON: Seam integration implementation and Tide framework.
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+		<formalpara id="overview.guice">
+			<title>Guice/Warp Integration</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Matt GIACOMI: Initial Guice/Warp integration implementation and sample application.
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+		<formalpara id="overview.grails">
+			<title>Grails Plugin</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Ford GUO: major improvements of the GDS/Grails plugin.
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+		<formalpara id="overview.osgi">
+			<title>OSGi Integration</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Zhang BIN: GDS/OSGi integration.
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+		<formalpara id="overview.datanucleus">
+			<title>DataNucleus Integration</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Stephen MORE: initial DataNucleus engine support.
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+		<formalpara id="overview.webcompiler">
+			<title>Web MXML/ActionScript3 Compiler</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Sébastien DELEUZE (aka Bouiaw) and Marvin FROEDER (aka VELO): A servlet-based compiler that compiles your MXML and ActionScript3 sources on the fly.
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+		<formalpara id="overview.maven">
+			<title>Maven Integration</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Rafique ANWAR: Initial Maven POM files and deploy script (java.net).
+					</listitem>
+					<listitem>
+					Edward YAKOP: Improved Maven POM files and deploy script (Sonatype).
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+		<formalpara id="overview.gas3">
+			<title>ActionScript3 Code Generation</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Francesco FARAONE and Saverio TRIONE: Gas3 extension with typed as3 client proxies generation.
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+		<formalpara id="overview.doc">
+			<title>Documentation</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Michael SLINN: Oversight.
+					</listitem>
+					<listitem>
+					Elizabeth Claire MYERS: Proofreading/editing.
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+		<formalpara id="overview.other">
+			<title>Other Contributions</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+					Francesco FARAONE: HibernateExternalizer Map support.
+					</listitem>
+					<listitem>
+					Marcelo SCHROEDER: Service exception handler.
+					</listitem>
+					<listitem>
+					Sébastien GUIMONT: Initial Java Enum support in Gas3.
+					</listitem>
+					<listitem>
+					Pedro GONCALVES: Improved service method finder for generics.
+					</listitem>
+				</itemizedlist>
+			</para>
+		</formalpara>
+	</formalpara>
+</preface>

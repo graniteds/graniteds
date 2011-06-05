@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<chapter id="graniteds.bignumbers">
+	<title>Big Numbers Implementations</title>
+    <para>
+    Number serialization with the standard AMF3 protocol suffers from a lack of precision and support: Java <literal>long</literal> (64 bits integers), 
+    <ulink url="http://download.oracle.com/javase/1.5.0/docs/api/java/math/BigInteger.html"><literal>BigInteger</literal></ulink> and 
+    <ulink url="http://download.oracle.com/javase/1.5.0/docs/api/java/math/BigDecimal.html"><literal>BigDecimal</literal></ulink> types are converted to 
+    ActionScript 3 <ulink url="http://livedocs.adobe.com/flex/3/langref/Number.html"><literal>Number</literal></ulink> or <literal>String</literal>
+    (see <ulink url="http://livedocs.adobe.com/flex/3/html/help.html?content=data_access_4.html">"Converting data from Java to ActionScript"</ulink>). 
+    These conversions lead to either approximation (significant bits may be lost) or uselessness (you can't do any arithmetic operation with strings and you 
+    can't control the way their string representations are produced).
+    </para>
+    <para>
+    Because GraniteDS doesn't allow string to number or number to string conversions (see <link linkend="remoting.mapping">Mapping Java and AS3 Objects</link>), 
+    <literal>BigInteger</literal> and <literal>BigDecimal</literal>, like <literal>long</literal> types, are both converted to <literal>Number</literal> 
+    by default, with even more potential approximations.
+    </para>
+    <para>
+    Starting with the release 2.2, GraniteDS offers ActionScript 3 implementations for <literal>Long</literal>, <literal>BigInteger</literal> and 
+    <literal>BigDecimal</literal>, and features a serialization mechanism that preserves the exact value of each type (see API documentation 
+    <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/math/package-detail.html">here</ulink>).
+    </para>
+    
+    <section id="bignumber.usage">
+        <title>Working with Long, BigInteger or BigDecimal AS3 Types</title>
+        <para>
+        The GraniteDS <literal>Long</literal> class let you do calculation with 64 bits signed integers. All arithmetic operations are provided, as well as 
+        bitwise, bit shift and comparison operator equivalents:
+        </para>
+        <para>
+        The Long Type:
+        </para>
+        <programlisting role="AS3">
+import org.granite.math.Long;
+
+var a:Long = new Long("9223372036854775807"); // or 0x7fffffffffffffff (max long value)
+trace(a); // "9223372036854775807"
+trace(a.toHexString()); // "7fffffffffffffff"
+
+a = a.subtract(7);
+trace(a); // "9223372036854775800"
+trace(a.toHexString()); // "7ffffffffffffff8"
+
+a = a.rightShift(4); // or a.divide(16)
+trace(a); // "576460752303423487"
+trace(a.toHexString()); // "7ffffffffffffff"
+
+// etc.
+
+// Wrong values with Numbers:
+var b:Number = new Number("9223372036854775807"); // max long value
+trace(b); // "9223372036854776000" (truncated value)...
+        </programlisting>
+        <para>
+        As you already have noticed from the above code, <literal>Long</literal> instances (as well as <literal>BigInteger</literal> and 
+        <literal>BigDecimal</literal> instances) are immutable: <literal>a.multiply(2)</literal> won't change the value of a, unless if you save the returned 
+        value of the method into the variable <literal>a</literal> (ie: <literal>a = a.multiply(2)</literal>).
+        </para>
+
+        <para>
+        The <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/math/BigInteger.html"><literal>BigInteger</literal></ulink> class, 
+        as its Java equivalent, represent an immutable arbitrary-precision integer. It provides analogues to all of ActionScript 3's primitive integer 
+        operators (+, -, *, /), as well as comparison operators.
+        </para>
+        <para>
+        The BigInteger Type:
+        </para>
+        <programlisting role="AS3">
+import org.granite.math.BigInteger;
+
+var a:BigInteger = new BigInteger("9223372036854775807"); // max long value
+
+a = a.add(1);
+trace(a); // "9223372036854775808"
+
+a = a.multiply(1000000);
+trace(a); // "9223372036854775808000000"
+
+// etc.
+        </programlisting>
+        <para>
+        With the <literal>BigInteger</literal> class, you cannot face the risk of an overflow due to the limited storage of a standard numeric type: 
+        a <literal>BigInteger</literal> value can be arbitrary big and its value is only limited by the Flash VM memory.
+        </para>
+        
+        <para>
+        The <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/math/BigDecimal.html"><literal>BigDecimal</literal></ulink> class, 
+        as its Java equivalent, represent an immutable, arbitrary-precision signed decimal number. It provides operations for arithmetic, scale manipulation, 
+        rounding, comparison and format conversion.
+        </para>
+        <para>
+        The BigDecimal Type:
+        </para>
+        <programlisting role="AS3">
+import org.granite.math.BigDecimal;
+import org.granite.math.RoundingMode;
+
+var a:BigDecimal = new BigDecimal("1"); // or BigDecimal.ONE
+
+a = a.divide(3, 2, RoundingMode.DOWN);
+trace(a); // "0.33"
+
+// etc.
+        </programlisting>
+        <para>
+        With the <literal>BigDecimal</literal> class, you can control precisely the scale and the rounding behavior of a division. The above code means: 
+        divide 1 by 3, with 2 digits to the right of the decimal point left in the result and apply a down rounding mode (truncate all extra digits). 
+        Like <literal>BigInteger</literal> instances, <literal>BigDecimal</literal> instances have no precision limitation other than the Flash VM memory.
+        </para>
+        <note><para>
+        Arithmetic binary methods are more versatile than their Java equivalents. You may pass not only <literal>BigDecimal</literal> instances as parameters to 
+        add, subtract, multiply and divide, but also <literal>int</literal>, <literal>Number</literal> or <literal>String</literal> literals. They will be 
+        automatically converted to <literal>BigDecimal</literal> instances and that's why <literal>a.add(3)</literal> is legal, as well as 
+        <literal>a.add("3")</literal> and <literal>a.add(new BigDecimal("3")</literal>. This is also true for the <literal>Long</literal> and 
+        <literal>BigInteger</literal> types.
+        </para></note>
+        <para>
+        See the API documentation for more informations.
+        </para>
+    </section>
+    
+    <section id="bignumber.serialization">
+        <title>Serializing Long, BigInteger or BigDecimal</title>
+        <para>        
+        As said above, without any specific configuration, <literal>long</literal>, <literal>Long</literal>, <literal>BigInteger</literal> or 
+        <literal>BigDecimal</literal> Java types are converted to AS3 <literal>Number</literal> (and vice-versa). To enable serialization into their 
+        ActionScript 3 equivalents, you must enable specific externalizers in your <literal>granite-config.xml</literal> file:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.2.0/granite-config.dtd">
+
+<granite-config>
+    <externalizers>
+        <externalizer
+            type="org.granite.messaging.amf.io.util.externalizer.LongExternalizer">
+            <include instance-of="java.lang.Long"/>
+        </externalizer>
+        <externalizer
+            type="org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer">
+            <include instance-of="java.math.BigInteger"/>
+        </externalizer>
+        <externalizer
+            type="org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer">
+            <include instance-of="java.math.BigDecimal"/>
+        </externalizer>
+    </externalizers>
+<granite-config>]]>
+        </programlisting>
+        <para>
+        You may of course enable only the externalizers you need, instead of configuring all of them.
+        </para>
+        <para>
+        With this configuration, you will be able to receive and send big numbers without potential lose of precision. Suppose you have a Java service 
+        that returns and receives <literal>BigDecimal</literal> values:
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[import java.math.BigDecimal;
+
+public class TestBigDecimal {
+
+    public BigDecimal returnBigValue() {
+        return new BigDecimal("10000000000000000000000000000.001");
+    }
+
+    public void receiveBigValue(BigDecimal value) {
+        // do something with the value.
+    }
+}]]>
+        </programlisting>
+        <para>
+        Within your Flex code, provided that the <literal>BigDecimalExternalizer</literal> is configured, you could use this kind of code:
+        </para>
+        <programlisting role="AS3">
+import org.granite.math.BigDecimal;
+
+private var testBigDecimalService:RemoteObject = null;
+private var value:BigDecimal = null;
+
+...
+
+protected function onReturnBigValueResult(event:ResultEvent):void {
+    value = event.result as BigDecimal;
+}
+
+...
+
+protected function sendBigValue():void {
+    testBigDecimalService.receiveBigValue(new BigDecimal("0.3333"));
+}
+        </programlisting>
+        <para>
+        The same kind of code will work with <literal>long</literal>, <literal>Long</literal> and <literal>BigInteger</literal> types as well.
+        </para>
+    </section>
+    
+    <section id="bignumber.gas3">
+        <title>Integration with Code Generation Tools</title>
+        <para>
+        Beside calling methods that return or receive big numbers, you may have Java bean or entity properties that use <literal>long</literal>, 
+        <literal>Long</literal>, <literal>BigInteger</literal> or <literal>BigDecimal</literal> types. The standard GraniteDS code generation tools 
+        (see <link linkend="graniteds.gas3">Gas3 Code Generator</link>) follow the standard serialization mechanism (ie: converting <literal>long</literal> 
+        and big number types to AS3 numbers) and generates <literal>Number</literal> typed variables for Java long and big number types.
+        </para>
+        <para>
+        In order to tell the code generation tools to generate AS3 <literal>Long</literal>, <literal>BigInteger</literal> and <literal>BigDecimal</literal> 
+        typed variables, you must enable three related options.
+        </para>
+        <para>
+        With the GraniteDS Eclipse builder, you will have to go to the <emphasis>"Options"</emphasis> panel and enable these three options:
+        <imagedata align="center" fileref="images/bignumbers.jpg"/>
+        </para>
+        <para>
+        With the Gas3 Ant task, you will use the following configuration in <literal>build.xml</literal>:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<gas3
+    externalizelong="true"
+    externalizebiginteger="true"
+    externalizebigdecimal="true"
+    ...>
+   ...
+</gas3>]]>
+        </programlisting>
+        <para>
+        Again, you may enable only one or more of these options, but you must follow the corresponding <literal>granite-config.xml</literal> configuration.
+        </para>
+        <para>
+        Suppose you have this kind of Java bean:
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[import java.math.BigDecimal;
+import java.math.BigInteger;
+
+public class MyBean {
+
+    private BigDecimal bd;
+    private BigInteger bi;
+    private Long l1;
+    private long l2;
+
+    public BigDecimal getBd() {
+        return bd;
+    }
+    public void setBd(BigDecimal bd) {
+        this.bd = bd;
+    }
+
+    // other get/set...
+}]]>
+        </programlisting>
+        <para>
+        With all options enabled, the result of generation will be has follow:
+        </para>
+        <programlisting role="AS3">
+<![CDATA[import org.granite.math.BigDecimal;
+import org.granite.math.BigInteger;
+import org.granite.math.Long;
+
+[RemoteClass(alias="path.to.MyBean")]
+public class MyBean {
+
+    private var _bd:BigDecimal;
+    private var _bi:BigInteger;
+    private var _l1:Long;
+    private var _l2:Long;
+
+    public function get bd():BigDecimal {
+        return _bd;
+    }
+    public function set bd(value:BigDecimal):void {
+        _bd = value;
+    }
+
+    // other get/set...
+}]]>
+        </programlisting>
+        <para>
+        With standard Gas3 configuration, the ActionScript 3 type generated for each property would have been <literal>Number</literal>.
+        </para>
+    </section>
+    
+    <section id="bignumber.perf">
+        <title>Note on Performance</title>
+        <para>
+        The ActionScript3 implementation of big numbers give reasonable operation performance, but not as good as their Java equivalents. At this time, 
+        due to the lack of a native 64 bits type in the Flash VM, arithmetic operations of the <literal>Long</literal>, <literal>BigInteger</literal> and 
+        <literal>BigDecimal</literal> AS3 implementations rely partly on short (16 bits) native operations rather than integer 32 bits operations, in order 
+        to control overflows. This leads to overall good performance, but not suitable for massive and complex computations.
+        </para>
+    </section>
+</chapter>
