@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.granite.config.api.Configuration;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.AMF3Deserializer;
+import org.granite.messaging.amf.io.AMF3DeserializerSecurizer;
 import org.granite.messaging.amf.io.AMF3Serializer;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
@@ -95,6 +96,8 @@ public class GraniteConfig implements ScannedItemHandler {
     // Custom AMF3 (De)Serializer configuration.
     private Constructor<AMF3Serializer> amf3SerializerConstructor = null;
     private Constructor<AMF3Deserializer> amf3DeserializerConstructor = null;
+    
+    private AMF3DeserializerSecurizer amf3DeserializerSecurizer = null;
 
     // Custom AMF3 message interceptor configuration.
     private AMF3MessageInterceptor amf3MessageInterceptor = null;
@@ -206,6 +209,9 @@ public class GraniteConfig implements ScannedItemHandler {
         	XMap doc = new XMap(customConfigIs, resolver);
             forElement(doc, true, configuration != null ? configuration.getGraniteConfigProperties() : null);
         }
+        
+        if (amf3DeserializerSecurizer == null)
+        	log.warn("You should configure a deserializer securizer in your granite-config.xml file in order to prevent potential security exploits!");
     }
 
     
@@ -348,8 +354,15 @@ public class GraniteConfig implements ScannedItemHandler {
 		return amf3DeserializerConstructor;
 	}
 
-	
-    public AMF3MessageInterceptor getAmf3MessageInterceptor() {
+    public AMF3DeserializerSecurizer getAmf3DeserializerSecurizer() {
+		return amf3DeserializerSecurizer;
+	}
+	public void setAmf3DeserializerSecurizer(
+			AMF3DeserializerSecurizer amf3DeserializerSecurizer) {
+		this.amf3DeserializerSecurizer = amf3DeserializerSecurizer;
+	}
+
+	public AMF3MessageInterceptor getAmf3MessageInterceptor() {
         return amf3MessageInterceptor;
     }
     public void setAmf3MessageInterceptor(AMF3MessageInterceptor amf3MessageInterceptor) {
@@ -518,6 +531,7 @@ public class GraniteConfig implements ScannedItemHandler {
         this.scan = Boolean.TRUE.toString().equals(scan);
 
         loadCustomAMF3Serializer(element, custom);
+        loadCustomAMF3DeserializerSecurizer(element, custom);
         loadCustomAMF3MessageInterceptor(element, custom);
         loadCustomConverters(element, custom);
         loadCustomMethodMatcher(element, custom);
@@ -562,10 +576,28 @@ public class GraniteConfig implements ScannedItemHandler {
         }
     }
 
+    private void loadCustomAMF3DeserializerSecurizer(XMap element, boolean custom) {
+        XMap securizer = element.getOne("amf3-deserializer-securizer");
+        if (securizer != null) {
+            String type = securizer.get("@type");
+            try {
+                amf3DeserializerSecurizer = (AMF3DeserializerSecurizer)ClassUtil.newInstance(type);
+            } catch (Exception e) {
+                throw new GraniteConfigException("Could not construct amf3 deserializer securizer: " + type, e);
+            }
+            String param = securizer.get("@param");
+            try {
+                amf3DeserializerSecurizer.setParam(param);
+            } catch (Exception e) {
+                throw new GraniteConfigException("Could not set param of amf3 deserializer securizer: " + type + ", param: " + param, e);
+            }
+        }
+    }
+
     private void loadCustomAMF3MessageInterceptor(XMap element, boolean custom) {
-        XMap methodMatcher = element.getOne("amf3-message-interceptor");
-        if (methodMatcher != null) {
-            String type = methodMatcher.get("@type");
+        XMap interceptor = element.getOne("amf3-message-interceptor");
+        if (interceptor != null) {
+            String type = interceptor.get("@type");
             try {
                 amf3MessageInterceptor = (AMF3MessageInterceptor)ClassUtil.newInstance(type);
             } catch (Exception e) {

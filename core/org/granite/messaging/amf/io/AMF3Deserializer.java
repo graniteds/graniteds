@@ -21,6 +21,7 @@
 package org.granite.messaging.amf.io;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,6 +60,8 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
     protected final List<ActionScriptClassDescriptor> storedClassDescriptors = new ArrayList<ActionScriptClassDescriptor>();
 
     protected final GraniteContext context = GraniteContext.getCurrentInstance();
+
+    protected final AMF3DeserializerSecurizer securizer = context.getGraniteConfig().getAmf3DeserializerSecurizer();
 
     protected final XMLUtil xmlUtil = new XMLUtil();
 
@@ -418,6 +421,10 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
 
                 String className = readAMF3String();
                 if (debug) log.debug("readAMF3Object() - className=%s", className);
+                
+                // Check if the class is allowed to be instantiated.
+                if (securizer != null && !securizer.allowInstantiation(className))
+                	throw new SecurityException("Illegal attempt to instantiate class: " + className + ", securizer: " + securizer.getClass());
 
                 // try to find out custom AS3 class descriptor
                 Class<? extends ActionScriptClassDescriptor> descriptorType = null;
@@ -641,7 +648,15 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
 
     protected byte[] readBytes(int count) throws IOException {
         byte[] bytes = new byte[count];
-        readFully(bytes);
+        //readFully(bytes);
+        
+        int b = -1;
+        for (int i = 0; i < count; i++) {
+        	b = in.read();
+        	if (b == -1)
+        		throw new EOFException();
+        	bytes[i] = (byte)b;
+        }
         return bytes;
     }
 }

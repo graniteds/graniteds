@@ -90,7 +90,7 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     // Constructor.
 
     public AMF3Serializer(OutputStream out) {
-    	this (out, true);
+    	this(out, true);
     }
 
     public AMF3Serializer(OutputStream out, boolean warnOnChannelMissing) {
@@ -321,7 +321,10 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
             addToStoredObjects(bytes);
 
             writeAMF3IntegerData(bytes.length << 1 | 0x01);
-            write(bytes);
+            //write(bytes);
+
+            for (int i = 0; i < bytes.length; i++)
+            	out.write(bytes[i]);
         }
     }
 
