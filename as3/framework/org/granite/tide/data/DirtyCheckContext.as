@@ -41,9 +41,9 @@ package org.granite.tide.data {
     import mx.logging.Log;
     import mx.utils.ObjectUtil;
     
+    import org.granite.IValue;
     import org.granite.collections.IMap;
     import org.granite.collections.IPersistentCollection;
-    import org.granite.math.BigNumber;
     import org.granite.meta;
     import org.granite.tide.BaseContext;
     import org.granite.tide.EntityDescriptor;
@@ -149,7 +149,7 @@ package org.granite.tide.data {
             var p:String;
             var val:Object, saveval:*;
             
-            var entityDesc:EntityDescriptor = entity is IEntity ? _context.meta_tide.getEntityDescriptor(entity) : null;
+            var entityDesc:EntityDescriptor = entity is IEntity ? _context.meta_tide.getEntityDescriptor(IEntity(entity)) : null;
             if (entityDesc != null && (!entityDesc.versionPropertyName || isNaN(Object(entity)[entityDesc.versionPropertyName]))) {
                 for each (p in cinfo.properties) {
                     if (p == entityDesc.versionPropertyName || p == "meta_dirty" || p == "uid")
@@ -186,7 +186,7 @@ package org.granite.tide.data {
 							break;
 						}
 					}
-                    else if (save && (val is BigNumber || saveval is BigNumber || val is Enum || saveval is Enum)) {
+                    else if (save && (val is IValue || saveval is IValue || val is Enum || saveval is Enum)) {
                     	if (saveval !== undefined && ((!val && saveval) || !val.equals(saveval))) {
                     		dirty = true;
                     		break;
@@ -199,7 +199,7 @@ package org.granite.tide.data {
                             break;
                         }
                     }
-					else if (val != null && val is IEventDispatcher && !(val is IUID || val is Enum || val is BigNumber || val is ByteArray || val is XML) && isEntityChanged(val)) {
+					else if (val != null && val is IEventDispatcher && !(val is IUID || val is Enum || val is IValue || val is ByteArray || val is XML) && isEntityChanged(val)) {
 						dirty = true;
 						break;
 					}
@@ -216,7 +216,7 @@ package org.granite.tide.data {
 				return ObjectUtil.compare(val1, val2, 0) == 0;
 			else if (val1 is ByteArray && val2 is ByteArray)
 				return ObjectUtil.compare(val1, val2, 0) == 0;
-			else if ((val1 is BigNumber && val2 is BigNumber) || (val1 is Enum && val2 is Enum))
+			else if ((val1 is IValue && val2 is IValue) || (val1 is Enum && val2 is Enum))
 				return val1.equals(val2);
 			else {
 				var n:* = val1 is IWrapper ? val1.object : val1;
@@ -530,7 +530,7 @@ package org.granite.tide.data {
                     if (save[p] !== undefined)
                         entity[p] = save[p];
                 }
-				else if (save && (val is Enum || save[p] is Enum || val is BigNumber || save[p] is BigNumber)) {
+				else if (save && (val is Enum || save[p] is Enum || val is IValue || save[p] is IValue)) {
 					if (save[p] !== undefined)
 						entity[p] = save[p];
 				} 

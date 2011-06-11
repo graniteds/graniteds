@@ -64,12 +64,12 @@ package org.granite.tide.data {
     import mx.utils.object_proxy;
     import mx.validators.ValidationResult;
     
+    import org.granite.IValue;
     import org.granite.collections.BasicMap;
     import org.granite.collections.IMap;
     import org.granite.collections.IPersistentCollection;
     import org.granite.collections.UIDWeakSet;
     import org.granite.events.SecurityEvent;
-    import org.granite.math.BigNumber;
     import org.granite.meta;
     import org.granite.reflect.Type;
     import org.granite.tide.BaseContext;
@@ -556,7 +556,7 @@ package org.granite.tide.data {
                 else if (obj is Enum) {
                 	next = Enum.normalize(obj as Enum);
                 }
-                else if (!ObjectUtil.isSimple(obj) && !(obj is BigNumber || obj is XML || obj is ByteArray)) {
+                else if (!ObjectUtil.isSimple(obj) && !(obj is IValue || obj is XML || obj is ByteArray)) {
                     next = mergeEntity(obj, previous, expr, parent);
                 	addRef = true;
                 }
@@ -1225,7 +1225,7 @@ package org.granite.tide.data {
             if (obj1 is Enum && obj2 is Enum && obj1.equals(obj2))
             	return true; 
             
-            if (obj1 is BigNumber && obj2 is BigNumber && obj1.equals(obj2))
+            if (obj1 is IValue && obj2 is IValue && obj1.equals(obj2))
             	return true; 
 
             return obj1 === obj2;

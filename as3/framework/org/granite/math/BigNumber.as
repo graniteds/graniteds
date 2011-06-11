@@ -21,6 +21,8 @@
 package org.granite.math {
 
 	import flash.utils.IExternalizable;
+	
+	import org.granite.IValue;
 
     /**
 	 * Common interface for the <code>Long</code>, <code>BigInteger</code> and
@@ -32,23 +34,13 @@ package org.granite.math {
 	 * @see BigInteger
 	 * @see BigDecimal
      */
-	public interface BigNumber extends IExternalizable {
+	public interface BigNumber extends IExternalizable, IValue {
 
 		/**
 		 * The sign of this big number as an integer (-1 for negative, 0
 		 * for null or 1 for positive numbers).
 		 */
 		function get sign():int;
-
-		/**
-		 * Tells if this big number is equals to the supplied parameter.
-		 * 
-		 * @param o the <code>Object</code> to which this big number
-		 * 		is to be compared.
-		 * @return <code>true</code> if and only if the specified
-		 * 		<code>Object</code> is equals to this object.
-		 */
-		function equals(o:*):Boolean;
 		
 		/**
 		 * Returns this big number as an integer (with possible loose of precision).
