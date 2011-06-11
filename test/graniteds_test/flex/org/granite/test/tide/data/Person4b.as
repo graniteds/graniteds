@@ -21,13 +21,13 @@ package org.granite.test.tide.data {
     use namespace meta;
 
     [Managed]
-    [RemoteClass(alias="org.granite.tide.test.Person4")]
-    public class Person4 extends AbstractEntity {
+    [RemoteClass(alias="org.granite.tide.test.Person4b")]
+    public class Person4b extends AbstractEntity {
 
 		private var _salutation:Salutation;
         private var _contacts:ListCollectionView;
         private var _firstName:String;
-		private var _address:EmbeddedAddress;
+		private var _address:EmbeddedAddress2;
         private var _lastName:String;
         
         
@@ -52,10 +52,10 @@ package org.granite.test.tide.data {
             return _firstName;
         }
 		
-		public function set address(value:EmbeddedAddress):void {
+		public function set address(value:EmbeddedAddress2):void {
 			_address = value;
 		}
-		public function get address():EmbeddedAddress {
+		public function get address():EmbeddedAddress2 {
 			return _address;
 		}
 
@@ -67,10 +67,10 @@ package org.granite.test.tide.data {
         }
 
         override meta function merge(em:IEntityManager, obj:*):void {
-            var src:Person4 = Person4(obj);
+            var src:Person4b = Person4b(obj);
             super.meta::merge(em, obj);
             if (meta::isInitialized()) {
-				em.meta_mergeExternal(src._address, _address, null, this, 'address', function setter(o:*):void{_address = o as EmbeddedAddress}) as EmbeddedAddress;
+				em.meta_mergeExternal(src._address, _address, null, this, 'address', function setter(o:*):void{_address = o as EmbeddedAddress2}) as EmbeddedAddress2;
                 em.meta_mergeExternal(src._contacts, _contacts, null, this, 'contacts', function setter(o:*):void{_contacts = o as ListCollectionView}) as ListCollectionView;
                 em.meta_mergeExternal(src._firstName, _firstName, null, this, 'firstName', function setter(o:*):void{_firstName = o as String}) as String;
                 em.meta_mergeExternal(src._lastName, _lastName, null, this, 'lastName', function setter(o:*):void{_lastName = o as String}) as String;
@@ -81,7 +81,7 @@ package org.granite.test.tide.data {
         override public function readExternal(input:IDataInput):void {
             super.readExternal(input);
             if (meta::isInitialized()) {
-				_address = input.readObject() as EmbeddedAddress;
+				_address = input.readObject() as EmbeddedAddress2;
                 _contacts = input.readObject() as ListCollectionView;
                 _firstName = input.readObject() as String;
                 _lastName = input.readObject() as String;

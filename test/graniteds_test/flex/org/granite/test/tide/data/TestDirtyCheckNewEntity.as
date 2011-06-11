@@ -23,8 +23,8 @@ package org.granite.test.tide.data
         }
         
         
-		[Ignore("Test failed, should consider pull request from A. Busch")]
-        [Test]
+		// [Ignore("Test failed, should consider pull request from A. Busch")]
+        [Test("GDS-857")]
         public function testDirtyCheckNewEntity():void {
         	var person:Person = new Person();
         	person.firstName = "toto";			

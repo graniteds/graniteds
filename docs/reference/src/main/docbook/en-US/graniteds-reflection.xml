@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<chapter id="graniteds.reflection">
+    <title>ActionScript 3 Reflection API</title>
+    <para>
+    The built-in ActionScript 3 reflection API is basically limited to a single method: 
+    <ulink url="http://livedocs.adobe.com/flex/3/langref/flash/utils/package.html#describeType%28%29"><literal>describeType</literal></ulink>. 
+    This method returns XML data describing its parameter object and is therefore not type-safe and its use is subject to many syntax errors.
+    </para>
+    <para>
+    GraniteDS provides a Java-like reflection API that encapsulates <literal>describeType</literal> calls and offers a type-safe, object-oriented, set of 
+    reflection classes and methods. This API caches its results for better performances and supports advanced features such as <literal>ApplicationDomain</literal>
+    and namespaces.
+    </para>
+    
+    <section id="reflection.properties">
+        <title>Getting the Properties of a Class</title>
+        <para>
+        The <literal>Type</literal> class is the entry point of the reflection API. In order to get the properties of a given object, class or class name, 
+        you may use one of the following methods:
+        </para>
+        <para>
+        From a Class Name:
+        </para>
+        <programlisting role="AS3">
+import org.granite.reflect.Type;
+
+var type:Type = Type.forName("path.to.MyClass");
+// or: var type:Type = Type.forName("path.to::MyClass");
+From an Instance
+import org.granite.reflect.Type;
+import path.to.MyClass;
+
+var type:Type = Type.forInstance(new MyClass());
+        </programlisting>
+        <para>
+        From a Class:
+        </para>
+        <programlisting role="AS3">
+import org.granite.reflect.Type;
+import path.to.MyClass;
+
+var type:Type =  Type.forClass(MyClass);
+        </programlisting>
+        <para>
+        Whatever method you use, you will get a unique <literal>Type</literal> instance for each ActionScript 3 class (see below, however, the 
+        <link linkend="reflection.appdomain">ApplicationDomain Support</link> section for very rare exceptions). This <literal>Type</literal> instance will give 
+        you access to all informations about the underlying class, such as superclasses and implemented interfaces, fields, methods, constructor and annotations 
+        (see API documentation <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/reflect/Type.html">here</ulink>).
+        </para>
+    </section>
+    
+    <section id="reflection.class">
+        <title>Exploring Class Members</title>
+        <para>
+        Class members are fields (constants, variables or accessors), constructor and methods. Unlike Java, the ActionScript 3 language does not give access to 
+        protected or private members: only those declared in the public namespace or in a specific namespace are accessible.
+        </para>
+        <para>
+        You may get all public members of a given <literal>Type</literal> via its members property. It will return an array of 
+        <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/reflect/Member.html"><literal>Member</literal></ulink> subclasses such as 
+        <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/reflect/Field.html"><literal>Field</literal></ulink>, 
+        <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/reflect/Method.html"><literal>Method</literal></ulink> and 
+        <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/reflect/Constructor.html"><literal>Constructor</literal></ulink>:
+        </para>
+        <programlisting role="AS3">
+import org.granite.reflect.Type;
+import org.granite.reflect.Member;
+import org.granite.reflect.Field;
+import org.granite.reflect.Method;
+import org.granite.reflect.Constructor;
+
+var type:Type = Type.forName("path.to.MyClass");
+var members:Array = type.members;
+
+trace("Members of type: " + type.name);
+for each (var member:Member in members) {
+    if (member is Field)
+        trace("Field " + Field(member).name + ":" + Field(member).type.name);
+    else if (member is Method)
+        trace("Method " + Method(member).name + ":" + Method(member).returnType.name);
+    else if (member is Constructor)
+        trace("Constructor " + Constructor(member).name);
+}
+        </programlisting>
+        <para>
+        Instead of using the general members property, you may use specialized properties such as <literal>fields</literal>, <literal>methods</literal>, 
+        <literal>constructor</literal> or even <literal>properties</literal>: 
+        <emphasis>properties</emphasis> are all not-static, public, read-write properties of a bean, either variables or accessors (get/set methods).
+        </para>
+        <para>
+        You may also retrieve a method (or field) by its name:
+        </para>
+        <programlisting role="AS3">
+var type:Type = Type.forName("path.to.MyClass");
+
+var field:Field = type.getInstanceField("myPropertyName");
+if (field == null)
+    trace("Could not find 'myPropertyName' field in: " + type.name);
+
+var method:Method = type.getInstanceMethod("myMethodName");
+if (method == null)
+    trace("Could not find 'myMethodName' method in: " + type.name);
+        </programlisting>
+        <note><para>
+        Unlike Java, the API distinguishes <literal>getInstanceField</literal> and <literal>getStaticField</literal>, as well as <literal>getInstanceMethod</literal>
+        and <literal>getStaticMethod</literal>: the reason is that the ActionScript 3 language allows a class to declare a static and a instance variable 
+        (or method) with the same name in the same class.
+        </para></note>
+        <para>
+        Furthermore, the API allows to filter returned members. For example, if you are interested in instance methods that have at least two parameters, 
+        you might write:
+        </para>
+        <programlisting role="AS3">
+<![CDATA[var type:Type = Type.forName("path.to.MyClass");
+var methods:Array = type.getMethods(function (m:Method):Boolean {
+    return !m.isStatic() && m.parameters.length >= 2;
+});]]>
+        </programlisting>
+        <para>
+        You may of course use the same kind of code for filtering fields or properties.
+        </para>
+    </section>
+    
+    <section id="reflection.annotations">
+        <title>Looking for Annotations</title>
+        <para>
+        An interesting feature of ActionScript 3 language is its support for annotations (aka metadatada). Annotations may be placed on classes or interfaces, 
+        variables, accessors and methods (there is no support for constructor annotations at this time). Unlike Java however, AS3 annotations aren't typed.
+        </para>
+        <para>
+        Four main methods are available to play with annotations (see the 
+        <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/reflect/IAnnotatedElement.html"><literal>IAnnotatedElement</literal></ulink> 
+        interface) for classes, fields and methods.
+        </para>
+        <programlisting role="AS3">
+<![CDATA[var type:Type = Type.forName("path.to.MyClass");
+var annotations:Array = type.annotations;
+
+for each (var annotation:Annotation in annotations) {
+    var args:Array = annotation.args;
+    trace(annotation.name + " with " + args.length + "args {");
+    for each (var arg:Arg in args)
+        trace(arg.key + "=" + arg.value);
+    trace("}");
+}]]>
+        </programlisting>
+        <para>
+        Looking for a specific annotation:
+        </para>
+        <programlisting role="AS3">
+<![CDATA[var type:Type = Type.forName("path.to.MyClass");
+
+if (type.isAnnotationPresent("MyAnnotationName")) {
+    trace("Found annotation" + type.getAnnotation("MyAnnotationName").name);
+}]]>
+        </programlisting>
+        <para>
+        Filtering annotations based on a name pattern:
+        </para>
+        <programlisting role="AS3">
+<![CDATA[var type:Type = Type.forName("path.to.MyClass");
+var annotations:Array = type.getAnnotations(false, "MyPrefix.*");]]>
+        </programlisting>
+        <para>
+        In the later case, the annotation name pattern is a regular expression that matches all annotations that have a name starting with "MyPrefix".
+        </para>
+        <para>
+        Note also that all these methods allow to look recursively for annotations:
+        </para>
+        <programlisting role="AS3">
+<![CDATA[public class MyClass implements MyInterface {
+
+    public function doSomething():void {}
+}
+
+...
+
+[MyAnnotation1]
+public interface MyInterface {
+
+    [MyAnnotation2]
+    function doSomething():void;
+}
+
+...
+
+var type:Type = Type.forName("path.to.MyClass");
+var method:Method = type.getInstanceMethod("doSomething");
+
+if (type.isAnnotationPresent("MyAnnotation1", true))
+    trace("Found annotation" + type.getAnnotation("MyAnnotation1", true).name);
+
+if (method.isAnnotationPresent("MyAnnotation2", true))
+    trace("Found annotation" + method.getAnnotation("MyAnnotation2", true).name);]]>
+        </programlisting>
+        <para>
+        The boolean parameter set to <literal>true</literal> in <literal>isAnnotationPresent</literal> and <literal>getAnnotation</literal> calls tells the API 
+        to look recursively for the annotation, and this code will actually print that the two annotations were found.
+        </para>
+        <para>
+        Beside these <literal>IAnnotatedElement</literal> methods, the Type class allows to quickly retieve methods or field annotated specific annotations:
+        </para>
+        <programlisting role="AS3">
+var type:Type = Type.forName("path.to.MyClass");
+var annotations:Array = type.getAnnotatedFields(false, "Bindable", "MyAnnotation");
+        </programlisting>
+        <para>
+        This code will return all fields annotated by at least one of the <literal>[Bindable]</literal> or <literal>[MyAnnotation]</literal> annotations.
+        </para>
+    </section>
+    
+    <section id="reflection.call">
+        <title>Calling Constructors or Methods, and Getting or Setting Properties</title>
+        <para>
+        The reflection API let you create new instances of a given class the following manner:
+        </para>
+        <para>
+        Creating new instances of a class:
+        </para>
+        <programlisting role="AS3">
+var type:Type = type.forName("path.to.MyClass");
+var instance:Object = type.constructor.newInstance(param1, param2);
+// or type.constructor.newInstanceWithArray([param1, param2]);
+        </programlisting>
+        <para>
+        This way of creating new instances of a class is however limited to constructors that have at most ten mandatory parameters. You may bypass this 
+        limitation by using directly the <literal>Class</literal> object, ie: <literal>new type.getClass()(arg1, arg2, ..., arg10, arg11, ...)</literal>. 
+        The main interests of the <literal>Constructor</literal> methods is that it let you use arrays of parameters and also that it will distinguish 
+        between an error thrown by the constructor body (rethrown as an <literal>InvocationTargetError</literal>) and an error thrown because of a wrong number 
+        of parameters or a wrong type of one of them (<literal>ArgumentError</literal>).
+        </para>
+        <para>
+        You may also call methods in a similar manner:
+        </para>
+        <programlisting role="AS3">
+var type:Type = type.forName("path.to.MyClass");
+
+var myInstanceMethod:Method= type.getInstanceMethod("myInstanceMethod");
+myInstanceMethod.invoke(myClassInstance, param1, param2);
+// or myInstanceMethod.invokeWithArray(myClassInstance, [param1, param2]);
+
+var myStaticMethod:Method= type.getStaticMethod("myStaticMethod");
+myStaticMethod.invoke(null, param1, param2);
+// or myStaticMethod.invokeWithArray(null, [param1, param2]);
+        </programlisting>
+        <para>
+        There is no limitation about the number of parameters this time, and the API still distinguish between an error thrown by the method body (rethrown 
+        as an <literal>InvocationTargetError</literal>) and an error thrown because of a wrong number of parameters or a wrong type of one of them 
+        (<literal>ArgumentError</literal>).
+        </para>
+        <para>
+        If you want to get or set the value of a given object property, you will use the following kind of code:
+        </para>
+        <programlisting role="AS3">
+var type:Type = type.forName("path.to.MyClass");
+
+var myInstanceField:Field= type.getInstanceField("myInstanceField");
+var value:* = myInstanceField.getValue(myClassInstance);
+myInstanceField.setValue(myClassInstance, "newValue");
+
+var myStaticField:Field= type.getStaticField("myStaticField");
+var value:* = myStaticField.getValue(null);
+myStaticField.setValue(null, "newValue");
+        </programlisting>
+        <note><para>
+        If you try to set the value of a constant, the <literal>setValue</literal> method will throw a <literal>IllegalAccessError</literal>.
+        </para></note>
+    </section>
+    
+    <section id="reflection.appdomain">
+        <title>Working with Application Domains</title>
+        <para>
+        Like the <ulink url="http://download-llnw.oracle.com/javase/1.5.0/docs/api/java/lang/ClassLoader.html"><literal>ClassLoader</literal></ulink> class in Java, 
+        the ActionScript 3 language has support for class loading in different contexts called 
+        <ulink url="http://livedocs.adobe.com/flex/3/html/help.html?content=18_Client_System_Environment_5.html"><literal>ApplicationDomain</literal>s</ulink>. 
+        This is an advanced feature that is only useful if you work with multiple Flex modules: SWF modules are loaded at runtime with their own set of classes 
+        and these classes may be owned and declared by a specific application domain.
+        </para>
+        <para>
+        Loading a module in a child <literal>ApplicationDomain</literal>:
+        </para>
+        <programlisting role="AS3">
+var childDomain:ApplicationDomain = new ApplicationDomain(ApplicationDomain.currentDomain);
+
+var context:LoaderContext = new LoaderContext(false, childDomain);
+var loader:Loader = new Loader();
+loader.load(new URLRequest("module.swf"), context);
+        </programlisting>
+        <para>
+        If a class is declared only in the above module (but not in the main application), it will be only available in the new child application domain. 
+        As such, the following code will fail with a <literal>ClassNotFoundError</literal> exception:
+        </para>
+        <programlisting role="AS3">
+try {
+    var type:Type = Type.forName("path.to.MyModuleClass");
+}
+catch (e:ClassNotFoundError) {
+    // Cannot be found in the main ApplicationDomain.
+}
+        </programlisting>
+        <para>
+        The first solution is to pass the child domain as a parameter:
+        </para>
+        <programlisting role="AS3">
+var type:Type = Type.forName("path.to.MyModuleClass", childDomain);
+        </programlisting>
+        <para>
+        This will work, but a better solution would be to register the child domain when loading the new module, so that the reflection API will look 
+        for classes in this child domain if it can't find it in the main domain:
+        </para>
+        <programlisting role="AS3">
+var childDomain:ApplicationDomain = new ApplicationDomain(ApplicationDomain.currentDomain);
+
+// register the child domain.
+Type.registerDomain(childDomain);
+
+var context:LoaderContext = new LoaderContext(false, childDomain);
+var loader:Loader = new Loader();
+loader.load(new URLRequest("module.swf"), context);
+
+// the type is found in the child domain without explicit reference.
+var type:Type = Type.forName("path.to.MyModuleClass");
+        </programlisting>
+        <note><para>
+        If you use an unknown domain parameter in a <literal>Type.forName</literal> call, it is automatically registered. Thus, the sample call to 
+        <literal>Type.forName("path.to.MyModuleClass", childDomain)</literal> above will register the <literal>childDomain</literal> domain because this domain 
+        isn't already known by the API.
+        </para></note>
+        <para>
+        When you unload a module, you should always unregister any specific application domain by calling:
+        </para>
+        <programlisting role="AS3">
+Type.unregisterDomain(childDomain);
+        </programlisting>
+        <para>
+        This will cleanup the API cache with all classes previously loaded in this domain.
+        </para>
+        <note><para>
+        The <literal>ApplicationDomain</literal> concept in the Flash VM allows you to load multiple versions of a class (same qualified name) into different domains. 
+        If you have loaded two modules with two versions of the same class and if you have registered their respective two domains with the 
+        <literal>registerDomain</literal> method, you must nonetheless explicitly refer to each domain when loading the class by its name. 
+        Otherwise, the <literal>Type.forName("path.to.MyClassIn2Domains")</literal> call will throw a <literal>AmbiguousClassNameError</literal> exception.
+        </para></note>
+    </section>
+    
+    <section id="reflection.namespaces">
+        <title>Working with Specific Namespaces</title>
+        <para>
+        The ActionScript 3 language lets you declare 
+        <ulink url="http://livedocs.adobe.com/flex/3/html/help.html?content=03_Language_and_Syntax_06.html">specific namespaces</ulink> that may be used instead 
+        of the usual public namespace. The reflection API may be used in order to find a pethod or a field in a specific namespace:
+        </para>
+        <programlisting role="AS3">
+<![CDATA[package my.namespaces {
+    public namespace my_namespace = "http://www.my.org/ns/my_namespace";
+}
+
+...
+
+public class MyClass {
+
+    import my.namespaces.my_namespace;
+
+    my_namespace var myField:String;
+}
+
+...
+
+import my.namespaces.my_namespace;
+
+var type:Type = Type.forName("path.to.MyClass");
+var field:Field = type.getInstanceField("myField", my_namespace);]]>
+        </programlisting>
+        <para>
+        Because the <literal>myField</literal> variable is declared in a specific namespace, a call to <literal>getInstanceField</literal> without the 
+        <literal>my_namespace</literal> parameter will return <literal>null</literal>. Adding this optional parameter will fix the problem.
+        </para>
+        <note><para>
+        When you use the <literal>type.fields</literal> property, all accessible fields are returned, including those declared in specific namespaces.
+        </para></note>
+    </section>
+    
+    <section id="reflection.visitor">
+        <title>Visitor Pattern Support</title>
+        <para>
+        The reflection API comes with a <emphasis>visitor</emphasis> pattern implementation that let you introspect class instances without looping recursively 
+        on all their properties. The entry point of this visitor API is the 
+        <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/reflect/visitor/Guide.html"><literal>Guide</literal></ulink> class: 
+        it implements an advanced two-phases visitor mechanism (see the 
+        <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/reflect/visitor/IVisitor.html"><literal>IVisitor</literal></ulink> interface) 
+        that let you first review which property you're interested in and then actually visit the selected ones.
+        </para>
+        <para>
+        This is a feature for advanced uses only, please refer to the API documentation 
+        <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/reflect/visitor/package-detail.html">here</ulink> and 
+        <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/reflect/visitor/handlers/package-detail.html">here</ulink>.
+        </para>
+    </section>
+</chapter>

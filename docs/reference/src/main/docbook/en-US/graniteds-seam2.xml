@@ -1,0 +1,1427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<chapter id="graniteds.seam2">
+	<title>Integration with Seam 2.2</title>
+    <para>
+    The <ulink url="http://www.seamframework.org">JBoss Seam framework</ulink> is a powerful Java enterprise framework. It integrates on a common 
+    platform all the necessary services for building enterprise applications: persistence, transactions, security... 
+    </para>
+    
+    <para>
+    GraniteDS provides out-of-the-box integration with Seam 2.2 via either the <literal>RemoteObject</literal> API or the Tide API 
+    to remotely call Seam components, and fully supports serialization of JPA entities from and to your Flex application, taking care of lazily loaded associations. 
+    The support for JPA entity beans is covered in the section <link linkend="remoting.jpa">JPA and lazy initialization</link>, so this section will only 
+    describe how to call Seam components from a Flex application. GraniteDS also fully supports Seam Security for authentication and authorization.
+    </para>
+    
+    <para>
+    The support for JBoss Seam 2.2 is included in the library <literal>granite-seam21.jar</literal>, so you always have to include this library in either
+    <literal>WEB-INF/lib</literal> or <literal>lib</literal> for an ear packaging. As you have maybe noticed in the name of the jar, it can be used with
+    any version of Seam since 2.1 but it is recommended to use Seam 2.2 with Flex and GraniteDS.
+    </para>
+    
+    <para>
+    Note that to provide a more native experience for Seam developers, the Seam support in GraniteDS can be configured directly in the Seam configuration
+    files (<literal>components.xml</literal>). Most features of GraniteDS can be configured this way, and it is still possible to fall back to the 
+    default GraniteDS configuration files <literal>services-config.xml</literal> and <literal>granite-config.xml</literal> for unsupported features. 
+    </para>
+    
+    <section id="seam2.nativesetup">
+        <title>Seam 2 Native Setup</title>
+        <para>
+        It is perfectly possible to use the default setup for GraniteDS servlet in <literal>web.xml</literal>, but the recommended way when using Seam 
+        is to use the Seam filter to handle incoming AMF requests. This will in particular allow configuring GraniteDS in the Seam configuration.
+        Note that this works only for the remoting servlet, but you still have to configure the Gravity servlet in the default way 
+        because the Seam filter does support non blocking I/O.
+        </para>
+        <programlisting role="XML">
+<![CDATA[<web-app version="2.4" ...>
+    ...
+    <!-- Seam global listener -->
+    <listener>
+        <listener-class>org.jboss.seam.servlet.SeamListener</listener-class>
+    </listener>
+
+    <!-- Seam Web filter -->
+    <filter>
+        <filter-name>SeamFilter</filter-name> 
+        <filter-class>org.jboss.seam.servlet.SeamFilter</filter-class> 
+    </filter>
+    <filter-mapping>
+        <filter-name>SeamFilter</filter-name> 
+        <url-pattern>/*</url-pattern> 
+    </filter-mapping>
+    ...
+</web-app>]]>  
+        </programlisting>
+        <para>
+        You also have to add an empty file <literal>WEB-INF/seam.properties</literal>.
+        </para>
+        <warning><para>
+        You must not use the standard <literal>SeamFilter</literal> together with the Tide/Seam interceptor. 
+        If you need a dual Flex/HTML front-end, you have to map the <literal>SeamFilter</literal> only for the HTML URLs.
+        </para></warning>
+    </section>
+    
+    <section id="seam2.remoteobject">
+       <title>Using the RemoteObject API</title>
+        <para>
+        The Flex-side usage of the <literal>RemoteObject</literal> API is completely independent of the server technology, so everything described in 
+        the <link linkend="remoting.remoteobject">Remoting</link> chapter applies for Seam components. This section will only describe the particular configuration
+        required in various use cases of Seam components.
+        </para>
+       
+        <section id="seam2.roexample">
+            <title>Basic Remoting Example</title>
+            <para>
+            All remoting examples from the <link linkend="remoting.remoteobject">Remoting</link> chapter apply for Seam components, here is a basic example:
+            </para>
+            <programlisting role="JAVA">
+<![CDATA[@Name("helloService")
+@RemoteDestination(id="helloService")
+public class HelloService {
+
+    public String hello(String name) {
+        return "Hello " + name;
+    }
+}]]>
+            </programlisting>
+            
+            <programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml">
+
+    <mx:Script>
+        import mx.rpc.events.ResultEvent;
+        import mx.rpc.events.FaultEvent;
+        import mx.controls.Alert;
+        
+        public function resultHandler(event:ResultEvent):void {
+            // Display received message
+            outputMessage.text = event.result as String;
+        }                       
+        
+        public function faultHandler(event:FaultEvent):void {
+            // Show error alert
+            Alert.show(event.fault.faultString);               
+        }
+    </mx:Script>
+    
+    <!-- Connect to a service destination.--> 
+    <mx:RemoteObject id="helloService" 
+        destination="helloService"
+        source="helloService"
+        result="handleResult(event);"
+        fault="handleFault(event);"/>
+    
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+    
+    <!-- Call the Seam component, use the text in a TextInput control as input data.--> 
+    <mx:Button click="helloService.hello(inputName.text)"/>
+    
+    <!-- Display results data in the user interface. --> 
+    <mx:Label id="outputMessage"/>
+</mx:Application>]]>
+            </programlisting>
+            
+            <para>
+            The main thing to note is the use of the <literal>source</literal> property in both the <literal>RemoteObject</literal> definition
+            and in the <literal>@RemoteDestination</literal> annotation that should match the name of the Seam component.
+            </para>
+        </section>
+        
+        <section id="seam2.roconversations">
+            <title>RemoteObject with Seam Conversations</title>
+            <para>
+            One of the interesting features of Seam is that its support for conversations that are a kind of temporary session. GraniteDS can be integrated with
+            Seam conversations by using the client component <literal>SeamRemoteObject</literal> instead of a simple <literal>RemoteObject</literal>.
+            <literal>SeamRemoteObject</literal> can also be maintain a <literal>taskId</literal> when using the Seam integration with jBPM.
+            </para>
+            <programlisting role="JAVA">
+public dynamic class SeamRemoteObject extends SecureRemoteObject {
+    ...
+    public function get conversation():Conversation {...}
+    public function set conversation(conversation:Conversation):void {...}
+
+    public function get task():Task {...}
+    public function set task(task:Task):void {...}
+    ...
+}
+            </programlisting>
+            <para>
+            Basically, <literal>Conversation</literal> and <literal>Task</literal> only encapsulate an id. 
+            Since <literal>SeamRemoteObject</literal> extends <literal>SecureRemoteObject</literal>, you may use all security features as explained 
+            <link linkend="remoting.secro">here</link>.
+            </para>
+            <para>
+            It's also necessary to use the specific <literal>SeamOperation</literal> class with <literal>SeamRemoteObject</literal> to ensure proper
+            serialization of the parameters:
+            </para>
+            <programlisting role="AS3">
+...
+import org.granite.seam.SeamRemoteObject;
+import org.granite.seam.SeamOperation;
+...
+srv = new SeamRemoteObject("myDestination");
+var operation:SeamOperation = new SeamOperation();
+operation.name = "myMethod";
+operation.addEventListener(ResultEvent.RESULT, onMyMethodResult);
+srv.operations = {myMethod: operation};
+...
+            </programlisting>
+        </section>
+        
+       <section id="seam2.romvcconfig">
+           <title>Configuration with the Seam XML</title>
+            <para>
+            Besides configuring the Seam filter (see <link linkend="seam2.nativesetup">here</link>), configuring GraniteDS in the Seam configuration 
+            just requires adding the <literal>graniteds</literal> namespace and adding a <literal>flex-filter</literal> element:
+            </para>
+            <programlisting role="XML">
+<![CDATA[<components xmlns="http://jboss.com/products/seam/components"
+	xmlns:core="http://jboss.com/products/seam/core"
+	xmlns:security="http://jboss.com/products/seam/security"
+	xmlns:transaction="http://jboss.com/products/seam/transaction"
+	xmlns:persistence="http://jboss.com/products/seam/persistence"
+	xmlns:framework="http://jboss.com/products/seam/framework"
+	xmlns:bpm="http://jboss.com/products/seam/bpm"
+	xmlns:jms="http://jboss.com/products/seam/jms"
+	xmlns:web="http://jboss.com/products/seam/web"
+	xmlns:graniteds="http://www.graniteds.org/config"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation=
+	    "http://jboss.com/products/seam/core http://jboss.com/products/seam/core-2.0.xsd
+	     http://jboss.com/products/seam/transaction http://jboss.com/products/seam/transaction-2.0.xsd
+	     http://jboss.com/products/seam/persistence http://jboss.com/products/seam/persistence-2.0.xsd
+	     http://jboss.com/products/seam/web http://jboss.com/products/seam/web-2.0.xsd
+	     http://jboss.com/products/seam/jms http://jboss.com/products/seam/jms-2.0.xsd
+	     http://jboss.com/products/seam/security http://jboss.com/products/seam/security-2.0.xsd
+	     http://jboss.com/products/seam/bpm http://jboss.com/products/seam/bpm-2.0.xsd
+	     http://jboss.com/products/seam/components http://jboss.com/products/seam/components-2.0.xsd
+	     http://jboss.com/products/seam/framework http://jboss.com/products/seam/framework-2.0.xsd
+	     http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.1.0/granite-config-2.1.xsd">
+	
+	...
+    
+    <graniteds:flex-filter url-pattern="/graniteamf/*"/>
+
+</components>]]>        
+            </programlisting>
+            
+            <para>
+            The <literal>url-pattern</literal> should be contained within the url mapping of the Seam filter as defined in <literal>web.xml</literal>.
+            The configuration described here maps GraniteDS on <literal>/graniteamf/*</literal> and is suitable in almost all cases.
+            </para>
+            
+            <para>
+            When necessary, this configuration can be overriden or completed by the default configuration in <literal>services-config.xml</literal> described 
+            in the <link linkend="seam2.rostdconfig">next section</link>.
+            In this case, the implicit configuration created by the native setup contains the following elements :
+            <itemizedlist>
+                <listitem>
+                a remoting service named <literal>granite-service</literal>
+                </listitem>
+                <listitem>
+                a remoting service factory named <literal>seam-factory</literal>
+                </listitem>
+                <listitem>
+                a remoting channel named <literal>graniteamf</literal>
+                </listitem>
+            </itemizedlist>
+            The native setup automatically enables component scanning, so you can just annotate your Seam components with <literal>@RemoteDestination</literal> 
+            and put an empty <literal>META-INF/services-config.properties</literal> file in your services jar or folder to tell GraniteDS where to look for services. 
+            See last paragraph <link linkend="seam2.roscan">Automatic Configuration of Destinations</link>.
+            </para>
+            
+            <para>
+            Alternatively you can also declare the remote destinations manually in the Seam configuration:
+            </para>
+            <programlisting role="XML">            
+<![CDATA[<graniteds:remote-destination id="personService" source="personService"/>]]> 
+            </programlisting>
+            <para>
+            You can also specify a secure destination by adding the list of roles required to access the destination:
+            </para>
+            <programlisting role="XML">            
+<![CDATA[<graniteds:remote-destination id="personService" source="personService">
+    <graniteds:roles>
+        <graniteds:role>admin</graniteds:role>
+    </graniteds:roles>
+</graniteds:remote-destination>]]> 
+            </programlisting>
+            
+            <para>
+            Finally remember that as there is no <literal>services-config.xml</literal>, you will have to manually initialize the endpoints 
+            for your client <literal>RemoteObject</literal>s (also see <link linkend="remoting.manualremoteobject">here</link>) :
+            </para>
+            <programlisting role="AS3">
+<![CDATA[srv.destination = "personService";
+srv.source = "personService";
+srv.channelSet = new ChannelSet();
+srv.channelSet.addChannel(new AMFChannel("graniteamf", 
+    "http://{server.name}:{server.port}/{context.root}/graniteamf/amf"));]]>
+            </programlisting>
+       </section>
+       
+       <section id="seam2.rostdconfig">
+           <title>Default Configuration</title>
+            <para>
+            Configuring remoting for Seam components simply requires using the <literal>org.granite.seam.SeamServiceFactory</literal> service factory in 
+            <literal>services-config.xml</literal>:
+            </para>
+            <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<services-config>
+    <services>
+        <service
+            id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <destination id="testComponent">
+                <channels>
+                    <channel ref="graniteamf"/>
+                </channels>
+                <properties>
+                    <factory>seamFactory</factory>
+                    <source>seamComponent</source>
+                </properties>
+                <security>
+                    <security-constraint>
+                        <auth-method>Custom</auth-method>
+                        <roles>
+                            <role>ROLE_USER</role>
+                            <role>ROLE_ADMIN</role>
+                        </roles>
+                    </security-constraint>
+                </security>
+            </destination>
+        </service>
+    </services>
+
+    <factories>
+        <factory id="seamFactory" class="org.granite.seam.SeamServiceFactory" />
+    </factories>
+
+    <channels>
+        <channel-definition id="graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+
+</services-config>]]>
+            </programlisting>
+            <para>
+            The only thing that should be noted for Seam destinations is that you have to specify a <literal>source</literal> property specifying the name
+            of the remote Seam component.
+            </para>
+       </section>
+       
+       <section id="seam2.roscan">
+            <title>Automatic Configuration of Destinations</title>
+            <para>
+            It is possible to instruct GraniteDS to automatically search for Seam destinations in the classpath by:
+            <itemizedlist>
+                <listitem>
+                Enabling scanning in <literal>granite-config.xml</literal> (scanning is always enabled with a native setup).
+                <programlisting>
+&lt;granite-config scan="true"/&gt;
+                </programlisting>
+                </listitem>
+                <listitem>
+                Adding an empty <literal>META-INF/services-config.properties</literal> marker file in all jars containing Seam destinations
+                </listitem>
+                <listitem>
+                Annotating the Seam component or its interface with <literal>org.granite.messaging.service.annotations.RemoteDestination</literal>
+                </listitem>
+            </itemizedlist>
+            </para>
+            <programlisting role="JAVA">
+@Name("personService")
+@RemoteDestination(id="person", source="personService", securityRoles={"user","admin"})
+public class PersonAction {
+  ...
+}
+            </programlisting>
+            <para>
+            The annotation supports the following attributes:
+            <itemizedlist>
+            <listitem>
+            <literal>id</literal> is mandatory and is the name of the destination as used from Flex
+            </listitem>
+            <listitem>
+            <literal>source</literal> is mandatory and should be the name of the Seam component
+            </listitem>
+            <listitem>
+            <literal>service</literal> is optional when there is only one service for <literal>RemotingMessage</literal> defined in <literal>services-config.xml</literal>. 
+            Otherwise this should be the name of the service.
+            </listitem>
+            <listitem>
+            <literal>channel</literal> is optional if there is only one channel defined in <literal>services-config.xml</literal>. 
+            Otherwise this should be the id of the target channel.
+            </listitem>
+            <listitem>
+            <literal>channels</literal> may be used instead of <literal>channel</literal> to define a failover channel.
+            </listitem>
+            <listitem>
+            <literal>factory</literal> is optional if there is only one factory in <literal>services-config.xml</literal>. Otherwise this should be the factory id.
+            </listitem>
+            <listitem>
+            <literal>securityRoles</literal> is an array of role names for securing the destination.
+            </listitem>
+            </itemizedlist>
+            Using scanning allows to simplify your <literal>services-config.xml</literal> file, however it is recommended to use the native setup, 
+            so you don't even need one !
+            </para>
+       </section>
+       
+       <section id="seam2.rosecurity">
+           <title>Integration with Seam Security</title>
+           <para>
+           When not using the Seam native setup, you have to manually configure the integration of Seam Security in <literal>granite-config.xml</literal>.
+           </para>
+           <programlisting role="XML">
+<![CDATA[<granite-config>
+   ...
+   <!--
+    ! Use Seam 2.1+ based security service.
+    !-->
+    <security type="org.granite.seam21.security.Seam21SecurityService"/>
+
+</granite-config>]]>
+           </programlisting>
+           <para>
+           You may then secure your Flex destinations as shown earlier. Please refer to <ulink url="http://www.seamframework.org/">Seam</ulink> 
+           documentation for specific configuration details.
+           </para>
+       </section>
+    </section>
+    
+    <section id="seam2.tide">
+       <title>Using the Tide API</title>
+        <para>
+        Most of what is described in the <link linkend="remoting.tideremoting">Tide Remoting</link> section applies for Seam 2.x, however GraniteDS also provides
+        a much improved integration with the Seam framework when using the Tide client API.
+        </para>
+       
+       <section id="seam2.tidemvcconfig">
+           <title>Configuration with a Native Setup</title>
+           <para>
+           This is by far the easiest way to use Tide with Seam, it just consists in declaring the GraniteDS flex filter in the Seam configuration:
+           </para>
+           <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<components xmlns="http://jboss.com/products/seam/components"
+            xmlns:core="http://jboss.com/products/seam/core"
+            xmlns:security="http://jboss.com/products/seam/security"
+            xmlns:transaction="http://jboss.com/products/seam/transaction"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:graniteds="http://www.graniteds.org/config"
+            xsi:schemaLocation=
+                "http://jboss.com/products/seam/core 
+                     http://jboss.com/products/seam/core-2.1.xsd
+                 http://jboss.com/products/seam/transaction 
+                     http://jboss.com/products/seam/transaction-2.1.xsd
+                 http://jboss.com/products/seam/security 
+                     http://jboss.com/products/seam/security-2.1.xsd
+                 http://jboss.com/products/seam/components 
+                     http://jboss.com/products/seam/components-2.1.xsd
+                 http://www.graniteds.org/config 
+                     http://www.graniteds.org/public/dtd/2.1.0/granite-config-2.1.xsd">
+
+    <core:init .../>
+    
+    ...
+   
+    <graniteds:flex-filter url-pattern="/graniteamf/*" tide="true"/>
+</components>]]>
+           </programlisting>
+           
+           <para>
+           The <literal>flex-filter</literal> declaration will setup an AMF processor for the specified url pattern, and the <literal>tide</literal> attribute 
+           specifies that you want a Tide-enabled service factory. Note that you have to ensure that the url pattern defined here is mapped to the 
+           Seam filter define in <literal>web.xml</literal>.
+           </para>
+           
+           <para>
+           Other configurations can be done with <literal>flex-filter</literal>:
+            <itemizedlist>
+                <listitem>
+                <literal>tide-annotations</literal> is equivalent to <literal>tide-component annotated-with=""</literal> in <literal>granite-config.xml</literal>. 
+                It allows to define the list of annotation names that enable remote access to Seam components. <literal>@RemoteDestination</literal> and
+                <literal>@TideEnabled</literal> are always declared by default, but you can use any other one if you don't want a compilation dependency 
+                on the GraniteDS libraries.
+                </listitem>
+                <listitem>
+                <literal>tide-roles</literal> allows to define a list of security roles that are required to access the Tide remote destination. 
+                In general it is not necessary to define this destination-wide security and you can only rely on Seam security for fine-grained access to individual
+                components.
+                </listitem>
+                <listitem>
+                <literal>exception-converters</literal> allows to define a list of server-side exception converters. 
+                It's the equivalent to <literal>exception-converters</literal> in <literal>granite-config.xml</literal>.
+                </listitem>
+                <listitem>
+                <literal>amf3-message-interceptor</literal> allows to define a message interceptor. You have to define an EL expression referencing an 
+                existing component implementing <literal>AMFMessageInterceptor</literal>. It's highly recommended to subclass <literal>Seam21Interceptor</literal> 
+                and call <literal>super.before</literal> and <literal>super.after</literal> in your implementation.
+                </listitem>
+            </itemizedlist>
+            </para>
+       </section>
+       
+        <section id="seam2.tidestdconfig">
+          <title>Default Configuration</title>
+            <para>
+            If you don't use the native setup, you will have to use the standard GraniteDS configuration files instead of the Seam configuration, and setup these 
+            elements manually. You can safely skip this section if you choose the native setup.
+            <itemizedlist>
+              <listitem>
+              You can define in the <literal>tide-annotations</literal> section of <literal>granite-config.xml</literal> the conditions 
+              used to enable remote access to Seam destinations (for example all components annotated with a particular annotation). 
+              </listitem>
+              <listitem>
+              You have to configure the specific Tide/Seam <literal>org.granite.tide.seam.SeamServiceFactory</literal> service factory 
+              in <literal>services-config.xml</literal>.
+              </listitem>
+              <listitem>
+              You have to configure a unique Tide/Seam destination named <literal>seam</literal> in <literal>services-config.xml</literal>
+              </listitem>
+              <listitem>
+              You have to retrieve the Tide context in Flex with <literal>Seam.getInstance().getSeamContext()</literal> 
+              instead of <literal>Tide.getInstance().getContext()</literal>.
+              </listitem>
+            </itemizedlist>
+            </para>
+            
+            <para>
+            Here is a default configuration suitable for most cases:
+            </para>
+            
+            <programlisting role="XML">
+<![CDATA[<granite-config scan="true">
+    ...
+    
+    <tide-components>
+        <tide-component annotated-with="org.granite.messaging.service.annotations.RemoteDestination"/>
+        <tide-component annotated-with="org.granite.tide.annotations.TideEnabled"/>
+    </tide-components>
+    
+</granite-config>]]>    
+            </programlisting>
+            
+            <programlisting role="XML">
+<![CDATA[<services-config>
+
+    <services>
+        <service id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <!--
+             ! Use "tideSeamFactory" and "my-graniteamf" for "seam" destination (see below).
+             ! The destination must be "seam" when using Tide with default configuration.
+             !-->
+            <destination id="seam">
+                <channels>
+                    <channel ref="my-graniteamf"/>
+                </channels>
+                <properties>
+                    <factory>tideSeamFactory</factory>
+                </properties>
+            </destination>
+        </service>
+    </services>
+
+    <!--
+     ! Declare tideSeamFactory service factory.
+     !-->
+    <factories>
+        <factory id="tideSeamFactory" class="org.granite.tide.seam.SeamServiceFactory"/>
+    </factories>
+
+    <!--
+     ! Declare my-graniteamf channel.
+     !-->
+    <channels>
+        <channel-definition id="my-graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+
+</services-config>]]>    
+            </programlisting>
+            
+            <para>
+            The destination named <literal>seam</literal> will be the one and only destination required for all Seam destinations. 
+            </para>
+            
+            <para>
+            You should also define the correct Seam security service in <literal>granite-config.xml</literal>, see <link linkend="seam2.rosecurity">here</link>
+            for details.
+            </para>
+       </section>
+       
+       <section id="seam2.tideremotingdi">
+            <title>Basic Remoting with Dependency Injection</title>
+            <para>
+            When using Seam, the only difference on the client is that you have to use the <literal>Seam</literal> singleton. Here is a simple example of 
+            remoting with an injected client proxy for an Seam component:
+            </para>
+                        
+            <programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Seam.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.seam.Seam;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        
+        [In]
+        public var helloService:Component;
+        
+        private function hello(name:String):void {
+            helloService.hello(name, resultHandler, faultHandler);
+        }
+        
+        private function resultHandler(event:TideResultEvent):void {
+            outputMessage.text = event.result as String;
+        }                       
+        
+        private function faultHandler(event:TideFaultEvent):void {
+            // Handle fault
+        }
+    </mx:Script>
+    
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+    
+    <!-- Call the web service, use the text in a TextInput control as input data.--> 
+    <mx:Button click="hello(inputName.text)"/>
+    
+    <!-- Result message. --> 
+    <mx:Label id="outputMessage"/>
+</mx:Application>]]>
+            </programlisting>
+            
+            <para>
+            This is almost identical to the standard Tide API described in the <link linkend="remoting.tideremoting">Tide remoting</link> section, and all other
+            methods apply for Seam. 
+            </para>
+       </section>
+       
+       <section id="seam2.tidecontextvariables">
+           <title>Using Context Variables</title>
+           <para>
+           Seam components are usually stateful and get their data by injection from context variables instead of arguments of method invocations.
+           The <literal>Context</literal> object replicates provides a means of invoking remote components and also serves as a container for variables that will be 
+           serialized and sent to the server.
+           </para>
+           <programlisting role="XML">
+<![CDATA[<fwk:entity-query name="contacts" results="5">
+  <fwk:ejbql>from Contact</fwk:ejbql>
+  <fwk:order>lastName</fwk:order>
+  <fwk:restrictions>
+    <value>lower(firstName) like lower(concat(#{exampleContact.firstName}, '%'))</value>
+    <value>lower(lastName) like lower(concat(#{exampleContact.lastName}, '%'))</value>
+  </fwk:restrictions>
+</fwk:entity-query>
+
+<component name="exampleContact" class="org.jboss.seam.example.contactlist.Contact"/>]]>
+           </programlisting>
+           
+           <programlisting role="JAVA">
+(1) tideContext.exampleContact = new Contact();
+    tideContext.exampleContact.firstName = 'Jimi';
+    tideContext.exampleContact.lastName = 'Hendrix';
+(2) tideContext.contacts.getResultList(getContactsHandler);
+    ...
+           </programlisting>
+           
+           <para>
+           <orderedlist>
+                <listitem>
+                The context variable <literal>exampleContact</literal> is set with a new <literal>Contact</literal> entity, and populated with some values.
+                </listitem>
+                <listitem>
+                The Seam component named <literal>contacts</literal> is called. As the <literal>Context</literal> has intercepted the previous context variable 
+                assignments, it sends these variables along with the remote call.
+                </listitem>
+           </orderedlist>
+           In general, all assignments to context variables made between remote calls are scheduled for update to resynchronize the server context on the next
+           remote call. Updates of properties on context variables that are entities or collections of entities are also tracked.
+           </para>
+           <para>
+           This means that it is the Flex client job to populate the context variables that need to be injected in the server component before calling it.
+           </para>
+           <para>
+           In some cases, notably when using context variables with the client framework (see corresponding section 
+           <link linkend="graniteds.tideframework">Tide Client Framework</link>), it can be useful to disable the synchronization between client 
+           and server for certain variables. This is possible by using <literal>Seam.getInstance().setComponentRemoteSync(variableName, false)</literal> expressions.
+           </para>
+           <para>
+           Note that remote synchronization of all variables received from the server is enabled by default. 
+           Variables that are outjected from client components can be remote-enabled with <literal>[Out(remote="true")]</literal>.
+           </para>
+       </section>
+       
+       <section id="seam2.tideserveroutjection">
+            <title>Integration with Variable Outjection</title>
+            <para>
+            Now that we are able to setup the server context from our client, we would like to be able to get the updated context variables from the server.
+            </para>
+            <para>
+            This is automatically managed by the Tide server interceptor, which detects all outjected objects from the component call, even through server 
+            event propagation, and schedules them for retrieval for the next remote call.
+            </para>
+            <para>
+            That allows, for example, to do things like (extract from the Seam booking sample):
+            </para>
+            <programlisting role="JAVA">
+@Stateful
+@Name("hotelBooking")
+@Restrict("#{identity.loggedIn}")
+public class HotelBookingAction implements HotelBooking {
+   ...
+   @In 
+   private User user;
+   
+   @In(required=false) @Out
+   private Hotel hotel;
+   
+   @In(required=false) 
+   @Out(required=false)
+   private Booking booking;
+   ...
+   
+   public void bookHotel() {      
+       booking = new Booking(hotel, user);
+       Calendar calendar = Calendar.getInstance();
+       booking.setCheckinDate( calendar.getTime() );
+       calendar.add(Calendar.DAY_OF_MONTH, 1);
+       booking.setCheckoutDate( calendar.getTime() );
+   }
+   ...
+}
+            </programlisting>
+            
+            <para>
+            Flex client controller code:
+            </para>
+            <programlisting role="AS3">
+public function bookHotel(hotel:Hotel):void {
+(1) tideContext.hotel = hotel;
+(2) tideContext.hotelBooking.bookHotel(bookResult);
+}
+
+private function bookResult(event:TideResultEvent):void {
+(3) var booking:Booking = event.context.booking as Booking;
+}
+            </programlisting>
+            
+            <para>
+            <orderedlist>
+                <listitem>
+                We set the context variable <literal>hotel</literal> which will be injected in the component named <literal>hotelBooking</literal>.
+                </listitem>
+                <listitem>
+                We call the method <literal>bookHotel</literal> on the component named <literal>hotelBooking</literal>.
+                </listitem>
+                <listitem>
+                The result handler gets the outjected object named <literal>booking</literal> from the result context.
+                </listitem>
+            </orderedlist>
+            </para>
+            
+            <para>
+            All objects outjected during the component call are intercepted and available through the client context after the remote invocation. 
+            This allows a very simple reuse of existing server components.
+            </para>
+            
+            <para>
+            If you need to resynchronize the last updated server context variables with the Flex client but do not have a particular remote component method to call,
+            you can use the following method of the context:
+            </para>
+            <programlisting role="AS3">
+tideContext.meta_resync(resultHandler, faultHandler);
+            </programlisting>
+            
+            <para>
+            You can also simplify the client code by using dependency injection on the Flex controller (see <link linkend="graniteds.tideframework">here</link>):
+            </para>
+            <programlisting role="AS3">
+[In]
+public var booking:Booking;
+
+[Out(remote="true")]
+public var hotel:Hotel;
+
+[In]
+public var hotelBooking:Component;
+
+public function bookHotel(hotel:Hotel):void {
+(1) this.hotel = hotel;
+(2) hotelBooking.bookHotel(bookResult);
+}
+
+private function bookResult(event:TideResultEvent):void {
+(3) Alert.show("Booking processed: " + booking.toString());
+}
+            </programlisting>
+            
+            <para>
+            It is also interesting to note that even the Seam events triggering other components outjection are intercepted, thus allowing full support for 
+            complex server-side interactions.
+            </para>
+            <para>
+            If, for some reason, some outjected variables should not be sent back to the client, it is possible to define a list of disabled component names 
+            in <literal>granite-config.xml</literal>, in the section <literal>tide-components</literal>:
+            </para>
+            <programlisting role="XML">
+<![CDATA[<tide-components>
+    <component annotatedwith="com.myapp.some.annotation.for.disabling.Components" disabled="true"/>
+    <component type="com\.myapp\..*" disabled="true"/>
+</tide-components>]]>
+            </programlisting>
+            <para>
+            The supported component definitions are the same as for enabling components (<literal>name</literal>, <literal>type</literal>, 
+            <literal>annotated-with</literal>, <literal>instance-of</literal>). This is relatively flexible and allows to finely control 
+            what part of the context may be shared between server and client.
+            </para>
+            
+            <formalpara>
+                <title>Integration with DataModels</title>
+                <para>
+                Tide+Seam intercepts injection and outjection of standard JSF <literal>DataModel</literal>s. This is not particularly useful in a Flex environment, 
+                except for reusing existing Seam components, and this is roughly equivalent to using <literal>@In</literal> and <literal>@Out</literal>. 
+                There is no support for custom data binding.
+                </para>
+            </formalpara>
+            <programlisting role="JAVA">
+<![CDATA[@Stateful
+@Scope(SESSION)
+@Name("bookingList")
+@Restrict("#{identity.loggedIn}")
+@TransactionAttribute(REQUIRES_NEW)
+public class BookingListAction implements BookingList, Serializable {
+   ...
+   @DataModel
+   private List<Booking> bookings;
+   @DataModelSelection 
+   private Booking booking;
+   ...
+}]]> 
+            </programlisting>
+            
+            <programlisting role="AS3">
+<![CDATA[public function cancelBooking(booking:Booking):void {
+(1) tideContext.bookingList.booking = booking;
+(2) tideContext.bookingList.cancel(cancelBookingResult);
+}
+
+private function cancelBookingResult(event:TideResultEvent):void {
+(3) bookings = event.context.bookings as ArrayCollection;
+}]]>
+            </programlisting>
+            
+            <para>
+            <orderedlist>
+                <listitem>
+                We prepare the injection of the current selected booking: <literal>booking</literal> is the name of the component property annotated with 
+                <literal>@DataModelSelection</literal>.
+                </listitem>
+                <listitem>
+                We call the method <literal>cancel</literal> of the component named <literal>bookingList</literal>.
+                </listitem>
+                <listitem>
+                We get back the outjected <literal>DataModel</literal> <literal>bookings</literal> from the context as an <literal>ArrayCollection</literal>; 
+                it is not encapsulated in ActionScript.
+                </listitem>
+            </orderedlist>
+            </para>
+       </section>
+       
+       <section id="seam2.tideconversations">
+           <title>Integration with Conversations</title>
+           <warning><para>
+            To enable integration with Seam conversations, check that the <literal>conversation-id-parameter</literal> in <literal>core:init</literal> 
+            has the default value <literal>conversationId</literal>. Other values won't work with Tide.
+           </para></warning>
+           <para>
+           Until now, all client-server communications have been done through the global Tide client context. Tide supports secondary client contexts 
+           which represent particular server conversations.
+           </para>
+           <para>
+           When a remote component call triggers the beginning of a new conversation, the context referenced by the <literal>TideResultEvent</literal> is a new 
+           context object corresponding to this conversation. Of course many such contexts can exist simultaneously on the Flex client, and correspond 
+           to different server conversations.
+           </para>
+           <para>
+           Variables having less than conversation scope are managed in the corresponding context. 
+           Session scoped variables and components are always managed in the global context.
+           </para>
+           <programlisting role="JAVA">
+@Stateful
+@Name("hotelBooking")
+@Restrict("#{identity.loggedIn}")
+public class HotelBookingAction implements HotelBooking {
+    ...
+    @Begin
+    public void selectHotel(Hotel selectedHotel) {
+        hotel = em.merge(selectedHotel);
+    }
+    ...
+}
+           </programlisting>
+           <programlisting role="AS3">
+public function selectHotel(hotel:Hotel):void {
+(1) tideContext.hotelBooking.selectHotel(hotel, selectHotelResult);
+}
+
+private function selectHotelResult(event:TideResultEvent):void {
+(2) var localContext:Context = event.context as Context;
+    var hotel:Hotel = localContext.hotel;
+}
+           </programlisting>
+           <para>
+           <orderedlist>
+                <listitem>
+                The component <literal>hotelBooking</literal> is called from the global context.
+                </listitem>
+                <listitem>
+                The context returned in the result event is a new context instance, corresponding to the newly created server conversation.
+                </listitem>
+           </orderedlist>
+           </para>
+           
+           <para>
+           All following operations must be then done through the localContext to be executed in the correct server conversation context. 
+           That means mainly that this context object has to be stored somewhere in the application, for example in the MXML corresponding to a particular wizard component. 
+           Optionally, it is also possible to store only the <literal>conversationId</literal>, and retrieve the context object by:
+           </para>
+           <programlisting role="AS3">
+var localContext:Context = Seam.getInstance().getSeamContext(conversationId)
+           </programlisting>
+           <para>
+            When the conversation ends, the context object returned in the result events remains the local conversation context, to allow the Flex client 
+            to get the last call resulting context variables. It is deleted just before the next remote component call on the global context.
+           </para>
+           <warning><para>
+           Nested conversations are not supported in the current version
+           </para></warning>
+           
+           <formalpara>
+                <title>Built-in Components for Conversation Management</title>
+                <para>
+                Tide/Seam provides two specific client components that enable a deeper integration with server conversations.
+                </para>
+           </formalpara>
+           <para>
+           The component <literal>org.granite.tide.seam.framework.ConversationList</literal>, always available by <literal>tideContext.conversationList</literal> 
+           or by injection with:
+           </para>
+           <programlisting role="AS3">
+[In] 
+public var conversationList:ConversationList
+           </programlisting>
+           <para>
+           <literal>ConversationList</literal> is a client equivalent of the Seam <literal>ConversationList</literal>. It gives access to the list of 
+           currently existing conversations. Only conversations that have a description are returned.
+           </para>
+           <para>
+           The component <literal>org.granite.tide.seam.framework.Conversation</literal> is a conversation-scoped component that is available in 
+           all conversation contexts by <literal>tideContext.conversation</literal> or by injection with:
+           </para>
+           <programlisting role="AS3">
+[In] 
+public var conversation:Conversation
+           </programlisting>
+           <para>
+           This component has three uses :
+           <itemizedlist>
+                <listitem>
+                Set the description before starting a new conversation with:
+                <programlisting>
+conversation.description = "Some description"; 
+someConversationalComponent.beginConversation();
+                </programlisting>
+                </listitem>
+                <listitem>
+                Set the description of an already existing conversation with:
+                <programlisting>
+conversation.setDescription("Some description");
+                </programlisting>
+                </listitem>
+                <listitem>
+                Resync the context with an existing server conversation (for example after a browser refresh) with:
+                <programlisting>
+conversation.getDescription();
+                </programlisting>
+                </listitem>
+           </itemizedlist>
+           </para>
+       </section>
+       
+       <section id="seam2.tideevents">
+           <title>Integration with Events</title>
+           <para>
+           The Tide client context can register listeners for Seam events triggered on the server-side. The interesting events are sent back along 
+           the server response and dispatched at the end of the processing of the result so that the context is correctly synchronized when the event is dispatched.           
+           </para>
+           <para>
+           Here is a simple example:
+           </para>
+           <programlisting role="JAVA">
+<![CDATA[@Stateful
+@Name("hotelBooking")
+@Restrict("#{identity.loggedIn}")
+public class HotelBookingAction implements HotelBooking {
+   ...
+   @End
+   public void confirm() {
+      em.persist(booking);
+      facesMessages.add(
+          "Thank you, #{user.name}, your confirmation number " +
+          "for #{hotel.name} is #{booking.id}"
+      );
+      log.info("New booking: #{booking.id} for #{user.username}");
+      events.raiseTransactionSuccessEvent("bookingConfirmed");
+   }
+}]]>
+           </programlisting>
+           
+           <programlisting role="AS3">
+Seam.getInstance().getSeamContext().addContextEventListener("bookingConfirmed", 
+    bookingConfirmedHandler, true); 
+    
+private function bookingConfirmedHandler(event:TideContextEvent):void {
+    // No need for remote call, event has been dispatched on
+    // the server and list is outjected.
+    hotelBookings = ArrayCollection(event.context.bookings);
+}
+           </programlisting>
+           
+           <para>
+           The last argument in <literal>addContextEventListener</literal> must be set to true; it indicates that the event will come from the remote side.
+           </para>
+           <para>
+           You can simplify the client code by using the <link linkend="graniteds.tideframework">Tide Client Framework</link>:
+           </para>
+           <programlisting role="AS3">
+[Name("bookingsCtl")]
+public class BookingsCtl {
+
+    [In]
+    public var bookings:ArrayCollection;
+
+    [Observer("bookingConfirmed", remote="true")]
+    public function bookingConfirmedHandler(event:TideContextEvent):void {
+        Alert.show("New booking confirmed: total " + bookings.length);
+    }
+}
+           </programlisting>
+       </section>
+       
+       <section id="seam2.tideasync">
+            <title>Integration with Asynchronous Events</title>
+            <para>
+            It is possible to use Gravity to listen to Seam events triggered asynchronously on the server-side. 
+            The registered events are received by a client event listener, exactly as synchronous events.
+            </para>
+            <para>
+            You will first have to configure a Gravity topic named <listeral>seamAsync</listeral> either in <literal>services-config.xml</literal>:
+            </para>
+            <programlisting role="XML">
+<![CDATA[<services-config>
+    <services>
+        <service id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <!--
+             ! Use "tideSeamFactory" and "my-graniteamf" for "seam" destination (see below).
+             !-->
+            <destination id="seam">
+                <channels>
+                    <channel ref="my-graniteamf"/>
+                </channels>
+                <properties>
+                    <factory>tideSeamFactory</factory>
+                </properties>
+                <security>
+                    <security-constraint>
+                        <auth-method>Custom</auth-method>
+                        <roles>
+                            <role>user</role>
+                            <role>admin</role>
+                        </roles>
+                    </security-constraint>
+                </security>
+            </destination>
+        </service>
+        
+        <service id="gravity-service"
+            class="flex.messaging.services.MessagingService"
+            messageTypes="flex.messaging.messages.AsyncMessage">
+            <adapters>
+                <adapter-definition id="seam"
+                    class="org.granite.gravity.adapters.SimpleServiceAdapter"/>
+            </adapters>
+
+            <destination id="seamAsync">
+                <channels>
+                    <channel ref="my-gravityamf"/>
+                </channels>
+                <security>
+                    <security-constraint>
+                        <auth-method>Custom</auth-method>
+                        <roles>
+                            <role>user</role>
+                            <role>admin</role>
+                        </roles>
+                    </security-constraint>
+                </security>
+                <adapter ref="seam"/>
+            </destination>
+        </service>
+    </services>
+
+    <!--
+     ! Declare Tide+Seam service factory.
+     !-->
+    <factories>
+        <factory id="tideSeamFactory" class="org.granite.tide.seam.SeamServiceFactory"/>
+    </factories>
+
+    <!--
+     ! Declare granite channels.
+     !-->
+    <channels>
+        <channel-definition id="my-graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+        
+        <channel-definition id="my-gravityamf"
+            class="org.granite.gravity.channels.GravityChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/gravity/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+
+</services-config>]]>
+            </programlisting>
+            
+            <para>
+            Or in <literal>component.xml</literal> (recommended):
+            </para>
+            
+            <programlisting role="XML">
+<![CDATA[<graniteds:messaging-destination name="seamAsync"/>]]>
+            </programlisting>
+            
+            <para>
+            Then the Tide messaging client has to be started and subscribed:
+            </para>
+            <programlisting role="AS3">
+Seam.getInstance().addPlugin(TideAsync.getInstance("seamAsync"));
+            </programlisting>
+            <para>
+            The asynchronous plugin will start a Gravity Consumer which listens to server events dispatched by the Tide server.
+            </para>
+            <note><para>
+            It is important to put this in a static initializer block of the main application.
+            </para></note>
+            <para>
+            Then you can simply register remote observers in any client component:
+            </para>
+            <programlisting role="JAVA">
+@Stateless
+@Name("test")
+public class TestAction implements Test {
+   
+   public void test(String text) {
+       Events.instance().raiseAsynchronousEvent("myEvent");
+   }
+}
+            </programlisting>
+            <programlisting role="AS3">
+private function init():void {
+    Seam.getInstance().getSeamContext().addContextEventListener(
+        "myEvent", myEventHandler, true);
+}
+
+private function myEventHandler(event:TideContextEvent):void {
+    trace("The event has been received");
+}
+            </programlisting>
+            <para>
+            Or with the client framework:
+            </para>
+            <programlisting role="AS3">
+public class TestObserver {
+    
+    [Observer("myEvent", remote="true")]
+    private function myEventHandler(event:TideContextEvent):void {
+        trace("The event has been received");
+    }
+}
+            </programlisting>
+       </section>
+       
+       <section id="seam2.tidemessages">
+            <title>Integration with Messages</title>
+            <para>
+            The built-in Flex component <literal>StatusMessages</literal> provides access to the latest status messages received from the server 
+            (both global and per control). 
+            <itemizedlist>
+                <listitem>
+                <literal>statusMessages.messages</literal> is a bindable list of global messages.
+                </listitem>
+                <listitem>
+                <literal>statusMessages.keyedMessages</literal> is a bindable map of per-control messages keyed by control id.
+                </listitem>
+            </itemizedlist>
+            </para>
+            <programlisting role="AS3">
+public function login():void {
+    tideContext.identity.username = 'joseph';
+    tideContext.identity.password = 'conrad';
+(1) tideContext.identity.login(loginResult);
+}
+...
+private function loginResult(event:TideResultEvent):void {
+(2) var welcomeMessage:TideMessage = 
+        event.context.statusMessages.messages.getItemAt(0) as TideMessage;
+    var s:String = welcomeMessage.summary;
+}
+            </programlisting>
+            
+            <para>
+            <orderedlist>
+                <listitem>
+                The component <literal>identity</literal> is called.
+                </listitem>
+                <listitem>
+                The welcome message produced by the Seam component is retrieved in the current context.
+                </listitem>
+            </orderedlist>
+            The property <literal>messages</literal> of the component <literal>StatusMessages</literal> is an <literal>ArrayCollection</literal> 
+            of <literal>TideMessage</literal> objects. The <literal>TideMessage</literal> is very similar to the Seam/JSF 
+            <literal>FacesMessage</literal>/<literal>StatusMessage</literal> and has three properties:
+            <itemizedlist>
+                <listitem>
+                <literal>severity</literal> (can be <literal>INFO</literal>, <literal>WARNING</literal>, <literal>ERROR</literal>, <literal>FATAL</literal>)
+                </listitem>
+                <listitem>
+                <literal>summary</literal>
+                </listitem>
+                <listitem>
+                <literal>detail</literal>
+                </listitem>
+            </itemizedlist>
+            </para>
+ 
+            <para>
+            Per-control messages can be retrieved with:
+            </para>
+            <programlisting role="AS3">
+<![CDATA[private function registerResult(event:TideResultEvent):void {
+    var messages:ArrayCollection = 
+        event.context.statusMessages.keyedMessages['username'] as ArrayCollection;
+    if (messages && messages.length > 0) {
+        var s:String = messages.getItemAt(0).summary;
+        Alert.show(s);
+    }
+}]]>
+            </programlisting>
+            <para>
+            These per-control messages can also be used to display validation messages on the corresponding UI component, by using the 
+            <literal>TideControlValidator</literal> component:
+            </para>
+            <programlisting role="XML">
+<![CDATA[<mx:Application
+    ...
+    xmlns:tsv="org.granite.tide.seam.validators">
+
+    <mx:TextInput id="username"/>
+
+    <tsv:TideControlValidator source="{username}" property="text"/>
+</mx:Application>]]>
+            </programlisting>
+       </section>
+       
+       <section id="seam2.tidequery">
+           <title>Data Paging with Query Component</title>
+           <para>
+           With Seam, you can easily use the <literal>Query</literal> component of the Seam Application Framework as the remote data provider for a paged collection. 
+           Filtering is also supported by using restrictions. All this is supported by the Seam-specific Flex implementation of <literal>PagedQuery</literal>. You
+           can also see the <link linkend="graniteds.paging">Data Paging</link> section for more details.
+           </para>
+           <programlisting role="AS3">
+import org.granite.tide.seam.framework.PagedQuery;
+
+Seam.getInstance().addComponent("people", PagedQuery);
+            </programlisting>
+            <para>
+            Then declare your Seam <literal>Query</literal> component:
+            </para>
+            <programlisting role="XML">
+<![CDATA[<component name="examplePerson" class="com.myapp.entity.Person"/>
+
+<framework:entity-query name="people"
+    ejbql="select p from Person p"
+    max-results="36">
+    <framework:restrictions>
+        <value>lower(p.lastName) like lower( #{examplePerson.lastName} || '%' )</value>
+    </framework:restrictions>
+</framework:entity-query>]]>
+            </programlisting>
+            <para>
+            This is a very standard Seam <literal>Query</literal> definition, only the <literal>max-results</literal> property is important as it will be 
+            used as the page size for the client component.
+            </para>
+            <warning><para>
+            Note that defining <literal>max-results</literal> is mandatory when using server page size and it is necessary that the <literal>max-results</literal> 
+            page size is greater than the expected maximum size of the UI component that will be bound to the collection.
+            </para></warning>
+            <para>
+            You can also specify the <literal>max-results</literal> property on the client component instead of the server, you can then omit the property on the
+            server component definition:
+            </para>
+           <programlisting role="AS3">
+Seam.getInstance().addComponentWithFactory("people", PagedQuery, { maxResults: 40 });
+            </programlisting>
+            <para>
+            To change filter parameters values on the client-side, you just have to set values on the restriction object (here <literal>examplePerson</literal>) 
+            in the context. Tide tracks the changes on the object on the Flex side and will update the server filter instance accordingly. 
+            <literal>PagedQuery</literal> implicitly forces the detected restriction variables to be synchronized remotely with the server 
+            so you don't have to do <literal>[Out(remote="true")]</literal> or <literal>Seam.getInstance().setComponentRemoteSync("examplePerson", true)</literal> manually.
+            </para>
+            <para>
+            For example, you can use a filter like this :
+            </para>
+            <programlisting role="XML">
+<![CDATA[<mx:Script>
+    [In(create="true")]
+    public var examplePerson:Person;
+
+    [In]
+    public var people:PagedQuery;
+</mx:Script>
+
+<mx:TextInput id="lastName" text="{examplePerson.lastName}"/>
+<mx:Button label="Search" click="people.refresh()"/>
+
+<mx:DataGrid id="peopleGrid" dataProvider="{people}">
+   ...
+</mx:DataGrid>]]>
+            </programlisting>
+       </section>
+       
+       <section id="seam2.tideidentity">
+           <title>Integration with Identity Component</title>
+           <para>
+           The Seam <literal>identity</literal> component can be called from the global Tide context and is fully integrated with 
+           the Flex <literal>RemoteObject</literal> security. This provides end-to-end security from the Flex client to the server component through Seam Security.
+           </para>
+           <para>
+           The Flex <literal>identity</literal> component for Seam (of class <literal>org.granite.tide.seam.security.Identity</literal>) predictably provides two methods 
+            <literal>login()</literal> and <literal>logout()</literal> that can be used as any Tide remote call:
+           </para>
+           <programlisting role="AS3">
+public function login(username:String, password:String):void {
+    tideContext.identity.username = username;
+    tideContext.identity.password = password;
+    tideContext.identity.login(loginResult, loginFault);
+}
+
+private function loginResult(event:TideResultEvent):void {
+    Alert.show(event.context.messages.getItemAt(0).summary);
+}
+
+private function loginFault(event:TideFaultEvent):void {
+    Alert.show(event.context.messages.getItemAt(0).summary);
+}
+           </programlisting>
+            
+            <para>
+            The <literal>identity</literal> component also exposes the bindable property <literal>loggedIn</literal> that represents the current authentication state.
+            As it is bindable, it can be used to choose between different views, for example to switch between a login form and the application view with a Flex
+            <literal>ViewStack</literal> component:
+            </para>
+            
+            <programlisting role="XML">
+<![CDATA[<mx:ViewStack id="main" selectedIndex="{identity.loggedIn ? 1 : 0}">
+    <views:LoginView id="loginView"/>
+    <views:MainView id="mainView"/>
+</mx:ViewStack>]]>
+            </programlisting>
+            
+            <para>
+            Finally the <literal>identity</literal> component is integrated with Seam Security role-based and permission-based security and can be used 
+            to get information or show/hide UI depending on the user access rights. It provides methods similar to the Seam Security JSF tags 
+            <literal>s:hasRole</literal> and <literal>s:hasPermission</literal>.
+            </para>
+            <programlisting role="XML">
+<![CDATA[<mx:Button id="deleteCategoryButton" 
+    label="Delete Category"
+    enabled="{identity.hasRole('admin')}"
+    click="productService.deleteCategory(category)"/>
+    
+<mx:Button id="deleteProductButton" label="Delete Product"
+    enabled="{productGrid.selectedItem}"
+    visible="{identity.hasPermission(productGrid.selectedItem, 'delete')}"
+    click="productService.deleteProduct(productGrid.selectedItem)"/>
+]]>
+            </programlisting>
+            <para>
+            With these declaration, the button labeled <emphasis>Delete Category</emphasis> will be enabled only if the user has the role <literal>admin</literal>
+            and the button <emphasis>Delete Product</emphasis> only if the user has the permission <literal>delete</literal> for the selected product.
+            Another possibility is to completely hide the button with the properties <literal>visible</literal> and <literal>includeInLayout</literal>, or any other
+            property relevant for the display of the UI component.
+            </para>
+            
+            <para>
+            This can also be used as any remote class with result and fault handlers: 
+            </para>
+            <programlisting role="AS3">
+ public function checkRole(role:String):void {
+    identity.hasRole(role, checkRoleResult, checkRoleFault);
+ }
+ 
+ private function checkRoleResult(event:TideResultEvent, role:String):void {
+    if (role == 'admin') {
+        if (event.result)
+            trace("User has admin role");
+        else
+            trace("User does not have admin role");
+    }
+ }
+            </programlisting>
+            
+            <para>
+            You can notice that the result and fault handlers have a second argument so you can use the same handler for many access check calls.            
+            </para>
+            
+            <warning><para>
+            <literal>identity.hasRole()</literal> will issue a remote call when it is called the first time, thus its return value cannot be used reliably
+            to determine if the use has the required role. It will always return <literal>false</literal> until the remote call result is received.
+            </para></warning>
+            
+            <para>
+            It is important to note that <literal>identity</literal> caches the user access rights so only the first call to <literal>hasRole()</literal> 
+            and <literal>hasPermission</literal> will be remote. If the user rights are changed on the server, or if you want to enforce security more 
+            than once per user session, you can clear the security cache manually with <literal>identity.clearSecurityCache()</literal>, 
+            for example periodically with a <literal>Timer</literal>.
+            </para>
+       </section>
+    </section>
+</chapter>

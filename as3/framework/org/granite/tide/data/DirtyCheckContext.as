@@ -22,6 +22,7 @@ package org.granite.tide.data {
     import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.events.IEventDispatcher;
+    import flash.utils.ByteArray;
     import flash.utils.Dictionary;
     import flash.utils.getQualifiedClassName;
     
@@ -30,6 +31,7 @@ package org.granite.tide.data {
     import mx.collections.ICollectionView;
     import mx.collections.IList;
     import mx.collections.ListCollectionView;
+    import mx.core.IPropertyChangeNotifier;
     import mx.core.IUID;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
@@ -40,20 +42,20 @@ package org.granite.tide.data {
     import mx.utils.ObjectUtil;
     
     import org.granite.collections.IMap;
-    import org.granite.util.Enum;
+    import org.granite.collections.IPersistentCollection;
     import org.granite.math.BigNumber;
     import org.granite.meta;
-    import org.granite.collections.IPersistentCollection;
     import org.granite.tide.BaseContext;
-    import org.granite.tide.Tide;
+    import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IExpression;
-    import org.granite.tide.EntityDescriptor;
-    import org.granite.tide.IWrapper;
     import org.granite.tide.IPropertyHolder;
+    import org.granite.tide.IWrapper;
+    import org.granite.tide.Tide;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
+    import org.granite.util.Enum;
 
 
     use namespace meta;
@@ -132,23 +134,23 @@ package org.granite.tide.data {
         /**
          *  Check if entity has changed since last save point
          *
-         *  @param entity entity to restore
+         *  @param entity entity to check
          *  @param propName property name
          *  @param value
          *   
          *  @return entity is dirty
          */ 
-        public function isEntityChanged(entity:IEntity, propName:String = null, value:* = null):Boolean {
+        public function isEntityChanged(entity:Object, propName:String = null, value:* = null):Boolean {
             var dirty:Boolean = false;
             var saveTracking:Boolean = _context.meta_tracking;
             _context.meta_tracking = false;
-            
+			
             var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false });
             var p:String;
             var val:Object, saveval:*;
             
-            var entityDesc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(entity);
-            if (!entityDesc.versionPropertyName || isNaN(Object(entity)[entityDesc.versionPropertyName])) {
+            var entityDesc:EntityDescriptor = entity is IEntity ? _context.meta_tide.getEntityDescriptor(entity) : null;
+            if (entityDesc != null && (!entityDesc.versionPropertyName || isNaN(Object(entity)[entityDesc.versionPropertyName]))) {
                 for each (p in cinfo.properties) {
                     if (p == entityDesc.versionPropertyName || p == "meta_dirty" || p == "uid")
                         continue;
@@ -162,22 +164,29 @@ package org.granite.tide.data {
             }
             else {
                 var save:Object = _savedProperties[entity];
+				var versionPropertyName:String = entityDesc != null ? entityDesc.versionPropertyName : null;
                 
                 for each (p in cinfo.properties) {
-                    if (p == entityDesc.versionPropertyName || p == 'meta_dirty')
+                    if (p == versionPropertyName || p == 'meta_dirty')
                         continue;
                     
                     val = (p == propName ? value : entity[p]);
                     saveval = save ? save[p] : null;
                     var o:Object;
-                    if (save && ((val && (ObjectUtil.isSimple(val) || val is Enum || val is IEntity))
-                    	|| (saveval && (ObjectUtil.isSimple(saveval) || saveval is Enum || saveval is IEntity)))) {
-                        if (saveval !== undefined && val !== save[p]) {
+                    if (save && ((val && (ObjectUtil.isSimple(val) || val is ByteArray))
+                    	|| (saveval && (ObjectUtil.isSimple(saveval) || saveval is ByteArray)))) {
+                        if (saveval !== undefined && ObjectUtil.compare(val, save[p]) != 0) {
                             dirty = true;
                             break;
                         }
                     }
-                    else if (save && (val is BigNumber || saveval is BigNumber)) {
+					else if (save && (val is IUID || saveval is IUID)) {
+						if (saveval !== undefined && val !== save[p]) {
+							dirty = true;
+							break;
+						}
+					}
+                    else if (save && (val is BigNumber || saveval is BigNumber || val is Enum || saveval is Enum)) {
                     	if (saveval !== undefined && ((!val && saveval) || !val.equals(saveval))) {
                     		dirty = true;
                     		break;
@@ -190,80 +199,36 @@ package org.granite.tide.data {
                             break;
                         }
                     }
+					else if (val != null && val is IEventDispatcher && !(val is IUID || val is Enum || val is BigNumber || val is ByteArray || val is XML) && isEntityChanged(val)) {
+						dirty = true;
+						break;
+					}
                 }
             }
             
             _context.meta_tracking = saveTracking;
             return dirty;
         }
-        
-        
-//        /**
-//         *  Update saved properties 
-//         *
-//         *  @param entity entity to restore
-//         *  @param propName property name
-//         *  @param value
-//         *   
-//         *  @return entity is dirty
-//         */ 
-//        public function updateSavedEntity(entity:IEntity, obj:Object):void {
-//            var saveTracking:Boolean = _context.meta_tracking;
-//            _context.meta_tracking = false;
-//            
-//            var oldDirty:Boolean = _dirtyCount > 0;
-//            
-//            var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false });
-//            var p:String;
-//            var val:Object;
-//            
-//            var save:Object = _savedProperties[entity];
-//            
-//            for (p in save) {
-//            	if (obj[p] === entity[p])
-//                    delete save[propName];
-//                else
-//            		save[p] = obj[p];
-//            }
-//                        
-//            var count:int = 0;
-//            for (p in save)
-//                count++;
-//            if (count <= 1) {
-//                delete _savedProperties[entity];
-//                _dirtyCount--;
-//            }
-//            
-//            // @TODO Handle case of collections, should update diff between 
-////            for each (p in cinfo.properties) {
-////                if (p == entityDesc.versionPropertyName || p == 'meta_dirty')
-////                    continue;
-////                
-////                val = entity[p];
-////                if ((val is IList || val is IMap) && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
-////                    var savedArray:Array = _savedProperties[val];
-////                    if (savedArray && savedArray.length > 0) {
-////                        dirty = true;
-////                        break;
-////                    }
-////                }
-////            }
-//        
-//            var newDirtyEntity:Boolean = isEntityChanged(entity);
-//            if (!newDirtyEntity) {
-//            	var pce:PropertyChangeEvent = new PropertyChangeEvent("dirtyChange", false, false, 
-//            		PropertyChangeEventKind.UPDATE, "meta_dirty", true, false);
-//            	entity.dispatchEvent(pce);
-//            }
-//	        
-//	        if ((_dirtyCount > 0) !== oldDirty)
-//                _context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", oldDirty, _dirtyCount > 0));
-//            
-//            _context.meta_tracking = saveTracking;
-//            return dirty;
-//        }
 
 
+		private function isSame(val1:*, val2:*):Boolean {
+			if (ObjectUtil.isSimple(val1) && ObjectUtil.isSimple(val2))
+				return ObjectUtil.compare(val1, val2, 0) == 0;
+			else if (val1 is ByteArray && val2 is ByteArray)
+				return ObjectUtil.compare(val1, val2, 0) == 0;
+			else if ((val1 is BigNumber && val2 is BigNumber) || (val1 is Enum && val2 is Enum))
+				return val1.equals(val2);
+			else {
+				var n:* = val1 is IWrapper ? val1.object : val1;
+				var o:* = val2 is IWrapper ? val2.object : val2;
+				if (n is IUID && o is IUID)
+					return n.uid === o.uid;
+				else
+					return n === o;
+			}
+			return val1 === val2;
+		}
+		
         /**
          *  @private 
          *  Interceptor for managed entity setters
@@ -274,73 +239,79 @@ package org.granite.tide.data {
          *  @param newValue new value
          */ 
         public function setEntityProperty(entity:IEntity, propName:String, oldValue:*, newValue:*):void {
-            var oldDirty:Boolean = _dirtyCount > 0;
-            
-            var diff:Boolean = false;
-            if (ObjectUtil.isSimple(newValue) && ObjectUtil.isSimple(oldValue))
-            	diff = ObjectUtil.compare(newValue, oldValue, 0) != 0;
-            else if (newValue is BigNumber && oldValue is BigNumber)
-            	diff = !newValue.equals(oldValue);
-            else {
-            	var n:* = newValue is IWrapper ? newValue.object : newValue;
-            	var o:* = oldValue is IWrapper ? oldValue.object : oldValue;
-            	if (n is IUID && o is IUID)
-            		diff = n.uid !== o.uid;
-            	else
-            		diff = n !== o;
-            }
-            
-            if (diff) {
-                var oldDirtyEntity:Boolean = isEntityChanged(entity, propName, oldValue);
-                
-                var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(entity);
-                if (desc.versionPropertyName && !isNaN(Object(entity)[desc.versionPropertyName])) {
-                    var save:Object = _savedProperties[entity];
-                    var unsaved:Boolean = !save;
-                    
-                    if (unsaved || save[desc.versionPropertyName] != Object(entity)[desc.versionPropertyName]) {
-                        save = new Object();
-                        save.version = Object(entity)[desc.versionPropertyName];
-                        _savedProperties[entity] = save;
-                        save[propName] = oldValue;
-                        if (unsaved)
-                        	_dirtyCount++;
-                    }
-                    
-                    if (save && save[desc.versionPropertyName] == Object(entity)[desc.versionPropertyName]) {
-                    	if (!save.hasOwnProperty(propName))
-                        	save[propName] = oldValue;
-	                    
-	                    if (save[propName] === newValue || (save[propName] is BigNumber && save[propName].equals(newValue))) {
-	                        delete save[propName];
-	                        var count:int = 0;
-	                        for (var p:Object in save)
-	                            count++;
-	                        if (count <= 1) {
-	                            delete _savedProperties[entity];
-	                            _dirtyCount--;
-	                        }
-	                    }
-	               	}
-                }
-                else {
-                	if (!isEmpty(newValue) && isEmpty(oldValue))
-                    	_dirtyCount++; 
-                    else if (isEmpty(newValue) && !isEmpty(oldValue))
-                    	_dirtyCount--;
-                }
-                
-                var newDirtyEntity:Boolean = isEntityChanged(entity);
-                if (newDirtyEntity !== oldDirtyEntity) {
-                	var pce:PropertyChangeEvent = new PropertyChangeEvent("dirtyChange", false, false, 
-                		PropertyChangeEventKind.UPDATE, "meta_dirty", oldDirtyEntity, newDirtyEntity);
-                	entity.dispatchEvent(pce);
-                }
-            }
-	        
-	        if ((_dirtyCount > 0) !== oldDirty)
-                _context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", oldDirty, _dirtyCount > 0));
+			entityPropertyChangeHandler(entity, entity, propName, oldValue, newValue);
         }
+		
+		
+		private function entityPropertyChangeHandler(owner:IEntity, entity:Object, propName:String, oldValue:*, newValue:*):void {
+			var oldDirty:Boolean = _dirtyCount > 0;
+			
+			var diff:Boolean = !isSame(oldValue, newValue);
+			
+			if (diff) {
+				var oldDirtyEntity:Boolean = isEntityChanged(owner, propName, oldValue);
+				
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(owner);
+				if (desc.versionPropertyName && !isNaN(Object(owner)[desc.versionPropertyName])) {
+					var save:Object = _savedProperties[entity];
+					var unsaved:Boolean = !save;
+					
+					if (unsaved || save[desc.versionPropertyName] != Object(owner)[desc.versionPropertyName]) {
+						save = new Object();
+						save.version = Object(owner)[desc.versionPropertyName];
+						_savedProperties[entity] = save;
+						save[propName] = oldValue;
+						if (unsaved)
+							_dirtyCount++;
+					}
+					
+					if (save && save[desc.versionPropertyName] == Object(owner)[desc.versionPropertyName]) {
+						if (!save.hasOwnProperty(propName))
+							save[propName] = oldValue;
+						
+						if (isSame(save[propName], newValue)) {
+							delete save[propName];
+							var count:int = 0;
+							for (var p:Object in save)
+								count++;
+							if (count <= 1) {
+								delete _savedProperties[entity];
+								_dirtyCount--;
+							}
+						}
+					}
+				}
+				else {
+					if (!isEmpty(newValue) && isEmpty(oldValue))
+						_dirtyCount++; 
+					else if (isEmpty(newValue) && !isEmpty(oldValue))
+						_dirtyCount--;
+				}
+				
+				var newDirtyEntity:Boolean = isEntityChanged(owner);
+				if (newDirtyEntity !== oldDirtyEntity) {
+					var pce:PropertyChangeEvent = new PropertyChangeEvent("dirtyChange", false, false, 
+						PropertyChangeEventKind.UPDATE, "meta_dirty", oldDirtyEntity, newDirtyEntity);
+					owner.dispatchEvent(pce);
+				}
+			}
+			
+			if ((_dirtyCount > 0) !== oldDirty)
+				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", oldDirty, _dirtyCount > 0));
+		}
+		
+		
+		/**
+		 *  @private 
+		 *  Embedded event handler to save changes on managed objects
+		 *
+		 *  @param event collection event
+		 */ 
+		public function entityEmbeddedChangeHandler(event:PropertyChangeEvent):void {
+			var owner:Object = _context.meta_getOwnerEntity(event.target);
+			if (owner is IEntity)
+				entityPropertyChangeHandler(IEntity(owner), event.target, event.property as String, event.oldValue, event.newValue);
+		}
 
 
         /**
@@ -366,7 +337,7 @@ package org.granite.tide.data {
                 if (((event.kind == CollectionEventKind.ADD && save[i].kind == CollectionEventKind.REMOVE)
                     || (event.kind == CollectionEventKind.REMOVE && save[i].kind == CollectionEventKind.ADD))
                     && event.items.length == 1 && save[i].items.length == 1 
-					&& event.items[0] === save[i].items[0] && event.location == save[i].location) {
+					&& isSame(event.items[0], save[i].items[0]) && event.location == save[i].location) {
                     save.splice(i, 1);
                     if (save.length == 0) {
                         delete _savedProperties[event.target];
@@ -383,8 +354,8 @@ package org.granite.tide.data {
 				else if (event.kind == CollectionEventKind.REPLACE && save[i].kind == CollectionEventKind.REPLACE
 					&& event.items.length == 1 && save[i].items.length == 1
 					&& event.location == save[i].location
-					&& event.items[0].oldValue == save[i].items[0].newValue
-					&& event.items[0].newValue == save[i].items[0].oldValue) {
+					&& isSame(event.items[0].oldValue, save[i].items[0].newValue)
+					&& isSame(event.items[0].newValue, save[i].items[0].oldValue)) {
 					save.splice(i, 1);
 					if (save.length == 0) {
 						delete _savedProperties[event.target];

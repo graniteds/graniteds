@@ -7,27 +7,28 @@
 
 package org.granite.test.tide.data {
 
+    import flash.utils.ByteArray;
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
     
     import mx.collections.ListCollectionView;
     
     import org.granite.meta;
+    import org.granite.test.tide.AbstractEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IPropertyHolder;
-	import org.granite.test.tide.AbstractEntity;
     import org.granite.util.Enum;
 
     use namespace meta;
 
     [Managed]
-    [RemoteClass(alias="org.granite.tide.test.Person4")]
-    public class Person4 extends AbstractEntity {
+    [RemoteClass(alias="org.granite.tide.test.Person10")]
+    public class Person10 extends AbstractEntity {
 
 		private var _salutation:Salutation;
         private var _contacts:ListCollectionView;
         private var _firstName:String;
-		private var _address:EmbeddedAddress;
+		private var _picture:ByteArray;
         private var _lastName:String;
         
         
@@ -52,11 +53,11 @@ package org.granite.test.tide.data {
             return _firstName;
         }
 		
-		public function set address(value:EmbeddedAddress):void {
-			_address = value;
+		public function set picture(value:ByteArray):void {
+			_picture = value;
 		}
-		public function get address():EmbeddedAddress {
-			return _address;
+		public function get picture():ByteArray {
+			return _picture;
 		}
 
         public function set lastName(value:String):void {
@@ -67,13 +68,13 @@ package org.granite.test.tide.data {
         }
 
         override meta function merge(em:IEntityManager, obj:*):void {
-            var src:Person4 = Person4(obj);
+            var src:Person10 = Person10(obj);
             super.meta::merge(em, obj);
             if (meta::isInitialized()) {
-				em.meta_mergeExternal(src._address, _address, null, this, 'address', function setter(o:*):void{_address = o as EmbeddedAddress}) as EmbeddedAddress;
                 em.meta_mergeExternal(src._contacts, _contacts, null, this, 'contacts', function setter(o:*):void{_contacts = o as ListCollectionView}) as ListCollectionView;
                 em.meta_mergeExternal(src._firstName, _firstName, null, this, 'firstName', function setter(o:*):void{_firstName = o as String}) as String;
                 em.meta_mergeExternal(src._lastName, _lastName, null, this, 'lastName', function setter(o:*):void{_lastName = o as String}) as String;
+				em.meta_mergeExternal(src._picture, _picture, null, this, 'picture', function setter(o:*):void{_picture = o as ByteArray}) as ByteArray;
                 em.meta_mergeExternal(src._salutation, _salutation, null, this, 'salutation', function setter(o:*):void{_salutation = o as Salutation}) as Salutation;
             }
         }
@@ -81,10 +82,10 @@ package org.granite.test.tide.data {
         override public function readExternal(input:IDataInput):void {
             super.readExternal(input);
             if (meta::isInitialized()) {
-				_address = input.readObject() as EmbeddedAddress;
                 _contacts = input.readObject() as ListCollectionView;
                 _firstName = input.readObject() as String;
                 _lastName = input.readObject() as String;
+				_picture = input.readObject() as ByteArray;
                 _salutation = Enum.readEnum(input) as Salutation;
             }
         }
@@ -92,10 +93,10 @@ package org.granite.test.tide.data {
         override public function writeExternal(output:IDataOutput):void {
             super.writeExternal(output);
             if (meta::isInitialized()) {
-				output.writeObject((_address is IPropertyHolder) ? IPropertyHolder(_address).object : _address);
                 output.writeObject((_contacts is IPropertyHolder) ? IPropertyHolder(_contacts).object : _contacts);
                 output.writeObject((_firstName is IPropertyHolder) ? IPropertyHolder(_firstName).object : _firstName);
                 output.writeObject((_lastName is IPropertyHolder) ? IPropertyHolder(_lastName).object : _lastName);
+				output.writeObject((_picture is IPropertyHolder) ? IPropertyHolder(_picture).object : _picture);
                 output.writeObject((_salutation is IPropertyHolder) ? IPropertyHolder(_salutation).object : _salutation);
             }
         }

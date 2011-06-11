@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<chapter id="graniteds.ee6cdi">
+    <title>Integration with CDI</title>
+    <para>
+    The <ulink url="http://www.jcp.org/en/jsr/detail?id=299">Context and Dependency Injection</ulink> specification is a powerful new feature of Java EE 6. 
+    It integrates on a common programming model all the services provided by Java EE. 
+    </para>
+    
+    <para>
+    GraniteDS provides out-of-the-box integration with CDI via the Tide API. You can remotely call CDI beans, and it fully supports serialization of JPA 
+    entities from and to your Flex application, taking care of lazily loaded associations. 
+    The support for JPA entity beans is covered in the section <link linkend="remoting.jpa">JPA and lazy initialization</link>, so this section will only 
+    describe how to call Seam components from a Flex application. GraniteDS also integrates with container security for authentication and role-based authorization.
+    </para>
+    
+    <para>
+    The support for CDI is included in the library <literal>granite-cdi.jar</literal>, so you always have to include this library in either
+    <literal>WEB-INF/lib</literal> or <literal>lib</literal> for an ear packaging.
+    </para>
+    <note><para>
+    Only the reference implementation <ulink url="http://seamframework.org/Weld">Weld</ulink> is supported for now. This is the one used in JBoss 6 and 
+    GlassFish v3.
+    </para></note>
+    
+    <para>
+    To provide a more native experience for CDI developers when used in a Servlet 3 compliant container, the CDI support in GraniteDS can be configured 
+    with a simple annotated class. The most important features of GraniteDS can be configured this way, and it is still possible to fall back to the 
+    default GraniteDS configuration files <literal>services-config.xml</literal> and <literal>granite-config.xml</literal> for unsupported features. 
+    </para>
+    
+    <section id="cdi.nativesetup">
+        <title>CDI Servlet 3 Setup</title>
+        <para>
+        On Servlet 3 compliant containers, GraniteDS can use the new APIs to automatically register its own servlets and filters and thus does not need any
+        particular configuration in <literal>web.xml</literal>. This automatic setup is triggered when GraniteDS finds a class annotated with
+        <literal>@FlexFilter</literal> in one of the application archives:
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[@FlexFilter(
+        tide=true,
+        type="cdi",
+        factoryClass=CDIServiceFactory.class,
+        tideInterfaces={Identity.class}
+)
+public class GraniteConfig {
+}]]>  
+        </programlisting>
+        <para>
+        You also have to add an empty file <literal>WEB-INF/beans.xml</literal>.
+        </para>
+    </section>
+    
+    <section id="cdi.tide">
+       <title>Using the Tide API</title>
+        <para>
+        Most of what is described in the <link linkend="remoting.tideremoting">Tide Remoting</link> section applies for CDI, however GraniteDS also provides
+        a much improved integration with CDI when using the Tide client API.
+        </para>
+       
+       <section id="cdi.tideconfig">
+           <title>Configuration with Servlet 3</title>
+           <para>
+           This is by far the easiest way to use Tide with CDI, it just consists in creating a class annotated with <literal>@FlexFilter</literal>:
+           </para>
+           <programlisting role="JAVA">
+<![CDATA[@FlexFilter(
+        tide=true,
+        type="cdi",
+        factoryClass=CDIServiceFactory.class,
+        tideInterfaces={Identity.class}
+)
+public class GraniteConfig {
+}]]>
+           </programlisting>
+           
+           <para>
+           The <literal>@FlexFilter</literal> declaration will setup an AMF processor for the specified url pattern, and the <literal>tide</literal> attribute 
+           specifies that you want a Tide-enabled service factory. The default url pattern for remoting <literal>/graniteamf/amf.txt</literal> and messaging
+           <literal>/gravityamf/amf.txt</literal>.
+           </para>
+           
+           <para>
+           Other configurations can be done with <literal>flex-filter</literal>:
+            <itemizedlist>
+                <listitem>
+                <literal>tideAnnotations</literal> is equivalent to <literal>tide-component annotated-with=""</literal> in <literal>granite-config.xml</literal>. 
+                It allows to define the list of annotation names that enable remote access to CDI beans. <literal>@RemoteDestination</literal> and
+                <literal>@TideEnabled</literal> are always declared by default, but you can use any other one if you don't want a compilation dependency 
+                on the GraniteDS libraries.
+                </listitem>
+                <listitem>
+                <literal>tideInterfaces</literal> is equivalent to <literal>tide-component instance-of=""</literal> in <literal>granite-config.xml</literal>. 
+                It allows to define the list of interface/class names that enable remote access to CDI beans.
+                </listitem>
+                <listitem>
+                <literal>tideRoles</literal> allows to define a list of security roles that are required to access the Tide remote destination. 
+                In general it is not necessary to define this destination-wide security and you can only rely on Java EE security for fine-grained access to individual
+                beans.
+                </listitem>
+                <listitem>
+                <literal>exceptionConverters</literal> allows to define a list of server-side exception converters. 
+                It's the equivalent to <literal>exception-converters</literal> in <literal>granite-config.xml</literal>.
+                </listitem>
+                <listitem>
+                <literal>amf3MessageInterceptor</literal> allows to define a message interceptor. You have to define a class implementing 
+                <literal>AMFMessageInterceptor</literal>. It's highly recommended to subclass <literal>org.granite.cdi.CDIInterceptor</literal> 
+                and call <literal>super.before</literal> and <literal>super.after</literal> in your implementation.
+                </listitem>
+            </itemizedlist>
+            </para>
+       </section>
+       
+        <section id="cdi.tidestdconfig">
+          <title>Default Configuration</title>
+            <para>
+            If you don't use the Servlet 3 configuration, you will have to use the standard GraniteDS configuration files instead, and setup these 
+            elements manually. You can safely skip this section if you choose Servlet 3 configuration.
+            <itemizedlist>
+              <listitem>
+              You can define in the <literal>tide-annotations</literal> section of <literal>granite-config.xml</literal> the conditions 
+              used to enable remote access to Seam destinations (for example all beans annotated with a particular annotation). 
+              </listitem>
+              <listitem>
+              You have to configure the specific Tide/CDI <literal>org.granite.tide.cdi.CDIServiceFactory</literal> service factory 
+              in <literal>services-config.xml</literal>.
+              </listitem>
+              <listitem>
+              You have to configure a unique Tide/CDI destination named <literal>cdi</literal> in <literal>services-config.xml</literal>
+              </listitem>
+              <listitem>
+              You have to retrieve the Tide context in Flex with <literal>Cdi.getInstance().getCdiContext()</literal> 
+              instead of <literal>Tide.getInstance().getContext()</literal>.
+              </listitem>
+            </itemizedlist>
+            </para>
+            
+            <para>
+            Here is a default configuration suitable for most cases:
+            </para>
+            
+            <programlisting role="XML">
+<![CDATA[<granite-config scan="true">
+    ...
+    
+    <tide-components>
+        <tide-component annotated-with="org.granite.messaging.service.annotations.RemoteDestination"/>
+        <tide-component annotated-with="org.granite.tide.annotations.TideEnabled"/>
+    </tide-components>
+    
+</granite-config>]]>    
+            </programlisting>
+            
+            <programlisting role="XML">
+<![CDATA[<services-config>
+
+    <services>
+        <service id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <!--
+             ! Use "tideCdiFactory" and "my-graniteamf" for "cdi" destination (see below).
+             ! The destination must be "cdi" when using Tide with default configuration.
+             !-->
+            <destination id="cdi">
+                <channels>
+                    <channel ref="my-graniteamf"/>
+                </channels>
+                <properties>
+                    <factory>tideCdiFactory</factory>
+                </properties>
+            </destination>
+        </service>
+    </services>
+
+    <!--
+     ! Declare tideCdiFactory service factory.
+     !-->
+    <factories>
+        <factory id="tideCdiFactory" class="org.granite.tide.cdi.CdiServiceFactory"/>
+    </factories>
+
+    <!--
+     ! Declare my-graniteamf channel.
+     !-->
+    <channels>
+        <channel-definition id="my-graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+
+</services-config>]]>    
+            </programlisting>
+            
+            <para>
+            The destination named <literal>cdi</literal> will be the one and only destination required for all Cdi destinations. 
+            </para>
+       </section>
+       
+       <section id="cdi.tideremotingdi">
+            <title>Basic Remoting with Dependency Injection</title>
+            <para>
+            When using Cdi, the only difference on the client is that you have to use the <literal>Cdi</literal> singleton. Here is a simple example of 
+            remoting with an injected client proxy for an Cdi bean:
+            </para>
+                        
+            <programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Cdi.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.cdi.Cdi;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        
+        [In]
+        public var helloService:Component;
+        
+        private function hello(name:String):void {
+            helloService.hello(name, resultHandler, faultHandler);
+        }
+        
+        private function resultHandler(event:TideResultEvent):void {
+            outputMessage.text = event.result as String;
+        }                       
+        
+        private function faultHandler(event:TideFaultEvent):void {
+            // Handle fault
+        }
+    </mx:Script>
+    
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+    
+    <!-- Call the web service, use the text in a TextInput control as input data.--> 
+    <mx:Button click="hello(inputName.text)"/>
+    
+    <!-- Result message. --> 
+    <mx:Label id="outputMessage"/>
+</mx:Application>]]>
+            </programlisting>
+            
+            <para>
+            This is almost identical to the standard Tide API described in the <link linkend="remoting.tideremoting">Tide remoting</link> section, and all other
+            methods apply for Cdi. 
+            </para>
+       </section>
+            
+       <section id="cdi.tideremotingtypesafe">
+            <title>Typesafe Remoting with Dependency Injection</title>
+            <para>
+            You can benefit from the capability of the Gas3 code generator (see <link linkend="graniteds.gas3">here</link>) to generate a strongly typed 
+            ActionScript 3 client proxy from the CDI bean interface when it is annotated with <literal>@RemoteDestination</literal>.
+            In this case, you can inject a typesafe reference to your service and get better compile time error checking and auto completion in your IDE:
+            </para>
+            
+            <programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Cdi.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.cdi.Cdi;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        import com.myapp.service.HelloService;
+        
+        [In]
+        public var helloService:HelloService;
+        
+        private function hello(name:String):void {
+            helloService.hello(name, resultHandler, faultHandler);
+        }
+        ...
+    </mx:Script>
+    
+    ...
+</mx:Application>]]>
+            </programlisting>
+            
+            <para>
+            It is possible to benefit from even more type safety by using the annotation <literal>[Inject]</literal> instead of <literal>In</literal>.
+            When using this annotation, the full class name is used to find the target bean in the CDI context instead of the bean name.
+            </para>
+            
+            <programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Cdi.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.cdi.Cdi;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        import com.myapp.service.HelloService;
+        
+        [Inject]
+        public var myService:HelloService;
+        
+        private function hello(name:String):void {
+            myService.hello(name, resultHandler, faultHandler);
+        }
+        ...
+    </mx:Script>
+    
+    ...
+</mx:Application>]]>
+            </programlisting>
+        </section>
+       
+       <section id="cdi.tideconversations">
+           <title>Integration with Conversations</title>
+           <para>
+           Until now, all client-server communications have been done through the global Tide client context. Tide supports secondary client contexts 
+           which represent particular server conversations.
+           </para>
+           <para>
+           When a remote component call triggers the beginning of a new conversation, the context referenced by the <literal>TideResultEvent</literal> is a new 
+           context object corresponding to this conversation. Of course many such contexts can exist simultaneously on the Flex client, and correspond 
+           to different server conversations.
+           </para>
+           <para>
+           Variables having less than conversation scope are managed in the corresponding context. Session scoped variables and components are always managed 
+           in the global context.
+           </para>
+           <programlisting role="JAVA">
+@Stateful
+public class HotelBookingAction implements HotelBooking {
+    ...
+    @Inject
+    private Conversation conversation;
+    
+    public void selectHotel(Hotel selectedHotel) {
+        conversation.begin();
+        hotel = em.merge(selectedHotel);
+    }
+    ...
+}
+           </programlisting>
+           <programlisting role="AS3">
+public function selectHotel(hotel:Hotel):void {
+(1) tideContext.hotelBooking.selectHotel(hotel, selectHotelResult);
+}
+
+private function selectHotelResult(event:TideResultEvent):void {
+(2) var localContext:Context = event.context as Context;
+    var hotel:Hotel = localContext.hotel;
+}
+           </programlisting>
+           <para>
+           <orderedlist>
+                <listitem>
+                The component <literal>hotelBooking</literal> is called from the global context.
+                </listitem>
+                <listitem>
+                The context returned in the result event is a new context instance, corresponding to the newly created server conversation.
+                </listitem>
+           </orderedlist>
+           </para>
+           
+           <para>
+           All following operations must be then done through the <literal>localContext</literal> to be executed in the correct server conversation context. 
+           That means mainly that this context object has to be stored somewhere in the application, for example in the MXML corresponding to a particular wizard component. 
+           Optionally, it is also possible to store only the <literal>conversationId</literal>, and retrieve the context object by:
+           </para>
+           <programlisting role="AS3">
+var localContext:Context = Cdi.getInstance().getCdiContext(conversationId)
+           </programlisting>
+           <para>
+            When the conversation ends, the context object returned in the result events remains the local conversation context, to allow the Flex client 
+            to get the last call resulting context variables. It is deleted just before the next remote component call on the global context.
+           </para>
+           <warning><para>
+           Nested conversations are not supported in the current version
+           </para></warning>
+       </section>
+       
+       <section id="cdi.tideevents">
+           <title>Integration with Events</title>
+           <para>
+           The Tide client context can register listeners for CDI events triggered on the server-side. The interesting events are sent back along 
+           the server response and dispatched at the end of the processing of the result so that the context is correctly synchronized when the event is dispatched.           
+           </para>
+           <para>
+           Here is a simple example:
+           </para>
+           <programlisting role="JAVA">
+<![CDATA[@Stateful
+public class HotelBookingAction implements HotelBooking {
+    ...    
+    @Inject
+    @Confirmed
+    private Event<BookingEvent> bookingConfirmedEventSrc;
+    ...
+        
+    public void confirm() {
+        em.persist(booking);
+        bookingConfirmedEventSrc.fire(new BookingEvent(booking));
+        conversation.end();
+    }
+}]]>
+           </programlisting>
+           
+           <programlisting role="AS3">
+[Observer(remote="true")]
+public function bookingConfirmedHandler(event:BookingEvent):void {
+    Alert.show("Booking confirmed: " + event.booking);
+}
+           </programlisting>
+       </section>
+        
+        <section id="cdi.tidesecurity">
+            <title>Security</title>
+            <para>
+            GraniteDS provides a client-side component named <literal>identity</literal> that ensures the integration between the client <literal>RemoteObject</literal>
+            credentials and the server-side container security. It additionally includes an easy-to-use API to define runtime authorization checks on the Flex UI. 
+            </para>
+            <para>
+            The CDI <literal>identity</literal> component (of class <literal>org.granite.tide.cdi.Identity</literal>) predictably provides two methods 
+            <literal>login()</literal> and <literal>logout()</literal> that can be used as any Tide remote call:
+            </para>
+            <programlisting role="AS3">
+private var tideContext:Context = Cdi.getInstance().getCdiContext();
+
+public function login(username:String, password:String):void {
+    tideContext.identity.login(username, password, loginResult, loginFault);
+}
+
+private function loginResult(event:TideResultEvent):void {
+    Alert.show(event.context.identity.loggedIn);
+}
+
+private function loginFault(event:TideFaultEvent):void {
+    Alert.show(event.fault);
+}
+
+public function logout():void {
+    tideContext.identity.logout();
+}
+            </programlisting>
+            <para>
+            Or with dependency injection:
+            </para>
+            <programlisting>
+[In]
+public var identity:Identity;
+            
+public function login(username:String, password:String):void {
+    identity.login(username, password, loginResult, loginFault);
+}
+
+private function loginResult(event:TideResultEvent):void {
+    Alert.show(event.context.identity.loggedIn);
+}
+
+private function loginFault(event:TideFaultEvent):void {
+    Alert.show(event.fault);
+}
+
+public function logout():void {
+    identity.logout();
+}
+            </programlisting>
+            
+            <para>
+            The <literal>identity</literal> component also exposes the bindable property <literal>loggedIn</literal> that represents the current authentication state.
+            As it is bindable, it can be used to choose between different views, for example to switch between a login form and the application view with a Flex
+            <literal>ViewStack</literal> component:
+            </para>
+            
+            <programlisting role="XML">
+<![CDATA[<mx:ViewStack id="main" selectedIndex="{identity.loggedIn ? 1 : 0}">
+    <views:LoginView id="loginView"/>
+    <views:MainView id="mainView"/>
+</mx:ViewStack>]]>
+            </programlisting>
+            
+            <para>
+            Finally the <literal>identity</literal> component is integrated with server-side role-based security and can be used to get information or show/hide UI
+            depending on the user access rights:
+            </para>
+            <programlisting role="XML">
+<![CDATA[<mx:Button id="deleteButton" 
+    label="Delete"
+    enabled="{identity.hasRole('admin')}"
+    click="myService.deleteEntity(myEntity)"/>
+]]>
+            </programlisting>
+            <para>
+            With this declaration, this button labeled <emphasis>Delete</emphasis> will be enabled only if the user has the role <literal>admin</literal>.
+            Another possibility is to completely hide the button with the properties <literal>visible</literal> and <literal>includeInLayout</literal>, or any other
+            property relevant for the UI component.
+            </para>
+            
+            <para>
+            This can also be used as any remote class with result and fault handlers: 
+            </para>
+            <programlisting role="AS3">
+ public function checkRole(role:String):void {
+    identity.hasRole(role, checkRoleResult, checkRoleFault);
+ }
+ 
+ private function checkRoleResult(event:TideResultEvent, role:String):void {
+    if (role == 'admin') {
+        if (event.result)
+            trace("User has admin role");
+        else
+            trace("User does not have admin role");
+    }
+ }
+            </programlisting>
+            
+            <para>
+            You can notice that the result and fault handlers have a second argument so you can use the same handler for many access check calls.            
+            </para>
+            
+            <warning><para>
+            <literal>identity.hasRole()</literal> will issue a remote call when it is called the first time, thus its return value cannot be used reliably
+            to determine if the use has the required role. It will always return <literal>false</literal> until the remote call result is received.
+            </para></warning>
+            
+            <para>
+            It is important to note that <literal>identity</literal> caches the user access rights so only the first call to <literal>hasRole()</literal> will be remote.
+            If the user rights are changed on the server, or if you want to enforce security more than once per user session, you can clear the security cache
+            manually with <literal>identity.clearSecurityCache()</literal>, for example periodically in a <literal>Timer</literal>.
+            </para>
+        </section>
+    </section>
+</chapter>
