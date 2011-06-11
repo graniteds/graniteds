@@ -23,6 +23,7 @@ package org.granite.tide.hibernate;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.granite.hibernate.HibernateOptimisticLockException;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.ExtendedServiceExceptionHandler;
 import org.granite.messaging.service.ServiceException;
@@ -69,9 +70,14 @@ public class HibernateExceptionConverter implements ExceptionConverter {
             error = ENTITY_NOT_FOUND;
         else if (t.getClass().equals(NonUniqueResultException.class))
             error = NON_UNIQUE_RESULT;
-        else if (t.getClass().equals(StaleStateException.class) || t.getClass().equals(StaleObjectStateException.class)) {
+        else if (t.getClass().equals(StaleStateException.class) || t.getClass().equals(StaleObjectStateException.class)
+        		|| t.getClass().equals(HibernateOptimisticLockException.class)) {
             error = OPTIMISTIC_LOCK;
-            if (t instanceof StaleObjectStateException) {
+            if (t instanceof HibernateOptimisticLockException) {
+                ex = new HashMap<String, Object>();
+                ex.put("entity", ((HibernateOptimisticLockException)t).getEntity());
+            }
+            else if (t instanceof StaleObjectStateException) {
                 ex = new HashMap<String, Object>();
                 ex.put("entityName", ((StaleObjectStateException)t).getEntityName());
                 ex.put("identifier", ((StaleObjectStateException)t).getIdentifier());
