@@ -88,7 +88,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 	    		};
 	    	}
     	}
-    	if (Controller.class.isInstance(instance) || componentName.endsWith("Controller"))
+    	if (Controller.class.isInstance(instance) || (componentName != null && componentName.endsWith("Controller")))
     		return new SimpleControllerHandlerAdapter();
     	
     	return instance;
