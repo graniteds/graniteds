@@ -663,13 +663,13 @@ package org.granite.tide.data {
             if (_versionChangeCache == null)
                 _versionChangeCache = new Dictionary();
             
+			var ignore:Boolean = false;
             if (dest is IEntity) {
                 desc = _context.meta_tide.getEntityDescriptor(IEntity(dest));
                 
                 // Associate entity with the current context
                 attachEntity(IEntity(dest), false);
 				
-				var ignore:Boolean = false;
                 if (previous && dest === previous) {
                     // Check version for optimistic locking
                     if (desc.versionPropertyName != null && !_resolvingConflict) {
@@ -729,7 +729,7 @@ package org.granite.tide.data {
                 previous.dispatchEvent(pce);
             }
 
-			if (dest != null && _versionChangeCache[dest] != null && !_resolvingConflict)
+			if (dest != null && _versionChangeCache[dest] != null && !ignore && !_resolvingConflict)
 				_dirtyCheckContext.markNotDirty(dest);
 			
 			if (dest != null)
@@ -1167,6 +1167,14 @@ package org.granite.tide.data {
         	if (_mergeConflicts != null && _mergeConflicts.allResolved)
         		_mergeConflicts = null;
         }
+		
+		
+		/**
+		 * 	Build a ChangeSet object from the current dirty context
+		 */
+		public function buildChangeSet():ChangeSet {
+			return _dirtyCheckContext.buildChangeSet();
+		}
         
         
         /**
@@ -1412,8 +1420,9 @@ package org.granite.tide.data {
         	
             var i:int = 0;
             
+			var parent:Object = null;
             if (event.kind == CollectionEventKind.ADD && event.items && event.items.length > 0) {
-            	var parent:Object = getOwnerEntity(event.target);
+            	parent = getOwnerEntity(event.target);
                 for (i = 0; i < event.items.length; i++) {
                     if (event.items[i] is IEntity) {
                     	if (parent)
@@ -1423,6 +1432,18 @@ package org.granite.tide.data {
                     }
                 }
             }
+			else if (event.kind == CollectionEventKind.REPLACE && event.items && event.items.length > 0) {
+				parent = getOwnerEntity(event.target);
+				for (i = 0; i < event.items.length; i++) {
+					var newValue:Object = event.items[i].newValue;
+					if (newValue is IEntity) {
+						if (parent)
+							addReference(IEntity(newValue), parent);
+						else
+							attachEntity(IEntity(newValue));
+					}
+				}
+			}
             
             if (event.kind != CollectionEventKind.ADD && event.kind != CollectionEventKind.REMOVE 
 				&& event.kind != CollectionEventKind.RESET && event.kind != CollectionEventKind.REPLACE)
@@ -1448,9 +1469,11 @@ package org.granite.tide.data {
         		return;
         	
             var i:int = 0;
-            
+			var parent:Object = null;
+			var obj:Array = null;
+			
             if (event.kind == CollectionEventKind.ADD && event.items && event.items.length > 0) {
-            	var parent:Object = getOwnerEntity(event.target);
+            	parent = getOwnerEntity(event.target);
                 for (i = 0; i < event.items.length; i++) {
                     if (event.items[i] is IEntity) {
                     	if (parent)
@@ -1459,7 +1482,7 @@ package org.granite.tide.data {
                         	attachEntity(IEntity(event.items[i]));
                     }
                     else if (event.items[i] is Array) {
-                        var obj:Array = event.items[i] as Array;
+                        obj = event.items[i] as Array;
 	                    if (obj[0] is IEntity) {
 	                    	if (parent)
 	                    		addReference(IEntity(obj[0]), parent);
@@ -1475,8 +1498,36 @@ package org.granite.tide.data {
                     }
                 }
             }
+			else if (event.kind == CollectionEventKind.REPLACE && event.items && event.items.length > 0) {
+				parent = getOwnerEntity(event.target);
+				for (i = 0; i < event.items.length; i++) {
+					var newValue:Object = event.items[i].newValue;
+					if (newValue is IEntity) {
+						if (parent)
+							addReference(IEntity(newValue), parent);
+						else
+							attachEntity(IEntity(newValue));
+					}
+					else if (newValue is Array) {
+						obj = newValue as Array;
+						if (obj[0] is IEntity) {
+							if (parent)
+								addReference(IEntity(obj[0]), parent);
+							else
+								attachEntity(IEntity(obj[0]));
+						}
+						if (obj[1] is IEntity) {
+							if (parent)
+								addReference(IEntity(obj[1]), parent);
+							else
+								attachEntity(IEntity(obj[1]));
+						}
+					}
+				}
+			}
             
-            if (event.kind != CollectionEventKind.ADD && event.kind != CollectionEventKind.REMOVE)
+            if (event.kind != CollectionEventKind.ADD && event.kind != CollectionEventKind.REMOVE
+				&& event.kind != CollectionEventKind.RESET && event.kind != CollectionEventKind.REPLACE)
                 return;
             
             log.debug("map changed: {0} {1}", event.kind, BaseContext.toString(event.target));

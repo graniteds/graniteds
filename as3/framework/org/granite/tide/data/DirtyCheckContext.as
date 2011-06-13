@@ -45,6 +45,7 @@ package org.granite.tide.data {
     import org.granite.collections.IMap;
     import org.granite.collections.IPersistentCollection;
     import org.granite.meta;
+    import org.granite.reflect.Type;
     import org.granite.tide.BaseContext;
     import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IEntity;
@@ -604,6 +605,107 @@ package org.granite.tide.data {
             // Must be here because entity reset may have triggered useless new saved properties
             markNotDirty(entity);
         }
+		
+		
+		/**
+		 *	@private
+		 *  Internal implementation of ChangeSet builder
+		 *	
+		 * 	@return the change set for this context 
+		 */ 
+		public function buildChangeSet():ChangeSet {
+			var changeSet:ChangeSet = new ChangeSet();
+			var changeMap:Dictionary = new Dictionary(true);
+			
+			for (var entity:Object in _savedProperties) {
+				if (_savedProperties[entity] is Array) {
+					entity = _context.meta_getOwnerEntity(entity);
+				}
+				if (!(entity is IEntity) && !(entity is IUID)) {
+					entity = _context.meta_getOwnerEntity(entity);
+				}
+				if (changeMap[entity] != null)
+					continue;
+				
+				var save:Object = _savedProperties[entity];
+				var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false });
+
+				var change:Change = null;
+				if (entity is IEntity) {
+					var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(entity));
+					change = new Change(desc.className, entity.uid, 
+						desc.idPropertyName != null ? entity[desc.idPropertyName] : null, 
+						entity[desc.versionPropertyName]);
+				}
+				else if (entity is IUID) {
+					change = new Change(Type.forInstance(entity).alias, entity.uid, null, NaN);
+				}
+				if (change == null) {
+					changeMap[entity] = false;
+					continue;
+				}
+				
+				changeMap[entity] = change;
+				changeSet.addChange(change);
+				var changes:Object = change.changes;
+				
+				for each (var p:String in cinfo.properties) {
+					if (save != null && save.hasOwnProperty(p)) {
+						changes[p] = buildRef(entity[p]);
+					}
+					else {
+						var v:Object = entity[p];
+						if (_savedProperties[v] is Array) {
+							var collEvents:Array = _savedProperties[v];
+							var collChanges:CollectionChanges = new CollectionChanges();
+							changes[p] = collChanges;
+							
+							for each (var event:CollectionEvent in collEvents) {
+								if (event.target is IMap) {
+									if (event.kind == CollectionEventKind.ADD && event.items.length == 1) {
+										collChanges.addChange(1, buildRef(event.items[0][0]), buildRef(event.items[0][1]));
+									}
+									else if (event.kind == CollectionEventKind.REMOVE && event.items.length == 1) {
+										collChanges.addChange(-1, buildRef(event.items[0][0]), buildRef(event.items[0][1]));
+									}
+									else if (event.kind == CollectionEventKind.REPLACE && event.items.length == 1) {
+										collChanges.addChange(0, buildRef(event.items[0].property), buildRef(event.items[0].newValue));
+									}
+								}
+								else {
+									if (event.kind == CollectionEventKind.ADD && event.items.length == 1) {
+										collChanges.addChange(1, event.location, buildRef(event.items[0]));
+									}
+									else if (event.kind == CollectionEventKind.REMOVE && event.items.length == 1) {
+										collChanges.addChange(-1, event.location, buildRef(event.items[0]));
+									}
+									else if (event.kind == CollectionEventKind.REPLACE && event.items.length == 1) {
+										collChanges.addChange(0, event.location, buildRef(event.items[0]));
+									}
+								}
+							}
+						}
+						else if (_savedProperties[v] != null && !(_savedProperties[v] is IEntity || _savedProperties[v] is IUID)) {
+							// Embedded objects
+							changes[p] = v;
+							changeMap[v] = false;
+						}
+					}
+				}
+			}
+			
+			return changeSet;
+		}
+		
+		private function buildRef(object:Object):Object {
+			if (object is IEntity) {
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(object));
+				if (desc.versionPropertyName != null && !isNaN(object[desc.versionPropertyName])) {
+					return new ChangeRef(desc.className, object.uid, object[desc.idPropertyName]);
+				}
+			}
+			return object;
+		}
         
         
         /**

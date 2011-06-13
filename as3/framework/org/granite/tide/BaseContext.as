@@ -25,7 +25,7 @@ package org.granite.tide {
     import flash.system.ApplicationDomain;
     import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
-	import flash.utils.getQualifiedClassName;
+    import flash.utils.getQualifiedClassName;
     
     import mx.binding.utils.BindingUtils;
     import mx.binding.utils.ChangeWatcher;
@@ -56,8 +56,8 @@ package org.granite.tide {
     import mx.rpc.events.FaultEvent;
     import mx.rpc.events.ResultEvent;
     import mx.rpc.remoting.mxml.RemoteObject;
-	import mx.utils.DescribeTypeCache;
-	import mx.utils.DescribeTypeCacheRecord;
+    import mx.utils.DescribeTypeCache;
+    import mx.utils.DescribeTypeCacheRecord;
     import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
     import mx.utils.UIDUtil;
@@ -70,18 +70,13 @@ package org.granite.tide {
     import org.granite.collections.UIDWeakSet;
     import org.granite.events.SecurityEvent;
     import org.granite.meta;
-    import org.granite.reflect.Type;
     import org.granite.reflect.Annotation;
     import org.granite.reflect.Field;
     import org.granite.reflect.Method;
-	import org.granite.util.ClassUtil;
+    import org.granite.reflect.Type;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
-    import org.granite.tide.impl.ComponentInfo;
-    import org.granite.tide.impl.ContextEventDispatcher;
-    import org.granite.tide.impl.ContextVariable;
-    import org.granite.tide.impl.TypeScanner;
-    import org.granite.tide.impl.IComponentProducer;
+    import org.granite.tide.data.ChangeSet;
     import org.granite.tide.data.EntityManager;
     import org.granite.tide.events.IConversationEvent;
     import org.granite.tide.events.TideEvent;
@@ -89,7 +84,13 @@ package org.granite.tide {
     import org.granite.tide.events.TideResultEvent;
     import org.granite.tide.events.TideUIConversationEvent;
     import org.granite.tide.events.TideUIEvent;
+    import org.granite.tide.impl.ComponentInfo;
+    import org.granite.tide.impl.ContextEventDispatcher;
+    import org.granite.tide.impl.ContextVariable;
+    import org.granite.tide.impl.IComponentProducer;
+    import org.granite.tide.impl.TypeScanner;
     import org.granite.util.ClassUtil;
+
 
 
     use namespace flash_proxy;
@@ -558,6 +559,15 @@ package org.granite.tide {
         public function get meta_dirty():Boolean {
             return _entityManager.dirty;
         }
+		
+		/**
+		 *	Return the current change set for the context
+		 *
+		 *  @return set of changes
+		 */
+		public function meta_buildChangeSet():ChangeSet {
+			return _entityManager.buildChangeSet();
+		}
         
         /**
          *  @private 

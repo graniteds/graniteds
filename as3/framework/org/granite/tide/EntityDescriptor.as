@@ -39,6 +39,7 @@ package org.granite.tide {
 	    
         private static var log:ILogger = Log.getLogger("org.granite.tide.EntityDescriptor");
         
+		public var className:String;
         public var idPropertyName:String;
         public var versionPropertyName:String;
         public var mergeGDS20:Boolean;
@@ -48,6 +49,8 @@ package org.granite.tide {
         public function EntityDescriptor(entity:IEntity):void {
 			
 			var type:Type = Type.forInstance(entity);
+			className = type.alias;
+			
 			var fields:Array = type.getAnnotatedFieldNamesNoCache('Id');
 			if (fields.length > 0)
 				idPropertyName = String(fields[0]);

@@ -20,23 +20,24 @@
 
 package org.granite.collections {
 
-    import flash.utils.Dictionary;
-    import flash.utils.IDataOutput;
-    import flash.utils.IDataInput;
-    import flash.utils.IExternalizable;
-    import flash.utils.flash_proxy;
-    import flash.utils.Proxy;
     import flash.events.Event;
-    import flash.events.IEventDispatcher;
     import flash.events.EventDispatcher;
-    import mx.utils.ObjectUtil;
-    import mx.collections.ArrayList;
+    import flash.events.IEventDispatcher;
+    import flash.utils.Dictionary;
+    import flash.utils.IDataInput;
+    import flash.utils.IDataOutput;
+    import flash.utils.IExternalizable;
+    import flash.utils.Proxy;
+    import flash.utils.flash_proxy;
+    
     import mx.collections.ArrayCollection;
-    import mx.events.PropertyChangeEvent;
+    import mx.collections.ArrayList;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
-	
-	import org.granite.util.Enum;
+    import mx.events.PropertyChangeEvent;
+    import mx.utils.ObjectUtil;
+    
+    import org.granite.util.Enum;
 
     use namespace flash_proxy;
 
@@ -49,7 +50,7 @@ package org.granite.collections {
      */
     public dynamic class BasicMap extends Proxy implements IMap, IExternalizable, IEventDispatcher {
     
-        private var dispatcher:EventDispatcher = new EventDispatcher();
+        private var dispatcher:EventDispatcher;
         
         private var _keySet:ArrayList = null;
         private var _values:ArrayList = new ArrayList();
@@ -59,6 +60,9 @@ package org.granite.collections {
         // Constructor.
 
         public function BasicMap(keySet:ArrayList = null) {
+			super();
+			dispatcher = new EventDispatcher(this);
+			
             if (keySet) {
                 keySet.removeAll(); // ensure consistency...
                 _keySet = keySet;
