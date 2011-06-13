@@ -53,10 +53,13 @@ import org.granite.util.ClassUtil;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.servlet.mvc.Controller;
@@ -72,7 +75,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     private static final long serialVersionUID = 1L;
     
     private static final String REQUEST_VALUE = "__REQUEST_VALUE__";
-    
+    private static final String INTROSPECT_TYPE_LEVEL_MAPPING = HandlerMapping.class.getName() + ".introspectTypeLevelMapping";
     private static final Logger log = Logger.getLogger(SpringMVCServiceContext.class);
 
     
@@ -88,7 +91,8 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 	    		};
 	    	}
     	}
-    	if (Controller.class.isInstance(instance) || componentName.endsWith("Controller"))
+    	//if (Controller.class.isInstance(instance) || componentName.endsWith("Controller"))
+    	if (Controller.class.isInstance(instance))
     		return new SimpleControllerHandlerAdapter();
     	
     	return instance;
@@ -155,6 +159,26 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 	    		catch (Exception e) {
 	    			// Ignore, probably not a Grails controller
 	    		}
+    		}
+    		context.getRequest().setAttribute(INTROSPECT_TYPE_LEVEL_MAPPING,true);
+    		if(context.getApplicationMap().containsKey("SPRING_MVC_REQUESTMAPPING."+handler.getClass()))
+    			componentName=(String) context.getApplicationMap().get("SPRING_MVC_REQUESTMAPPING."+handler.getClass());
+    		else
+    		{
+    			RequestMapping typeLevelMapping=AnnotationUtils.findAnnotation(handler.getClass(), RequestMapping.class);
+    			if(typeLevelMapping!=null)
+        		{
+        			String[] typeLevelPatterns = typeLevelMapping.value();
+        			if(typeLevelPatterns.length>0)
+        			{
+    	    			String typeLevelPattern=typeLevelPatterns[0];
+    	    			if (typeLevelPattern.startsWith("/")) {
+    						typeLevelPattern = typeLevelPattern.substring(1);
+    					}
+    	    			componentName=typeLevelPattern+"Controller";
+        			}
+        		}
+    			context.getApplicationMap().put("SPRING_MVC_REQUESTMAPPING."+handler.getClass(), componentName);
     		}
      		ControllerRequestWrapper rw = new ControllerRequestWrapper(grails, context.getRequest(), componentName, (String)args[2], requestMap, valueMap);
     		return new Object[] { "handle", new Object[] { rw, context.getResponse(), handler }};
@@ -351,7 +375,10 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     	
 		public ControllerRequestWrapper(boolean grails, HttpServletRequest request, String componentName, String methodName, Map<String, Object> requestMap, Map<String, Object> valueMap) {
 			super(request);
-			this.componentName = componentName.substring(0, componentName.length()-"Controller".length());
+			if(!componentName.endsWith("Controller"))
+				this.componentName=componentName;
+			else
+				this.componentName = componentName.substring(0, componentName.length()-"Controller".length());
 			if (this.componentName.indexOf(".") > 0)
 				this.componentName = this.componentName.substring(this.componentName.lastIndexOf(".")+1);
 			if (grails)

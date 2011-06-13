@@ -52,7 +52,7 @@ package org.granite.tide.collections {
 	import org.granite.tide.BaseContext;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideResultEvent;
-    
+    import mx.collections.ISort;
     use namespace mx_internal;
 	
 	
@@ -505,13 +505,13 @@ package org.granite.tide.collections {
     	}
 		
         [Bindable("sortChanged")]
-		public override function get sort():Sort {
+		public override function get sort():ISort {
 		    if (_tempSort && !_tempSort.sorted)
 		        return _tempSort;
 		    return super.sort;
 		}
 		
-		public override function set sort(newSort:Sort):void {
+		public override function set sort(newSort:ISort):void {
 			// Track changes on sort fields
 			if (sort != null && sort.fields != null) {
 				for each (var field:SortField in sort.fields)

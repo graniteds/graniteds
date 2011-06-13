@@ -28,9 +28,9 @@
 	<classpathentry kind="lib" path="lib/guice-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/acegi-security-1.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/spring-beans.jar"/>
-	<classpathentry kind="lib" path="lib/spring-context.jar"/>
+	<classpathentry kind="lib" path="lib/spring-context.jar" sourcepath="C:/Users/Administrator/.m2/repository/org/springframework/spring-context/2.5.5/spring-context-2.5.5-sources.jar"/>
 	<classpathentry kind="lib" path="lib/spring-core.jar"/>
-	<classpathentry kind="lib" path="lib/spring-web.jar"/>
+	<classpathentry kind="lib" path="lib/spring-web.jar" sourcepath="C:/Users/Administrator/.m2/repository/org/springframework/spring-web/2.5.5/spring-web-2.5.5-sources.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-validator.jar"/>
 	<classpathentry kind="lib" path="lib/el-api.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.4.jar"/>
@@ -51,7 +51,7 @@
 	<classpathentry kind="lib" path="lib/org.osgi.core-1.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-seam-21.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-seam-20.jar"/>
-	<classpathentry kind="lib" path="lib/spring-webmvc.jar"/>
+	<classpathentry kind="lib" path="lib/spring-webmvc.jar" sourcepath="C:/Users/Administrator/.m2/repository/org/springframework/spring-webmvc/2.5.5/spring-webmvc-2.5.5-sources.jar"/>
 	<classpathentry kind="lib" path="lib/aopalliance-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/appengine-api-1.0-sdk-1.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>

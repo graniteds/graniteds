@@ -43,7 +43,8 @@ package org.granite.tide.spring {
     import mx.utils.ArrayUtil;
     import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
-    
+	import mx.collections.ISort;
+	
     import org.granite.tide.BaseContext;
     import org.granite.tide.Component;
     import org.granite.tide.IComponent;
@@ -84,7 +85,7 @@ package org.granite.tide.spring {
 		}
     	
     	
-		protected override function doFind(filter:Object, first:int, max:int, sort:Sort, findResponder:PagedCollectionResponder):void {			
+		protected override function doFind(filter:Object, first:int, max:int, sort:ISort, findResponder:PagedCollectionResponder):void {			
 			var order:* = null;
 			var desc:* = null;
 			if (this.multipleSort && !_useGrailsController) {

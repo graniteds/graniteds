@@ -43,7 +43,8 @@ package org.granite.tide.collections {
     import mx.utils.ArrayUtil;
     import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
-    
+	import mx.collections.ISort;
+	
     import org.granite.tide.BaseContext;
     import org.granite.tide.IComponent;
     import org.granite.tide.Component;
@@ -173,7 +174,7 @@ package org.granite.tide.collections {
 			doFind(filter, first, max, sort, findResponder);
 		}
 		
-		protected function doFind(filter:Object, first:int, max:int, sort:Sort, findResponder:PagedCollectionResponder):void { 			
+		protected function doFind(filter:Object, first:int, max:int, sort:ISort, findResponder:PagedCollectionResponder):void { 			
 			// Force evaluation of max, results and count
 			var order:* = null;
 			var desc:* = null;
