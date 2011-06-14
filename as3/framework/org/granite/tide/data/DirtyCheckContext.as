@@ -149,7 +149,7 @@ package org.granite.tide.data {
             var p:String;
             var val:Object, saveval:*;
             
-            var entityDesc:EntityDescriptor = entity is IEntity ? _context.meta_tide.getEntityDescriptor(entity) : null;
+            var entityDesc:EntityDescriptor = entity is IEntity ? _context.meta_tide.getEntityDescriptor(IEntity(entity)) : null;
             if (entityDesc != null && (!entityDesc.versionPropertyName || isNaN(Object(entity)[entityDesc.versionPropertyName]))) {
                 for each (p in cinfo.properties) {
                     if (p == entityDesc.versionPropertyName || p == "meta_dirty" || p == "uid")
