@@ -313,7 +313,8 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
 	        	DataEnabled dataEnabled = cClass.getAnnotation(DataEnabled.class);
 	        	if (dataEnabled != null) {
 	        		DataContext.init(dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
-	        		prepareDataObserver(dataEnabled);
+	        		if (dataEnabled.auto())
+	        			prepareDataObserver(dataEnabled);
 	        		break;
 	        	}
         	}
