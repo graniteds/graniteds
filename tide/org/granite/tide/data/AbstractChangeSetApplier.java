@@ -23,6 +23,7 @@ package org.granite.tide.data;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,7 +53,8 @@ public abstract class AbstractChangeSetApplier {
 
 	
 	@SuppressWarnings({ "unchecked" })
-	public void applyChanges(ChangeSet changeSet) {
+	public Set<Object> applyChanges(ChangeSet changeSet) {
+		Set<Object> appliedChanges = new HashSet<Object>();
 		for (Change change : changeSet.getChanges()) {
 			try {
 				Class<?> entityClass = ClassUtil.forName(change.getClassName());
@@ -61,6 +63,8 @@ public abstract class AbstractChangeSetApplier {
 					Long version = getVersion(entity);
 					if (change.getVersion() != null && change.getVersion().longValue() < version)
 						throwOptimisticLockException(entity);
+					
+					appliedChanges.add(entity);
 					
 					for (Entry<String, Object> me : change.getChanges().entrySet()) {
 						try {
@@ -134,6 +138,8 @@ public abstract class AbstractChangeSetApplier {
 				throw new ServiceException("Could not find class " + change.getClassName(), cnfe);
 			}
 		}
+		
+		return appliedChanges;
 	}
 
 }
