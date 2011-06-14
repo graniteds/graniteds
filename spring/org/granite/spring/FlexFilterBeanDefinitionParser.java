@@ -142,10 +142,13 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
         
         Element source = graniteConfigElement != null ? graniteConfigElement : parent;
 
-        BeanDefinitionBuilder graniteConfigBuilder = BeanDefinitionBuilder.genericBeanDefinition("org.granite.spring.SpringGraniteConfig");
-
+        BeanDefinitionBuilder graniteConfigBuilder = BeanDefinitionBuilder.genericBeanDefinition(SpringGraniteConfig.class);
         registerInfrastructureComponent(source, parserContext, graniteConfigBuilder, 
         		parent.getAttribute(ID_ATTRIBUTE) + "_graniteConfig");
+        
+        BeanDefinitionBuilder gravityFactoryBuilder = BeanDefinitionBuilder.rootBeanDefinition(SpringGravityFactoryBean.class);
+        registerInfrastructureComponent(source, parserContext, gravityFactoryBuilder, 
+        		parent.getAttribute(ID_ATTRIBUTE) + "_gravityFactory");
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

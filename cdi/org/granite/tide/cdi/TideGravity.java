@@ -20,7 +20,13 @@
 
 package org.granite.tide.cdi;
 
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
+import javax.enterprise.util.AnnotationLiteral;
+import javax.inject.Inject;
+import javax.servlet.ServletContext;
 
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
@@ -33,14 +39,32 @@ import org.granite.messaging.webapp.HttpGraniteContext;
  * 
  * @author William DRAI
  */
-public class TideGravity {    
+public class TideGravity {
+
+	@Inject
+	Instance<ServletContext> servletContextInstance;
+	
+    @SuppressWarnings("serial")
+    private static final AnnotationLiteral<Default> DEFAULT_LITERAL = new AnnotationLiteral<Default>() {}; 
     
-    @Produces
+    @Produces @RequestScoped
     public Gravity getGravity() {
-    	GraniteContext graniteContext = GraniteContext.getCurrentInstance();
-    	if (graniteContext == null || !(graniteContext instanceof HttpGraniteContext))
-    		throw new RuntimeException("Gravity not found: not in a GraniteDS HTTP context");
     	
-    	return GravityManager.getGravity(((HttpGraniteContext)graniteContext).getServletContext());
+    	ServletContext servletContext = null;
+    	
+    	if (!servletContextInstance.isUnsatisfied()) {
+    		// Use ServletContext exposed with @Default qualifier (with Seam Servlet for example)
+    		servletContext = servletContextInstance.select(DEFAULT_LITERAL).get();
+    	}
+    	else {
+    		// If not found, look in GraniteContext
+	    	GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+	    	if (graniteContext == null || !(graniteContext instanceof HttpGraniteContext))
+	    		throw new RuntimeException("Gravity not found: not in a GraniteDS HTTP context");
+	    	
+	    	servletContext = ((HttpGraniteContext)graniteContext).getServletContext();
+    	}
+    	
+    	return GravityManager.getGravity(servletContext);
     }
 }
