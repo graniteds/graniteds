@@ -95,10 +95,15 @@ package org.granite.tide.data {
         
         /**
          *  Clear dirty cache
+		 * 
+		 * 	@param dispatch dispatch a PropertyChangeEvent on meta_dirty if the context was dirty before clearing
          */ 
-        public function clear():void {
+        public function clear(dispatch:Boolean = true):void {
+			var wasDirty:Boolean = dirty;
         	_dirtyCount = 0;
         	_savedProperties = new Dictionary(true);
+			if (wasDirty && dispatch)
+				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", true, false));
         }
         
         
@@ -146,7 +151,7 @@ package org.granite.tide.data {
             var saveTracking:Boolean = _context.meta_tracking;
             _context.meta_tracking = false;
 			
-            var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false });
+            var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
             var p:String;
             var val:Object, saveval:*;
             
@@ -181,18 +186,18 @@ package org.granite.tide.data {
                             break;
                         }
                     }
+					else if (save && (val is IValue || saveval is IValue || val is Enum || saveval is Enum)) {
+						if (saveval !== undefined && ((!val && saveval) || !val.equals(saveval))) {
+							dirty = true;
+							break;
+						} 
+					}
 					else if (save && (val is IUID || saveval is IUID)) {
 						if (saveval !== undefined && val !== save[p]) {
 							dirty = true;
 							break;
 						}
 					}
-                    else if (save && (val is IValue || saveval is IValue || val is Enum || saveval is Enum)) {
-                    	if (saveval !== undefined && ((!val && saveval) || !val.equals(saveval))) {
-                    		dirty = true;
-                    		break;
-                    	} 
-                    }
                     else if ((val is IList || val is IMap) && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
                         var savedArray:Array = _savedProperties[val];
                         if (savedArray && savedArray.length > 0) {
@@ -520,7 +525,7 @@ package org.granite.tide.data {
             var savedArray:Array;
             var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(entity);
             
-            var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false });
+            var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
             for each (var p:String in cinfo.properties) {
                 if (p == desc.versionPropertyName)
                     continue;
@@ -628,7 +633,7 @@ package org.granite.tide.data {
 					continue;
 				
 				var save:Object = _savedProperties[entity];
-				var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false });
+				var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
 
 				var change:Change = null;
 				if (entity is IEntity) {
