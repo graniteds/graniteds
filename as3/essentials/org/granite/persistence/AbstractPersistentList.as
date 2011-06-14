@@ -22,11 +22,13 @@ package org.granite.persistence {
 
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
+    
     import mx.core.IUID;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
     
+    import org.granite.IValue;
     import org.granite.collections.IPersistentCollection;
     import org.granite.collections.UIDList;
 
@@ -88,21 +90,14 @@ package org.granite.persistence {
         private function dirtyCheckHandler(event:CollectionEvent):void {
             if (!_initialized)
                 return;
-            if (event.kind == CollectionEventKind.ADD)
-                _dirty = true;
-            else if (event.kind == CollectionEventKind.REMOVE)
-                _dirty = true;
-            else if (event.kind == CollectionEventKind.UPDATE) {
-                for (var i:uint = 0; i < event.items.length; i++) {
-                    if (event.items[i] is PropertyChangeEvent) {
-                        var pce:PropertyChangeEvent = event.items[i] as PropertyChangeEvent;
-                        if ((pce.newValue is IUID || pce.oldValue is IUID) && (pce.newValue as IUID) != (pce.oldValue as IUID)) {
-                            _dirty = true;
-                            break;
-                        }
-                    }
-                }
-            }
+			if (event.kind == CollectionEventKind.ADD)
+				_dirty = true;
+			else if (event.kind == CollectionEventKind.REMOVE)
+				_dirty = true;
+			else if (event.kind == CollectionEventKind.RESET)
+				_dirty = true;
+			else if (event.kind == CollectionEventKind.REPLACE)
+				_dirty = true;
         }
 
 
