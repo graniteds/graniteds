@@ -29,8 +29,8 @@ package org.granite.test.tide.framework
 			
 			Assert.assertEquals("Before type", "someEvent", interceptor.before);
 			Assert.assertStrictlyEquals("Before ctx", _ctx, interceptor.beforeCtx);
-			Assert.assertNull("After type", interceptor.after);
-			Assert.assertNull("After ctx", interceptor.afterCtx);
+			Assert.assertEquals("After type", "someEvent", interceptor.after);
+			Assert.assertStrictlyEquals("After ctx", _ctx, interceptor.afterCtx);
 			
 			_ctx.myComponentObserverNoCreate = new MyComponentObserverNoCreate();
 			
