@@ -561,6 +561,15 @@ package org.granite.tide {
         }
 		
 		/**
+		 * 	Enables or disabled dirty checking in this context
+		 *  
+		 *  @param enabled
+		 */
+		public function set meta_dirtyCheckEnabled(enabled:Boolean):void {
+			_entityManager.dirtyCheckEnabled = enabled;
+		}
+		
+		/**
 		 *	Return the current change set for the context
 		 *
 		 *  @return set of changes
@@ -1751,8 +1760,11 @@ package org.granite.tide {
 		 *  @param updates list of data updates
 		 */
 		public function meta_handleUpdates(sourceSessionId:String, updates:Array):void {
+			var entities:Array = new Array();
 			for each (var update:Array in updates)
-				meta_mergeExternalData(update[1], null, sourceSessionId);
+				entities.push(update[1]);
+			
+			meta_mergeExternalData(entities, null, sourceSessionId);
 		}
 		
 		/**

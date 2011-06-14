@@ -729,7 +729,7 @@ package org.granite.tide.data {
                 previous.dispatchEvent(pce);
             }
 
-			if (dest != null && _versionChangeCache[dest] != null && !ignore && !_resolvingConflict)
+			if (dest != null && _versionChangeCache[dest] != null && !ignore && _mergeUpdate && !_resolvingConflict)
 				_dirtyCheckContext.markNotDirty(dest);
 			
 			if (dest != null)
@@ -1170,6 +1170,15 @@ package org.granite.tide.data {
 		
 		
 		/**
+		 * 	Enables or disabled dirty checking in this context
+		 *  
+		 *  @param enabled
+		 */
+		public function set dirtyCheckEnabled(enabled:Boolean):void {
+			_merging = !enabled;
+		}
+		
+		/**
 		 * 	Build a ChangeSet object from the current dirty context
 		 */
 		public function buildChangeSet():ChangeSet {
@@ -1274,7 +1283,11 @@ package org.granite.tide.data {
          *  @param entity entity to restore
          */ 
         public function resetEntity(entity:IEntity, cache:Dictionary):void {
+			var saveMerging:Boolean = _merging;
+			// Disable dirty check during reset of entity
+			_merging = true;
         	_dirtyCheckContext.resetEntity(entity, cache);
+			_merging = saveMerging;
         }
 
 
