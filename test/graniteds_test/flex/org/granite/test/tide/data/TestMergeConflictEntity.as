@@ -106,7 +106,7 @@ package org.granite.test.tide.data
         	contact3b.person = person3;
         	person3.contacts.addItem(contact3);
         	
-        	_ctx.meta_mergeExternalData(person3, null, "S3");
+        	_ctx.meta_mergeExternalData(person3, null, "S2");
         	
         	Assert.assertEquals("Conflicts after merge 2", 1, _conflicts.conflicts.length);
         	
