@@ -59,6 +59,7 @@ package org.granite.tide {
 	import mx.rpc.AbstractOperation;
 	import mx.rpc.AsyncToken;
 	import mx.rpc.Fault;
+	import mx.rpc.Responder;
 	import mx.rpc.events.FaultEvent;
 	import mx.rpc.events.InvokeEvent;
 	import mx.rpc.events.ResultEvent;
@@ -1408,18 +1409,30 @@ package org.granite.tide {
 			
 			dispatchEvent(new TidePluginEvent(PLUGIN_LOGOUT));
 
-			if (ro.channelSet)
-				ro.channelSet.logout();	// Workaround described in BLZ-310
+			if (ro.channelSet) {
+				var asyncToken:AsyncToken = ro.channelSet.logout();	// Workaround described in BLZ-310
+				asyncToken.addResponder(new Responder(logoutComplete, null));
+			}
+			else
+				logoutComplete(null);
+		}
+		
+		/**
+		 * 	@private
+		 * 	
+		 * 	Handler method for logout complete
+		 */
+		private function logoutComplete(event:Event):void {
 			ro.logout();
 			
 			log.info("Tide application logout");
-            
+			
 			_contextManager.destroyContexts();
 			
 			_logoutInProgress = false;
 			_waitForLogout = 0;
 			
-		    getContext().raiseEvent(LOGGED_OUT);
+			getContext().raiseEvent(LOGGED_OUT);
 		}
         
         
