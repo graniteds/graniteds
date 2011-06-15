@@ -73,5 +73,6 @@
 	<classpathentry kind="lib" path="lib/spring-security-core-3.0.1.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-vfs3.jar"/>
 	<classpathentry kind="lib" path="lib/spring-security-web-3.0.1.RELEASE.jar"/>
+	<classpathentry kind="lib" path="lib/aspectjweaver-1.5.4.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
