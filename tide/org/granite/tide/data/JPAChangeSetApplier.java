@@ -21,10 +21,13 @@
 package org.granite.tide.data;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 
 import javax.persistence.EntityManager;
 import javax.persistence.OptimisticLockException;
 
+import org.granite.context.GraniteContext;
+import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.service.ServiceException;
 import org.granite.util.ClassUtil;
 import org.granite.util.Entity;
@@ -45,7 +48,10 @@ public class JPAChangeSetApplier extends AbstractChangeSetApplier {
 	
 	@Override
 	protected Object find(Class<?> entityClass, Serializable id) {
-		return em.find(entityClass, id);
+		Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
+		Entity e = new Entity(entityClass);
+		Type identifierType = e.getIdentifierType();
+		return em.find(entityClass, converters.convert(id, identifierType));
 	}
 	
 	@Override

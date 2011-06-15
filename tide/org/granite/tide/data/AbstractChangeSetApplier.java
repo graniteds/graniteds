@@ -23,13 +23,17 @@ package org.granite.tide.data;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
+import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.service.ServiceException;
 import org.granite.util.ClassUtil;
 
@@ -54,6 +58,8 @@ public abstract class AbstractChangeSetApplier {
 	
 	@SuppressWarnings({ "unchecked" })
 	public Set<Object> applyChanges(ChangeSet changeSet) {
+		Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
+		
 		Set<Object> appliedChanges = new HashSet<Object>();
 		for (Change change : changeSet.getChanges()) {
 			try {
@@ -86,22 +92,61 @@ public abstract class AbstractChangeSetApplier {
 									CollectionChanges collectionChanges = (CollectionChanges)me.getValue();
 									for (CollectionChange collectionChange : collectionChanges.getChanges()) {
 										if (collectionChange.getType() == 1) {
-											if (collection instanceof Set<?>)
-												((Set<Object>)collection).add(dereference(collectionChange.getValue()));
-											else if (collection instanceof List<?>)
-												((List<Object>)collection).add((Integer)collectionChange.getKey(), dereference(collectionChange.getValue()));
-											else if (collection instanceof Map<?, ?>)
-												((Map<Object, Object>)collection).put(dereference(collectionChange.getKey()), dereference(collectionChange.getValue()));
+											if (collection instanceof Set<?>) {
+												Type collectionType = propertyDescriptor.getReadMethod().getGenericReturnType();
+												Type elementType = Object.class;
+												if (collectionType instanceof ParameterizedType)
+													elementType = ((ParameterizedType)collectionType).getActualTypeArguments()[0];
+												
+												Object value = converters.convert(dereference(collectionChange.getValue()), elementType);
+												((Set<Object>)collection).add(value);
+											}
+											else if (collection instanceof List<?>) {
+												Type collectionType = propertyDescriptor.getReadMethod().getGenericReturnType();
+												Type elementType = Object.class;
+												if (collectionType instanceof ParameterizedType)
+													elementType = ((ParameterizedType)collectionType).getActualTypeArguments()[0];
+												
+												Object value = converters.convert(dereference(collectionChange.getValue()), elementType);
+												((List<Object>)collection).add((Integer)collectionChange.getKey(), value);
+											}
+											else if (collection instanceof Map<?, ?>) {
+												Type mapType = propertyDescriptor.getReadMethod().getGenericReturnType();
+												Type keyType = Object.class;
+												Type valueType = Object.class;
+												if (mapType instanceof ParameterizedType) {
+													keyType = ((ParameterizedType)mapType).getActualTypeArguments()[0];
+													valueType = ((ParameterizedType)mapType).getActualTypeArguments()[1];
+												}
+												
+												Object key = converters.convert(dereference(collectionChange.getKey()), keyType);
+												Object value = converters.convert(dereference(collectionChange.getValue()), valueType);
+												((Map<Object, Object>)collection).put(key, value);
+											}
 										}
 										else if (collectionChange.getType() == -1) {
-											if (collection instanceof Set<?>)
-												((Set<Object>)collection).remove(dereference(collectionChange.getValue()));
+											if (collection instanceof Set<?>) {
+												Type collectionType = propertyDescriptor.getReadMethod().getGenericReturnType();
+												Type elementType = Object.class;
+												if (collectionType instanceof ParameterizedType)
+													elementType = ((ParameterizedType)collectionType).getActualTypeArguments()[0];
+												
+												Object value = converters.convert(dereference(collectionChange.getValue()), elementType);
+												((Set<Object>)collection).remove(value);
+											}
 											else if (collection instanceof List<?>) {
 												int index = (Integer)collectionChange.getKey();
 												((List<Object>)collection).remove(index);
 											}
-											else if (collection instanceof Map<?, ?>)
-												((Map<Object, Object>)collection).remove(dereference(collectionChange.getKey()));
+											else if (collection instanceof Map<?, ?>) {
+												Type mapType = propertyDescriptor.getReadMethod().getGenericReturnType();
+												Type keyType = Object.class;
+												if (mapType instanceof ParameterizedType)
+													keyType = ((ParameterizedType)mapType).getActualTypeArguments()[0];
+												
+												Object key = converters.convert(dereference(collectionChange.getKey()), keyType);
+												((Map<Object, Object>)collection).remove(key);
+											}
 										}
 										else if (collectionChange.getType() == 0) {
 											if (collection instanceof Set<?>) {
@@ -110,16 +155,36 @@ public abstract class AbstractChangeSetApplier {
 											}
 											else if (collection instanceof List<?>) {
 												int index = (Integer)collectionChange.getKey();
-												((List<Object>)collection).set(index, dereference(collectionChange.getValue()));
+												Type collectionType = propertyDescriptor.getReadMethod().getGenericReturnType();
+												Type elementType = Object.class;
+												if (collectionType instanceof ParameterizedType)
+													elementType = ((ParameterizedType)collectionType).getActualTypeArguments()[0];
+												
+												Object value = converters.convert(dereference(collectionChange.getValue()), elementType);
+												((List<Object>)collection).set(index, value);
 											}
-											else if (collection instanceof Map<?, ?>)
-												((Map<Object, Object>)collection).put(dereference(collectionChange.getKey()), dereference(collectionChange.getValue()));
+											else if (collection instanceof Map<?, ?>) {
+												Type mapType = propertyDescriptor.getReadMethod().getGenericReturnType();
+												Type keyType = Object.class;
+												Type valueType = Object.class;
+												if (mapType instanceof ParameterizedType) {
+													keyType = ((ParameterizedType)mapType).getActualTypeArguments()[0];
+													valueType = ((ParameterizedType)mapType).getActualTypeArguments()[1];
+												}
+												
+												Object key = converters.convert(dereference(collectionChange.getKey()), keyType);
+												Object value = converters.convert(dereference(collectionChange.getValue()), valueType);
+												((Map<Object, Object>)collection).put(key, value);
+											}
 										}
 									}
 								}
 								else {
-									if (propertyDescriptor.getWriteMethod() != null)
-										propertyDescriptor.getWriteMethod().invoke(entity, dereference(me.getValue()));
+									if (propertyDescriptor.getWriteMethod() != null) {
+										Object value = dereference(me.getValue());
+										value = converters.convert(value, propertyDescriptor.getWriteMethod().getGenericParameterTypes()[0]);
+										propertyDescriptor.getWriteMethod().invoke(entity, value);
+									}
 									else
 										log.warn("Property " + me.getKey() + " on class " + change.getClassName() + " is not writeable");
 								}

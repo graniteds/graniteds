@@ -22,8 +22,11 @@ package org.granite.tide.hibernate;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
+import org.granite.context.GraniteContext;
 import org.granite.hibernate.HibernateOptimisticLockException;
+import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.service.ServiceException;
 import org.granite.tide.data.AbstractChangeSetApplier;
 import org.granite.tide.data.ChangeRef;
@@ -47,7 +50,10 @@ public class HibernateChangeSetApplier extends AbstractChangeSetApplier {
 	
 	@Override
 	protected Object find(Class<?> entityClass, Serializable id) {
-		return session.load(entityClass, id);
+		Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
+		ClassMetadata cmd = session.getSessionFactory().getClassMetadata(entityClass.getName());
+		Type identifierType = cmd.getIdentifierType().getReturnedClass();		
+		return session.load(entityClass, (Serializable)converters.convert(id, identifierType));
 	}
 	
 	@Override
