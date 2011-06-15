@@ -1517,6 +1517,9 @@ package org.granite.tide {
         }
         
         
+		/**
+		 * 	Allows to disable automatic loading of lazy collections
+		 */
         public var meta_lazyInitializationDisabled:Boolean = false;
         
         
