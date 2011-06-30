@@ -42,6 +42,7 @@ package org.granite.persistence {
 
         private var _initializing:Boolean = false;
         private var _initialized:Boolean = false;
+		private var _lazy:Boolean = false;
         private var _metadata:String = null;
         private var _dirty:Boolean = false;
 
@@ -50,9 +51,15 @@ package org.granite.persistence {
             _initialized = initialized;
             if (_initialized)
 	            addEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler);
+			else
+				_lazy = true;
         }
 
 
+		final public function isLazy():Boolean {
+			return _lazy;
+		}
+		
         final public function isInitialized():Boolean {
             return _initialized;
         }
@@ -72,10 +79,10 @@ package org.granite.persistence {
         }
 
         final public function uninitialize():void {
+			removeEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler);
+			_initialized = false;
             clear();
-            _initialized = false;
             _dirty = false;
-            removeEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler);
         }
         
         public function clone():PersistentMap {
@@ -110,6 +117,8 @@ package org.granite.persistence {
                 _dirty = input.readObject() as Boolean;
                 super.readExternal(input);
             }
+			else
+				_lazy = true;
         }
 
         override public function writeExternal(output:IDataOutput):void {

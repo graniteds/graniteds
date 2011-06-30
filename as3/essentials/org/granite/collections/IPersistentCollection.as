@@ -26,6 +26,8 @@ package org.granite.collections {
      * 	@author Franck WOLFF
      */
     public interface IPersistentCollection {
+		
+		function isLazy():Boolean;
 
         function isInitialized():Boolean;
 
