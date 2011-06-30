@@ -136,7 +136,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         
         if (graniteConfig.isRegisterMBeans()) {
 	        try {
-	            ObjectName name = new ObjectName("org.granite:type=Gravity,context=" + graniteConfig.getMBeanContextName());
+	            ObjectName name = new ObjectName("org.graniteds:type=Gravity,context=" + graniteConfig.getMBeanContextName());
 		        log.info("Registering MBean: %s", name);
 	            OpenMBean mBean = OpenMBean.createMBean(this);
 	        	MBeanServerLocator.getInstance().register(mBean, name, true);

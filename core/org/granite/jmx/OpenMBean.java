@@ -145,14 +145,23 @@ public class OpenMBean implements DynamicMBean {
 	 */
 	public static OpenMBean createMBean(Object instance) {
 		
-		Class<?> beanClass = instance.getClass();
-		String interMBeanName = beanClass.getSimpleName() + "MBean";
-		for (Class<?> inter : instance.getClass().getInterfaces()) {
-			if (interMBeanName.equals(inter.getSimpleName())) {
-				beanClass = inter;
-				break;
+		Class<?> beanClass = null;
+		Class<?> instanceClass = instance.getClass();
+		while (instanceClass != null) {
+			String interMBeanName = instanceClass.getSimpleName() + "MBean";
+			for (Class<?> inter : instanceClass.getInterfaces()) {
+				if (interMBeanName.equals(inter.getSimpleName())) {
+					beanClass = inter;
+					break;
+				}
 			}
+			if (beanClass != null)
+				break;
+			instanceClass = instanceClass.getSuperclass();
 		}
+		
+		if (beanClass == null)
+			beanClass = instance.getClass();
 		
 		Class<?> stopClass = null;
 		if (!beanClass.isInterface()) {
@@ -225,11 +234,12 @@ public class OpenMBean implements DynamicMBean {
 				if (mba == null && property.getWriteMethod() != null)
 					mba = property.getWriteMethod().getAnnotation(MBeanAttribute.class);
 				
+				if (mba == null)
+					continue;
+				
 				String name = property.getName();
 				
-				String desc = null;
-				if (mba != null)
-					desc = mba.description();
+				String desc = mba.description();
 				if (desc == null)
 					desc = name.substring(0, 1).toUpperCase() + name.substring(1) + " Attribute";
 				
@@ -259,11 +269,12 @@ public class OpenMBean implements DynamicMBean {
 				
 				MBeanOperation mbo = method.getMethod().getAnnotation(MBeanOperation.class);
 				
+				if (mbo == null)
+					continue;
+				
 				String name = method.getName();
 
-				String desc = null;
-				if (mbo != null)
-					desc = mbo.description();
+				String desc = mbo.description();
 				if (desc == null)
 					desc = name.substring(0, 1).toUpperCase() + name.substring(1) + " Operation";
 				
