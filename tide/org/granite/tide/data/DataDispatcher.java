@@ -21,7 +21,10 @@
 package org.granite.tide.data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
@@ -54,7 +57,7 @@ public class DataDispatcher {
     
 	public DataDispatcher(Gravity gravity, String topic, Class<? extends DataTopicParams> dataTopicParamsClass) {
 		GraniteContext graniteContext = GraniteContext.getCurrentInstance();
-		if (graniteContext == null)
+		if (gravity == null && graniteContext == null)
 			return;
 		
 		this.topic = topic;
@@ -87,10 +90,13 @@ public class DataDispatcher {
 			}
 		}
 		else {
-			if (gravity == null)
+			if (gravity == null) {
 				log.debug("Gravity not defined, data dispatch disabled");
+				return;
+			}
 			
 			this.gravity = gravity;
+			this.sessionId = "__GDS_SERVER_DISPATCHER__";
 		}
 		
 		enabled = true;
@@ -177,28 +183,41 @@ public class DataDispatcher {
 			return;
 		
 		try {
-			AsyncMessage message = new AsyncMessage();
-			message.setClientId(clientId);
-			message.setHeader(AsyncMessage.SUBTOPIC_HEADER, "tideDataTopic");
-			message.setDestination(topic);
-			message.setHeader("GDSSessionID", sessionId);
-			message.setHeader("type", "DATA");
-			if (paramsProvider != null) {
-				DataPublishParams params = new DataPublishParams();
-				for (Object[] dataUpdate : dataUpdates)
-					paramsProvider.publishes(params, dataUpdate[1]);
-				
-				params.setHeaders(message);
-			}
-			message.setBody(dataUpdates.toArray());
-			
 			Channel channel = gravity.getChannel(clientId);
 			
-			Message resultMessage = gravity.publishMessage(channel, message);
-			if (resultMessage instanceof ErrorMessage)
-				log.error("Could not dispatch data update on topic %s, message %s", topic, resultMessage.toString());
-			else
-				log.debug("Data message dispatched on topic %s", topic);
+			Map<Map<String, String>, List<Object>> updates = new HashMap<Map<String, String>, List<Object>>();
+			if (paramsProvider != null) {
+				for (Object[] dataUpdate : dataUpdates) {
+					DataPublishParams params = new DataPublishParams();
+					paramsProvider.publishes(params, dataUpdate[1]);
+					
+					Map<String, String> headers = params.getHeaders();
+					List<Object> list = updates.get(headers);
+					if (list == null) {
+						list = new ArrayList<Object>();
+						updates.put(headers, list);
+					}
+					list.add(dataUpdate);
+				}
+			}
+			
+			for (Entry<Map<String, String>, List<Object>> me : updates.entrySet()) {
+				AsyncMessage message = new AsyncMessage();
+				message.setClientId(clientId);
+				message.setHeader(AsyncMessage.SUBTOPIC_HEADER, "tideDataTopic");
+				message.setDestination(topic);
+				message.setHeader("GDSSessionID", sessionId);
+				message.setHeader("type", "DATA");
+				for (Entry<String, String> hh : me.getKey().entrySet())
+					message.setHeader(hh.getKey(), hh.getValue());
+				message.setBody(me.getValue().toArray());
+				
+				Message resultMessage = gravity.publishMessage(channel, message);
+				if (resultMessage instanceof ErrorMessage)
+					log.error("Could not dispatch data update on topic %s, message %s", topic, resultMessage.toString());
+				else
+					log.debug("Data message dispatched on topic %s", topic);
+			}
 		}
 		catch (Exception e) {
 			log.error(e, "Could not dispatch data update on topic %s", topic);
