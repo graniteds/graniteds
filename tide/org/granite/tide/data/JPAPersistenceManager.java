@@ -23,10 +23,7 @@ package org.granite.tide.data;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Query;
+import javax.persistence.*;
 
 import org.granite.tide.TideTransactionManager;
 
@@ -83,7 +80,7 @@ public class JPAPersistenceManager extends AbstractTidePersistenceManager implem
      * @return the entity with the JPA context.
      */
 	@Override
-	public Object findEntity(Object entity, String[] fetch) {
+	public Object fetchEntity(Object entity, String[] fetch) {
 		org.granite.util.Entity tideEntity = new org.granite.util.Entity(entity);
 		Serializable id = (Serializable)tideEntity.getIdentifier();
 		
@@ -101,4 +98,5 @@ public class JPAPersistenceManager extends AbstractTidePersistenceManager implem
         }
         return entity;
 	}
+
 }

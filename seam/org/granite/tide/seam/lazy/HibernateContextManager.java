@@ -55,7 +55,7 @@ public class HibernateContextManager implements TidePersistenceManager {
         ClassGetter getter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
         
 		try { 
-		    attachedEntity = findEntity(entity, propertyNames);
+		    attachedEntity = fetchEntity(entity, propertyNames);
 			
 			if (propertyNames != null) {
 	            for (int i = 0; i < propertyNames.length; i++) {
@@ -77,13 +77,12 @@ public class HibernateContextManager implements TidePersistenceManager {
 	 * attaches the entity to the HibernateSession.
 	 * @return the attached entity
 	 */
-	public Object findEntity(Object entity, String[] fetch) {
+	public Object fetchEntity(Object entity, String[] fetch) {
 	    Serializable id = (Serializable)Entity.forClass(entity.getClass()).getIdentifier(entity);
 	    if (id == null)
 	        return null;
 	    return session.get(entity.getClass(), id);
 	}
-	
     
 	/**
 	 * disconnects from the Hibernate Session.

@@ -57,7 +57,7 @@ public class PersistenceContextManager implements TidePersistenceManager  {
 		
 		//the get is called to give the children a chance to override and
 		//use the implemented method
-		attachedEntity = findEntity(entity, propertyNames);
+		attachedEntity = fetchEntity(entity, propertyNames);
 
 	    if (attachedEntity != null && propertyNames != null) {
 	        for (int i = 0; i < propertyNames.length; i++) {
@@ -82,7 +82,7 @@ public class PersistenceContextManager implements TidePersistenceManager  {
 	 * attaches the entity to the JPA context.
 	 * @return the attached entity
 	 */
-	public Object findEntity(Object entity, String[] fetch) {
+	public Object fetchEntity(Object entity, String[] fetch) {
         Serializable id = (Serializable)Entity.forClass(entity.getClass()).getIdentifier(entity);
         if (id == null)
             return null;

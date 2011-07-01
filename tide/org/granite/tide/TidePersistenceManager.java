@@ -20,10 +20,19 @@
 
 package org.granite.tide;
 
+
 /**
  * @author cingram
+ * @author William DRAI
  */
 public interface TidePersistenceManager {
 	
-	public Object attachEntity(Object entity, String[] propertyNames); 
+    /**
+     * Fetch the entity with its lazy properties from the persistence context.
+     * @param entity entity to load
+     * @param propertyNames array of property names to fetch
+     * @return the entity with the persistence context.
+     */
+	public Object attachEntity(Object entity, String[] propertyNames);
+
 }

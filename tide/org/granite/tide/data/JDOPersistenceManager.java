@@ -57,7 +57,7 @@ public class JDOPersistenceManager extends AbstractTidePersistenceManager implem
      * @return the entity
      */
 	@Override
-	public Object findEntity(Object entity, String[] fetch) {
+	public Object fetchEntity(Object entity, String[] fetch) {
 		Object id = pm.getObjectId(entity);
 		if (id == null)
 			return null;

@@ -48,7 +48,7 @@ public class HibernatePersistenceControllerManager extends PersistenceContextMan
      * @return the attached hibernate object
      */
     @Override
-    public Object findEntity(Object entity, String[] fetch) {
+    public Object fetchEntity(Object entity, String[] fetch) {
         PersistenceController<?> controller = (PersistenceController<?>)Component.getInstance(controllerName);
         Session session = (Session)controller.getPersistenceContext();
         Serializable id = (Serializable)Entity.forClass(entity.getClass()).getIdentifier(entity);

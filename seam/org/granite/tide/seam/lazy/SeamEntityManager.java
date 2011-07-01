@@ -50,7 +50,7 @@ public class SeamEntityManager extends PersistenceContextManager {
 	 * @return The attached entity
 	 */
 	@Override
-    public Object findEntity(Object entity, String[] fetch) {
+    public Object fetchEntity(Object entity, String[] fetch) {
         EntityManager em = (EntityManager) Component.getInstance(emName);
         if (em == null)
 		    throw new RuntimeException("Could not find entity, EntityManager [" + emName + "] not found");
