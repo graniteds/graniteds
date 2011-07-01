@@ -21,6 +21,7 @@
 <!ELEMENT granite-config (
     amf3-serializer?,
     amf3-deserializer?,
+    amf3-deserializer-securizer?,
     amf3-message-interceptor?,
     converters?,
     method-matcher?,
@@ -47,6 +48,12 @@
 <!ELEMENT amf3-deserializer EMPTY>
 <!ATTLIST amf3-deserializer
 	type CDATA #REQUIRED
+>
+
+<!ELEMENT amf3-deserializer-securizer EMPTY>
+<!ATTLIST amf3-deserializer-securizer
+	type CDATA "org.granite.messaging.amf.io.RegexAMF3DeserializerSecurizer"
+	param CDATA ""
 >
 
 <!ELEMENT amf3-message-interceptor EMPTY>
