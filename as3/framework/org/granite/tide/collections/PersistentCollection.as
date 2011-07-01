@@ -25,9 +25,10 @@ package org.granite.tide.collections {
     
     import mx.collections.IList;
     import mx.collections.IViewCursor;
+    import mx.collections.ItemResponder;
     import mx.collections.ListCollectionView;
     import mx.collections.errors.ItemPendingError;
-    import mx.collections.ItemResponder;
+    import mx.data.utils.Managed;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.logging.ILogger;
@@ -36,14 +37,13 @@ package org.granite.tide.collections {
     import mx.rpc.IResponder;
     import mx.rpc.events.ResultEvent;
     import mx.utils.object_proxy;
-    import mx.data.utils.Managed;
     
     import org.granite.collections.IPersistentCollection;
+    import org.granite.tide.BaseContext;
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
-    import org.granite.tide.IWrapper;
     import org.granite.tide.IPropertyHolder;
-    import org.granite.tide.BaseContext;
+    import org.granite.tide.IWrapper;
     
     
     use namespace flash_proxy;
@@ -73,10 +73,10 @@ package org.granite.tide.collections {
         	return _entity;
         } 
 	    
-        public function get propertyName() : String {
+        public function get propertyName():String {
         	return _propertyName;
         }
-	    
+		
 		public function PersistentCollection(entity:IEntity, propertyName:String, collection:IPersistentCollection) {
 		    super(IList(collection));
 		    _entity = entity;
@@ -88,6 +88,10 @@ package org.granite.tide.collections {
             return list;
         }
         
+		public function isLazy():Boolean {
+			return IPersistentCollection(list).isLazy();
+		}
+		
         public function isInitialized():Boolean {
             return IPersistentCollection(list).isInitialized();
         }
