@@ -23,9 +23,11 @@ package org.granite.tide.spring;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.granite.gravity.Gravity;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataEnabled.PublishMode;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Spring AOP aspect to handle publishing of data changes instead of relying on the default behaviour
@@ -34,14 +36,21 @@ import org.granite.tide.data.DataEnabled.PublishMode;
  *
  */
 @Aspect
-public class SpringDataPublishingAspect {
+public class TideDataPublishingAspect {
+	
+	private Gravity gravity;
+	
+	@Autowired
+	public void setGravity(Gravity gravity) {
+		this.gravity = gravity;
+	}
 	
     @Around("@within(org.granite.tide.data.DataEnabled) && @within(dataEnabled)")
     public Object processPublishData(ProceedingJoinPoint pjp, DataEnabled dataEnabled) throws Throwable {
     	boolean initContext = DataContext.get() == null;
     	
     	if (initContext)
-    		DataContext.init(dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
+    		DataContext.init(gravity, dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
         DataContext.observe();
         try {
         	Object ret = pjp.proceed();
