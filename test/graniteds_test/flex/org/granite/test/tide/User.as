@@ -21,7 +21,7 @@ package org.granite.test.tide
     
     
     [Managed]
-    [RemoteClass(alias="org.granite.tide.test.User")]
+    [RemoteClass(alias="org.granite.test.tide.User")]
     public class User implements IExternalizable {
 
         [Transient]

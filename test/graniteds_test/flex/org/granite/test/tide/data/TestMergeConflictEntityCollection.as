@@ -84,7 +84,7 @@ package org.granite.test.tide.data
 			Assert.assertEquals("Contacts collections not yet merged 2", 1, person.contacts.length);
 			Assert.assertTrue("Person still dirty after merge 2", _ctx.meta_isEntityChanged(person));
 			
-			_conflicts.conflicts[0].acceptServer ();
+			_conflicts.conflicts[0].acceptServer();
 			
 			Assert.assertEquals("Person last name", "tutu", person.lastName);
 			Assert.assertEquals("Contacts collections merges after accept server", 2, person.contacts.length);

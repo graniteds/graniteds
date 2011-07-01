@@ -12,7 +12,7 @@ package org.granite.test.tide {
 	
 
     [Managed]
-    [RemoteClass(alias="org.granite.tide.test.Person0")]
+    [RemoteClass(alias="org.granite.test.tide.Person0")]
     public class Person0 {
 
 		public function Person0(id:Number = NaN, firstName:String = null, lastName:String = null):void {

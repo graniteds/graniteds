@@ -13,7 +13,7 @@ package org.granite.test.tide
     
     
     [Managed]
-    [RemoteClass(alias="org.granite.tide.test.Group")]
+    [RemoteClass(alias="org.granite.test.tide.Group")]
     public class Group implements IExternalizable {
 
         [Transient]

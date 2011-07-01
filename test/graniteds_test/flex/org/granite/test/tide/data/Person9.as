@@ -24,7 +24,7 @@ package org.granite.test.tide.data {
     use namespace tide;
 
     [Managed]
-    [RemoteClass(alias="org.granite.tide.test.Person9")]
+    [RemoteClass(alias="org.granite.test.tide.Person9")]
     public class Person9 extends AbstractEntity {
 
 		private var _salutation:Salutation;

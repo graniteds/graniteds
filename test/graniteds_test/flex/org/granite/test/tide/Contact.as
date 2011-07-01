@@ -16,7 +16,7 @@ package org.granite.test.tide {
 	use namespace meta;
 
 	[Managed]
-    [RemoteClass(alias="org.granite.tide.test.Contact")]
+    [RemoteClass(alias="org.granite.test.tide.Contact")]
     public class Contact extends AbstractEntity {
 
         private var _email:String;
