@@ -144,8 +144,8 @@ package org.granite.tide {
         public function meta_init(contextId:String, contextManager:IContextManager):void {
             _contextId = contextId;
             _contextManager = contextManager;
-            dispatcher = new ContextEventDispatcher(this, _contextManager);
-            _entityManager = new EntityManager(this, _contextManager);
+            dispatcher = new ContextEventDispatcher(this);
+            _entityManager = new EntityManager(this);
         }
         
         /**
@@ -168,6 +168,13 @@ package org.granite.tide {
 		 */
 		public function get meta_parentContext():BaseContext {
 			return _parentContext;
+		}
+		
+		/**
+		 * 	@return context manager
+		 */
+		public function get meta_contextManager():IContextManager {
+			return _contextManager;
 		}
         
         /**
@@ -540,6 +547,14 @@ package org.granite.tide {
         }
         
         
+		/**
+         * 	@private
+		 *  @return allow uninitialize of collections
+		 */
+		public function get meta_uninitializeAllowed():Boolean {
+			return _entityManager.uninitializeAllowed;
+		}
+		
         /**
          * 	@private
          *	Allow uninitialize of persistence collections
@@ -549,7 +564,7 @@ package org.granite.tide {
         public function set meta_uninitializeAllowed(allowed:Boolean):void {
         	_entityManager.uninitializeAllowed = allowed;
         }
-        
+		
         
         /**
          *	Entity manager is dirty when any entity/collection/map has been modified
@@ -570,12 +585,12 @@ package org.granite.tide {
 		}
 		
 		/**
-		 *	Return the current change set for the context
+		 *	Return the current set of dirty properties
 		 *
-		 *  @return set of changes
+		 *  @return map of saved properties
 		 */
-		public function meta_buildChangeSet():ChangeSet {
-			return _entityManager.buildChangeSet();
+		public function meta_getSavedProperties():Dictionary {
+			return _entityManager.savedProperties;
 		}
         
         /**
@@ -586,8 +601,8 @@ package org.granite.tide {
          *  @param parent the parent entity
          *  @param res the context expression
          */ 
-        public function meta_addReference(obj:Object, parent:Object, res:IExpression = null):void {
-        	_entityManager.addReference(obj, parent, res);
+        public function meta_addReference(obj:Object, parent:Object, propName:String, res:IExpression = null):void {
+        	_entityManager.addReference(obj, parent, propName, res);
         }
         
 		/**
@@ -970,11 +985,11 @@ package org.granite.tide {
                     var n:String = name is QName ? QName(name).localName : name;
                     if (value is IEntity) {
                         // Setup context for entity context variable
-                        _entityManager.addReference(value, null, new ContextVariable(n));
+                        _entityManager.addReference(value, null, null, new ContextVariable(n));
                         meta_addUpdate(n, null, value);
                     }
                     else if ((value is IList || ObjectUtil.isSimple(value)) && !(value is IComponent || value is IUIComponent)) {
-                        _entityManager.addReference(value, null, new ContextVariable(n));
+                        _entityManager.addReference(value, null, null, new ContextVariable(n));
                         meta_addUpdate(n, null, value);
                     }
                     else if (value is Subcontext) {
@@ -1418,12 +1433,6 @@ package org.granite.tide {
             if (_finished)
 		        throw new InvalidContextError(_contextId);
 		    
-		    for (var i:int = 0; i < args.length; i++) {
-		    	if (args[i] is IPropertyHolder)
-		    		args[i] = IPropertyHolder(args[i]).object;
-		    	meta_attach(args[i]);
-		    }
-		    
 		    var responder:ITideResponder = null;
 		    if (args != null && args.length > 0 && args[args.length-1] is ITideResponder)
 		        responder = args.pop() as ITideResponder;
@@ -1440,6 +1449,15 @@ package org.granite.tide {
                 responder = new TideResponder(resultHandler, faultHandler);
             }
             
+			for (var i:int = 0; i < args.length; i++) {
+				if (args[i] is IPropertyHolder)
+					args[i] = IPropertyHolder(args[i]).object;
+				meta_mergeExternal(args[i]);
+			}
+			
+			for each (var app:IArgumentPreprocessor in allByType(IArgumentPreprocessor, true))
+				args = app.preprocess(args);
+			
             _tracking = false;
             var token:AsyncToken = _tide.invokeComponent(this, component, op, args, responder, withContext);
             _tracking = true;
@@ -1811,15 +1829,17 @@ package org.granite.tide {
          *
          *  @return merged object (should === previous when previous not null)
          */
-        public function meta_mergeFromContext(sourceContext:BaseContext, obj:Object, externalData:Boolean = false):Object {
+        public function meta_mergeFromContext(sourceContext:BaseContext, obj:Object, externalData:Boolean = false, uninitializing:Boolean = false):Object {
         	var saveSourceContext:BaseContext = _entityManager.sourceContext;
     		_entityManager.sourceContext = sourceContext;
-        		        		
+			_entityManager.uninitializing = uninitializing;
+        	
         	var next:Object = externalData
 				? meta_mergeExternalData(obj, null, _tide.sessionId + '$')	// Force handling of external data
 				: meta_mergeExternal(obj);
         	
     		_entityManager.sourceContext = saveSourceContext;
+			_entityManager.uninitializing = false;
     		return next;
         }
         
