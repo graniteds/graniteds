@@ -22,6 +22,8 @@ package org.granite.gravity.selector;
 
 import java.io.IOException;
 
+import javax.jms.JMSException;
+
 import org.apache.activemq.command.Response;
 import org.apache.activemq.filter.BooleanExpression;
 import org.apache.activemq.filter.MessageEvaluationContext;
@@ -40,7 +42,7 @@ public class ActiveMQMessageSelector implements MessageSelector {
 
     public ActiveMQMessageSelector(String selector) {
         try {
-            this.expression = new SelectorParser().parse(selector);
+            this.expression = SelectorParser.parse(selector);
         }
         catch (Exception e) {
             throw new RuntimeException("ActiveMQ SelectorParser error " + selector, e);
@@ -85,5 +87,9 @@ public class ActiveMQMessageSelector implements MessageSelector {
         public byte getDataStructureType() {
             return 0;
         }
+
+		@Override
+		public void clearBody() throws JMSException {
+		}
     }
 }
