@@ -55,7 +55,11 @@ public class DefaultClassGetter implements ClassGetter {
     
     public void initialize(Object owner, String propertyName, Object propertyValue) {
     }
-    
+
+    public List<Object[]> getFieldValues(Object obj) {
+    	return getFieldValues(obj, null);
+    }
+
     public List<Object[]> getFieldValues(Object obj, Object dest) {
     	return defaultGetFieldValues(obj, dest);
     }
@@ -77,8 +81,12 @@ public class DefaultClassGetter implements ClassGetter {
                         continue;
                     field.setAccessible(true);
                     Object o = field.get(obj);
-                    Object d = field.get(dest);
-                    fieldValues.add(new Object[] { field, o, d });
+                    if (dest != null) {
+                        Object d = field.get(dest);
+                        fieldValues.add(new Object[] { field, o, d });
+                    }
+                    else
+                        fieldValues.add(new Object[] { field, o });
                 }
                 clazz = clazz.getSuperclass();
             }

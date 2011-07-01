@@ -58,7 +58,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  *  @author Sebastien Deleuze
- * 	@author William Draï
+ * 	@author William DRAI
  */
 public class SpringServiceContext extends TideServiceContext {
 
