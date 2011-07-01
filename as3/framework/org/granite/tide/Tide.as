@@ -2029,6 +2029,7 @@ package org.granite.tide {
         public function initializerResult(sourceContext:BaseContext, data:Object, entity:Object, propertyNames:Array):void {
             var res:Array = data.result.result as Array;
             
+			var saveUninitializeAllowed:Boolean = sourceContext.meta_uninitializeAllowed;
             sourceContext.meta_uninitializeAllowed = false;
             
             // Assumes objects is a PersistentCollection or PersistentMap
@@ -2036,7 +2037,7 @@ package org.granite.tide {
 		    
             result(sourceContext, "", data);
             
-            sourceContext.meta_uninitializeAllowed = true;
+            sourceContext.meta_uninitializeAllowed = saveUninitializeAllowed;
         }
         
 		/**
