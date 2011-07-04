@@ -11,11 +11,6 @@ package org.granite.test.tide.data
     import org.granite.test.tide.Person;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
-    import org.granite.tide.data.Change;
-    import org.granite.tide.data.ChangeRef;
-    import org.granite.tide.data.ChangeSet;
-    import org.granite.tide.data.ChangeSetBuilder;
-    import org.granite.tide.data.CollectionChanges;
     
     
     public class TestManagedEntity 
