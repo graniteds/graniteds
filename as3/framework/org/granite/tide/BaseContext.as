@@ -76,7 +76,6 @@ package org.granite.tide {
     import org.granite.reflect.Type;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
-    import org.granite.tide.data.ChangeSet;
     import org.granite.tide.data.EntityManager;
     import org.granite.tide.events.IConversationEvent;
     import org.granite.tide.events.TideEvent;
