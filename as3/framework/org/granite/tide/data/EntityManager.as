@@ -279,6 +279,25 @@ package org.granite.tide.data {
 			if (putInCache)
 				_entitiesByUID.put(entity);			
 		}
+		
+		/**
+		 *  @private
+		 *  Detach an entity from this context only if it's not persistent
+		 * 
+		 *  @param entity an entity
+		 *  @param removeFromCache remove entity from cache
+		 */
+		public function detachEntity(entity:IEntity, removeFromCache:Boolean = true):void {
+			var versionPropName:String = _context.meta_tide.getEntityDescriptor(entity).versionPropertyName;
+			if (versionPropName == null || !isNaN(entity[versionPropName]))
+				return;
+			
+			_dirtyCheckContext.markNotDirty(entity, entity);
+			
+			Managed.setEntityManager(entity, null);
+			if (removeFromCache)
+				_entitiesByUID.remove(entity.uid);
+		}
         
         /**
          *	@private
@@ -302,10 +321,7 @@ package org.granite.tide.data {
             for each (var p:String in cinfo.properties) {
                 var val:Object = object[p];
                 
-                if (!ObjectUtil.isSimple(val)) {
-                	attach(val, cache);
-                }
-                else if (val is IList && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
+                if (val is IList && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
                     var coll:IList = IList(val);
                     for each (var o:Object in coll)
                     	attach(o, cache);
@@ -318,6 +334,13 @@ package org.granite.tide.data {
                         attach(value, cache);
                     }
                 }
+				else if (val is Array) {
+					for each (var e:Object in val)
+					attach(e, cache);
+				}
+				else if (!ObjectUtil.isSimple(val)) {
+					attach(val, cache);
+				}
             }
         }
         
@@ -476,16 +499,17 @@ package org.granite.tide.data {
          *
          *  @param obj an entity
          *  @param parent the parent entity to dereference
+		 *  @param propName name of the parent entity property that references the entity
          *  @param res expression to remove
          */ 
-        public function removeReference(obj:Object, parent:IUID = null, res:IExpression = null):void {
+        public function removeReference(obj:Object, parent:IUID = null, propName:String = null, res:IExpression = null):void {
             var refs:Array = _entityReferences[obj];
             if (!refs)
                 return;
             var idx:int = -1, i:uint;
             if (parent) {
 				for (i = 0; i < refs.length; i++) {
-					if (refs[i] is Array && refs[i][0] == getQualifiedClassName(parent) + ":" + parent.uid) {
+					if (refs[i] is Array && refs[i][0] == getQualifiedClassName(parent) + ":" + parent.uid && refs[i][1] == propName) {
                 		idx = i;
 						break;
 					}
@@ -502,19 +526,23 @@ package org.granite.tide.data {
             if (idx >= 0)
                 refs.splice(idx, 1);
             
-            if (refs.length == 0)
+            if (refs.length == 0) {
             	delete _entityReferences[obj];
+				
+				if (obj is IEntity)
+					detachEntity(IEntity(obj), true);
+			}
             
             var elt:Object = null;
             if (obj is IList || obj is Array) {
             	for each (elt in obj)
-            		removeReference(elt, parent);
+            		removeReference(elt, parent, propName);
             }
             else if (obj is IMap) {
             	for (elt in obj) {
             		var val:Object = obj.get(elt);
-            		removeReference(val, parent);
-            		removeReference(elt, parent);
+            		removeReference(val, parent, propName);
+            		removeReference(elt, parent, propName);
             	}
             }
         }
@@ -717,12 +745,17 @@ package org.granite.tide.data {
                     			// Conflict between externally received data and local modifications
                     			log.error("conflict with external data detected on {0} (current: {1}, received: {2})",
                     				BaseContext.toString(dest), oldVersion, newVersion);
-                    				
-                    			if (_mergeConflicts == null)
-                    				_mergeConflicts = new Conflicts(_context, this);
-                				_mergeConflicts.addConflict(dest as IEntity, obj as IEntity);
                     			
-                    			ignore = true;
+								if (_dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), IEntity(obj))) {
+									// Incoming data is different from local data
+	                    			if (_mergeConflicts == null)
+	                    				_mergeConflicts = new Conflicts(_context, this);
+	                				_mergeConflicts.addConflict(dest as IEntity, obj as IEntity);
+	                    			
+	                    			ignore = true;
+								}
+								else
+									_mergeUpdate = true;
                     		}
                     		else
                     			_mergeUpdate = true;
@@ -1354,7 +1387,7 @@ package org.granite.tide.data {
         public function setEntityProperty(entity:IEntity, propName:String, oldValue:*, newValue:*):void {
         	if (newValue !== oldValue) {
         		if (oldValue != null) {
-        			removeReference(oldValue, entity);
+        			removeReference(oldValue, entity, propName);
         			removeTrackingListeners(oldValue, entity);
         		}
         		
@@ -1496,6 +1529,15 @@ package org.granite.tide.data {
                     }
                 }
             }
+			else if (event.kind == CollectionEventKind.REMOVE && event.items && event.items.length > 0) {
+				parent = getOwnerEntity(event.target);
+				if (parent) {
+					for (i = 0; i < event.items.length; i++) {
+						if (event.items[i] is IEntity)
+							removeReference(IEntity(event.items[i]), parent[0], String(parent[1]));
+					}
+				}
+			}
 			else if (event.kind == CollectionEventKind.REPLACE && event.items && event.items.length > 0) {
 				parent = getOwnerEntity(event.target);
 				for (i = 0; i < event.items.length; i++) {
@@ -1565,6 +1607,22 @@ package org.granite.tide.data {
                     }
                 }
             }
+			else if (event.kind == CollectionEventKind.REMOVE && event.items && event.items.length > 0) {
+				parent = getOwnerEntity(event.target);
+				if (parent) {
+					for (i = 0; i < event.items.length; i++) {
+						if (event.items[i] is IEntity)
+							removeReference(IEntity(event.items[i]), parent[0], String(parent[1]));
+						else if (event.items[i] is Array) {
+							obj = event.items[i] as Array;
+							if (obj[0] is IEntity)
+								removeReference(IEntity(obj[0]), parent[0], String(parent[1]));
+							if (obj[1] is IEntity)
+								removeReference(IEntity(obj[1]), parent[0], String(parent[1]));
+						}
+					}
+				}
+			}
 			else if (event.kind == CollectionEventKind.REPLACE && event.items && event.items.length > 0) {
 				parent = getOwnerEntity(event.target);
 				for (i = 0; i < event.items.length; i++) {

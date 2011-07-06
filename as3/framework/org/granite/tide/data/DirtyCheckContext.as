@@ -658,11 +658,12 @@ package org.granite.tide.data {
 		 *
 		 *  @param entity merged entity
 		 *  @param source source entity
+		 *  @return true if the entity is still dirty after comparing with incoming object
 		 */ 
-		public function checkAndMarkNotDirty(entity:IEntity, source:IEntity):void {
+		public function checkAndMarkNotDirty(entity:IEntity, source:IEntity):Boolean {
 			var save:Object = _savedProperties[entity];
 			if (save == null)
-				return;
+				return false;
 			
 			var oldDirty:Boolean = _dirtyCount > 0;			
 			var oldDirtyEntity:Boolean = isEntityChanged(entity);
@@ -705,6 +706,8 @@ package org.granite.tide.data {
 			
 			if ((_dirtyCount > 0) !== oldDirty)
 				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", oldDirty, _dirtyCount > 0));
+			
+			return newDirtyEntity;
 		}
         
         

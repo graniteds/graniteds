@@ -21,10 +21,11 @@ package org.granite.test.tide.data
         public function setUp():void {
             Tide.resetInstance();
             _ctx = Tide.getInstance().getContext();
+			_conflicts = null;
         }
         
         
-        private var _conflicts:Conflicts;
+        private var _conflicts:Conflicts = null;
         
         
         [Test]
@@ -117,7 +118,58 @@ package org.granite.test.tide.data
         	Assert.assertEquals("Person contacts", 2, person.contacts.length);
         	Assert.assertFalse("Person not dirty", _ctx.meta_isEntityChanged(person));
         }
-        
+		
+		[Test]
+		public function testMergeConflictEntity2():void {
+			var person:Person = new Person();
+			person.id = 1; 
+			person.version = 0;
+			person.contacts = new ArrayCollection();
+			var contact:Contact = new Contact();
+			contact.id = 1;
+			contact.version = 0;
+			contact.person = person;
+			person.contacts.addItem(contact);
+			_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+			person = _ctx.person;
+			
+			person.lastName = "toto";
+			var addedContact:Contact = new Contact();
+			addedContact.id = 2;
+			addedContact.version = 0;
+			addedContact.person = person;
+			person.contacts.addItem(addedContact);
+			contact.email = "test@test.com";
+			
+			Assert.assertTrue("Person dirty", _ctx.meta_isEntityChanged(person));
+			
+			var person2:Person = new Person();
+			person2.contacts = new ArrayCollection();
+			person2.id = person.id;
+			person2.version = 1;
+			person2.uid = person.uid;
+			person2.lastName = "toto";
+			var contact2a:Contact = new Contact();
+			contact2a.id = contact.id;
+			contact2a.version = 0;
+			contact2a.uid = contact.uid;
+			contact2a.person = person2;
+			var contact2b:Contact = new Contact();
+			contact2b.id = addedContact.id;
+			contact2b.version = 0;
+			contact2b.uid = addedContact.uid;
+			contact2b.person = person2;
+			person2.contacts.addItem(contact2a);
+			person2.contacts.addItem(contact2b);
+			
+			_ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, conflictsHandler);
+			
+			_ctx.meta_mergeExternalData(person2, null, "S2");
+			
+			Assert.assertNull("Conflicts after merge", _conflicts);
+			Assert.assertFalse("Person dirty after merge", _ctx.meta_isEntityChanged(person));
+		}
+       
         private function conflictsHandler(event:TideDataConflictsEvent):void {
         	_conflicts = event.conflicts;
         }

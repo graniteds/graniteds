@@ -477,7 +477,7 @@ package org.granite.tide {
             
             if (remove) {
                 if (obj != null)
-                    _entityManager.removeReference(obj, null, new ContextVariable(name));
+                    _entityManager.removeReference(obj, null, null, new ContextVariable(name));
                 
                 if (obj is IEventDispatcher) {
                 	meta_unregisterComponent(name, obj);
@@ -968,7 +968,7 @@ package org.granite.tide {
                 }
                 
                 if (prev != null)
-                    _entityManager.removeReference(prev, null, new ContextVariable(n));
+                    _entityManager.removeReference(prev, null, null, new ContextVariable(n));
                 
                 saveTracking = _tracking;
                 _tracking = true;
