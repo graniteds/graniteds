@@ -109,8 +109,7 @@ public class SpringServiceContext extends TideServiceContext {
     	ApplicationContext springContext = getSpringContext();
     	try {
     		if (componentClass != null) {
-	    		@SuppressWarnings("unchecked")
-	    		Map<String, Object> beans = springContext.getBeansOfType(componentClass);
+	    		Map<String, ?> beans = springContext.getBeansOfType(componentClass);
 	    		if (beans.size() == 1)
 	    			bean = beans.values().iterator().next();
 	    		else if (beans.size() > 1 && componentName != null && !("".equals(componentName))) {
@@ -266,8 +265,7 @@ public class SpringServiceContext extends TideServiceContext {
         		// No bean or entity manager factory specified 
         		
         		// 1. Look for a TidePersistenceManager bean
-        		@SuppressWarnings("unchecked")
-        		Map<String, Object> pms = springContext.getBeansOfType(TidePersistenceManager.class);
+        		Map<String, ?> pms = springContext.getBeansOfType(TidePersistenceManager.class);
         		if (pms.size() > 1)
         			throw new RuntimeException("More than one Tide persistence managers defined");
         		
@@ -275,8 +273,7 @@ public class SpringServiceContext extends TideServiceContext {
         			return (TidePersistenceManager)pms.values().iterator().next();
         		
         		// 2. If not found, try to determine the Spring transaction manager        		
-        		@SuppressWarnings("unchecked")
-        		Map<String, Object> tms = springContext.getBeansOfType(PlatformTransactionManager.class);
+        		Map<String, ?> tms = springContext.getBeansOfType(PlatformTransactionManager.class);
         		if (tms.isEmpty())
         			log.debug("No Spring transaction manager found, specify a persistence-manager-bean-name or entity-manager-factory-bean-name");
         		else if (tms.size() > 1)
@@ -288,8 +285,7 @@ public class SpringServiceContext extends TideServiceContext {
 	        			// Check if a JPA factory is setup
 	        			// If we find one, define a persistence manager with the JPA factory and Spring transaction manager
 						Class<?> emfiClass = ClassUtil.forName("org.springframework.orm.jpa.EntityManagerFactoryInfo");
-		        		@SuppressWarnings("unchecked")
-		        		Map<String, Object> emfs = springContext.getBeansOfType(emfiClass);
+		        		Map<String, ?> emfs = springContext.getBeansOfType(emfiClass);
 						if (emfs.size() == 1) {
 							try {
 								Class<?> emfClass = ClassUtil.forName("javax.persistence.EntityManagerFactory");
@@ -332,8 +328,7 @@ public class SpringServiceContext extends TideServiceContext {
                 
                 // Try to determine the Spring transaction manager
                 TideTransactionManager tm = null;
-        		@SuppressWarnings("unchecked")        		
-        		Map<String, Object> ptms = springContext.getBeansOfType(PlatformTransactionManager.class);
+        		Map<String, ?> ptms = springContext.getBeansOfType(PlatformTransactionManager.class);
         		if (ptms.size() == 1) {
         			log.debug("Found Spring transaction manager " + ptms.keySet().iterator().next());
         			tm = new SpringTransactionManager((PlatformTransactionManager)ptms.values().iterator().next());

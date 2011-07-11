@@ -102,8 +102,7 @@ public class SpringServiceFactory extends ServiceFactory {
                 SpringServiceContext tideContext = null;
                 ServletContext sc = ((HttpGraniteContext)context).getServletContext();
                 ApplicationContext springContext = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
-                @SuppressWarnings("unchecked")
-                Map<String, Object> beans = springContext.getBeansOfType(SpringServiceContext.class);
+                Map<String, ?> beans = springContext.getBeansOfType(SpringServiceContext.class);
                 if (beans.size() > 1)
                     throw new RuntimeException("More than one SpringServiceContext bean found");
                 else if (beans.size() == 1)

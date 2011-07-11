@@ -144,7 +144,6 @@ public class SpringSecurity3Service extends AbstractSecurityService {
     	if (this.authenticationManager != null)
     		return;
     	
-    	@SuppressWarnings("unchecked")
     	Map<String, AuthenticationManager> authManagers = BeanFactoryUtils.beansOfTypeIncludingAncestors(ctx, AuthenticationManager.class);
     	
         if (authenticationManagerBeanName != null) {
