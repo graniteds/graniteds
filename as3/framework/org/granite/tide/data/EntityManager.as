@@ -19,62 +19,35 @@
 
 package org.granite.tide.data {
     
-    import flash.display.DisplayObject;
-    import flash.events.Event;
-    import flash.events.EventDispatcher;
     import flash.events.IEventDispatcher;
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
     import flash.utils.getQualifiedClassName;
-    import flash.utils.getQualifiedSuperclassName;
     
-    import mx.binding.utils.BindingUtils;
-    import mx.binding.utils.ChangeWatcher;
-    import mx.collections.ArrayCollection;
-    import mx.collections.ArrayList;
     import mx.collections.ICollectionView;
     import mx.collections.IList;
-    import mx.collections.ItemResponder;
     import mx.collections.ListCollectionView;
-    import mx.controls.Alert;
-    import mx.core.Application;
-    import mx.core.IUIComponent;
     import mx.core.IUID;
     import mx.data.IManaged;
     import mx.data.utils.Managed;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
-    import mx.events.FlexEvent;
     import mx.events.PropertyChangeEvent;
     import mx.events.PropertyChangeEventKind;
-    import mx.events.ValidationResultEvent;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.messaging.events.ChannelFaultEvent;
-    import mx.messaging.messages.ErrorMessage;
-    import mx.rpc.AbstractOperation;
-    import mx.rpc.AsyncToken;
-    import mx.rpc.events.FaultEvent;
-    import mx.rpc.events.ResultEvent;
-    import mx.rpc.remoting.mxml.RemoteObject;
-    import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
-    import mx.utils.UIDUtil;
     import mx.utils.object_proxy;
-    import mx.validators.ValidationResult;
     
     import org.granite.IValue;
-    import org.granite.collections.BasicMap;
     import org.granite.collections.IMap;
     import org.granite.collections.IPersistentCollection;
     import org.granite.collections.UIDWeakSet;
-    import org.granite.events.SecurityEvent;
     import org.granite.meta;
     import org.granite.reflect.Type;
     import org.granite.tide.BaseContext;
     import org.granite.tide.EntityDescriptor;
-    import org.granite.tide.IContextManager;
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IExpression;
@@ -83,10 +56,6 @@ package org.granite.tide.data {
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
     import org.granite.tide.data.events.TideDataConflictsEvent;
-    import org.granite.tide.events.IConversationEvent;
-    import org.granite.tide.events.TideEvent;
-    import org.granite.tide.events.TideFaultEvent;
-    import org.granite.tide.events.TideResultEvent;
     import org.granite.util.Enum;
 
 
@@ -461,7 +430,10 @@ package org.granite.tide.data {
         public function addReference(obj:Object, parent:Object, propName:String, res:IExpression = null):void {
             if (obj is IEntity)
                 attachEntity(IEntity(obj));
-            
+			
+			if (obj is ListCollectionView && parent != null)
+				obj = obj.list;
+			
             var refs:Array = _entityReferences[obj] as Array;
             if (!(obj is IPersistentCollection) && res != null) {
                 refs = initRefs(obj);
@@ -503,6 +475,9 @@ package org.granite.tide.data {
          *  @param res expression to remove
          */ 
         public function removeReference(obj:Object, parent:IUID = null, propName:String = null, res:IExpression = null):void {
+			if (obj is ListCollectionView && parent != null)
+				obj = obj.list;
+			
             var refs:Array = _entityReferences[obj];
             if (!refs)
                 return;
@@ -1428,12 +1403,13 @@ package org.granite.tide.data {
          *  @param parent parent object for collections
          */
         private function addTrackingListeners(previous:Object, parent:Object):void {
-        	if (_trackingListeners == null)
+        	if (_trackingListeners == null || previous == null || previous is XMLList)
         		return;
         	
             if (previous != null && previous is ListCollectionView) {
                 if (parent != null) {
-                    ListCollectionView(previous).addEventListener(CollectionEvent.COLLECTION_CHANGE, entityCollectionChangeHandler, false, 0, true);
+					previous = previous.list;
+                    previous.addEventListener(CollectionEvent.COLLECTION_CHANGE, entityCollectionChangeHandler, false, 0, true);
                     _trackingListeners[previous] = "entityCollection";
                 }
                 else {
@@ -1469,8 +1445,10 @@ package org.granite.tide.data {
         		return;
         	
             if (previous is ListCollectionView) {
-                if (parent != null)
-                    ListCollectionView(previous).removeEventListener(CollectionEvent.COLLECTION_CHANGE, entityCollectionChangeHandler);
+                if (parent != null) {
+					previous = previous.list;
+                    previous.removeEventListener(CollectionEvent.COLLECTION_CHANGE, entityCollectionChangeHandler);
+				}
                 else
                     ListCollectionView(previous).removeEventListener(CollectionEvent.COLLECTION_CHANGE, _context.meta_collectionChangeHandler);
             }
