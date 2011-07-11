@@ -5,12 +5,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.graniteds.examples.tide_seam.poms</groupId>
+    <groupId>org.graniteds.examples.addressbook.seam.poms</groupId>
     <artifactId>master</artifactId>
     <version>2.2.0.SP2</version>
   </parent>
 
-  <groupId>org.graniteds.examples.tide_seam.poms</groupId>
+  <groupId>org.graniteds.examples.addressbook.seam.poms</groupId>
   <artifactId>jee</artifactId>
   <version>2.2.0.SP2</version>
   <packaging>pom</packaging>
@@ -53,7 +53,7 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>org.graniteds.examples.tide_seam.poms.jee</groupId>
+                  <groupId>org.graniteds.examples.addressbook.seam.poms.jee</groupId>
                   <artifactId>jeeTest</artifactId>
                   <version>2.2.0.SP2</version>
                   <type>jar</type>
@@ -66,7 +66,7 @@
         </executions>
         <dependencies>
           <dependency>
-            <groupId>org.graniteds.examples.tide_seam.poms.jee</groupId>
+            <groupId>org.graniteds.examples.addressbook.seam.poms.jee</groupId>
             <artifactId>jeeTest</artifactId>
             <version>2.2.0.SP2</version>
           </dependency>
@@ -94,7 +94,7 @@
     <dependency>
       <groupId>javax.el</groupId>
       <artifactId>el-api</artifactId>
-      <version>1.2</version>
+      <version>1.0</version>
       <scope>test</scope>
     </dependency>
 

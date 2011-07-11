@@ -1,4 +1,4 @@
-package test.granite.ejb3.service;
+package org.granite.example.test.addressbook.seam.service;
 
 import org.jboss.seam.mock.SeamTest;
 import org.jboss.seam.security.Credentials;
@@ -7,6 +7,9 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+
+import org.granite.example.addressbook.seam.service.Authenticator;
+
 
 /**
  * Demonstrate on how to use embedded jboss to test seam component.

@@ -18,26 +18,22 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.example.components {
+package org.granite.example.addressbook.events {
 	
-    import mx.collections.Sort;
+    import flash.events.Event;
+    import org.granite.tide.events.AbstractTideEvent;
     
-
-    /**
-     * @author Franck WOLFF
-     */
-    public class PropertySort extends mx.collections.Sort {
-        
-        private var _comparator:Function = null;
-        
-        public function PropertySort(comparator:Function) {
-            super();
-            this._comparator = comparator;
+    import org.granite.example.addressbook.entity.Contact;
+    
+    
+    public class CreateContactEvent extends AbstractTideEvent {
+    	
+        public function CreateContactEvent():void {
+        	super();
         }
         
-        override public function findItem(
-            items:Array, values:Object, mode:String, returnInsertionIndex:Boolean = false, compareFunction:Function = null):int {
-            return super.findItem(items, values, mode, returnInsertionIndex, _comparator);
+        public override function clone():Event {
+        	return new CreateContactEvent();
         }
     }
 }

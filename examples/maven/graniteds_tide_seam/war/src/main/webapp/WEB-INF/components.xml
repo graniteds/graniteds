@@ -49,13 +49,13 @@
   <core:manager concurrent-request-timeout="500"
                 conversation-timeout="120000" conversation-id-parameter="cid" parent-conversation-id-parameter="pid"/>
 
-  <persistence:entity-manager-factory name="ejb3" persistence-unit-name="ejb3"/>
-  <persistence:managed-persistence-context name="entityManager" entity-manager-factory="#{ejb3}"/>
+  <persistence:entity-manager-factory name="seampu" persistence-unit-name="seam-pu"/>
+  <persistence:managed-persistence-context name="entityManager" entity-manager-factory="#{seampu}"/>
 
   <security:identity jaas-config-name="other"/>
-  <component name="examplePerson" class="test.granite.ejb3.entity.Person"/>
+  <component name="examplePerson" class="org.granite.example.addressbook.entity.Person"/>
 
-  <component name="people" class="test.granite.ejb3.service.PeopleQuery">
+  <component name="people" class="org.granite.example.addressbook.seam.service.PeopleQuery">
     <property name="ejbql">
       select p from Person p where (p.createdBy = '#{identity.credentials.username}' or p.restricted = 0)
     </property>

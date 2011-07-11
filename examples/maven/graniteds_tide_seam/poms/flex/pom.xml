@@ -4,12 +4,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.graniteds.examples.tide_seam.poms</groupId>
+    <groupId>org.graniteds.examples.addressbook.seam.poms</groupId>
     <artifactId>master</artifactId>
     <version>2.2.0.SP2</version>
   </parent>
 
-  <groupId>org.graniteds.examples.tide_seam.poms</groupId>
+  <groupId>org.graniteds.examples.addressbook.seam.poms</groupId>
   <artifactId>flex</artifactId>
   <version>2.2.0.SP2</version>
   <packaging>pom</packaging>

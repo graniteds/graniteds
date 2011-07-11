@@ -18,30 +18,27 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package test.granite.ejb3.service;
+package org.granite.example.addressbook.seam.service;
 
 import java.util.Set;
+
+import org.granite.example.addressbook.entity.AbstractEntity;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.security.Identity;
 import org.jboss.seam.security.permission.PermissionResolver;
-import test.granite.ejb3.entity.AbstractEntity;
 
 
-@Name( "test.granite.permissionResolver" )
-public class CreatedByPermissionResolver implements PermissionResolver
-{
 
-    public void filterSetByAction( Set<Object> set, String action )
-    {
+@Name("test.granite.permissionResolver")
+public class CreatedByPermissionResolver implements PermissionResolver {
+
+    public void filterSetByAction(Set<Object> set, String action) {
     }
 
-    public boolean hasPermission( Object target, String action )
-    {
-        if( target instanceof AbstractEntity &&
-            ( "update".equals( action ) || "delete".equals( action ) || ( (AbstractEntity) target ).isRestricted() ) )
-        {
-            return Identity.instance().getCredentials().getUsername().equals( ( (AbstractEntity) target ).getCreatedBy() );
-        }
+    public boolean hasPermission(Object target, String action) {
+        if (target instanceof AbstractEntity && ("update".equals(action) || "delete".equals(action) || ((AbstractEntity)target).isRestricted()))
+            return Identity.instance().getCredentials().getUsername().equals(((AbstractEntity)target).getCreatedBy());
         return false;
     }
+
 }

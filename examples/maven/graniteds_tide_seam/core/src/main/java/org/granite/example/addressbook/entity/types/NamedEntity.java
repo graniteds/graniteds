@@ -18,26 +18,18 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.example.components {
-	
-    import mx.collections.Sort;
-    
+package org.granite.example.addressbook.entity.types;
 
-    /**
-     * @author Franck WOLFF
-     */
-    public class PropertySort extends mx.collections.Sort {
-        
-        private var _comparator:Function = null;
-        
-        public function PropertySort(comparator:Function) {
-            super();
-            this._comparator = comparator;
-        }
-        
-        override public function findItem(
-            items:Array, values:Object, mode:String, returnInsertionIndex:Boolean = false, compareFunction:Function = null):int {
-            return super.findItem(items, values, mode, returnInsertionIndex, _comparator);
-        }
-    }
+/**
+ * @author Franck WOLFF
+ */
+public interface NamedEntity {
+
+    public String getFirstName();
+    public void setFirstName(String firstName);
+
+    public String getLastName();
+    public void setLastName(String lastName);
+
+    public String getFullName();
 }

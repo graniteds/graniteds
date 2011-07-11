@@ -18,129 +18,105 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package test.granite.ejb3.entity;
+package org.granite.example.addressbook.entity;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+
+import org.granite.example.addressbook.entity.types.NamedEntity;
 import org.hibernate.annotations.Cascade;
 
-import static javax.persistence.EnumType.ORDINAL;
-import static javax.persistence.FetchType.EAGER;
-import static javax.persistence.FetchType.LAZY;
-import static org.hibernate.annotations.CascadeType.ALL;
-import static org.hibernate.annotations.CascadeType.DELETE_ORPHAN;
-
 @Entity
-public class Person extends AbstractEntity
-{ // , DocumentedEntity {
-
+public class Person extends AbstractEntity implements NamedEntity {
+    
     private static final long serialVersionUID = 1L;
 
-    public enum Salutation
-    {
+    public enum Salutation {
         Mr,
         Ms,
         Dr
     }
-
-    @Enumerated( ORDINAL )
+    
+    @Enumerated(EnumType.ORDINAL)
     private Salutation salutation;
 
     @Basic
     private String firstName;
-
+    
     @Basic
     private String lastName;
-
-    @OneToMany( fetch = LAZY, mappedBy = "person" )
-    @Cascade( { ALL, DELETE_ORPHAN } )
+    
+    @OneToMany(fetch=FetchType.LAZY, mappedBy="person")
+    @Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
     private Set<Contact> contacts = new HashSet<Contact>();
-
-    @OneToOne( cascade = CascadeType.ALL, fetch = EAGER )
+    
+    @OneToOne(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
     private Contact mainContact;
 
 /*    @Embedded
     private Document document;
-*/
+*/    
 
-    public Salutation getSalutation()
-    {
+    public Salutation getSalutation() {
         return salutation;
     }
-
-    public void setSalutation( Salutation salutation )
-    {
+    public void setSalutation(Salutation salutation) {
         this.salutation = salutation;
     }
-
-    public String getFirstName()
-    {
+    
+    public String getFirstName() {
         return firstName;
     }
-
-    public void setFirstName( String firstName )
-    {
+    public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
-
-    public String getLastName()
-    {
+    
+    public String getLastName() {
         return lastName;
     }
-
-    public void setLastName( String lastName )
-    {
+    public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-
-    public Set<Contact> getContacts()
-    {
+    
+    public Set<Contact> getContacts() {
         return contacts;
     }
-
-    public void setContacts( Set<Contact> contacts )
-    {
+    public void setContacts(Set<Contact> contacts) {
         this.contacts = contacts;
     }
-
-    public Contact getMainContact()
-    {
+    
+    public Contact getMainContact() {
         return mainContact;
     }
-
-    public void setMainContact( Contact mainContact )
-    {
+    public void setMainContact(Contact mainContact) {
         this.mainContact = mainContact;
     }
 
-    /*    public Document getDocument() {
-            return document;
-        }
-        public void setDocument(Document document) {
-            this.document = document;
-        }
-    */
-    public String getFullName()
-    {
-        StringBuilder sb = new StringBuilder();
-        if( firstName != null && firstName.length() > 0 )
-        {
-            sb.append( firstName );
-        }
-        if( lastName != null && lastName.length() > 0 )
-        {
-            if( sb.length() > 0 )
-            {
-                sb.append( ' ' );
-            }
-            sb.append( lastName );
-        }
+/*    public Document getDocument() {
+		return document;
+	}
+	public void setDocument(Document document) {
+		this.document = document;
+	}
+*/
+	public String getFullName() {
+    	StringBuilder sb = new StringBuilder();
+    	if (firstName != null && firstName.length() > 0)
+    		sb.append(firstName);
+    	if (lastName != null && lastName.length() > 0) {
+    		if (sb.length() > 0)
+    			sb.append(' ');
+    		sb.append(lastName);
+    	}
         return sb.toString();
     }
 }

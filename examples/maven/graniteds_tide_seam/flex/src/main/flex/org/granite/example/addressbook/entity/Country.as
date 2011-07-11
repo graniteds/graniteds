@@ -8,7 +8,7 @@
 package org.granite.example.addressbook.entity {
 
     [Bindable]
-    [RemoteClass(alias="org.granite.example.addressbook.entity.Address")]
-    public class Address extends AddressBase {
+    [RemoteClass(alias="org.granite.example.addressbook.entity.Country")]
+    public class Country extends CountryBase {
     }
 }

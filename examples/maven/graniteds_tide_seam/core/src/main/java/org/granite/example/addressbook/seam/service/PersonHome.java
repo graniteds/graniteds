@@ -18,9 +18,10 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package test.granite.ejb3.service;
+package org.granite.example.addressbook.seam.service;
 
 
+import org.granite.example.addressbook.entity.Person;
 import org.granite.tide.annotations.TideEnabled;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataEnabled.PublishMode;
@@ -30,49 +31,44 @@ import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Transactional;
 import org.jboss.seam.annotations.security.Restrict;
 import org.jboss.seam.framework.EntityHome;
-import test.granite.ejb3.entity.Person;
 
 
-@Name( "personHome" )
-@Restrict( "#{identity.loggedIn}" )
+
+@Name("personHome")
+@Restrict("#{identity.loggedIn}")
 @TideEnabled
-@DataEnabled( topic = "addressBookTopic", params = AddressBookParams.class, publish = PublishMode.ON_SUCCESS )
-public class PersonHome extends EntityHome<Person>
-{
+@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_SUCCESS)
+public class PersonHome extends EntityHome<Person> {
 
     private static final long serialVersionUID = 1L;
-
-
+    
+    
     @Override
-    @Begin( join = true )
-    public void create()
-    {
+    @Begin(join=true)
+    public void create() {
         super.create();
     }
-
+    
     @Override
     @Transactional
     @End
-    public String persist()
-    {
+    public String persist() {
         return super.persist();
     }
-
+    
     @Override
-    @Restrict( "#{s:hasRole('admin') or s:hasPermission(personHome.instance, 'update')}" )
+    @Restrict("#{s:hasRole('admin') or s:hasPermission(personHome.instance, 'update')}")
     @Transactional
     @End
-    public String update()
-    {
+    public String update() {
         return super.update();
     }
-
+    
     @Override
-    @Restrict( "#{s:hasRole('admin')}" )
+    @Restrict("#{s:hasRole('admin')}")
     @Transactional
     @End
-    public String remove()
-    {
+    public String remove() {
         return super.remove();
     }
 }

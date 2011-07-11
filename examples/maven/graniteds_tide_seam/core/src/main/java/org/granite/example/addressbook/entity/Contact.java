@@ -18,22 +18,20 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package test.granite.ejb3.entity;
+package org.granite.example.addressbook.entity;
 
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
-import static javax.persistence.CascadeType.ALL;
-
 @Entity
-public class Contact extends AbstractEntity
-{
+public class Contact extends AbstractEntity {
 
     private static final long serialVersionUID = 1L;
 
 
-    @ManyToOne( optional = false )
+    @ManyToOne(optional=false)
     private Person person;
 
     @Basic
@@ -45,67 +43,49 @@ public class Contact extends AbstractEntity
     @Basic
     private String email;
 
-    @ManyToOne( cascade = ALL, optional = false )
+    @ManyToOne(cascade=CascadeType.ALL, optional=false)
     private Address address;
 
 
-    public Person getPerson()
-    {
+    public Person getPerson() {
         return person;
     }
-
-    public void setPerson( Person person )
-    {
+    public void setPerson(Person person) {
         this.person = person;
     }
 
-    public Address getAddress()
-    {
+    public Address getAddress() {
         return address;
     }
-
-    public void setAddress( Address address )
-    {
+    public void setAddress(Address address) {
         this.address = address;
     }
 
-    public String getEmail()
-    {
+    public String getEmail() {
         return email;
     }
-
-    public void setEmail( String email )
-    {
+    public void setEmail(String email) {
         this.email = email;
     }
 
-    public String getFax()
-    {
+    public String getFax() {
         return fax;
     }
-
-    public void setFax( String fax )
-    {
+    public void setFax(String fax) {
         this.fax = fax;
     }
 
-    public String getMobile()
-    {
+    public String getMobile() {
         return mobile;
     }
-
-    public void setMobile( String mobile )
-    {
+    public void setMobile(String mobile) {
         this.mobile = mobile;
     }
-
-    public String getPhone()
-    {
+    
+    public String getPhone() {
         return phone;
     }
-
-    public void setPhone( String phone )
-    {
+    public void setPhone(String phone) {
         this.phone = phone;
     }
 }
