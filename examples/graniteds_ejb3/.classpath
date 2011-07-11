@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Dev/workspaceseam3/graniteds/lib/jpa-2.0-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jpa-2.0-api.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-annotations-ejb3.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-ejb3x.jar"/>
 	<classpathentry kind="lib" path="/graniteds/build/granite.jar"/>
