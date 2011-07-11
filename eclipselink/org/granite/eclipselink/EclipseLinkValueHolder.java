@@ -56,6 +56,10 @@ public class EclipseLinkValueHolder implements WeavedAttributeValueHolderInterfa
         return false;
     }
 
+	public boolean shouldAllowInstantiationDeferral() {
+		return true;
+	}
+
     public void setIsCoordinatedWithProperty(boolean value) {
     }
 
