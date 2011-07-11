@@ -4,5 +4,5 @@
 /classes
 /test-reports
 /swf
-/FlexUnitApplication.mxml
-/FlexUnitCompilerApplication.mxml
+/flex/FlexUnitApplication.mxml
+/flex/FlexUnitCompilerApplication.mxml
