@@ -23,11 +23,9 @@
 <mx:Application
     xmlns:mx="http://www.adobe.com/2006/mxml"
     xmlns="*"
-    xmlns:cs="test.granite.components.*"
-    xmlns:rs="test.granite.rpc.remoting.mxml.*"
-    xmlns:et="test.granite.ejb3.entity.*"
+    xmlns:cs="org.granite.example.components.*"
+    xmlns:et="org.granite.example.addressbook.entity.*"
     layout="vertical"
-    backgroundGradientColors="[#0e2e7d, #6479ab]"
     initialize="init()">
 
     <mx:Script>
@@ -50,16 +48,16 @@
             import org.granite.rpc.remoting.mxml.SecureRemoteObject;
             import org.granite.events.SecurityEvent;
 
-            import test.granite.ejb3.entity.Address;
-            import test.granite.ejb3.entity.Country;
-            import test.granite.ejb3.entity.types.DocumentedEntity;
-            import test.granite.ejb3.entity.embed.Document;
+            import org.granite.example.addressbook.entity.Address;
+            import org.granite.example.addressbook.entity.Country;
+            import org.granite.example.addressbook.entity.types.DocumentedEntity;
+            import org.granite.example.addressbook.entity.embed.Document;
 
             [Bindable]
             private var srv:SecureRemoteObject = null;
 
             [Bindable]
-            [ArrayElementType("test.granite.ejb3.entity.Person")]
+            [ArrayElementType("org.granite.example.addressbook.entity.Person")]
             private var personsModel:ArrayCollection = new ArrayCollection();
 
             public function init():void {
@@ -274,9 +272,9 @@
 
         <mx:VBox id="loggedInView">
             <mx:ApplicationControlBar id="acb" width="100%">
-                <mx:Label text="Granite Data Services (Address Book Demo)" fontSize="18" fontWeight="bold" color="#f0f0f0"/>
+                <mx:Label text="Granite Data Services (Address Book Demo)" fontSize="18" fontWeight="bold" color="#222222"/>
                 <mx:Spacer width="100%"/>
-                <mx:Label text="Search" color="#f0f0f0"/>
+                <mx:Label text="Search" color="#222222"/>
                 <mx:TextInput id="fSearch" enter="srv.findAllPersons(fSearch.text)"/>
                 <mx:Button label="Go" click="srv.findAllPersons(fSearch.text)"/>
                 <mx:Button label="Logout" click="doLogout()"/>

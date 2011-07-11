@@ -25,7 +25,7 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
     version="1.0" xmlns="http://java.sun.com/xml/ns/persistence">
 
-	<persistence-unit name="spring">
+	<persistence-unit name="spring-pu">
  	</persistence-unit>
 
 </persistence>

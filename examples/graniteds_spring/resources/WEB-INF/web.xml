@@ -48,8 +48,10 @@
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
-            /WEB-INF/conf/applicationContext.xml,
-            /WEB-INF/conf/applicationContextSecurity.xml
+            /WEB-INF/conf/application-context-core.xml,
+            /WEB-INF/conf/application-context-persistence.xml,
+            /WEB-INF/conf/application-context-graniteds.xml,
+            /WEB-INF/conf/application-context-security.xml
         </param-value>
     </context-param>
 
