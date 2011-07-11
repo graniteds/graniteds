@@ -2,24 +2,28 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/graniteds/lib/ejb3-persistence.jar"/>
+	<classpathentry kind="lib" path="C:/Dev/workspaceseam3/graniteds/lib/jpa-2.0-api.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-annotations-ejb3.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-ejb3x.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/hibernate-annotations.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/hibernate-validator.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-aop.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-beans.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-context.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-core.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-jdbc.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-orm.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-tx.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-web.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-webmvc.jar"/>
 	<classpathentry kind="lib" path="/graniteds/build/granite.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-security-acl-2.0.4.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-security-core-2.0.4.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/spring-security-core-tiger-2.0.4.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.aop.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.asm.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.beans.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.context.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.core.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.jdbc.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.jms.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.orm.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.transaction.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.web.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.web.servlet.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-j2ee.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-acl-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-config-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-core-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-web-3.0.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

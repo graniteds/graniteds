@@ -23,9 +23,8 @@
 <mx:Application
     xmlns:mx="http://www.adobe.com/2006/mxml"
     xmlns="*"
-    xmlns:cs="test.granite.components.*"
+    xmlns:cs="org.granite.example.components.*"
     layout="vertical"
-    backgroundGradientColors="[#0e2e7d, #6479ab]"
     preinitialize="Spring.getInstance().initApplication()"
     creationComplete="init()">
     
@@ -35,8 +34,6 @@
         	import mx.events.CloseEvent;
         	import org.granite.tide.data.Conflicts;
         	import org.granite.tide.data.events.TideDataConflictsEvent;
-            import test.granite.spring.entity.Person;
-            import test.granite.spring.entity.Contact;
             import mx.collections.ListCollectionView;
             import mx.collections.ArrayCollection;
             
@@ -46,7 +43,9 @@
             import org.granite.tide.events.*;
             import org.granite.tide.service.DefaultServiceInitializer;
             
-            import test.granite.AddressBookModule;
+            import org.granite.example.addressbook.spring.AddressBookModule;
+			import org.granite.example.addressbook.entity.Person;
+			import org.granite.example.addressbook.entity.Contact;
 
 			Spring.getInstance().addComponentWithFactory("serviceInitializer", DefaultServiceInitializer, 
 				{ contextRoot: "/graniteds-tide-spring" });

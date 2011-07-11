@@ -28,11 +28,11 @@
 
     <persistence-unit name="spring-pu">
 	    <provider>org.datanucleus.jpa.PersistenceProviderImpl</provider>
-	   	<class>test.granite.spring.entity.AbstractEntity</class>
-	   	<class>test.granite.spring.entity.Address</class>
-		<class>test.granite.spring.entity.Contact</class>
-		<class>test.granite.spring.entity.Country</class>
-		<class>test.granite.spring.entity.Person</class>
+	   	<class>org.granite.example.addressbook.entity.AbstractEntity</class>
+	   	<class>org.granite.example.addressbook.entity.Address</class>
+		<class>org.granite.example.addressbook.entity.Contact</class>
+		<class>org.granite.example.addressbook.entity.Country</class>
+		<class>org.granite.example.addressbook.entity.Person</class>
 	    <properties>
 	    	<property name="datanucleus.ConnectionDriverName" value="org.hsqldb.jdbcDriver"/>
 	     	<property name="datanucleus.ConnectionURL" value="jdbc:hsqldb:mem:graniteds-tide-spring"/>
