@@ -16,42 +16,31 @@
 	<classpathentry kind="src" output="classes/guice" path="guice"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/hibernate3.jar"/>
+	<classpathentry kind="lib" path="lib/jpa-2.0-api.jar"/>
 	<classpathentry kind="lib" path="lib/ejb-api.jar"/>
-	<classpathentry kind="lib" path="lib/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="lib/catalina.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-util-6.1.5.jar"/>
-	<classpathentry kind="lib" path="lib/apache-activemq-4.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-el.jar"/>
 	<classpathentry kind="lib" path="lib/jbossmq.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-6.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/jsf-api.jar"/>
-	<classpathentry kind="lib" path="lib/guice-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/guice.jar"/>
 	<classpathentry kind="lib" path="lib/acegi-security-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/spring-beans.jar"/>
-	<classpathentry kind="lib" path="lib/spring-context.jar"/>
-	<classpathentry kind="lib" path="lib/spring-core.jar"/>
-	<classpathentry kind="lib" path="lib/spring-web.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-validator.jar"/>
 	<classpathentry kind="lib" path="lib/el-api.jar"/>
-	<classpathentry kind="lib" path="lib/junit-4.4.jar"/>
 	<classpathentry kind="lib" path="lib/log4j.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate-commons-annotations.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-j2ee.jar"/>
-	<classpathentry kind="lib" path="lib/spring-aop.jar"/>
 	<classpathentry kind="lib" path="lib/toplink-essentials.jar"/>
 	<classpathentry kind="lib" path="lib/appserv-rt.jar"/>
 	<classpathentry kind="lib" path="lib/eclipselink.jar"/>
 	<classpathentry kind="lib" path="lib/jbossweb.jar"/>
-	<classpathentry kind="lib" path="lib/openjpa-1.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/openjpa.jar"/>
 	<classpathentry kind="lib" path="lib/datanucleus-core.jar"/>
-	<classpathentry kind="lib" path="lib/jdo2-api-2.3-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/weblogic10-compat.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate-annotations.jar"/>
 	<classpathentry kind="lib" path="lib/org.osgi.compendium-1.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/org.osgi.core-1.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-seam-21.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-seam-20.jar"/>
-	<classpathentry kind="lib" path="lib/spring-webmvc.jar"/>
 	<classpathentry kind="lib" path="lib/aopalliance-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/appengine-api-1.0-sdk-1.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>
@@ -63,16 +52,28 @@
 	<classpathentry kind="lib" path="lib/weld-core.jar"/>
 	<classpathentry kind="lib" path="lib/interceptor-api.jar"/>
 	<classpathentry kind="lib" path="lib/validation-api.jar"/>
-	<classpathentry kind="lib" path="lib/spring-orm.jar"/>
-	<classpathentry kind="lib" path="lib/spring-tx.jar"/>
 	<classpathentry kind="lib" path="lib/jsr250-api.jar"/>
 	<classpathentry kind="lib" path="lib/spring-security-acl-2.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/spring-security-core-2.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/spring-security-core-tiger-2.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/spring-security-acl-3.0.1.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-security-core-3.0.1.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-vfs3.jar"/>
-	<classpathentry kind="lib" path="lib/spring-security-web-3.0.1.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/aspectjweaver-1.5.4.jar"/>
+	<classpathentry kind="lib" path="lib/apache-activemq.jar"/>
+	<classpathentry kind="lib" path="lib/jdo2-api-2.3-eb.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.aop.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.asm.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.beans.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.context.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.core.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.jdbc.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.jms.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.orm.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.transaction.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.web.jar"/>
+	<classpathentry kind="lib" path="lib/org.springframework.web.servlet.jar"/>
+	<classpathentry kind="lib" path="lib/spring-security-acl-3.0.jar"/>
+	<classpathentry kind="lib" path="lib/spring-security-config-3.0.jar"/>
+	<classpathentry kind="lib" path="lib/spring-security-core-3.0.jar"/>
+	<classpathentry kind="lib" path="lib/spring-security-web-3.0.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
