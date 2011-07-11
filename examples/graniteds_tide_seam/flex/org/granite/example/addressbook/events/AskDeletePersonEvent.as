@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.example.addressbook.seam.events {
+package org.granite.example.addressbook.events {
 
     import flash.events.Event;
     import org.granite.tide.events.AbstractTideEvent;
