@@ -14,7 +14,7 @@
 
     <!-- Guice specific context listener (Initialize Guice injector and WARP persistence) -->
     <listener>
-        <listener-class>test.granite.guice.listeners.InitNDestroy</listener-class>
+        <listener-class>org.granite.example.crud.guice.listeners.InitNDestroy</listener-class>
     </listener>
 
     <!--

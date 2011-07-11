@@ -35,10 +35,10 @@
 	<property name="flex.src" value="flex"/>
 	<property name="flex.context.root" value="graniteds-guice"/>
 	<fileset id="entity.path" dir="classes">
-        <include name="test/granite/ejb3/entity/**/*.class"/>
+        <include name="org/granite/example/crud/entity/**/*.class"/>
     </fileset>
 	<fileset id="service.path" dir="classes">
-        <include name="test/granite/guice/**/*.class"/>
+        <include name="org/granite/example/crud/guice/**/*.class"/>
     </fileset>
 	<fileset id="service.gen.path" dir="classes">
         <exclude name="**"/>

@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package test.granite.guice.modules;
+package org.granite.example.crud.guice.modules;
 
 import com.google.inject.AbstractModule;
 import com.wideplay.warp.jpa.JpaUnit;

@@ -29,7 +29,6 @@
   verticalGap="0"
   layout="vertical"
   verticalAlign="middle"
-  backgroundGradientColors="[#0e2e7d, #6479ab]"
   creationComplete="refresh()">
 
   <mx:Script>
@@ -40,7 +39,7 @@
       import mx.rpc.events.FaultEvent;
       import mx.managers.CursorManager;
 
-      import test.granite.ejb3.entity.Car;
+      import org.granite.example.crud.entity.Car;
 
       [Bindable]
       private var cars:ArrayCollection;

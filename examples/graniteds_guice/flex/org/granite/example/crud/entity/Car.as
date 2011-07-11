@@ -5,10 +5,10 @@
  * your custom code here.
  */
 
-package test.granite.ejb3.entity {
+package org.granite.example.crud.entity {
 
     [Bindable]
-    [RemoteClass(alias="test.granite.ejb3.entity.Car")]
+    [RemoteClass(alias="org.granite.example.crud.entity.Car")]
     public class Car extends CarBase {
     }
 }

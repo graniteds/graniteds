@@ -18,18 +18,19 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package test.granite.guice.services;
+package org.granite.example.crud.guice.services;
 
 import java.util.Collection;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import org.granite.example.crud.entity.Car;
+
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.wideplay.warp.persist.Transactional;
 
-import test.granite.ejb3.entity.Car;
 
 /**
  * @author Matt GIACOMI

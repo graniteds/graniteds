@@ -32,7 +32,7 @@
         </channels>
         <properties>
           <factory>guiceFactory</factory>
-          <source>test.granite.guice.services.Cars</source>
+          <source>org.granite.example.crud.guice.services.Cars</source>
         </properties>
       </destination>
     </service>

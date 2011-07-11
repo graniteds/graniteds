@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package test.granite.ejb3.entity;
+package org.granite.example.crud.entity;
 
 import java.io.Serializable;
 

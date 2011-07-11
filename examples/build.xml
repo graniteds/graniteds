@@ -230,7 +230,7 @@
 		<include name="granite-seam21.jar" if="gds-seam.lib"/>
 	</fileset>
 	<fileset id="guice.jar" dir="${gds.lib}">
-		<include name="guice-*.jar" if="guice.lib"/>
+		<include name="guice*.jar" if="guice.lib"/>
 		<include name="warp-*.jar" if="guice.lib"/>
 		<include name="aopalliance-*.jar" if="guice.lib"/>
 	</fileset>

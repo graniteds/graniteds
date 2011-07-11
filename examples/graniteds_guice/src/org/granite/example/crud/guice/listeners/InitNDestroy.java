@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package test.granite.guice.listeners;
+package org.granite.example.crud.guice.listeners;
 
 import javax.persistence.EntityManagerFactory;
 import javax.servlet.ServletContext;
@@ -26,8 +26,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
+import org.granite.example.crud.guice.modules.GuiceModule;
 
-import test.granite.guice.modules.GuiceModule;
 
 import com.google.inject.Guice;
 import com.google.inject.Inject;

@@ -5,7 +5,7 @@
  * THE GENERATOR. INSTEAD, EDIT THE INHERITED CLASS (Car.as).
  */
 
-package test.granite.ejb3.entity {
+package org.granite.example.crud.entity {
 
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
