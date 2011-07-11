@@ -89,7 +89,7 @@
      !-->
 	<path id="ejb3.jar">
 		<fileset dir="${gds.lib}">
-			<include name="ejb3-persistence.jar"/>
+			<include name="jpa-2.0-api.jar"/>
 			<include name="hibernate-annotations.jar"/>
 			<include name="hibernate-commons-annotations.jar"/>
 		</fileset>
@@ -105,8 +105,8 @@
 			<include name="datanucleus-core.jar"/>
 			<include name="datanucleus-enhancer.jar"/>
 			<include name="datanucleus-jpa.jar"/>
-			<include name="jdo2-api-2.3-SNAPSHOT.jar"/>
-			<include name="ejb3-persistence.jar"/>
+			<include name="jdo2-api-2.3-eb.jar"/>
+			<include name="jpa-2.0-api.jar"/>
 		</fileset>
 		<fileset dir="${gds.build}">
 			<include name="granite.jar"/>
@@ -119,10 +119,10 @@
 		<include name="jetty-util*.jar" if="jetty-util.lib"/>
 	</fileset>
 	<fileset id="hibernate.jar" dir="${gds.lib}">
-		<include name="ejb3-persistence.jar" if="hibernate.lib"/>
+		<include name="jpa-2.0-api.jar" if="hibernate.lib"/>
 		<include name="hibernate3.jar" if="hibernate.lib"/>
-		<include name="hibernate-annotations.jar" if="hibernate.lib"/>
-		<include name="hibernate-commons-annotations.jar" if="hibernate.lib"/>
+		<!--include name="hibernate-annotations.jar" if="hibernate.lib"/>
+		<include name="hibernate-commons-annotations.jar" if="hibernate.lib"/-->
 		<include name="dom4j.jar" if="hibernate.lib"/>
 		<include name="antlr-2.7.7.jar" if="hibernate.lib"/>
 		<include name="asm-1.5.3.jar" if="hibernate.lib"/>
@@ -134,11 +134,11 @@
 		<include name="slf4j-log4j12.jar" if="hibernate.lib"/>
 	</fileset>
 	<fileset id="hibernate-entitymanager.jar" dir="${gds.lib}">
-		<include name="ejb3-persistence.jar" if="hibernate-entitymanager.lib"/>
+		<include name="jpa-2.0-api.jar" if="hibernate-entitymanager.lib"/>
 		<include name="hibernate3.jar" if="hibernate-entitymanager.lib"/>
-		<include name="hibernate-entitymanager.jar" if="hibernate-entitymanager.lib"/>
+		<!--include name="hibernate-entitymanager.jar" if="hibernate-entitymanager.lib"/>
 		<include name="hibernate-annotations.jar" if="hibernate-entitymanager.lib"/>
-		<include name="hibernate-commons-annotations.jar" if="hibernate-entitymanager.lib"/>
+		<include name="hibernate-commons-annotations.jar" if="hibernate-entitymanager.lib"/-->
 		<include name="dom4j.jar" if="hibernate-entitymanager.lib"/>
 		<include name="antlr-2.7.7.jar" if="hibernate-entitymanager.lib"/>
 		<include name="jta.jar" if="hibernate-entitymanager.lib"/>
@@ -149,8 +149,8 @@
 		<include name="slf4j-log4j12.jar" if="hibernate-entitymanager.lib"/>
 	</fileset>
 	<fileset id="hibernate-validator.jar" dir="${gds.lib}">
-		<include name="hibernate-validator.jar" if="hibernate-validator.lib"/>
-		<include name="hibernate-commons-annotations.jar" if="hibernate-validator.lib"/>
+		<include name="hibernate-validator-4.2.0.jar" if="hibernate-validator.lib"/>
+		<!--include name="hibernate-commons-annotations.jar" if="hibernate-validator.lib"/-->
 		<include name="slf4j-api.jar" if="hibernate-validator.lib"/>
 		<include name="slf4j-log4j12.jar" if="hibernate-validator.lib"/>
 	</fileset>
@@ -171,7 +171,7 @@
 	</fileset>
 	<fileset id="eclipselink.jar" dir="${gds.lib}">
 		<include name="eclipselink*.jar" if="eclipselink.lib"/>
-		<include name="ejb3-persistence.jar" if="eclipselink.lib"/>
+		<include name="jpa-2.0-api.jar" if="eclipselink.lib"/>
 		<include name="jta.jar" if="eclipselink.lib"/>
 	</fileset>
 	<fileset id="granite-eclipselink.jar" dir="${gds.build}">
@@ -186,14 +186,14 @@
 	<fileset id="datanucleus.jar" dir="${gds.lib}">
 		<include name="datanucleus*.jar" if="datanucleus.lib"/>
 		<include name="asm-3.0.jar" if="datanucleus.lib"/>
-		<include name="jdo2-api-2.3-SNAPSHOT.jar" if="datanucleus.lib"/>
-		<include name="ejb3-persistence.jar" if="datanucleus.lib"/>
+		<include name="jdo2-api-2.3-eb.jar" if="datanucleus.lib"/>
+		<include name="jpa-2.0-api.jar" if="datanucleus.lib"/>
 		<include name="jta.jar" if="datanucleus.lib"/>
 	</fileset>
 	<fileset id="granite-datanucleus.jar" dir="${gds.build}">
 		<include name="granite-datanucleus.jar" if="gds-datanucleus.lib"/>
 	</fileset>
-	<fileset id="spring.jar" dir="${gds.lib}">
+	<fileset id="spring2.jar" dir="${gds.lib}">
 		<include name="spring-*.jar" if="spring.lib"/>
 		<include name="aopalliance-*.jar" if="spring.lib"/>
 		<include name="aspectj*.jar" if="spring.lib"/>
@@ -204,7 +204,7 @@
 		<exclude name="spring-security-*-3*.jar" if="spring.lib"/>
 	</fileset>
 	<fileset id="spring3.jar" dir="${gds.lib}">
-		<include name="org.springframework.*-3*.jar" if="spring3.lib"/>
+		<include name="org.springframework.*.jar" if="spring3.lib"/>
 		<include name="spring-security-*-3*.jar" if="spring3.lib"/>
 		<include name="aopalliance-*.jar" if="spring3.lib"/>
 		<include name="aspectj*.jar" if="spring3.lib"/>
@@ -220,7 +220,7 @@
 		<include name="jboss-el.jar" if="seam.lib"/>
 	</fileset>
 	<fileset id="seam-deps.jar" dir="${gds.lib}">
-		<include name="javassist-3.6.jar" if="seam-deps.lib"/>
+		<include name="javassist.jar" if="seam-deps.lib"/>
 		<include name="dom4j.jar" if="seam-deps.lib"/>
 	</fileset>
 	<fileset id="seamcore.jar" dir="${gds.lib}">
@@ -412,7 +412,7 @@
 			<lib refid="hibernate-entitymanager.jar"/>
 			<lib refid="hibernate-validator.jar"/>
 			<lib refid="hsqldb.jar"/>
-        	<lib refid="spring.jar"/>
+        	<lib refid="spring2.jar"/>
         	<lib refid="spring3.jar"/>
         	<lib refid="guice.jar"/>
 			<lib refid="seam.jar"/>
@@ -456,7 +456,7 @@
 			<fileset refid="hibernate-entitymanager.jar"/>
 			<fileset refid="hibernate-validator.jar"/>
 			<fileset refid="hsqldb.jar"/>
-			<fileset refid="spring.jar"/>
+			<fileset refid="spring2.jar"/>
 			<fileset refid="spring3.jar"/>
 			<fileset refid="guice.jar"/>
 			<fileset refid="seam.jar"/>
