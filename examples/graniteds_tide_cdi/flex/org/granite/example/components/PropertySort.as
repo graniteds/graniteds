@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+/*
   GRANITE DATA SERVICES
   Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
 
@@ -18,19 +16,28 @@
 
   You should have received a copy of the GNU Library General Public License
   along with this library; if not, see <http://www.gnu.org/licenses/>.
--->
+*/
 
-<persistence
-  	xmlns="http://java.sun.com/xml/ns/persistence"
-  	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
-  	version="2.0">
+package org.granite.example.components {
+	
+    import mx.collections.Sort;
+    
 
- 	<persistence-unit name="cdi-pu">
-        <jta-data-source>java:/DefaultDS</jta-data-source>
-        <properties>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
-        </properties>
- 	</persistence-unit>
-
-</persistence>
+    /**
+     * @author Franck WOLFF
+     */
+    public class PropertySort extends mx.collections.Sort {
+        
+        private var _comparator:Function = null;
+        
+        public function PropertySort(comparator:Function) {
+            super();
+            this._comparator = comparator;
+        }
+        
+        override public function findItem(
+            items:Array, values:Object, mode:String, returnInsertionIndex:Boolean = false, compareFunction:Function = null):int {
+            return super.findItem(items, values, mode, returnInsertionIndex, _comparator);
+        }
+    }
+}

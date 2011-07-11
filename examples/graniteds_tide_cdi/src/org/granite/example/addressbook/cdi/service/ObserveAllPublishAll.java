@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+/*
   GRANITE DATA SERVICES
   Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
 
@@ -10,27 +8,30 @@
   it under the terms of the GNU Library General Public License as published by
   the Free Software Foundation; either version 2 of the License, or (at your
   option) any later version.
-
+ 
   Granite Data Services is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
   FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
   for more details.
-
+ 
   You should have received a copy of the GNU Library General Public License
   along with this library; if not, see <http://www.gnu.org/licenses/>.
--->
+*/
 
-<persistence
-  	xmlns="http://java.sun.com/xml/ns/persistence"
-  	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
-  	version="2.0">
+package org.granite.example.addressbook.cdi.service;
 
- 	<persistence-unit name="cdi-pu">
-        <jta-data-source>java:/DefaultDS</jta-data-source>
-        <properties>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
-        </properties>
- 	</persistence-unit>
+import org.granite.tide.data.DataObserveParams;
+import org.granite.tide.data.DataPublishParams;
+import org.granite.tide.data.DataTopicParams;
 
-</persistence>
+
+public class ObserveAllPublishAll implements DataTopicParams {
+
+	@Override
+	public void observes(DataObserveParams params) {
+	}
+
+	@Override
+	public void publishes(DataPublishParams params, Object entity) {
+	}
+}

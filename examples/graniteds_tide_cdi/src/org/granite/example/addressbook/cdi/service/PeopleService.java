@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+/*
   GRANITE DATA SERVICES
   Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
 
@@ -18,19 +16,25 @@
 
   You should have received a copy of the GNU Library General Public License
   along with this library; if not, see <http://www.gnu.org/licenses/>.
--->
+*/
 
-<persistence
-  	xmlns="http://java.sun.com/xml/ns/persistence"
-  	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
-  	version="2.0">
+package org.granite.example.addressbook.cdi.service;
 
- 	<persistence-unit name="cdi-pu">
-        <jta-data-source>java:/DefaultDS</jta-data-source>
-        <properties>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
-        </properties>
- 	</persistence-unit>
+import java.util.Map;
 
-</persistence>
+import javax.annotation.security.RolesAllowed;
+
+import org.granite.example.addressbook.entity.Person;
+import org.granite.messaging.service.annotations.RemoteDestination;
+import org.granite.tide.data.DataEnabled;
+import org.granite.tide.data.DataEnabled.PublishMode;
+
+
+
+@RolesAllowed({ "user" })
+@RemoteDestination
+@DataEnabled(topic="addressBookTopic", params=ObserveAllPublishAll.class, publish=PublishMode.ON_SUCCESS)
+public interface PeopleService {
+
+	public Map<String, Object> find(Person examplePerson, int first, int max, String[] order, boolean[] desc);
+}

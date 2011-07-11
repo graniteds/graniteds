@@ -46,16 +46,16 @@
 	<property name="flex.src" value="flex"/>
 	<property name="flex.context.root" value="graniteds-tide-cdi"/>
 	<fileset id="entity.path" dir="classes">
-        <include name="test/granite/cdi/entity/**/*.class"/>
+        <include name="org/granite/example/addressbook/entity/**/*.class"/>
     </fileset>
 	<fileset id="service.path" dir="classes">
-        <include name="test/granite/cdi/service/*.class"/>
+        <include name="org/granite/example/addressbook/cdi/service/*.class"/>
     </fileset>
 	<fileset id="service.gen.path" dir="classes">
-        <include name="test/granite/cdi/service/*Service.class"/>
+        <include name="org/granite/example/addressbook/cdi/service/*Service.class"/>
     </fileset>
 	<fileset id="event.path" dir="classes">
-        <include name="test/granite/cdi/event/*.class"/>
+        <include name="org/granite/example/addressbook/cdi/event/*.class"/>
     </fileset>
 	<property name="flex.use.tide" value="true"/>
     
