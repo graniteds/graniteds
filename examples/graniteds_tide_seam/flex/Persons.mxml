@@ -23,9 +23,8 @@
 <mx:Application
     xmlns:mx="http://www.adobe.com/2006/mxml"
     xmlns="*"
-    xmlns:cs="test.granite.components.*"
+    xmlns:cs="org.granite.example.components.*"
     layout="vertical"
-    backgroundGradientColors="[#0e2e7d, #6479ab]"
     preinitialize="Seam.getInstance().initApplication()"
     creationComplete="init()">
 
@@ -45,12 +44,9 @@
         	import org.granite.tide.data.Conflicts;
         	import org.granite.tide.data.events.TideDataConflictsEvent;
         	
-            import test.granite.ejb3.entity.Person;
-            import test.granite.ejb3.entity.Contact;
-            
-            import test.granite.events.*;
-            
-            import test.granite.AddressBookModule;
+            import org.granite.example.addressbook.entity.*;
+            import org.granite.example.addressbook.events.*;            
+            import org.granite.example.addressbook.seam.AddressBookModule;
 
 			Seam.getInstance().addComponentWithFactory("serviceInitializer", DefaultServiceInitializer, 
 				{ contextRoot: "/graniteds-tide-seam" });

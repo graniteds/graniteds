@@ -26,10 +26,10 @@
     version="1.0">
     <persistence-unit name="seam-pu" transaction-type="JTA">
         <jta-data-source>jdbc/__default</jta-data-source>
-        <class>test.granite.ejb3.entity.AbstractEntity</class>
-        <class>test.granite.ejb3.entity.Person</class>
-        <class>test.granite.ejb3.entity.Contact</class>
-        <class>test.granite.ejb3.entity.Address</class>
+        <class>org.granite.example.addressbook.entity.AbstractEntity</class>
+        <class>org.granite.example.addressbook.entity.Person</class>
+        <class>org.granite.example.addressbook.entity.Contact</class>
+        <class>org.granite.example.addressbook.entity.Address</class>
 	    <properties>
 	        <property name="toplink.target-database" value="JavaDB"/>
 	        <property name="toplink.ddl-generation" value="create-tables"/>

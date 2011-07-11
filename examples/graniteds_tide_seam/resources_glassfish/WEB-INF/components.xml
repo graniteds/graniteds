@@ -58,9 +58,9 @@
     <security:identity authenticate-method="#{authenticator.authenticate}"/>
 
 
-    <component name="examplePerson" class="test.granite.ejb3.entity.Person"/>
+    <component name="examplePerson" class="org.granite.example.addressbook.entity.Person"/>
 
-    <component name="people" class="test.granite.ejb3.service.PeopleQuery">
+    <component name="people" class="org.granite.example.addressbook.seam.service.PeopleQuery">
     	<property name="ejbql">select p from Person p where (p.createdBy = '#{identity.credentials.username}' or p.restricted = 0)</property>
     	<property name="max-results">36</property>
     	<property name="restrictions">
