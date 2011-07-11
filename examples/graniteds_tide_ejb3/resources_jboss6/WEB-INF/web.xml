@@ -22,8 +22,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
  	
- 	<description>GraniteDS EJB3 Example Application</description>
- 	<display-name>GraniteDS EJB3</display-name>
+ 	<description>GraniteDS Tide/EJB3 Example Application</description>
+ 	<display-name>GraniteDS Tide/EJB3</display-name>
 
     
  	<welcome-file-list>
