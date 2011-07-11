@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package test.pojo;
+package org.granite.example.counter;
 
 import java.io.Serializable;
 

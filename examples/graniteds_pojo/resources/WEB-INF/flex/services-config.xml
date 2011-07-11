@@ -33,7 +33,7 @@
                 </channels>
                 <properties>
                     <scope>session</scope>
-                    <source>test.pojo.PojoService</source>
+                    <source>org.granite.example.counter.PojoService</source>
                 </properties>
             </destination>
         </service>
