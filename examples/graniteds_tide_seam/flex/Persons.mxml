@@ -98,14 +98,14 @@
 
         <mx:VBox id="loggedInView">
             <mx:ApplicationControlBar id="acb" width="100%">
-                <mx:Label text="Granite Data Services (Address Book Demo)" fontSize="18" fontWeight="bold" color="#f0f0f0"/>
+                <mx:Label text="Granite Data Services (Address Book Demo)" fontSize="18" fontWeight="bold" color="#222222"/>
                 <mx:Spacer width="100%"/>
-                <mx:Label text="Search" color="#f0f0f0"/>
+                <mx:Label text="Search" color="#222222"/>
                 <mx:TextInput id="fSearch" enter="dispatchEvent(new SearchEvent(fSearch.text));"/>
                 <mx:Button label="Go" click="dispatchEvent(new SearchEvent(fSearch.text))"/>
-                <mx:Label text="Logged as {identity.username}" color="#f0f0f0"/>
-                <mx:Label text="{Seam.getInstance().busy ? 'Busy' : 'Idle'}" color="#f0f0f0"/>
-                <mx:Label text="{Seam.getInstance().disconnected ? '[Disconnected]' : ''}" color="#f0f0f0"/>
+                <mx:Label text="{identity.username}" color="#222222"/>
+                <mx:Label text="{Seam.getInstance().busy ? 'Busy' : 'Idle'}" color="#222222"/>
+                <mx:Label text="{Seam.getInstance().disconnected ? '[Disconnected]' : ''}" color="#222222"/>
                 <mx:Button label="Logout" click="identity.logout();"/>
             </mx:ApplicationControlBar>
 

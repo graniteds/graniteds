@@ -32,10 +32,11 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import org.granite.example.addressbook.entity.types.NamedEntity;
 import org.hibernate.annotations.Cascade;
 
 @Entity
-public class Person extends AbstractEntity { // , DocumentedEntity {
+public class Person extends AbstractEntity implements NamedEntity {
     
     private static final long serialVersionUID = 1L;
 
