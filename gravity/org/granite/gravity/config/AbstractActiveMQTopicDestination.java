@@ -27,6 +27,7 @@ import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Scope;
 
 
+// TODO: remove dependency on Seam
 @Scope(ScopeType.APPLICATION)
 public class AbstractActiveMQTopicDestination extends AbstractJmsTopicDestination {
 
