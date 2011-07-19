@@ -744,29 +744,28 @@ package org.granite.tide.data {
                 var val:Object = entity[p];
                 var o:Object;
 				if (val is IList && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
-					var coll:IList = IList(val);
 					savedArray = save ? save[p] as Array : null;
 					if (savedArray) {
 						for (a = savedArray.length-1; a >= 0; a--) {
 							ce = savedArray[a] as CollectionEvent;
 							if (ce.kind == CollectionEventKind.ADD) {
 								for (z = 0; z < ce.items.length; z++)
-									coll.removeItemAt(ce.location);
+									ce.target.removeItemAt(ce.location);
 							}
 							else if (ce.kind == CollectionEventKind.REMOVE) {
 								for (z = 0; z < ce.items.length; z++)
-									coll.addItemAt(ce.items[z], ce.location+z); 
+									ce.target.addItemAt(ce.items[z], ce.location+z); 
 							}
 							else if (ce.kind == CollectionEventKind.REPLACE) {
 								for (z = 0; z < ce.items.length; z++)
-									coll.setItemAt(ce.items[z].oldValue, ce.location+z);
+									ce.target.setItemAt(ce.items[z].oldValue, ce.location+z);
 							}
 						}
 						
 						// Must be here because collection reset has triggered other useless CollectionEvents
 						markNotDirty(val, entity);
 					}
-					for each (o in coll) {
+					for each (o in val) {
 						if (o is IEntity)
 							resetEntity(IEntity(o), cache);
 					}

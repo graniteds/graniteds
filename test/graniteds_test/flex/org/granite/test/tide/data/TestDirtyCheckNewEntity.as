@@ -23,7 +23,6 @@ package org.granite.test.tide.data
         }
         
         
-		// [Ignore("Test failed, should consider pull request from A. Busch")]
         [Test("GDS-857")]
         public function testDirtyCheckNewEntity():void {
         	var person:Person = new Person();
@@ -67,6 +66,35 @@ package org.granite.test.tide.data
 			Assert.assertTrue("Context dirty after item change", _ctx.meta_dirty);
 			
 			person.contacts.removeItemAt(0);
+			
+			Assert.assertFalse("Context not dirty after item removed", _ctx.meta_dirty);
+		}
+		
+		[Test]
+		public function testDirtyCheckNewEntityAddedToCollReset():void {
+			var person:Person = new Person();
+			person.id = 1;
+			person.uid = "P1";
+			person.version = 0;
+			person.firstName = "toto";
+			person.contacts = new ArrayCollection();
+			_ctx.person = _ctx.meta_mergeExternalData(person);
+			person = Person(person);
+			
+			Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
+			
+			var contact:Contact = new Contact();
+			contact.uid = "C1";
+			contact.person = person;
+			person.contacts.addItem(contact);
+			
+			Assert.assertTrue("Context dirty after new item", _ctx.meta_dirty);
+			
+			contact.email = "test@test.com";
+			
+			Assert.assertTrue("Context dirty after item change", _ctx.meta_dirty);
+			
+			Managed.resetEntity(person);
 			
 			Assert.assertFalse("Context not dirty after item removed", _ctx.meta_dirty);
 		}

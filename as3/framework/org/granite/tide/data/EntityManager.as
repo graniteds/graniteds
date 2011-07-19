@@ -547,79 +547,82 @@ package org.granite.tide.data {
             var saveMergeUpdate:Boolean = _mergeUpdate;
 			var saveMerging:Boolean = _merging;
 			
-			_merging = true;
-            
-			var addRef:Boolean = false;
-            var fromCache:Boolean = false;
-            var prev:Object = _entityCache[obj];
-            var next:Object = obj;
-            if (prev) {
-                next = prev;
-                fromCache = true;
-            }
-            else {
-                // Clear change tracking
-            	removeTrackingListeners(previous, parent); 
-                
-				if (obj == null) {
-					next = null;
-				}
-				else if (((obj is IPersistentCollection && !IPersistentCollection(obj).isInitialized()) 
-                	|| (obj is IPersistentCollection && !(previous is IPersistentCollection))) && parent is IEntity && propertyName) {
-                    next = mergePersistentCollection(IPersistentCollection(obj), previous, null, IEntity(parent), propertyName);
-                    addRef = true;
-                }
-                else if (obj is IList) {
-                    next = mergeCollection(IList(obj), previous, parent == null ? expr : null, parent, propertyName);
-                    addRef = true;
-                }
-                else if (obj is Array) {
-                    next = mergeArray(obj as Array, previous, parent == null ? expr : null, parent, propertyName);
-                    addRef = true;
-                }
-                else if (obj is IMap) {
-                    next = mergeMap(IMap(obj), previous, parent == null ? expr : null, parent, propertyName);
-                    addRef = true;
-                }
-                else if (obj is Enum) {
-                	next = Enum.normalize(obj as Enum);
-                }
-                else if (!ObjectUtil.isSimple(obj) && !(obj is IValue || obj is XML || obj is ByteArray)) {
-                    next = mergeEntity(obj, previous, expr, parent);
-                	addRef = true;
-                }
-            }
-			
-            if (next && !fromCache && addRef
-                && (expr != null || (prev == null && parent != null))) {
-                // Store reference from current object to its parent entity or root component expression
-                // If it comes from the cache, we are probably in a circular graph 
-                addReference(next, parent, propertyName, expr);
-            }
-            
-            _mergeUpdate = saveMergeUpdate;
-            
-            if ((_mergeUpdate || forceUpdate) && setter != null && parent != null && propertyName != null && parent is IManaged) {
-            	if (!_resolvingConflict || propertyName != _context.meta_tide.getEntityDescriptor(IEntity(parent)).versionPropertyName) {
-	                setter(next);
-	                Managed.setProperty(IManaged(parent), propertyName, previous, next);
-	            }
-            }
-			
-			if ((_mergeUpdate || forceUpdate) && !fromCache && obj is IEntity) {
-				// @TODO Try to improve performance here by not iterating on child contexts where unnecessary  
-				// && _context.meta_isGlobal()) {
+			try {
+				_merging = true;
 				
-				// Propagate to existing conversation contexts where the entity is present
-				_context.meta_contextManager.forEachChildContext(_context, function(ctx:BaseContext, entity:IEntity):void {
-					if (ctx === _sourceContext)
-						return;
-					if (ctx.meta_getCachedObject(entity, true) != null)
-						ctx.meta_mergeFromContext(_context, entity, _externalData);
-				}, obj);
+				var addRef:Boolean = false;
+	            var fromCache:Boolean = false;
+	            var prev:Object = _entityCache[obj];
+	            var next:Object = obj;
+	            if (prev) {
+	                next = prev;
+	                fromCache = true;
+	            }
+	            else {
+	                // Clear change tracking
+	            	removeTrackingListeners(previous, parent); 
+	                
+					if (obj == null) {
+						next = null;
+					}
+					else if (((obj is IPersistentCollection && !IPersistentCollection(obj).isInitialized()) 
+	                	|| (obj is IPersistentCollection && !(previous is IPersistentCollection))) && parent is IEntity && propertyName) {
+	                    next = mergePersistentCollection(IPersistentCollection(obj), previous, null, IEntity(parent), propertyName);
+	                    addRef = true;
+	                }
+	                else if (obj is IList) {
+	                    next = mergeCollection(IList(obj), previous, parent == null ? expr : null, parent, propertyName);
+	                    addRef = true;
+	                }
+	                else if (obj is Array) {
+	                    next = mergeArray(obj as Array, previous, parent == null ? expr : null, parent, propertyName);
+	                    addRef = true;
+	                }
+	                else if (obj is IMap) {
+	                    next = mergeMap(IMap(obj), previous, parent == null ? expr : null, parent, propertyName);
+	                    addRef = true;
+	                }
+	                else if (obj is Enum) {
+	                	next = Enum.normalize(obj as Enum);
+	                }
+	                else if (!ObjectUtil.isSimple(obj) && !(obj is IValue || obj is XML || obj is ByteArray)) {
+	                    next = mergeEntity(obj, previous, expr, parent);
+	                	addRef = true;
+	                }
+	            }
+				
+	            if (next && !fromCache && addRef
+	                && (expr != null || (prev == null && parent != null))) {
+	                // Store reference from current object to its parent entity or root component expression
+	                // If it comes from the cache, we are probably in a circular graph 
+	                addReference(next, parent, propertyName, expr);
+	            }
+	            
+	            _mergeUpdate = saveMergeUpdate;
+	            
+	            if ((_mergeUpdate || forceUpdate) && setter != null && parent != null && propertyName != null && parent is IManaged) {
+	            	if (!_resolvingConflict || propertyName != _context.meta_tide.getEntityDescriptor(IEntity(parent)).versionPropertyName) {
+		                setter(next);
+		                Managed.setProperty(IManaged(parent), propertyName, previous, next);
+		            }
+	            }
+				
+				if ((_mergeUpdate || forceUpdate) && !fromCache && obj is IEntity) {
+					// @TODO Try to improve performance here by not iterating on child contexts where unnecessary  
+					// && _context.meta_isGlobal()) {
+					
+					// Propagate to existing conversation contexts where the entity is present
+					_context.meta_contextManager.forEachChildContext(_context, function(ctx:BaseContext, entity:IEntity):void {
+						if (ctx === _sourceContext)
+							return;
+						if (ctx.meta_getCachedObject(entity, true) != null)
+							ctx.meta_mergeFromContext(_context, entity, _externalData);
+					}, obj);
+				}
 			}
-			
-			_merging = saveMerging;
+			finally {
+				_merging = saveMerging;
+			}
             
             return next;
         }
@@ -1344,9 +1347,13 @@ package org.granite.tide.data {
         public function resetEntity(entity:IEntity, cache:Dictionary):void {
 			var saveMerging:Boolean = _merging;
 			// Disable dirty check during reset of entity
-			_merging = true;
-        	_dirtyCheckContext.resetEntity(entity, cache);
-			_merging = saveMerging;
+			try {
+				_merging = true;
+        		_dirtyCheckContext.resetEntity(entity, cache);
+			}
+			finally {
+				_merging = saveMerging;
+			}
         }
 
 

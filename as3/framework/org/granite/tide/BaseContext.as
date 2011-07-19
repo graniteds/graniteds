@@ -1936,14 +1936,16 @@ package org.granite.tide {
         public function meta_resetEntity(entity:IEntity):void {
             var cache:Dictionary = new Dictionary(true);
             var saveTracking:Boolean = _tracking;
-            _tracking = false;
             try {
+				_tracking = false;
                 _entityManager.resetEntity(entity, cache);
             }
             catch (e:Error) {
                 log.error("Error resetting entity", e);
             }
-            _tracking = saveTracking;
+			finally {
+            	_tracking = saveTracking;
+			}
         }
 
 
