@@ -48,6 +48,12 @@ package org.granite.test.tide.framework
         	Assert.assertEquals("Observer NS untyped event arg1", "toto", _ctx.myComponentNSObserver.untypedEventArg1); 
         	Assert.assertEquals("Observer NS untyped event arg2", true, _ctx.myComponentNSObserver.untypedEventArg2); 
         	Assert.assertTrue("Multiple observer event 3", _ctx.myComponentObserver.multipleObserverEvent3);
+			
+			_ctx.application.dispatchEvent(new TideUIEvent("someEvent2b"));
+			Assert.assertTrue("Multiple observer event 2b", _ctx.myComponentObserver.multipleObserverEvent2b);
+			Assert.assertFalse("Multiple observer event 3b", _ctx.myComponentObserver.multipleObserverEvent3b);  // Not yet triggered
+			_ctx.application.dispatchEvent(new TideUIEvent("someEvent3b", "toto", true));
+			Assert.assertTrue("Multiple observer event 3b", _ctx.myComponentObserver.multipleObserverEvent3b);
         }
     }
 }

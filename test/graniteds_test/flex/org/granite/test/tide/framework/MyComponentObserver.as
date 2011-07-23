@@ -14,6 +14,8 @@ package org.granite.test.tide.framework {
     	public var typedEvent:int = 0;
     	public var multipleObserverEvent2:Boolean = false;
     	public var multipleObserverEvent3:Boolean = false;
+		public var multipleObserverEvent2b:Boolean = false;
+		public var multipleObserverEvent3b:Boolean = false;
     	
     	
     	[Observer]
@@ -41,5 +43,13 @@ package org.granite.test.tide.framework {
     		else if (event.type == "someEvent3")
     			multipleObserverEvent3 = true;
     	}
+		
+		[Observer("someEvent2b, someEvent3b")]
+		public function myHandler5(event:TideContextEvent):void {
+			if (event.type == "someEvent2b")
+				multipleObserverEvent2b = true;
+			else if (event.type == "someEvent3b")
+				multipleObserverEvent3b = true;
+		}
     }
 }
