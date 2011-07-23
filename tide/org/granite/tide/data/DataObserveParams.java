@@ -20,6 +20,7 @@
 
 package org.granite.tide.data;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +29,10 @@ import java.util.Set;
 
 
 
-public class DataObserveParams {
+public class DataObserveParams implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
 	
 	private Map<String, Set<String>> params = new HashMap<String, Set<String>>();
 	

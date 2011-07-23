@@ -20,6 +20,8 @@
 
 package org.granite.tide.seam;
 
+import java.io.Serializable;
+
 import javax.faces.model.DataModel;
 
 
@@ -28,9 +30,12 @@ import javax.faces.model.DataModel;
  * 
  * @author William DRAI
  */
-public class TideDataModel extends DataModel {
+public class TideDataModel extends DataModel implements Serializable {
     
-    private Object rowData;
+	private static final long serialVersionUID = 1L;
+	
+	
+	private Object rowData;
     private Object wrappedData;
 
     
