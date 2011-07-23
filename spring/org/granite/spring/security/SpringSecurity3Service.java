@@ -61,6 +61,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 	private static final Logger log = Logger.getLogger(SpringSecurity3Service.class);
 	
     private static final String FILTER_APPLIED = "__spring_security_scpf_applied";
+    private static final String SECURITY_SERVICE_APPLIED = "__spring_security_granite_service_applied";
 	
 	private AuthenticationManager authenticationManager = null;
 	private SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -71,7 +72,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
     
 	
 	public SpringSecurity3Service() {
-		log.debug("Starting Spring 3 Security Service!");
+		log.debug("Starting Spring 3 Security Service");
 		try {
 	    	getRequest = HttpRequestResponseHolder.class.getDeclaredMethod("getRequest");
 	    	getRequest.setAccessible(true);
@@ -137,7 +138,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
             }
         }
 
-        log.debug("Logged In!");
+        log.debug("User %s logged in", user);
     }
     
     public void lookupAuthenticationManager(ApplicationContext ctx, String authenticationManagerBeanName) throws SecurityServiceException {
@@ -164,8 +165,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 
     
     public Object authorize(AbstractSecurityContext context) throws Exception {
-        log.debug("Authorize: %s", context);
-        log.debug("Is %s secured? %b", context.getDestination().getId(), context.getDestination().isSecured());
+        log.debug("Authorize %s on destination %s (secured: %b)", context, context.getDestination().getId(), context.getDestination().isSecured());
 
         startAuthorization(context);
         
@@ -175,22 +175,28 @@ public class SpringSecurity3Service extends AbstractSecurityService {
         HttpRequestResponseHolder holder = null;
         
         if (graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null) {
-	        holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
-	        SecurityContext contextBeforeChainExecution = securityContextRepository.loadContext(holder);
-		    SecurityContextHolder.setContext(contextBeforeChainExecution);
-		    if (isAuthenticated(authentication))
-		    	contextBeforeChainExecution.setAuthentication(authentication);
-		    else
-		    	authentication = contextBeforeChainExecution.getAuthentication();
+        	if (graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED) == null) {
+		        holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
+		        SecurityContext contextBeforeChainExecution = securityContextRepository.loadContext(holder);
+			    SecurityContextHolder.setContext(contextBeforeChainExecution);
+			    if (isAuthenticated(authentication))
+			    	contextBeforeChainExecution.setAuthentication(authentication);
+			    else
+			    	authentication = contextBeforeChainExecution.getAuthentication();
+			    
+			    graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, 1);
+        	}
+        	else
+			    graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, (Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED)+1);
         }
         
         if (context.getDestination().isSecured()) {
             if (!isAuthenticated(authentication) || authentication instanceof AnonymousAuthenticationToken) {
-                log.debug("Is not authenticated!");
+                log.debug("User not authenticated!");
                 throw SecurityServiceException.newNotLoggedInException("User not logged in");
             }
             if (!userCanAccessService(context, authentication)) { 
-                log.debug("Access denied for: %s", authentication.getName());
+                log.debug("Access denied for user %s", authentication.getName());
                 throw SecurityServiceException.newAccessDeniedException("User not in required role");
             }
         }
@@ -211,14 +217,19 @@ public class SpringSecurity3Service extends AbstractSecurityService {
         }
         finally {
             if (graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null) {
-	            SecurityContext contextAfterChainExecution = SecurityContextHolder.getContext();
-	            SecurityContextHolder.clearContext();
-	            try {
-	            	securityContextRepository.saveContext(contextAfterChainExecution, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
-	            }
-	            catch (Exception e) {
-	            	log.error(e, "Could not extract wrapped context from holder");
-	            }
+            	if ((Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED) == 0) {
+		            SecurityContext contextAfterChainExecution = SecurityContextHolder.getContext();
+		            SecurityContextHolder.clearContext();
+		            try {
+		            	securityContextRepository.saveContext(contextAfterChainExecution, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
+		            }
+		            catch (Exception e) {
+		            	log.error(e, "Could not extract wrapped context from holder");
+		            }
+		            graniteContext.getRequest().removeAttribute(SECURITY_SERVICE_APPLIED);
+            	}
+            	else
+            		graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, (Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED)-1);
             }
         }
     }
