@@ -36,7 +36,7 @@ public class JmsTopicDestination extends AbstractJmsTopicDestination implements 
 	}
 	
     public void afterPropertiesSet() {
-		SpringGraniteConfig springGraniteConfig = (SpringGraniteConfig)context.getBeansOfType(SpringGraniteConfig.class).values().iterator().next();
+		SpringGraniteConfig springGraniteConfig = context.getBeansOfType(SpringGraniteConfig.class).values().iterator().next();
 		
 		init(springGraniteConfig);
 	}

@@ -83,11 +83,10 @@ public class FlexFilter implements InitializingBean, ApplicationContextAware, Se
 	}
     
 	public void afterPropertiesSet() {
-		SpringGraniteConfig springGraniteConfig = (SpringGraniteConfig)context.getBeansOfType(SpringGraniteConfig.class).values().iterator().next();
+		SpringGraniteConfig springGraniteConfig = context.getBeansOfType(SpringGraniteConfig.class).values().iterator().next();
 		
         this.graniteConfig = springGraniteConfig.getGraniteConfig();
         
-        @SuppressWarnings("unchecked")
         Map<String, SecurityService> securityServices = context.getBeansOfType(SecurityService.class);
         if (securityServices.size() > 1)
         	log.error("More than one Security Service bean defined");
