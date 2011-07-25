@@ -42,8 +42,6 @@ import org.jboss.seam.annotations.async.IntervalDuration;
 @Scope(ScopeType.STATELESS)
 @Name("org.granite.tide.seam.asynchronousInvoker")
 public class AsynchronousInvoker {
-
-    private static final long serialVersionUID = 1L;
     
     
     @In(create=false,required=false) 

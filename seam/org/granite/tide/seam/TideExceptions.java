@@ -41,9 +41,6 @@ import org.jboss.seam.exception.Exceptions;
 @Scope(APPLICATION)
 @BypassInterceptors
 public class TideExceptions extends Exceptions {
-
-    private static final long serialVersionUID = -5395975397632138270L;
-
     
     @Override
     public void handle(Exception e) throws Exception {

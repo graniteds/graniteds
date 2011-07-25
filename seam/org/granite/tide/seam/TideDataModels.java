@@ -42,10 +42,7 @@ import org.jboss.seam.faces.DataModels;
 @Install(precedence=FRAMEWORK, classDependencies="javax.faces.context.FacesContext")
 @Scope(STATELESS)
 @BypassInterceptors
-public class TideDataModels extends DataModels {
-
-    private static final long serialVersionUID = -5395975397632138270L;
-    
+public class TideDataModels extends DataModels {    
     
     @Override
     public DataModel getDataModel(Object value) {
