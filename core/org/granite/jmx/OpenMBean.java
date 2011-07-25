@@ -295,7 +295,7 @@ public class OpenMBean implements DynamicMBean {
 				OpenType returnedType = getOpenType(method.getMethod().getReturnType());
 				
 				int impact = MBeanOperationInfo.UNKNOWN;
-				if (mbo != null && mbo.impact() != null) {
+				if (mbo.impact() != null) {
 					switch (mbo.impact()) {
 						case ACTION: impact = MBeanOperationInfo.ACTION; break;
 						case ACTION_INFO: impact = MBeanOperationInfo.ACTION_INFO; break;
