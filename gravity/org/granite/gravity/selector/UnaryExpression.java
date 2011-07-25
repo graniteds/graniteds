@@ -93,14 +93,16 @@ public abstract class UnaryExpression implements Expression {
                 answer.append(getExpressionSymbol());
                 answer.append(" ( ");
 
-                int count=0;
-                for (Iterator<?> i = inList.iterator(); i.hasNext();) {
-                    Object o = i.next();
-                    if( count!=0 ) {
-                        answer.append(", ");
-                    }
-                    answer.append(o);
-                    count++;
+                if (inList != null) {
+                	int count=0;
+	                for (Iterator<?> i = inList.iterator(); i.hasNext();) {
+	                    Object o = i.next();
+	                    if( count!=0 ) {
+	                        answer.append(", ");
+	                    }
+	                    answer.append(o);
+	                    count++;
+	                }
                 }
 
                 answer.append(" )");
