@@ -78,7 +78,7 @@ public abstract class AbstractSecurityService implements SecurityService {
 	protected void endLogin(HttpGraniteContext context, Object credentials) {
     	HttpSession session = context.getSession(false);
     	if (session != null)
-    		context.getSession(true).setAttribute(CREDENTIALS_KEY, credentials);
+    		session.setAttribute(CREDENTIALS_KEY, credentials);
     }
     
     protected boolean tryRelogin(HttpGraniteContext context) {
