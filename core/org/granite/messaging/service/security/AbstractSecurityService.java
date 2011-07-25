@@ -22,6 +22,9 @@ package org.granite.messaging.service.security;
 
 import java.io.UnsupportedEncodingException;
 
+import javax.servlet.http.HttpSession;
+
+import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.util.Base64;
 
 import flex.messaging.messages.Message;
@@ -31,8 +34,9 @@ import flex.messaging.messages.Message;
  */
 public abstract class AbstractSecurityService implements SecurityService {
 
+	private static final String CREDENTIALS_KEY = AbstractSecurityService.class.getName() + ".CREDENTIALS";
     public static final String AUTH_TYPE = "granite-security";
-
+    
     protected void startAuthorization(AbstractSecurityContext context) throws Exception {
         // RemoteObject.setRemoteCredentials().
         Object credentials = context.getMessage().getHeaders().get(Message.REMOTE_CREDENTIALS_HEADER);
@@ -66,5 +70,37 @@ public abstract class AbstractSecurityService implements SecurityService {
     }
     
     public void handleSecurityException(SecurityServiceException e) {
+    }
+    
+    // Clustering related methods: re-authenticate users on another cluster node (fail-over).
+    // Session replication & sticky-session must be on.
+
+	protected void endLogin(HttpGraniteContext context, Object credentials) {
+    	HttpSession session = context.getSession(false);
+    	if (session != null)
+    		context.getSession(true).setAttribute(CREDENTIALS_KEY, credentials);
+    }
+    
+    protected boolean tryRelogin(HttpGraniteContext context) {
+    	HttpSession session = context.getSession(false);
+        if (session != null) {
+        	Object credentials = session.getAttribute(CREDENTIALS_KEY);
+        	if (credentials != null) {
+        		try {
+        			login(credentials);
+        		}
+        		catch (SecurityServiceException e) {
+        			return false;
+        		}
+        		return true;
+        	}
+        }
+        return false;
+    }
+
+	protected void endLogout(HttpGraniteContext context) {
+    	HttpSession session = context.getSession(false);
+    	if (session != null)
+    		session.removeAttribute(CREDENTIALS_KEY);
     }
 }
