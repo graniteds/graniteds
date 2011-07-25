@@ -26,9 +26,6 @@ import javax.persistence.PostUpdate;
 
 
 public class DataListener {
-
-    private static final long serialVersionUID = 1L;
-    
     
     @PostLoad
     public void onPostLoad(Object entity) {
