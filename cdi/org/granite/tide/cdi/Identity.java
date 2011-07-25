@@ -28,9 +28,6 @@ import org.granite.messaging.webapp.HttpGraniteContext;
  * @author William DRAI
  */
 public class Identity  {
-
-    private static final long serialVersionUID = 1L;
-    
         
     public String isLoggedIn() {
     	GraniteContext context = GraniteContext.getCurrentInstance();
