@@ -20,7 +20,6 @@
 
 package org.granite.messaging.service;
 
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +29,15 @@ import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.security.RemotingDestinationSecurizer;
+import org.granite.util.TransientReference;
 
 import flex.messaging.messages.RemotingMessage;
 
 /**
  * @author Franck WOLFF
  */
-public abstract class ServiceInvoker<T extends ServiceFactory> implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+@TransientReference
+public abstract class ServiceInvoker<T extends ServiceFactory> {
 
 	private static final Logger log = Logger.getLogger(ServiceInvoker.class);
 

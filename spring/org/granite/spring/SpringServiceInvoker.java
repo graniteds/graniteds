@@ -29,8 +29,6 @@ import org.granite.messaging.service.ServiceInvoker;
  */
 public class SpringServiceInvoker extends ServiceInvoker<SpringServiceFactory> {
 
-    private static final long serialVersionUID = 1L;
-
     public SpringServiceInvoker(Destination destination, SpringServiceFactory factory, Object instance)
         throws ServiceException {
         super(destination, factory);

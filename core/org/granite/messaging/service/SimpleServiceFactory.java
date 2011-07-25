@@ -35,8 +35,6 @@ import java.util.Set;
  * @author Franck WOLFF
  */
 public class SimpleServiceFactory extends ServiceFactory implements DestinationRemoveListener {
-
-    private static final long serialVersionUID = 1L;
     
     private Set<String> invalidKeys = new HashSet<String>();
     

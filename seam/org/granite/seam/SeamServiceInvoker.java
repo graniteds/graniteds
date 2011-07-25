@@ -32,8 +32,6 @@ import org.granite.messaging.service.ServiceInvoker;
  */
 public class SeamServiceInvoker extends ServiceInvoker<SeamServiceFactory> {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Logger log = Logger.getLogger(SeamServiceInvoker.class);
 
     public static final String CAPITALIZED_DESTINATION_ID = "{capitalized.destination.id}";

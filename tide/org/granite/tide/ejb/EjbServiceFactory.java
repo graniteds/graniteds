@@ -40,8 +40,6 @@ import flex.messaging.messages.RemotingMessage;
  * @author William DRAI
  */
 public class EjbServiceFactory extends ServiceFactory {
-
-    private static final long serialVersionUID = 1L;
     
     public static final String ENTITY_MANAGER_FACTORY_JNDI_NAME = "entity-manager-factory-jndi-name";
     public static final String ENTITY_MANAGER_JNDI_NAME = "entity-manager-jndi-name";
