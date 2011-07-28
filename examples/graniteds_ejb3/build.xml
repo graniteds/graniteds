@@ -33,10 +33,10 @@
 	<property name="flex.src" value="flex"/>
 	<property name="flex.context.root" value="graniteds-ejb3"/>
 	<fileset id="entity.path" dir="classes">
-        <include name="test/granite/ejb3/entity/**/*.class"/>
+        <include name="org/granite/example/addressbook/entity/**/*.class"/>
     </fileset>
 	<fileset id="service.path" dir="classes">
-        <include name="test/granite/ejb3/service/**/*.class"/>
+        <include name="org/granite/example/addressbook/ejb/service/**/*.class"/>
     </fileset>
 	<fileset id="service.gen.path" dir="classes">
         <exclude name="**"/>

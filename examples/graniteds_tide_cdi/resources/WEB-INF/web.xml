@@ -25,8 +25,8 @@
 		xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 		version="3.0">
 
-    <display-name>GraniteDS CDI</display-name>
-    <description>GraniteDS CDI Example Application</description>
+    <display-name>GraniteDS Tide/CDI</display-name>
+    <description>GraniteDS Tide/CDI Example Application</description>
 	
 	
 	<!-- Weld/JBoss 6 integration does not work with asynchronous servlets 3: WELD-44 -->

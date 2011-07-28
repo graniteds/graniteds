@@ -22,7 +22,7 @@ package org.granite.test.tide.data {
     use namespace meta;
 
     [Managed]
-    [RemoteClass(alias="org.granite.tide.test.Person10")]
+    [RemoteClass(alias="org.granite.test.tide.Person10")]
     public class Person10 extends AbstractEntity {
 
 		private var _salutation:Salutation;

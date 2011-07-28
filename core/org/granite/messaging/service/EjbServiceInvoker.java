@@ -31,8 +31,6 @@ import org.granite.logging.Logger;
  */
 public class EjbServiceInvoker extends ServiceInvoker<EjbServiceFactory> {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Logger log = Logger.getLogger(EjbServiceInvoker.class);
 
     public static final String CAPITALIZED_DESTINATION_ID = "{capitalized.destination.id}";

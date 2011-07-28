@@ -37,7 +37,7 @@ public class MessagingDestination extends AbstractMessagingDestination implement
 
 	
     public void afterPropertiesSet() {
-		SpringGraniteConfig springGraniteConfig = (SpringGraniteConfig)context.getBeansOfType(SpringGraniteConfig.class).values().iterator().next();
+		SpringGraniteConfig springGraniteConfig = context.getBeansOfType(SpringGraniteConfig.class).values().iterator().next();
 		
 		init(springGraniteConfig);
     }

@@ -115,7 +115,7 @@ package org.granite.tide {
             var val:Object = value;
             if (val is IEntity) {
                 log.debug("setProperty (entity) {0}.{1}", _name, propName);
-                _context.meta_addReference(val, null, new ContextExpression(_name, propName));
+                _context.meta_addReference(val, null, null, new ContextExpression(_name, propName));
             }
             else if (val == null) {
                 log.debug("setProperty (null) {0}.{1}", _name, propName);

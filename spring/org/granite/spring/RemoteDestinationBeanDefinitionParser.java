@@ -37,7 +37,6 @@ import org.w3c.dom.Element;
 public class RemoteDestinationBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {        
     	builder.setLazyInit(false);
 
@@ -50,7 +49,7 @@ public class RemoteDestinationBeanDefinitionParser extends AbstractSingleBeanDef
         mapOptionalAttributes(element, parserContext, builder, "id", "source");
         
         Object sourceElement = parserContext.extractSource(element);
-        ManagedList roles = new ManagedList();
+        ManagedList<String> roles = new ManagedList<String>();
         roles.setSource(sourceElement);
         List<Element> rolesElements = DomUtils.getChildElementsByTagName(element, "roles");
         for (Element rolesElement : rolesElements) {

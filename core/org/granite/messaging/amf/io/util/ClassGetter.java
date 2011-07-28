@@ -31,6 +31,8 @@ public interface ClassGetter {
     
     public boolean isEntity(Object o);
     
+    public List<Object[]> getFieldValues(Object obj);
+
     public List<Object[]> getFieldValues(Object obj, Object dest);
         
     public boolean isInitialized(Object owner, String propertyName, Object propertyValue);

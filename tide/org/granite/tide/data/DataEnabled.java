@@ -35,6 +35,8 @@ public @interface DataEnabled {
 	public Class<? extends DataTopicParams> params();
 	
 	public PublishMode publish() default PublishMode.MANUAL;
+	
+	public boolean auto() default true;
     
     
     public enum PublishMode {

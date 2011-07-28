@@ -70,7 +70,6 @@ public class SpringValidationExceptionConverter implements ExceptionConverter {
     	}
     	
         org.granite.tide.validators.InvalidValue[] converted = new org.granite.tide.validators.InvalidValue[errors.getErrorCount()];
-    	@SuppressWarnings("unchecked")
     	List<? extends ObjectError> allErrors = errors.getAllErrors();
     	int i = 0;
     	for (ObjectError error : allErrors) {

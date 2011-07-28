@@ -28,8 +28,6 @@ import org.eclipse.persistence.indirection.WeavedAttributeValueHolderInterface;
  */
 public class EclipseLinkValueHolder implements WeavedAttributeValueHolderInterface {
 
-    private static final long serialVersionUID = 1L;
-
     private Object value = null;
     
     
@@ -55,6 +53,10 @@ public class EclipseLinkValueHolder implements WeavedAttributeValueHolderInterfa
     public boolean isNewlyWeavedValueHolder() {
         return false;
     }
+
+	public boolean shouldAllowInstantiationDeferral() {
+		return true;
+	}
 
     public void setIsCoordinatedWithProperty(boolean value) {
     }

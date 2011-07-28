@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans
+  	xmlns="http://www.springframework.org/schema/beans"
+  	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  	xmlns:aop="http://www.springframework.org/schema/aop"
+  	xmlns:tx="http://www.springframework.org/schema/tx"
+  	xmlns:context="http://www.springframework.org/schema/context"
+  	xmlns:graniteds="http://www.graniteds.org/config"
+  	xsi:schemaLocation="
+    	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+       	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+       	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+       	http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.1.0/granite-config-2.1.xsd">
+
+  	
+  	<!-- Annotation scan -->
+  	<context:component-scan base-package="test.granite.spring.service" />
+  
+  	<tx:annotation-driven transaction-manager="transactionManager"/>
+  
+  	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
+
+  	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>
+    
+  	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    	<property name="driverClassName">
+      		<value>org.hsqldb.jdbcDriver</value>
+    	</property>
+    	<property name="url">
+      		<value>jdbc:hsqldb:mem:graniteds-tide-spring</value>
+    	</property>
+    	<property name="username">
+      		<value>sa</value>
+    	</property>
+    	<property name="password">
+      		<value></value>
+    	</property>
+  	</bean>
+
+  	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+	    <property name="persistenceUnitName" value="spring-pu" />
+    	<property name="dataSource" ref="dataSource" />
+    	<property name="jpaDialect">
+      		<bean class="org.springframework.orm.jpa.vendor.HibernateJpaDialect" />
+    	</property>
+    	<property name="jpaVendorAdapter">
+      		<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+        		<property name="showSql" value="false" />
+        		<property name="generateDdl" value="true" /> 
+        		<property name="databasePlatform" value="org.hibernate.dialect.HSQLDialect" />
+      		</bean>
+    	</property>
+  	</bean>
+
+  	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+    	<property name="entityManagerFactory" ref="entityManagerFactory" />
+    	<property name="dataSource" ref="dataSource" />
+  	</bean>
+  	
+  	<graniteds:flex-filter url-pattern="/*" tide="true">
+  		<graniteds:tide-annotations>
+  	    	<graniteds:value>org.springframework.stereotype.Controller</graniteds:value>
+  		</graniteds:tide-annotations>
+  	</graniteds:flex-filter>
+  	
+  	<graniteds:tide-identity/>
+    
+    <graniteds:messaging-destination id="addressBookTopic" no-local="true" session-selector="true"/>
+
+</beans>

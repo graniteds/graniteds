@@ -56,8 +56,6 @@ import flex.messaging.messages.RemotingMessage;
  * @author William DRAI
  */
 public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker<T> {
-
-    private static final long serialVersionUID = 1L;
      
     private static final Logger log = Logger.getLogger(TideServiceInvoker.class);
     
@@ -297,29 +295,24 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         	Converters converters = graniteContext.getGraniteConfig().getConverters();
         	
         	Set<Class<?>> componentClasses = tideContext.findComponentClasses(componentName, componentClass);
-        	boolean mDataEnabled=false;
         	for (Class<?> cClass : componentClasses) {
         		try {
         			Method m = cClass.getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
         			for (int i = 0; i < m.getGenericParameterTypes().length; i++)
         				context.getParameters()[i] = converters.convert(context.getParameters()[i], m.getGenericParameterTypes()[i]);
-        			DataEnabled methodDataEnabled=m.getAnnotation(DataEnabled.class);
-        			if (methodDataEnabled != null) {
-                		DataContext.init(methodDataEnabled.topic(), methodDataEnabled.params(), methodDataEnabled.publish());
-                		prepareDataObserver(methodDataEnabled);
-                		mDataEnabled=true;
-                	}
+        			
         			break;
         		}
         		catch (NoSuchMethodException e) {
         		}
         	}
-        	if(!mDataEnabled)
+        	
         	for (Class<?> cClass : componentClasses) {
 	        	DataEnabled dataEnabled = cClass.getAnnotation(DataEnabled.class);
 	        	if (dataEnabled != null) {
 	        		DataContext.init(dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
-	        		prepareDataObserver(dataEnabled);
+	        		if (dataEnabled.auto())
+	        			prepareDataObserver(dataEnabled);
 	        		break;
 	        	}
         	}

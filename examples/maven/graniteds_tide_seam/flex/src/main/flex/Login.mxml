@@ -20,62 +20,65 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 -->
 
-<mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml"
-          title="Login"
-          horizontalAlign="center"
-          verticalGap="0" paddingTop="8" paddingBottom="8"
-          titleIcon="@Embed('network.png')">
+<mx:Panel
+    title="Login"
+    horizontalAlign="center"
+    verticalGap="0"
+    paddingTop="8"
+    paddingBottom="8"
+    titleIcon="@Embed('network.png')"
+    xmlns:mx="http://www.adobe.com/2006/mxml">
+    
+    <mx:Metadata>
+    	[Name]
+    </mx:Metadata>
 
-  <mx:Metadata>
-    [Name]
-  </mx:Metadata>
-
-  <mx:Script>
+    <mx:Script>
     <![CDATA[
-    import org.granite.tide.events.TideFaultEvent;
-    import org.granite.tide.events.TideResultEvent;
-    import org.granite.tide.seam.security.Identity;
+        import org.granite.tide.seam.Context;
+        import org.granite.tide.seam.Seam;
+        import org.granite.tide.seam.security.Identity;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        
+        [Bindable] [In]
+        public var identity:Identity;
+        
+        [Bindable]
+        public var message:String = null;
+        
+        
+        private function tryLogin(username:String, password:String):void {
+            identity.username = username; 
+            identity.password = password; 
+            identity.login(loginResult, loginFault);        
+        }
 
-    [Bindable]
-    [In]
-    public var identity:Identity;
-
-    [Bindable]
-    public var message:String = null;
-
-
-    private function tryLogin( username:String, password:String ):void
-    {
-      identity.username = username;
-      identity.password = password;
-      identity.login( loginResult, loginFault );
-    }
-
-    private function loginResult( event:TideResultEvent ):void
-    {
-      message = null;
-    }
-
-    private function loginFault( event:TideFaultEvent ):void
-    {
-      if( event.context.statusMessages.messages && event.context.statusMessages.messages.length > 0 )
-        message = event.context.statusMessages.messages.getItemAt( 0 ).summary;
-    }
+        private function loginResult(event:TideResultEvent):void {
+            message = null;
+        }
+        
+        private function loginFault(event:TideFaultEvent):void {
+            if (event.context.statusMessages.messages && event.context.statusMessages.messages.length > 0)
+                message = event.context.statusMessages.messages.getItemAt(0).summary;
+        }
     ]]>
     </mx:Script>
 
-  <mx:Text htmlText="&lt;i&gt;(Type in user/user or admin/admin)&lt;/i&gt;" textAlign="center"/>
+    <mx:Text htmlText="&lt;i&gt;(Type in user/user or admin/admin)&lt;/i&gt;" textAlign="center"/>
 
-  <mx:Form id="loginForm">
-    <mx:FormItem label="Username">
-      <mx:TextInput id="username"/>
-    </mx:FormItem>
-    <mx:FormItem label="Password">
-      <mx:TextInput id="password" displayAsPassword="true" enter="tryLogin(username.text, password.text);"/>
-    </mx:FormItem>
-  </mx:Form>
+    <mx:Form id="loginForm">
+        <mx:FormItem label="Username">
+            <mx:TextInput id="username"/>
+        </mx:FormItem>
+        <mx:FormItem label="Password">
+            <mx:TextInput id="password" displayAsPassword="true"
+                enter="tryLogin(username.text, password.text);"/>
+        </mx:FormItem>
+    </mx:Form>
 
-  <mx:Text text="{message}" textAlign="center"/>
+    <mx:Text text="{message}" textAlign="center"/>
 
-  <mx:Button label="Login" click="tryLogin(username.text, password.text);"/>
+    <mx:Button label="Login" 
+        click="tryLogin(username.text, password.text);"/>
 </mx:Panel>

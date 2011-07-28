@@ -123,8 +123,12 @@ public class TopLinkClassGetter extends DefaultClassGetter {
                     else if (!topLinkVhs.contains("_toplink_" + field.getName() + "_vh")) {
                         field.setAccessible(true);
                         Object o = field.get(obj);
-                        Object d = field.get(dest);
-                        fieldValues.add(new Object[] { field, o, d });
+                        if (dest != null) {
+                            Object d = field.get(dest);
+                            fieldValues.add(new Object[] { field, o, d });
+                        }
+                        else
+                            fieldValues.add(new Object[] { field, o });
                     }
                 }
                 clazz = clazz.getSuperclass();

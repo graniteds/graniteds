@@ -34,8 +34,6 @@ import flex.messaging.messages.RemotingMessage;
  */
 public class SimpleServiceInvoker extends ServiceInvoker<SimpleServiceFactory> {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Logger log = Logger.getLogger(SimpleServiceInvoker.class);
 
     private final Map<String, Object> sources;

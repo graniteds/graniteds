@@ -45,8 +45,6 @@ import flex.messaging.messages.RemotingMessage;
  */
 public class CDIServiceFactory extends ServiceFactory {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Logger log = Logger.getLogger(CDIServiceFactory.class);
     
     public static final String ENTITY_MANAGER_FACTORY_JNDI_NAME = "entity-manager-factory-jndi-name";
@@ -129,5 +127,4 @@ public class CDIServiceFactory extends ServiceFactory {
         CDIServiceInvoker invoker = new CDIServiceInvoker(destination, this);
         return invoker;
     }
-
 }

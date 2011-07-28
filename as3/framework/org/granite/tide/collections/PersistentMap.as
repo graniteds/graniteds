@@ -23,11 +23,12 @@ package org.granite.tide.collections {
     import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
     
+    import mx.collections.ArrayCollection;
     import mx.collections.IList;
     import mx.collections.IViewCursor;
     import mx.collections.ListCollectionView;
-    import mx.collections.ArrayCollection;
     import mx.collections.errors.ItemPendingError;
+    import mx.data.utils.Managed;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.logging.ILogger;
@@ -36,16 +37,15 @@ package org.granite.tide.collections {
     import mx.rpc.IResponder;
     import mx.rpc.events.ResultEvent;
     import mx.utils.object_proxy;
-    import mx.data.utils.Managed;
     
-    import org.granite.collections.IPersistentCollection;
-    import org.granite.collections.IMap;
     import org.granite.collections.BasicMap;
+    import org.granite.collections.IMap;
+    import org.granite.collections.IPersistentCollection;
+    import org.granite.tide.BaseContext;
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.IWrapper;
-    import org.granite.tide.BaseContext;
     
     
     use namespace flash_proxy;
@@ -65,6 +65,7 @@ package org.granite.tide.collections {
 		
 	    private var _entity:IEntity = null;
 	    private var _propertyName:String = null;
+		private var _lazy:Boolean = false;
 	    private var _map:IMap = null;
 	
 	    private var _localInitializing:Boolean = false;
@@ -76,14 +77,15 @@ package org.granite.tide.collections {
         	return _entity;
         } 
 	    
-        public function get propertyName() : String {
+        public function get propertyName():String {
         	return _propertyName;
         }
-	    
+		
 		public function PersistentMap(entity:IEntity, propertyName:String, collection:IPersistentCollection) {
 		    super();
 		    _entity = entity;
 		    _propertyName = propertyName;
+			_lazy = !collection.isInitialized();
 		    _map = IMap(collection);
 		}
 		
@@ -92,6 +94,10 @@ package org.granite.tide.collections {
             return _map;
         }
         
+		public function isLazy():Boolean {
+			return IPersistentCollection(_map).isLazy();
+		}
+		
         public function isInitialized():Boolean {
             return IPersistentCollection(_map).isInitialized();
         }

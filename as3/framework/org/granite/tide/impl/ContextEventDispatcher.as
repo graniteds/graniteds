@@ -35,12 +35,10 @@ package org.granite.tide.impl {
     public class ContextEventDispatcher extends EventDispatcher {
         
 		private var _context:BaseContext;
-        private var _contextManager:IContextManager;    
         
-        public function ContextEventDispatcher(target:BaseContext, contextManager:IContextManager):void {
+        public function ContextEventDispatcher(target:BaseContext):void {
         	super(target);
 			_context = target;
-        	_contextManager = contextManager;
         }
 
 		public override function hasEventListener(type:String):Boolean {
@@ -52,7 +50,7 @@ package org.granite.tide.impl {
         	
         	if (event is PropertyChangeEvent
 					&& !(PropertyChangeEvent(event).property is String && PropertyChangeEvent(event).property.indexOf("meta_") == 0)) {
-        		_contextManager.forEachChildContext(_context, function(ctx:BaseContext):void {
+        		_context.meta_contextManager.forEachChildContext(_context, function(ctx:BaseContext):void {
         			ctx.dispatchEvent(event);
         		});
         	}

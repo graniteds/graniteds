@@ -42,6 +42,11 @@ public class HibernatePersistenceManager extends AbstractTidePersistenceManager 
 		super(tm);
 	}
 
+	public HibernatePersistenceManager(SessionFactory sf) {
+		super(null);
+        this.sessionFactory = sf;
+	}
+
 	public HibernatePersistenceManager(SessionFactory sf, TideTransactionManager tm) {
 		super(tm);
         this.sessionFactory = sf;
@@ -52,9 +57,9 @@ public class HibernatePersistenceManager extends AbstractTidePersistenceManager 
 	 * @return the attached entity
 	 */
 	@Override
-	public Object findEntity(Object entity, String[] fetch) {
+	public Object fetchEntity(Object entity, String[] fetch) {
 		Entity tideEntity = new Entity(entity);
-		Serializable id = (Serializable) tideEntity.getIdentifier();
+		Serializable id = (Serializable)tideEntity.getIdentifier();
 		
         if (id == null)
             return null;

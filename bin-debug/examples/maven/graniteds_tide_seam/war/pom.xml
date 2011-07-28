@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.graniteds.examples.tide_seam.poms</groupId>
+    <artifactId>jee</artifactId>
+    <version>2.2.0.SP1</version>
+  </parent>
+
+  <groupId>org.graniteds.examples.tide_seam</groupId>
+  <artifactId>war</artifactId>
+  <version>2.2.0.SP1</version>
+  <packaging>war</packaging>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.graniteds.examples.tide_seam</groupId>
+                  <artifactId>flex</artifactId>
+                  <version>${pom.version}</version>
+                  <type>swf</type>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
+                  <destFileName>Persons.swf</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.graniteds.examples.tide_seam</groupId>
+      <artifactId>core</artifactId>
+      <version>2.2.0.SP1</version>
+      <type>ejb</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.graniteds.examples.tide_seam</groupId>
+      <artifactId>flex</artifactId>
+      <version>2.2.0.SP1</version>
+      <type>swf</type>
+    </dependency>
+  </dependencies>
+</project>

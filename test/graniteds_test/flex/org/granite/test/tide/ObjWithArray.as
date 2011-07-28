@@ -69,8 +69,8 @@ package org.granite.test.tide
         }
         public function get uid():String {
             if (!_name)
-                return "org.granite.tide.test.ObjWithArray";
-            return "org.granite.tide.test.ObjWithArray:" + String(_name);
+                return "org.granite.test.tide.ObjWithArray";
+            return "org.granite.test.tide.ObjWithArray:" + String(_name);
         }
 
         public function meta_merge(em:IEntityManager, obj:*):void {

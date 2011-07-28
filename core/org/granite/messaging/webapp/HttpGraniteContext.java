@@ -34,6 +34,8 @@ import javax.servlet.http.HttpSession;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
+import org.granite.util.TransientReference;
+import org.granite.util.TransientReferenceHolder;
 
 /**
  * @author Franck WOLFF
@@ -316,7 +318,10 @@ class SessionMap extends BaseContextMap<String, Object> {
     public Object get(Object key) {
         if (!(key instanceof String))
             return null;
-        return getSession().getAttribute(key.toString());
+        Object value = getSession().getAttribute(key.toString());
+        if (value instanceof TransientReferenceHolder)
+        	return ((TransientReferenceHolder)value).get();
+        return value;
     }
 
     @Override
@@ -325,6 +330,10 @@ class SessionMap extends BaseContextMap<String, Object> {
             throw new IllegalArgumentException(KEY_STRING_ERROR + key);
         HttpSession session = getSession();
         Object result = session.getAttribute(key);
+        if (result instanceof TransientReferenceHolder)
+        	result = ((TransientReferenceHolder)result).get();
+        if (value != null && value.getClass().isAnnotationPresent(TransientReference.class))
+        	value = new TransientReferenceHolder(value);
         session.setAttribute(key, value);
         return result;
     }
@@ -335,6 +344,8 @@ class SessionMap extends BaseContextMap<String, Object> {
             return null;
         HttpSession session = getSession();
         Object result = session.getAttribute(key.toString());
+        if (result instanceof TransientReferenceHolder)
+        	result = ((TransientReferenceHolder)result).get();
         session.removeAttribute(key.toString());
         return result;
     }
@@ -345,7 +356,10 @@ class SessionMap extends BaseContextMap<String, Object> {
         HttpSession session = getSession();
         for (Enumeration<?> e = session.getAttributeNames(); e.hasMoreElements(); ) {
             String key = (String)e.nextElement();
-            entries.add(new Entry<String, Object>(key, session.getAttribute(key)));
+            Object value = session.getAttribute(key);
+            if (value instanceof TransientReferenceHolder)
+            	value = ((TransientReferenceHolder)value).get();
+            entries.add(new Entry<String, Object>(key, value));
         }
         return entries;
     }

@@ -50,8 +50,6 @@ import org.jboss.seam.log.Log;
 @BypassInterceptors
 @AutoCreate
 public class TideEvents extends org.granite.tide.seam.TideEvents {
-
-    private static final long serialVersionUID = -5395975397632138270L;
     
     protected @Logger Log log;
     

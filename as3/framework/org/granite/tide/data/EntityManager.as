@@ -19,62 +19,35 @@
 
 package org.granite.tide.data {
     
-    import flash.display.DisplayObject;
-    import flash.events.Event;
-    import flash.events.EventDispatcher;
     import flash.events.IEventDispatcher;
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
     import flash.utils.getQualifiedClassName;
-    import flash.utils.getQualifiedSuperclassName;
     
-    import mx.binding.utils.BindingUtils;
-    import mx.binding.utils.ChangeWatcher;
-    import mx.collections.ArrayCollection;
-    import mx.collections.ArrayList;
     import mx.collections.ICollectionView;
     import mx.collections.IList;
-    import mx.collections.ItemResponder;
     import mx.collections.ListCollectionView;
-    import mx.controls.Alert;
-    import mx.core.Application;
-    import mx.core.IUIComponent;
     import mx.core.IUID;
     import mx.data.IManaged;
     import mx.data.utils.Managed;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
-    import mx.events.FlexEvent;
     import mx.events.PropertyChangeEvent;
     import mx.events.PropertyChangeEventKind;
-    import mx.events.ValidationResultEvent;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.messaging.events.ChannelFaultEvent;
-    import mx.messaging.messages.ErrorMessage;
-    import mx.rpc.AbstractOperation;
-    import mx.rpc.AsyncToken;
-    import mx.rpc.events.FaultEvent;
-    import mx.rpc.events.ResultEvent;
-    import mx.rpc.remoting.mxml.RemoteObject;
-    import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
-    import mx.utils.UIDUtil;
     import mx.utils.object_proxy;
-    import mx.validators.ValidationResult;
     
-    import org.granite.collections.BasicMap;
+    import org.granite.IValue;
     import org.granite.collections.IMap;
     import org.granite.collections.IPersistentCollection;
     import org.granite.collections.UIDWeakSet;
-    import org.granite.events.SecurityEvent;
-    import org.granite.math.BigNumber;
     import org.granite.meta;
     import org.granite.reflect.Type;
     import org.granite.tide.BaseContext;
     import org.granite.tide.EntityDescriptor;
-    import org.granite.tide.IContextManager;
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IExpression;
@@ -83,10 +56,6 @@ package org.granite.tide.data {
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
     import org.granite.tide.data.events.TideDataConflictsEvent;
-    import org.granite.tide.events.IConversationEvent;
-    import org.granite.tide.events.TideEvent;
-    import org.granite.tide.events.TideFaultEvent;
-    import org.granite.tide.events.TideResultEvent;
     import org.granite.util.Enum;
 
 
@@ -105,7 +74,6 @@ package org.granite.tide.data {
         private static var log:ILogger = Log.getLogger("org.granite.tide.data.EntityManager");
     
     	private var _context:BaseContext;
-    	private var _contextManager:IContextManager;
         
         private var _externalData:Boolean = false;
         private var _sourceContext:BaseContext = null;
@@ -119,13 +87,13 @@ package org.granite.tide.data {
         private var _trackingListeners:Dictionary = new Dictionary(true);
 		private var _merging:Boolean = false;
         private var _resolvingConflict:Boolean = false;
+		private var _uninitializing:Boolean = false;
         
 
 
-        public function EntityManager(context:BaseContext, contextManager:IContextManager) {
+        public function EntityManager(context:BaseContext) {
             super();
             _context = context;
-            _contextManager = contextManager;
             _dirtyCheckContext = new DirtyCheckContext(_context);
         }
         
@@ -176,6 +144,7 @@ package org.granite.tide.data {
             _entityCache = null;
             _mergeConflicts = null;
             _resolvingConflict = false;
+			_uninitializing = false;
             _versionChangeCache = null;
             _uninitializeAllowed = true;
         }
@@ -220,6 +189,24 @@ package org.granite.tide.data {
         public function set uninitializeAllowed(allowed:Boolean):void {
         	_uninitializeAllowed = allowed;
         }
+		
+		/**
+         * 	@private
+		 *  @return allow uninitialize of collections
+		 */
+		public function get uninitializeAllowed():Boolean {
+			return _uninitializeAllowed;
+		}
+		
+		/**
+		 * 	@private
+		 *  Force uninitialize of persistent collections
+		 * 
+		 *  @param uninitializing force uninitializing of collections during merge
+		 */
+		public function set uninitializing(uninitializing:Boolean):void {
+			_uninitializing = uninitializing;
+		}
         
         
         /**
@@ -261,6 +248,25 @@ package org.granite.tide.data {
 			if (putInCache)
 				_entitiesByUID.put(entity);			
 		}
+		
+		/**
+		 *  @private
+		 *  Detach an entity from this context only if it's not persistent
+		 * 
+		 *  @param entity an entity
+		 *  @param removeFromCache remove entity from cache
+		 */
+		public function detachEntity(entity:IEntity, removeFromCache:Boolean = true):void {
+			var versionPropName:String = _context.meta_tide.getEntityDescriptor(entity).versionPropertyName;
+			if (versionPropName == null || !isNaN(entity[versionPropName]))
+				return;
+			
+			_dirtyCheckContext.markNotDirty(entity, entity);
+			
+			Managed.setEntityManager(entity, null);
+			if (removeFromCache)
+				_entitiesByUID.remove(entity.uid);
+		}
         
         /**
          *	@private
@@ -284,10 +290,7 @@ package org.granite.tide.data {
             for each (var p:String in cinfo.properties) {
                 var val:Object = object[p];
                 
-                if (!ObjectUtil.isSimple(val)) {
-                	attach(val, cache);
-                }
-                else if (val is IList && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
+                if (val is IList && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
                     var coll:IList = IList(val);
                     for each (var o:Object in coll)
                     	attach(o, cache);
@@ -300,6 +303,13 @@ package org.granite.tide.data {
                         attach(value, cache);
                     }
                 }
+				else if (val is Array) {
+					for each (var e:Object in val)
+					attach(e, cache);
+				}
+				else if (!ObjectUtil.isSimple(val)) {
+					attach(val, cache);
+				}
             }
         }
         
@@ -334,8 +344,8 @@ package org.granite.tide.data {
                 return null;
             
             for (var i:int = 0; i < refs.length; i++) {
-                if (refs[i] is String)
-                    return _entitiesByUID.get(refs[i] as String);
+                if (refs[i] is Array && refs[i][0] is String)
+                    return [ _entitiesByUID.get(refs[i][0] as String), refs[i][1] ];
             }
             return null;
         }
@@ -372,16 +382,16 @@ package org.granite.tide.data {
             if (recurse) {
             	var ref:Object;
                 for (i = 0; i < refs.length; i++) {
-                    if (refs[i] is String) {
-                        ref = _entitiesByUID.get(refs[i] as String);
+                    if (refs[i] is Array && refs[i][0] is String) {
+                        ref = _entitiesByUID.get(refs[i][0] as String);
                         if (ref != null) {
                             ref = getReference(ref, recurse, cache);
                             if (ref != null)
                                 return IExpression(ref);
                         }
                     }
-                    else if (!(refs[i] is IExpression)) {
-                    	ref = refs[i];
+                    else if (refs[i] is Array && !(refs[i] is IExpression)) {
+                    	ref = refs[i][0];
                     	if (ref != null) {
                     		ref = getReference(ref, recurse, cache);
                             if (ref != null)
@@ -414,12 +424,16 @@ package org.granite.tide.data {
          * 
          *  @param obj an entity
          *  @param parent the parent entity
+		 *  @param propName name of the parent entity property that references the entity
          *  @param res the context expression
          */ 
-        public function addReference(obj:Object, parent:Object, res:IExpression = null):void {
+        public function addReference(obj:Object, parent:Object, propName:String, res:IExpression = null):void {
             if (obj is IEntity)
                 attachEntity(IEntity(obj));
-            
+			
+			if (obj is ListCollectionView && parent != null)
+				obj = obj.list;
+			
             var refs:Array = _entityReferences[obj] as Array;
             if (!(obj is IPersistentCollection) && res != null) {
                 refs = initRefs(obj);
@@ -440,13 +454,13 @@ package org.granite.tide.data {
                 var ref:String = getQualifiedClassName(parent) + ":" + parent.uid;
                 if (refs == null || refs.indexOf(ref) < 0) {
                     refs = initRefs(obj);
-                    refs.push(ref);
+                    refs.push([ref, propName]);
                 }
             }
 	       	else if (parent) {
 	       		if (refs == null || refs.indexOf(parent) < 0) {
 	       			refs = initRefs(obj);
-	       			refs.push(parent);
+	       			refs.push([parent, propName]);
 	       		}
 	       	}
         }
@@ -457,17 +471,27 @@ package org.granite.tide.data {
          *
          *  @param obj an entity
          *  @param parent the parent entity to dereference
+		 *  @param propName name of the parent entity property that references the entity
          *  @param res expression to remove
          */ 
-        public function removeReference(obj:Object, parent:IUID = null, res:IExpression = null):void {
+        public function removeReference(obj:Object, parent:IUID = null, propName:String = null, res:IExpression = null):void {
+			if (obj is ListCollectionView && parent != null)
+				obj = obj.list;
+			
             var refs:Array = _entityReferences[obj];
             if (!refs)
                 return;
-            var idx:int = -1;
-            if (parent)
-                idx = refs.indexOf(getQualifiedClassName(parent) + ":" + parent.uid);
+            var idx:int = -1, i:uint;
+            if (parent) {
+				for (i = 0; i < refs.length; i++) {
+					if (refs[i] is Array && refs[i][0] == getQualifiedClassName(parent) + ":" + parent.uid && refs[i][1] == propName) {
+                		idx = i;
+						break;
+					}
+				}
+			}
             else if (res) {
-                for (var i:int = 0; i < refs.length; i++) {
+                for (i = 0; i < refs.length; i++) {
                     if (refs[i] is IExpression && IExpression(refs[i]).path == res.path) {
                         idx = i;
                         break;
@@ -477,19 +501,23 @@ package org.granite.tide.data {
             if (idx >= 0)
                 refs.splice(idx, 1);
             
-            if (refs.length == 0)
+            if (refs.length == 0) {
             	delete _entityReferences[obj];
+				
+				if (obj is IEntity)
+					detachEntity(IEntity(obj), true);
+			}
             
             var elt:Object = null;
             if (obj is IList || obj is Array) {
             	for each (elt in obj)
-            		removeReference(elt, parent);
+            		removeReference(elt, parent, propName);
             }
             else if (obj is IMap) {
             	for (elt in obj) {
             		var val:Object = obj.get(elt);
-            		removeReference(val, parent);
-            		removeReference(elt, parent);
+            		removeReference(val, parent, propName);
+            		removeReference(elt, parent, propName);
             	}
             }
         }
@@ -519,79 +547,82 @@ package org.granite.tide.data {
             var saveMergeUpdate:Boolean = _mergeUpdate;
 			var saveMerging:Boolean = _merging;
 			
-			_merging = true;
-            
-			var addRef:Boolean = false;
-            var fromCache:Boolean = false;
-            var prev:Object = _entityCache[obj];
-            var next:Object = obj;
-            if (prev) {
-                next = prev;
-                fromCache = true;
-            }
-            else {
-                // Clear change tracking
-            	removeTrackingListeners(previous, parent); 
-                
-				if (obj == null) {
-					next = null;
-				}
-				else if (((obj is IPersistentCollection && !IPersistentCollection(obj).isInitialized()) 
-                	|| (obj is IPersistentCollection && !(previous is IPersistentCollection))) && parent is IEntity && propertyName) {
-                    next = mergePersistentCollection(IPersistentCollection(obj), previous, null, IEntity(parent), propertyName);
-                    addRef = true;
-                }
-                else if (obj is IList) {
-                    next = mergeCollection(IList(obj), previous, parent == null ? expr : null, parent, propertyName);
-                    addRef = true;
-                }
-                else if (obj is Array) {
-                    next = mergeArray(obj as Array, previous, parent == null ? expr : null, parent, propertyName);
-                    addRef = true;
-                }
-                else if (obj is IMap) {
-                    next = mergeMap(IMap(obj), previous, parent == null ? expr : null, parent, propertyName);
-                    addRef = true;
-                }
-                else if (obj is Enum) {
-                	next = Enum.normalize(obj as Enum);
-                }
-                else if (!ObjectUtil.isSimple(obj) && !(obj is BigNumber || obj is XML || obj is ByteArray)) {
-                    next = mergeEntity(obj, previous, expr, parent);
-                	addRef = true;
-                }
-            }
-			
-            if (next && !fromCache && addRef
-                && (expr != null || (prev == null && parent != null))) {
-                // Store reference from current object to its parent entity or root component expression
-                // If it comes from the cache, we are probably in a circular graph 
-                addReference(next, parent, expr);
-            }
-            
-            _mergeUpdate = saveMergeUpdate;
-            
-            if ((_mergeUpdate || forceUpdate) && setter != null && parent != null && propertyName != null && parent is IManaged) {
-            	if (!_resolvingConflict || propertyName != _context.meta_tide.getEntityDescriptor(IEntity(parent)).versionPropertyName) {
-	                setter(next);
-	                Managed.setProperty(IManaged(parent), propertyName, previous, next);
-	            }
-            }
-			
-			if ((_mergeUpdate || forceUpdate) && !fromCache && obj is IEntity) {
-				// @TODO Try to improve performance here by not iterating on child contexts where unnecessary  
-				// && _context.meta_isGlobal()) {
+			try {
+				_merging = true;
 				
-				// Propagate to existing conversation contexts where the entity is present
-				_contextManager.forEachChildContext(_context, function(ctx:BaseContext, entity:IEntity):void {
-					if (ctx === _sourceContext)
-						return;
-					if (ctx.meta_getCachedObject(entity, true) != null)
-						ctx.meta_mergeFromContext(_context, entity, _externalData);
-				}, obj);
+				var addRef:Boolean = false;
+	            var fromCache:Boolean = false;
+	            var prev:Object = _entityCache[obj];
+	            var next:Object = obj;
+	            if (prev) {
+	                next = prev;
+	                fromCache = true;
+	            }
+	            else {
+	                // Clear change tracking
+	            	removeTrackingListeners(previous, parent); 
+	                
+					if (obj == null) {
+						next = null;
+					}
+					else if (((obj is IPersistentCollection && !IPersistentCollection(obj).isInitialized()) 
+	                	|| (obj is IPersistentCollection && !(previous is IPersistentCollection))) && parent is IEntity && propertyName) {
+	                    next = mergePersistentCollection(IPersistentCollection(obj), previous, null, IEntity(parent), propertyName);
+	                    addRef = true;
+	                }
+	                else if (obj is IList) {
+	                    next = mergeCollection(IList(obj), previous, parent == null ? expr : null, parent, propertyName);
+	                    addRef = true;
+	                }
+	                else if (obj is Array) {
+	                    next = mergeArray(obj as Array, previous, parent == null ? expr : null, parent, propertyName);
+	                    addRef = true;
+	                }
+	                else if (obj is IMap) {
+	                    next = mergeMap(IMap(obj), previous, parent == null ? expr : null, parent, propertyName);
+	                    addRef = true;
+	                }
+	                else if (obj is Enum) {
+	                	next = Enum.normalize(obj as Enum);
+	                }
+	                else if (!ObjectUtil.isSimple(obj) && !(obj is IValue || obj is XML || obj is ByteArray)) {
+	                    next = mergeEntity(obj, previous, expr, parent);
+	                	addRef = true;
+	                }
+	            }
+				
+	            if (next && !fromCache && addRef
+	                && (expr != null || (prev == null && parent != null))) {
+	                // Store reference from current object to its parent entity or root component expression
+	                // If it comes from the cache, we are probably in a circular graph 
+	                addReference(next, parent, propertyName, expr);
+	            }
+	            
+	            _mergeUpdate = saveMergeUpdate;
+	            
+	            if ((_mergeUpdate || forceUpdate) && setter != null && parent != null && propertyName != null && parent is IManaged) {
+	            	if (!_resolvingConflict || propertyName != _context.meta_tide.getEntityDescriptor(IEntity(parent)).versionPropertyName) {
+		                setter(next);
+		                Managed.setProperty(IManaged(parent), propertyName, previous, next);
+		            }
+	            }
+				
+				if ((_mergeUpdate || forceUpdate) && !fromCache && obj is IEntity) {
+					// @TODO Try to improve performance here by not iterating on child contexts where unnecessary  
+					// && _context.meta_isGlobal()) {
+					
+					// Propagate to existing conversation contexts where the entity is present
+					_context.meta_contextManager.forEachChildContext(_context, function(ctx:BaseContext, entity:IEntity):void {
+						if (ctx === _sourceContext)
+							return;
+						if (ctx.meta_getCachedObject(entity, true) != null)
+							ctx.meta_mergeFromContext(_context, entity, _externalData);
+					}, obj);
+				}
 			}
-			
-			_merging = saveMerging;
+			finally {
+				_merging = saveMerging;
+			}
             
             return next;
         }
@@ -617,8 +648,12 @@ package org.granite.tide.data {
             if (obj is IUID) {
                 p = _entitiesByUID.get(getQualifiedClassName(obj) + ":" + IUID(obj).uid);
                 if (p) {
-                    previous = p;
-                    dest = previous;
+					// Trying to merge an entity that is already cached: stop now, this is not necessary to go deeper in the object graph
+					if (obj === p)
+						return obj;
+					
+					previous = p;
+					dest = previous;
                 }
             }
             if (dest !== previous && previous && (objectEquals(previous, obj)
@@ -663,13 +698,13 @@ package org.granite.tide.data {
             if (_versionChangeCache == null)
                 _versionChangeCache = new Dictionary();
             
+			var ignore:Boolean = false;
             if (dest is IEntity) {
                 desc = _context.meta_tide.getEntityDescriptor(IEntity(dest));
                 
                 // Associate entity with the current context
                 attachEntity(IEntity(dest), false);
 				
-				var ignore:Boolean = false;
                 if (previous && dest === previous) {
                     // Check version for optimistic locking
                     if (desc.versionPropertyName != null && !_resolvingConflict) {
@@ -681,18 +716,24 @@ package org.granite.tide.data {
                         	ignore = true;
                         }
                     	else if (newVersion > oldVersion || (!isNaN(newVersion) && isNaN(oldVersion))) {
+							// Handle changes when version number is increased
                     		_versionChangeCache[dest] = true;
                     		
                     		if (_externalData && _dirtyCheckContext.isEntityChanged(IEntity(dest))) {
                     			// Conflict between externally received data and local modifications
                     			log.error("conflict with external data detected on {0} (current: {1}, received: {2})",
                     				BaseContext.toString(dest), oldVersion, newVersion);
-                    				
-                    			if (_mergeConflicts == null)
-                    				_mergeConflicts = new Conflicts(_context, this);
-                				_mergeConflicts.addConflict(dest as IEntity, obj as IEntity);
                     			
-                    			ignore = true;
+								if (_dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), IEntity(obj))) {
+									// Incoming data is different from local data
+	                    			if (_mergeConflicts == null)
+	                    				_mergeConflicts = new Conflicts(_context, this);
+	                				_mergeConflicts.addConflict(dest as IEntity, obj as IEntity);
+	                    			
+	                    			ignore = true;
+								}
+								else
+									_mergeUpdate = true;
                     		}
                     		else
                     			_mergeUpdate = true;
@@ -729,8 +770,12 @@ package org.granite.tide.data {
                 previous.dispatchEvent(pce);
             }
 
-			if (dest != null && _versionChangeCache[dest] != null && !_resolvingConflict)
-				_dirtyCheckContext.markNotDirty(dest);
+			if (dest != null && !ignore && !_resolvingConflict) {
+				if (_mergeUpdate && _versionChangeCache[dest] != null)
+					_dirtyCheckContext.markNotDirty(dest);
+				else if (dest is IEntity && obj is IEntity)
+					_dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), IEntity(obj));
+			}
 			
 			if (dest != null)
 				log.debug("mergeEntity result: {0}", BaseContext.toString(dest));
@@ -756,6 +801,15 @@ package org.granite.tide.data {
          */ 
         private function mergeCollection(coll:IList, previous:Object, expr:IExpression, parent:Object = null, propertyName:String = null):IList {
             log.debug("mergeCollection: {0} previous {1}", BaseContext.toString(coll), BaseContext.toString(previous));
+			
+			if (_uninitializing) {
+				if (previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+					log.debug("uninitialize lazy collection {0}", BaseContext.toString(previous));
+					_entityCache[coll] = previous;
+					IPersistentCollection(previous).uninitialize();
+					return IList(previous);
+				}
+			}
 
             if (previous && previous is IPersistentCollection && !IPersistentCollection(previous).isInitialized()) {
                 log.debug("initialize lazy collection {0}", BaseContext.toString(previous));
@@ -941,7 +995,16 @@ package org.granite.tide.data {
          */ 
         private function mergeMap(map:IMap, previous:Object, expr:IExpression, parent:Object = null, propertyName:String = null):IMap {
             log.debug("mergeMap: {0} previous {1}", BaseContext.toString(map), BaseContext.toString(previous));
-
+			
+			if (_uninitializing) {
+				if (previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+					log.debug("uninitialize lazy map {0}", BaseContext.toString(previous));
+					_entityCache[map] = previous;
+					IPersistentCollection(previous).uninitialize();
+					return IMap(previous);
+				}
+			}
+			
             var value:Object;
             var key:Object;
             
@@ -1090,7 +1153,7 @@ package org.granite.tide.data {
             
             if (coll is IMap) {
             	var pmap:PersistentMap = new PersistentMap(parent, propertyName, 
-            		(coll is PersistentMap ? duplicatePersistentMap(PersistentMap(coll).object) : IPersistentCollection(coll)));
+            		(coll is PersistentMap ? duplicatePersistentCollection(PersistentMap(coll).object) : IPersistentCollection(coll)));
 	            _entityCache[coll] = pmap;
             	if (pmap.isInitialized()) {
 	                for each (var key:Object in pmap.keySet) {
@@ -1119,17 +1182,13 @@ package org.granite.tide.data {
         }
         
         private function duplicatePersistentCollection(coll:Object):IPersistentCollection {
-        	if (coll is IPersistentCollection)
-        		return coll.clone() as IPersistentCollection;
-        	
-        	throw new Error("Not a persistent collection " + BaseContext.toString(coll)); 
-        }
-        
-        private function duplicatePersistentMap(map:Object):IPersistentCollection {
-        	if (map is IPersistentCollection)
-        		return map.clone() as IPersistentCollection;
-        	
-        	throw new Error("Not a persistent map " + BaseContext.toString(map)); 
+        	if (!(coll is IPersistentCollection))
+				throw new Error("Not a persistent collection/map " + BaseContext.toString(coll));
+			
+    		var ccoll:IPersistentCollection = coll.clone() as IPersistentCollection;
+			if (_uninitializing)
+				ccoll.uninitialize();
+			return ccoll;
         }
         
         
@@ -1167,6 +1226,26 @@ package org.granite.tide.data {
         	if (_mergeConflicts != null && _mergeConflicts.allResolved)
         		_mergeConflicts = null;
         }
+		
+		
+		/**
+		 * 	Enables or disabled dirty checking in this context
+		 *  
+		 *  @param enabled
+		 */
+		public function set dirtyCheckEnabled(enabled:Boolean):void {
+			_merging = !enabled;
+		}
+		
+		
+		/**
+		 * 	Current map of saved properties
+		 * 
+		 *  @return saved properties
+		 */
+		public function get savedProperties():Dictionary {
+			return _dirtyCheckContext.savedProperties;
+		}
         
         
         /**
@@ -1225,7 +1304,7 @@ package org.granite.tide.data {
             if (obj1 is Enum && obj2 is Enum && obj1.equals(obj2))
             	return true; 
             
-            if (obj1 is BigNumber && obj2 is BigNumber && obj1.equals(obj2))
+            if (obj1 is IValue && obj2 is IValue && obj1.equals(obj2))
             	return true; 
 
             return obj1 === obj2;
@@ -1266,7 +1345,15 @@ package org.granite.tide.data {
          *  @param entity entity to restore
          */ 
         public function resetEntity(entity:IEntity, cache:Dictionary):void {
-        	_dirtyCheckContext.resetEntity(entity, cache);
+			var saveMerging:Boolean = _merging;
+			// Disable dirty check during reset of entity
+			try {
+				_merging = true;
+        		_dirtyCheckContext.resetEntity(entity, cache);
+			}
+			finally {
+				_merging = saveMerging;
+			}
         }
 
 
@@ -1282,12 +1369,12 @@ package org.granite.tide.data {
         public function setEntityProperty(entity:IEntity, propName:String, oldValue:*, newValue:*):void {
         	if (newValue !== oldValue) {
         		if (oldValue != null) {
-        			removeReference(oldValue, entity);
+        			removeReference(oldValue, entity, propName);
         			removeTrackingListeners(oldValue, entity);
         		}
         		
             	if (newValue is IUID || newValue is IList || newValue is IMap || newValue is Array) {
-            		addReference(newValue, entity);
+            		addReference(newValue, entity, propName);
             		addTrackingListeners(newValue, entity);
             	}
             }
@@ -1323,12 +1410,13 @@ package org.granite.tide.data {
          *  @param parent parent object for collections
          */
         private function addTrackingListeners(previous:Object, parent:Object):void {
-        	if (_trackingListeners == null)
+        	if (_trackingListeners == null || previous == null || previous is XMLList)
         		return;
         	
             if (previous != null && previous is ListCollectionView) {
                 if (parent != null) {
-                    ListCollectionView(previous).addEventListener(CollectionEvent.COLLECTION_CHANGE, entityCollectionChangeHandler, false, 0, true);
+					previous = previous.list;
+                    previous.addEventListener(CollectionEvent.COLLECTION_CHANGE, entityCollectionChangeHandler, false, 0, true);
                     _trackingListeners[previous] = "entityCollection";
                 }
                 else {
@@ -1364,8 +1452,10 @@ package org.granite.tide.data {
         		return;
         	
             if (previous is ListCollectionView) {
-                if (parent != null)
-                    ListCollectionView(previous).removeEventListener(CollectionEvent.COLLECTION_CHANGE, entityCollectionChangeHandler);
+                if (parent != null) {
+					previous = previous.list;
+                    previous.removeEventListener(CollectionEvent.COLLECTION_CHANGE, entityCollectionChangeHandler);
+				}
                 else
                     ListCollectionView(previous).removeEventListener(CollectionEvent.COLLECTION_CHANGE, _context.meta_collectionChangeHandler);
             }
@@ -1412,21 +1502,46 @@ package org.granite.tide.data {
         	
             var i:int = 0;
             
+			var parent:Object = null;
             if (event.kind == CollectionEventKind.ADD && event.items && event.items.length > 0) {
-            	var parent:Object = getOwnerEntity(event.target);
+            	parent = getOwnerEntity(event.target);
                 for (i = 0; i < event.items.length; i++) {
                     if (event.items[i] is IEntity) {
                     	if (parent)
-                    		addReference(IEntity(event.items[i]), parent);
+                    		addReference(IEntity(event.items[i]), parent[0], String(parent[1]));
                     	else
                         	attachEntity(IEntity(event.items[i]));
                     }
                 }
             }
+			else if (event.kind == CollectionEventKind.REMOVE && event.items && event.items.length > 0) {
+				parent = getOwnerEntity(event.target);
+				if (parent) {
+					for (i = 0; i < event.items.length; i++) {
+						if (event.items[i] is IEntity)
+							removeReference(IEntity(event.items[i]), parent[0], String(parent[1]));
+					}
+				}
+			}
+			else if (event.kind == CollectionEventKind.REPLACE && event.items && event.items.length > 0) {
+				parent = getOwnerEntity(event.target);
+				for (i = 0; i < event.items.length; i++) {
+					var newValue:Object = event.items[i].newValue;
+					if (newValue is IEntity) {
+						if (parent)
+							addReference(IEntity(newValue), parent[0], String(parent[1]));
+						else
+							attachEntity(IEntity(newValue));
+					}
+				}
+			}
             
             if (event.kind != CollectionEventKind.ADD && event.kind != CollectionEventKind.REMOVE 
 				&& event.kind != CollectionEventKind.RESET && event.kind != CollectionEventKind.REPLACE)
                 return;
+			
+			if (event.kind == CollectionEventKind.RESET && event.target is IPersistentCollection && !IPersistentCollection(event.target).isInitialized())
+				return;
             
             log.debug("collection changed: {0} {1}", event.kind, BaseContext.toString(event.target));
             
@@ -1448,35 +1563,81 @@ package org.granite.tide.data {
         		return;
         	
             var i:int = 0;
-            
+			var parent:Object = null;
+			var obj:Array = null;
+			
             if (event.kind == CollectionEventKind.ADD && event.items && event.items.length > 0) {
-            	var parent:Object = getOwnerEntity(event.target);
+            	parent = getOwnerEntity(event.target);
                 for (i = 0; i < event.items.length; i++) {
                     if (event.items[i] is IEntity) {
                     	if (parent)
-                    		addReference(IEntity(event.items[i]), parent);
+                    		addReference(IEntity(event.items[i]), parent[0], String(parent[1]));
                     	else
                         	attachEntity(IEntity(event.items[i]));
                     }
                     else if (event.items[i] is Array) {
-                        var obj:Array = event.items[i] as Array;
+                        obj = event.items[i] as Array;
 	                    if (obj[0] is IEntity) {
 	                    	if (parent)
-	                    		addReference(IEntity(obj[0]), parent);
+	                    		addReference(IEntity(obj[0]), parent[0], String(parent[1]));
 	                    	else
 	                        	attachEntity(IEntity(obj[0]));
 	                    }
 	                    if (obj[1] is IEntity) {
 	                    	if (parent)
-	                    		addReference(IEntity(obj[1]), parent);
+	                    		addReference(IEntity(obj[1]), parent[0], String(parent[1]));
 	                    	else
 	                        	attachEntity(IEntity(obj[1]));
 	                    }
                     }
                 }
             }
+			else if (event.kind == CollectionEventKind.REMOVE && event.items && event.items.length > 0) {
+				parent = getOwnerEntity(event.target);
+				if (parent) {
+					for (i = 0; i < event.items.length; i++) {
+						if (event.items[i] is IEntity)
+							removeReference(IEntity(event.items[i]), parent[0], String(parent[1]));
+						else if (event.items[i] is Array) {
+							obj = event.items[i] as Array;
+							if (obj[0] is IEntity)
+								removeReference(IEntity(obj[0]), parent[0], String(parent[1]));
+							if (obj[1] is IEntity)
+								removeReference(IEntity(obj[1]), parent[0], String(parent[1]));
+						}
+					}
+				}
+			}
+			else if (event.kind == CollectionEventKind.REPLACE && event.items && event.items.length > 0) {
+				parent = getOwnerEntity(event.target);
+				for (i = 0; i < event.items.length; i++) {
+					var newValue:Object = event.items[i].newValue;
+					if (newValue is IEntity) {
+						if (parent)
+							addReference(IEntity(newValue), parent[0], String(parent[1]));
+						else
+							attachEntity(IEntity(newValue));
+					}
+					else if (newValue is Array) {
+						obj = newValue as Array;
+						if (obj[0] is IEntity) {
+							if (parent)
+								addReference(IEntity(obj[0]), parent[0], String(parent[1]));
+							else
+								attachEntity(IEntity(obj[0]));
+						}
+						if (obj[1] is IEntity) {
+							if (parent)
+								addReference(IEntity(obj[1]), parent[0], String(parent[1]));
+							else
+								attachEntity(IEntity(obj[1]));
+						}
+					}
+				}
+			}
             
-            if (event.kind != CollectionEventKind.ADD && event.kind != CollectionEventKind.REMOVE)
+            if (event.kind != CollectionEventKind.ADD && event.kind != CollectionEventKind.REMOVE
+				&& event.kind != CollectionEventKind.RESET && event.kind != CollectionEventKind.REPLACE)
                 return;
             
             log.debug("map changed: {0} {1}", event.kind, BaseContext.toString(event.target));

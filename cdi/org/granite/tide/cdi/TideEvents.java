@@ -35,8 +35,6 @@ import javax.inject.Inject;
  * @author William DRAI
  */
 public class TideEvents {
-
-    private static final long serialVersionUID = -5395975397632138270L;
     
     
     @Inject

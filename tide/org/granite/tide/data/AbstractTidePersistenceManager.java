@@ -68,7 +68,7 @@ public abstract class AbstractTidePersistenceManager implements TidePersistenceM
             //the get is called to give the children a chance to override and
             //use the implemented method
 			if (propertyNames != null)
-				attachedEntity = findEntity(entity, propertyNames);
+				attachedEntity = fetchEntity(entity, propertyNames);
 			else
 				attachedEntity = entity;
             
@@ -95,9 +95,11 @@ public abstract class AbstractTidePersistenceManager implements TidePersistenceM
 	} 
 	
     /**
-     * Finds the entity with the persistence context.
+     * Fetch the entity with its lazy properties from the persistence context.
+     * @param entity entity to load
+     * @param fetch array of property names to fetch
      * @return the entity with the persistence context.
      */
-	public abstract Object findEntity(Object entity, String[] fetch);
+	public abstract Object fetchEntity(Object entity, String[] fetch);
 	
 }

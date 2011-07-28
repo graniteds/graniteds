@@ -21,7 +21,10 @@
 package org.granite.tide.data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
@@ -29,6 +32,7 @@ import javax.servlet.http.HttpSession;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
 
@@ -43,17 +47,17 @@ public class DataDispatcher {
 
     
     private boolean enabled = false;
+    private Gravity gravity = null;
     private String topic = null;
     private DataTopicParams paramsProvider = null;
-    private Gravity gravity = null;
     private String sessionId = null;
     private String clientId = null;
     private String subscriptionId = null;
     
     
-	public DataDispatcher(String topic, Class<? extends DataTopicParams> dataTopicParamsClass) {
+	public DataDispatcher(Gravity gravity, String topic, Class<? extends DataTopicParams> dataTopicParamsClass) {
 		GraniteContext graniteContext = GraniteContext.getCurrentInstance();
-		if (graniteContext == null || !(graniteContext instanceof HttpGraniteContext))
+		if (gravity == null && graniteContext == null)
 			return;
 		
 		this.topic = topic;
@@ -64,24 +68,35 @@ public class DataDispatcher {
 			log.error("Could not instantiate class " + dataTopicParamsClass, e);
 		}
 		
-		gravity = (Gravity)graniteContext.getApplicationMap().get("org.granite.gravity.Gravity");
-		HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
-		if (gravity == null || session == null) {
-			log.debug("Gravity not found, data dispatch disabled");
-			return;
+		if (graniteContext instanceof HttpGraniteContext) {
+			this.gravity = GravityManager.getGravity(((HttpGraniteContext)graniteContext).getServletContext());
+			
+			HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
+			if (this.gravity == null || session == null) {
+				log.debug("Gravity not found or HTTP session not found, data dispatch disabled");
+				return;
+			}
+			sessionId = session.getId();
+			
+			clientId = (String)session.getAttribute("org.granite.gravity.channel.clientId." + topic);
+			if (clientId == null) {
+				log.debug("Gravity channel clientId not defined, data dispatch disabled");
+				return;
+			}
+			subscriptionId = (String)session.getAttribute("org.granite.gravity.channel.subscriptionId." + topic);
+			if (subscriptionId == null) {
+				log.debug("Gravity channel subscriptionId not defined, data dispatch disabled");
+				return;
+			}
 		}
-		
-		sessionId = session.getId();
-		
-		clientId = (String)session.getAttribute("org.granite.gravity.channel.clientId." + topic);
-		if (clientId == null) {
-			log.debug("Gravity channel clientId not defined, data dispatch disabled");
-			return;
-		}
-		subscriptionId = (String)session.getAttribute("org.granite.gravity.channel.subscriptionId." + topic);
-		if (subscriptionId == null) {
-			log.debug("Gravity channel subscriptionId not defined, data dispatch disabled");
-			return;
+		else {
+			if (gravity == null) {
+				log.debug("Gravity not defined, data dispatch disabled");
+				return;
+			}
+			
+			this.gravity = gravity;
+			this.sessionId = "__GDS_SERVER_DISPATCHER__";
 		}
 		
 		enabled = true;
@@ -99,6 +114,9 @@ public class DataDispatcher {
 		
 		// Ensure that the current Gravity consumer listens about this data topic and params
 		GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+		if (!(graniteContext instanceof HttpGraniteContext))
+			return;
+		
 		HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
 		
 		@SuppressWarnings("unchecked")
@@ -165,28 +183,41 @@ public class DataDispatcher {
 			return;
 		
 		try {
-			AsyncMessage message = new AsyncMessage();
-			message.setClientId(clientId);
-			message.setHeader(AsyncMessage.SUBTOPIC_HEADER, "tideDataTopic");
-			message.setDestination(topic);
-			message.setHeader("GDSSessionID", sessionId);
-			message.setHeader("type", "DATA");
-			if (paramsProvider != null) {
-				DataPublishParams params = new DataPublishParams();
-				for (Object[] dataUpdate : dataUpdates)
-					paramsProvider.publishes(params, dataUpdate[1]);
-				
-				params.setHeaders(message);
-			}
-			message.setBody(dataUpdates.toArray());
-			
 			Channel channel = gravity.getChannel(clientId);
 			
-			Message resultMessage = gravity.publishMessage(channel, message);
-			if (resultMessage instanceof ErrorMessage)
-				log.error("Could not dispatch data update on topic %s, message %s", topic, resultMessage.toString());
-			else
-				log.debug("Data message dispatched on topic %s", topic);
+			Map<Map<String, String>, List<Object>> updates = new HashMap<Map<String, String>, List<Object>>();
+			if (paramsProvider != null) {
+				for (Object[] dataUpdate : dataUpdates) {
+					DataPublishParams params = new DataPublishParams();
+					paramsProvider.publishes(params, dataUpdate[1]);
+					
+					Map<String, String> headers = params.getHeaders();
+					List<Object> list = updates.get(headers);
+					if (list == null) {
+						list = new ArrayList<Object>();
+						updates.put(headers, list);
+					}
+					list.add(dataUpdate);
+				}
+			}
+			
+			for (Entry<Map<String, String>, List<Object>> me : updates.entrySet()) {
+				AsyncMessage message = new AsyncMessage();
+				message.setClientId(clientId);
+				message.setHeader(AsyncMessage.SUBTOPIC_HEADER, "tideDataTopic");
+				message.setDestination(topic);
+				message.setHeader("GDSSessionID", sessionId);
+				message.setHeader("type", "DATA");
+				for (Entry<String, String> hh : me.getKey().entrySet())
+					message.setHeader(hh.getKey(), hh.getValue());
+				message.setBody(me.getValue().toArray());
+				
+				Message resultMessage = gravity.publishMessage(channel, message);
+				if (resultMessage instanceof ErrorMessage)
+					log.error("Could not dispatch data update on topic %s, message %s", topic, resultMessage.toString());
+				else
+					log.debug("Data message dispatched on topic %s", topic);
+			}
 		}
 		catch (Exception e) {
 			log.error(e, "Could not dispatch data update on topic %s", topic);

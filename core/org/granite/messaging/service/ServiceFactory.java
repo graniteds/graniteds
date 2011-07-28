@@ -20,7 +20,6 @@
 
 package org.granite.messaging.service;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -36,9 +35,7 @@ import flex.messaging.messages.RemotingMessage;
 /**
  * @author Franck WOLFF
  */
-public abstract class ServiceFactory implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public abstract class ServiceFactory {
 
 	private static final Logger log = Logger.getLogger(ServiceFactory.class);
     private static final ReentrantLock lock = new ReentrantLock();

@@ -91,7 +91,6 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 	    		};
 	    	}
     	}
-    	//if (Controller.class.isInstance(instance) || componentName.endsWith("Controller"))
     	if (Controller.class.isInstance(instance))
     		return new SimpleControllerHandlerAdapter();
     	
@@ -238,7 +237,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 			
 			HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
 			
-	    	Map<Object, Object> modelMap = null;
+	    	Map<String, Object> modelMap = null;
 	    	if (result instanceof ModelAndView) {
 	    		ModelAndView modelAndView = (ModelAndView)result;
 	    		modelMap = modelAndView.getModel();
@@ -267,7 +266,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 	    		Boolean localBinding = (Boolean)graniteContext.getRequestMap().get(SPRINGMVC_BINDING_ATTR);
 	    		
 		    	results = new ArrayList<ContextUpdate>();
-		    	for (Map.Entry<Object, Object> me : modelMap.entrySet()) {
+		    	for (Map.Entry<String, Object> me : modelMap.entrySet()) {
 					if (me.getKey().toString().startsWith("org.springframework.validation.")
 							|| (me.getValue() != null && (
 									me.getValue().getClass().getName().startsWith("groovy.lang.ExpandoMetaClass")
@@ -476,7 +475,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 			return target;			
 		}
 		
-		@SuppressWarnings("rawtypes")
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public Object convertIfNecessary(Object value, Class requiredType, MethodParameter methodParam) throws TypeMismatchException {
 			if (target == null && value == REQUEST_VALUE || (value instanceof String[] && ((String[])value)[0] == REQUEST_VALUE))

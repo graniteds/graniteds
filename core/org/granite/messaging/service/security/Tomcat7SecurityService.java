@@ -87,6 +87,8 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
         session.setPrincipal(principal);
         session.setNote(Constants.SESS_USERNAME_NOTE, decoded[0]);
         session.setNote(Constants.SESS_PASSWORD_NOTE, decoded[1]);
+        
+        endLogin(context, credentials);
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {
@@ -96,12 +98,19 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
         Request request = getRequest(httpRequest);
-        Session session = request.getSessionInternal();
-        request.setAuthType(session.getAuthType());
-        request.setUserPrincipal(session.getPrincipal());
+        Session session = request.getSessionInternal(false);
+
+        Principal principal = null;
+        if (session != null) {
+            request.setAuthType(session.getAuthType());
+        	principal = session.getPrincipal();
+        	if (principal == null && tryRelogin(graniteContext))
+        		principal = session.getPrincipal();
+        }
+
+        request.setUserPrincipal(principal);
 
         if (context.getDestination().isSecured()) {
-            Principal principal = getPrincipal(httpRequest);
             if (principal == null) {
                 if (httpRequest.getRequestedSessionId() != null) {
                     HttpSession httpSession = httpRequest.getSession(false);
@@ -145,6 +154,9 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
             session.setPrincipal(null);
             session.removeNote(Constants.SESS_USERNAME_NOTE);
             session.removeNote(Constants.SESS_PASSWORD_NOTE);
+            
+            endLogout(context);
+            
             session.expire();
         }
     }

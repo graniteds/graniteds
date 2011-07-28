@@ -37,7 +37,6 @@ import org.w3c.dom.Element;
 public class JmsTopicDestinationBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
     	builder.setLazyInit(false);
         
@@ -45,7 +44,7 @@ public class JmsTopicDestinationBeanDefinitionParser extends AbstractSingleBeanD
         		"acknowledge-mode", "transacted-sessions", "no-local", "session-selector");
         
         Object sourceElement = parserContext.extractSource(element);
-        ManagedList roles = new ManagedList();
+        ManagedList<String> roles = new ManagedList<String>();
         roles.setSource(sourceElement);
         List<Element> rolesElements = DomUtils.getChildElementsByTagName(element, "roles");
         for (Element rolesElement : rolesElements) {

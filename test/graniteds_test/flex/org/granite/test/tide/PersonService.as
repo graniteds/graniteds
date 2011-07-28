@@ -10,7 +10,7 @@ package org.granite.test.tide {
 	import org.granite.tide.Component;
 	
 
-	[RemoteClass(alias="org.granite.tide.test.PersonService")]
+	[RemoteClass(alias="org.granite.test.tide.PersonService")]
     public class PersonService extends Component {
         
         public function PersonService():void {

@@ -27,8 +27,6 @@ package org.granite.eclipselink;
  */
 public class EclipseLinkProxy {
 
-    private static final long serialVersionUID = 1L;
-
     private final Class<?> proxiedClass;
 
     public EclipseLinkProxy(Class<?> proxiedClass) {

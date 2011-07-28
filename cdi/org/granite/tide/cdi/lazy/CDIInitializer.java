@@ -49,7 +49,7 @@ public class CDIInitializer implements Serializable {
     
     private static final Logger log = Logger.getLogger(CDIInitializer.class);
     
-    private TidePersistenceManager pm = null;
+    private transient TidePersistenceManager pm = null;
     
     private Set<Object> loadedEntities = new HashSet<Object>();
     

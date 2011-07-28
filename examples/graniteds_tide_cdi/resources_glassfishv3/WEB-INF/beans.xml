@@ -5,6 +5,6 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
 
   	<interceptors>
-    	<class>test.granite.cdi.service.TransactionInterceptor</class>
+    	<class>org.granite.example.addressbook.cdi.service.TransactionInterceptor</class>
   	</interceptors>
 </beans>

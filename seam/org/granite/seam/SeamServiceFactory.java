@@ -37,8 +37,6 @@ import flex.messaging.messages.RemotingMessage;
  */
 public class SeamServiceFactory extends ServiceFactory {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Log log = Logging.getLog(SeamServiceFactory.class);
 
     @Override

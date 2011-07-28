@@ -56,7 +56,7 @@ public class SeamInitializer implements Serializable {
 	
     @Logger Log log;
     
-    private TidePersistenceManager pm = null;
+    private transient TidePersistenceManager pm = null;
     
     private Set<Object> loadedEntities = new HashSet<Object>();
     

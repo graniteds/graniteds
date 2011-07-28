@@ -43,6 +43,7 @@ import org.hibernate.type.AbstractComponentType;
 /**
  * @author Franck WOLFF
  */
+@SuppressWarnings("deprecation")
 public class ProxyFactory {
 
     private static final Class<?>[] INTERFACES = new Class[]{HibernateProxy.class};
@@ -59,7 +60,7 @@ public class ProxyFactory {
         	// class with the same signature.
             Class<?> initializerClass = ClassUtil.forName(initializerClassName);
             getProxyFactory = initializerClass.getMethod("getProxyFactory", new Class[]{Class.class, Class[].class});
-            Class<?> componentTypeClass = AbstractComponentType.class;
+			Class<?> componentTypeClass = AbstractComponentType.class;
             try {
             	// Hibernate 3.6
             	componentTypeClass = ClassUtil.forName("org.hibernate.type.CompositeType");

@@ -60,16 +60,16 @@
 	<property name="flex.src" value="flex"/>
 	<property name="flex.context.root" value="graniteds-tide-ejb3"/>
 	<fileset id="entity.path" dir="classes">
-        <include name="test/granite/ejb3/entity/**/*.class"/>
+        <include name="org/granite/example/addressbook/entity/**/*.class"/>
     </fileset>
 	<fileset id="service.path" dir="classes">
-        <include name="test/granite/ejb3/service/*.class"/>
+        <include name="org/granite/example/addressbook/ejb3/service/*.class"/>
     </fileset>
 	<fileset id="event.path" dir="classes">
-        <include name="test/granite/ejb3/event/*.class"/>
+        <include name="org/granite/example/addressbook/ejb3/event/*.class"/>
     </fileset>	
 	<fileset id="service.gen.path" dir="classes">
-        <include name="test/granite/ejb3/service/*Service.class"/>
+        <include name="org/granite/example/addressbook/ejb3/service/*Service.class"/>
     </fileset>
 	<property name="flex.use.tide" value="true"/>
     

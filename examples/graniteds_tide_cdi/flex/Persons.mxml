@@ -23,7 +23,7 @@
 <mx:Application
     xmlns:mx="http://www.adobe.com/2006/mxml"
     xmlns="*"
-    xmlns:cs="test.granite.components.*"
+    xmlns:cs="org.granite.example.components.*"
     layout="vertical"
     preinitialize="Cdi.getInstance().initApplication()"
     creationComplete="init();">
@@ -35,8 +35,6 @@
         	import mx.events.CloseEvent;
         	import mx.controls.Alert;
         	import org.granite.tide.data.events.TideDataConflictsEvent;
-            import test.granite.cdi.entity.Person;
-            import test.granite.cdi.entity.Contact;
             import mx.collections.ListCollectionView;
             import mx.collections.ArrayCollection;
             
@@ -45,7 +43,9 @@
             import org.granite.tide.cdi.Identity;
             import org.granite.tide.events.TideUIEvent;
             
-            import test.granite.AddressBookModule;
+            import org.granite.example.addressbook.cdi.AddressBookModule;
+			import org.granite.example.addressbook.entity.Person;
+			import org.granite.example.addressbook.entity.Contact;
 
 			Cdi.getInstance().addComponentWithFactory("serviceInitializer", DefaultServiceInitializer, 
 				{ contextRoot: "/graniteds-tide-cdi" });
@@ -97,12 +97,14 @@
 
         <mx:VBox id="loggedInView">
             <mx:ApplicationControlBar id="acb" width="100%">
-                <mx:Label text="Granite Data Services (Address Book Demo)" fontSize="18" fontWeight="bold" color="#f0f0f0"/>
+                <mx:Label text="Granite Data Services (Address Book Demo)" fontSize="18" fontWeight="bold" color="#222222"/>
                 <mx:Spacer width="100%"/>
-                <mx:Label text="Search" color="#f0f0f0"/>
+                <mx:Label text="Search" color="#222222"/>
                 <mx:TextInput id="fSearch" enter="dispatchEvent(new TideUIEvent('search', fSearch.text));"/>
                 <mx:Button label="Go" click="dispatchEvent(new TideUIEvent('search', fSearch.text))"/>
-                <mx:Label text="Logged as {identity.username}" color="#f0f0f0"/>
+				<mx:Label text="{identity.username}" color="#222222"/>
+				<mx:Label text="{Cdi.getInstance().busy ? 'Busy' : 'Idle'}" color="#222222"/>
+				<mx:Label text="{Cdi.getInstance().disconnected ? '[Disconnected]' : ''}" color="#222222"/>
                 <mx:Button label="Logout" click="identity.logout();"/>
             </mx:ApplicationControlBar>
 
@@ -116,6 +118,7 @@
                                 <cs:DataGridColumn dataField="salutation" headerText=""/>
                                 <cs:DataGridColumn dataField="firstName" headerText="First name"/>
                                 <cs:DataGridColumn dataField="lastName" headerText="Last name"/>
+								<cs:DataGridColumn dataField="createdBy" headerText="Created by"/>
                             </cs:columns>
                         </cs:DataGrid>
 

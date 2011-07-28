@@ -28,7 +28,7 @@
   	<persistence-unit name="guice" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         <non-jta-data-source>java:/DefaultDS</non-jta-data-source>
-        <class>test.granite.ejb3.entity.Car</class>
+        <class>org.granite.example.crud.entity.Car</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" />
             <property name="hibernate.transaction.factory_class"

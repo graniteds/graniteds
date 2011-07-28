@@ -81,16 +81,15 @@ package org.granite.test.tide.data
         	Assert.assertTrue("Contact dirty", _ctx.meta_isEntityChanged(contact)); 
         	Assert.assertTrue("Context dirty", ctxDirty); 
         	
-			// Removing the the dirty contact doesn't make the context clean 
+			// Removing the the dirty contact makes the context clean because it's not referenced any more
         	person.contacts.removeItemAt(0);
         	
         	Assert.assertFalse("Person not dirty", _ctx.meta_isEntityChanged(person));
         	Assert.assertFalse("Person not dirty 2", personDirty);
-        	Assert.assertTrue("Context still dirty", ctxDirty);
+        	Assert.assertFalse("Context not dirty", ctxDirty);
 			
-			// When setting the contact mail to null again, the test passes, which means 
-			// that the newly created contact is still managed 
-			contact.email = null; 
+			// The contact is not managed any more, so dirty check does not apply
+			contact.email = "tutu@example.org"; 
 
 			// This fails if email is not cleand 
         	Assert.assertFalse("Context not dirty", ctxDirty);

@@ -69,10 +69,9 @@ public class SpringGraniteConfig extends AbstractFrameworkGraniteConfig implemen
     	init(servletContext, "org/granite/spring/granite-config-spring.xml");
     	
     	if (getGraniteConfig().getSecurityService() == null) {
-    		@SuppressWarnings("unchecked")
-    		Map<String, Object> servicesMap = applicationContext.getBeansOfType(SecurityService.class);
+    		Map<String, ?> servicesMap = applicationContext.getBeansOfType(SecurityService.class);
     		if (servicesMap.size() == 1) {
-    			Entry<String, Object> se = servicesMap.entrySet().iterator().next();
+    			Entry<String, ?> se = servicesMap.entrySet().iterator().next();
     			log.info("Found security service %s in Spring context", se.getKey());
     			getGraniteConfig().setSecurityService((SecurityService)se.getValue());
     		}

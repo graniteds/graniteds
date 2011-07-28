@@ -27,8 +27,6 @@ package org.granite.toplink;
  */
 public class TopLinkProxy {
 
-    private static final long serialVersionUID = 1L;
-
     private final Class<?> proxiedClass;
 
     public TopLinkProxy(Class<?> proxiedClass) {

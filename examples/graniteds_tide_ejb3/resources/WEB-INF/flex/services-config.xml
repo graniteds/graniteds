@@ -24,7 +24,7 @@
 
     <!--
      ! Declares Flex services. This configuration uses automated destinations
-     ! discovery: see test.granite.ejb3.service.PersonServiceBean.java (the
+     ! discovery: see org.granite.example.addressbook.ejb3.service.PersonServiceBean.java (the
      ! @RemoteDestination(id="person", securityRoles={"user","admin"}) annotation)
      ! and granite-config.xml (the scan="true" attribute). There is no need to
      ! set the factory: since only one factory is configured, it will be used by

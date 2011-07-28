@@ -62,7 +62,19 @@
         <mkdir dir="classes"/>
 
         <path id="gds.classpath">
-            <fileset dir="lib" includes="*.jar"/>
+            <fileset dir="lib">
+                <include name="appengine*.jar"/>
+                <include name="appserv-rt.jar"/>
+                <include name="catalina.jar"/>
+                <include name="ejb-api.jar"/>
+                <include name="jpa-2.0-api.jar"/>
+                <include name="javax.servlet.jar"/>
+                <include name="org.osgi.*.jar"/>
+                <include name="jboss-vfs*.jar"/>
+                <include name="weblogic*.jar"/>
+                <include name="jetty*.jar"/>
+                <include name="log4j.jar"/>
+        	</fileset>
         </path>
 
         <!-- core -->
@@ -86,6 +98,11 @@
             <classpath>
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
+            	<pathelement location="lib/jboss-j2ee.jar"/>
+                <pathelement location="lib/apache-activemq.jar"/>
+                <pathelement location="lib/jbossmq.jar"/>
+                <pathelement location="lib/jbossweb.jar"/>
+                <pathelement location="lib/jboss-seam.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/gravity">
@@ -101,6 +118,8 @@
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
                 <dirset dir="classes/gravity"/>
+                <pathelement location="lib/jta.jar"/>
+                <pathelement location="lib/jdo2-api-2.3-eb.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/tide">
@@ -116,6 +135,8 @@
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
                 <dirset dir="classes/tide"/>
+                <pathelement location="lib/hibernate3.jar"/>
+                <pathelement location="lib/hibernate-validator.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/hibernate">
@@ -130,6 +151,7 @@
             <classpath>
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
+                <pathelement location="lib/toplink-essentials.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/toplink">
@@ -144,6 +166,7 @@
             <classpath>
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
+                <pathelement location="lib/eclipselink.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/eclipselink">
@@ -158,6 +181,8 @@
             <classpath>
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
+                <pathelement location="lib/jdo2-api-2.3-eb.jar"/>
+                <pathelement location="lib/openjpa.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/openjpa">
@@ -172,6 +197,9 @@
             <classpath>
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
+                <pathelement location="lib/jdo2-api-2.3-eb.jar"/>
+                <pathelement location="lib/datanucleus-core.jar"/>
+                <pathelement location="lib/datanucleus-jpa.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/datanucleus">
@@ -187,6 +215,7 @@
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
                 <dirset dir="classes/tide"/>
+                <pathelement location="lib/validation-api.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/beanvalidation">
@@ -203,6 +232,22 @@
                 <dirset dir="classes/core"/>
                 <dirset dir="classes/gravity"/>
                 <dirset dir="classes/tide"/>
+                <pathelement location="lib/aspectjweaver-1.5.4.jar"/>
+                <pathelement location="lib/org.springframework.core.jar"/>
+                <pathelement location="lib/org.springframework.beans.jar"/>
+                <pathelement location="lib/org.springframework.context.jar"/>
+                <pathelement location="lib/org.springframework.aop.jar"/>
+                <pathelement location="lib/org.springframework.transaction.jar"/>
+                <pathelement location="lib/org.springframework.orm.jar"/>
+                <pathelement location="lib/org.springframework.web.jar"/>
+                <pathelement location="lib/org.springframework.web.servlet.jar"/>
+                <pathelement location="lib/spring-security-core-3.0.jar"/>
+                <pathelement location="lib/spring-security-web-3.0.jar"/>
+                <pathelement location="lib/spring-security-core-2.0.4.jar"/>
+                <pathelement location="lib/spring-security-acl-2.0.4.jar"/>
+                <pathelement location="lib/spring-security-acl-3.0.jar"/>
+                <pathelement location="lib/acegi-security-1.0.4.jar"/>
+                <pathelement location="lib/jboss-seam.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/spring">
@@ -223,6 +268,11 @@
                 <dirset dir="classes/hibernate"/>
                 <dirset dir="classes/gravity"/>
                 <dirset dir="classes/tide"/>
+                <pathelement location="lib/jboss-seam-20.jar"/>
+                <pathelement location="lib/jboss-seam.jar"/>
+                <pathelement location="lib/jsf-api.jar"/>
+                <pathelement location="lib/hibernate-validator.jar"/>
+                <pathelement location="lib/hibernate3.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/seam">
@@ -240,6 +290,8 @@
                 <dirset dir="classes/gravity"/>
                 <dirset dir="classes/tide"/>
                 <dirset dir="classes/seam"/>
+                <pathelement location="lib/jboss-seam-21.jar"/>
+                <pathelement location="lib/jboss-seam.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/seam21">
@@ -257,6 +309,12 @@
                 <dirset dir="classes/core"/>
                 <dirset dir="classes/gravity"/>
                 <dirset dir="classes/tide"/>
+                <pathelement location="lib/javax.inject.jar"/>
+                <pathelement location="lib/cdi-api.jar"/>
+                <pathelement location="lib/el-api.jar"/>
+                <pathelement location="lib/weld-api.jar"/>
+                <pathelement location="lib/weld-spi.jar"/>
+                <pathelement location="lib/weld-servlet.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/cdi">
@@ -272,6 +330,7 @@
             <classpath>
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
+                <pathelement location="lib/guice.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/guice">

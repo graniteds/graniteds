@@ -20,10 +20,6 @@
 
 package org.granite.messaging.service;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,13 +33,10 @@ import org.granite.util.XMap;
 /**
  * @author Franck WOLFF
  */
-public class EjbServiceMetadata implements Externalizable {
-
-	private static final long serialVersionUID = 1L;
+public class EjbServiceMetadata {
 
 	private boolean stateful = false;
 	private final Map<Method, Boolean> removeMethods = new HashMap<Method, Boolean>();
-	private Class<?> invokeeClass = null;
 	
 	/**
 	 * Default constructor. Should only be used by the externalization mechanism.
@@ -52,8 +45,6 @@ public class EjbServiceMetadata implements Externalizable {
 	}
 	
 	public EjbServiceMetadata(Class<?> scannedClass, Class<?> invokeeClass) {
-		this.invokeeClass = invokeeClass;
-		
 		stateful = scannedClass.isAnnotationPresent(Stateful.class);
 		
 		if (stateful) {
@@ -72,8 +63,6 @@ public class EjbServiceMetadata implements Externalizable {
 	}
 	
 	public EjbServiceMetadata(XMap properties, Class<?> invokeeClass) {
-		this.invokeeClass = invokeeClass;
-
 		stateful = properties.containsKey("ejb-stateful");
 		
 		if (stateful) {
@@ -105,32 +94,5 @@ public class EjbServiceMetadata implements Externalizable {
 	
 	public boolean getRetainIfException(Method method) {
 		return removeMethods.get(method).booleanValue();
-	}
-	
-	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeUTF(invokeeClass.getName());
-		out.writeBoolean(stateful);
-		out.writeInt(removeMethods.size());
-		for (Map.Entry<Method, Boolean> entry : removeMethods.entrySet()) {
-			out.writeUTF(ClassUtil.getMethodSignature(entry.getKey()));
-			out.writeBoolean(entry.getValue());
-		}
-	}
-
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		invokeeClass = ClassUtil.forName(in.readUTF());
-		stateful = in.readBoolean();
-		int size = in.readInt();
-		for (int i = 0; i < size; i++) {
-			String signature = in.readUTF();
-			boolean retainIfException = in.readBoolean();
-			
-			try {
-				removeMethods.put(ClassUtil.getMethod(invokeeClass, signature), retainIfException);
-			}
-			catch (NoSuchMethodException e) {
-				throw new RuntimeException(e);
-			}
-		}
 	}
 }

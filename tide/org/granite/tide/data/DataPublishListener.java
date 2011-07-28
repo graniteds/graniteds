@@ -28,9 +28,6 @@ import org.granite.tide.data.DataContext.EntityUpdateType;
 
 
 public class DataPublishListener {
-
-    private static final long serialVersionUID = 1L;
-    
     
     @PostPersist
     public void onPostPersist(Object entity) {

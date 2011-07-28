@@ -23,8 +23,8 @@
 		xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		version="2.5">
 		
- 	<description>GraniteDS EJB3 Example Application</description>
- 	<display-name>GraniteDS EJB3</display-name>
+ 	<description>GraniteDS Tide/EJB3 Example Application</description>
+ 	<display-name>GraniteDS Tide/EJB3</display-name>
  	
  	<!-- Granite config context listener -->
  	<listener>
@@ -95,13 +95,13 @@
   		<ejb-ref-name>graniteds-tide-ejb3/PeopleServiceBean</ejb-ref-name>
   		<ejb-ref-type>Session</ejb-ref-type>
   		<local-home/>
-  		<local>test.granite.ejb3.service.PeopleService</local>
+  		<local>org.granite.example.addressbook.ejb3.service.PeopleService</local>
  	</ejb-local-ref> 	
  	<ejb-local-ref>
   		<ejb-ref-name>graniteds-tide-ejb3/PersonServiceBean</ejb-ref-name>
   		<ejb-ref-type>Session</ejb-ref-type>
   		<local-home/>
-  		<local>test.granite.ejb3.service.PersonService</local>
+  		<local>org.granite.example.addressbook.ejb3.service.PersonService</local>
  	</ejb-local-ref>
  	
 	<persistence-unit-ref>

@@ -38,5 +38,4 @@ public class NoPersistenceManager implements TidePersistenceManager {
 	public Object attachEntity(Object entity, String[] propertyNames) {
         return entity;
 	} 
-
 }

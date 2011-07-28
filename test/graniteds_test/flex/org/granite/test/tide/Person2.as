@@ -21,7 +21,7 @@ package org.granite.test.tide {
     use namespace tide;
 
     [Managed]
-    [RemoteClass(alias="org.granite.tide.test.Person2")]
+    [RemoteClass(alias="org.granite.test.tide.Person2")]
     public class Person2 extends AbstractEntity {
 
         private var _contacts:ListCollectionView;

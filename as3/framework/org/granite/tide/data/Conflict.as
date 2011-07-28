@@ -19,39 +19,11 @@
 
 package org.granite.tide.data {
     
-    import flash.events.Event;
-    import flash.events.EventDispatcher;
-    import flash.events.IEventDispatcher;
-    import flash.utils.Dictionary;
-    import flash.utils.getQualifiedClassName;
-    
-    import mx.collections.ArrayCollection;
-    import mx.collections.ArrayList;
-    import mx.collections.ICollectionView;
-    import mx.collections.IList;
-    import mx.collections.ListCollectionView;
-    import mx.core.IUID;
-    import mx.events.CollectionEvent;
-    import mx.events.CollectionEventKind;
-    import mx.events.PropertyChangeEvent;
-    import mx.events.PropertyChangeEventKind;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.utils.ObjectUtil;
     
-    import org.granite.collections.IMap;
     import org.granite.meta;
-    import org.granite.collections.IPersistentCollection;
-    import org.granite.tide.BaseContext;
-    import org.granite.tide.Tide;
     import org.granite.tide.IEntity;
-    import org.granite.tide.IEntityManager;
-    import org.granite.tide.IExpression;
-    import org.granite.tide.EntityDescriptor;
-    import org.granite.tide.IWrapper;
-    import org.granite.tide.IPropertyHolder;
-    import org.granite.tide.collections.PersistentCollection;
-    import org.granite.tide.collections.PersistentMap;
 
 
     use namespace meta;

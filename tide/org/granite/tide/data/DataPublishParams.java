@@ -23,8 +23,6 @@ package org.granite.tide.data;
 import java.util.HashMap;
 import java.util.Map;
 
-import flex.messaging.messages.AsyncMessage;
-
 
 
 public class DataPublishParams {
@@ -48,8 +46,7 @@ public class DataPublishParams {
 	}
 	
 	
-	public void setHeaders(AsyncMessage message) {
-		for (Map.Entry<String, String> me : params.entrySet())
-			message.setHeader(me.getKey(), me.getValue());
+	public Map<String, String> getHeaders() {
+		return new HashMap<String, String>(params);
 	}
 }

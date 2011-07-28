@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<components xmlns="http://jboss.com/products/seam/components"
+            xmlns:core="http://jboss.com/products/seam/core"
+            xmlns:security="http://jboss.com/products/seam/security"
+            xmlns:transaction="http://jboss.com/products/seam/transaction"
+            xmlns:persistence="http://jboss.com/products/seam/persistence"
+            xmlns:framework="http://jboss.com/products/seam/framework"
+            xmlns:bpm="http://jboss.com/products/seam/bpm"
+            xmlns:jms="http://jboss.com/products/seam/jms"
+            xmlns:web="http://jboss.com/products/seam/web"
+            xmlns:graniteds="http://www.graniteds.org/config"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation=
+                "http://jboss.com/products/seam/core http://jboss.com/products/seam/core-2.0.xsd
+                 http://jboss.com/products/seam/transaction http://jboss.com/products/seam/transaction-2.0.xsd
+                 http://jboss.com/products/seam/persistence http://jboss.com/products/seam/persistence-2.0.xsd
+                 http://jboss.com/products/seam/web http://jboss.com/products/seam/web-2.0.xsd
+                 http://jboss.com/products/seam/jms http://jboss.com/products/seam/jms-2.0.xsd
+                 http://jboss.com/products/seam/security http://jboss.com/products/seam/security-2.0.xsd
+                 http://jboss.com/products/seam/bpm http://jboss.com/products/seam/bpm-2.0.xsd
+                 http://jboss.com/products/seam/components http://jboss.com/products/seam/components-2.0.xsd
+                 http://jboss.com/products/seam/framework http://jboss.com/products/seam/framework-2.0.xsd
+                 http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.1.0/granite-config-2.1.xsd">
+
+
+    <core:init jndi-pattern="graniteds-tide-seam/#{ejbName}/local" debug="true"/>
+
+    <core:manager concurrent-request-timeout="500" 
+        conversation-timeout="120000" conversation-id-parameter="cid" parent-conversation-id-parameter="pid"/>
+
+    <persistence:entity-manager-factory name="entityManagerFactory" persistence-unit-name="seam-pu"/>
+
+    <persistence:managed-persistence-context name="entityManager" entity-manager-factory="#{entityManagerFactory}"/>
+    
+	<transaction:entity-transaction entity-manager="#{entityManager}"/>	
+
+    <security:identity authenticate-method="#{authenticator.authenticate}"/>
+
+
+    <component name="examplePerson" class="test.granite.ejb3.entity.Person"/>
+
+    <component name="people" class="test.granite.ejb3.service.PeopleQuery">
+    	<property name="ejbql">select p from Person p where (p.createdBy = '#{identity.credentials.username}' or p.restricted = 0)</property>
+    	<property name="max-results">36</property>
+    	<property name="restrictions">
+            <value>lower(p.lastName) like lower( #{examplePerson.lastName} || '%' )</value>
+    	</property>
+    </component>
+    
+    
+    <graniteds:flex-filter url-pattern="/graniteamf/*" tide="true"/>
+    
+    <graniteds:messaging-destination id="addressBookTopic" 
+    	no-local="true" session-selector="true"/>
+    
+    <!--graniteds:jms-topic-destination id="addressBookTopic"
+    	name="dataTopic"
+    	connection-factory="ConnectionFactory"
+    	jndi-name="topic/testTopic"
+    	acknowledge-mode="AUTO_ACKNOWLEDGE"
+    	transacted-sessions="true"
+    	no-local="true" 
+    	session-selector="true"/-->
+                             
+</components>

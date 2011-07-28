@@ -73,7 +73,7 @@ public class AcegiSecurityService extends AbstractSecurityService {
         );
         if (ctx != null) {
             AbstractAuthenticationManager authenticationManager =
-                (AbstractAuthenticationManager)BeanFactoryUtils.beanOfTypeIncludingAncestors(ctx, AbstractAuthenticationManager.class);
+                BeanFactoryUtils.beanOfTypeIncludingAncestors(ctx, AbstractAuthenticationManager.class);
             try {
                 Authentication authentication = authenticationManager.authenticate(auth);
                 SecurityContextHolder.getContext().setAuthentication(authentication);

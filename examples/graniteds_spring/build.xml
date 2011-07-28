@@ -25,8 +25,8 @@
     <property name="Name" value="GraniteDS Spring Example"/>
     <property name="example.name" value="graniteds-spring"/>
 		
-	<property name="spring.lib" value="yes"/>
-	<!--property name="spring3.lib" value="yes"/-->
+	<property name="spring3.lib" value="yes"/>
+    <!--property name="spring2.lib" value="yes"/-->
 	<property name="gds-spring.lib" value="yes"/>
 	<property name="services.config" value=""/>
 		
@@ -48,10 +48,10 @@
 	<property name="flex.src" value="flex"/>
 	<property name="flex.context.root" value="graniteds-spring"/>
 	<fileset id="entity.path" dir="classes">
-        <include name="test/granite/ejb3/entity/**/*.class"/>
+        <include name="org/granite/example/addressbook/entity/**/*.class"/>
     </fileset>
 	<fileset id="service.path" dir="classes">
-        <include name="test/granite/ejb3/service/**/*.class"/>
+        <include name="org/granite/example/addressbook/spring/service/**/*.class"/>
     </fileset>
 	<fileset id="service.gen.path" dir="classes">
         <exclude name="**"/>

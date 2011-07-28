@@ -39,8 +39,6 @@ import org.jboss.seam.security.Identity;
  * @author William DRAI
  */
 public class SeamServiceInvoker extends TideServiceInvoker<SeamServiceFactory> {
-
-    private static final long serialVersionUID = 1L;
     
      
     public SeamServiceInvoker(Destination destination, SeamServiceFactory factory) {

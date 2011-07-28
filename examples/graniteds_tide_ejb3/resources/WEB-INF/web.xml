@@ -19,52 +19,57 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 -->
 <web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
- <description>GraniteDS EJB3 Example Application</description>
- <display-name>GraniteDS EJB3</display-name>
- <filter>
-  <filter-name>AMFMessageFilter</filter-name>
-  <filter-class>org.granite.messaging.webapp.AMFMessageFilter</filter-class>
- </filter>
- <filter-mapping>
-  <filter-name>AMFMessageFilter</filter-name>
-  <url-pattern>/graniteamf/*</url-pattern>
- </filter-mapping>
- <!-- Granite config context listener -->
- <listener>
-  <listener-class>org.granite.config.GraniteConfigListener</listener-class>
- </listener>
- <servlet>
-  <servlet-name>AMFMessageServlet</servlet-name>
-  <servlet-class>org.granite.messaging.webapp.AMFMessageServlet</servlet-class>
-  <load-on-startup>1</load-on-startup>
- </servlet>
- <servlet>
-  <servlet-name>GravityServlet</servlet-name>
-  <servlet-class>org.granite.gravity.tomcat.GravityTomcatServlet</servlet-class>
-  <load-on-startup>1</load-on-startup>
- </servlet>
- <servlet-mapping>
-  <servlet-name>AMFMessageServlet</servlet-name>
-  <url-pattern>/graniteamf/*</url-pattern>
- </servlet-mapping>
- <servlet-mapping>
-  <servlet-name>GravityServlet</servlet-name>
-  <url-pattern>/gravityamf/*</url-pattern>
- </servlet-mapping>
- <!--session-config>
-        <session-timeout>2</session-timeout>
-    </session-config-->
- <welcome-file-list>
-  <welcome-file>index.html</welcome-file>
- </welcome-file-list>
- <login-config>
-  <auth-method>BASIC</auth-method>
- </login-config>
- <security-role>
-  <role-name>user</role-name>
- </security-role>
- <security-role>
-  <role-name>admin</role-name>
- </security-role>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+	
+	<description>GraniteDS Tide/EJB3 Example Application</description>
+	<display-name>GraniteDS Tide/EJB3</display-name>
+	
+    <!-- Granite config context listener -->
+    <listener>
+        <listener-class>org.granite.config.GraniteConfigListener</listener-class>
+    </listener>
+    
+	<filter>
+		<filter-name>AMFMessageFilter</filter-name>
+		<filter-class>org.granite.messaging.webapp.AMFMessageFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>AMFMessageFilter</filter-name>
+		<url-pattern>/graniteamf/*</url-pattern>
+	</filter-mapping>
+	
+	<servlet>
+		<servlet-name>AMFMessageServlet</servlet-name>
+		<servlet-class>org.granite.messaging.webapp.AMFMessageServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AMFMessageServlet</servlet-name>
+		<url-pattern>/graniteamf/*</url-pattern>
+	</servlet-mapping>
+	
+    <servlet>
+        <servlet-name>GravityServlet</servlet-name>
+        <servlet-class>org.granite.gravity.tomcat.GravityTomcatServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+	<servlet-mapping>
+		<servlet-name>GravityServlet</servlet-name>
+		<url-pattern>/gravityamf/*</url-pattern>
+	</servlet-mapping>
+	
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+	
+	<login-config>
+		<auth-method>BASIC</auth-method>
+	</login-config>	
+	<security-role>
+		<role-name>user</role-name>
+	</security-role>
+	<security-role>
+		<role-name>admin</role-name>
+	</security-role>
 </web-app>

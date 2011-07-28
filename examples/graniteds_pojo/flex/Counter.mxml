@@ -24,7 +24,6 @@
     xmlns:mx="http://www.adobe.com/2006/mxml"
     xmlns="*"
     layout="vertical"
-    backgroundGradientColors="[#0e2e7d, #6479ab]"
     verticalAlign="middle"
     creationComplete="srv.getCounter()">
 

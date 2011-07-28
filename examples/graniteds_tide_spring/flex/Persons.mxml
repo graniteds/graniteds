@@ -23,9 +23,8 @@
 <mx:Application
     xmlns:mx="http://www.adobe.com/2006/mxml"
     xmlns="*"
-    xmlns:cs="test.granite.components.*"
+    xmlns:cs="org.granite.example.components.*"
     layout="vertical"
-    backgroundGradientColors="[#0e2e7d, #6479ab]"
     preinitialize="Spring.getInstance().initApplication()"
     creationComplete="init()">
     
@@ -35,8 +34,6 @@
         	import mx.events.CloseEvent;
         	import org.granite.tide.data.Conflicts;
         	import org.granite.tide.data.events.TideDataConflictsEvent;
-            import test.granite.spring.entity.Person;
-            import test.granite.spring.entity.Contact;
             import mx.collections.ListCollectionView;
             import mx.collections.ArrayCollection;
             
@@ -46,7 +43,9 @@
             import org.granite.tide.events.*;
             import org.granite.tide.service.DefaultServiceInitializer;
             
-            import test.granite.AddressBookModule;
+            import org.granite.example.addressbook.spring.AddressBookModule;
+			import org.granite.example.addressbook.entity.Person;
+			import org.granite.example.addressbook.entity.Contact;
 
 			Spring.getInstance().addComponentWithFactory("serviceInitializer", DefaultServiceInitializer, 
 				{ contextRoot: "/graniteds-tide-spring" });
@@ -98,17 +97,19 @@
 
         <mx:VBox id="loggedInView">
             <mx:ApplicationControlBar id="acb" width="100%">
-                <mx:Label text="Granite Data Services (Address Book Demo)" fontSize="18" fontWeight="bold" color="#f0f0f0"/>
+                <mx:Label text="Granite Data Services (Address Book Demo)" fontSize="18" fontWeight="bold" color="#222222"/>
                 <mx:Spacer width="100%"/>
-                <mx:Label text="Search" color="#f0f0f0"/>
+                <mx:Label text="Search" color="#222222"/>
                 <mx:TextInput id="fSearch" enter="dispatchEvent(new TideUIEvent('search', fSearch.text));"/>
                 <mx:Button label="Go" click="dispatchEvent(new TideUIEvent('search', fSearch.text))"/>
-                <mx:Label text="Logged as {identity.username}" color="#f0f0f0"/>
+				<mx:Label text="{identity.username}" color="#222222"/>
+				<mx:Label text="{Spring.getInstance().busy ? 'Busy' : 'Idle'}" color="#222222"/>
+				<mx:Label text="{Spring.getInstance().disconnected ? '[Disconnected]' : ''}" color="#222222"/>
                 <mx:Button label="Logout" click="identity.logout();"/>
             </mx:ApplicationControlBar>
 
             <mx:HBox width="100%" height="100%">
-                <mx:VBox width="300" height="100%" id="vbPersons">
+                <mx:VBox width="350" height="100%" id="vbPersons">
                     <mx:Panel id="pPersons" title="Persons" width="100%" height="100%">
                         <cs:DataGrid id="persons" dataProvider="{people}" width="100%" height="100%"
                             liveScrolling="false"
@@ -117,6 +118,7 @@
                                 <cs:DataGridColumn dataField="salutation" headerText=""/>
                                 <cs:DataGridColumn dataField="firstName" headerText="First name"/>
                                 <cs:DataGridColumn dataField="lastName" headerText="Last name"/>
+								<cs:DataGridColumn dataField="createdBy" headerText="Created by"/>
                             </cs:columns>
                         </cs:DataGrid>
 

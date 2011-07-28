@@ -19,12 +19,13 @@ package org.granite.test.tide {
     use namespace tide;
 
     [Managed]
-    [RemoteClass(alias="org.granite.tide.test.Person")]
+    [RemoteClass(alias="org.granite.test.tide.Person")]
     public class Person extends AbstractEntity {
 
         private var _contacts:ListCollectionView;
         private var _firstName:String;
         private var _lastName:String;
+		private var _age:Number;
         
         
         public function set contacts(value:ListCollectionView):void {
@@ -47,11 +48,19 @@ package org.granite.test.tide {
         public function get lastName():String {
             return _lastName;
         }
+		
+		public function set age(value:Number):void {
+			_age = value;
+		}
+		public function get age():Number {
+			return _age;
+		}
 
         override meta function merge(em:IEntityManager, obj:*):void {
             var src:Person = Person(obj);
             super.meta::merge(em, obj);
             if (meta::isInitialized()) {
+				em.meta_mergeExternal(src._age, _age, null, this, 'age', function setter(o:*):void{_age = o as Number}) as Number;
                 em.meta_mergeExternal(src._contacts, _contacts, null, this, 'contacts', function setter(o:*):void{_contacts = o as ListCollectionView}) as ListCollectionView;
                 em.meta_mergeExternal(src._firstName, _firstName, null, this, 'firstName', function setter(o:*):void{_firstName = o as String}) as String;
                 em.meta_mergeExternal(src._lastName, _lastName, null, this, 'lastName', function setter(o:*):void{_lastName = o as String}) as String;

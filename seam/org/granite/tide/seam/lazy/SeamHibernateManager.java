@@ -49,7 +49,7 @@ public class SeamHibernateManager extends HibernateContextManager  {
 	 * @return the attached hibernate object
 	 */
     @Override
-    public Object findEntity(Object entity, String[] fetch) {
+    public Object fetchEntity(Object entity, String[] fetch) {
         Serializable id = (Serializable)Entity.forClass(entity.getClass()).getIdentifier(entity);
         if (id == null)
             return null;

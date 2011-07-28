@@ -28,6 +28,7 @@ package org.granite.persistence {
     import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
     
+    import org.granite.IValue;
     import org.granite.collections.BasicMap;
     import org.granite.collections.IPersistentCollection;
     import org.granite.collections.UIDArraySet;
@@ -41,6 +42,7 @@ package org.granite.persistence {
 
         private var _initializing:Boolean = false;
         private var _initialized:Boolean = false;
+		private var _lazy:Boolean = false;
         private var _metadata:String = null;
         private var _dirty:Boolean = false;
 
@@ -49,9 +51,15 @@ package org.granite.persistence {
             _initialized = initialized;
             if (_initialized)
 	            addEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler);
+			else
+				_lazy = true;
         }
 
 
+		final public function isLazy():Boolean {
+			return _lazy;
+		}
+		
         final public function isInitialized():Boolean {
             return _initialized;
         }
@@ -71,10 +79,10 @@ package org.granite.persistence {
         }
 
         final public function uninitialize():void {
+			removeEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler);
+			_initialized = false;
             clear();
-            _initialized = false;
             _dirty = false;
-            removeEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler);
         }
         
         public function clone():PersistentMap {
@@ -95,17 +103,10 @@ package org.granite.persistence {
                 _dirty = true;
             else if (event.kind == CollectionEventKind.REMOVE)
                 _dirty = true;
-            else if (event.kind == CollectionEventKind.UPDATE) {
-                for (var i:uint = 0; i < event.items.length; i++) {
-                    if (event.items[i] is PropertyChangeEvent) {
-                        var pce:PropertyChangeEvent = event.items[i] as PropertyChangeEvent;
-                        if ((pce.newValue is IUID || pce.oldValue is IUID) && (pce.newValue as IUID) != (pce.oldValue as IUID)) {
-                            _dirty = true;
-                            break;
-                        }
-                    }
-                }
-            }
+			else if (event.kind == CollectionEventKind.RESET)
+				_dirty = true;
+			else if (event.kind == CollectionEventKind.REPLACE)
+				_dirty = true;
         }
 
 
@@ -116,6 +117,8 @@ package org.granite.persistence {
                 _dirty = input.readObject() as Boolean;
                 super.readExternal(input);
             }
+			else
+				_lazy = true;
         }
 
         override public function writeExternal(output:IDataOutput):void {

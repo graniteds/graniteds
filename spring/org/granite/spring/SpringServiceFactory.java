@@ -41,8 +41,6 @@ import flex.messaging.messages.RemotingMessage;
  */
 public class SpringServiceFactory extends SimpleServiceFactory {
 
-    private static final long serialVersionUID = 1L;
-
     private ApplicationContext springContext = null;
 
     @Override

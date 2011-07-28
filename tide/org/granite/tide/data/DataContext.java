@@ -23,6 +23,7 @@ package org.granite.tide.data;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.granite.gravity.Gravity;
 import org.granite.tide.data.DataEnabled.PublishMode;
 
 
@@ -38,12 +39,17 @@ public class DataContext {
     
     
     public static void init(String topic, Class<? extends DataTopicParams> dataTopicParamsClass, PublishMode publishMode) {
-    	DataContext dc = new DataContext(topic, dataTopicParamsClass, publishMode);
+    	DataContext dc = new DataContext(null, topic, dataTopicParamsClass, publishMode);
     	dataContext.set(dc);
     }
     
-    private DataContext(String topic, Class<? extends DataTopicParams> dataTopicParamsClass, PublishMode publishMode) {
-		dataDispatcher = new DataDispatcher(topic, dataTopicParamsClass);
+    public static void init(Gravity gravity, String topic, Class<? extends DataTopicParams> dataTopicParamsClass, PublishMode publishMode) {
+    	DataContext dc = new DataContext(gravity, topic, dataTopicParamsClass, publishMode);
+    	dataContext.set(dc);
+    }
+    
+    private DataContext(Gravity gravity, String topic, Class<? extends DataTopicParams> dataTopicParamsClass, PublishMode publishMode) {
+		dataDispatcher = new DataDispatcher(gravity, topic, dataTopicParamsClass);
 		this.publishMode = publishMode;
     }
     
@@ -56,6 +62,7 @@ public class DataContext {
     }
     
     private final Set<Object[]> dataUpdates = new HashSet<Object[]>();
+    private boolean published = false;
 
     
     public Set<Object[]> getDataUpdates() {
@@ -64,8 +71,13 @@ public class DataContext {
     
     public static void addUpdate(EntityUpdateType type, Object entity) {
     	DataContext dc = get();
-    	if (dc != null)
+    	if (dc != null) {
+    		for (Object[] update : dc.dataUpdates) {
+    			if (update[0].equals(type) && update[1].equals(entity))
+    				return;
+    		}
     		dc.dataUpdates.add(new Object[] { type.name(), entity });
+    	}
     }
     
     
@@ -80,10 +92,11 @@ public class DataContext {
     }
     public static void publish(PublishMode publishMode) {
     	DataContext dc = get();
-    	if (dc != null && !dc.dataUpdates.isEmpty() 
+    	if (dc != null && !dc.dataUpdates.isEmpty() && !dc.published 
     		&& (publishMode == PublishMode.MANUAL || (dc.publishMode.equals(publishMode)))) {
     		dc.dataDispatcher.publish(dc.dataUpdates);
-    		dc.dataUpdates.clear();
+    		// Publish can be called only once but we have to keep the updates until the end of a GraniteDS request
+    		dc.published = true;	
     	}
     }
     

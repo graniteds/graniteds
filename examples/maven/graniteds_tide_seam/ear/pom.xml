@@ -5,12 +5,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.graniteds.examples.tide_seam.poms</groupId>
+    <groupId>org.graniteds.examples.addressbook.seam.poms</groupId>
     <artifactId>jee</artifactId>
     <version>2.2.0.SP2</version>
   </parent>
 
-  <groupId>org.graniteds.examples.tide_seam</groupId>
+  <groupId>org.graniteds.examples.addressbook.seam</groupId>
   <artifactId>graniteds_tide_seam</artifactId>
   <version>2.2.0.SP2</version>
   <packaging>ear</packaging>
@@ -31,16 +31,15 @@
           <version>5</version>
           <modules>
             <ejbModule>
-              <groupId>org.graniteds.examples.tide_seam</groupId>
+              <groupId>org.graniteds.examples.addressbook.seam</groupId>
               <artifactId>core</artifactId>
               <bundleFileName>graniteds-tide-seam.jar</bundleFileName>
             </ejbModule>
             <webModule>
-              <groupId>org.graniteds.examples.tide_seam</groupId>
+              <groupId>org.graniteds.examples.addressbook.seam</groupId>
               <artifactId>war</artifactId>
               <bundleFileName>graniteds-tide-seam.war</bundleFileName>
               <contextRoot>/graniteds-tide-seam</contextRoot>
-              <unpack>true</unpack>
             </webModule>
             <ejbModule>
               <groupId>org.jboss.seam</groupId>
@@ -55,13 +54,13 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.graniteds.examples.tide_seam</groupId>
+      <groupId>org.graniteds.examples.addressbook.seam</groupId>
       <artifactId>core</artifactId>
       <version>2.2.0.SP2</version>
       <type>ejb</type>
     </dependency>
     <dependency>
-      <groupId>org.graniteds.examples.tide_seam</groupId>
+      <groupId>org.graniteds.examples.addressbook.seam</groupId>
       <artifactId>war</artifactId>
       <version>2.2.0.SP2</version>
       <type>war</type>

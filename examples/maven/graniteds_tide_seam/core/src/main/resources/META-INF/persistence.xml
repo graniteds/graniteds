@@ -24,7 +24,7 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
              version="1.0">
-  <persistence-unit name="ejb3">
+  <persistence-unit name="seam-pu">
     <provider>org.hibernate.ejb.HibernatePersistence</provider>
     <jta-data-source>java:/DefaultDS</jta-data-source>
     <properties>

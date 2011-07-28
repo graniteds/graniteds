@@ -36,9 +36,7 @@ import org.granite.tide.cdi.lazy.CDIInitializer;
  */
 public class CDIServiceInvoker extends TideServiceInvoker<CDIServiceFactory> {
 
-    private static final long serialVersionUID = 1L;
-    
-     
+	
     public CDIServiceInvoker(Destination destination, CDIServiceFactory factory) {
         super(destination, factory);
     } 

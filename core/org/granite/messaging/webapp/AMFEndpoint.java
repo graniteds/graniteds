@@ -44,8 +44,6 @@ import org.granite.messaging.amf.process.AMF0MessageProcessor;
  */
 public class AMFEndpoint {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Logger log = Logger.getLogger(AMFEndpoint.class);
 	
     public static void service(GraniteConfig graniteConfig, ServicesConfig servicesConfig, ServletContext context,

@@ -36,6 +36,7 @@
         <param-name>registerGraniteMBeans</param-name>
         <param-value>true</param-value>
     </context-param>
+    
     <!--
     Uncomment (part of) this block if configs are not present at default locations.
     <context-param>

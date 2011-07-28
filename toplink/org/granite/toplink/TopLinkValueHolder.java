@@ -28,8 +28,6 @@ import oracle.toplink.essentials.indirection.WeavedAttributeValueHolderInterface
  */
 public class TopLinkValueHolder implements WeavedAttributeValueHolderInterface {
 
-    private static final long serialVersionUID = 1L;
-
     private Object value = null;
     
     

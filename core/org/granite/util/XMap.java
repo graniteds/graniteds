@@ -328,16 +328,37 @@ public class XMap implements Serializable {
 	 * 		or (creation case) if the parent node does not exist or is not an element instance. 
 	 */
 	public String put(String key, String value) {
+		return put(key, value, false);
+	}
+	
+	/**
+	 * Creates or updates the text value of the element (or text or attribute) matched by
+	 * the supplied XPath expression. If the matched element (or text or attribute) does not exist or if append
+	 * is <tt>true</tt>, it is created with the last segment of the XPath expression (but its parent must already
+	 * exist).
+	 * 
+	 * @param key an XPath expression.
+	 * @param value the value to set (may be null).
+	 * @param append should the new element be appended (created) next to a possibly existing element(s) of
+	 * 		the same name?
+	 * @return the previous value of the matched element (may be null).
+	 * @throws RuntimeException if the root element of this XMap is null, if the XPath expression is not valid,
+	 * 		or (creation case) if the parent node does not exist or is not an element instance. 
+	 */
+	public String put(String key, String value, boolean append) {
 		if (root == null)
 			root = getDom().newDocument(DEFAULT_ROOT_NAME).getDocumentElement();
-		try {
-			Node selectResult = getDom().selectSingleNode(root, key);
-			if (selectResult != null)
-				return getDom().setValue(selectResult, value);
-		} catch(RuntimeException e) {
-			throw e;
-		} catch(Exception e) {
-			throw new RuntimeException(e);
+
+		if (!append) {
+			try {
+				Node selectResult = getDom().selectSingleNode(root, key);
+				if (selectResult != null)
+					return getDom().setValue(selectResult, value);
+			} catch(RuntimeException e) {
+				throw e;
+			} catch(Exception e) {
+				throw new RuntimeException(e);
+			}
 		}
 		
 		Element parent = root;
