@@ -18,14 +18,14 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.util;
+package org.granite.clustering;
 
 import java.io.Serializable;
 
 /**
  * This class holds a <tt>transient</tt> reference to the object given to its
  * constructor. When this class is serialized, the reference to the object is
- * lost. This class is immutable for replication optimization (if any).
+ * lost.
  * 
  * @author Franck WOLFF
  * 

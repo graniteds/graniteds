@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.util;
+package org.granite.clustering;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
