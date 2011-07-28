@@ -22,32 +22,60 @@ package org.granite.messaging.service.security;
 
 import java.io.UnsupportedEncodingException;
 
-import javax.servlet.http.HttpSession;
-
-import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.clustering.GraniteDistributedData;
+import org.granite.clustering.GraniteDistributedDataFactory;
+import org.granite.logging.Logger;
+import org.granite.messaging.amf.process.AMF3MessageProcessor;
 import org.granite.util.Base64;
 
 import flex.messaging.messages.Message;
 
 /**
+ * Abstract implementation of the {@link SecurityService} interface. This class mainly contains
+ * utility methods helping with actual implementations.
+ * 
  * @author Franck WOLFF
  */
 public abstract class AbstractSecurityService implements SecurityService {
 
-	private static final String CREDENTIALS_KEY = AbstractSecurityService.class.getName() + ".CREDENTIALS";
+    private static final Logger log = Logger.getLogger(AbstractSecurityService.class);
+
     public static final String AUTH_TYPE = "granite-security";
     
-    protected void startAuthorization(AbstractSecurityContext context) throws Exception {
-        // RemoteObject.setRemoteCredentials().
+    /**
+     * Try to login by using remote credentials (see Flex method RemoteObject.setRemoteCredentials()).
+     * This method must be called at the beginning of {@link SecurityService#authorize(AbstractSecurityContext)}.
+     * 
+     * @param context the current security context.
+     * @throws SecurityServiceException if login fails.
+     */
+    protected void startAuthorization(AbstractSecurityContext context) throws SecurityServiceException {
+        // Get credentials set with RemoteObject.setRemoteCredentials() and login.
         Object credentials = context.getMessage().getHeaders().get(Message.REMOTE_CREDENTIALS_HEADER);
         if (credentials != null && !("".equals(credentials)))
             login(credentials);
     }
 
+    /**
+     * Invoke a service method (EJB3, Spring, Seam, etc...) after a successful authorization.
+     * This method must be called at the end of {@link SecurityService#authorize(AbstractSecurityContext)}.
+     * 
+     * @param context the current security context.
+     * @throws Exception if anything goes wrong with service invocation.
+     */
     protected Object endAuthorization(AbstractSecurityContext context) throws Exception {
         return context.invoke();
     }
 
+    /**
+     * Decode credentails encoded in base 64 (in the form of "username:password"), as they have been
+     * sent by a RemoteObject.
+     * 
+     * @param credentails base 64 encoded credentials.
+     * @return an array containing two decoded Strings, username and password.
+     * @throws IllegalArgumentException if credentials isn't a String.
+     * @throws SecurityServiceException if credentials are invalid (bad encoding or missing ':').
+     */
     protected String[] decodeBase64Credentials(Object credentials) {
         if (!(credentials instanceof String))
             throw new IllegalArgumentException("Credentials should be a non null String: " +
@@ -69,38 +97,79 @@ public abstract class AbstractSecurityService implements SecurityService {
         return new String[] {decoded.substring(0, colon), decoded.substring(colon + 1)};
     }
     
-    public void handleSecurityException(SecurityServiceException e) {
+    /**
+     * Handle a security exception. This method is called in
+     * {@link AMF3MessageProcessor#processCommandMessage(flex.messaging.messages.CommandMessage)}
+     * whenever a SecurityService occurs and does nothing by default.
+     * 
+     * @param e the security exception.
+     */
+	public void handleSecurityException(SecurityServiceException e) {
     }
-    
-    // Clustering related methods: re-authenticate users on another cluster node (fail-over).
-    // Session replication & sticky-session must be on.
 
-	protected void endLogin(HttpGraniteContext context, Object credentials) {
-    	HttpSession session = context.getSession(false);
-    	if (session != null)
-    		session.setAttribute(CREDENTIALS_KEY, credentials);
+    /**
+     * Try to save current credentials in distributed data, typically a user session attribute. This method
+     * must be called at the end of a successful {@link SecurityService#login(Object)} operation and is useful
+     * in clustered environments with session replication in order to transparently re-authenticate the
+     * user when failing over.
+     * 
+     * @param credentials the credentials to be saved in distributed data.
+     */
+	protected void endLogin(Object credentials) {
+		try {
+			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+			if (gdd != null)
+				gdd.setCredentials(credentials);
+		}
+		catch (Exception e) {
+			log.error(e, "Could not save credentials in distributed data");
+		}
     }
     
-    protected boolean tryRelogin(HttpGraniteContext context) {
-    	HttpSession session = context.getSession(false);
-        if (session != null) {
-        	Object credentials = session.getAttribute(CREDENTIALS_KEY);
-        	if (credentials != null) {
-        		try {
-        			login(credentials);
-        		}
-        		catch (SecurityServiceException e) {
-        			return false;
-        		}
-        		return true;
-        	}
-        }
+	/**
+	 * Try to re-authenticate the current user with credentials previously saved in distributed data.
+	 * This method must be called in the {@link SecurityService#authorize(AbstractSecurityContext)}
+	 * method when the current user principal is null.
+	 * 
+	 * @return <tt>true</tt> if relogin was successful, <tt>false</tt> otherwise.
+	 * 
+	 * @see #endLogin(Object)
+	 */
+    protected boolean tryRelogin() {
+    	try {
+			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+			if (gdd != null) {
+				Object credentials = gdd.getCredentials();
+	        	if (credentials != null) {
+	        		try {
+	        			login(credentials);
+		        		return true;
+	        		}
+	        		catch (SecurityServiceException e) {
+	        		}
+	        	}
+			}
+    	}
+    	catch (Exception e) {
+    		log.error(e, "Could not relogin with credentials found in distributed data");
+    	}
         return false;
     }
 
-	protected void endLogout(HttpGraniteContext context) {
-    	HttpSession session = context.getSession(false);
-    	if (session != null)
-    		session.removeAttribute(CREDENTIALS_KEY);
+    /**
+     * Try to remove credentials previously saved in distributed data. This method must be called in the
+     * {@link SecurityService#logout()} method.
+     * 
+	 * @see #endLogin(Object)
+     */
+	protected void endLogout() {
+		try {
+			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+			if (gdd != null)
+				gdd.removeCredentials();
+		}
+		catch (Exception e) {
+			log.error(e, "Could not remove credentials from distributed data");
+		}
     }
 }

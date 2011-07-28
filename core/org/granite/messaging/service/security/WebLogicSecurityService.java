@@ -64,7 +64,7 @@ public class WebLogicSecurityService extends AbstractSecurityService {
         // Make sure we have a valid HTTP session.
         httpRequest.getSession(true);
         
-        endLogin(context, credentials);
+        endLogin(credentials);
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {
@@ -76,7 +76,7 @@ public class WebLogicSecurityService extends AbstractSecurityService {
             HttpServletRequest httpRequest = graniteContext.getRequest();
 
             Principal principal = httpRequest.getUserPrincipal();
-            if (principal == null && tryRelogin(graniteContext))
+            if (principal == null && tryRelogin())
             	principal = httpRequest.getUserPrincipal();
             
             if (principal == null) {
@@ -116,7 +116,7 @@ public class WebLogicSecurityService extends AbstractSecurityService {
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
 
-        endLogout(graniteContext);
+        endLogout();
         
         // Make sure we invalidate current HTTP session.
         if (httpRequest.getSession(false) != null)
