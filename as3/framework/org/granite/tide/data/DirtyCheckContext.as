@@ -451,14 +451,30 @@ package org.granite.tide.data {
 				
 	            var found:Boolean = false;
 				var count:int, p:Object;
-	            var pce:PropertyChangeEvent = null;
-	            for (var i:int = 0; i < save.length; i++) {
+	            var pce:PropertyChangeEvent = null, ce:CollectionEvent = null;
+				var location:int = event.location;
+				for each (ce in save) {
+					if (ce.kind == CollectionEventKind.REMOVE && ce.location > location)
+						location++;
+					else if (ce.kind == CollectionEventKind.ADD && ce.location < location)
+						location--;
+				}
+				
+	            for (var i:int = 0; i < save.length; i++) {						
 	                if (((event.kind == CollectionEventKind.ADD && save[i].kind == CollectionEventKind.REMOVE)
 	                    || (event.kind == CollectionEventKind.REMOVE && save[i].kind == CollectionEventKind.ADD))
 	                    && event.items.length == 1 && save[i].items.length == 1 
-						&& isSame(event.items[0], save[i].items[0]) && event.location == save[i].location) {
+						&& isSame(event.items[0], save[i].items[0]) && location == save[i].location) {
 						
 	                    save.splice(i, 1);
+						// Adjust location of other events because an element added locally has been removed
+						for each (ce in save) {
+							if (event.kind == CollectionEventKind.REMOVE && ce.location > event.location)
+								ce.location--;
+							else if (event.kind == CollectionEventKind.ADD && ce.location < event.location)
+								ce.location++;
+						}
+						
 	                    if (save.length == 0) {
 	                        delete esave[propName];
 							count = 0;
