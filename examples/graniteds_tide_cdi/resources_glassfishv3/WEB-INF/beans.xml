@@ -6,5 +6,6 @@
 
   	<interceptors>
     	<class>org.granite.example.addressbook.cdi.service.TransactionInterceptor</class>
+        <class>org.granite.tide.cdi.TideDataPublishingInterceptor</class>
   	</interceptors>
 </beans>

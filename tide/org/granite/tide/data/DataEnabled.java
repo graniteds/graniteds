@@ -25,18 +25,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.enterprise.util.Nonbinding;
+import javax.interceptor.InterceptorBinding;
+
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@InterceptorBinding
 public @interface DataEnabled {
 	
+	@Nonbinding
 	public String topic();
 	
-	public Class<? extends DataTopicParams> params();
+	@Nonbinding
+	public Class<? extends DataTopicParams> params() default DefaultDataTopicParams.class;
 	
+	@Nonbinding
 	public PublishMode publish() default PublishMode.MANUAL;
 	
-	public boolean auto() default true;
+	public boolean useInterceptor() default false;
     
     
     public enum PublishMode {

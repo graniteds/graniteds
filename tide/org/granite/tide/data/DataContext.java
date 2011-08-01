@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.granite.gravity.Gravity;
+import org.granite.logging.Logger;
 import org.granite.tide.data.DataEnabled.PublishMode;
 
 
@@ -32,11 +33,19 @@ import org.granite.tide.data.DataEnabled.PublishMode;
  */
 public class DataContext {
     
+	private static final Logger log = Logger.getLogger(DataContext.class);
+	
     private static ThreadLocal<DataContext> dataContext = new ThreadLocal<DataContext>();
+    
+    private static DataContext NULL_DATA_CONTEXT = new NullDataContext(); 
     
     private DataDispatcher dataDispatcher = null;
     private PublishMode publishMode = null;
     
+    
+    public static void init() {
+    	dataContext.set(NULL_DATA_CONTEXT);
+    }
     
     public static void init(String topic, Class<? extends DataTopicParams> dataTopicParamsClass, PublishMode publishMode) {
     	DataContext dc = new DataContext(null, topic, dataTopicParamsClass, publishMode);
@@ -48,17 +57,34 @@ public class DataContext {
     	dataContext.set(dc);
     }
     
-    private DataContext(Gravity gravity, String topic, Class<? extends DataTopicParams> dataTopicParamsClass, PublishMode publishMode) {
-		dataDispatcher = new DataDispatcher(gravity, topic, dataTopicParamsClass);
-		this.publishMode = publishMode;
+    public static void init(DataDispatcher dataDispatcher, PublishMode publishMode) {
+		DataContext dc = new DataContext(dataDispatcher, publishMode);
+		dataContext.set(dc);
     }
     
+    private DataContext(Gravity gravity, String topic, Class<? extends DataTopicParams> dataTopicParamsClass, PublishMode publishMode) {
+		log.debug("Init Gravity data context for topic %s and mode %s", topic, publishMode);
+		dataDispatcher = new DefaultDataDispatcher(gravity, topic, dataTopicParamsClass);
+		this.publishMode = publishMode;
+    }
+
+    private DataContext(DataDispatcher dataDispatcher, PublishMode publishMode) {
+		log.debug("Init data context with custom dispatcher %s and mode %s", dataDispatcher, publishMode);
+		this.dataDispatcher = dataDispatcher;
+		this.publishMode = publishMode;
+    }
+
     public static DataContext get() {
         return dataContext.get();
     }
     
     public static void remove() {
+		log.debug("Remove Gravity data context");
     	dataContext.remove();
+    }
+    
+    public static boolean isNull() {
+    	return dataContext.get() == NULL_DATA_CONTEXT;
     }
     
     private final Set<Object[]> dataUpdates = new HashSet<Object[]>();
@@ -83,8 +109,10 @@ public class DataContext {
     
     public static void observe() {
     	DataContext dc = get();
-    	if (dc != null)
+    	if (dc != null) {
+    		log.debug("Observe data updates");
     		dc.dataDispatcher.observe();
+    	}
     }
     
     public static void publish() {
@@ -92,8 +120,9 @@ public class DataContext {
     }
     public static void publish(PublishMode publishMode) {
     	DataContext dc = get();
-    	if (dc != null && !dc.dataUpdates.isEmpty() && !dc.published 
+    	if (dc != null && dc.dataDispatcher != null && !dc.dataUpdates.isEmpty() && !dc.published 
     		&& (publishMode == PublishMode.MANUAL || (dc.publishMode.equals(publishMode)))) {
+    		log.debug("Publish %s data updates with mode %s", dc.dataUpdates.size(), dc.publishMode);
     		dc.dataDispatcher.publish(dc.dataUpdates);
     		// Publish can be called only once but we have to keep the updates until the end of a GraniteDS request
     		dc.published = true;	
@@ -105,5 +134,12 @@ public class DataContext {
     	PERSIST,
     	UPDATE,
     	REMOVE
+    }
+    
+    private static class NullDataContext extends DataContext {
+    	
+    	public NullDataContext() {
+    		super(null, null);
+    	}
     }
 }

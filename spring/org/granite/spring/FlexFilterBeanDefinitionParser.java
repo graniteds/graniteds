@@ -41,6 +41,12 @@ import org.w3c.dom.Element;
  */
 public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
+    private static final String FLEX_FILTER_BEAN_NAME = "org.granite.spring.FlexFilter";
+
+    private static final String GRANITE_CONFIG_BEAN_NAME = "org.granite.spring.SpringGraniteConfig";
+    
+    public static final String GRAVITY_FACTORY_BEAN_NAME = "org.granite.spring.gravityFactory";
+
     private static final String DEFAULT_HANDLER_MAPPING_CLASS_NAME = "org.springframework.web.servlet.handler.SimpleUrlHandlerMapping";
 
 
@@ -51,9 +57,7 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
             parserContext.extractSource(element));
         parserContext.pushContainingComponent(componentDefinition);
 
-        // Set the default ID if necessary
-        if (!StringUtils.hasText(element.getAttribute(ID_ATTRIBUTE)))
-            element.setAttribute(ID_ATTRIBUTE, "org.granite.spring.FlexFilter");
+        element.setAttribute(ID_ATTRIBUTE, FLEX_FILTER_BEAN_NAME);
         
         mapOptionalAttributes(element, parserContext, builder, "tide");
         
@@ -133,22 +137,20 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
 
     @Override
     protected String getBeanClassName(Element element) {
-        return "org.granite.spring.FlexFilter";
+        return FlexFilter.class.getName();
     }
 
     private void configureGraniteDS(Element parent, ParserContext parserContext, Element graniteConfigElement) {
-        if (parserContext.getRegistry().containsBeanDefinition("org.granite.spring.SpringGraniteConfig"))
+        if (parserContext.getRegistry().containsBeanDefinition(GRANITE_CONFIG_BEAN_NAME))
         	return;
         
         Element source = graniteConfigElement != null ? graniteConfigElement : parent;
 
         BeanDefinitionBuilder graniteConfigBuilder = BeanDefinitionBuilder.genericBeanDefinition(SpringGraniteConfig.class);
-        registerInfrastructureComponent(source, parserContext, graniteConfigBuilder, 
-        		parent.getAttribute(ID_ATTRIBUTE) + "_graniteConfig");
+        registerInfrastructureComponent(source, parserContext, graniteConfigBuilder, GRANITE_CONFIG_BEAN_NAME);
         
         BeanDefinitionBuilder gravityFactoryBuilder = BeanDefinitionBuilder.rootBeanDefinition(SpringGravityFactoryBean.class);
-        registerInfrastructureComponent(source, parserContext, gravityFactoryBuilder, 
-        		parent.getAttribute(ID_ATTRIBUTE) + "_gravityFactory");
+        registerInfrastructureComponent(source, parserContext, gravityFactoryBuilder, GRAVITY_FACTORY_BEAN_NAME);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

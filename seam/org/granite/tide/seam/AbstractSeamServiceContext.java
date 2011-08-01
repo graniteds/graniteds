@@ -388,6 +388,10 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
             }
         }
         
+        // Initialize an empty data context
+        DataContext.init();
+        
+        // Initialize invocation context with received changes to apply to the server context and results to return 
         TideInvocation tideInvocation = TideInvocation.init();
         tideInvocation.update(updates);
         
@@ -438,12 +442,14 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
         else
             results = tideInvocation.getResults();
         
+        // Retrieve data updates made during the call
     	DataContext dataContext = DataContext.get();
 		Set<Object[]> dataUpdates = dataContext != null ? dataContext.getDataUpdates() : null;
 		Object[][] updates = null;
 		if (dataUpdates != null && !dataUpdates.isEmpty())
 			updates = dataUpdates.toArray(new Object[dataUpdates.size()][]);
 		
+		// Build the invocation result
         InvocationResult res = new InvocationResult(result, results);
         res.setScope(scope);
         res.setRestrict(restrict);

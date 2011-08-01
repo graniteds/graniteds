@@ -21,6 +21,7 @@
 package org.granite.spring;
 
 import org.granite.spring.security.SecurityServiceBeanDefinitionParser;
+import org.granite.tide.spring.TideDataPublishingAdviceBeanDefinitionParser;
 import org.granite.tide.spring.TideIdentityBeanDefinitionParser;
 import org.granite.tide.spring.TidePersistenceBeanDefinitionParser;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
@@ -37,6 +38,7 @@ public class GranitedsNamespaceHandler extends NamespaceHandlerSupport {
         registerBeanDefinitionParser("activemq-topic-destination", new ActiveMQTopicDestinationBeanDefinitionParser());
         registerBeanDefinitionParser("tide-persistence", new TidePersistenceBeanDefinitionParser());
         registerBeanDefinitionParser("tide-identity", new TideIdentityBeanDefinitionParser());
+        registerBeanDefinitionParser("tide-data-publishing-advice", new TideDataPublishingAdviceBeanDefinitionParser());
     }
 
 }

@@ -204,6 +204,7 @@ public class SpringServiceContext extends TideServiceContext {
     
     @Override
     public void prepareCall(ServiceInvocationContext context, IInvocationCall c, String componentName, Class<?> componentClass) {
+    	DataContext.init();
     }
 
     @Override

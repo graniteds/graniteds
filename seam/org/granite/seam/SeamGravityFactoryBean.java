@@ -18,19 +18,22 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.example.addressbook.ejb3.service;
+package org.granite.seam;
 
-import org.granite.tide.data.DataObserveParams;
-import org.granite.tide.data.DataPublishParams;
-import org.granite.tide.data.DataTopicParams;
+import org.granite.gravity.GravityManager;
+import org.jboss.seam.ScopeType;
+import org.jboss.seam.annotations.Factory;
+import org.jboss.seam.annotations.Name;
+import org.jboss.seam.annotations.Scope;
+import org.jboss.seam.contexts.ServletLifecycle;
 
-public class ObserveAllPublishAll implements DataTopicParams {
 
-	@Override
-	public void observes(DataObserveParams params) {
-	}
-
-	@Override
-	public void publishes(DataPublishParams params, Object entity) {
+@Name("org.granite.seam.gravityFactory")
+@Scope(ScopeType.STATELESS)
+public class SeamGravityFactoryBean {
+	
+	@Factory(value="org.granite.seam.gravity", autoCreate=true, scope=ScopeType.EVENT)
+	public Object getGravity() {
+		return GravityManager.getGravity(ServletLifecycle.getServletContext());
 	}
 }

@@ -270,6 +270,8 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         return new Object[] { methodName, new Object[] {} };
     }
 
+    
+    private static final String DATAENABLED_HANDLED = "org.granite.tide.invoker.dataEnabled";
 
     @Override
     protected void beforeInvocation(ServiceInvocationContext context) {
@@ -311,10 +313,10 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         	
         	for (Class<?> cClass : componentClasses) {
 	        	DataEnabled dataEnabled = cClass.getAnnotation(DataEnabled.class);
-	        	if (dataEnabled != null) {
+	        	if (dataEnabled != null && !dataEnabled.useInterceptor()) {
+	        		GraniteContext.getCurrentInstance().getRequestMap().put(DATAENABLED_HANDLED, true);
 	        		DataContext.init(dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
-	        		if (dataEnabled.auto())
-	        			prepareDataObserver(dataEnabled);
+        			prepareDataObserver(dataEnabled);
 	        		break;
 	        	}
         	}
@@ -384,7 +386,11 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
     	}
     	
     	DataMergeContext.remove();
-    	publishDataUpdates();
+    	
+    	// DataContext has been setup by beforeInvocation
+		if (GraniteContext.getCurrentInstance().getRequestMap().get(DATAENABLED_HANDLED) != null)
+	    	publishDataUpdates();
+    	
 		DataContext.remove();
     	
     	return res;

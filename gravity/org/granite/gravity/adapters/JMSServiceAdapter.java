@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +39,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
+import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.MessageReceivingException;
@@ -46,6 +49,7 @@ import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.AMF3Deserializer;
 import org.granite.messaging.amf.io.AMF3Serializer;
 import org.granite.messaging.service.ServiceException;
+import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.util.XMap;
 
 import flex.messaging.messages.AcknowledgeMessage;
@@ -63,7 +67,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
 
     protected ConnectionFactory jmsConnectionFactory = null;
     protected javax.jms.Destination jmsDestination = null;
-    protected Map<String, JMSClient> jmsClients = new HashMap<String, JMSClient>();
+    protected Map<String, JMSClientImpl> jmsClients = new HashMap<String, JMSClientImpl>();
     protected String destinationName = null;
     protected boolean textMessages = false;
     protected boolean transactedSessions = false;
@@ -71,6 +75,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
     protected int messagePriority = javax.jms.Message.DEFAULT_PRIORITY;
     protected int deliveryMode = javax.jms.Message.DEFAULT_DELIVERY_MODE;
     protected boolean noLocal = false;
+    protected boolean sessionSelector = false;
 
     @Override
     public void configure(XMap adapterProperties, XMap destinationProperties) throws ServiceException {
@@ -90,6 +95,8 @@ public class JMSServiceAdapter extends ServiceAdapter {
                 textMessages = true;
             if (Boolean.TRUE.toString().equals(destinationProperties.get("jms/no-local")))
             	noLocal = true;
+            if (Boolean.TRUE.toString().equals(destinationProperties.get("session-selector")))
+            	sessionSelector = true;
 
             Properties environment = new Properties();
             for (XMap property : destinationProperties.getAll("jms/initial-context-environment/property")) {
@@ -118,7 +125,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
             String dsJndiName = destinationProperties.get("jms/destination-jndi-name");
             jmsDestination = (Destination)ic.lookup(dsJndiName);
         }
-        catch (Exception e) {
+        catch (NamingException e) {
             throw new ServiceException("Error when configuring JMS Adapter", e);
         }
     }
@@ -140,15 +147,16 @@ public class JMSServiceAdapter extends ServiceAdapter {
     public void stop() throws ServiceException {
         super.stop();
 
-        for (JMSClient jmsClient : jmsClients.values())
+        for (JMSClientImpl jmsClient : jmsClients.values())
             jmsClient.close();
+        jmsClients.clear();
     }
 
 
-    private synchronized JMSClient createJMSClient(Channel client) throws Exception {
-        JMSClient jmsClient = jmsClients.get(client.getId());
+    private synchronized JMSClientImpl createJMSClient(Channel client) throws Exception {
+        JMSClientImpl jmsClient = jmsClients.get(client.getId());
         if (jmsClient == null) {
-            jmsClient = new JMSClient(client);
+            jmsClient = new JMSClientImpl(client);
             jmsClient.connect();
             jmsClients.put(client.getId(), jmsClient);
         }
@@ -158,7 +166,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
     @Override
     public Object invoke(Channel fromClient, AsyncMessage message) {
         try {
-            JMSClient jmsClient = createJMSClient(fromClient);
+            JMSClientImpl jmsClient = createJMSClient(fromClient);
             jmsClient.send(message);
 
             AsyncMessage reply = new AcknowledgeMessage(message);
@@ -179,8 +187,10 @@ public class JMSServiceAdapter extends ServiceAdapter {
     public Object manage(Channel fromChannel, CommandMessage message) {
         if (message.getOperation() == CommandMessage.SUBSCRIBE_OPERATION) {
             try {
-                JMSClient jmsClient = createJMSClient(fromChannel);
+                JMSClientImpl jmsClient = createJMSClient(fromChannel);
                 jmsClient.subscribe(message);
+                if (sessionSelector && GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)
+                	((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSession().setAttribute("org.granite.gravity.jmsClient." + message.getDestination(), jmsClient);
                 
                 AsyncMessage reply = new AcknowledgeMessage(message);
                 return reply;
@@ -191,8 +201,11 @@ public class JMSServiceAdapter extends ServiceAdapter {
         }
         else if (message.getOperation() == CommandMessage.UNSUBSCRIBE_OPERATION) {
             try {
-                JMSClient jmsClient = createJMSClient(fromChannel);
+                JMSClientImpl jmsClient = createJMSClient(fromChannel);
                 jmsClient.unsubscribe(message);
+                if (sessionSelector && GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)
+                	((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSession().removeAttribute("org.granite.gravity.jmsClient." + message.getDestination());
+                jmsClients.remove(fromChannel.getId());
 
                 AsyncMessage reply = new AcknowledgeMessage(message);
                 return reply;
@@ -206,7 +219,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
     }
 
 
-    private class JMSClient {
+    private class JMSClientImpl implements JMSClient {
 
         private Channel channel = null;
         private String topic = null;
@@ -216,8 +229,8 @@ public class JMSServiceAdapter extends ServiceAdapter {
         private Map<String, JMSConsumer> consumers = new HashMap<String, JMSConsumer>();
 
 
-        public JMSClient(Channel channel) {
-            this.channel = channel;
+        public JMSClientImpl(Channel channel) {
+            this.channel = channel;            
         }
 
         public void connect() throws ServiceException {
@@ -240,6 +253,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                     consumer.close();
                 jmsConnection.stop();
                 jmsConnection.close();
+                consumers.clear();
             }
             catch (JMSException e) {
                 throw new ServiceException("JMS Stop error", e);
@@ -248,14 +262,6 @@ public class JMSServiceAdapter extends ServiceAdapter {
         
 
         public void send(Message message) throws Exception {
-            if (jmsProducerSession == null)
-                jmsProducerSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
-            if (jmsProducer == null) {
-                jmsProducer = jmsProducerSession.createProducer(getProducerDestination(topic));
-                jmsProducer.setPriority(messagePriority);
-                jmsProducer.setDeliveryMode(deliveryMode);
-            }
-            
             Object msg = null;
             if (Boolean.TRUE.equals(message.getHeader(Gravity.BYTEARRAY_BODY_HEADER))) {
             	byte[] byteArray = (byte[])message.getBody();
@@ -265,19 +271,35 @@ public class JMSServiceAdapter extends ServiceAdapter {
             }
             else
             	msg = message.getBody();
+            
+            internalSend(message.getHeaders(), msg, message.getMessageId(), ((AsyncMessage)message).getCorrelationId(), message.getTimestamp(), message.getTimeToLive());
+        }
 
+        public void send(Map<String, ?> params, Object msg, long timeToLive) throws JMSException {
+        	internalSend(params, msg, null, null, new Date().getTime(), timeToLive);
+        }
+        
+        public void internalSend(Map<String, ?> headers, Object msg, String messageId, String correlationId, long timestamp, long timeToLive) throws JMSException {
+            if (jmsProducerSession == null)
+                jmsProducerSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
+            if (jmsProducer == null) {
+                jmsProducer = jmsProducerSession.createProducer(getProducerDestination(topic));
+                jmsProducer.setPriority(messagePriority);
+                jmsProducer.setDeliveryMode(deliveryMode);
+            }
+            
             javax.jms.Message jmsMessage = null;
             if (textMessages)
                 jmsMessage = jmsProducerSession.createTextMessage(msg.toString());
             else
                 jmsMessage = jmsProducerSession.createObjectMessage((Serializable)msg);
 
-            jmsMessage.setJMSMessageID(normalizeJMSMessageID(message.getMessageId()));
-            jmsMessage.setJMSCorrelationID(normalizeJMSMessageID(((AsyncMessage)message).getCorrelationId()));
-            jmsMessage.setJMSTimestamp(message.getTimestamp());
-            jmsMessage.setJMSExpiration(message.getTimeToLive());
+            jmsMessage.setJMSMessageID(normalizeJMSMessageID(messageId));
+            jmsMessage.setJMSCorrelationID(normalizeJMSMessageID(correlationId));
+            jmsMessage.setJMSTimestamp(timestamp);
+            jmsMessage.setJMSExpiration(timeToLive);
 
-            for (Map.Entry<String, Object> me : message.getHeaders().entrySet()) {
+            for (Map.Entry<String, ?> me : headers.entrySet()) {
                 if ("JMSType".equals(me.getKey())) {
                     if (me.getValue() instanceof String)
                         jmsMessage.setJMSType((String)me.getValue());
@@ -311,11 +333,22 @@ public class JMSServiceAdapter extends ServiceAdapter {
 			return messageId;
 		}
 
-        public void subscribe(Message message) throws Exception {
+        public void subscribe(Message message) throws JMSException {
             String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
             String selector = (String)message.getHeader(CommandMessage.SELECTOR_HEADER);
             this.topic = (String)message.getHeader(AsyncMessage.SUBTOPIC_HEADER);
 
+            internalSubscribe(subscriptionId, selector, message.getDestination(), this.topic);
+        }
+        
+        public void subscribe(String selector, String destination, String topic) throws JMSException {
+        	if (GraniteContext.getCurrentInstance() instanceof HttpGraniteContext) {
+        		String subscriptionId = (String)((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSession().getAttribute("org.granite.gravity.jmsClient." + topic);
+        		internalSubscribe(subscriptionId, selector, destination, topic);
+        	}
+        }
+        
+        private void internalSubscribe(String subscriptionId, String selector, String destination, String topic) throws JMSException {
             synchronized (consumers) {
                 JMSConsumer consumer = consumers.get(subscriptionId);
                 if (consumer == null) {
@@ -324,7 +357,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                 }
                 else
                     consumer.setSelector(selector);
-                channel.addSubscription(message.getDestination(), topic, subscriptionId, false);
+                channel.addSubscription(destination, topic, subscriptionId, false);
             }
         }
 

@@ -30,7 +30,9 @@ package org.granite.example.addressbook.entity {
         private var __initialized:Boolean = true;
         private var __detachedState:String = null;
 
+        private var _createdBy:String;
         private var _id:Number;
+        private var _restricted:Boolean;
         private var _uid:String;
         private var _version:Number;
 
@@ -50,10 +52,22 @@ package org.granite.example.addressbook.entity {
 			return Managed.getProperty(this, "meta_dirty", false);
 		}
 
+        [Bindable(event="unused")]
+        public function get createdBy():String {
+            return _createdBy;
+        }
+
         [Id]
         [Bindable(event="unused")]
         public function get id():Number {
             return _id;
+        }
+
+        public function set restricted(value:Boolean):void {
+            _restricted = value;
+        }
+        public function get restricted():Boolean {
+            return _restricted;
         }
 
         public function set uid(value:String):void {
@@ -74,7 +88,9 @@ package org.granite.example.addressbook.entity {
             __initialized = src.__initialized;
             __detachedState = src.__detachedState;
             if (meta::isInitialized()) {
+               em.meta_mergeExternal(src._createdBy, _createdBy, null, this, 'createdBy', function setter(o:*):void{_createdBy = o as String}, false);
                em.meta_mergeExternal(src._id, _id, null, this, 'id', function setter(o:*):void{_id = o as Number}, false);
+               em.meta_mergeExternal(src._restricted, _restricted, null, this, 'restricted', function setter(o:*):void{_restricted = o as Boolean}, false);
                em.meta_mergeExternal(src._uid, _uid, null, this, 'uid', function setter(o:*):void{_uid = o as String}, false);
                em.meta_mergeExternal(src._version, _version, null, this, 'version', function setter(o:*):void{_version = o as Number}, false);
             }
@@ -87,7 +103,9 @@ package org.granite.example.addressbook.entity {
             __initialized = input.readObject() as Boolean;
             __detachedState = input.readObject() as String;
             if (meta::isInitialized()) {
+                _createdBy = input.readObject() as String;
                 _id = function(o:*):Number { return (o is Number ? o as Number : Number.NaN) } (input.readObject());
+                _restricted = input.readObject() as Boolean;
                 _uid = input.readObject() as String;
                 _version = function(o:*):Number { return (o is Number ? o as Number : Number.NaN) } (input.readObject());
             }
@@ -100,7 +118,9 @@ package org.granite.example.addressbook.entity {
             output.writeObject(__initialized);
             output.writeObject(__detachedState);
             if (meta::isInitialized()) {
+                output.writeObject((_createdBy is IPropertyHolder) ? IPropertyHolder(_createdBy).object : _createdBy);
                 output.writeObject((_id is IPropertyHolder) ? IPropertyHolder(_id).object : _id);
+                output.writeObject((_restricted is IPropertyHolder) ? IPropertyHolder(_restricted).object : _restricted);
                 output.writeObject((_uid is IPropertyHolder) ? IPropertyHolder(_uid).object : _uid);
                 output.writeObject((_version is IPropertyHolder) ? IPropertyHolder(_version).object : _version);
             }

@@ -18,23 +18,16 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.example.addressbook.cdi.service;
+package org.granite.gravity.adapters;
 
-import javax.annotation.security.RolesAllowed;
+import java.util.Map;
 
-import org.granite.example.addressbook.entity.Person;
-import org.granite.messaging.service.annotations.RemoteDestination;
+import javax.jms.JMSException;
 
+public interface JMSClient {
 
+	public void subscribe(String selector, String destination, String topic) throws JMSException;
+	
+	public void send(Map<String, ?> params, Object msg, long timeToLive) throws JMSException;
 
-@RolesAllowed({ "user" })
-@RemoteDestination
-public interface PersonService {
-
-    public Person createPerson(Person person);
-    
-    public Person modifyPerson(Person person);
-    
-    @RolesAllowed({ "admin" })
-    public void deletePerson(Integer personId);
 }

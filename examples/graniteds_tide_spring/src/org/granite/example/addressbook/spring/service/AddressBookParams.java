@@ -20,17 +20,25 @@
 
 package org.granite.example.addressbook.spring.service;
 
+import org.granite.example.addressbook.entity.AbstractEntity;
 import org.granite.tide.data.DataObserveParams;
 import org.granite.tide.data.DataPublishParams;
 import org.granite.tide.data.DataTopicParams;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-public class ObserveAllPublishAll implements DataTopicParams {
 
-	@Override
+
+public class AddressBookParams implements DataTopicParams {
+	
 	public void observes(DataObserveParams params) {
+		params.addValue("user", SecurityContextHolder.getContext().getAuthentication().getName());
+		params.addValue("user", "__public__");
 	}
-
-	@Override
+	
 	public void publishes(DataPublishParams params, Object entity) {
+		if (((AbstractEntity)entity).isRestricted())
+			params.setValue("user", ((AbstractEntity)entity).getCreatedBy());
+		else
+			params.setValue("user", "__public__");
 	}
 }

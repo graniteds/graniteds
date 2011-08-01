@@ -28,7 +28,7 @@ import java.util.Map;
 //import org.granite.tide.data.ChangeSet;
 //import org.granite.tide.data.ChangeSetApplier;
 import org.granite.example.addressbook.entity.Person;
-import org.granite.example.addressbook.spring.service.ObserveAllPublishAll;
+import org.granite.example.addressbook.spring.service.AddressBookParams;
 import org.granite.example.addressbook.spring.service.PersonService;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataEnabled.PublishMode;
@@ -42,8 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
-@Transactional
-@DataEnabled(topic="addressBookTopic", params=ObserveAllPublishAll.class, publish=PublishMode.ON_SUCCESS, auto=false)
+@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_COMMIT, useInterceptor=true)
 public class HibernatePersonService implements PersonService {
 
 	@Autowired
