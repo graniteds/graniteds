@@ -587,12 +587,12 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         return reply;
     }
 
-    private Message handleSubscribeMessage(CommandMessage message) {
+    private Message handleSubscribeMessage(final CommandMessage message) {
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
+        final GraniteContext context = GraniteContext.getCurrentInstance();
 
         // Get and check destination.
-        Destination destination = context.getServicesConfig().findDestinationById(
+        final Destination destination = context.getServicesConfig().findDestinationById(
             message.getMessageRefType(),
             message.getDestination()
         );
@@ -601,13 +601,56 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
             return getInvalidDestinationError(message);
 
 
-        GravityInvocationContext invocationContext = new GravityInvocationContext(message, destination);
+        GravityInvocationContext invocationContext = new GravityInvocationContext(message, destination) {
+			@Override
+			public Object invoke() throws Exception {
+		        // Subscribe...
+		        Channel channel = getChannel((String)message.getClientId());
+		        if (channel == null)
+		            return handleUnknownClientMessage(message);
+
+		        String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
+		        if (subscriptionId == null) {
+		            subscriptionId = UUIDUtil.randomUUID();
+		            message.setHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER, subscriptionId);
+		        }
+		        
+		        HttpSession session = null;
+		        if (context instanceof HttpGraniteContext)
+		        	session = ((HttpGraniteContext)context).getSession(false);
+		        
+		        if (session != null && Boolean.TRUE.toString().equals(destination.getProperties().get("session-selector"))) {
+		        	String selector = (String)session.getAttribute("org.granite.gravity.selector." + destination.getId());
+		        	log.debug("Session selector found in session %s: %s", session.getId(), selector);
+		        	if (selector != null)
+		        		message.setHeader(CommandMessage.SELECTOR_HEADER, selector);
+		        }
+
+		        ServiceAdapter adapter = adapterFactory.getServiceAdapter(message);
+		        
+		        AsyncMessage reply = (AsyncMessage)adapter.manage(channel, message);
+		        
+		        postManage(channel);
+
+		        reply.setDestination(message.getDestination());
+		        reply.setClientId(channel.getId());
+		        reply.getHeaders().putAll(message.getHeaders());
+
+		        if (session != null && message.getDestination() != null) {
+		    		session.setAttribute("org.granite.gravity.channel.clientId." + message.getDestination(), channel.getId());
+		    		session.setAttribute("org.granite.gravity.channel.subscriptionId." + message.getDestination(), subscriptionId);
+		        }
+
+		        return reply;
+			}       	
+        };
 
         // Check security 1 (destination).
         if (destination.getSecurizer() instanceof GravityDestinationSecurizer) {
             try {
                 ((GravityDestinationSecurizer)destination.getSecurizer()).canSubscribe(invocationContext);
-            } catch (Exception e) {
+            } 
+            catch (Exception e) {
                 return new ErrorMessage(message, e);
             }
         }
@@ -616,50 +659,19 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         GraniteConfig config = context.getGraniteConfig();
         if (config.hasSecurityService()) {
             try {
-                config.getSecurityService().authorize(invocationContext);
-            } catch (Exception e) {
+                return (Message)config.getSecurityService().authorize(invocationContext);
+            } 
+            catch (Exception e) {
                 return new ErrorMessage(message, e);
             }
         }
-
-        // Subscribe...
-        Channel channel = getChannel((String)message.getClientId());
-        if (channel == null)
-            return handleUnknownClientMessage(message);
-
-        String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
-        if (subscriptionId == null) {
-            subscriptionId = UUIDUtil.randomUUID();
-            message.setHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER, subscriptionId);
+        
+        try {
+        	return (Message)invocationContext.invoke();
+        } 
+        catch (Exception e) {
+            return new ErrorMessage(message, e);
         }
-        
-        HttpSession session = null;
-        if (context instanceof HttpGraniteContext)
-        	session = ((HttpGraniteContext)context).getSession(false);
-        
-        if (session != null && Boolean.TRUE.toString().equals(destination.getProperties().get("session-selector"))) {
-        	String selector = (String)session.getAttribute("org.granite.gravity.selector." + destination.getId());
-        	log.debug("Session selector found in session %s: %s", session.getId(), selector);
-        	if (selector != null)
-        		message.setHeader(CommandMessage.SELECTOR_HEADER, selector);
-        }
-
-        ServiceAdapter adapter = adapterFactory.getServiceAdapter(message);
-        
-        AsyncMessage reply = (AsyncMessage)adapter.manage(channel, message);
-        
-        postManage(channel);
-
-        reply.setDestination(message.getDestination());
-        reply.setClientId(channel.getId());
-        reply.getHeaders().putAll(message.getHeaders());
-
-        if (session != null && message.getDestination() != null) {
-    		session.setAttribute("org.granite.gravity.channel.clientId." + message.getDestination(), channel.getId());
-    		session.setAttribute("org.granite.gravity.channel.subscriptionId." + message.getDestination(), subscriptionId);
-        }
-
-        return reply;
     }
 
     private Message handleUnsubscribeMessage(CommandMessage message) {
@@ -689,7 +701,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     	return handlePublishMessage(message, null);
     }
     
-    private Message handlePublishMessage(AsyncMessage message, Channel channel) {
+    private Message handlePublishMessage(final AsyncMessage message, final Channel channel) {
 
         GraniteContext context = GraniteContext.getCurrentInstance();
 
@@ -703,7 +715,26 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
             return getInvalidDestinationError(message);
 
 
-        GravityInvocationContext invocationContext = new GravityInvocationContext(message, destination);
+        GravityInvocationContext invocationContext = new GravityInvocationContext(message, destination) {
+			@Override
+			public Object invoke() throws Exception {
+		        // Publish...
+		        Channel fromChannel = channel;
+		        if (fromChannel == null)
+		        	fromChannel = getChannel((String)message.getClientId());
+		        if (fromChannel == null)
+		            return handleUnknownClientMessage(message);
+
+		        ServiceAdapter adapter = adapterFactory.getServiceAdapter(message);
+		        
+		        AsyncMessage reply = (AsyncMessage)adapter.invoke(fromChannel, message);
+
+		        reply.setDestination(message.getDestination());
+		        reply.setClientId(fromChannel.getId());
+
+		        return reply;
+			}       	
+        };
 
         // Check security 1 (destination).
         if (destination.getSecurizer() instanceof GravityDestinationSecurizer) {
@@ -713,32 +744,24 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
                 return new ErrorMessage(message, e, true);
             }
         }
-
+	
         // Check security 2 (security service).
         GraniteConfig config = context.getGraniteConfig();
         if (config.hasSecurityService() && context instanceof HttpGraniteContext) {
             try {
-                config.getSecurityService().authorize(invocationContext);
-            } catch (Exception e) {
+                return (Message)config.getSecurityService().authorize(invocationContext);
+            } 
+            catch (Exception e) {
                 return new ErrorMessage(message, e, true);
             }
         }
-
-        // Publish...
-        Channel fromChannel = channel;
-        if (fromChannel == null)
-        	fromChannel = getChannel((String)message.getClientId());
-        if (fromChannel == null)
-            return handleUnknownClientMessage(message);
-
-        ServiceAdapter adapter = adapterFactory.getServiceAdapter(message);
         
-        AsyncMessage reply = (AsyncMessage)adapter.invoke(fromChannel, message);
-
-        reply.setDestination(message.getDestination());
-        reply.setClientId(fromChannel.getId());
-
-        return reply;
+        try {
+        	return (Message)invocationContext.invoke();
+        }
+        catch (Exception e) {
+            return new ErrorMessage(message, e, true);
+        }
     }
 
     private Message handleUnknownClientMessage(Message message) {
