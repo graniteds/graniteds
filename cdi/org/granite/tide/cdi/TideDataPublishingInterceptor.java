@@ -20,13 +20,11 @@
 
 package org.granite.tide.cdi;
 
-import javax.annotation.Resource;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.transaction.Synchronization;
-import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.granite.gravity.Gravity;
 import org.granite.tide.data.DataContext;
@@ -41,23 +39,19 @@ import org.granite.tide.data.DataTopicParams;
  * 
  * @author William DRAI
  */
-@Interceptor
 @DataEnabled(topic="", params=DataTopicParams.class, publish=PublishMode.MANUAL, useInterceptor=true)
+@Interceptor
 public class TideDataPublishingInterceptor {
 	
+	@Inject
 	private Gravity gravity;
 	
 	@Inject
-	public void setGravity(Gravity gravity) {
-		this.gravity = gravity;
-	}
-	
-	@Resource(mappedName="java:comp/TransactionSynchronizationRegistry")
-	TransactionSynchronizationRegistry tsr;
+	Event<TideDataPublishingEvent> dataPublishingEvent;
 	
     @AroundInvoke
     public Object processPublishData(InvocationContext invocationContext) throws Throwable {
-    	DataEnabled dataEnabled = invocationContext.getTarget().getClass().getAnnotation(DataEnabled.class);
+    	DataEnabled dataEnabled = invocationContext.getMethod().getDeclaringClass().getAnnotation(DataEnabled.class);
     	if (dataEnabled == null || !dataEnabled.useInterceptor())
     		return invocationContext.proceed();
     	
@@ -71,7 +65,7 @@ public class TideDataPublishingInterceptor {
         DataContext.observe();
         try {
         	if (dataEnabled.publish().equals(PublishMode.ON_COMMIT)) {
-        		tsr.registerInterposedSynchronization(new DataPublishingSynchronization(shouldRemoveContextAtEnd));
+        		dataPublishingEvent.fire(new TideDataPublishingEvent(shouldRemoveContextAtEnd));
         		onCommit = true;
         	}
         	
@@ -84,24 +78,5 @@ public class TideDataPublishingInterceptor {
         	if (shouldRemoveContextAtEnd && !onCommit)
         		DataContext.remove();
         }
-    }
-    
-    private static class DataPublishingSynchronization implements Synchronization {
-    	
-    	private final boolean removeContext;
-    	
-    	public DataPublishingSynchronization(boolean removeContext) {
-    		this.removeContext = removeContext;
-    	}
-
-		public void beforeCompletion() {
-			DataContext.publish(PublishMode.ON_COMMIT);
-			if (removeContext)
-				DataContext.remove();
-		}		
-
-		public void afterCompletion(int status) {
-		}
-    	
     }
 }

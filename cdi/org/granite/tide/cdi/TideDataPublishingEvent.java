@@ -18,37 +18,28 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.data;
+package org.granite.tide.cdi;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.enterprise.util.Nonbinding;
-import javax.interceptor.InterceptorBinding;
+import java.io.Serializable;
 
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@InterceptorBinding
-public @interface DataEnabled {
+/**
+ * CDI event type to handle publishing of data changes instead of relying on the default behaviour
+ * This can be used outside of a HTTP Granite context and inside the security/transaction context
+ * @author William DRAI
+ *
+ */
+public class TideDataPublishingEvent implements Serializable {
 	
-	@Nonbinding
-	public String topic();
+	private static final long serialVersionUID = 1L;
+
+	private boolean initContext;
 	
-	@Nonbinding
-	public Class<? extends DataTopicParams> params() default DefaultDataTopicParams.class;
+	public TideDataPublishingEvent(boolean initContext) {
+		this.initContext = initContext;
+	}
 	
-	@Nonbinding
-	public PublishMode publish() default PublishMode.MANUAL;
-	
-	public boolean useInterceptor() default false;
-    
-    
-    public enum PublishMode {
-    	MANUAL,
-    	ON_SUCCESS,
-    	ON_COMMIT
-    }
+	public boolean getInitContext() {
+		return initContext;
+	}
 }

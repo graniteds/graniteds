@@ -18,37 +18,26 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.data;
+package org.granite.tide.cdi;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import javax.enterprise.event.Observes;
+import javax.enterprise.event.TransactionPhase;
 
-import javax.enterprise.util.Nonbinding;
-import javax.interceptor.InterceptorBinding;
+import org.granite.tide.data.DataContext;
+import org.granite.tide.data.DataEnabled.PublishMode;
 
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@InterceptorBinding
-public @interface DataEnabled {
+/**
+ * CDI event listener to handle publishing of data changes instead of relying on the default behaviour
+ * This can be used outside of a HTTP Granite context and inside the security/transaction context
+ * @author William DRAI
+ *
+ */
+public class TideDataPublishingOnSuccessHandler {
 	
-	@Nonbinding
-	public String topic();
-	
-	@Nonbinding
-	public Class<? extends DataTopicParams> params() default DefaultDataTopicParams.class;
-	
-	@Nonbinding
-	public PublishMode publish() default PublishMode.MANUAL;
-	
-	public boolean useInterceptor() default false;
-    
-    
-    public enum PublishMode {
-    	MANUAL,
-    	ON_SUCCESS,
-    	ON_COMMIT
+    public void doPublish(@Observes(during=TransactionPhase.BEFORE_COMPLETION) TideDataPublishingEvent event) {
+    	DataContext.publish(PublishMode.ON_COMMIT);
+    	if (event.getInitContext())
+    		DataContext.remove();
     }
 }
