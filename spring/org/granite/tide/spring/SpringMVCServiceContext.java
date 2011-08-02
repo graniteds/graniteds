@@ -449,7 +449,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 			return target;			
 		}
 		
-		@SuppressWarnings({"unchecked", "rawtypes"})
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public Object convertIfNecessary(Object value, Class requiredType, MethodParameter methodParam) throws TypeMismatchException {
 			if (target == null && value == REQUEST_VALUE || (value instanceof String[] && ((String[])value)[0] == REQUEST_VALUE))

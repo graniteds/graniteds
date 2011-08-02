@@ -40,8 +40,6 @@ import org.jboss.seam.annotations.intercept.BypassInterceptors;
 @BypassInterceptors
 @AutoCreate
 public class TideUserEvents {
-
-    private static final long serialVersionUID = -5395975397632138270L;
     
     private ConcurrentHashMap<String, UserEvents> userEventsMap = new ConcurrentHashMap<String, UserEvents>();
     

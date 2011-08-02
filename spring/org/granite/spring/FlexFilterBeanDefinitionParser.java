@@ -51,7 +51,6 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
 
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
         CompositeComponentDefinition componentDefinition = new CompositeComponentDefinition(element.getLocalName(),
             parserContext.extractSource(element));
@@ -63,7 +62,7 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
         
         Object source = parserContext.extractSource(element);
 
-        ManagedList roles = new ManagedList();
+        ManagedList<String> roles = new ManagedList<String>();
         roles.setSource(source);
         List<Element> rolesElements = DomUtils.getChildElementsByTagName(element, "tide-roles");
         for (Element rolesElement : rolesElements) {
@@ -74,7 +73,7 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
         if (!roles.isEmpty())
         	builder.addPropertyValue("tideRoles", roles);
         
-        ManagedList tideAnnotations = new ManagedList();
+        ManagedList<String> tideAnnotations = new ManagedList<String>();
         tideAnnotations.setSource(source);
         List<Element> tideAnnotationsElements = DomUtils.getChildElementsByTagName(element, "tide-annotations");
         for (Element tideAnnotationsElement : tideAnnotationsElements) {
@@ -84,7 +83,7 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
         }
         builder.addPropertyValue("tideAnnotations", tideAnnotations);
         
-        ManagedList tideInterfaces = new ManagedList();
+        ManagedList<String> tideInterfaces = new ManagedList<String>();
         tideInterfaces.setSource(source);
         List<Element> tideInterfacesElements = DomUtils.getChildElementsByTagName(element, "tide-interfaces");
         for (Element tideInterfacesElement : tideInterfacesElements) {
@@ -94,7 +93,7 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
         }
         builder.addPropertyValue("tideInterfaces", tideInterfaces);
         
-        ManagedList tideNames = new ManagedList();
+        ManagedList<String> tideNames = new ManagedList<String>();
         tideNames.setSource(source);
         List<Element> tideNamesElements = DomUtils.getChildElementsByTagName(element, "tide-names");
         for (Element tideNamesElement : tideNamesElements) {
@@ -104,7 +103,7 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
         }
         builder.addPropertyValue("tideNames", tideNames);
         
-        ManagedList tideTypes = new ManagedList();
+        ManagedList<String> tideTypes = new ManagedList<String>();
         tideTypes.setSource(source);
         List<Element> tideTypesElements = DomUtils.getChildElementsByTagName(element, "tide-types");
         for (Element tideTypesElement : tideTypesElements) {
@@ -114,7 +113,7 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
         }
         builder.addPropertyValue("tideTypes", tideTypes);
 
-        ManagedList exceptionConverters = new ManagedList();
+        ManagedList<String> exceptionConverters = new ManagedList<String>();
         exceptionConverters.setSource(source);
         List<Element> exceptionConvertersElements = DomUtils.getChildElementsByTagName(element, "exception-converters");
         for (Element exceptionConvertersElement : exceptionConvertersElements) {

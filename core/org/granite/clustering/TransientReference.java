@@ -18,30 +18,28 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.cdi;
+package org.granite.clustering;
 
-import org.granite.context.GraniteContext;
-import org.granite.messaging.webapp.HttpGraniteContext;
-
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @author William DRAI
+ * This annotation is intended to be used on classes that need to be cached in an HTTP session
+ * without being replicated in a clustered environment. It will however only work in conjunction
+ * with the session map returned by an <tt>HttpGraniteContext</tt> instance. 
+ * 
+ * @author Franck WOLFF
+ * 
+ * @see org.granite.messaging.webapp.HttpGraniteContext
+ * @see TransientReferenceHolder
  */
-public class Identity  {
-        
-    public String isLoggedIn() {
-    	GraniteContext context = GraniteContext.getCurrentInstance();
-    	if (context != null && ((HttpGraniteContext)context).getRequest().getUserPrincipal() != null)
-    		return ((HttpGraniteContext)context).getRequest().getUserPrincipal().getName();    	
-    	return null;
-    }
-    
-    
-    public boolean hasRole(String role) {
-    	GraniteContext context = GraniteContext.getCurrentInstance();
-    	if (context == null || !(context instanceof HttpGraniteContext))
-    		return false;
-    	
-    	return ((HttpGraniteContext)context).getRequest().isUserInRole(role);
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Inherited
+@Documented
+public @interface TransientReference {
 }

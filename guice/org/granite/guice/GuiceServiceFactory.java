@@ -39,8 +39,6 @@ import flex.messaging.messages.RemotingMessage;
  */
 public class GuiceServiceFactory extends SimpleServiceFactory {
 
-    private static final long serialVersionUID = 1L;
-
     private Injector injector = null;
 
     @Override

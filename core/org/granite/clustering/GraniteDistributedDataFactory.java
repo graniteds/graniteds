@@ -18,30 +18,25 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.cdi;
+package org.granite.clustering;
 
-import org.granite.context.GraniteContext;
-import org.granite.messaging.webapp.HttpGraniteContext;
-
+import org.granite.logging.Logger;
 
 /**
- * @author William DRAI
+ * @author Franck WOLFF
  */
-public class Identity  {
-        
-    public String isLoggedIn() {
-    	GraniteContext context = GraniteContext.getCurrentInstance();
-    	if (context != null && ((HttpGraniteContext)context).getRequest().getUserPrincipal() != null)
-    		return ((HttpGraniteContext)context).getRequest().getUserPrincipal().getName();    	
-    	return null;
-    }
-    
-    
-    public boolean hasRole(String role) {
-    	GraniteContext context = GraniteContext.getCurrentInstance();
-    	if (context == null || !(context instanceof HttpGraniteContext))
-    		return false;
-    	
-    	return ((HttpGraniteContext)context).getRequest().isUserInRole(role);
-    }
+public class GraniteDistributedDataFactory {
+
+	private static final Logger log = Logger.getLogger(GraniteDistributedDataFactory.class);
+
+	public static GraniteDistributedData getInstance() {
+		Class<? extends GraniteDistributedData> gddClass = SessionGraniteDistributedData.class;
+		try {
+			return gddClass.newInstance();
+		}
+		catch (Exception e) {
+			log.debug(e, "Could not create instance of: %s", gddClass);
+			return null;
+		}
+	}
 }

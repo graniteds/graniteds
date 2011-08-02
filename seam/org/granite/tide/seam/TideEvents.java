@@ -47,8 +47,6 @@ import org.jboss.seam.core.Events;
 @BypassInterceptors
 @AutoCreate
 public class TideEvents extends Events {
-
-    private static final long serialVersionUID = -5395975397632138270L;
     
     
     @Override

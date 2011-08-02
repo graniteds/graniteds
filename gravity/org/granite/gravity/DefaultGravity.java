@@ -30,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpSession;
 
+import org.granite.clustering.GraniteDistributedData;
+import org.granite.clustering.GraniteDistributedDataFactory;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
 import org.granite.config.flex.ServicesConfig;
@@ -327,9 +329,23 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
             channel = gravityConfig.getChannelFactory().newChannel(UUIDUtil.randomUUID());
             timeChannel = new TimeChannel(channel);
         }
+
+        String channelId = channel.getId();
+        
+        // Save channel id in distributed data (clustering).
+        try {
+	        GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+	        if (gdd != null) {
+        		log.info("Saving channel id in distributed data: %s", channelId);
+	        	gdd.addChannelId(channelId);
+	        }
+        }
+        catch (Exception e) {
+			log.error(e, "Could not add channel id in distributed data: %s", channelId);
+        }
         
         // Initialize timer task.
-        access(channel.getId());
+        access(channelId);
     	
         return channel;
     }
@@ -339,16 +355,47 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
             return null;
 
         TimeChannel timeChannel = channels.get(channelId);
-        if (timeChannel != null)
-        	return timeChannel.getChannel();
+        if (timeChannel == null) {
+	        // Look for existing channel id/subscriptions in distributed data (clustering).
+        	try {
+	        	GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+	        	if (gdd != null && gdd.hasChannelId(channelId)) {
+	        		log.info("Found channel id in distributed data: %s", channelId);
+	        		Channel channel = gravityConfig.getChannelFactory().newChannel(channelId);
+	    	    	timeChannel = new TimeChannel(channel);
+	    	        if (channels.putIfAbsent(channelId, timeChannel) == null) {
+	    	        	for (CommandMessage subscription : gdd.getSubscriptions(channelId)) {
+	    	        		log.info("Resubscribing channel: %s - %s", channelId, subscription);
+	    	        		handleSubscribeMessage(subscription, false);
+	    	        	}
+	    	        	access(channelId);
+	    	        }
+	        	}
+        	}
+        	catch (Exception e) {
+    			log.error(e, "Could not recreate channel/sunscriptions from distributed data: %s", channelId);
+        	}
+        }
 
-        return null;
+        return (timeChannel != null ? timeChannel.getChannel() : null);
     }
 
     public Channel removeChannel(String channelId) {
         if (channelId == null)
             return null;
 
+        // Remove existing channel id/subscriptions in distributed data (clustering).
+        try {
+	        GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+	        if (gdd != null) {
+        		log.info("Removing channel id from distributed data: %s", channelId);
+	        	gdd.removeChannelId(channelId);
+	        }
+		}
+		catch (Exception e) {
+			log.error(e, "Could not remove channel id from distributed data: %s", channelId);
+		}
+        
         TimeChannel timeChannel = channels.get(channelId);
         Channel channel = null;
         if (timeChannel != null) {
@@ -588,6 +635,10 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     }
 
     private Message handleSubscribeMessage(final CommandMessage message) {
+    	return handleSubscribeMessage(message, true);
+    }
+    
+    private Message handleSubscribeMessage(final CommandMessage message, final boolean saveMessageInSession) {
 
         final GraniteContext context = GraniteContext.getCurrentInstance();
 
@@ -618,12 +669,17 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		        HttpSession session = null;
 		        if (context instanceof HttpGraniteContext)
 		        	session = ((HttpGraniteContext)context).getSession(false);
-		        
-		        if (session != null && Boolean.TRUE.toString().equals(destination.getProperties().get("session-selector"))) {
-		        	String selector = (String)session.getAttribute("org.granite.gravity.selector." + destination.getId());
-		        	log.debug("Session selector found in session %s: %s", session.getId(), selector);
-		        	if (selector != null)
-		        		message.setHeader(CommandMessage.SELECTOR_HEADER, selector);
+
+		        GraniteDistributedData gdd = null;
+		        if (session != null) {
+		        	gdd = GraniteDistributedDataFactory.getInstance();
+
+		        	if (Boolean.TRUE.toString().equals(destination.getProperties().get("session-selector"))) {
+		        		String selector = gdd.getDestinationSelector(destination.getId());
+		        		log.debug("Session selector found in session %s: %s", session.getId(), selector);
+		        		if (selector != null)
+		        			message.setHeader(CommandMessage.SELECTOR_HEADER, selector);
+		        	}
 		        }
 
 		        ServiceAdapter adapter = adapterFactory.getServiceAdapter(message);
@@ -631,14 +687,27 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		        AsyncMessage reply = (AsyncMessage)adapter.manage(channel, message);
 		        
 		        postManage(channel);
+		        
+		        if (saveMessageInSession && !(reply instanceof ErrorMessage)) {
+		        	// Save subscription message in distributed data (clustering).
+		        	try {
+			        	if (gdd != null) {
+			        		log.info("Saving new subscription message for channel: %s - %s", channel.getId(), message);
+			        		gdd.addSubcription(channel.getId(), message);
+			        	}
+		        	}
+		        	catch (Exception e) {
+		        		log.error(e, "Could not add subscription in distributed data: %s - %s", channel.getId(), subscriptionId);
+		        	}
+		        }
 
 		        reply.setDestination(message.getDestination());
 		        reply.setClientId(channel.getId());
 		        reply.getHeaders().putAll(message.getHeaders());
 
-		        if (session != null && message.getDestination() != null) {
-		    		session.setAttribute("org.granite.gravity.channel.clientId." + message.getDestination(), channel.getId());
-		    		session.setAttribute("org.granite.gravity.channel.subscriptionId." + message.getDestination(), subscriptionId);
+		        if (gdd != null && message.getDestination() != null) {
+		        	gdd.setDestinationClientId(message.getDestination(), channel.getId());
+		        	gdd.setDestinationSubscriptionId(message.getDestination(), subscriptionId);
 		        }
 
 		        return reply;
@@ -668,9 +737,9 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         
         try {
         	return (Message)invocationContext.invoke();
-        } 
+        }
         catch (Exception e) {
-            return new ErrorMessage(message, e);
+            return new ErrorMessage(message, e, true);
         }
     }
 
@@ -686,6 +755,24 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         reply = (AcknowledgeMessage)adapter.manage(channel, message);
         
         postManage(channel);
+        
+        if (!(reply instanceof ErrorMessage)) {
+        	// Remove subscription message in distributed data (clustering).
+        	try {
+		        GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+		        if (gdd != null) {
+		        	String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
+		        	log.info("Removing subscription message from channel info: %s - %s", channel.getId(), subscriptionId);
+	    			gdd.removeSubcription(channel.getId(), subscriptionId);
+		        }
+        	}
+        	catch (Exception e) {
+        		log.error(
+        			e, "Could not remove subscription from distributed data: %s - %s",
+        			channel.getId(), message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER)
+        		);
+        	}
+        }
 
         reply.setDestination(message.getDestination());
         reply.setClientId(channel.getId());

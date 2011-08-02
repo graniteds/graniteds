@@ -22,12 +22,12 @@ package org.granite.gravity.adapters;
 
 import java.util.Map;
 
-import javax.jms.JMSException;
-
 public interface JMSClient {
-
-	public void subscribe(String selector, String destination, String topic) throws JMSException;
 	
-	public void send(Map<String, ?> params, Object msg, long timeToLive) throws JMSException;
+	public static final String JMSCLIENT_KEY_PREFIX = "org.granite.gravity.jmsClient.";
+
+	public void subscribe(String selector, String destination, String topic) throws Exception;
+	
+	public void send(Map<String, ?> params, Object msg, long timeToLive) throws Exception;
 
 }

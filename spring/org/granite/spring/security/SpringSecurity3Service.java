@@ -184,7 +184,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 			    else
 			    	authentication = contextBeforeChainExecution.getAuthentication();
 			    
-			    graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, 1);
+			    graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, 0);
         	}
         	else
 			    graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, (Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED)+1);

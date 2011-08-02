@@ -41,6 +41,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.granite.clustering.GraniteDistributedDataFactory;
+import org.granite.clustering.TransientReference;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
@@ -64,6 +66,9 @@ import flex.messaging.messages.Message;
 public class JMSServiceAdapter extends ServiceAdapter {
 
     private static final Logger log = Logger.getLogger(JMSServiceAdapter.class);
+    
+    public static final long DEFAULT_FAILOVER_RETRY_INTERVAL = 1000L;
+    public static final int DEFAULT_FAILOVER_RETRY_COUNT = 4;
 
     protected ConnectionFactory jmsConnectionFactory = null;
     protected javax.jms.Destination jmsDestination = null;
@@ -76,27 +81,52 @@ public class JMSServiceAdapter extends ServiceAdapter {
     protected int deliveryMode = javax.jms.Message.DEFAULT_DELIVERY_MODE;
     protected boolean noLocal = false;
     protected boolean sessionSelector = false;
+    
+    protected long failoverRetryInterval = DEFAULT_FAILOVER_RETRY_INTERVAL;
+    protected int failoverRetryCount = DEFAULT_FAILOVER_RETRY_COUNT;
 
     @Override
     public void configure(XMap adapterProperties, XMap destinationProperties) throws ServiceException {
         super.configure(adapterProperties, destinationProperties);
 
         try {
+        	log.info("Using JMS configuration: %s", destinationProperties.getOne("jms"));
+        	
             destinationName = destinationProperties.get("jms/destination-name");
+            
             if (Boolean.TRUE.toString().equals(destinationProperties.get("jms/transacted-sessions")))
                 transactedSessions = true;
-            if ("AUTO_ACKNOWLEDGE".equals(destinationProperties.get("jms/acknowledge-mode")))
+            
+            String ackMode = destinationProperties.get("jms/acknowledge-mode");
+            if ("AUTO_ACKNOWLEDGE".equals(ackMode))
                 acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
-            else if ("CLIENT_ACKNOWLEDGE".equals(destinationProperties.get("jms/acknowledge-mode")))
+            else if ("CLIENT_ACKNOWLEDGE".equals(ackMode))
                 acknowledgeMode = Session.CLIENT_ACKNOWLEDGE;
-            else if ("DUPS_OK_ACKNOWLEDGE".equals(destinationProperties.get("jms/acknowledge-mode")))
+            else if ("DUPS_OK_ACKNOWLEDGE".equals(ackMode))
                 acknowledgeMode = Session.DUPS_OK_ACKNOWLEDGE;
+            else if (ackMode != null)
+            	log.warn("Unsupported acknowledge mode: %s (using default AUTO_ACKNOWLEDGE)", ackMode);
+            
             if ("javax.jms.TextMessage".equals(destinationProperties.get("jms/message-type")))
                 textMessages = true;
+            
             if (Boolean.TRUE.toString().equals(destinationProperties.get("jms/no-local")))
             	noLocal = true;
+
             if (Boolean.TRUE.toString().equals(destinationProperties.get("session-selector")))
             	sessionSelector = true;
+            
+            failoverRetryInterval = destinationProperties.get("jms/failover-retry-interval", Long.TYPE, DEFAULT_FAILOVER_RETRY_INTERVAL);
+        	if (failoverRetryInterval <= 0) {
+        		log.warn("Illegal failover retry interval: %d (using default %d)", failoverRetryInterval, DEFAULT_FAILOVER_RETRY_INTERVAL);
+        		failoverRetryInterval = DEFAULT_FAILOVER_RETRY_INTERVAL;
+        	}
+            
+        	failoverRetryCount = destinationProperties.get("jms/failover-retry-count", Integer.TYPE, DEFAULT_FAILOVER_RETRY_COUNT);
+        	if (failoverRetryCount <= 0) {
+        		log.warn("Illegal failover retry count: %s (using default %d)", failoverRetryCount, DEFAULT_FAILOVER_RETRY_COUNT);
+        		failoverRetryCount = DEFAULT_FAILOVER_RETRY_COUNT;
+        	}
 
             Properties environment = new Properties();
             for (XMap property : destinationProperties.getAll("jms/initial-context-environment/property")) {
@@ -190,7 +220,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                 JMSClientImpl jmsClient = createJMSClient(fromChannel);
                 jmsClient.subscribe(message);
                 if (sessionSelector && GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)
-                	((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSession().setAttribute("org.granite.gravity.jmsClient." + message.getDestination(), jmsClient);
+                	((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSessionMap().put(JMSClient.JMSCLIENT_KEY_PREFIX + message.getDestination(), jmsClient);
                 
                 AsyncMessage reply = new AcknowledgeMessage(message);
                 return reply;
@@ -204,7 +234,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                 JMSClientImpl jmsClient = createJMSClient(fromChannel);
                 jmsClient.unsubscribe(message);
                 if (sessionSelector && GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)
-                	((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSession().removeAttribute("org.granite.gravity.jmsClient." + message.getDestination());
+                	((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSessionMap().remove(JMSClient.JMSCLIENT_KEY_PREFIX + message.getDestination());
                 jmsClients.remove(fromChannel.getId());
 
                 AsyncMessage reply = new AcknowledgeMessage(message);
@@ -219,6 +249,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
     }
 
 
+    @TransientReference
     private class JMSClientImpl implements JMSClient {
 
         private Channel channel = null;
@@ -275,17 +306,49 @@ public class JMSServiceAdapter extends ServiceAdapter {
             internalSend(message.getHeaders(), msg, message.getMessageId(), ((AsyncMessage)message).getCorrelationId(), message.getTimestamp(), message.getTimeToLive());
         }
 
-        public void send(Map<String, ?> params, Object msg, long timeToLive) throws JMSException {
+        public void send(Map<String, ?> params, Object msg, long timeToLive) throws Exception {
         	internalSend(params, msg, null, null, new Date().getTime(), timeToLive);
         }
         
-        public void internalSend(Map<String, ?> headers, Object msg, String messageId, String correlationId, long timestamp, long timeToLive) throws JMSException {
+        public void internalSend(Map<String, ?> headers, Object msg, String messageId, String correlationId, long timestamp, long timeToLive) throws Exception {
             if (jmsProducerSession == null)
                 jmsProducerSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
             if (jmsProducer == null) {
-                jmsProducer = jmsProducerSession.createProducer(getProducerDestination(topic));
-                jmsProducer.setPriority(messagePriority);
-                jmsProducer.setDeliveryMode(deliveryMode);
+                try {
+                	// When failing over, JMS can be in a temporary illegal state. Give it some time to recover. 
+                	int retryCount = failoverRetryCount;
+                	do {
+		                try {
+		                	jmsProducer = jmsProducerSession.createProducer(getProducerDestination(topic));
+		                	break;
+		                }
+		                catch (Exception e) {
+		                	if (retryCount <= 0)
+		                		throw e;
+		                	
+		                	if (log.isDebugEnabled())
+		                		log.debug(e, "Could not create JMS Producer (retrying %d time)", retryCount);
+		                	else
+		                		log.info("Could not create JMS Producer (retrying %d time)", retryCount);
+		                	
+		                	try {
+		                		Thread.sleep(failoverRetryInterval);
+		                	}
+		                	catch (Exception f) {
+		                		throw new ServiceException("Could not sleep when retrying to create JMS Producer", f.getMessage(), e);
+		                	}
+		                }
+                	}
+	                while (retryCount-- > 0);
+	                
+	                jmsProducer.setPriority(messagePriority);
+	                jmsProducer.setDeliveryMode(deliveryMode);
+                }
+                catch (JMSException e) {
+                	jmsProducerSession.close();
+                	jmsProducerSession = null;
+                	throw e;
+                }
             }
             
             javax.jms.Message jmsMessage = null;
@@ -333,7 +396,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
 			return messageId;
 		}
 
-        public void subscribe(Message message) throws JMSException {
+        public void subscribe(Message message) throws Exception {
             String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
             String selector = (String)message.getHeader(CommandMessage.SELECTOR_HEADER);
             this.topic = (String)message.getHeader(AsyncMessage.SUBTOPIC_HEADER);
@@ -341,14 +404,15 @@ public class JMSServiceAdapter extends ServiceAdapter {
             internalSubscribe(subscriptionId, selector, message.getDestination(), this.topic);
         }
         
-        public void subscribe(String selector, String destination, String topic) throws JMSException {
+        public void subscribe(String selector, String destination, String topic) throws Exception {
         	if (GraniteContext.getCurrentInstance() instanceof HttpGraniteContext) {
-        		String subscriptionId = (String)((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSession().getAttribute("org.granite.gravity.jmsClient." + topic);
-        		internalSubscribe(subscriptionId, selector, destination, topic);
+        		String subscriptionId = GraniteDistributedDataFactory.getInstance().getDestinationSubscriptionId(destination);
+        		if (subscriptionId != null)
+        			internalSubscribe(subscriptionId, selector, destination, topic);
         	}
         }
         
-        private void internalSubscribe(String subscriptionId, String selector, String destination, String topic) throws JMSException {
+        private void internalSubscribe(String subscriptionId, String selector, String destination, String topic) throws Exception {
             synchronized (consumers) {
                 JMSConsumer consumer = consumers.get(subscriptionId);
                 if (consumer == null) {
@@ -381,26 +445,68 @@ public class JMSServiceAdapter extends ServiceAdapter {
             private javax.jms.MessageConsumer jmsConsumer = null;
             private boolean noLocal = false;
 
-            public JMSConsumer(String subscriptionId, String selector, boolean noLocal) throws JMSException {
+            public JMSConsumer(String subscriptionId, String selector, boolean noLocal) throws Exception {
                 this.subscriptionId = subscriptionId;
                 this.noLocal = noLocal;
+                
                 jmsConsumerSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
-                jmsConsumer = jmsConsumerSession.createConsumer(getConsumerDestination(topic), selector, noLocal);
-                jmsConsumer.setMessageListener(this);
+                try {	                
+                	// When failing over, JMS can be in a temporary illegal state. Give it some time to recover. 
+                	int retryCount = failoverRetryCount;
+                	do {
+		                try {
+		                	jmsConsumer = jmsConsumerSession.createConsumer(getConsumerDestination(topic), selector, noLocal);
+		                	break;
+		                }
+		                catch (Exception e) {
+		                	if (retryCount <= 0)
+		                		throw e;
+		                	
+		                	if (log.isDebugEnabled())
+		                		log.debug(e, "Could not create JMS Consumer (retrying %d time)", retryCount);
+		                	else
+		                		log.info("Could not create JMS Consumer (retrying %d time)", retryCount);
+		                	
+		                	try {
+		                		Thread.sleep(failoverRetryInterval);
+		                	}
+		                	catch (Exception f) {
+		                		throw new ServiceException("Could not sleep when retrying to create JMS Consumer", f.getMessage(), e);
+		                	}
+		                }
+                	}
+	                while (retryCount-- > 0);
+	                
+	                jmsConsumer.setMessageListener(this);
+                }
+                catch (Exception e) {
+                	close();
+                	throw e;
+                }
             }
 
             public void setSelector(String selector) throws JMSException {
-                if (jmsConsumer != null)
+                if (jmsConsumer != null) {
                     jmsConsumer.close();
+                    jmsConsumer = null;
+                }
                 jmsConsumer = jmsConsumerSession.createConsumer(getConsumerDestination(topic), selector, noLocal);
                 jmsConsumer.setMessageListener(this);
             }
 
             public void close() throws JMSException {
-                if (jmsConsumer != null)
-                    jmsConsumer.close();
-                if (jmsConsumerSession != null)
-                    jmsConsumerSession.close();
+                try {
+	            	if (jmsConsumer != null) {
+	                    jmsConsumer.close();
+	                    jmsConsumer = null;
+	                }
+                }
+                finally {
+	                if (jmsConsumerSession != null) {
+	                    jmsConsumerSession.close();
+	                    jmsConsumerSession = null;
+	                }
+                }
             }
 
             public void onMessage(javax.jms.Message message) {

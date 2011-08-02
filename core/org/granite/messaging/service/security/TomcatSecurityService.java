@@ -72,7 +72,7 @@ public class TomcatSecurityService extends AbstractSecurityService {
         return engine;
     }
 
-    public void configure(Map<String, String> params) {
+	public void configure(Map<String, String> params) {
         String serviceId = params.get("service");
 
         Server server = ServerFactory.getServer();
@@ -110,11 +110,13 @@ public class TomcatSecurityService extends AbstractSecurityService {
         request.setAuthType(AUTH_TYPE);
         request.setUserPrincipal(principal);
 
-        Session session = request.getSessionInternal();
+        Session session = request.getSessionInternal(true);
         session.setAuthType(AUTH_TYPE);
         session.setPrincipal(principal);
         session.setNote(Constants.SESS_USERNAME_NOTE, decoded[0]);
         session.setNote(Constants.SESS_PASSWORD_NOTE, decoded[1]);
+        
+    	endLogin(credentials);
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {
@@ -124,12 +126,19 @@ public class TomcatSecurityService extends AbstractSecurityService {
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
         Request request = getRequest(httpRequest);
-        Session session = request.getSessionInternal();
-        request.setAuthType(session.getAuthType());
-        request.setUserPrincipal(session.getPrincipal());
+        Session session = request.getSessionInternal(false);
+        
+        Principal principal = null;
+        if (session != null) {
+            request.setAuthType(session.getAuthType());
+        	principal = session.getPrincipal();
+        	if (principal == null && tryRelogin())
+        		principal = session.getPrincipal();
+        }
+
+        request.setUserPrincipal(principal);
 
         if (context.getDestination().isSecured()) {
-            Principal principal = getPrincipal(httpRequest);
             if (principal == null) {
                 if (httpRequest.getRequestedSessionId() != null) {
                     HttpSession httpSession = httpRequest.getSession(false);
@@ -173,6 +182,9 @@ public class TomcatSecurityService extends AbstractSecurityService {
             session.setPrincipal(null);
             session.removeNote(Constants.SESS_USERNAME_NOTE);
             session.removeNote(Constants.SESS_PASSWORD_NOTE);
+            
+            endLogout();
+            
             session.expire();
         }
     }
@@ -198,7 +210,7 @@ public class TomcatSecurityService extends AbstractSecurityService {
         }
     }
 
-    protected Realm getRealm(HttpServletRequest request) {
+    protected Context getContext(HttpServletRequest request) {
         String serverName = request.getServerName();
         String contextPath = request.getContextPath();
 
@@ -209,12 +221,18 @@ public class TomcatSecurityService extends AbstractSecurityService {
             if (host == null)
                 throw new NullPointerException("Could not find Tomcat host for: " + serverName + " or: " + engine.getDefaultHost());
         }
+
         Context context = (Context)host.findChild(contextPath);
         if (context == null)
             throw new NullPointerException("Could not find Tomcat context for: " + contextPath);
+        return context;
+    }
+
+    protected Realm getRealm(HttpServletRequest request) {
+        Context context = getContext(request);
         Realm realm = context.getRealm();
         if (realm == null)
-            throw new NullPointerException("Could not find Tomcat realm for: " + serverName + "" + contextPath);
+            throw new NullPointerException("Could not find Tomcat realm for: " + context.getPath());
 
         return realm;
     }

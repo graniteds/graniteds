@@ -24,6 +24,12 @@ import java.util.Set;
 
 public interface DataDispatcher {
 	
+	public static final String TIDE_DATA_SUBTOPIC = "tideDataTopic";
+	public static final String GDS_SESSION_ID = "GDSSessionID";
+	public static final String TIDE_DATA_TYPE_KEY = "type";
+	public static final String TIDE_DATA_TYPE_VALUE = "DATA";
+	public static final String SERVER_DISPATCHER_GDS_SESSION_ID = "__GDS_SERVER_DISPATCHER__";
+
 	public void observe();
 	
 	public void publish(Set<Object[]> dataUpdates);

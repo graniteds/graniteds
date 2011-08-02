@@ -28,8 +28,6 @@ import org.eclipse.persistence.indirection.WeavedAttributeValueHolderInterface;
  */
 public class EclipseLinkValueHolder implements WeavedAttributeValueHolderInterface {
 
-    private static final long serialVersionUID = 1L;
-
     private Object value = null;
     
     

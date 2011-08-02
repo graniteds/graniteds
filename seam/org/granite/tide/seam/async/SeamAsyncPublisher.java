@@ -47,8 +47,6 @@ import flex.messaging.messages.AsyncMessage;
 @BypassInterceptors
 @AutoCreate
 public class SeamAsyncPublisher implements AsyncPublisher {
-
-    private static final long serialVersionUID = -5395975397632138270L;
     
     public static final String DESTINATION_NAME = "seamAsync";
     

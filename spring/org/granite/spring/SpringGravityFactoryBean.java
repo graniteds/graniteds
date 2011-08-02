@@ -28,7 +28,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.web.context.ServletContextAware;
 
 
-public class SpringGravityFactoryBean implements ServletContextAware, FactoryBean {
+public class SpringGravityFactoryBean implements ServletContextAware, FactoryBean<Object> {
 	
     private GravityProxy proxy = null;
     

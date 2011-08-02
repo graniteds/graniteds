@@ -40,8 +40,6 @@ import org.granite.gravity.adapters.JMSClient;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
 
-import flex.messaging.messages.AsyncMessage;
-
 public class JMSDataDispatcher extends AbstractDataDispatcher {
     
     private static final Logger log = Logger.getLogger(JMSDataDispatcher.class);
@@ -67,11 +65,11 @@ public class JMSDataDispatcher extends AbstractDataDispatcher {
 			}
 			sessionId = session.getId();
 			
-			jmsClient = (JMSClient)session.getAttribute("org.granite.gravity.jmsClient." + topicName);
+			jmsClient = (JMSClient)((HttpGraniteContext)graniteContext).getSessionMap().get(JMSClient.JMSCLIENT_KEY_PREFIX + topicName);
 		}
 		else {
 			// Server initiated dispatcher
-			this.sessionId = "__GDS_SERVER_DISPATCHER__";
+			this.sessionId = SERVER_DISPATCHER_GDS_SESSION_ID;
 			
 			try {
 				InitialContext ic = new InitialContext();
@@ -92,11 +90,11 @@ public class JMSDataDispatcher extends AbstractDataDispatcher {
 	protected void changeDataSelector(String dataSelector) {
 		if (jmsClient != null) {
 			try {
-				jmsClient.subscribe(dataSelector, topicName, "tideDataTopic");			
+				jmsClient.subscribe(dataSelector, topicName, TIDE_DATA_SUBTOPIC);			
 				log.debug("JMS Topic %s data selector changed: %s", topicName, dataSelector);
 			}
-			catch (JMSException e) {
-				log.debug(e, "Could not change JMS Topic %s data selector: %s", topicName);
+			catch (Exception e) {
+				log.error(e, "Could not change JMS Topic %s data selector: %s", topicName);
 			}
 		}
 	}
@@ -107,7 +105,7 @@ public class JMSDataDispatcher extends AbstractDataDispatcher {
 			try {
 				jmsClient.send(params, body, 0L);
 			}
-			catch (JMSException e) {
+			catch (Exception e) {
 				log.error("Could not dispatch data update on topic %s using internal JMS client, message %s", topicName, body.toString());
 			}
 		}
@@ -117,9 +115,6 @@ public class JMSDataDispatcher extends AbstractDataDispatcher {
 				Session jmsSession = jmsConnection.createSession(transacted, Session.AUTO_ACKNOWLEDGE);
 				MessageProducer jmsProducer = jmsSession.createProducer(topic);
 				ObjectMessage jmsMessage = jmsSession.createObjectMessage((Serializable)body);
-				jmsMessage.setStringProperty(AsyncMessage.SUBTOPIC_HEADER, "tideDataTopic");
-				jmsMessage.setStringProperty("GDSSessionID", sessionId);
-				jmsMessage.setStringProperty("type", "DATA");
 				for (Entry<String, String> hh : params.entrySet())
 					jmsMessage.setStringProperty(hh.getKey(), hh.getValue());
 			

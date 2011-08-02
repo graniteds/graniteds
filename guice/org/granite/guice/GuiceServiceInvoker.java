@@ -29,8 +29,6 @@ import org.granite.messaging.service.ServiceInvoker;
  */
 public class GuiceServiceInvoker extends ServiceInvoker<GuiceServiceFactory> {
 
-    private static final long serialVersionUID = 1L;
-
     public GuiceServiceInvoker(Destination destination, GuiceServiceFactory factory, Object instance)
         throws ServiceException {
         super(destination, factory);

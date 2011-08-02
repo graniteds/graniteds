@@ -56,8 +56,6 @@ import flex.messaging.messages.RemotingMessage;
  * @author William DRAI
  */
 public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker<T> {
-
-    private static final long serialVersionUID = 1L;
      
     private static final Logger log = Logger.getLogger(TideServiceInvoker.class);
     

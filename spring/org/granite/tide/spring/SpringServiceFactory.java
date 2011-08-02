@@ -46,8 +46,6 @@ import flex.messaging.messages.RemotingMessage;
  * @author Sebastien Deleuze
  */
 public class SpringServiceFactory extends ServiceFactory {
-
-    private static final long serialVersionUID = 1L;
     
 	private static final Logger log = Logger.getLogger(SpringServiceFactory.class);
     

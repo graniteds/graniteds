@@ -25,6 +25,8 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpSession;
 
+import org.granite.clustering.GraniteDistributedData;
+import org.granite.clustering.GraniteDistributedDataFactory;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
@@ -63,13 +65,14 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 				return;
 			}
 			sessionId = session.getId();
+			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
 			
-			clientId = (String)session.getAttribute("org.granite.gravity.channel.clientId." + topicName);
+			clientId = gdd.getDestinationClientId(topicName);
 			if (clientId == null) {
 				log.debug("Gravity channel clientId not defined, data dispatch disabled");
 				return;
 			}
-			subscriptionId = (String)session.getAttribute("org.granite.gravity.channel.subscriptionId." + topicName);
+			subscriptionId = gdd.getDestinationSubscriptionId(topicName);
 			if (subscriptionId == null) {
 				log.debug("Gravity channel subscriptionId not defined, data dispatch disabled");
 				return;
@@ -82,7 +85,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 			}
 			
 			this.gravity = gravity;
-			this.sessionId = "__GDS_SERVER_DISPATCHER__";
+			this.sessionId = DataDispatcher.SERVER_DISPATCHER_GDS_SESSION_ID;
 		}
 		
 		enabled = true;
@@ -93,34 +96,34 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 	protected void changeDataSelector(String dataSelector) {
 		HttpSession session = ((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSession(false);
 		
-		String clientId = (String)session.getAttribute("org.granite.gravity.channel.clientId." + topicName);	    				
-		if (clientId != null) {
-			String subscriptionId = (String)session.getAttribute("org.granite.gravity.channel.subscriptionId." + topicName);
+		if (session != null) {
+			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+			String clientId = gdd.getDestinationClientId(topicName);
+			String subscriptionId = gdd.getDestinationSubscriptionId(topicName);
 			
-			CommandMessage message = new CommandMessage();
-			message.setClientId(clientId);
-			message.setHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER, subscriptionId);
-			message.setHeader(AsyncMessage.SUBTOPIC_HEADER, "tideDataTopic");
-			message.setDestination(topicName);
-			message.setOperation(CommandMessage.SUBSCRIBE_OPERATION);
-			
-			message.setHeader(CommandMessage.SELECTOR_HEADER, dataSelector);
-			
-			gravity.handleMessage(message, true);
-			
-			log.debug("Topic %s data selector changed: %s", topicName, dataSelector);
+			if (clientId != null) {
+				CommandMessage message = new CommandMessage();
+				message.setClientId(clientId);
+				message.setHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER, subscriptionId);
+				message.setHeader(AsyncMessage.SUBTOPIC_HEADER, TIDE_DATA_SUBTOPIC);
+				message.setDestination(topicName);
+				message.setOperation(CommandMessage.SUBSCRIBE_OPERATION);
+				
+				message.setHeader(CommandMessage.SELECTOR_HEADER, dataSelector);
+				
+				gravity.handleMessage(message, true);
+				
+				log.debug("Topic %s data selector changed: %s", topicName, dataSelector);
+			}
 		}
 	}
-		
+	
 	@Override
 	public void publishUpdate(Map<String, String> params, Object body) {
 		Channel channel = gravity.getChannel(clientId);
 		AsyncMessage message = new AsyncMessage();
 		message.setClientId(clientId);
-		message.setHeader(AsyncMessage.SUBTOPIC_HEADER, "tideDataTopic");
 		message.setDestination(topicName);
-		message.setHeader("GDSSessionID", sessionId);
-		message.setHeader("type", "DATA");
 		for (Entry<String, String> hh : params.entrySet())
 			message.setHeader(hh.getKey(), hh.getValue());
 		message.setBody(body);

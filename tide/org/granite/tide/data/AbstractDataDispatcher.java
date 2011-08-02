@@ -29,13 +29,20 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
+import org.granite.clustering.GraniteDistributedData;
+import org.granite.clustering.GraniteDistributedDataFactory;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
 
+import flex.messaging.messages.AsyncMessage;
+
 public abstract class AbstractDataDispatcher implements DataDispatcher {
     
-    private static final Logger log = Logger.getLogger(AbstractDataDispatcher.class);
+    private static final String TIDE_DATA_SELECTORS_KEY_PREFIX = "org.granite.tide.dataSelectors.";
+
+
+	private static final Logger log = Logger.getLogger(AbstractDataDispatcher.class);
 
     
     protected boolean enabled;
@@ -67,23 +74,25 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 			paramsProvider.observes(params);
 		}
 		
+		
 		// Ensure that the current Gravity consumer listens about this data topic and params
 		GraniteContext graniteContext = GraniteContext.getCurrentInstance();
 		if (!(graniteContext instanceof HttpGraniteContext))
 			return;
 		
+		GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
 		HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
 		
 		@SuppressWarnings("unchecked")
-		List<DataObserveParams> selectors = (List<DataObserveParams>)session.getAttribute("org.granite.tide.dataSelectors." + topicName);
+		List<DataObserveParams> selectors = (List<DataObserveParams>)session.getAttribute(TIDE_DATA_SELECTORS_KEY_PREFIX + topicName);
 		if (selectors == null) {
 			selectors = new ArrayList<DataObserveParams>();
-			session.setAttribute("org.granite.tide.dataSelectors." + topicName, selectors);
+			session.setAttribute(TIDE_DATA_SELECTORS_KEY_PREFIX + topicName, selectors);
 		}
 		
-		String dataSelector = (String)session.getAttribute("org.granite.gravity.selector." + topicName);
+		String dataSelector = gdd.getDestinationSelector(topicName);
 		if (params != null && !DataObserveParams.containsParams(selectors, params)) {
-			StringBuilder sb = new StringBuilder("type = 'DATA'");
+			StringBuilder sb = new StringBuilder(TIDE_DATA_TYPE_KEY + " = '" + TIDE_DATA_TYPE_VALUE + "'");
 			
 			if (!params.isEmpty())
 				selectors.add(params);
@@ -103,11 +112,10 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 				sb.append(")");
 			}
 			
-			session.setAttribute("org.granite.gravity.selector." + topicName, sb.toString());
+			gdd.setDestinationSelector(topicName, sb.toString());
 		}
 		else if (dataSelector == null) {
-			dataSelector = "type = 'UNINITIALIZED'";
-			session.setAttribute("org.granite.tide.selector." + topicName, dataSelector);
+			gdd.setDestinationSelector(topicName, TIDE_DATA_TYPE_KEY + " = 'UNINITIALIZED'");
 		}
 		
 		if (!enabled)
@@ -141,7 +149,11 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 			}
 			
 			for (Entry<Map<String, String>, List<Object>> me : updates.entrySet()) {
-				publishUpdate(me.getKey(), me.getValue());
+				Map<String, String> headers = new HashMap<String, String>(me.getKey());
+				headers.put(AsyncMessage.SUBTOPIC_HEADER, TIDE_DATA_SUBTOPIC);
+				headers.put(GDS_SESSION_ID, sessionId);
+				headers.put(TIDE_DATA_TYPE_KEY, TIDE_DATA_TYPE_VALUE);
+				publishUpdate(headers, me.getValue().toArray());
 			}
 		}
 		catch (Exception e) {
