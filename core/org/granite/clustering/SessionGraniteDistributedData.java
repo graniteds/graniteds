@@ -44,9 +44,9 @@ public class SessionGraniteDistributedData implements GraniteDistributedData {
 	private static final String CREDENTIALS_KEY = KEY_PREFIX + "CREDENTIALS";
 	private static final String CHANNELID_KEY_PREFIX = KEY_PREFIX + "CHANNELID.";
 	private static final String SUBSCRIPTION_KEY_PREFIX = KEY_PREFIX + "SUBSCRIPTION.";
-	private static final String DESTINATION_CLIENTID_KEY_PREFIX = KEY_PREFIX + "DESTINATION_CLIENTID.";
-	private static final String DESTINATION_SUBSCRIPTIONID_KEY_PREFIX = KEY_PREFIX + "DESTINATION_SUBSCRIPTIONID.";
-	private static final String DESTINATION_SELECTOR_KEY_PREFIX = KEY_PREFIX + "DESTINATION_SELECTOR.";
+	private static final String DESTINATION_CLIENTID_KEY_PREFIX = "org.granite.gravity.channel.clientId.";
+	private static final String DESTINATION_SUBSCRIPTIONID_KEY_PREFIX = "org.granite.gravity.channel.subscriptionId.";
+	private static final String DESTINATION_SELECTOR_KEY_PREFIX = KEY_PREFIX + "org.granite.gravity.selector.";
 	
 	private final HttpSession session;
 
