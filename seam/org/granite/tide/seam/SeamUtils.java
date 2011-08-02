@@ -31,7 +31,7 @@ public class SeamUtils {
 		boolean lifecycle = component.isLifecycleMethod(method);
 		if (!lifecycle) {
     		Class<?> clazz = method.getDeclaringClass();
-    		while (clazz.getSuperclass() != null) {
+    		while (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
     			clazz = clazz.getSuperclass();
     			try {
     				Method m = clazz.getMethod(method.getName(), method.getParameterTypes());
