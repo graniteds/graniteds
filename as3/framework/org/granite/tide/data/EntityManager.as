@@ -102,9 +102,7 @@ package org.granite.tide.data {
          * 	@private
          *  Clear the current context
          *  Destroys all components/context variables
-         * 
-         *  @param force force complete destruction of context (all event listeners...), used for testing
-         */ 
+         */
         public function clear():void {
             for each (var e:Object in _entitiesByUID.data) {
             	if (e is IEntity)
@@ -317,7 +315,7 @@ package org.granite.tide.data {
          *  @private 
          * 	Retrives an entity in the cache from its uid
          *   
-         *  @param obj an entity
+         *  @param object an entity
          *  @param nullIfAbsent return null if entity not cached in context
          */
         public function getCachedObject(object:Object, nullIfAbsent:Boolean = false):Object {
@@ -335,7 +333,7 @@ package org.granite.tide.data {
          *  @private 
          * 	Retrives the owner entity of the provided object (collection/map/entity)
          *   
-         *  @param obj an entity
+         *  @param object an entity
          */
         public function getOwnerEntity(object:Object):Object {
             var refs:Array = _entityReferences[object];
@@ -846,12 +844,15 @@ package org.granite.tide.data {
             
             // Restore collection sort/filter state
             var prevColl:IList = list !== coll ? list : null;
-            if (prevColl is ICollectionView && coll is ICollectionView) {
-                ICollectionView(coll).sort = ICollectionView(prevColl).sort;
-                ICollectionView(coll).filterFunction = ICollectionView(prevColl).filterFunction;
+            var destColl:IList = prevColl;
+            if (destColl is ListCollectionView && (ListCollectionView(destColl).sort != null || ListCollectionView(destColl).filterFunction != null))
+                destColl = ListCollectionView(destColl).list;
+            else if (destColl is ICollectionView && coll is ICollectionView) {
+                ICollectionView(coll).sort = ICollectionView(destColl).sort;
+                ICollectionView(coll).filterFunction = ICollectionView(destColl).filterFunction;
                 ICollectionView(coll).refresh();
             }
-            
+
             if (prevColl && _mergeUpdate) {
             	// Enable tracking before modifying collection when resolving a conflict
             	// so the dirty checking can save changes
@@ -860,8 +861,8 @@ package org.granite.tide.data {
 	            	tracking = true;
 	            }
 	            
-                for (i = 0; i < prevColl.length; i++) {
-                    obj = prevColl.getItemAt(i);
+                for (i = 0; i < destColl.length; i++) {
+                    obj = destColl.getItemAt(i);
                     found = false;
                     for (j = 0; j < coll.length; j++) {
                         var next:Object = coll.getItemAt(j);
@@ -871,31 +872,31 @@ package org.granite.tide.data {
                         }
                     }
                     if (!found) {
-                        prevColl.removeItemAt(i);
+                        destColl.removeItemAt(i);
                         i--;
                     }
                 }
             }
             for (i = 0; i < coll.length; i++) {
                 obj = coll.getItemAt(i);
-                if (prevColl) {
+                if (destColl) {
                     var found:Boolean = false;
-                    for (var j:int = i; j < prevColl.length; j++) {
-                        var prev:Object = prevColl.getItemAt(j);
-                        if (i < prevColl.length && objectEquals(prev, obj)) {
+                    for (var j:int = i; j < destColl.length; j++) {
+                        var prev:Object = destColl.getItemAt(j);
+                        if (i < destColl.length && objectEquals(prev, obj)) {
                             obj = mergeExternal(obj, prev, propertyName != null ? expr : null, propertyName != null ? parent : null);
                             
                             if (j != i) {
-                            	prevColl.removeItemAt(j);
-                            	if (i < prevColl.length)
-                            		prevColl.addItemAt(obj, i);
+                            	destColl.removeItemAt(j);
+                            	if (i < destColl.length)
+                            		destColl.addItemAt(obj, i);
                             	else
-                            		prevColl.addItem(obj);
+                            		destColl.addItem(obj);
                             	if (i > j)
                             		j--;
                             }
                             else if (obj !== prev)
-                                prevColl.setItemAt(obj, i);
+                                destColl.setItemAt(obj, i);
                             
                             found = true;
                         }
@@ -905,9 +906,9 @@ package org.granite.tide.data {
                         
                         if (_mergeUpdate) {
 	                        if (i < prevColl.length)
-	                        	prevColl.addItemAt(obj, i);
+	                        	destColl.addItemAt(obj, i);
 	                        else
-	                        	prevColl.addItem(obj);
+	                        	destColl.addItem(obj);
 	                    }
                     }
                 }
@@ -918,7 +919,7 @@ package org.granite.tide.data {
                 		coll.setItemAt(obj, i);
                 }
             }
-            if (prevColl && _mergeUpdate) {
+            if (destColl && _mergeUpdate) {
             	if (!_resolvingConflict)
 					_dirtyCheckContext.markNotDirty(previous, parent as IEntity);
                 

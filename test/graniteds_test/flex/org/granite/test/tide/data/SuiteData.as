@@ -21,7 +21,7 @@ package org.granite.test.tide.data
 	import org.granite.test.tide.data.TestMergeCollection5;
 	import org.granite.test.tide.data.TestMergeCollectionOfElementsGDS501;
 	import org.granite.test.tide.data.TestMergeCollectionOfEntities;
-	import org.granite.test.tide.data.TestMergeCollectionSort;
+	import org.granite.test.tide.data.TestMergeCollectionSortFilter;
 	import org.granite.test.tide.data.TestMergeConflictEntity;
 	import org.granite.test.tide.data.TestMergeConflictEntityCollection;
 	import org.granite.test.tide.data.TestMergeConflictEntityConversation;
@@ -71,7 +71,7 @@ package org.granite.test.tide.data
 		public var test11:org.granite.test.tide.data.TestMergeCollection3;
 		public var test12:org.granite.test.tide.data.TestMergeCollection4;
 		public var test13:org.granite.test.tide.data.TestMergeCollection5;
-		public var test13b:org.granite.test.tide.data.TestMergeCollectionSort;
+		public var test13b:org.granite.test.tide.data.TestMergeCollectionSortFilter;
 		public var test14:org.granite.test.tide.data.TestMergeCollectionOfElementsGDS501;
 		public var test15:org.granite.test.tide.data.TestMergeCollectionOfEntities;
 		public var test16:org.granite.test.tide.data.TestMergeConflictEntity;
