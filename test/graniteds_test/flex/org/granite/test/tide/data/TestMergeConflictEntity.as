@@ -3,8 +3,10 @@ package org.granite.test.tide.data
     import org.flexunit.Assert;
     
     import mx.collections.ArrayCollection;
-    
-    import org.granite.tide.BaseContext;
+
+import org.granite.persistence.PersistentSet;
+
+import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
     import org.granite.tide.data.Conflicts;
     import org.granite.tide.data.events.TideDataConflictsEvent;
@@ -169,9 +171,100 @@ package org.granite.test.tide.data
 			Assert.assertNull("Conflicts after merge", _conflicts);
 			Assert.assertFalse("Person dirty after merge", _ctx.meta_isEntityChanged(person));
 		}
-       
+		
+		[Test]
+		public function testMergeConflictEntity3():void {
+			var person:Person = new Person();
+			person.id = 1; 
+			person.version = 0;
+			person.firstName = "toto";
+			person.lastName = "toto";
+			person.contacts = new PersistentSet(true);
+			var contact:Contact = new Contact();
+			contact.id = 1;
+			contact.version = 0;
+			contact.person = person;
+			person.contacts.addItem(contact);
+			_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+			person = _ctx.person;
+			
+			person.lastName = "tutu";
+			
+			Assert.assertTrue("Person dirty", _ctx.meta_isEntityChanged(person));
+			
+			var person2:Person = new Person();
+			person2.contacts = new PersistentSet(true);
+			person2.id = person.id;
+			person2.version = 1;
+			person2.uid = person.uid;
+			person2.firstName = "tutu";
+			person2.lastName = "toto";
+			var contact2:Contact = new Contact();
+			contact2.id = contact.id;
+			contact2.version = 0;
+			contact2.uid = contact.uid;
+			contact2.person = person2;
+			person2.contacts.addItem(contact2);
+			
+			_ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, acceptServerConflictsHandler);
+			
+			_ctx.meta_mergeExternalData([person2], null, "S2");
+
+			Assert.assertFalse("Person dirty after merge", _ctx.meta_isEntityChanged(person));
+			Assert.assertEquals("Person firstName", "tutu", person.firstName);
+			Assert.assertEquals("Person lastName", "toto", person.lastName);
+		}
+
+        [Test]
+        public function testMergeConflictEntity4():void {
+            var person:Person = new Person();
+            person.id = 1;
+            person.version = 0;
+            person.firstName = "toto";
+            person.lastName = "toto";
+            person.contacts = new ArrayCollection();
+            var contact:Contact = new Contact();
+            contact.id = 1;
+            contact.version = 0;
+            contact.person = person;
+            person.contacts.addItem(contact);
+            _ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+            person = Person(_ctx.person);
+            contact = Contact(person.contacts.getItemAt(0));
+
+            contact.email = "test@test.com";
+
+            Assert.assertTrue("Person dirty", _ctx.meta_isEntityChanged(contact));
+
+            var person2:Person = new Person();
+            person2.contacts = new ArrayCollection();
+            person2.id = person.id;
+            person2.version = 1;
+            person2.uid = person.uid;
+            person2.firstName = "toto";
+            person2.lastName = "toto";
+            var contact2:Contact = new Contact();
+            contact2.id = contact.id;
+            contact2.version = 1;
+            contact2.uid = contact.uid;
+            contact2.person = person2;
+            contact2.email = "toto@toto.net";
+            person2.contacts.addItem(contact2);
+
+            _ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, acceptServerConflictsHandler);
+
+            _ctx.meta_mergeExternalData([person2], null, "S2");
+
+            Assert.assertFalse("Contact dirty after merge", _ctx.meta_isEntityChanged(contact));
+            Assert.assertEquals("Contact email", "toto@toto.net", contact.email);
+        }
+
         private function conflictsHandler(event:TideDataConflictsEvent):void {
         	_conflicts = event.conflicts;
+        }
+
+        private function acceptServerConflictsHandler(event:TideDataConflictsEvent):void {
+        	event.conflicts.acceptAllServer();
         }
     }
 }

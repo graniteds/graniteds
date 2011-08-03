@@ -146,7 +146,6 @@ package org.granite.tide.data {
             _resolvingConflict = false;
 			_uninitializing = false;
             _versionChangeCache = null;
-            _uninitializeAllowed = true;
         }
         
         /**
@@ -1211,6 +1210,11 @@ package org.granite.tide.data {
          *  Dispatch an event when last merge generated conflicts 
          */
         public function handleMergeConflicts():void {
+            // Clear thread cache so acceptClient/acceptServer can work inside the conflicts handler
+            _entityCache = null;
+            _versionChangeCache = null;
+            _resolvingConflict = false;
+
         	if (_mergeConflicts != null && !_mergeConflicts.empty)
         		_context.dispatchEvent(new TideDataConflictsEvent(_context, _mergeConflicts));
         }
