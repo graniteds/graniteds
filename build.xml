@@ -66,9 +66,13 @@
                 <include name="appengine*.jar"/>
                 <include name="appserv-rt.jar"/>
                 <include name="catalina.jar"/>
+                <include name="interceptor-api.jar"/>
+                <include name="jboss-j2ee.jar"/>
+                <include name="cdi-api.jar"/>
                 <include name="ejb-api.jar"/>
                 <include name="jpa-2.0-api.jar"/>
                 <include name="javax.servlet.jar"/>
+                <include name="aopalliance-1.0.jar"/>
                 <include name="org.osgi.*.jar"/>
                 <include name="jboss-vfs*.jar"/>
                 <include name="weblogic*.jar"/>
