@@ -31,6 +31,8 @@ public class SecurityServiceException extends ServiceException {
 
     /** Code for invalid credentails (wrong username or password) */
     public static String CODE_INVALID_CREDENTIALS = "Server.Security.InvalidCredentials";
+    /** Code for other types of authentication errors */
+    public static String CODE_AUTHENTICATION_FAILED = "Server.Security.AuthenticationFailed";
     /** Code for illegal access to a service or method that requires authentication */
     public static String CODE_NOT_LOGGED_IN = "Server.Security.NotLoggedIn";
     /** Code for user session timeout */
@@ -48,7 +50,10 @@ public class SecurityServiceException extends ServiceException {
     public static SecurityServiceException newInvalidCredentialsException(String message, String details) {
         return new SecurityServiceException(CODE_INVALID_CREDENTIALS, message, details);
     }
-
+    public static SecurityServiceException newAuthenticationFailedException(String message) {
+        return new SecurityServiceException(CODE_AUTHENTICATION_FAILED, message);
+    }
+    
     public static SecurityServiceException newNotLoggedInException() {
         return new SecurityServiceException(CODE_NOT_LOGGED_IN);
     }

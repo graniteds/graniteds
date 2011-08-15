@@ -44,9 +44,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.context.HttpRequestResponseHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -67,6 +69,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 	private SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 	private AbstractSpringSecurity3Interceptor securityInterceptor = null;
 	private String authenticationManagerBeanName = null;
+	private boolean allowAnonymousAccess = false;
 	private Method getRequest = null;
 	private Method getResponse = null;
     
@@ -89,6 +92,10 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 		this.authenticationManager = authenticationManager;
 	}
 	
+	public void setAllowAnonymousAccess(boolean allowAnonymousAccess) {
+		this.allowAnonymousAccess = allowAnonymousAccess;
+	}
+	
 	public void setSecurityContextRepository(SecurityContextRepository securityContextRepository) {
 		this.securityContextRepository = securityContextRepository;
 	}
@@ -101,6 +108,8 @@ public class SpringSecurity3Service extends AbstractSecurityService {
         log.debug("Configuring with parameters %s: ", params);
         if (params.containsKey("authentication-manager-bean-name"))
         	authenticationManagerBeanName = params.get("authentication-manager-bean-name");
+        if (Boolean.TRUE.toString().equals(params.get("allow-anonymous-access")))
+        	allowAnonymousAccess = true;
     }
     
     public void login(Object credentials) {
@@ -133,12 +142,19 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 	            	log.error(e, "Could not save context after authentication");
 	            }
             } 
-            catch (BadCredentialsException e) {
-                throw SecurityServiceException.newInvalidCredentialsException(e.getMessage());
+            catch (AuthenticationException e) {
+            	handleAuthenticationExceptions(e);
             }
         }
 
         log.debug("User %s logged in", user);
+    }
+    
+    protected void handleAuthenticationExceptions(AuthenticationException e) {
+    	if (e instanceof BadCredentialsException || e instanceof UsernameNotFoundException)
+            throw SecurityServiceException.newInvalidCredentialsException(e.getMessage());
+        
+    	throw SecurityServiceException.newAuthenticationFailedException(e.getMessage());
     }
     
     public void lookupAuthenticationManager(ApplicationContext ctx, String authenticationManagerBeanName) throws SecurityServiceException {
@@ -151,13 +167,13 @@ public class SpringSecurity3Service extends AbstractSecurityService {
         	this.authenticationManager = authManagers.get(authenticationManagerBeanName);
         	if (authenticationManager == null) {
         		log.error("AuthenticationManager bean not found " + authenticationManagerBeanName);
-        		throw SecurityServiceException.newInvalidCredentialsException("Authentication failed");
+        		throw SecurityServiceException.newAuthenticationFailedException("Authentication failed");
         	}
         	return;
         }
         else if (authManagers.size() > 1) {
         	log.error("More than one AuthenticationManager beans found, specify which one to use in Spring config <graniteds:security-service authentication-manager='myAuthManager'/> or in granite-config.xml <security type='org.granite.spring.security.SpringSecurity3Service'><param name='authentication-manager-bean-name' value='myAuthManager'/></security>");
-    		throw SecurityServiceException.newInvalidCredentialsException("Authentication failed");
+    		throw SecurityServiceException.newAuthenticationFailedException("Authentication failed");
         }
         
     	this.authenticationManager = authManagers.values().iterator().next();
@@ -191,7 +207,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
         }
         
         if (context.getDestination().isSecured()) {
-            if (!isAuthenticated(authentication) || authentication instanceof AnonymousAuthenticationToken) {
+            if (!isAuthenticated(authentication) || (!allowAnonymousAccess && authentication instanceof AnonymousAuthenticationToken)) {
                 log.debug("User not authenticated!");
                 throw SecurityServiceException.newNotLoggedInException("User not logged in");
             }
