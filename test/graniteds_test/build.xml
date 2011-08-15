@@ -188,19 +188,22 @@
         <mkdir dir="${gds.test}/swf"/>
         <antcall target="build.module">
             <param name="moduleName" value="TestRunner.mxml"/>
+            <param name="targetName" value="tests.swf"/>
         </antcall>
         <antcall target="build.module">
             <param name="moduleName" value="TestModule.mxml"/>
+            <param name="targetName" value="module.swf"/>
         </antcall>
         <antcall target="build.module">
             <param name="moduleName" value="TestModule2.mxml"/>
+            <param name="targetName" value="module2.swf"/>
         </antcall>
     </target>
 
     <target name="build.module" description="Build Flex tests swf">
         <mkdir dir="${gds.test}/swf"/>
         <mxmlc
-            output="${gds.test}/swf/tests.swf"
+            output="${gds.test}/swf/${targetName}"
             file="${gds.test}/flex/${moduleName}"
             use-network="false"
             debug="true">
