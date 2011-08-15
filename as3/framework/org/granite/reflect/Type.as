@@ -317,8 +317,8 @@ package org.granite.reflect {
 		 * 		otherwise.
 		 */
 		public static function registerDomain(domain:ApplicationDomain):Boolean {
-			if (domain !== ClassUtil.systemDomain && !(_registeredDomains.hasOwnProperty(domain))) {
-				_registeredDomains[domain] = new Array();
+			if (domain !== ClassUtil.systemDomain && _registeredDomains[domain] == null) {
+				_registeredDomains[domain] = [];
 				return true;
 			}
 			return false;
@@ -413,7 +413,14 @@ package org.granite.reflect {
 		
 		///////////////////////////////////////////////////////////////////////
 		// Instance
-		
+
+        /**
+         * @private
+         */
+        private var _id:int;
+
+        private static var CURRENT_ID:int = 0;
+
 		/**
 		 * @private
 		 */
@@ -478,7 +485,8 @@ package org.granite.reflect {
 			
 			if (desc == null || domain == null)
 				throw new ReflectionError("domain cannot be null");
-			
+
+            _id = CURRENT_ID++;
 			_class = clazz;
 			_domain = domain;
 			
@@ -497,6 +505,16 @@ package org.granite.reflect {
 		public function getClass():Class {
 			return _class;
 		}
+
+        /**
+         * Returns the internal identifier of this <code>Type</code>.
+         * Can be used to identify types for the same <code>Class</code> in different application domains.
+         *
+         * @return the internal identifier of the type.
+         */
+        public function get id():int {
+            return _id;
+        }
 
 		/**
 		 * The underlying <code>ApplicationDomain</code> instance associated

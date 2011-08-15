@@ -20,54 +20,19 @@
 
 package org.granite.tide.impl { 
 	
-	import flash.display.DisplayObject;
-	import flash.display.DisplayObjectContainer;
-	import flash.display.LoaderInfo;
-	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import flash.events.TimerEvent;
-	import flash.net.LocalConnection;
 	import flash.system.ApplicationDomain;
 	import flash.utils.Dictionary;
-	import flash.utils.IExternalizable;
-	import flash.utils.Proxy;
-	import flash.utils.Timer;
-	import flash.utils.flash_proxy;
-	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	
-	import mx.binding.BindabilityInfo;
-	import mx.binding.utils.BindingUtils;
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
 	import mx.collections.Sort;
-	import mx.controls.Alert;
-	import mx.core.Application;
-	import mx.core.IUIComponent;
-	import mx.core.mx_internal;
-	import mx.events.PropertyChangeEvent;
-	import mx.logging.ILogger;
+    import mx.core.IUIComponent;
+    import mx.events.FlexEvent;
+    import mx.logging.ILogger;
 	import mx.logging.Log;
-	import mx.managers.SystemManager;
-	import mx.messaging.config.ServerConfig;
-	import mx.messaging.events.ChannelFaultEvent;
-	import mx.messaging.events.MessageEvent;
-	import mx.messaging.messages.AsyncMessage;
-	import mx.messaging.messages.ErrorMessage;
-	import mx.messaging.messages.IMessage;
-	import mx.rpc.AbstractOperation;
-	import mx.rpc.AsyncToken;
-	import mx.rpc.Fault;
-	import mx.rpc.events.FaultEvent;
-	import mx.rpc.events.InvokeEvent;
-	import mx.rpc.events.ResultEvent;
-	import mx.rpc.remoting.mxml.Operation;
-	import mx.rpc.remoting.mxml.RemoteObject;
-	import mx.utils.DescribeTypeCache;
-	import mx.utils.DescribeTypeCacheRecord;
-	import mx.utils.ObjectProxy;
-	import mx.utils.ObjectUtil;
+    import mx.utils.ObjectUtil;
 	import mx.utils.StringUtil;
 	
 	import org.granite.reflect.Annotation;
@@ -77,22 +42,13 @@ package org.granite.tide.impl {
 	import org.granite.reflect.Type;
 	import org.granite.tide.BaseContext;
 	import org.granite.tide.ComponentDescriptor;
-	import org.granite.tide.IComponent;
 	import org.granite.tide.IContextManager;
 	import org.granite.tide.IEntity;
 	import org.granite.tide.ITideModule;
 	import org.granite.tide.Subcontext;
 	import org.granite.tide.Tide;
-	import org.granite.tide.collections.PersistentCollection;
-	import org.granite.tide.collections.PersistentMap;
 	import org.granite.tide.events.TideContextEvent;
-	import org.granite.tide.events.TideEvent;
-	import org.granite.tide.events.TideFaultEvent;
 	import org.granite.tide.events.TidePluginEvent;
-	import org.granite.tide.events.TideResultEvent;
-	import org.granite.tide.service.DefaultServiceInitializer;
-	import org.granite.tide.service.IServiceInitializer;
-	import org.granite.tide.validators.ValidatorResponder;
 	import org.granite.util.ClassUtil;
     
 
@@ -116,9 +72,10 @@ package org.granite.tide.impl {
 		private var _injectionPointsByType:Dictionary = new Dictionary();
 		
         private var _modules:Dictionary = new Dictionary();
+        private var _moduleRef:Dictionary = new Dictionary();
 		private var _moduleApplicationDomain:Dictionary = new Dictionary(true);
 		private var _applicationDomains:Dictionary = new Dictionary(true);
-		
+
 		
 		public function ComponentStore(tide:Tide, contextManager:IContextManager):void {
 			_tide = tide;
@@ -135,8 +92,7 @@ package org.granite.tide.impl {
 		 *  @return name of implementation component
 		 */
 		public function getProducer(type:Class):IComponentProducer {
-			var typeName:String = getQualifiedClassName(type);
-			var producers:Array = _allProducersByType[typeName];
+			var producers:Array = _allProducersByType[type];
 			return producers && producers.length > 0 ? producers[0] : null;
 		}
 		
@@ -149,8 +105,7 @@ package org.granite.tide.impl {
 		 *  @return array of names of implementation components 
 		 */
 		public function getAllProducers(type:Class):Array {
-			var typeName:String = getQualifiedClassName(type);
-			var producers:Array = _allProducersByType[typeName] as Array;
+			var producers:Array = _allProducersByType[type] as Array;
 			return producers ? producers : null;
 		}
 		
@@ -160,14 +115,14 @@ package org.granite.tide.impl {
 		 *  
 		 * 	Register a component implementation producer for a type
 		 * 
-		 *  @param typeName type class name
+		 *  @param type type class
 		 *  @param name of implementation component
 		 */
-		private function registerProducer(typeName:String, producer:IComponentProducer):void {
-			var producers:Array = _allProducersByType[typeName] as Array;
+		private function registerProducer(type:Type, producer:IComponentProducer):void {
+			var producers:Array = _allProducersByType[type.getClass()] as Array;
 			if (producers == null) {
 				producers = [];
-				_allProducersByType[typeName] = producers;
+				_allProducersByType[type.getClass()] = producers;
 			}
 			
 			var found:Boolean = false;
@@ -180,32 +135,32 @@ package org.granite.tide.impl {
 			if (!found) {
 				producers.push(producer);
 				if (producers.length > 1)
-					log.info("Many implementation producers for type " + typeName + ", " + producer.componentName + " will be ignored for [Inject]");
+					log.info("Many implementation producers for type " + type.name + ", " + producer.componentName + " will be ignored for [Inject]");
 			}
 		}
 		
-		private function registerSimpleProducer(typeName:String, name:String):void {
-			if (isFrameworkType(typeName))
+		private function registerSimpleProducer(type:Type, name:String):void {
+			if (isFrameworkType(type.name))
 				return;
 			
 			var producer:IComponentProducer = new SimpleComponentProducer(name);
-			registerProducer(typeName, producer); 
+			registerProducer(type, producer);
 		}
 		
-		private function registerMethodProducer(typeName:String, name:String, method:Method):void {
-			if (isFrameworkType(typeName))
+		private function registerMethodProducer(type:Type, name:String, method:Method):void {
+			if (isFrameworkType(type.name))
 				return;
 			
 			var producer:IComponentProducer = new MethodComponentProducer(name, method);
-			registerProducer(typeName, producer);
+			registerProducer(type, producer);
 		}
 		
-		private function registerPropertyProducer(typeName:String, name:String, field:Field):void {
-			if (isFrameworkType(typeName))
+		private function registerPropertyProducer(type:Type, name:String, field:Field):void {
+			if (isFrameworkType(type.name))
 				return;
 			
 			var producer:IComponentProducer = new PropertyComponentProducer(name, field);
-			registerProducer(typeName, producer);
+			registerProducer(type, producer);
 		}
 		
 		
@@ -214,14 +169,15 @@ package org.granite.tide.impl {
 		 *  
 		 * 	Unregister a component implementation for a type
 		 * 	
-		 *  @param typeName type class name
+		 *  @param type type class
 		 *  @param name of implementation component
 		 */
 		private function unregisterProducer(name:String):void {
-			var typesToRemove:Array = new Array();
+			var typesToRemove:Array = [];
 			var producer:IComponentProducer;
-			for (var typeName:String in _allProducersByType) {
-				var producers:Array = _allProducersByType[typeName] as Array;
+            var type:Object;
+			for (type in _allProducersByType) {
+				var producers:Array = _allProducersByType[type] as Array;
 				var idx:int = -1;
 				for (var i:int = 0; i < producers.length; i++) {
 					if (producers[i].componentName == name) {
@@ -233,10 +189,10 @@ package org.granite.tide.impl {
 					producers.splice(idx, 1);
 				
 				if (producers.length == 0)
-					typesToRemove.push(typeName)
+					typesToRemove.push(type)
 			}
-			for each (typeName in typesToRemove)
-				delete _allProducersByType[typeName];
+			for each (type in typesToRemove)
+				delete _allProducersByType[type];
 		}
 		
 		/**
@@ -247,8 +203,8 @@ package org.granite.tide.impl {
 		 *  @param type type required at injection point
 		 *  @return array of injection points [ componentName, propertyName ]
 		 */
-		public function getInjectionPoints(typeName:String):Array {
-			var injectionPoints:Array = _injectionPointsByType[typeName];
+		public function getInjectionPoints(type:Type):Array {
+			var injectionPoints:Array = _injectionPointsByType[type];
 			return injectionPoints ? injectionPoints : null;
 		}
 				
@@ -257,18 +213,18 @@ package org.granite.tide.impl {
 		 *  
 		 * 	Register an injection point for a type
 		 * 
-		 *  @param typeName type class name
+		 *  @param type type class
 		 *  @param componentName target component name
 		 *  @param propertyName target property name
 		 */
-		private function registerInjectionPoint(typeName:String, componentName:String, propertyName:String):void {
-			if (isFrameworkType(typeName))
+		private function registerInjectionPoint(type:Type, componentName:String, propertyName:String):void {
+			if (isFrameworkType(type.name))
 				return;
 			
-			var ips:Array = _injectionPointsByType[typeName] as Array;
+			var ips:Array = _injectionPointsByType[type] as Array;
 			if (ips == null) {
-				ips = new Array();
-				_injectionPointsByType[typeName] = ips;
+				ips = [];
+				_injectionPointsByType[type] = ips;
 			}
 			var found:Boolean = false;
 			for each (var ip:Array in ips) {
@@ -282,21 +238,21 @@ package org.granite.tide.impl {
 		}
 		
 		private function unregisterInjectionPoints(componentName:String):void {
-		    var typeNamesToDelete:Array = new Array();
-		    var typeName:String;
-		    for (typeName in _injectionPointsByType) {
-		    	var ips:Array = _injectionPointsByType[typeName];
+		    var typeNamesToDelete:Array = [];
+		    var type:Object;
+		    for (type in _injectionPointsByType) {
+		    	var ips:Array = _injectionPointsByType[type];
 		    	for (var j:int = 0; j < ips.length; j++) {
 		    		if (ips[j][0] == componentName) {
 		    			ips.splice(j, 1);
 		    			j--;
 		    		}
 		    		if (ips.length == 0)
-		    			typeNamesToDelete.push(typeName);
+		    			typeNamesToDelete.push(type);
 		    	}
 		    }
-		    for each (typeName in typeNamesToDelete)
-		    	delete _injectionPointsByType[typeName];
+		    for each (type in typeNamesToDelete)
+		    	delete _injectionPointsByType[type];
 		}	
 		
 		private function isFrameworkType(typeName:String):Boolean {
@@ -313,9 +269,9 @@ package org.granite.tide.impl {
 		 *  @return types
 		 */
 		public function getComponentTypes(type:Type):Array {
-			var types:Array = [type.name].concat(type.fastSupertypes());			
+			var types:Array = [type].concat(type.superclasses).concat(type.interfaces);
 			return types.filter(function(item:*, index:int, array:Array):Boolean {
-				return !isFrameworkType(String(item));
+				return !isFrameworkType(String(item.name));
 			});
 		}
 				
@@ -338,32 +294,45 @@ package org.granite.tide.impl {
 		
 		
         private var _currentDomain:ApplicationDomain = ApplicationDomain.currentDomain;
-		private var _moduleInitializing:ITideModule = null;
-		
+		private var _moduleInitializing:Object = null;
+
 		/**
 		 * 	Register a Tide module
 		 * 
-		 * 	@param moduleClass the module class (that must implement ITideModule)
+		 * 	@param module the module class or instance (that must implement ITideModule)
 		 * 	@param appDomain the Flex application domain for modules loaded dynamically
 		 */
-		public function addModule(moduleClass:Class, appDomain:ApplicationDomain = null):void {
+		public function addModule(module:Object, appDomain:ApplicationDomain = null):void {
 		    if (appDomain != null)
 		        Type.registerDomain(appDomain);
-		    
-		    var module:ITideModule = _modules[moduleClass];
-		    if (module == null) {
-		        module = new moduleClass() as ITideModule;
-		        _modules[moduleClass] = module;
-		        _moduleInitializing = module;
-		        _moduleComponents[module] = new Array();
+
+            var moduleClass:Class = module is Class ? module as Class : Type.forName(getQualifiedClassName(module)).getClass();
+
+            if (!(module is Class)) {
+                var refs:Object = _moduleRef[moduleClass];
+                if (refs == null)
+                    _moduleRef[moduleClass] = 1;
+                else {
+                    _moduleRef[moduleClass] = Number(refs)+1;
+                    return;     // Module class already registered
+                }
+            }
+
+		    var moduleInstance:Object = _modules[moduleClass];
+		    if (moduleInstance == null) {
+		        moduleInstance = module is Class ? new moduleClass() : module;
+		        _modules[moduleClass] = moduleInstance;
+		        _moduleInitializing = moduleInstance;
+		        _moduleComponents[moduleInstance] = [];
 		        if (appDomain != null)
-	                _moduleApplicationDomain[module] = appDomain;
+	                _moduleApplicationDomain[moduleInstance] = appDomain;
 		        				
 		        try {
-					if (Object(module).hasOwnProperty("moduleName"))
-						addSubcontext(Object(module).moduleName);
-					
-		            module.init(_tide);
+					if (Object(moduleInstance).hasOwnProperty("moduleName"))
+						addSubcontext(Object(moduleInstance).moduleName);
+
+                    if (moduleInstance is ITideModule)
+		                ITideModule(moduleInstance).init(_tide);
 		        }
 		        catch (e:Error) {
 		            log.error("Module " + moduleClass + " initialization failed", e);
@@ -374,26 +343,60 @@ package org.granite.tide.impl {
 		    else
 		        throw new Error("Module " + moduleClass + " already added");
 		}
-		
+
+        public function trackModuleCreation(moduleInstance:Object):void {
+            if (_moduleComponents[moduleInstance] == null)
+                return;
+            _moduleInitializing = moduleInstance;
+            moduleInstance.addEventListener(FlexEvent.CREATION_COMPLETE, moduleCreationCompleteHandler, false, 0, true);
+            moduleInstance.addEventListener(FlexEvent.REMOVE, moduleRemoveHandler, false, 0, true);
+        }
+
+        private function moduleCreationCompleteHandler(event:FlexEvent):void {
+            event.target.removeEventListener(FlexEvent.CREATION_COMPLETE, moduleCreationCompleteHandler);
+            _moduleInitializing = null;
+        }
+
+        private function moduleRemoveHandler(event:FlexEvent):void {
+            event.target.removeEventListener(FlexEvent.REMOVE, moduleRemoveHandler);
+            if (_moduleComponents[event.target] != null)
+                removeModule(event.target);
+        }
+
+
 		/**
 		 * 	Unregister a Tide module
 		 * 
-		 * 	@param moduleClass the module class (that must implement ITideModule)
+		 * 	@param module the module class or instance (that must implement ITideModule)
 		 */
-		public function removeModule(moduleClass:Class):void {
-		    var module:ITideModule = _modules[moduleClass];
-		    if (module == null)
+		public function removeModule(module:Object):void {
+            if (!(module is Class) && _moduleComponents[module] == null)
+                return;     // Module already removed
+
+            var moduleClass:Class = module is Class ? module as Class : Type.forName(getQualifiedClassName(module)).getClass();
+
+            if (!(module is Class)) {
+                var refs:Object = _moduleRef[moduleClass];
+                if (Number(refs) > 1) {
+                    _moduleRef[moduleClass] = Number(refs)-1;
+                    return;
+                }
+            }
+
+		    var moduleInstance:Object = module is Class ? _modules[moduleClass] : module;
+		    if (moduleInstance == null)
 		        throw new Error("Module " + moduleClass + " not found");
 		        
-		    var componentNames:Array = _moduleComponents[module] as Array;
+		    var componentNames:Array = _moduleComponents[moduleInstance] as Array;
 		    for each (var name:String in componentNames)
 		        removeComponent(name);
 		        
-		    var appDomain:ApplicationDomain = _moduleApplicationDomain[module];
+		    var appDomain:ApplicationDomain = _moduleApplicationDomain[moduleInstance];
 		    
-		    delete _moduleApplicationDomain[module];
-		    delete _moduleComponents[module];
+		    delete _moduleApplicationDomain[moduleInstance];
+		    delete _moduleComponents[moduleInstance];
 		    delete _modules[moduleClass];
+            delete _moduleRef[moduleClass];
 		    
 		    if (appDomain != null)
 		        removeApplicationDomain(appDomain);
@@ -487,11 +490,11 @@ package org.granite.tide.impl {
 		    descriptor.types = getComponentTypes(type);
 
 			if (descriptor.types.indexOf("org.granite.tide::IEntity") < 0) {
-				for each (var typeName:String in descriptor.types) {
-					if (typeName == "org.granite.tide::IComponent" || typeName == "org.granite.tide::Component")
+				for each (var type:Type in descriptor.types) {
+					if (type.name == "org.granite.tide::IComponent" || type.name == "org.granite.tide::Component")
 						continue;
 						 
-					registerSimpleProducer(typeName, name);
+					registerSimpleProducer(type, name);
 				}
 			}
 		    
@@ -708,7 +711,7 @@ package org.granite.tide.impl {
 				function(context:BaseContext, field:Field, annotation:Annotation, sourcePropName:String, destPropName:Object, create:String, global:String):void {
 					var name:String;
 					if (annotation.name == 'Inject') {
-	                    name = Tide.internalNameForTypedComponent(field.type.name);
+	                    name = Tide.internalNameForTypedComponent(field.type.name + '_' + field.type.id);
 	                    
 	                    if ((!modulePrefix && !isComponent(name)) || (modulePrefix && !isComponent(modulePrefix + name))) {
 	                    	addComponentFromType(modulePrefix, name, field.type, 
@@ -717,7 +720,7 @@ package org.granite.tide.impl {
 	                    	);
 	                    }
 	                    
-	                	registerInjectionPoint(field.type.name, componentName, field.name);
+	                	registerInjectionPoint(field.type, componentName, field.name);
 					}
 					else {
 	                    if (sourcePropName.match(/#{.*}/))
@@ -776,7 +779,7 @@ package org.granite.tide.impl {
 		private function scanProducerMethods(name:String, type:Type, modulePrefix:String, inConversation:Boolean, restrict:int):void {
 			TypeScanner.scanProducerMethods(null, type,
 				function(context:BaseContext, method:Method, annotation:Annotation):void {
-					registerMethodProducer(method.returnType.name, name, method);
+					registerMethodProducer(method.returnType, name, method);
 				}
 			);
 		}
@@ -794,7 +797,7 @@ package org.granite.tide.impl {
 		private function scanProducerProperties(name:String, type:Type, modulePrefix:String, inConversation:Boolean, restrict:int):void {
 			TypeScanner.scanProducerProperties(null, type,
 				function(context:BaseContext, field:Field, annotation:Annotation):void {
-					registerPropertyProducer(field.type.name, name, field);
+					registerPropertyProducer(field.type, name, field);
 				}
 			);
 		}

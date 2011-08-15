@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+           xmlns:s="library://ns.adobe.com/flex/spark"
+           xmlns:mx="library://ns.adobe.com/flex/mx">
+
+    <fx:Script><![CDATA[
+        import mx.core.FlexGlobals;
+
+        import org.granite.test.tide.PersonService;
+
+        import org.granite.tide.spring.Context;
+
+        import skins.TestModuleSkin;
+
+        private static var classConstructed:Boolean = classConstruct();
+
+        private static function classConstruct():Boolean {
+             var styleManager:IStyleManager2 = FlexGlobals.topLevelApplication.styleManager;
+             var style:CSSStyleDeclaration = styleManager.getStyleDeclaration(".custom");
+             if (!style)
+                style = new CSSStyleDeclaration();
+
+             style.defaultFactory = function():void {
+                this.skinClass = TestModuleSkin;
+             };
+             styleManager.setStyleDeclaration(".custom", style, true);
+             return true;
+        }
+
+        [Inject] [Bindable]
+        public var context:Context;
+
+        [Inject] [Bindable]
+        public var personService:PersonService;
+    ]]></fx:Script>
+
+    <fx:Metadata>[Name]</fx:Metadata>
+
+    <s:Panel title="Module 2">
+        <s:layout><s:VerticalLayout gap="4"/></s:layout>
+
+        <s:Label text="This is a second module in context: {context}"/>
+
+        <s:Label text="PersonService: {personService.meta_name}"/>
+
+        <s:Button label="Close" styleName="custom"/>
+    </s:Panel>
+</mx:Module>

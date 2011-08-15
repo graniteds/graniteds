@@ -186,9 +186,22 @@
      !-->
     <target name="build.mxmlc" description="Build Flex tests swf">
         <mkdir dir="${gds.test}/swf"/>
+        <antcall target="build.module">
+            <param name="moduleName" value="TestRunner.mxml"/>
+        </antcall>
+        <antcall target="build.module">
+            <param name="moduleName" value="TestModule.mxml"/>
+        </antcall>
+        <antcall target="build.module">
+            <param name="moduleName" value="TestModule2.mxml"/>
+        </antcall>
+    </target>
+
+    <target name="build.module" description="Build Flex tests swf">
+        <mkdir dir="${gds.test}/swf"/>
         <mxmlc
             output="${gds.test}/swf/tests.swf"
-            file="${gds.test}/flex/TestRunner.mxml"
+            file="${gds.test}/flex/${moduleName}"
             use-network="false"
             debug="true">
 
@@ -196,7 +209,7 @@
 
             <source-path path-element="${FLEX_HOME_TESTS}/frameworks"/>
             <source-path path-element="${gds.test}/flex"/>
-            
+
             <!-- Standard annotations -->
             <keep-as3-metadata name="Bindable"/>
             <keep-as3-metadata name="Managed"/>
@@ -230,15 +243,15 @@
             <compiler.library-path dir="${gds.build}" append="true">
                 <include name="granite.swc"/>
             </compiler.library-path>
-            
+
             <compiler.library-path dir="${gds.test}/libs" append="true">
                 <include name="flexunit*-4.1.0.swc"/>
             </compiler.library-path>
-            
+
             <compiler.headless-server>true</compiler.headless-server>
         </mxmlc>
     </target>
-    
+
     <target name="tests.flex" depends="build.mxmlc" description="Run Flex tests">
         <mkdir dir="${gds.test}/test-reports/flex"/>
         <flexunit swf="${gds.test}/swf/tests.swf" todir="${gds.test}/test-reports/flex" headless="true" localTrusted="true" verbose="true"/>

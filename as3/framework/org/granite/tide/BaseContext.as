@@ -17,80 +17,45 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 package org.granite.tide {
-    
+
     import flash.display.DisplayObject;
     import flash.events.Event;
-    import flash.events.EventDispatcher;
     import flash.events.IEventDispatcher;
     import flash.system.ApplicationDomain;
     import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
     import flash.utils.getQualifiedClassName;
-    
+
     import mx.binding.utils.BindingUtils;
     import mx.binding.utils.ChangeWatcher;
-    import mx.collections.ArrayCollection;
-    import mx.collections.ArrayList;
-    import mx.collections.ICollectionView;
     import mx.collections.IList;
-    import mx.collections.ItemResponder;
-    import mx.collections.ListCollectionView;
-    import mx.controls.Alert;
-    import mx.core.Application;
     import mx.core.IUIComponent;
-    import mx.core.IUID;
-    import mx.data.IManaged;
     import mx.data.utils.Managed;
     import mx.events.CollectionEvent;
-    import mx.events.CollectionEventKind;
-    import mx.events.FlexEvent;
     import mx.events.PropertyChangeEvent;
-    import mx.events.PropertyChangeEventKind;
-    import mx.events.ValidationResultEvent;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.messaging.events.ChannelFaultEvent;
     import mx.messaging.messages.ErrorMessage;
     import mx.rpc.AbstractOperation;
     import mx.rpc.AsyncToken;
-    import mx.rpc.events.FaultEvent;
-    import mx.rpc.events.ResultEvent;
-    import mx.rpc.remoting.mxml.RemoteObject;
-    import mx.utils.DescribeTypeCache;
-    import mx.utils.DescribeTypeCacheRecord;
     import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
-    import mx.utils.UIDUtil;
     import mx.utils.object_proxy;
-    import mx.validators.ValidationResult;
-    
-    import org.granite.collections.BasicMap;
-    import org.granite.collections.IMap;
+
     import org.granite.collections.IPersistentCollection;
-    import org.granite.collections.UIDWeakSet;
-    import org.granite.events.SecurityEvent;
     import org.granite.meta;
     import org.granite.reflect.Annotation;
     import org.granite.reflect.Field;
-    import org.granite.reflect.Method;
     import org.granite.reflect.Type;
     import org.granite.tide.collections.PersistentCollection;
-    import org.granite.tide.collections.PersistentMap;
     import org.granite.tide.data.EntityManager;
     import org.granite.tide.events.IConversationEvent;
-    import org.granite.tide.events.TideEvent;
-    import org.granite.tide.events.TideFaultEvent;
-    import org.granite.tide.events.TideResultEvent;
-    import org.granite.tide.events.TideUIConversationEvent;
     import org.granite.tide.events.TideUIEvent;
-    import org.granite.tide.impl.ComponentInfo;
     import org.granite.tide.impl.ContextEventDispatcher;
     import org.granite.tide.impl.ContextVariable;
     import org.granite.tide.impl.IComponentProducer;
     import org.granite.tide.impl.TypeScanner;
     import org.granite.util.ClassUtil;
-
-
 
     use namespace flash_proxy;
     use namespace object_proxy;
@@ -1001,11 +966,8 @@ package org.granite.tide {
 						}
                     }
                     else if (!(value is Component)) {
-                        if (!_tide.isComponent(n)) {
-                            var componentClass:Class = Type.forInstance(value).getClass(); 
-                            _tide.addComponent(n, componentClass, _parentContext != null, false);
-                        }
-	                    
+                        _tide.addComponentFromInstance(value, n, _parentContext != null);
+
 	                    if (value is IEventDispatcher) { 
 	                        if (_componentListeners[value] == null) {
 	                        	_contextManager.unregisterComponent(n, value);
@@ -1068,8 +1030,8 @@ package org.granite.tide {
     			return;
     		
 			var value:Object = meta_getInstance(name, false);
-			for each (var typeName:String in descriptor.types) {
-				var ips:Array = _tide.getInjectionPoints(typeName);
+			for each (var type:Type in descriptor.types) {
+				var ips:Array = _tide.getInjectionPoints(type);
 				if (ips != null) {
 					for each (var ip:Array in ips) {
 						var comp:Object = meta_getInstance(String(ip[0]), false);
@@ -1081,8 +1043,8 @@ package org.granite.tide {
 		}
     	
     	private function meta_inject(name:String, instance:Object):void {
-			for each (var typeName:String in _tide.getDescriptor(name).types) {
-				var ips:Array = _tide.getInjectionPoints(typeName);
+			for each (var type:Type in _tide.getDescriptor(name).types) {
+				var ips:Array = _tide.getInjectionPoints(type);
 				for each (var ip:Array in ips) {
 					var comp:Object = this[ip[0]];
 					if (comp != null)

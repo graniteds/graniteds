@@ -58,7 +58,8 @@ package org.granite.test.tide.framework
 	import org.granite.test.tide.framework.TestUIComponentGDS781b;
 	import org.granite.test.tide.framework.TestUIComponentModules;
 	import org.granite.test.tide.framework.TestEventInterceptor;
-	
+    import org.granite.test.tide.framework.TestComponentFlexModules;
+
 	[Suite]
 	[RunWith("org.flexunit.runners.Suite")]
 	public class SuiteFramework
@@ -121,6 +122,6 @@ package org.granite.test.tide.framework
 		public var test54:org.granite.test.tide.framework.TestUIComponentGDS781b;
 		public var test55:org.granite.test.tide.framework.TestUIComponentModules;
 		public var test56:org.granite.test.tide.framework.TestEventInterceptor;
-		
+		public var test57:org.granite.test.tide.framework.TestComponentFlexModules;
 	}
 }

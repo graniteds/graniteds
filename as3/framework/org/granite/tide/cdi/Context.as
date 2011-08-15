@@ -21,48 +21,27 @@
 package org.granite.tide.cdi {
 
     import flash.events.Event;
-    import flash.events.IEventDispatcher;
-    import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
     import flash.utils.getQualifiedClassName;
     
     import mx.collections.ArrayCollection;
-    import mx.collections.ArrayList;
     import mx.collections.IList;
-    import mx.collections.ItemResponder;
-    import mx.collections.ListCollectionView;
-    import mx.controls.Alert;
-    import mx.core.IUID;
-    import mx.core.UIComponent;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
-    import mx.events.FlexEvent;
     import mx.events.PropertyChangeEvent;
-    import mx.events.PropertyChangeEventKind;
-    import mx.events.ValidationResultEvent;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.messaging.events.ChannelFaultEvent;
-    import mx.messaging.messages.ErrorMessage;
     import mx.rpc.AbstractOperation;
     import mx.rpc.AsyncToken;
-    import mx.rpc.events.FaultEvent;
-    import mx.rpc.events.ResultEvent;
-    import mx.rpc.remoting.mxml.RemoteObject;
-    import mx.utils.ObjectProxy;
-    import mx.utils.ObjectUtil;
     import mx.utils.object_proxy;
-    import mx.validators.ValidationResult;
-    
+
     import org.granite.collections.IPersistentCollection;
-    import org.granite.events.SecurityEvent;
     import org.granite.meta;
     import org.granite.reflect.Type;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Component;
     import org.granite.tide.IComponent;
     import org.granite.tide.IEntity;
-    import org.granite.tide.IEntityManager;
     import org.granite.tide.IExpression;
     import org.granite.tide.IIdentity;
     import org.granite.tide.IInvocationCall;
@@ -70,11 +49,7 @@ package org.granite.tide.cdi {
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.Tide;
     import org.granite.tide.impl.ComponentProperty;
-    import org.granite.tide.impl.ContextExpression;
     import org.granite.tide.impl.TypedContextExpression;
-    import org.granite.tide.collections.PersistentCollection;
-    import org.granite.tide.events.TideFaultEvent;
-    import org.granite.tide.events.TideResultEvent;
     import org.granite.tide.invocation.ContextEvent;
     import org.granite.tide.invocation.ContextResult;
     import org.granite.tide.invocation.ContextUpdate;
@@ -296,8 +271,8 @@ package org.granite.tide.cdi {
 		 *  Logs the current call
 		 */ 
 		private function meta_traceCall():void {
-			log.debug("updates: {0}", toString(_updates));
-			log.debug("results: {0}", toString(_results));
+			log.debug("updates: {0}", BaseContext.toString(_updates));
+			log.debug("results: {0}", BaseContext.toString(_results));
 		}
 		
 		/**
