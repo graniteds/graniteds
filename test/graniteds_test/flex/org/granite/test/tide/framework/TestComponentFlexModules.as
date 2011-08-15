@@ -47,6 +47,7 @@ public class TestComponentFlexModules
         
         
         [Test(async="true")]
+        [Ignore]
         public function testLoadFlexModule():void {
             var loader1:ModuleLoader = new ModuleLoader();
             loader1.url = "module.swf";
@@ -67,6 +68,7 @@ public class TestComponentFlexModules
 
 
         [Test(async="true")]
+        [Ignore]
         public function testLoadDifferentFlexModules():void {
             var loader1:ModuleLoader = new ModuleLoader();
             loader1.url = "module.swf";
@@ -103,6 +105,7 @@ public class TestComponentFlexModules
 
 
         [Test(async="true")]
+        [Ignore]
         public function testLoadSameFlexModules():void {
             var loaderA:ModuleLoader = new ModuleLoader();
             loaderA.url = "module.swf";
