@@ -1,0 +1,6 @@
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+.custom {
+    skinClass: ClassReference("skins.TestModuleSkin");
+}
