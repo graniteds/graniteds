@@ -1028,6 +1028,9 @@
      !-->
     <target name="platform">
         
+    	<mkdir dir="distjars"/>
+    	<mkdir dir="distswcs"/>
+    	
         <!-- GDS -->
         <mkdir dir="graniteds"/>
         <mkdir dir="graniteds/libraries"/>
@@ -1035,11 +1038,21 @@
         <mkdir dir="graniteds/sources"/>
         <mkdir dir="graniteds/docs"/>
 
-        <copy todir="graniteds/libraries">
+        <copy todir="distjars">
+            <fileset dir="build">
+                <include name="*.jar"/>
+            </fileset>              
+        </copy>
+        <copy todir="distswcs">
             <fileset dir="build">
                 <include name="*.swc"/>
+            </fileset>              
+        </copy>
+        <copy todir="graniteds/libraries">
+            <fileset dir="distswcs">
+                <include name="*.swc"/>
             </fileset>
-            <fileset dir="build">
+            <fileset dir="distjars">
                 <include name="*.jar"/>
             </fileset>
         </copy>
