@@ -360,6 +360,9 @@ public class CDIServiceContext extends TideServiceContext {
         	// Not in a conversation
         }
         
+        // Initialize an empty data context
+        DataContext.init();
+        
         TideInvocation tideInvocation = TideInvocation.init();
         tideInvocation.update(updates);
     }

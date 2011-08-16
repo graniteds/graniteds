@@ -267,6 +267,9 @@ public class EjbServiceContext extends TideServiceContext  {
     	if ((c instanceof InvocationCall) && ((InvocationCall)c).getListeners() != null)
     		remoteObservers.addAll(((InvocationCall)c).getListeners());
     	Context.create(this);
+    	        
+        // Initialize an empty data context
+        DataContext.init();
     }
 
     
