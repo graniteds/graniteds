@@ -243,6 +243,8 @@ public class GraniteConfig implements ScannedItemHandler {
                 handleClass(item.loadAsClass());
             } catch (NoClassDefFoundError e) {
                 // Ignore errors with Tide classes depending on Gravity
+            } catch (LinkageError e) {
+                // Ignore errors with GraniteDS/Hibernate classes depending on Hibernate 3 when using Hibernate 4
             } catch (Throwable t) {
                 log.error(t, "Could not load class: %s", item);
             }
