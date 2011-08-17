@@ -91,31 +91,9 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 		}
 		
 		String dataSelector = gdd.getDestinationSelector(topicName);
-		if (params != null && !DataObserveParams.containsParams(selectors, params)) {
-			StringBuilder sb = new StringBuilder(TIDE_DATA_TYPE_KEY + " = '" + TIDE_DATA_TYPE_VALUE + "'");
-			
-			if (!params.isEmpty())
-				selectors.add(params);
-			
-			if (!selectors.isEmpty()) {
-				sb.append(" AND (");
-				boolean first = true;
-				for (DataObserveParams selector : selectors) {
-					if (first)
-						first = false;
-					else
-						sb.append(" OR ");
-					sb.append("(");
-					selector.append(sb);
-					sb.append(")");
-				}
-				sb.append(")");
-			}
-			
-			gdd.setDestinationSelector(topicName, sb.toString());
-		}
-		else if (dataSelector == null) {
-			gdd.setDestinationSelector(topicName, TIDE_DATA_TYPE_KEY + " = 'UNINITIALIZED'");
+		if (params != null) {
+			dataSelector = params.updateDataSelector(dataSelector, selectors);
+			gdd.setDestinationSelector(topicName, dataSelector);
 		}
 		
 		if (!enabled)
