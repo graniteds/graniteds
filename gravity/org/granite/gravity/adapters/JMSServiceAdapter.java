@@ -177,9 +177,14 @@ public class JMSServiceAdapter extends ServiceAdapter {
     public void stop() throws ServiceException {
         super.stop();
 
-        for (JMSClientImpl jmsClient : jmsClients.values())
-            jmsClient.close();
-        jmsClients.clear();
+        for (JMSClientImpl jmsClient : jmsClients.values()) {
+        	try {
+        		jmsClient.close();
+        	}
+        	catch (Exception e) {
+        		log.warn(e, "Could not close JMSClient: %s", jmsClient);
+        	}
+        }
     }
 
 

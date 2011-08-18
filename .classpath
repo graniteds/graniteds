@@ -75,5 +75,6 @@
 	<classpathentry kind="lib" path="lib/spring-security-config-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/spring-security-core-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/spring-security-web-3.0.jar"/>
+	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
