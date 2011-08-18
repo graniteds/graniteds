@@ -95,6 +95,8 @@ public class TideDataPublishingInterceptor {
 		}
 
 		public void afterCompletion(int status) {
+			if (removeContext)
+				DataContext.remove();
 		}
     	
     }

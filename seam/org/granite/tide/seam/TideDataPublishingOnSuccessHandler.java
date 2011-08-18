@@ -44,4 +44,10 @@ public class TideDataPublishingOnSuccessHandler {
     	if (initContext)
     		DataContext.remove();
     }
+	
+    @Observer("org.granite.tide.seam.data.transactionCompletion")
+    public void doFinish(boolean initContext) {
+    	if (initContext)
+    		DataContext.remove();
+    }
 }

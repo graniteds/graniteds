@@ -67,6 +67,7 @@ public class TideDataPublishingInterceptor extends AbstractInterceptor {
         try {
         	if (dataEnabled.publish().equals(PublishMode.ON_COMMIT)) {
         		Events.instance().raiseTransactionSuccessEvent("org.granite.tide.seam.data.transactionSuccess", shouldRemoveContextAtEnd);
+        		Events.instance().raiseTransactionCompletionEvent("org.granite.tide.seam.data.transactionCompletion", shouldRemoveContextAtEnd);
         		onCommit = true;
         	}
         	

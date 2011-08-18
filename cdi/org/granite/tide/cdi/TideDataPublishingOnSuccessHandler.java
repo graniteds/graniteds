@@ -22,7 +22,12 @@ package org.granite.tide.cdi;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.TransactionPhase;
+import javax.inject.Inject;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
+import org.granite.logging.Logger;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled.PublishMode;
 
@@ -35,8 +40,19 @@ import org.granite.tide.data.DataEnabled.PublishMode;
  */
 public class TideDataPublishingOnSuccessHandler {
 	
+	private static final Logger log = Logger.getLogger(TideDataPublishingOnSuccessHandler.class);
+	
+	@Inject
+	UserTransaction ut;
+	
     public void doPublish(@Observes(during=TransactionPhase.BEFORE_COMPLETION) TideDataPublishingEvent event) {
-    	DataContext.publish(PublishMode.ON_COMMIT);
+    	try {
+			if (!(ut.getStatus() == Status.STATUS_MARKED_ROLLBACK || ut.getStatus() == Status.STATUS_ROLLING_BACK || ut.getStatus() == Status.STATUS_ROLLING_BACK))
+				DataContext.publish(PublishMode.ON_COMMIT);
+		} 
+    	catch (SystemException e) {
+    		log.warn(e, "Could not get the current status of the transaction ???");
+		}
     	if (event.getInitContext())
     		DataContext.remove();
     }

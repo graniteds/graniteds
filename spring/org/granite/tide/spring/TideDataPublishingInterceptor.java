@@ -92,9 +92,14 @@ public class TideDataPublishingInterceptor implements MethodInterceptor {
 		public void beforeCommit(boolean readOnly) {
 			if (!readOnly)
 				DataContext.publish(PublishMode.ON_COMMIT);
+		}
+
+		@Override
+		public void beforeCompletion() {
 			if (removeContext)
 				DataContext.remove();
 		}
+
     	
     }
 }
