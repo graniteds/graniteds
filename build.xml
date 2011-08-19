@@ -149,6 +149,22 @@
             </fileset>
         </copy>
 
+        <!-- hibernate 4 -->
+        <mkdir dir="classes/hibernate4"/>
+        <javac destdir="classes/hibernate4" srcdir="hibernate4" target="1.5" source="1.5" debug="true">
+            <classpath>
+                <path refid="gds.classpath"/>
+                <dirset dir="classes/core"/>
+                <dirset dir="classes/tide"/>
+                <pathelement location="lib/hibernate-core-4.0.0.jar"/>
+            </classpath>
+        </javac>
+        <copy todir="classes/hibernate4">
+            <fileset dir="hibernate4">
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+
         <!-- toplink -->
         <mkdir dir="classes/toplink"/>
         <javac destdir="classes/toplink" srcdir="toplink" target="1.5" source="1.5" debug="true">
@@ -372,6 +388,11 @@
 	        <include name="**"/> 
 	      </fileset> 
 	    </jar> 
+        <jar destfile="build/sources/java/granite-hibernate4-sources.jar"> 
+          <fileset dir="hibernate4"> 
+            <include name="**"/> 
+          </fileset> 
+        </jar> 
 	    <jar destfile="build/sources/java/granite-toplink-sources.jar">
 	      <fileset dir="toplink"> 
 	        <include name="**"/> 
@@ -488,6 +509,7 @@
                 <pathelement path="classes/gravity/"/>
                 <pathelement path="classes/tide/"/>
                 <pathelement path="classes/hibernate/"/>
+                <pathelement path="classes/hibernate4/"/>
 	            <pathelement path="classes/beanvalidation/"/>
 	            <pathelement path="classes/toplink/"/>
 	            <pathelement path="classes/eclipselink/"/>
@@ -522,6 +544,9 @@
 		
         <antcall target="build.maven.javadoc.module">
             <param name="moduleName" value="hibernate"/>
+        </antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="hibernate4"/>
         </antcall>
         <antcall target="build.maven.javadoc.module">
             <param name="moduleName" value="toplink"/>
@@ -578,6 +603,7 @@
                 <pathelement path="classes/gravity/"/>
                 <pathelement path="classes/tide/"/>
                 <pathelement path="classes/hibernate/"/>
+                <pathelement path="classes/hibernate4/"/>
 	            <pathelement path="classes/beanvalidation/"/>
 	            <pathelement path="classes/toplink/"/>
 	            <pathelement path="classes/eclipselink/"/>
@@ -643,6 +669,7 @@
                 <pathelement path="classes/gravity/"/>
                 <pathelement path="classes/tide/"/>
                 <pathelement path="classes/hibernate/"/>
+                <pathelement path="classes/hibernate4/"/>
                 <pathelement path="classes/beanvalidation/"/>
                 <pathelement path="classes/toplink/"/>
                 <pathelement path="classes/eclipselink/"/>
@@ -715,6 +742,11 @@
         </jar>
         <jar destfile="build/granite-hibernate.jar" manifest="build/META-INF/MANIFEST.MF">
             <fileset dir="classes/hibernate">
+                <include name="**"/>
+            </fileset>
+        </jar>
+        <jar destfile="build/granite-hibernate4.jar" manifest="build/META-INF/MANIFEST.MF">
+            <fileset dir="classes/hibernate4">
                 <include name="**"/>
             </fileset>
         </jar>
@@ -891,6 +923,7 @@
                 <pathelement path="classes/gravity/"/>
                 <pathelement path="classes/tide/"/>
                 <pathelement path="classes/hibernate/"/>
+                <pathelement path="classes/hibernate4/"/>
 	            <pathelement path="classes/beanvalidation/"/>
 	            <pathelement path="classes/toplink/"/>
 	            <pathelement path="classes/eclipselink/"/>
@@ -907,6 +940,7 @@
             <fileset dir="gravity/" includes="**/*.java"/>
             <fileset dir="tide/" includes="**/*.java"/>
             <fileset dir="hibernate/" includes="**/*.java"/>
+            <fileset dir="hibernate4/" includes="**/*.java"/>
             <fileset dir="beanvalidation/" includes="**/*.java"/>
             <fileset dir="toplink/" includes="**/*.java"/>
             <fileset dir="eclipselink/" includes="**/*.java"/>
