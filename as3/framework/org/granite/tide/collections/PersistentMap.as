@@ -200,7 +200,9 @@ package org.granite.tide.collections {
             if (_localInitializing || isInitialized())
                 return _map.length;
             
-	        return 1;     // Must be initialized to >0 to enable ItemPendingError at first getItemAt
+            requestInitialization();
+            return 0;
+//	        return 1;     // Must be initialized to >0 to enable ItemPendingError at first getItemAt
         }
         
         override public function get(key:*):* {
