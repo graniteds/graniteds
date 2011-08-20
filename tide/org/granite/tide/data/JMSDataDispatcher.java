@@ -109,7 +109,7 @@ public class JMSDataDispatcher extends AbstractDataDispatcher {
 				log.error("Could not dispatch data update on topic %s using internal JMS client, message %s", topicName, body.toString());
 			}
 		}
-		else {
+		else if (enabled) {
 			try {
 				Connection jmsConnection = connectionFactory.createConnection();
 				Session jmsSession = jmsConnection.createSession(transacted, Session.AUTO_ACKNOWLEDGE);
