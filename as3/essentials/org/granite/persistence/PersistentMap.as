@@ -50,7 +50,7 @@ package org.granite.persistence {
             super(new UIDArraySet());
             _initialized = initialized;
             if (_initialized)
-	            addEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler);
+	            addEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler, false, 1000);
 			else
 				_lazy = true;
         }

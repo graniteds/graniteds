@@ -20,10 +20,13 @@
 
 package org.granite.persistence {
 
-    import flash.utils.IDataInput;
+import flash.events.Event;
+import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
-    
-    import mx.core.IUID;
+
+import mx.core.EventPriority;
+
+import mx.core.IUID;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
@@ -48,7 +51,7 @@ package org.granite.persistence {
         public function AbstractPersistentList(initialized:Boolean = true):void {
             _initialized = initialized;
             if (_initialized)
-    	        addEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler);
+    	        addEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler, false, 1000);
 			else
 				_lazy = true;
         }
