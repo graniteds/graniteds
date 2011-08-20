@@ -761,11 +761,13 @@ package org.granite.tide.data {
             else
                 EntityManager.defaultMerge(_context, obj, dest, _mergeUpdate, expr, parent);
             
+            /*  GDS-863
             if (previous && obj !== previous && previous is IUID && _dirtyCheckContext.isSaved(previous)) {
-                var pce:PropertyChangeEvent = new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, 
+                var pce:PropertyChangeEvent = new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE,
                     false, false, PropertyChangeEventKind.UPDATE, null, previous, previous);
                 previous.dispatchEvent(pce);
             }
+            */
 
 			if (dest != null && !ignore && !_resolvingConflict) {
 				if (_mergeUpdate && _versionChangeCache[dest] != null)
