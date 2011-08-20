@@ -20,14 +20,28 @@
 
 package org.granite.gravity.adapters;
 
+import flex.messaging.messages.AsyncMessage;
+import flex.messaging.messages.CommandMessage;
+
 import java.util.Map;
 
 public interface JMSClient {
 	
 	public static final String JMSCLIENT_KEY_PREFIX = "org.granite.gravity.jmsClient.";
 
+    public void connect() throws Exception;
+
+    public void subscribe(CommandMessage message) throws Exception;
+
 	public void subscribe(String selector, String destination, String topic) throws Exception;
-	
+
+    public void unsubscribe(CommandMessage message) throws Exception;
+
 	public void send(Map<String, ?> params, Object msg, long timeToLive) throws Exception;
 
+    public void send(AsyncMessage message) throws Exception;
+
+    public boolean hasActiveConsumer();
+
+    public void close() throws Exception;
 }

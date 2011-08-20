@@ -58,7 +58,6 @@ import flex.messaging.messages.AcknowledgeMessage;
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.ErrorMessage;
-import flex.messaging.messages.Message;
 
 /**
  * @author William DRAI
@@ -72,7 +71,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
 
     protected ConnectionFactory jmsConnectionFactory = null;
     protected javax.jms.Destination jmsDestination = null;
-    protected Map<String, JMSClientImpl> jmsClients = new HashMap<String, JMSClientImpl>();
+    protected Map<String, JMSClient> jmsClients = new HashMap<String, JMSClient>();
     protected String destinationName = null;
     protected boolean textMessages = false;
     protected boolean transactedSessions = false;
@@ -177,7 +176,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
     public void stop() throws ServiceException {
         super.stop();
 
-        for (JMSClientImpl jmsClient : jmsClients.values()) {
+        for (JMSClient jmsClient : jmsClients.values()) {
         	try {
         		jmsClient.close();
         	}
@@ -185,23 +184,38 @@ public class JMSServiceAdapter extends ServiceAdapter {
         		log.warn(e, "Could not close JMSClient: %s", jmsClient);
         	}
         }
+        jmsClients.clear();
     }
 
 
-    private synchronized JMSClientImpl createJMSClient(Channel client) throws Exception {
-        JMSClientImpl jmsClient = jmsClients.get(client.getId());
+    private synchronized JMSClient connectJMSClient(Channel client, String destination) throws Exception {
+        JMSClient jmsClient = jmsClients.get(client.getId());
         if (jmsClient == null) {
             jmsClient = new JMSClientImpl(client);
             jmsClient.connect();
             jmsClients.put(client.getId(), jmsClient);
+            if (sessionSelector && GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)
+                ((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSessionMap().put(JMSClient.JMSCLIENT_KEY_PREFIX + destination, jmsClient);
+            log.debug("JMS client connected for channel " + client.getId());
         }
         return jmsClient;
+    }
+
+    private synchronized void closeJMSClientIfNecessary(Channel client, String destination) throws Exception {
+        JMSClient jmsClient = jmsClients.get(client.getId());
+        if (jmsClient != null && !jmsClient.hasActiveConsumer()) {
+            jmsClient.close();
+            jmsClients.remove(client.getId());
+            if (sessionSelector && GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)
+                ((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSessionMap().remove(JMSClient.JMSCLIENT_KEY_PREFIX + destination);
+            log.debug("JMS client closed for channel " + client.getId());
+        }
     }
 
     @Override
     public Object invoke(Channel fromClient, AsyncMessage message) {
         try {
-            JMSClientImpl jmsClient = createJMSClient(fromClient);
+            JMSClient jmsClient = connectJMSClient(fromClient, message.getDestination());
             jmsClient.send(message);
 
             AsyncMessage reply = new AcknowledgeMessage(message);
@@ -222,11 +236,9 @@ public class JMSServiceAdapter extends ServiceAdapter {
     public Object manage(Channel fromChannel, CommandMessage message) {
         if (message.getOperation() == CommandMessage.SUBSCRIBE_OPERATION) {
             try {
-                JMSClientImpl jmsClient = createJMSClient(fromChannel);
+                JMSClient jmsClient = connectJMSClient(fromChannel, message.getDestination());
                 jmsClient.subscribe(message);
-                if (sessionSelector && GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)
-                	((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSessionMap().put(JMSClient.JMSCLIENT_KEY_PREFIX + message.getDestination(), jmsClient);
-                
+
                 AsyncMessage reply = new AcknowledgeMessage(message);
                 return reply;
             }
@@ -236,11 +248,9 @@ public class JMSServiceAdapter extends ServiceAdapter {
         }
         else if (message.getOperation() == CommandMessage.UNSUBSCRIBE_OPERATION) {
             try {
-                JMSClientImpl jmsClient = createJMSClient(fromChannel);
+                JMSClient jmsClient = connectJMSClient(fromChannel, message.getDestination());
                 jmsClient.unsubscribe(message);
-                if (sessionSelector && GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)
-                	((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSessionMap().remove(JMSClient.JMSCLIENT_KEY_PREFIX + message.getDestination());
-                jmsClients.remove(fromChannel.getId());
+                closeJMSClientIfNecessary(fromChannel, message.getDestination());
 
                 AsyncMessage reply = new AcknowledgeMessage(message);
                 return reply;
@@ -269,6 +279,11 @@ public class JMSServiceAdapter extends ServiceAdapter {
             this.channel = channel;            
         }
 
+        public boolean hasActiveConsumer() {
+            return consumers != null && !consumers.isEmpty();
+        }
+
+
         public void connect() throws ServiceException {
             try {
                 jmsConnection = jmsConnectionFactory.createConnection();
@@ -283,21 +298,48 @@ public class JMSServiceAdapter extends ServiceAdapter {
             try {
                 if (jmsProducer != null)
                     jmsProducer.close();
-                if (jmsProducerSession != null)
-                    jmsProducerSession.close();
-                for (JMSConsumer consumer : consumers.values())
-                    consumer.close();
-                jmsConnection.stop();
-                jmsConnection.close();
-                consumers.clear();
             }
             catch (JMSException e) {
-                throw new ServiceException("JMS Stop error", e);
+            	log.error(e, "Could not close JMS producer for channel " + channel.getId());
+            }
+            finally {
+            	try {
+	                if (jmsProducerSession != null)
+	                    jmsProducerSession.close();
+	            }
+	            catch (JMSException e) {
+	            	log.error(e, "Could not close JMS producer session for channel " + channel.getId());
+	            }
+            }
+            for (JMSConsumer consumer : consumers.values()) {
+            	try {
+            		consumer.close();
+            	}
+            	catch (JMSException e) {
+            		log.error(e, "Could not close JMS consumer " + consumer.subscriptionId + " for channel " + channel.getId());
+            	}
+            }
+            try {
+                jmsConnection.stop();
+            }
+            catch (JMSException e) {
+            	log.debug(e, "Could not stop JMS connection for channel " + channel.getId());
+            }
+            finally {
+	        	try {
+	        		jmsConnection.close();
+	        	}
+	            catch (JMSException e) {
+	                throw new ServiceException("JMS Stop error", e);
+	            }
+	        	finally {
+		        	consumers.clear();
+	        	}
             }
         }
         
 
-        public void send(Message message) throws Exception {
+        public void send(AsyncMessage message) throws Exception {
             Object msg = null;
             if (Boolean.TRUE.equals(message.getHeader(Gravity.BYTEARRAY_BODY_HEADER))) {
             	byte[] byteArray = (byte[])message.getBody();
@@ -308,7 +350,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
             else
             	msg = message.getBody();
             
-            internalSend(message.getHeaders(), msg, message.getMessageId(), ((AsyncMessage)message).getCorrelationId(), message.getTimestamp(), message.getTimeToLive());
+            internalSend(message.getHeaders(), msg, message.getMessageId(), message.getCorrelationId(), message.getTimestamp(), message.getTimeToLive());
         }
 
         public void send(Map<String, ?> params, Object msg, long timeToLive) throws Exception {
@@ -401,7 +443,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
 			return messageId;
 		}
 
-        public void subscribe(Message message) throws Exception {
+        public void subscribe(CommandMessage message) throws Exception {
             String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
             String selector = (String)message.getHeader(CommandMessage.SELECTOR_HEADER);
             this.topic = (String)message.getHeader(AsyncMessage.SUBTOPIC_HEADER);
@@ -430,15 +472,19 @@ public class JMSServiceAdapter extends ServiceAdapter {
             }
         }
 
-        public void unsubscribe(Message message) throws Exception {
+        public void unsubscribe(CommandMessage message) throws Exception {
             String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
 
             synchronized (consumers) {
                 JMSConsumer consumer = consumers.get(subscriptionId);
-                if (consumer != null)
-                    consumer.close();
-                consumers.remove(subscriptionId);
-                channel.removeSubscription(subscriptionId);
+                try {
+	                if (consumer != null)
+	                    consumer.close();
+                }
+                finally {
+	                consumers.remove(subscriptionId);
+	                channel.removeSubscription(subscriptionId);
+                }
             }
         }
 
