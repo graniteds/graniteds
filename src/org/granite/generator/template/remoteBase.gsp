@@ -23,6 +23,7 @@
 
     as3Imports.add("mx.messaging.ChannelSet");
     as3Imports.add("mx.messaging.config.ServerConfig");
+    as3Imports.add("mx.rpc.AsyncToken");
 
     if (!jClass.hasSuperclass())
         as3Imports.add("mx.rpc.remoting.mxml.RemoteObject");
@@ -93,10 +94,10 @@ package ${jClass.as3Type.packageName} {
                 count++;
             }
             count = 0;
-            %>):void {
+            %>):AsyncToken {
             if (!_initRemote)
                 initRemote();
-            getOperation("${jMethod.name}").send(<%
+            return getOperation("${jMethod.name}").send(<%
                 for (pType in jMethod.getAs3ParameterTypes()) {
                     if (count > 0) {
                         %>, <%
