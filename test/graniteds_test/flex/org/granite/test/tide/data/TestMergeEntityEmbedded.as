@@ -5,12 +5,16 @@ package org.granite.test.tide.data
     import mx.collections.ArrayCollection;
     import mx.events.CollectionEvent;
 	import mx.events.PropertyChangeEvent;
-    
-    import org.granite.tide.BaseContext;
+
+import org.granite.persistence.PersistentSet;
+import org.granite.test.tide.Contact;
+
+import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
-    
-    
-    public class TestMergeEntityEmbedded 
+import org.granite.tide.collections.PersistentCollection;
+
+
+public class TestMergeEntityEmbedded
     {
         private var _ctx:BaseContext = Tide.getInstance().getContext();
         
@@ -60,5 +64,29 @@ package org.granite.test.tide.data
 			if (event.property == "address1")
 				_addrValueChanged = true;
 		}
+
+        [Test(async="true")]
+        public function testMergeEmbeddedLazyCollection():void {
+            var p1:Person11 = new Person11();
+            p1.id = 1;
+            p1.uid = "P1";
+            p1.version = 0;
+            p1.contactList = new Contacts11();
+            p1.contactList.contacts = new PersistentSet();
+            var c1:Contact = new Contact();
+            c1.id = 1;
+            c1.uid = "C1";
+            c1.version = 0;
+            p1.contactList.contacts.addItem(c1);
+
+            var p:Person11 = Person11(_ctx.meta_mergeExternalData(p1));
+
+            Assert.assertTrue("Contacts wrapped", p.contactList.contacts is PersistentCollection);
+            Assert.assertStrictlyEquals("Owner is person", p, PersistentCollection(p.contactList.contacts).entity);
+            Assert.assertStrictlyEquals("PropertyName", "contactList.contacts", PersistentCollection(p.contactList.contacts).propertyName);
+
+
+        }
     }
+
 }

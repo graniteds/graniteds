@@ -74,8 +74,11 @@ public abstract class AbstractTidePersistenceManager implements TidePersistenceM
             
             if (attachedEntity != null && propertyNames != null) {
                 for (int i = 0; i < propertyNames.length; i++) {
-                    Object initializedObj = Reflections.getGetterMethod(attachedEntity.getClass(), propertyNames[i]).invoke(attachedEntity);
-
+                	Object initializedObj = attachedEntity;
+                	String[] pnames = propertyNames[i].split("\\.");
+                	for (int j = 0; j < pnames.length; j++)
+                		initializedObj = Reflections.getGetterMethod(initializedObj.getClass(), pnames[j]).invoke(initializedObj);
+                	
                     //This is here to make sure the list is forced to return a value while operating inside of a 
                     //session. Forcing the  initialization of object.
                     if (getter != null)

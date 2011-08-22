@@ -85,6 +85,22 @@
             <include name="commons-collections.jar"/>
         </fileset>
     </path>
+    <path id="hibernate4.jar">
+        <fileset dir="${gds.lib}">
+            <include name="jpa-2.0-api.jar"/>
+            <include name="hibernate-core-4.0.0.jar"/>
+            <include name="hibernate-entitymanager-4.0.0.jar"/>
+            <include name="hibernate-commons-annotations-3.2.0.Final.jar"/>
+            <include name="dom4j.jar"/>
+            <include name="antlr-2.7.7.jar"/>
+            <include name="asm-1.5.3.jar"/>
+            <include name="cglib-2.1_3.jar"/>
+            <include name="javassist.jar"/>
+            <include name="jta.jar"/>
+            <include name="commons-collections.jar"/>
+            <include name="jboss-logging.jar"/>
+        </fileset>
+    </path>
     <path id="hibernate-validator.jar">
         <fileset dir="${gds.lib}">
             <include name="hibernate-validator.jar"/>
@@ -96,6 +112,11 @@
     <path id="granite-hibernate.jar">
         <fileset dir="${gds.build}">
             <include name="granite-hibernate.jar"/>
+        </fileset>
+    </path>
+    <path id="granite-hibernate4.jar">
+        <fileset dir="${gds.build}">
+            <include name="granite-hibernate4.jar"/>
         </fileset>
     </path>
     <path id="seam.jar">
@@ -156,7 +177,7 @@
     <target name="tests.java" depends="build.javac" description="Run Java tests">
         <mkdir dir="test-reports/java"/>
         
-        <junit printsummary="yes" showoutput="true">
+        <junit printsummary="yes" showoutput="false">
             <classpath>
                 <path refid="gds.classpath"/>
                 <path refid="test.classpath"/>
@@ -168,7 +189,134 @@
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
                     <include name="**/*Test.java"/>
+                    <exclude name="**/Hibernate*.java"/>
+                	<exclude name="**/EclipseLink*.java"/>
+                    <exclude name="**/DataNucleus*.java"/>
+                    <exclude name="**/OpenJpa*.java"/>
                     <exclude name="**/Abstract*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+        
+        <junit printsummary="yes" showoutput="false" fork="true">
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <path refid="log4j.jar"/>
+                <path refid="hibernate.jar"/>
+                <path refid="granite.jar"/>
+                <path refid="granite-hibernate.jar"/>
+                <pathelement location="${gds.lib}/h2.jar"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/Hibernate3*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+        
+        <junit printsummary="yes" showoutput="false">
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <path refid="log4j.jar"/>
+                <path refid="hibernate4.jar"/>
+                <path refid="granite.jar"/>
+                <path refid="granite-hibernate4.jar"/>
+                <pathelement location="${gds.lib}/h2.jar"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/Hibernate4*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+        
+        <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
+        	<jvmarg value="-javaagent:${gds.lib}/eclipselink.jar"/>
+        	
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <pathelement location="${gds.lib}/jpa-2.0-api.jar"/>
+                <pathelement location="${gds.lib}/jta.jar"/>
+                <pathelement location="${gds.lib}/eclipselink.jar"/>
+                <path refid="granite.jar"/>
+                <pathelement location="${gds.build}/granite-eclipselink.jar"/>
+                <pathelement location="${gds.lib}/h2.jar"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/EclipseLink*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+        
+        <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
+    	   <jvmarg value="-javaagent:${gds.lib}/openjpa.jar"/>
+        	
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <pathelement location="${gds.lib}/jpa-2.0-api.jar"/>
+                <pathelement location="${gds.lib}/jta.jar"/>
+                <pathelement location="${gds.lib}/openjpa.jar"/>
+                <pathelement location="${gds.lib}/commons-lang.jar"/>
+                <pathelement location="${gds.lib}/commons-logging.jar"/>
+                <pathelement location="${gds.lib}/commons-collections.jar"/>
+                <pathelement location="${gds.lib}/serp.jar"/>
+                <path refid="granite.jar"/>
+                <pathelement location="${gds.build}/granite-openjpa.jar"/>
+                <pathelement location="${gds.lib}/hsqldb.jar"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/OpenJpa*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+        
+        <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
+        	<jvmarg value="-javaagent:${gds.lib}/datanucleus-enhancer.jar=-api=JPA"/>
+        	
+             <classpath>
+                 <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                 <path refid="main.jar"/>
+                 <pathelement location="${gds.lib}/jpa-2.0-api.jar"/>
+                 <pathelement location="${gds.lib}/jdo2-api-2.3-eb.jar"/>
+                 <pathelement location="${gds.lib}/jta.jar"/>
+                 <pathelement location="${gds.lib}/datanucleus-core.jar"/>
+                 <pathelement location="${gds.lib}/datanucleus-rdbms.jar"/>
+                 <pathelement location="${gds.lib}/datanucleus-jpa.jar"/>
+                 <pathelement location="${gds.lib}/datanucleus-enhancer.jar"/>
+                 <pathelement location="${gds.lib}/asm-3.0.jar"/>
+                 <path refid="granite.jar"/>
+                 <pathelement location="${gds.build}/granite-datanucleus.jar"/>
+                 <pathelement location="${gds.lib}/h2.jar"/>
+                 <pathelement path="classes"/>
+             </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/DataNucleus*Test.java"/>
                 </fileset>
             </batchtest>
         </junit>

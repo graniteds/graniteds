@@ -583,7 +583,7 @@ package org.granite.tide.data {
 	                	next = Enum.normalize(obj as Enum);
 	                }
 	                else if (!ObjectUtil.isSimple(obj) && !(obj is IValue || obj is XML || obj is ByteArray)) {
-	                    next = mergeEntity(obj, previous, expr, parent);
+	                    next = mergeEntity(obj, previous, expr, parent, propertyName);
 	                	addRef = true;
 	                }
 	            }
@@ -633,10 +633,11 @@ package org.granite.tide.data {
          *  @param previous previously existing object in the context (null if no existing object)
          *  @param expr current path from the context
          *  @param parent parent object for collections
+         *  @param propertyName propertyName of the owning object
          * 
          *  @return merged entity (=== previous when previous not null)
          */ 
-        private function mergeEntity(obj:Object, previous:Object, expr:IExpression = null, parent:Object = null):Object {
+        private function mergeEntity(obj:Object, previous:Object, expr:IExpression = null, parent:Object = null, propertyName:String = null):Object {
         	if (obj != null || previous != null)
             	log.debug("mergeEntity: {0} previous {1}{2}", BaseContext.toString(obj), BaseContext.toString(previous), obj === previous ? " (same)" : "");
         	
@@ -755,12 +756,12 @@ package org.granite.tide.data {
                 	else if (desc.mergeGDS20)
                 		dest.meta_merge(_context, obj);
                 	else
-                		EntityManager.defaultMerge(_context, obj, dest, _mergeUpdate, expr, parent);
+                		EntityManager.defaultMerge(_context, obj, dest, _mergeUpdate, expr, parent, propertyName);
                 }
             }
             else
-                EntityManager.defaultMerge(_context, obj, dest, _mergeUpdate, expr, parent);
-            
+                EntityManager.defaultMerge(_context, obj, dest, _mergeUpdate, expr, parent, propertyName);
+
             /*  GDS-863
             if (previous && obj !== previous && previous is IUID && _dirtyCheckContext.isSaved(previous)) {
                 var pce:PropertyChangeEvent = new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE,
@@ -1263,21 +1264,23 @@ package org.granite.tide.data {
          *  @param obj source object
          *  @param dest destination object
          *  @param expr current path of the entity in the context (mostly for internal use)
+         *  @param parent owning object
+         *  @param propertyName property name of the owning object
          */ 
-        public static function defaultMerge(em:IEntityManager, obj:Object, dest:Object, mergeUpdate:Boolean = true, expr:IExpression = null, parent:Object = null):void {
-            var cinfo:Object = ObjectUtil.getClassInfo(obj, null, { includeTransient: false });
+        public static function defaultMerge(em:IEntityManager, obj:Object, dest:Object, mergeUpdate:Boolean = true, expr:IExpression = null, parent:Object = null, propertyName:String = null):void {
+            var cinfo:Object = ObjectUtil.getClassInfo(obj, null, { includeTransient: false, includeReadOnly: false });
 			var rw:Array = new Array();
             for each (var p:String in cinfo.properties) {
                 var o:Object = obj[p];
 				var d:Object = dest[p];
-                o = em.meta_mergeExternal(o, d, expr, parent != null ? parent : dest, p);
+                o = em.meta_mergeExternal(o, d, expr, parent != null ? parent : dest, propertyName != null ? propertyName + '.' + p : p);
                 if (o !== d && mergeUpdate)
                 	dest[p] = o;
 				rw.push(p);
             }
 			cinfo = ObjectUtil.getClassInfo(obj, rw, { includeReadOnly: true });
 			for each (p in cinfo.properties)
-				em.meta_mergeExternal(obj[p], dest[p], expr, parent != null ? parent : dest, p);
+				em.meta_mergeExternal(obj[p], dest[p], expr, parent != null ? parent : dest, propertyName != null ? propertyName + '.' + p : p);
         }
 
     

@@ -170,7 +170,7 @@ public class HibernateExternalizer extends DefaultExternalizer {
             ((HibernateProxyInstantiator)o).readId(in);
         }
         // @Embeddable or others...
-        else if (!isRegularEntity(o.getClass())) {
+        else if (!isRegularEntity(o.getClass()) && !isEmbeddable(o.getClass())) {
         	log.debug("Delegating non regular entity reading to DefaultExternalizer...");
             super.readExternal(o, in);
         }
@@ -302,16 +302,18 @@ public class HibernateExternalizer extends DefaultExternalizer {
             o = proxy.getHibernateLazyInitializer().getImplementation();
         }
 
-        if (!isRegularEntity(o.getClass())) { // @Embeddable or others...
+        if (!isRegularEntity(o.getClass()) && !isEmbeddable(o.getClass())) { // @Embeddable or others...
         	log.debug("Delegating non regular entity writing to DefaultExternalizer...");
             super.writeExternal(o, out);
         }
         else {
-            // Write initialized flag.
-            out.writeObject(Boolean.TRUE);
-            // Write detachedState.
-            out.writeObject(null);
-
+        	if (isRegularEntity(o.getClass())) {
+	            // Write initialized flag.
+	            out.writeObject(Boolean.TRUE);
+	            // Write detachedState.
+	            out.writeObject(null);
+        	}
+        	
             // Externalize entity fields.
             List<Property> fields = findOrderedFields(oClass, false);
             log.debug("Writing entity %s with fields %s", o.getClass().getName(), fields);
@@ -392,6 +394,10 @@ public class HibernateExternalizer extends DefaultExternalizer {
     protected boolean isRegularEntity(Class<?> clazz) {
         return clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(MappedSuperclass.class);
     }
+
+    protected boolean isEmbeddable(Class<?> clazz) {
+        return clazz.isAnnotationPresent(Embeddable.class);
+    }    
     
     protected byte[] serializeSerializable(Serializable o) {
     	if (o == null)

@@ -121,7 +121,7 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
     @Override
     public void readExternal(Object o, ObjectInput in) throws IOException, ClassNotFoundException, IllegalAccessException {
 
-        if (!isRegularEntity(o.getClass())) {
+        if (!isRegularEntity(o.getClass()) && !isEmbeddable(o.getClass())) {
         	log.debug("Delegating non regular entity reading to DefaultExternalizer...");
             super.readExternal(o, in);
         }
@@ -204,7 +204,7 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
         ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
         Class<?> oClass = classGetter.getClass(o);
 
-        if (!isRegularEntity(o.getClass())) { // @Embeddable or others...
+        if (!isRegularEntity(o.getClass()) && !isEmbeddable(o.getClass())) { // @Embeddable or others...
         	log.debug("Delegating non regular entity writing to DefaultExternalizer...");
             super.writeExternal(o, out);
         }
@@ -213,33 +213,35 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
         	preSerialize((PersistenceCapable)pco);
         	Object[] detachedState = getDetachedState(pco);
         	
-        	// Pseudo-proxy created for uninitialized entities (see below).
-        	if (detachedState != null && detachedState[0] == NULL_ID) {
-            	// Write initialized flag.
-            	out.writeObject(Boolean.FALSE);
-            	// Write detached state.
-        		out.writeObject(null);
-        		// Write id.
-        		out.writeObject(null);
-        		return;
+        	if (isRegularEntity(o.getClass())) {        	
+	        	// Pseudo-proxy created for uninitialized entities (see below).
+	        	if (detachedState != null && detachedState[0] == NULL_ID) {
+	            	// Write initialized flag.
+	            	out.writeObject(Boolean.FALSE);
+	            	// Write detached state.
+	        		out.writeObject(null);
+	        		// Write id.
+	        		out.writeObject(null);
+	        		return;
+	        	}
+	
+	        	// Write initialized flag.
+	        	out.writeObject(Boolean.TRUE);
+	        	
+	        	if (detachedState != null) {
+	            	// Write detached state as a String, in the form of an hex representation
+	            	// of the serialized detached state.
+	    	        org.granite.util.Entity entity = new org.granite.util.Entity(pco);
+	    	        Object version = entity.getVersion();
+	    	        if (version != null)
+	    	        	detachedState[1] = version;
+		        	byte[] binDetachedState = serializeDetachedState(detachedState);
+		        	char[] hexDetachedState = StringUtil.bytesToHexChars(binDetachedState);
+		            out.writeObject(new String(hexDetachedState));
+	        	}
+	        	else
+	        		out.writeObject(null);
         	}
-
-        	// Write initialized flag.
-        	out.writeObject(Boolean.TRUE);
-        	
-        	if (detachedState != null) {
-            	// Write detached state as a String, in the form of an hex representation
-            	// of the serialized detached state.
-    	        org.granite.util.Entity entity = new org.granite.util.Entity(pco);
-    	        Object version = entity.getVersion();
-    	        if (version != null)
-    	        	detachedState[1] = version;
-	        	byte[] binDetachedState = serializeDetachedState(detachedState);
-	        	char[] hexDetachedState = StringUtil.bytesToHexChars(binDetachedState);
-	            out.writeObject(new String(hexDetachedState));
-        	}
-        	else
-        		out.writeObject(null);
 
             // Externalize entity fields.
             List<Property> fields = findOrderedFields(oClass);
@@ -311,6 +313,12 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
         return ((PersistenceCapable.class.isAssignableFrom(clazz) && Detachable.class.isAssignableFrom(clazz)) 
         	|| clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(MappedSuperclass.class))
         	&& !(clazz.isAnnotationPresent(Embeddable.class));
+    }
+    
+    protected boolean isEmbeddable(Class<?> clazz) {
+        return ((PersistenceCapable.class.isAssignableFrom(clazz) && Detachable.class.isAssignableFrom(clazz)) 
+            || clazz.isAnnotationPresent(Embeddable.class))
+            && !(clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(MappedSuperclass.class));
     }
 
     @Override

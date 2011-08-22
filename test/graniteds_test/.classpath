@@ -9,7 +9,6 @@
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-el.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jsf-api.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/dom4j.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jta.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/el-api.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-container.jar"/>
@@ -20,9 +19,6 @@
 	<classpathentry kind="lib" path="/graniteds/lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jnpserver.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-embedded-api.jar"/>
-	<classpathentry kind="lib" path="/graniteds/build/granite.jar"/>
-	<classpathentry kind="lib" path="/graniteds/build/granite-hibernate.jar"/>
-	<classpathentry kind="lib" path="/graniteds/build/granite-seam21.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-seam.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="lib" path="/graniteds/lib/javassist.jar"/>
@@ -30,5 +26,7 @@
 	<classpathentry kind="lib" path="/graniteds/lib/javax.servlet.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jpa-2.0-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/eclipselink.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate-core-4.0.0.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
