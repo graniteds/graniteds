@@ -117,6 +117,9 @@ public class AdapterFactory implements Serializable {
 
                     adapters.add(serviceAdapter);
                 }
+                catch (ServiceException e) {
+                	throw e;
+                }
                 catch (Exception e) {
                     throw new ServiceException("Could not instantiate serviceAdapter: " + config, e);
                 }
