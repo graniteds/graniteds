@@ -90,16 +90,20 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 			session.setAttribute(TIDE_DATA_SELECTORS_KEY_PREFIX + topicName, selectors);
 		}
 		
+		boolean dataSelectorChanged = false;
 		String dataSelector = gdd.getDestinationSelector(topicName);
 		if (params != null) {
-			dataSelector = params.updateDataSelector(dataSelector, selectors);
-			gdd.setDestinationSelector(topicName, dataSelector);
+			String newDataSelector = params.updateDataSelector(dataSelector, selectors);
+			dataSelectorChanged = !newDataSelector.equals(dataSelector);
+			if (dataSelectorChanged)
+				gdd.setDestinationSelector(topicName, newDataSelector);
 		}
 		
 		if (!enabled)
 			return;
 		
-		changeDataSelector(dataSelector);
+		if (dataSelectorChanged)
+			changeDataSelector(dataSelector);
 	}
 	
 	protected abstract void changeDataSelector(String dataSelector);

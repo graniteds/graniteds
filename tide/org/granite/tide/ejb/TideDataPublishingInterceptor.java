@@ -20,10 +20,11 @@
 
 package org.granite.tide.ejb;
 
+import javax.annotation.Resource;
+import javax.ejb.EJBContext;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.naming.InitialContext;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
@@ -42,6 +43,9 @@ import org.granite.tide.data.JMSDataDispatcher;
 @Interceptor
 public class TideDataPublishingInterceptor {
 	
+	@Resource
+	private EJBContext ctx;
+	
     @AroundInvoke
     public Object processPublishData(InvocationContext invocationContext) throws Exception {
     	if (invocationContext.getMethod() == null) {
@@ -58,13 +62,12 @@ public class TideDataPublishingInterceptor {
     	boolean onCommit = false;
     	
     	if (shouldInitContext)
-    		DataContext.init(new JMSDataDispatcher(dataEnabled.topic(), onCommit, dataEnabled.params()), dataEnabled.publish());    	
+    		DataContext.init(new JMSDataDispatcher(dataEnabled.topic(), onCommit, dataEnabled.params()), dataEnabled.publish());
     	
         DataContext.observe();
         try {
         	if (dataEnabled.publish().equals(PublishMode.ON_COMMIT)) {
-        		InitialContext ic = new InitialContext();
-        		TransactionSynchronizationRegistry tsr = (TransactionSynchronizationRegistry)ic.lookup("java:comp/TransactionSynchronizationRegistry");
+        		TransactionSynchronizationRegistry tsr = (TransactionSynchronizationRegistry)ctx.lookup("java:comp/TransactionSynchronizationRegistry");
         		tsr.registerInterposedSynchronization(new DataPublishingSynchronization(shouldRemoveContextAtEnd));
         		onCommit = true;
         	}
