@@ -54,9 +54,9 @@ public class GraniteRebuildJob extends Job {
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-    	Map<String, Object> args = new HashMap<String, Object>();
+    	Map<String, String> args = new HashMap<String, String>();
     	if (reset)
-    		args.put(RESET_KEY, Boolean.TRUE);
+    		args.put(RESET_KEY, null);
         try {
             project.build(IncrementalProjectBuilder.FULL_BUILD, GraniteBuilder.GRANITE_BUILDER_ID, args, monitor);
         } catch (CoreException e) {

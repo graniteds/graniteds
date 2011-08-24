@@ -93,7 +93,7 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
     	    	AddNatureWizard.run(getProject());
 	    		config = null;
 	    		generator.clear();
-        	} else if (Boolean.TRUE.equals(args.get(GraniteRebuildJob.RESET_KEY)) || (config != null && config.isOutdated())) {
+        	} else if (args.containsKey(GraniteRebuildJob.RESET_KEY) || (config != null && config.isOutdated())) {
 	    		config = null;
 	    		generator.clear();
 	    	}
