@@ -988,7 +988,9 @@
             <arg line="-templates-path '${FLEX_HOME}/asdoc/templates'"/>
             <arg line="-main-title 'Granite Data Services API Documentation (${GDS_VERSION})'" />
             <arg line="-window-title 'Granite Data Services API Documentation - ${GDS_VERSION}'" />
-        	<arg line="-define=CONFIG::debugging,false" />
+        	<arg line="-define+=CONFIG::debugging,false" />
+            <arg line="-define+=CONFIG::flex40,true"/>
+        	<arg line="-define+=CONFIG::flex45,false"/>
         </exec>
     </target>
 

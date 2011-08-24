@@ -1,5 +1,12 @@
 /doc
-
 /build
 /classes
 /graniteds-*.zip
+/.idea
+/*.iml
+/*/*.iml
+/*/*/*.iml
+/*/*/*/*.iml
+/test/graniteds_test/junit*.properties
+
+

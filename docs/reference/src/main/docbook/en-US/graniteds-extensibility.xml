@@ -235,4 +235,34 @@ public interface SecurityService {
 	   TODO
 	   </para>
 	</section>
+	
+	<section id="extensibility.messageinterceptor">
+	   <title>Registering a message interceptor</title>
+	   <para>
+	   If you need to do some actions before and after each remote call, such as setting or accessing message headers, or doing some setup before request handling, 
+	   you can configure a custom <literal>AMF3MessageInterceptor</literal> in <literal>granite-config.xml</literal> :
+	   </para>
+        
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<granite-config>
+   ...
+   <amf3-message-interceptor type="com.myapp.MyMessageInterceptor"/>
+</granite-config>]]>
+        </programlisting>
+        
+        <para>
+        When using configuration scanning, you can also put this in <literal>META-INF/granite-config.properties</literal> of your application jar archive :
+        </para>
+        
+        <programlisting role="XML">
+<![CDATA[amf3MessageInterceptor=com.myapp.MyMessageInterceptor]]>
+        </programlisting>
+        
+        <para>
+        Take care that some of the GraniteDS server frameworks integrations (CDI and Seam) already provide their own message interceptors. If you need to do something else, 
+        you will have to override the existing interceptor and call <literal>super.before</literal> and <literal>super.after</literal>.
+        </para>
+    </section>
 </chapter>

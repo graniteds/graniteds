@@ -135,7 +135,8 @@
        <para>
        This is a bit better, the main UI is now defined in its own MXML. Tide has not much to do here, but note that we have added the <literal>[Name]</literal>
        metadata annotation on the MXML to instruct Tide that it has to manage the component and inject the dependencies on properties marked with 
-       <literal>[In]</literal>. This was not necessary in the initial case because the main application itself is always registered as a component managed by Tide.
+       <literal>[In]</literal>. This was not necessary in the initial case because the main application itself is always registered as a component managed by Tide
+       (under the name <literal>application</literal>).
        </para>
        <para>
        The next step is to decouple our UI component from the server interaction, so we can for example reuse the same UI component in another context or 
