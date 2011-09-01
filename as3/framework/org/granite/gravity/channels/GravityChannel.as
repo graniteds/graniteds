@@ -218,7 +218,7 @@ package org.granite.gravity.channels {
                             if (previousSubscriptionId != null)
                             	delete _consumers[previousSubscriptionId];
                             
-                            _consumers[subscriptionId] = responder.agent as Consumer;
+                            _consumers[subscriptionId] = consumer;
                         }
                         else if (command.operation == CommandMessage.UNSUBSCRIBE_OPERATION) {
                             subscriptionId = response.headers[AbstractMessage.DESTINATION_CLIENT_ID_HEADER] as String;
