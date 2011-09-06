@@ -168,7 +168,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     }
 
     public void stop(boolean now) throws Exception {
-    	log.info("Starting Gravity (now=%s)...", now);
+    	log.info("Stopping Gravity (now=%s)...", now);
         synchronized (this) {
         	if (adapterFactory != null) {
 	            try {
