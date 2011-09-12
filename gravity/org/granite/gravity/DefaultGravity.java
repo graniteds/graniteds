@@ -168,7 +168,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     }
 
     public void stop(boolean now) throws Exception {
-    	log.info("Starting Gravity (now=%s)...", now);
+    	log.info("Stopping Gravity (now=%s)...", now);
         synchronized (this) {
         	if (adapterFactory != null) {
 	            try {
@@ -336,7 +336,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         try {
 	        GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
 	        if (gdd != null) {
-        		log.info("Saving channel id in distributed data: %s", channelId);
+        		log.debug("Saving channel id in distributed data: %s", channelId);
 	        	gdd.addChannelId(channelId);
 	        }
         }
@@ -360,12 +360,12 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         	try {
 	        	GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
 	        	if (gdd != null && gdd.hasChannelId(channelId)) {
-	        		log.info("Found channel id in distributed data: %s", channelId);
+	        		log.debug("Found channel id in distributed data: %s", channelId);
 	        		Channel channel = gravityConfig.getChannelFactory().newChannel(channelId);
 	    	    	timeChannel = new TimeChannel(channel);
 	    	        if (channels.putIfAbsent(channelId, timeChannel) == null) {
 	    	        	for (CommandMessage subscription : gdd.getSubscriptions(channelId)) {
-	    	        		log.info("Resubscribing channel: %s - %s", channelId, subscription);
+	    	        		log.debug("Resubscribing channel: %s - %s", channelId, subscription);
 	    	        		handleSubscribeMessage(subscription, false);
 	    	        	}
 	    	        	access(channelId);
@@ -388,7 +388,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         try {
 	        GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
 	        if (gdd != null) {
-        		log.info("Removing channel id from distributed data: %s", channelId);
+        		log.debug("Removing channel id from distributed data: %s", channelId);
 	        	gdd.removeChannelId(channelId);
 	        }
 		}
@@ -692,7 +692,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		        	// Save subscription message in distributed data (clustering).
 		        	try {
 			        	if (gdd != null) {
-			        		log.info("Saving new subscription message for channel: %s - %s", channel.getId(), message);
+			        		log.debug("Saving new subscription message for channel: %s - %s", channel.getId(), message);
 			        		gdd.addSubcription(channel.getId(), message);
 			        	}
 		        	}
@@ -762,7 +762,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		        GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
 		        if (gdd != null) {
 		        	String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
-		        	log.info("Removing subscription message from channel info: %s - %s", channel.getId(), subscriptionId);
+		        	log.debug("Removing subscription message from channel info: %s - %s", channel.getId(), subscriptionId);
 	    			gdd.removeSubcription(channel.getId(), subscriptionId);
 		        }
         	}
