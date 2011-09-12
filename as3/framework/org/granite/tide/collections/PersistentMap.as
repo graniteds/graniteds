@@ -46,10 +46,9 @@ package org.granite.tide.collections {
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.IWrapper;
-import org.granite.tide.data.CollectionChange;
 
 
-use namespace flash_proxy;
+    use namespace flash_proxy;
     use namespace object_proxy;
     
 
