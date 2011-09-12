@@ -73,7 +73,8 @@ package org.granite.tide.data {
         private static var log:ILogger = Log.getLogger("org.granite.tide.data.EntityManager");
     
     	private var _context:BaseContext;
-        
+        private var _customMergers:Array = null;
+
         private var _dirtyCheckContext:DirtyCheckContext = null;
         private var _entityCache:Dictionary = null;
         private var _entitiesByUID:UIDWeakSet = new UIDWeakSet();
@@ -137,7 +138,19 @@ package org.granite.tide.data {
             _entityCache = null;
             _mergeContext.clear();
         }
-        
+
+        /**
+         *  @private
+         *  Initialize the merge process
+         */
+        public function initMerge():void {
+            var customMergers:Array = _context.allByType(ICustomMerger);
+            if (customMergers != null && customMergers.length > 0)
+                _customMergers = customMergers;
+            else
+                _customMergers = null;
+        }
+
         /**
          *	@private 	
          *  'threadlocal' indicating that incoming data does not come from the current session 
@@ -311,16 +324,22 @@ package org.granite.tide.data {
          *  @param nullIfAbsent return null if entity not cached in context
          */
         public function getCachedObject(object:Object, nullIfAbsent:Boolean = false):Object {
+            var entity:Object = null;
         	if (object is IEntity) {
-        		var entity:Object = _entitiesByUID.get(getQualifiedClassName(object) + ":" + IUID(object).uid);
-        		if (entity)
-        			return entity;
-        		if (nullIfAbsent)
-        			return null;
-        	}
+        		entity = _entitiesByUID.get(getQualifiedClassName(object) + ":" + IUID(object).uid);
+            }
+            else if (object.hasOwnProperty("className") && object.hasOwnProperty("uid")) {
+                entity = _entitiesByUID.get(object.className + ":" + object.uid);
+            }
+
+            if (entity)
+                return entity;
+            if (nullIfAbsent)
+                return null;
+
         	return object;
         }
-        
+
         /** 
          *  @private 
          * 	Retrives the owner entity of the provided object (collection/map/entity)
