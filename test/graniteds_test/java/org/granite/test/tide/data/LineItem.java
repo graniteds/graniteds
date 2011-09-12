@@ -18,14 +18,47 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide {
-import org.granite.reflect.Method;
+package org.granite.test.tide.data;
+
+import javax.persistence.Basic;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+
 
 /**
-	 * 	@author William DRAI
-	 */
-	public interface IArgumentPreprocessor {
-	    
-	    function preprocess(method:Method, args:Array):Array;
+ * @author William Drai
+ */
+@Entity
+public class LineItem extends AbstractEntity0 {
+
+    private static final long serialVersionUID = 1L;
+
+
+    public LineItem() {
+    }
+    
+    public LineItem(Long id, Long version, String uid) {
+    	super(id, version, uid);
+    }
+    
+    @ManyToOne
+    private Order3 order;
+    
+    @Basic
+    private String description;
+
+
+    public Order3 getOrder() {
+		return order;
 	}
+	public void setOrder(Order3 order) {
+		this.order = order;
+	}
+
+	public String getDescription() {
+        return description;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

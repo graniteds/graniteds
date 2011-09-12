@@ -676,7 +676,7 @@ package org.granite.tide.data {
 		 *  @param source source entity
 		 *  @return true if the entity is still dirty after comparing with incoming object
 		 */ 
-		public function checkAndMarkNotDirty(entity:IEntity, source:IEntity):Boolean {
+		public function checkAndMarkNotDirty(entity:IEntity, source:Object):Boolean {
 			var save:Object = _savedProperties[entity];
 			if (save == null)
 				return false;
@@ -691,7 +691,7 @@ package org.granite.tide.data {
 				if (propName == desc.versionPropertyName)
 					continue;
 				var localValue:Object = entity[propName];
-				var sourceValue:Object = source[propName];
+				var sourceValue:Object = source.hasOwnProperty(propName) ? source[propName] : null;
 				if (localValue is PersistentCollection)
 					localValue = localValue.list;
 				else if (localValue is PersistentMap)

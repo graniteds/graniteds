@@ -5,7 +5,9 @@
  * THE GENERATOR. CHANGE INSTEAD THE INHERITED CLASS (Person.as).
  */
 
-package org.granite.test.tide {
+package org.granite.test.tide.data {
+import org.granite.collections.IMap;
+import org.granite.test.tide.*;
 
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
@@ -19,13 +21,14 @@ package org.granite.test.tide {
     use namespace tide;
 
     [Managed]
-    [RemoteClass(alias="org.granite.test.tide.Person")]
-    public class Person extends AbstractEntity {
+    [RemoteClass(alias="org.granite.test.tide.data.Person11")]
+    public class Person11 extends AbstractEntity {
 
         private var _contacts:ListCollectionView;
         private var _firstName:String;
         private var _lastName:String;
 		private var _age:Number;
+        private var _map:IMap;
         
         
         public function set contacts(value:ListCollectionView):void {
@@ -57,14 +60,23 @@ package org.granite.test.tide {
 			return _age;
 		}
 
+        [Lazy]
+        public function get map():IMap {
+            return _map;
+        }
+        public function set map(value:IMap):void {
+            _map = value;
+        }
+
         override meta function merge(em:IEntityManager, obj:*):void {
-            var src:Person = Person(obj);
+            var src:Person11 = Person11(obj);
             super.meta::merge(em, obj);
             if (meta::isInitialized()) {
 				em.meta_mergeExternal(src._age, _age, null, this, 'age', function setter(o:*):void{_age = o as Number}) as Number;
                 em.meta_mergeExternal(src._contacts, _contacts, null, this, 'contacts', function setter(o:*):void{_contacts = o as ListCollectionView}) as ListCollectionView;
                 em.meta_mergeExternal(src._firstName, _firstName, null, this, 'firstName', function setter(o:*):void{_firstName = o as String}) as String;
                 em.meta_mergeExternal(src._lastName, _lastName, null, this, 'lastName', function setter(o:*):void{_lastName = o as String}) as String;
+                em.meta_mergeExternal(src._map, _map, null, this, 'map', function setter(o:*):void{_map = o as IMap}) as IMap;
             }
         }
 
@@ -75,6 +87,7 @@ package org.granite.test.tide {
                 _contacts = input.readObject() as ListCollectionView;
                 _firstName = input.readObject() as String;
                 _lastName = input.readObject() as String;
+                _map = input.readObject() as IMap;
             }
         }
 
@@ -85,6 +98,7 @@ package org.granite.test.tide {
                 output.writeObject((_contacts is IPropertyHolder) ? IPropertyHolder(_contacts).object : _contacts);
                 output.writeObject((_firstName is IPropertyHolder) ? IPropertyHolder(_firstName).object : _firstName);
                 output.writeObject((_lastName is IPropertyHolder) ? IPropertyHolder(_lastName).object : _lastName);
+                output.writeObject((_map is IPropertyHolder) ? IPropertyHolder(_map).object : _map);
             }
         }
     }

@@ -6,6 +6,7 @@
  */
 
 package org.granite.test.tide {
+import org.granite.test.tide.*;
 
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
@@ -16,11 +17,10 @@ package org.granite.test.tide {
 	use namespace meta;
 
 	[Managed]
-    [RemoteClass(alias="org.granite.test.tide.Contact")]
-    public class Contact extends AbstractEntity {
+    [RemoteClass(alias="org.granite.test.tide.Contact2")]
+    public class Contact2 extends AbstractEntity {
 
         private var _email:String;
-        private var _person:Person;
 
         public function set email(value:String):void {
             _email = value;
@@ -29,20 +29,11 @@ package org.granite.test.tide {
             return _email;
         }
 
-        [Lazy]
-        public function set person(value:Person):void {
-            _person = value;
-        }
-        public function get person():Person {
-            return _person;
-        }
-
        	override meta function merge(em:IEntityManager, obj:*):void {
-            var src:Contact = Contact(obj);
+            var src:Contact2 = Contact2(obj);
             super.meta::merge(em, obj);
             if (meta::isInitialized()) {
                	em.meta_mergeExternal(src._email, _email, null, this, 'email', function setter(o:*):void{_email = o as String}) as String;
-                em.meta_mergeExternal(src._person, _person, null, this, 'person', function setter(o:*):void{_person = o as Person}) as Person;
             }
         }
 
@@ -50,7 +41,6 @@ package org.granite.test.tide {
             super.readExternal(input);
             if (meta::isInitialized()) {
                 _email = input.readObject() as String;
-                _person = input.readObject() as Person;
             }
         }
 
@@ -58,7 +48,6 @@ package org.granite.test.tide {
             super.writeExternal(output);
             if (meta::isInitialized()) {
                 output.writeObject((_email is IPropertyHolder) ? IPropertyHolder(_email).object : _email);
-                output.writeObject((_person is IPropertyHolder) ? IPropertyHolder(_person).object : _person);
             }
         }
     }

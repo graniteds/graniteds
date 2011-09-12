@@ -20,6 +20,8 @@
 
 package org.granite.hibernate;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 
 import org.granite.logging.Logger;
@@ -66,6 +68,13 @@ public class HibernateClassGetter extends DefaultClassGetter {
     @Override
     public boolean isEntity(Object o) {
     	return o.getClass().isAnnotationPresent(Entity.class);    
+    }
+
+    @Override
+    public Serializable getIdentifier(Object o) {
+    	if (o instanceof HibernateProxy)
+    		return ((HibernateProxy)o).getHibernateLazyInitializer().getIdentifier();
+    	return null;
     }
     
     @Override

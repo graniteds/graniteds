@@ -4,9 +4,9 @@ package org.granite.test.tide.data
     
     import mx.collections.ArrayCollection;
 
-import org.granite.persistence.PersistentSet;
+    import org.granite.persistence.PersistentSet;
 
-import org.granite.tide.BaseContext;
+    import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
     import org.granite.tide.data.Conflicts;
     import org.granite.tide.data.events.TideDataConflictsEvent;

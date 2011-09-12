@@ -46,6 +46,7 @@ package org.granite.tide {
     import org.granite.meta;
     import org.granite.reflect.Annotation;
     import org.granite.reflect.Field;
+    import org.granite.reflect.Method;
     import org.granite.reflect.Type;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.data.EntityManager;
@@ -197,6 +198,15 @@ package org.granite.tide {
         public function meta_scheduleDestroy():void {
         	_destroyScheduled = true;
 			_contextManager.addToContextsToDestroy(contextId);
+        }
+
+
+        private static var tmpContextId:uint = 1;
+
+        public function newTemporaryContext():BaseContext {
+            var tmpContext:BaseContext = new BaseContext(_tide, this);
+            tmpContext.meta_init("$$TMP$$" + (tmpContextId++), _contextManager);
+            return tmpContext;
         }
         
         /**
@@ -1415,10 +1425,11 @@ package org.granite.tide {
 					args[i] = IPropertyHolder(args[i]).object;
 				meta_mergeExternal(args[i]);
 			}
-			
-			for each (var app:IArgumentPreprocessor in allByType(IArgumentPreprocessor, true))
-				args = app.preprocess(args);
-			
+
+            var method:Method = Type.forInstance(component).getInstanceMethodNoCache(op);
+            for each (var app:IArgumentPreprocessor in allByType(IArgumentPreprocessor, true))
+                args = app.preprocess(method, args);
+
             _tracking = false;
             var token:AsyncToken = _tide.invokeComponent(this, component, op, args, responder, withContext);
             _tracking = true;
@@ -1719,11 +1730,15 @@ package org.granite.tide {
          *
          *  @return merged object (should === prev when prev not null)
          */
-        public function meta_mergeExternalData(obj:Object, prev:Object = null, sourceSessionId:String = null):Object {
+        public function meta_mergeExternalData(obj:Object, prev:Object = null, sourceSessionId:String = null, removals:Array = null):Object {
+            _entityManager.initMerge();
+
         	if (sourceSessionId && sourceSessionId != _tide.sessionId)
         		_entityManager.externalData = true;
         	
         	var next:Object = meta_mergeExternal(obj, prev);
+
+            _entityManager.handleRemovals(removals);
         	
         	_entityManager.handleMergeConflicts();
         	
@@ -1732,7 +1747,7 @@ package org.granite.tide {
     		_entityManager.externalData = false;
     		return next;
         }
-		
+
 		
 		/**
 		 * 	@private
@@ -1742,11 +1757,15 @@ package org.granite.tide {
 		 *  @param updates list of data updates
 		 */
 		public function meta_handleUpdates(sourceSessionId:String, updates:Array):void {
-			var entities:Array = new Array();
-			for each (var update:Array in updates)
-				entities.push(update[1]);
+			var merges:Array = [], removals:Array = [];
+			for each (var update:Array in updates) {
+                if (update[0] == 'PERSIST' || update[0] == 'UPDATE')
+				    merges.push(update[1]);
+                else if (update[0] == 'REMOVE')
+                    removals.push(update[1]);
+            }
 			
-			meta_mergeExternalData(entities, null, sourceSessionId);
+			meta_mergeExternalData(merges, null, sourceSessionId, removals);
 		}
 		
 		/**

@@ -20,6 +20,7 @@
 
 package org.granite.messaging.amf.io.util;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
@@ -47,6 +48,10 @@ public class DefaultClassGetter implements ClassGetter {
     
     public boolean isEntity(Object o) {
     	return false;
+    }
+    
+    public Serializable getIdentifier(Object o) {
+    	return null;
     }
     
     public boolean isInitialized(Object owner, String propertyName, Object propertyValue) {

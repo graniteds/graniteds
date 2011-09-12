@@ -1,53 +1,5 @@
 package org.granite.test.tide.data
 {
-	import org.granite.test.tide.data.TestCollectionEnumGDS588;
-	import org.granite.test.tide.data.TestDestroyContext;
-	import org.granite.test.tide.data.TestDirtyCheckEntity;
-	import org.granite.test.tide.data.TestDirtyCheckEntityBidir;
-	import org.granite.test.tide.data.TestDirtyCheckEntityBigNumber;
-	import org.granite.test.tide.data.TestDirtyCheckEntityCollGDS898;
-	import org.granite.test.tide.data.TestDirtyCheckEntityEmbedded;
-	import org.granite.test.tide.data.TestDirtyCheckEntityEnum;
-	import org.granite.test.tide.data.TestDirtyCheckEntityFilter;
-	import org.granite.test.tide.data.TestDirtyCheckEntityGDS614;
-	import org.granite.test.tide.data.TestDirtyCheckEntityLazy;
-	import org.granite.test.tide.data.TestDirtyCheckNewEntity;
-	import org.granite.test.tide.data.TestEntityRefs;
-	import org.granite.test.tide.data.TestManagedEntity;
-	import org.granite.test.tide.data.TestMergeCollection;
-	import org.granite.test.tide.data.TestMergeCollection2;
-	import org.granite.test.tide.data.TestMergeCollection3;
-	import org.granite.test.tide.data.TestMergeCollection4;
-	import org.granite.test.tide.data.TestMergeCollection5;
-	import org.granite.test.tide.data.TestMergeCollectionOfElementsGDS501;
-	import org.granite.test.tide.data.TestMergeCollectionOfEntities;
-	import org.granite.test.tide.data.TestMergeCollectionSortFilter;
-	import org.granite.test.tide.data.TestMergeConflictEntity;
-	import org.granite.test.tide.data.TestMergeConflictEntityCollection;
-	import org.granite.test.tide.data.TestMergeConflictEntityConversation;
-	import org.granite.test.tide.data.TestMergeContexts;
-	import org.granite.test.tide.data.TestMergeDirtyEntity;
-	import org.granite.test.tide.data.TestMergeEntityArray;
-	import org.granite.test.tide.data.TestMergeEntityCollection;
-	import org.granite.test.tide.data.TestMergeEntityConversation;
-	import org.granite.test.tide.data.TestMergeEntityConversation2;
-	import org.granite.test.tide.data.TestMergeEntityConversation3;
-	import org.granite.test.tide.data.TestMergeEntityConversation4;
-	import org.granite.test.tide.data.TestMergeEntityEmbedded;
-	import org.granite.test.tide.data.TestMergeEntityMap;
-	import org.granite.test.tide.data.TestMergeEntityXML;
-	import org.granite.test.tide.data.TestMergeLazyEntity;
-	import org.granite.test.tide.data.TestMergeLazyEntity2;
-	import org.granite.test.tide.data.TestMergeMap;
-	import org.granite.test.tide.data.TestMergeMap2;
-	import org.granite.test.tide.data.TestMergeMap3;
-	import org.granite.test.tide.data.TestResetEntityBigNumber;
-	import org.granite.test.tide.data.TestResetEntityEnum;
-	import org.granite.test.tide.data.TestResetEntityEnum2;
-	import org.granite.test.tide.data.TestResetEntityGDS453;
-	import org.granite.test.tide.data.TestResetEntityGDS667;
-	import org.granite.test.tide.data.TestResetEntityGDS668;
-	
 	[Suite]
 	[RunWith("org.flexunit.runners.Suite")]
 	public class SuiteData
@@ -99,6 +51,8 @@ package org.granite.test.tide.data
 		public var test37:org.granite.test.tide.data.TestResetEntityGDS453;
 		public var test38:org.granite.test.tide.data.TestResetEntityGDS667;
 		public var test39:org.granite.test.tide.data.TestResetEntityGDS668;
-		
+        public var test40:org.granite.test.tide.data.TestEntityCollectionRefs;
+        public var test41:org.granite.test.tide.data.TestUninitAssociations;
+        public var test42:org.granite.test.tide.data.TestUninitArguments;
 	}
 }

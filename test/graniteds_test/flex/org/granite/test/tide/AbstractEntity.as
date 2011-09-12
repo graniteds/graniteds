@@ -48,6 +48,10 @@ package org.granite.test.tide {
         meta function setInitialized(init:Boolean):void {
         	__initialized = init;
         }
+        meta function defineProxy(id:Number):void {
+            __initialized = false;
+            _id = id;
+        }
 
 		[Id]
         public function get id():Number {

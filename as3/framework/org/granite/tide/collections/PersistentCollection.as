@@ -88,10 +88,6 @@ package org.granite.tide.collections {
             return list;
         }
         
-		public function isLazy():Boolean {
-			return IPersistentCollection(list).isLazy();
-		}
-		
         public function isInitialized():Boolean {
             return IPersistentCollection(list).isInitialized();
         }

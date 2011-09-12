@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE bookinfo PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
    "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<!ENTITY version "WORKING">
 
 <bookinfo>
    <title>GraniteDS Documentation</title>
    <subtitle>Reference Guide</subtitle>
-   <releaseinfo>2.2.0.RC2</releaseinfo>
+   <releaseinfo>&version;</releaseinfo>
 
    <xi:include href="graniteds-author_group.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
 </bookinfo>

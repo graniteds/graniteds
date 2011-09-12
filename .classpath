@@ -16,7 +16,7 @@
 	<classpathentry kind="src" output="classes/seam21" path="seam21"/>
 	<classpathentry kind="src" output="classes/guice" path="guice"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/hibernate3.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate3.jar" sourcepath="C:/Dev/hibernate-distribution-3.6.5.Final/project/hibernate-core/src/main/java"/>
 	<classpathentry kind="lib" path="lib/jpa-2.0-api.jar"/>
 	<classpathentry kind="lib" path="lib/ejb-api.jar"/>
 	<classpathentry kind="lib" path="lib/catalina.jar"/>

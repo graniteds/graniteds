@@ -19,8 +19,8 @@ package org.granite.test.tide {
     use namespace tide;
 
     [Managed]
-    [RemoteClass(alias="org.granite.test.tide.Person")]
-    public class Person extends AbstractEntity {
+    [RemoteClass(alias="org.granite.test.tide.Person10")]
+    public class Person10 extends AbstractEntity {
 
         private var _contacts:ListCollectionView;
         private var _firstName:String;
@@ -58,7 +58,7 @@ package org.granite.test.tide {
 		}
 
         override meta function merge(em:IEntityManager, obj:*):void {
-            var src:Person = Person(obj);
+            var src:Person10 = Person10(obj);
             super.meta::merge(em, obj);
             if (meta::isInitialized()) {
 				em.meta_mergeExternal(src._age, _age, null, this, 'age', function setter(o:*):void{_age = o as Number}) as Number;

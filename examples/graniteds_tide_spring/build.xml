@@ -53,6 +53,7 @@
     -->
 	
 	<!-- Alternative configuration for Tomcat with Spring+Hibernate using JPA API
+    -->
 	<property name="war.packaging" value="yes"/>
 	<property name="log4j.lib" value="yes"/>
 	<property name="hsqldb.lib" value="yes"/>
@@ -61,10 +62,8 @@
 	<property name="gds-hibernate.lib" value="yes"/>
 	<property name="jpa.api" value="yes"/>
 	<property name="resources.dir" value="resources_tomcat_jpa"/>
-    -->
 	
 	<!-- Alternative configuration for Tomcat with Spring+DataNucleus using JPA API
-    -->
 	<property name="war.packaging" value="yes"/>
 	<property name="log4j.lib" value="yes"/>
 	<property name="hsqldb.lib" value="yes"/>
@@ -72,6 +71,7 @@
 	<property name="gds-datanucleus.lib" value="yes"/>
 	<property name="jpa.api" value="yes"/>
 	<property name="resources.dir" value="resources_datanucleus"/>
+    -->
 	
 	<!-- Alternative configuration for GlassFish V2 with Spring+TopLink using JPA API
 	<property name="ear.packaging" value="yes"/>

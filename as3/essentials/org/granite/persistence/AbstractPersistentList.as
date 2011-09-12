@@ -43,7 +43,6 @@ import mx.core.IUID;
 
         private var _initializing:Boolean = false;
         private var _initialized:Boolean = false;
-		private var _lazy:Boolean = false;
         private var _metadata:String = null;
         private var _dirty:Boolean = false;
 
@@ -52,15 +51,9 @@ import mx.core.IUID;
             _initialized = initialized;
             if (_initialized)
     	        addEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler, false, 1000);
-			else
-				_lazy = true;
         }
 
 
-		final public function isLazy():Boolean {
-			return _lazy;
-		}
-		
         final public function isInitialized():Boolean {
             return _initialized;
         }
@@ -88,7 +81,6 @@ import mx.core.IUID;
         
         protected function internalClone(clazz:Class):AbstractPersistentList {
         	var coll:AbstractPersistentList = new clazz(_initialized) as AbstractPersistentList;
-			coll._lazy = _lazy;
         	coll._metadata = _metadata;
         	coll._dirty = _dirty;
         	if (_initialized) {
@@ -119,8 +111,6 @@ import mx.core.IUID;
                 _dirty = input.readObject() as Boolean;
                 super.readExternal(input);
             }
-			else
-				_lazy = true;
         }
 
         override public function writeExternal(output:IDataOutput):void {
