@@ -3,14 +3,12 @@ package org.granite.test.tide.spring
     import org.flexunit.Assert;
     import org.flexunit.async.Async;
     import org.granite.persistence.PersistentSet;
-import org.granite.test.tide.Contact;
-import org.granite.test.tide.Person;
-import org.granite.test.tide.PersonServiceDiff;
-import org.granite.test.tide.PersonServiceFold;
-import org.granite.tide.BaseContext;
-    import org.granite.tide.data.ChangeArgumentPreprocessor;
-import org.granite.tide.data.UninitializeArgumentPreprocessor;
-import org.granite.tide.events.TideResultEvent;
+    import org.granite.test.tide.Contact;
+    import org.granite.test.tide.Person;
+    import org.granite.test.tide.PersonServiceFold;
+    import org.granite.tide.BaseContext;
+    import org.granite.tide.data.UninitializeArgumentPreprocessor;
+    import org.granite.tide.events.TideResultEvent;
 
     public class TestSpringUninitPreprocessor
     {
