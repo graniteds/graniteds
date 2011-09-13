@@ -12,6 +12,7 @@ import junit.framework.Assert;
 
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled.PublishMode;
+import org.granite.tide.data.DefaultDataDispatcher;
 import org.hibernate.ejb.Ejb3Configuration;
 import org.junit.Test;
 
@@ -93,7 +94,7 @@ public class HibernateDataPublishTest {
 		close();
 		
 		DataContext.remove();
-		DataContext.init(null, PublishMode.MANUAL);
+		DataContext.init(new DefaultDataDispatcher(null, "testTopic", DefaultDataTopicParams.class), PublishMode.MANUAL);
 		
 		open();
 		o = find(Order3.class, orderId);
