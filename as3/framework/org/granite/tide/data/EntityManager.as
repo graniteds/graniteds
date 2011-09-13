@@ -872,7 +872,7 @@ package org.granite.tide.data {
                 for (var i:int = 0; i < coll.length; i++) {
                     var obj:Object = coll.getItemAt(i);
 
-                    obj = mergeExternal(obj, null, null, propertyName != null ? parent : null);
+                    obj = mergeExternal(obj, null, null, propertyName != null ? parent : null, propertyName);
                     previous.addItem(obj);
                 }
                 
@@ -1072,7 +1072,7 @@ package org.granite.tide.data {
                 for each (key in map.keySet) {
                     value = map.get(key);
                     key = mergeExternal(key, null, null, propertyName != null ? parent: null, propertyName);
-                    value = mergeExternal(value, null, null, parent);
+                    value = mergeExternal(value, null, null, propertyName != null ? parent : null, propertyName);
                     previous.put(key, value);
                 }
                 
@@ -1280,7 +1280,7 @@ package org.granite.tide.data {
                     // Conflict between externally received data and local modifications
                     log.error("conflict with external data removal detected on {0}", BaseContext.toString(entity));
 
-                    _mergeContext..addConflict(entity as IEntity, null);
+                    _mergeContext.addConflict(entity as IEntity, null);
                 }
                 else {
                     var owners:Array = getOwnerEntities(entity);

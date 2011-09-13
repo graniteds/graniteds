@@ -20,6 +20,7 @@
 
 package org.granite.tide.data;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,7 +45,8 @@ public class DataContext {
     
     
     public static void init() {
-    	dataContext.set(NULL_DATA_CONTEXT);
+    	if (dataContext.get() == null)
+    		dataContext.set(NULL_DATA_CONTEXT);
     }
     
     public static void init(String topic, Class<? extends DataTopicParams> dataTopicParamsClass, PublishMode publishMode) {
@@ -97,7 +99,7 @@ public class DataContext {
     
     public static void addUpdate(EntityUpdateType type, Object entity) {
     	DataContext dc = get();
-    	if (dc != null) {
+    	if (dc != null && dc.dataDispatcher != null) {
     		for (Object[] update : dc.dataUpdates) {
     			if (update[0].equals(type) && update[1].equals(entity))
     				return;
@@ -109,7 +111,7 @@ public class DataContext {
     
     public static void observe() {
     	DataContext dc = get();
-    	if (dc != null) {
+    	if (dc != null && dc.dataDispatcher != null) {
     		log.debug("Observe data updates");
     		dc.dataDispatcher.observe();
     	}
@@ -141,5 +143,10 @@ public class DataContext {
     	public NullDataContext() {
     		super(null, null);
     	}
+    	
+    	@Override
+        public Set<Object[]> getDataUpdates() {
+        	return Collections.emptySet();
+        }
     }
 }
