@@ -13,6 +13,7 @@ import junit.framework.Assert;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled.PublishMode;
 import org.granite.tide.data.DefaultDataDispatcher;
+import org.granite.tide.data.DefaultDataTopicParams;
 import org.hibernate.ejb.Ejb3Configuration;
 import org.junit.Test;
 
