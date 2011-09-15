@@ -13,23 +13,23 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
   FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
   for more details.
-
   You should have received a copy of the GNU Library General Public License
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.data;
+package org.granite.tide {
 
+	/**
+	 * 	Holds a compact reference to an entity 
+	 * 
+     * 	@author William DRAI
+	 */
+    public interface IEntityRef {
 
-public interface DataDispatcher {
-	
-	public static final String TIDE_DATA_SUBTOPIC = "tideDataTopic";
-	public static final String GDS_SESSION_ID = "GDSSessionID";
-	public static final String TIDE_DATA_TYPE_KEY = "type";
-	public static final String TIDE_DATA_TYPE_VALUE = "DATA";
-	public static final String SERVER_DISPATCHER_GDS_SESSION_ID = "__GDS_SERVER_DISPATCHER__";
-
-	public void observe();
-	
-	public void publish(Object[][] dataUpdates);
+		function get id():Object;
+		
+		function get uid():String;
+		
+		function get className():String;
+    }
 }

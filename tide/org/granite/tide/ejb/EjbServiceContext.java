@@ -289,10 +289,7 @@ public class EjbServiceContext extends TideServiceContext  {
     		
     		List<ContextUpdate> results = new ArrayList<ContextUpdate>(threadContext.size());
         	DataContext dataContext = DataContext.get();
-    		Set<Object[]> dataUpdates = dataContext != null ? dataContext.getDataUpdates() : null;
-    		Object[][] updates = null;
-    		if (dataUpdates != null && !dataUpdates.isEmpty())
-    			updates = dataUpdates.toArray(new Object[dataUpdates.size()][]);
+    		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
     		
     		for (Map.Entry<String, Object> entry : threadContext.entrySet())
     			results.add(new ContextUpdate(entry.getKey(), null, entry.getValue(), 3, false));

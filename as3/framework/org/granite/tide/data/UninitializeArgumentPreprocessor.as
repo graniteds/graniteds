@@ -44,17 +44,17 @@ import org.granite.reflect.Type;
         public function preprocess(method:Method, args:Array):Array {
             if (method == null)
                 return args;
-            var folds:Array = method.getAnnotationsNoCache("Fold");
-            if (folds == null || folds.length == 0)
+            var lazys:Array = method.getAnnotationsNoCache("Lazy");
+            if (lazys == null || lazys.length == 0)
                 return args;
             var all:Boolean = false;
             var indices:Array = [];
-            for each (var fold:Annotation in folds) {
-                if (fold.getArgValue("") == "") {
+            for each (var lazy:Annotation in lazys) {
+				if (lazy.getArgValue("") == null || lazy.getArgValue("") == "") {
                     all = true;
                     break;
                 }
-                indices.push(int(fold.getArgValue("")));
+                indices.push(int(lazy.getArgValue("")));
             }
 
             var context:BaseContext = null;

@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.persistence.*;
 
+import org.granite.logging.Logger;
 import org.granite.tide.TideTransactionManager;
 
 
@@ -34,6 +35,8 @@ import org.granite.tide.TideTransactionManager;
  *
  */
 public class JPAPersistenceManager extends AbstractTidePersistenceManager implements TideTransactionPersistenceManager {
+	
+	private static final Logger log = Logger.getLogger(JPAPersistenceManager.class);
 	
 	protected EntityManager em;
 
@@ -94,7 +97,10 @@ public class JPAPersistenceManager extends AbstractTidePersistenceManager implem
 	        Query q = em.createQuery("select e from " + entity.getClass().getName() + " e left join fetch e." + f + " where e = :entity");
 	        q.setParameter("entity", entity);
 	        List<?> results = q.getResultList();
-	        entity = results.get(0);
+	        if (!results.isEmpty())
+	        	entity = results.get(0);
+	        else
+	        	log.warn("Could not find entity %s to initialize, id: %s", entity.getClass().getName(), id);  
         }
         return entity;
 	}

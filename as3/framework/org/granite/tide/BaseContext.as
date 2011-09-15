@@ -1423,7 +1423,7 @@ package org.granite.tide {
 			for (var i:int = 0; i < args.length; i++) {
 				if (args[i] is IPropertyHolder)
 					args[i] = IPropertyHolder(args[i]).object;
-				meta_mergeExternal(args[i]);
+				args[i] = meta_mergeExternal(args[i]);
 			}
 
             var method:Method = Type.forInstance(component).getInstanceMethodNoCache(op);
@@ -1733,16 +1733,18 @@ package org.granite.tide {
         public function meta_mergeExternalData(obj:Object, prev:Object = null, sourceSessionId:String = null, removals:Array = null):Object {
             _entityManager.initMerge();
 
-        	if (sourceSessionId && sourceSessionId != _tide.sessionId)
+			var isExternalData:Boolean = sourceSessionId && sourceSessionId != _tide.sessionId;
+        	if (isExternalData)
         		_entityManager.externalData = true;
         	
         	var next:Object = meta_mergeExternal(obj, prev);
 
             _entityManager.handleRemovals(removals);
         	
-        	_entityManager.handleMergeConflicts();
-        	
-        	meta_clearCache();
+			if (isExternalData) {
+        		_entityManager.handleMergeConflicts();        	
+	        	meta_clearCache();
+			}
         	
     		_entityManager.externalData = false;
     		return next;
@@ -1783,7 +1785,7 @@ package org.granite.tide {
 				if (entity) {
 					var updateType:String = String(update[0]).toLowerCase();
 					
-					var entityName:String = ClassUtil.getUnqualifiedClassName(update[1]);
+					var entityName:String = update[1] is IEntityRef ? ClassUtil.getUnqualifiedClassName(update[1].className) : ClassUtil.getUnqualifiedClassName(update[1]);
 					var eventType:String = "org.granite.tide.data." + updateType + "." + entityName;
 					raiseEvent(eventType, entity);
 					

@@ -460,6 +460,7 @@
 	      </fileset> 
           <fileset dir="tide">
             <include name="org/granite/tide/annotations/**.java"/>
+            <include name="org/granite/tide/data/Lazy.java"/>
           </fileset>
 	    </jar> 
 
@@ -624,6 +625,7 @@
   	        </fileset> 
             <fileset dir="tide">
               <include name="org/granite/tide/annotations/**.java"/>
+              <include name="org/granite/tide/data/Lazy.java"/>
             </fileset>
 
             <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
@@ -819,6 +821,7 @@
            	</fileset>
         	<fileset dir="classes/tide">
                 <include name="org/granite/tide/annotations/**"/>
+        		<include name="org/granite/tide/data/Lazy.class"/>
             </fileset>
         </jar>
     </target>

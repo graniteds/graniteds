@@ -285,10 +285,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     	}
 		
     	DataContext dataContext = DataContext.get();
-		Set<Object[]> dataUpdates = dataContext != null ? dataContext.getDataUpdates() : null;
-		Object[][] updates = null;
-		if (dataUpdates != null && !dataUpdates.isEmpty())
-			updates = dataUpdates.toArray(new Object[dataUpdates.size()][]);
+		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
 		
         InvocationResult ires = new InvocationResult(result, results);
         if (component == null)

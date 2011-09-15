@@ -444,10 +444,7 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
         
         // Retrieve data updates made during the call
     	DataContext dataContext = DataContext.get();
-		Set<Object[]> dataUpdates = dataContext != null ? dataContext.getDataUpdates() : null;
-		Object[][] updates = null;
-		if (dataUpdates != null && !dataUpdates.isEmpty())
-			updates = dataUpdates.toArray(new Object[dataUpdates.size()][]);
+		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
 		
 		// Build the invocation result
         InvocationResult res = new InvocationResult(result, results);

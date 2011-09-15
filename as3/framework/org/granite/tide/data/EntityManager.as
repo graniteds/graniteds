@@ -48,6 +48,7 @@ package org.granite.tide.data {
     import org.granite.tide.BaseContext;
     import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IEntity;
+	import org.granite.tide.IEntityRef;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IExpression;
     import org.granite.tide.IPropertyHolder;
@@ -328,7 +329,7 @@ package org.granite.tide.data {
         	if (object is IEntity) {
         		entity = _entitiesByUID.get(getQualifiedClassName(object) + ":" + IUID(object).uid);
             }
-            else if (object.hasOwnProperty("className") && object.hasOwnProperty("uid")) {
+            else if (object is IEntityRef) {
                 entity = _entitiesByUID.get(object.className + ":" + object.uid);
             }
 
@@ -477,18 +478,35 @@ package org.granite.tide.data {
                 if (!found)
                     refs.push(res);
             }
+			found = false;
             if (parent is IUID) {
                 var ref:String = getQualifiedClassName(parent) + ":" + parent.uid;
-                if (refs == null || refs.indexOf(ref) < 0) {
-                    refs = initRefs(obj);
-                    refs.push([ref, propName]);
-                }
+                if (refs == null)
+					refs = initRefs(obj);
+				else {
+					for (i = 0; i < refs.length; i++) {
+						if (refs[i] is Array && refs[i][0] === ref) {
+							found = true;
+							break;
+						}
+					}
+				}
+				if (!found)
+                	refs.push([ref, propName]);
             }
 	       	else if (parent) {
-	       		if (refs == null || refs.indexOf(parent) < 0) {
-	       			refs = initRefs(obj);
+				if (refs == null)
+					refs = initRefs(obj);
+				else {
+					for (i = 0; i < refs.length; i++) {
+						if (refs[i] is Array && refs[i][0] === parent) {
+							found = true;
+							break;
+						}
+					}
+				}
+	       		if (!found)
 	       			refs.push([parent, propName]);
-	       		}
 	       	}
         }
         
@@ -508,7 +526,7 @@ package org.granite.tide.data {
             var refs:Array = _entityReferences[obj];
             if (!refs)
                 return;
-            var idx:int = -1, i:uint;
+            var idx:int = -1, i:int;
             if (parent) {
 				for (i = 0; i < refs.length; i++) {
 					if (refs[i] is Array && refs[i][0] == getQualifiedClassName(parent) + ":" + parent.uid && refs[i][1] == propName) {
@@ -614,6 +632,10 @@ package org.granite.tide.data {
 	                else if (obj is Enum) {
 	                	next = Enum.normalize(obj as Enum);
 	                }
+					else if (obj is IEntity) {
+						next = mergeEntity(obj, previous, expr, parent, propertyName);
+						addRef = true;
+					}
                     else {
                         var merged:Boolean = false;
                         if (_customMergers != null) {
@@ -693,7 +715,8 @@ package org.granite.tide.data {
             if (obj is IUID) {
                 p = _entitiesByUID.get(getQualifiedClassName(obj) + ":" + IUID(obj).uid);
                 if (p) {
-					// Trying to merge an entity that is already cached: stop now, this is not necessary to go deeper in the object graph
+					// Trying to merge an entity that is already cached with itself: stop now, this is not necessary to go deeper in the object graph
+					// it should be already instrumented and tracked
 					if (obj === p)
 						return obj;
 					
@@ -704,8 +727,9 @@ package org.granite.tide.data {
             if (dest !== previous && previous && (objectEquals(previous, obj)
 				|| (parent != null && !(previous is IUID)))) 	// GDS-649 Case of embedded objects 
                 dest = previous;
-            
+            			
             if (dest === obj && p == null && obj != null && _mergeContext.sourceContext != null) {
+				// When merging from another context, ensure we create a new copy of the entity
             	dest = Type.forInstance(obj).constructor.newInstance();
             	if (obj is IUID)
             		dest.uid = obj.uid;
@@ -1395,8 +1419,12 @@ package org.granite.tide.data {
 				rw.push(p);
             }
 			cinfo = ObjectUtil.getClassInfo(obj, rw, { includeReadOnly: true });
-			for each (p in cinfo.properties)
+			for each (p in cinfo.properties) {
+				if (obj[p] is IUID || dest[p] is IUID)
+					throw new Error("Cannot merge the read-only property " + p + " on bean " + obj + " with an IUID value, this will break local unicity and caching. Change property access to read-write.");  
+				
 				em.meta_mergeExternal(obj[p], dest[p], expr, parent != null ? parent : dest, p);
+			}
         }
 
     

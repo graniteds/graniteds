@@ -21,8 +21,10 @@
 package org.granite.tide.data;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
@@ -89,7 +91,11 @@ public class DataContext {
     	return dataContext.get() == NULL_DATA_CONTEXT;
     }
     
-    private final Set<Object[]> dataUpdates = new HashSet<Object[]>();
+    private final Set<Object[]> dataUpdates = new TreeSet<Object[]>(new Comparator<Object[]>() {
+		public int compare(Object[] o1, Object[] o2) {
+			return (Integer)o1[2] - (Integer)o2[2];
+		}
+    });
     private boolean published = false;
 
     
@@ -97,14 +103,33 @@ public class DataContext {
         return dataUpdates;
     }
     
+    public Object[][] getUpdates() {
+    	if (dataUpdates == null || dataUpdates.isEmpty())
+    		return null;
+    	Object[][] updates = new Object[dataUpdates.size()][];
+    	int i = 0;
+    	Iterator<Object[]> iu = dataUpdates.iterator();
+    	while (iu.hasNext()) {
+    		Object[] u = iu.next();
+    		updates[i++] = new Object[] { u[0], u[1] }; 
+    	}
+		return updates;
+    }
+    
     public static void addUpdate(EntityUpdateType type, Object entity) {
+    	addUpdate(type, entity, 0);
+    }
+    public static void addUpdate(EntityUpdateType type, Object entity, int priority) {
     	DataContext dc = get();
     	if (dc != null && dc.dataDispatcher != null) {
     		for (Object[] update : dc.dataUpdates) {
-    			if (update[0].equals(type) && update[1].equals(entity))
+    			if (update[0].equals(type) && update[1].equals(entity)) {
+    				if ((Integer)update[2] < priority)
+    					update[2] = priority;
     				return;
+    			}
     		}
-    		dc.dataUpdates.add(new Object[] { type.name(), entity });
+    		dc.dataUpdates.add(new Object[] { type.name(), entity, priority });
     	}
     }
     
@@ -125,7 +150,7 @@ public class DataContext {
     	if (dc != null && dc.dataDispatcher != null && !dc.dataUpdates.isEmpty() && !dc.published 
     		&& (publishMode == PublishMode.MANUAL || (dc.publishMode.equals(publishMode)))) {
     		log.debug("Publish %s data updates with mode %s", dc.dataUpdates.size(), dc.publishMode);
-    		dc.dataDispatcher.publish(dc.dataUpdates);
+    		dc.dataDispatcher.publish(dc.getUpdates());
     		// Publish can be called only once but we have to keep the updates until the end of a GraniteDS request
     		dc.published = true;	
     	}

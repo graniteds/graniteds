@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
@@ -109,7 +108,7 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 	protected abstract void changeDataSelector(String dataSelector);
 	
 	
-	public void publish(Set<Object[]> dataUpdates) {
+	public void publish(Object[][] dataUpdates) {
 		if (!enabled)
 			return;
 		

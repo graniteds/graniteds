@@ -383,10 +383,7 @@ public class CDIServiceContext extends TideServiceContext {
 
 		List<ContextUpdate> results = new ArrayList<ContextUpdate>(tideInvocation.getResults());
     	DataContext dataContext = DataContext.get();
-		Set<Object[]> dataUpdates = dataContext != null ? dataContext.getDataUpdates() : null;
-		Object[][] updates = null;
-		if (dataUpdates != null && !dataUpdates.isEmpty())
-			updates = dataUpdates.toArray(new Object[dataUpdates.size()][]);
+		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
 		
         Bean<?> bean = null;
         if (componentName != null || componentClass != null) {
