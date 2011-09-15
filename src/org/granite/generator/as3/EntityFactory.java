@@ -37,5 +37,7 @@ public interface EntityFactory {
 	public boolean isId(JavaFieldProperty property);
 	
 	public boolean isVersion(JavaProperty property);
+	
+	public boolean isLazy(JavaProperty property);
 		
 }

@@ -66,8 +66,18 @@ package ${jClass.as3Type.packageName} {
 ///////////////////////////////////////////////////////////////////////////
 // Write Methods.
         
-    for (jMethod in jClass.methods) {%>
-
+    for (jMethod in jClass.methods) {%>    
+        <%
+        if (jMethod.options != null) {%>
+        [${jMethod.options}]<%
+        }
+        int idx = 0;
+        for (opt in jMethod.getAs3ParameterOptions()) {
+            if (opt != null) {%>
+        [${opt}("${jMethod.getAs3ParameterNames()[idx]}")]<%
+            }
+            idx++; 
+        }%>
         public function ${jMethod.name}(<%
             String[] names = jMethod.getAs3ParameterNames();
 

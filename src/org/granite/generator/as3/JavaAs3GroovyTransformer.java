@@ -307,6 +307,10 @@ public class JavaAs3GroovyTransformer
 		return getConfig().getEntityFactory().isVersion(property);
 	}
 	
+	public boolean isLazy(JavaProperty property) {
+		return getConfig().getEntityFactory().isLazy(property);
+	}
+	
 	static class PublicByteArrayOutputStream extends ByteArrayOutputStream {
 		public PublicByteArrayOutputStream() {
 		}

@@ -30,8 +30,13 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Version;
 
 import org.granite.generator.as3.reflect.JavaEntityBean;
@@ -90,5 +95,25 @@ public class DefaultEntityFactory implements EntityFactory {
 	    	}
 	    }
 	    return false;
+	}
+	
+	public boolean isLazy(JavaProperty property) {
+		if (property.isAnnotationPresent(ManyToOne.class)) {
+			ManyToOne manyToOne = property.getAnnotation(ManyToOne.class);
+			return manyToOne.fetch().equals(FetchType.LAZY);
+		}
+		else if (property.isAnnotationPresent(OneToOne.class)) {
+			OneToOne oneToOne = property.getAnnotation(OneToOne.class);
+			return oneToOne.fetch().equals(FetchType.LAZY);
+		}
+		else if (property.isAnnotationPresent(OneToMany.class)) {
+			OneToMany oneToMany = property.getAnnotation(OneToMany.class);
+			return oneToMany.fetch().equals(FetchType.LAZY);
+		}
+		else if (property.isAnnotationPresent(ManyToMany.class)) {
+			ManyToMany manyToMany = property.getAnnotation(ManyToMany.class);
+			return manyToMany.fetch().equals(FetchType.LAZY);
+		}
+		return false;
 	}
 }

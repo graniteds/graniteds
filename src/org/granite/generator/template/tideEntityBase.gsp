@@ -178,6 +178,11 @@ package ${jClass.as3Type.packageName} {
             );
         }
         
+        meta <%= (jClass.hasSuperclass() ? "override " : "") %>function defineProxy(id:${jClass.firstIdentifier.as3Type.name}):void {
+            __initialized = false;
+            _${jClass.firstIdentifier.name} = id;
+        }
+        
         [Bindable(event="dirtyChange")]
 		public function get meta_dirty():Boolean {
 			return Managed.getProperty(this, "meta_dirty", false);
@@ -207,6 +212,8 @@ package ${jClass.as3Type.packageName} {
         [Id]<%
                     } else if (jProperty == versionField) {%>
         [Version]<%
+                    } else if (jClass.isLazy(jProperty)) {%>
+        [Lazy]<%
                     }
                     if (!jProperty.writable) {%>
         [Bindable(event="unused")]<%

@@ -40,5 +40,6 @@ public interface JavaTypeFactory {
 	public boolean isId(JavaFieldProperty fieldProperty);
 	public boolean isUid(JavaProperty property);
 	public boolean isVersion(JavaProperty property);
+	public boolean isLazy(JavaProperty property);
 	public As3Type getAs3Type(Class<?> clazz);
 }
