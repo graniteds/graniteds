@@ -27,6 +27,7 @@ public interface StandardTemplateUris {
 
 	public static final String BEAN = "class:org/granite/generator/template/bean.gsp";
 	public static final String BEAN_BASE = "class:org/granite/generator/template/beanBase.gsp";
+	public static final String TIDE_BEAN_BASE = "class:org/granite/generator/template/tideBeanBase.gsp";
 
 	public static final String ENTITY = "class:org/granite/generator/template/entity.gsp";
 	public static final String ENTITY_BASE = "class:org/granite/generator/template/entityBase.gsp";

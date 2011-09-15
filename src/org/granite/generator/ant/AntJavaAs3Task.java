@@ -361,6 +361,10 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
             	log("Using custom bean base template: " + beanbasetemplate, Project.MSG_INFO);
             	baseTemplateUri = beanbasetemplate;
             }
+            else if (tide) {
+            	log("Using tide bean base template.", Project.MSG_INFO);
+            	baseTemplateUri = StandardTemplateUris.TIDE_BEAN_BASE;
+            }
         	beanTemplateUris = createTemplateUris(baseTemplateUri, templateUri);
             
         	// Remote service templates.

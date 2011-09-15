@@ -142,6 +142,8 @@ public class TemplatesPanel extends Composite {
 				template.setUri(StandardTemplateUris.TIDE_ENTITY_BASE, true);
 				template = properties.getGas3().getTemplate(Kind.REMOTE_DESTINATION);
 				template.setUri(StandardTemplateUris.TIDE_REMOTE_BASE, true);
+				template = properties.getGas3().getTemplate(Kind.BEAN);
+				template.setUri(StandardTemplateUris.TIDE_BEAN_BASE, true);
 				for (TreeItem item : templatesTree.getItems())
 					item.dispose();
 				initialized = false;
