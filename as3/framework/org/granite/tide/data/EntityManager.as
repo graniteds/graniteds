@@ -703,7 +703,7 @@ package org.granite.tide.data {
          *  @param expr current path from the context
          *  @param parent parent object for collections
          *  @param propertyName propertyName from the owner object
-         * 
+         *
          *  @return merged entity (=== previous when previous not null)
          */ 
         private function mergeEntity(obj:Object, previous:Object, expr:IExpression = null, parent:Object = null, propertyName:String = null):Object {
