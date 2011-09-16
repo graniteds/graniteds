@@ -1766,8 +1766,11 @@ package org.granite.tide {
                 else if (update[0] == 'REMOVE')
                     removals.push(update[1]);
             }
-			
-			meta_mergeExternalData(merges, null, sourceSessionId, removals);
+
+            if (merges.length == 1)
+                meta_mergeExternalData(merges[0], null, sourceSessionId, removals);
+            else
+			    meta_mergeExternalData(merges, null, sourceSessionId, removals);
 		}
 		
 		/**
