@@ -162,6 +162,7 @@
             <classpath>
                 <path refid="gds.classpath"/>
                 <path refid="test.classpath"/>
+            	<pathelement location="${gds.lib}/eclipselink.jar"/>
             </classpath>
         </javac>
         <copy todir="classes">
