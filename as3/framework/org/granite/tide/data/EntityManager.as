@@ -702,7 +702,7 @@ package org.granite.tide.data {
          *  @param previous previously existing object in the context (null if no existing object)
          *  @param expr current path from the context
          *  @param parent parent object for collections
-         *  @param propertyName propertyName from the parent object
+         *  @param propertyName propertyName from the owner object
          * 
          *  @return merged entity (=== previous when previous not null)
          */ 
@@ -832,11 +832,11 @@ package org.granite.tide.data {
                 	else if (desc.mergeGDS20)
                 		dest.meta_merge(_context, obj);
                 	else
-                		EntityManager.defaultMerge(_context, obj, dest, _mergeContext.mergeUpdate, expr, parent);
+                		EntityManager.defaultMerge(_context, obj, dest, _mergeContext.mergeUpdate, expr, parent, propertyName);
                 }
             }
             else
-                EntityManager.defaultMerge(_context, obj, dest, _mergeContext.mergeUpdate, expr, parent);
+                EntityManager.defaultMerge(_context, obj, dest, _mergeContext.mergeUpdate, expr, parent, propertyName);
             
             /*  GDS-863
             if (previous && obj !== previous && previous is IUID && _dirtyCheckContext.isSaved(previous)) {
@@ -1406,14 +1406,16 @@ package org.granite.tide.data {
          *  @param obj source object
          *  @param dest destination object
          *  @param expr current path of the entity in the context (mostly for internal use)
+         *  @param parent owning object
+         *  @param propertyName property name of the owning object
          */ 
-        public static function defaultMerge(em:IEntityManager, obj:Object, dest:Object, mergeUpdate:Boolean = true, expr:IExpression = null, parent:Object = null):void {
-            var cinfo:Object = ObjectUtil.getClassInfo(obj, null, { includeTransient: false });
+        public static function defaultMerge(em:IEntityManager, obj:Object, dest:Object, mergeUpdate:Boolean = true, expr:IExpression = null, parent:Object = null, propertyName:String = null):void {
+            var cinfo:Object = ObjectUtil.getClassInfo(obj, null, { includeTransient: false, includeReadOnly: false });
 			var rw:Array = [];
             for each (var p:String in cinfo.properties) {
                 var o:Object = obj[p];
 				var d:Object = dest[p];
-                o = em.meta_mergeExternal(o, d, expr, parent != null ? parent : dest, p);
+                o = em.meta_mergeExternal(o, d, expr, parent != null ? parent : dest, propertyName != null ? propertyName + '.' + p : p);
                 if (o !== d && mergeUpdate)
                 	dest[p] = o;
 				rw.push(p);
@@ -1423,7 +1425,7 @@ package org.granite.tide.data {
 				if (obj[p] is IUID || dest[p] is IUID)
 					throw new Error("Cannot merge the read-only property " + p + " on bean " + obj + " with an IUID value, this will break local unicity and caching. Change property access to read-write.");  
 				
-				em.meta_mergeExternal(obj[p], dest[p], expr, parent != null ? parent : dest, p);
+				em.meta_mergeExternal(obj[p], dest[p], expr, parent != null ? parent : dest, propertyName != null ? propertyName + '.' + p : p);
 			}
         }
 
