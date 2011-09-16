@@ -67,7 +67,7 @@ public class TestMergeEntityEmbedded
 
         [Test(async="true")]
         public function testMergeEmbeddedLazyCollection():void {
-            var p1:Person11 = new Person11();
+            var p1:Person12 = new Person12();
             p1.id = 1;
             p1.uid = "P1";
             p1.version = 0;
@@ -79,7 +79,7 @@ public class TestMergeEntityEmbedded
             c1.version = 0;
             p1.contactList.contacts.addItem(c1);
 
-            var p:Person11 = Person11(_ctx.meta_mergeExternalData(p1));
+            var p:Person12 = Person12(_ctx.meta_mergeExternalData(p1));
 
             Assert.assertTrue("Contacts wrapped", p.contactList.contacts is PersistentCollection);
             Assert.assertStrictlyEquals("Owner is person", p, PersistentCollection(p.contactList.contacts).entity);

@@ -23,7 +23,7 @@ package org.granite.test.tide.data {
 
     [Managed]
     [RemoteClass(alias="org.granite.test.tide.Person11")]
-    public class Person11 extends AbstractEntity {
+    public class Person12 extends AbstractEntity {
 
 		private var _salutation:Salutation;
         private var _contactList:Contacts11;
@@ -60,7 +60,7 @@ package org.granite.test.tide.data {
         }
 
         override meta function merge(em:IEntityManager, obj:*):void {
-            var src:Person11 = Person11(obj);
+            var src:Person12 = Person12(obj);
             super.meta::merge(em, obj);
             if (meta::isInitialized()) {
                 em.meta_mergeExternal(src._contactList, _contactList, null, this, 'contactList', function setter(o:*):void{_contactList = o as Contacts11}) as Contacts11;
