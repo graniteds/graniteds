@@ -22,7 +22,7 @@ package org.granite.test.tide {
             super();
         }
 
-        [Fold]
+        [Lazy]
         public function modifyPerson(arg0:Person, resultHandler:Object = null, faultHandler:Function = null):void {
             if (faultHandler != null)
                 callProperty("modifyPerson", arg0, resultHandler, faultHandler);

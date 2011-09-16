@@ -223,6 +223,7 @@
             <!-- Tide annotations -->
             <keep-as3-metadata name="Id"/>
             <keep-as3-metadata name="Version"/>
+            <keep-as3-metadata name="Lazy"/>
             <keep-as3-metadata name="Name"/>
             <keep-as3-metadata name="In"/>
             <keep-as3-metadata name="Inject"/>
@@ -232,6 +233,8 @@
             <keep-as3-metadata name="Observer"/>
             <keep-as3-metadata name="PostConstruct"/>
             <keep-as3-metadata name="Destroy"/>
+
+            <!-- FlexUnit annotations -->
             <keep-as3-metadata name="Test"/>
             <keep-as3-metadata name="Ignore"/>
             <keep-as3-metadata name="Suite"/>
