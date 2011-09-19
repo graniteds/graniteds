@@ -73,6 +73,7 @@ package org.granite.test.tide.framework
 		public var test7:org.granite.test.tide.framework.TestComponentInjection;
 		public var test8:org.granite.test.tide.framework.TestComponentInjection2;
 		public var test9:org.granite.test.tide.framework.TestComponentInjection3;
+        public var test9b:org.granite.test.tide.framework.TestComponentInjection4;
 		public var test10:org.granite.test.tide.framework.TestComponentInjectionForum4314;
 		public var test11:org.granite.test.tide.framework.TestComponentInjectionForum7129;
 		public var test12:org.granite.test.tide.framework.TestComponentInjectionGDS471;

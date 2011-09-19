@@ -490,11 +490,11 @@ package org.granite.tide.impl {
 		    descriptor.types = getComponentTypes(type);
 
 			if (descriptor.types.indexOf("org.granite.tide::IEntity") < 0) {
-				for each (var type:Type in descriptor.types) {
-					if (type.name == "org.granite.tide::IComponent" || type.name == "org.granite.tide::Component")
+				for each (var t:Type in descriptor.types) {
+					if (t.name == "org.granite.tide::IComponent" || t.name == "org.granite.tide::Component")
 						continue;
 						 
-					registerSimpleProducer(type, name);
+					registerSimpleProducer(t, name);
 				}
 			}
 		    
