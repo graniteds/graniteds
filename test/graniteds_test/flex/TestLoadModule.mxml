@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<s:Application
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:mx="library://ns.adobe.com/flex/mx"
+    preinitialize="Spring.getInstance().initApplication()">
+
+    <fx:Script><![CDATA[
+        import mx.core.IVisualElement;
+        import mx.events.ModuleEvent;
+        import mx.modules.IModuleInfo;
+        import mx.modules.ModuleManager;
+        
+        import org.granite.reflect.Type;
+        import org.granite.tide.Tide;
+        import org.granite.tide.spring.Spring;
+
+        private var loadedModulesCache:Object = {};
+        private var loadingModules:Object = {};
+		
+		[Bindable]
+		public var moduleDomain:ApplicationDomain = new ApplicationDomain(ApplicationDomain.currentDomain);
+
+		private function loadModule(modulePath:String):void {
+			moduleDomain = new ApplicationDomain(ApplicationDomain.currentDomain)
+			moduleLoader.url = modulePath;
+		}
+		
+		private function unloadModule(modulePath:String):void {
+			moduleLoader.unloadModule();
+			moduleLoader.url = null;
+		}
+		
+//        private function loadModule(modulePath:String):void {
+//            var moduleInfo:IModuleInfo = ModuleManager.getModule(modulePath);
+//            if (moduleInfo.ready) {
+//                var loadedModule:Object = null;
+//                if (loadedModulesCache != null) {
+//                    loadedModule = loadedModulesCache[modulePath];
+//                    if (loadedModule == null) {
+//                        loadedModule = moduleInfo.factory.create();
+//                        loadedModulesCache[modulePath] = loadedModule;
+//                    }
+//                }
+//                else
+//                    loadedModule = moduleInfo.factory.create();
+//
+//				moduleLoader.removeAllElements();
+//				moduleLoader.addElement(loadedModule as IVisualElement);
+//            }
+//            else {
+//                var moduleDomain:ApplicationDomain = new ApplicationDomain(ApplicationDomain.currentDomain);
+//                loadingModules[modulePath] = { info: moduleInfo, domain: moduleDomain };
+//                moduleInfo.addEventListener(ModuleEvent.READY, moduleReadyHandler);
+//                moduleInfo.load(moduleDomain, null, null, moduleFactory);
+//            }
+//        }
+//
+//        private function moduleReadyHandler(event:ModuleEvent):void {
+//            var loadedModule:Object = event.module.factory.create();
+//            var moduleDomain:ApplicationDomain = ApplicationDomain(loadingModules[event.module.url].domain);
+//            Tide.getInstance().addModule(loadedModule, moduleDomain);
+//            delete loadingModules[event.module.url];
+//
+//            if (loadedModulesCache != null)
+//                loadedModulesCache[event.module.url] = loadedModule;
+//
+//			moduleLoader.removeAllElements();
+//			moduleLoader.addElement(loadedModule as IVisualElement);
+//        }
+//
+//        private function unloadModule(modulePath:String):void {
+//			moduleLoader.removeAllElements();
+//
+//            var moduleInfo:IModuleInfo = ModuleManager.getModule(modulePath);
+//            if (!moduleInfo.loaded)
+//                return;
+//
+//            if (loadedModulesCache != null) {
+//                var loadedModule:Object = loadedModulesCache[modulePath];
+//
+//                delete loadedModulesCache[modulePath];
+//            }
+//
+//            moduleInfo.addEventListener(ModuleEvent.UNLOAD, moduleUnloadHandler);
+//            moduleInfo.unload();
+//        }
+//
+//        private function moduleUnloadHandler(event:ModuleEvent):void {
+//        }
+
+//        [Inject]
+//        public var personService:PersonService;
+
+        ]]></fx:Script>
+
+    <s:VGroup>
+        <s:Button label="Load module 1" click="loadModule('TestModule.swf')"/>
+        <s:Button label="Unload module 1" click="unloadModule('TestModule.swf')"/>
+
+        <s:Button label="Load module 2" click="loadModule('TestModule2.swf')"/>
+        <s:Button label="Unload module 2" click="unloadModule('TestModule2.swf')"/>
+
+        <mx:ModuleLoader id="moduleLoader" url="TestModule.swf"
+                         applicationDomain="{moduleDomain}"
+                         ready="Tide.getInstance().addModule(moduleLoader.child, moduleLoader.applicationDomain)"/>
+
+            <!--mx:ModuleLoader id="loader2" url="module2.swf"
+                             applicationDomain="{appDomain}"
+                             ready="Tide.getInstance().addModule(loader2.child, appDomain)"/-->
+    </s:VGroup>
+</s:Application>

@@ -11,22 +11,21 @@
 
         import org.granite.tide.spring.Context;
 
-        import skins.TestModuleSkin;
-
-        private static var classConstructed:Boolean = classConstruct();
-
-        private static function classConstruct():Boolean {
-             var styleManager:IStyleManager2 = FlexGlobals.topLevelApplication.styleManager;
-             var style:CSSStyleDeclaration = styleManager.getStyleDeclaration(".custom");
-             if (!style)
-                style = new CSSStyleDeclaration();
-
-             style.defaultFactory = function():void {
-                this.skinClass = TestModuleSkin;
-             };
-             styleManager.setStyleDeclaration(".custom", style, true);
-             return true;
-        }
+//
+//        private static var classConstructed:Boolean = classConstruct();
+//
+//        private static function classConstruct():Boolean {
+//            var styleManager:IStyleManager2 = FlexGlobals.topLevelApplication.styleManager;
+//            var style:CSSStyleDeclaration = styleManager.getStyleDeclaration(".custom");
+//            if (!style)
+//                style = new CSSStyleDeclaration();
+//
+//            style.defaultFactory = function():void {
+//                this.skinClass = TestModuleSkin;
+//            };
+//            styleManager.setStyleDeclaration(".custom", style, true);
+//            return true;
+//        }
 
         [Inject] [Bindable]
         public var context:Context;

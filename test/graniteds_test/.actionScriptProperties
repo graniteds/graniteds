@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <actionScriptProperties analytics="false" mainApplicationPath="Test.mxml" projectUUID="c1846bd7-b169-4cc7-8857-7620cb9e1aec" version="10">
-  <compiler additionalCompilerArguments="-locale en_US -keep-as3-metadata+=Name,In,Inject,Out,Observer,ManagedEvent,PostConstruct,Destroy,Id,Version" autoRSLOrdering="false" copyDependentFiles="true" flexSDK="Flex 4.1" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="flex" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="false" verifyDigests="true" warn="true">
+  <compiler additionalCompilerArguments="-locale en_US -keep-as3-metadata+=Name,In,Inject,Out,Observer,ManagedEvent,PostConstruct,Destroy,Id,Version" autoRSLOrdering="false" copyDependentFiles="true" flexSDK="Flex 4.5.1" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="flex" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="false" verifyDigests="true" warn="true">
     <compilerSourcePath/>
     <libraryPath defaultLinkType="1">
       <libraryPathEntry kind="4" path="">
@@ -22,10 +22,17 @@
     <sourceAttachmentPath/>
   </compiler>
   <applications>
+    <application path="TestLoadModule.mxml"/>
+    <application path="TestRunner.mxml"/>
+    <application path="TestRunnerEnterprise.mxml"/>
     <application path="FlexUnitApplication.mxml"/>
-    <application path="FlexUnitCompilerApplication.mxml"/>
   </applications>
-  <modules/>
-  <buildCSSFiles/>
+  <modules>
+    <module application="flex/FlexUnitApplication.mxml" destPath="TestModule.swf" optimize="false" sourcePath="flex/TestModule.mxml"/>
+    <module application="flex/FlexUnitApplication.mxml" destPath="TestModule2.swf" optimize="false" sourcePath="flex/TestModule2.mxml"/>
+  </modules>
+  <buildCSSFiles>
+    <buildCSSFileEntry destPath="bin-debug" sourcePath="flex/custom.css"/>
+  </buildCSSFiles>
   <flashCatalyst validateFlashCatalystCompatibility="false"/>
 </actionScriptProperties>
