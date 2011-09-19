@@ -23,11 +23,7 @@ package org.granite.tide.spring {
     import flash.events.Event;
     
     import mx.binding.utils.BindingUtils;
-    import mx.collections.ArrayCollection;
-    import mx.collections.IList;
-    import mx.collections.ListCollectionView;
-    import mx.collections.Sort;
-    import mx.collections.SortField;
+    import mx.collections.*;
     import mx.collections.errors.ItemPendingError;
     import mx.core.IPropertyChangeNotifier;
     import mx.core.IUID;
@@ -84,49 +80,99 @@ package org.granite.tide.spring {
 		}
     	
     	
-		protected override function doFind(filter:Object, first:int, max:int, sort:Sort, findResponder:PagedCollectionResponder):void {			
-			var order:* = null;
-			var desc:* = null;
-			if (this.multipleSort && !_useGrailsController) {
-				if (sort != null) {
-					order = new Array();
-					desc = new Array();
-					for each (var s:SortField in sort.fields) {
-						order.push(s.name);
-						desc.push(s.descending);
+		CONFIG::flex40 {
+			protected override function doFind(filter:Object, first:int, max:int, sort:Sort, findResponder:PagedCollectionResponder):void {			
+				var order:* = null;
+				var desc:* = null;
+				if (this.multipleSort && !_useGrailsController) {
+					if (sort != null) {
+						order = new Array();
+						desc = new Array();
+						for each (var s:SortField in sort.fields) {
+							order.push(s.name);
+							desc.push(s.descending);
+						}
 					}
 				}
+				else {
+					order = sort != null && sort.fields.length > 0 ? sort.fields[0].name : null;
+					desc = sort != null && sort.fields.length > 0 ? sort.fields[0].descending : false;
+				}
+				
+				if (_useGrailsController) {
+					_context.meta_callComponent(_component, _methodName, [{ filter: filter, 
+							offset: first, 
+							max: max, 
+							sort: order, 
+							order: desc ? "desc" : "asc"
+						}, 
+						true, 	// Use local binding
+						findResponder]
+					);
+					return;
+				}
+				else if (_useController) {
+					_context.meta_callComponent(_component, _methodName, [{ filter: filter, 
+							first: first, 
+							max: max, 
+							order: order, 
+							desc: desc 
+						}, 
+						true, 	// Use local binding
+						findResponder]
+					);
+				}
+				else { 
+					super.doFind(filter, first, max, sort, findResponder);
+				}
 			}
-			else {
-				order = sort != null && sort.fields.length > 0 ? sort.fields[0].name : null;
-				desc = sort != null && sort.fields.length > 0 ? sort.fields[0].descending : false;
-			}
-			
-			if (_useGrailsController) {
-				_context.meta_callComponent(_component, _methodName, [{ filter: filter, 
-						offset: first, 
-						max: max, 
-						sort: order, 
-						order: desc ? "desc" : "asc"
-					}, 
-					true, 	// Use local binding
-					findResponder]
-				);
-				return;
-			}
-			else if (_useController) {
-				_context.meta_callComponent(_component, _methodName, [{ filter: filter, 
-						first: first, 
-						max: max, 
-						order: order, 
-						desc: desc 
-					}, 
-					true, 	// Use local binding
-					findResponder]
-				);
-			}
-			else { 
-				super.doFind(filter, first, max, sort, findResponder);
+		}
+    	
+		CONFIG::flex45 {
+			protected override function doFind(filter:Object, first:int, max:int, sort:ISort, findResponder:PagedCollectionResponder):void {			
+				var order:* = null;
+				var desc:* = null;
+				if (this.multipleSort && !_useGrailsController) {
+					if (sort != null) {
+						order = new Array();
+						desc = new Array();
+						for each (var s:SortField in sort.fields) {
+							order.push(s.name);
+							desc.push(s.descending);
+						}
+					}
+				}
+				else {
+					order = sort != null && sort.fields.length > 0 ? sort.fields[0].name : null;
+					desc = sort != null && sort.fields.length > 0 ? sort.fields[0].descending : false;
+				}
+				
+				if (_useGrailsController) {
+					_context.meta_callComponent(_component, _methodName, [{ filter: filter, 
+							offset: first, 
+							max: max, 
+							sort: order, 
+							order: desc ? "desc" : "asc"
+						}, 
+						true, 	// Use local binding
+						findResponder]
+					);
+					return;
+				}
+				else if (_useController) {
+					_context.meta_callComponent(_component, _methodName, [{ filter: filter, 
+							first: first, 
+							max: max, 
+							order: order, 
+							desc: desc 
+						}, 
+						true, 	// Use local binding
+						findResponder]
+					);
+				}
+				else { 
+					super.doFind(filter, first, max, sort, findResponder);
+				}
 			}
 		}
 		

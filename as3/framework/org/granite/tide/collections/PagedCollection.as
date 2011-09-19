@@ -24,13 +24,7 @@ package org.granite.tide.collections {
     import flash.events.IEventDispatcher;
     
     import mx.binding.utils.BindingUtils;
-    import mx.collections.ArrayCollection;
-    import mx.collections.CursorBookmark;
-    import mx.collections.IList;
-    import mx.collections.IViewCursor;
-    import mx.collections.ListCollectionView;
-    import mx.collections.Sort;
-    import mx.collections.SortField;
+    import mx.collections.*;
     import mx.collections.errors.ItemPendingError;
     import mx.core.IPropertyChangeNotifier;
     import mx.core.IUID;
@@ -41,7 +35,6 @@ package org.granite.tide.collections {
     import mx.events.PropertyChangeEventKind;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.rpc.IResponder;
     import mx.rpc.events.FaultEvent;
     import mx.rpc.events.ResultEvent;
     import mx.utils.ArrayUtil;
@@ -503,24 +496,44 @@ package org.granite.tide.collections {
     	public override function get list():IList {
     	    return _list;
     	}
-		
-        [Bindable("sortChanged")]
-		public override function get sort():Sort {
-		    if (_tempSort && !_tempSort.sorted)
-		        return _tempSort;
-		    return super.sort;
-		}
-		
-		public override function set sort(newSort:Sort):void {
-			// Track changes on sort fields
-			if (sort != null && sort.fields != null) {
-				for each (var field:SortField in sort.fields)
-					field.removeEventListener("descendingChanged", sortFieldChangeHandler);
-			}
-			_sortFieldListenersSet = 0;
-			super.sort = newSort;
-		}
-		
+
+        CONFIG::flex40 {
+            [Bindable("sortChanged")]
+            public override function get sort():Sort {
+                if (_tempSort && !_tempSort.sorted)
+                    return _tempSort;
+                return super.sort;
+            }
+
+            public override function set sort(newSort:Sort):void {
+                // Track changes on sort fields
+                if (sort != null && sort.fields != null) {
+                    for each (var field:SortField in sort.fields)
+                        field.removeEventListener("descendingChanged", sortFieldChangeHandler);
+                }
+                _sortFieldListenersSet = 0;
+                super.sort = newSort;
+            }
+        }
+
+        CONFIG::flex45 {
+            [Bindable("sortChanged")]
+            public override function get sort():ISort {
+                if (_tempSort && !_tempSort.sorted)
+                    return _tempSort;
+                return super.sort;
+            }
+
+            public override function set sort(newSort:ISort):void {
+                // Track changes on sort fields
+                if (sort != null && sort.fields != null) {
+                    for each (var field:SortField in sort.fields)
+                        field.removeEventListener("descendingChanged", sortFieldChangeHandler);
+                }
+                _sortFieldListenersSet = 0;
+                super.sort = newSort;
+            }
+        }
 		
 		/**
 		 *  @private

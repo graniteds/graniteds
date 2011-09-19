@@ -857,6 +857,8 @@
             	<include name="framework.swc"/>
             </compiler.external-library-path>
         	<define name="CONFIG::debugging" value="false"/>
+            <define name="CONFIG::flex40" value="true"/>
+            <define name="CONFIG::flex45" value="false"/>
         </compc>
         <zip basedir="build" update="true" keepcompression="true"
             destfile="build/granite-essentials.swc" includes="META-INF/MANIFEST.MF"/>
@@ -871,6 +873,8 @@
                 <include name="granite-essentials.swc" />
             </compiler.library-path>
         	<define name="CONFIG::debugging" value="false"/>
+            <define name="CONFIG::flex40" value="true"/>
+            <define name="CONFIG::flex45" value="false"/>
         </compc>
         <zip basedir="build" update="true" keepcompression="true"
             destfile="build/granite.swc" includes="META-INF/MANIFEST.MF"/>

@@ -23,11 +23,7 @@ package org.granite.tide.collections {
     import flash.events.Event;
     
     import mx.binding.utils.BindingUtils;
-    import mx.collections.ArrayCollection;
-    import mx.collections.IList;
-    import mx.collections.ListCollectionView;
-    import mx.collections.Sort;
-    import mx.collections.SortField;
+    import mx.collections.*;
     import mx.collections.errors.ItemPendingError;
     import mx.core.IPropertyChangeNotifier;
     import mx.core.IUID;
@@ -173,33 +169,66 @@ package org.granite.tide.collections {
 			doFind(filter, first, max, sort, findResponder);
 		}
 		
-		protected function doFind(filter:Object, first:int, max:int, sort:Sort, findResponder:PagedCollectionResponder):void { 			
-			// Force evaluation of max, results and count
-			var order:* = null;
-			var desc:* = null;
-			if (this.multipleSort) {
-				if (sort != null) {
-					order = new Array();
-					desc = new Array();
-					for each (var s:SortField in sort.fields) {
-						order.push(s.name);
-						desc.push(s.descending);
+		CONFIG::flex40 {
+			protected function doFind(filter:Object, first:int, max:int, sort:Sort, findResponder:PagedCollectionResponder):void { 			
+				// Force evaluation of max, results and count
+				var order:* = null;
+				var desc:* = null;
+				if (this.multipleSort) {
+					if (sort != null) {
+						order = new Array();
+						desc = new Array();
+						for each (var s:SortField in sort.fields) {
+							order.push(s.name);
+							desc.push(s.descending);
+						}
 					}
 				}
+				else {
+					order = sort != null && sort.fields.length > 0 ? sort.fields[0].name : null;
+					desc = sort != null && sort.fields.length > 0 ? sort.fields[0].descending : false;
+				}
+				
+				_context.meta_callComponent(_component, _methodName, [filter, 
+					first, 
+					max, 
+					order, 
+					desc, 
+					findResponder]
+				);
 			}
-			else {
-				order = sort != null && sort.fields.length > 0 ? sort.fields[0].name : null;
-				desc = sort != null && sort.fields.length > 0 ? sort.fields[0].descending : false;
-			}
-			
-			_context.meta_callComponent(_component, _methodName, [filter, 
-				first, 
-				max, 
-				order, 
-				desc, 
-				findResponder]
-			);
 		}
+		
+		CONFIG::flex45 {
+			protected function doFind(filter:Object, first:int, max:int, sort:ISort, findResponder:PagedCollectionResponder):void { 			
+				// Force evaluation of max, results and count
+				var order:* = null;
+				var desc:* = null;
+				if (this.multipleSort) {
+					if (sort != null) {
+						order = new Array();
+						desc = new Array();
+						for each (var s:SortField in sort.fields) {
+							order.push(s.name);
+							desc.push(s.descending);
+						}
+					}
+				}
+				else {
+					order = sort != null && sort.fields.length > 0 ? sort.fields[0].name : null;
+					desc = sort != null && sort.fields.length > 0 ? sort.fields[0].descending : false;
+				}
+				
+				_context.meta_callComponent(_component, _methodName, [filter, 
+					first, 
+					max, 
+					order, 
+					desc, 
+					findResponder]
+				);
+			}
+		}
+		
 		
 		
 		protected override function getResult(event:TideResultEvent, first:int, max:int):Object {
