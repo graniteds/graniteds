@@ -81,6 +81,7 @@
     <artifact:pom id="granite-root-swc" file="${build.pom.dir}/root-swc.pom.xml"/>
     <artifact:pom id="granite-essentials-swc" file="${build.pom.dir}/essentials-swc.pom.xml"/>
     <artifact:pom id="granite-swc" file="${build.pom.dir}/granite-swc.pom.xml"/>
+    <artifact:pom id="granite-flex45-swc" file="${build.pom.dir}/granite-flex45-swc.pom.xml"/>
   </target>
 
   <path id="maven-ant-tasks.classpath" path="../lib/maven-ant-tasks.jar"/>
