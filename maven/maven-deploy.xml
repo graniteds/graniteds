@@ -158,6 +158,9 @@
     <artifact:install pomRefId="granite-swc" file="../build/granite.swc">
       <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
     </artifact:install>
+    <artifact:install pomRefId="granite-flex45-swc" file="../build/granite-flex45.swc">
+      <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
+    </artifact:install>
   </target>
 
   <target name="load.wagon">
@@ -357,6 +360,16 @@
       </remoterepository>
       <attach file="../build/granite.swc.asc" type="swc.asc"/>
       <attach file="../build/poms/granite-swc.pom.xml.asc" type="pom.asc"/>
+      <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/flex/granite-sources.jar.asc" classifier="sources" type="jar.asc"/>
+    </artifact:deploy>
+
+    <artifact:deploy pomRefId="granite-flex45-swc" file="../build/granite-flex45.swc">
+      <remoterepository id="${remote.repo.id}" url="${remote.repo.url}">
+        <authentication username="${remote.repo.user}" password="${remote.repo.password}"/>
+      </remoterepository>
+      <attach file="../build/granite-flex45.swc.asc" type="swc.asc"/>
+      <attach file="../build/poms/granite-flex45-swc.pom.xml.asc" type="pom.asc"/>
       <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
       <attach file="../build/sources/flex/granite-sources.jar.asc" classifier="sources" type="jar.asc"/>
     </artifact:deploy>
