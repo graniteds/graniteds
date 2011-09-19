@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<!--
+ ! @author Franck WOLFF
+ !-->
+<project name="graniteds-flex45" default="build.swc">
+
+    <!--
+     ! Flex 2 SDK tasks (mxmlc, compc, html-wrapper).
+     !-->
+    <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
+
+    <!--
+     ! Build AS3 libraries (only if outdated).
+     !-->
+    <target name="check.swc">
+        <uptodate property="skip.compc" targetfile="build/granite-flex45.swc">
+            <srcfiles dir="as3" includes="**/*.as"/>
+        </uptodate>
+    </target>
+    <target name="build.swc" depends="check.swc" unless="skip.compc">
+        <mkdir dir="build"/>
+        <mkdir dir="build/META-INF"/>
+
+        <!-- Create Swcs Manifest -->
+        <tstamp>
+            <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss 'GMT'Z"/>
+        </tstamp>
+        <manifest file="build/META-INF/MANIFEST.MF">
+            <section name="granite/swc">
+                <attribute name="Implementation-Vendor" value="Granite Data Services"/>
+                <attribute name="Implementation-Version" value="${GDS_VERSION} (${TODAY})"/>
+            </section>
+        </manifest>
+
+        <!-- Build Swcs and add Manifest -->
+        <compc output="build/granite-flex45.swc" use-network="false" warn-missing-namespace-decl="false">
+            <source-path path-element="as3/framework"/>
+            <include-sources dir="as3/framework" includes="**/*.as"/>
+            <compiler.external-library-path dir="${FLEX_HOME}/frameworks/libs" append="true">
+            	<include name="framework.swc"/>
+                <include name="mx/mx.swc"/>
+            </compiler.external-library-path>
+            <compiler.library-path dir="build" append="true">
+                <include name="granite-essentials.swc" />
+            </compiler.library-path>
+        	<define name="CONFIG::debugging" value="false"/>
+            <define name="CONFIG::flex40" value="false"/>
+            <define name="CONFIG::flex45" value="true"/>
+        </compc>
+        <zip basedir="build" update="true" keepcompression="true"
+            destfile="build/granite-flex45.swc" includes="META-INF/MANIFEST.MF"/>
+    </target>
+
+</project>
