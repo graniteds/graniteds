@@ -350,7 +350,11 @@ package org.granite.tide {
 		 *  @return top level application
 		 */
 		private function currentApplication():Object {
-			var app:Object = Application.application;
+			var app:Object = null;
+			// Application.application seems to break Flex 4.5 mobile applications
+			CONFIG::flex40 {
+				app = Application.application;
+			}
 			if (app == null) {
 				// Flex 4 spark application
 				var flexGlobals:Class = getDefinitionByName("mx.core.FlexGlobals") as Class;
