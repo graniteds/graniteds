@@ -21,6 +21,7 @@
 package org.granite.tide.cdi;
 
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -31,6 +32,7 @@ import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataEnabled.PublishMode;
 import org.granite.tide.data.DataTopicParams;
+import org.granite.tide.data.DataUpdatePostprocessor;
 
 
 /**
@@ -47,6 +49,9 @@ public class TideDataPublishingInterceptor {
 	private Gravity gravity;
 	
 	@Inject
+	private Instance<DataUpdatePostprocessor> dataUpdatePostprocessor;
+	
+	@Inject
 	Event<TideDataPublishingEvent> dataPublishingEvent;
 	
     @AroundInvoke
@@ -59,8 +64,12 @@ public class TideDataPublishingInterceptor {
     	boolean shouldInitContext = shouldRemoveContextAtEnd || DataContext.isNull();
     	boolean onCommit = false;
     	
-    	if (shouldInitContext)
+    	if (shouldInitContext) {
     		DataContext.init(gravity, dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
+    		
+    		if (!dataUpdatePostprocessor.isUnsatisfied())
+    			DataContext.get().setDataUpdatePostprocessor(dataUpdatePostprocessor.get());
+    	}
     	
         DataContext.observe();
         try {

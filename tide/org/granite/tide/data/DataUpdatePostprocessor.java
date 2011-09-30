@@ -22,28 +22,15 @@ package org.granite.tide.data;
 
 
 /**
- *  Interface for data update dispatchers.
- *  The dispatch is a three step process :
- * 
- * 	<ul>
- *  <li>Initialization in the constructor (specific for each implementation), at initialization of <code>DataContext</code></li>
- *  <li><code>observe()</code> builds the server selector depending on the data that are processed</li>
- *  <li><code>publish()</code> handles the actual publishing</li>
- *  </ul>
+ *  Interface for data update postprocessors.
+ *  Allows processing of updated entities before the updates are dispatched or returned to the clients.
+ *  Can be attached to the <code>DataContext</code> or lookup up by injection when using a DI framework.
  * 
  *  @see DataContext
  * 
  *  @author William Drai
  */
-public interface DataDispatcher {
+public interface DataUpdatePostprocessor {
 	
-	public static final String TIDE_DATA_SUBTOPIC = "tideDataTopic";
-	public static final String GDS_SESSION_ID = "GDSSessionID";
-	public static final String TIDE_DATA_TYPE_KEY = "type";
-	public static final String TIDE_DATA_TYPE_VALUE = "DATA";
-	public static final String SERVER_DISPATCHER_GDS_SESSION_ID = "__GDS_SERVER_DISPATCHER__";
-
-	public void observe();
-	
-	public void publish(Object[][] dataUpdates);
+	public Object process(Object entity);
 }

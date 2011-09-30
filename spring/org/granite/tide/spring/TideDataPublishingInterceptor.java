@@ -26,7 +26,9 @@ import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled;
+import org.granite.tide.data.DataUpdatePostprocessor;
 import org.granite.tide.data.DataEnabled.PublishMode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -41,9 +43,15 @@ public class TideDataPublishingInterceptor implements MethodInterceptor {
 	private static final Logger log = Logger.getLogger(TideDataPublishingInterceptor.class);
 	
 	private Gravity gravity;
+	private DataUpdatePostprocessor dataUpdatePostprocessor;
 	
 	public void setGravity(Gravity gravity) {
 		this.gravity = gravity;
+	}
+	
+	@Autowired(required=false)
+	public void setDataUpdatePostprocessor(DataUpdatePostprocessor dataUpdatePostprocessor) {
+		this.dataUpdatePostprocessor = dataUpdatePostprocessor;
 	}
 	
     public Object invoke(final MethodInvocation invocation) throws Throwable {
@@ -55,8 +63,11 @@ public class TideDataPublishingInterceptor implements MethodInterceptor {
     	boolean shouldInitContext = shouldRemoveContextAtEnd || DataContext.isNull();
     	boolean onCommit = false;
     	
-    	if (shouldInitContext)
+    	if (shouldInitContext) {
     		DataContext.init(gravity, dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
+    		if (dataUpdatePostprocessor != null)
+    			DataContext.get().setDataUpdatePostprocessor(dataUpdatePostprocessor);
+    	}
     	
         DataContext.observe();
         try {

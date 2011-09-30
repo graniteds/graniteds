@@ -57,6 +57,7 @@ import org.granite.tide.annotations.BypassTideMerge;
 import org.granite.tide.async.AsyncPublisher;
 import org.granite.tide.cdi.lazy.CDIInitializer;
 import org.granite.tide.data.DataContext;
+import org.granite.tide.data.DataUpdatePostprocessor;
 import org.granite.tide.invocation.ContextEvent;
 import org.granite.tide.invocation.ContextResult;
 import org.granite.tide.invocation.ContextUpdate;
@@ -362,6 +363,10 @@ public class CDIServiceContext extends TideServiceContext {
         
         // Initialize an empty data context
         DataContext.init();
+        
+        DataUpdatePostprocessor dataUpdatePostprocessor = (DataUpdatePostprocessor)findComponent(null, DataUpdatePostprocessor.class);
+        if (dataUpdatePostprocessor != null)
+        	DataContext.get().setDataUpdatePostprocessor(dataUpdatePostprocessor);
         
         TideInvocation tideInvocation = TideInvocation.init();
         tideInvocation.update(updates);

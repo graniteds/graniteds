@@ -23,6 +23,7 @@ package org.granite.tide.seam;
 import org.granite.gravity.Gravity;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled;
+import org.granite.tide.data.DataUpdatePostprocessor;
 import org.granite.tide.data.DataEnabled.PublishMode;
 import org.jboss.seam.Component;
 import org.jboss.seam.annotations.intercept.AroundInvoke;
@@ -61,6 +62,10 @@ public class TideDataPublishingInterceptor extends AbstractInterceptor {
     	if (shouldInitContext) {
     		Gravity gravity = (Gravity)Component.getInstance("org.granite.seam.gravity");
     		DataContext.init(gravity, dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
+    		
+    		DataUpdatePostprocessor dataUpdatePostprocessor = (DataUpdatePostprocessor)Component.getInstance("org.granite.tide.seam.data.dataUpdatePreprocessor", true);
+    		if (dataUpdatePostprocessor != null)
+    			DataContext.get().setDataUpdatePostprocessor(dataUpdatePostprocessor);
     	}
     	
         DataContext.observe();

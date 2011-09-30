@@ -36,6 +36,25 @@ import org.granite.messaging.webapp.HttpGraniteContext;
 
 import flex.messaging.messages.AsyncMessage;
 
+
+/**
+ *  Base implementation for data update dispatchers.
+ *  It should be built at beginning of each request during initialization of <code>DataContext</code>.
+ *  The dispatch is a three step process :
+ * 
+ * 	<ul>
+ *  <li>Initialization in the constructor</li>
+ *  <li><code>observe()</code> builds the server selector depending on the data that are processed</li>
+ *  <li><code>publish()</code> handles the actual publishing</li>
+ *  </ul>
+ *  
+ *  Actual implementations should only override <code>changeDataSelector</code> and <code>publishUpdate</code>/
+ * 
+ *  @see DataDispatcher
+ *  @see DataContext
+ * 
+ *  @author William Drai
+ */
 public abstract class AbstractDataDispatcher implements DataDispatcher {
     
     private static final String TIDE_DATA_SELECTORS_KEY_PREFIX = "org.granite.tide.dataSelectors.";

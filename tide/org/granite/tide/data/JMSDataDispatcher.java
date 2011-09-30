@@ -40,6 +40,14 @@ import org.granite.gravity.adapters.JMSClient;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
 
+/**
+ *  Implementation for data update dispatchers using JMS to dispatch updates.
+ * 
+ *  @see DataDispatcher
+ *  @see DataContext
+ * 
+ *  @author William Drai
+ */
 public class JMSDataDispatcher extends AbstractDataDispatcher {
     
     private static final Logger log = Logger.getLogger(JMSDataDispatcher.class);

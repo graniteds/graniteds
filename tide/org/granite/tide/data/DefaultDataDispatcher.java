@@ -39,6 +39,15 @@ import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.ErrorMessage;
 import flex.messaging.messages.Message;
 
+
+/**
+ *  Default implementation for data update dispatchers using the Gravity API to dispatch updates.
+ * 
+ *  @see DataDispatcher
+ *  @see DataContext
+ * 
+ *  @author William Drai
+ */
 public class DefaultDataDispatcher extends AbstractDataDispatcher {
     
     private static final Logger log = Logger.getLogger(DefaultDataDispatcher.class);

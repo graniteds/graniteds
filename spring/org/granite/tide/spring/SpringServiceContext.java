@@ -43,6 +43,7 @@ import org.granite.tide.TideTransactionManager;
 import org.granite.tide.annotations.BypassTideMerge;
 import org.granite.tide.async.AsyncPublisher;
 import org.granite.tide.data.DataContext;
+import org.granite.tide.data.DataUpdatePostprocessor;
 import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationResult;
 import org.granite.util.ClassUtil;
@@ -205,6 +206,10 @@ public class SpringServiceContext extends TideServiceContext {
     @Override
     public void prepareCall(ServiceInvocationContext context, IInvocationCall c, String componentName, Class<?> componentClass) {
     	DataContext.init();
+    	
+    	DataUpdatePostprocessor dupp = (DataUpdatePostprocessor)findComponent(null, DataUpdatePostprocessor.class);
+    	if (dupp != null)
+    		DataContext.get().setDataUpdatePostprocessor(dupp);
     }
 
     @Override

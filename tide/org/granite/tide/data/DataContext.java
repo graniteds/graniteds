@@ -44,6 +44,7 @@ public class DataContext {
     
     private DataDispatcher dataDispatcher = null;
     private PublishMode publishMode = null;
+    private DataUpdatePostprocessor dataUpdatePostprocessor = null; 
     
     
     public static void init() {
@@ -111,9 +112,13 @@ public class DataContext {
     	Iterator<Object[]> iu = dataUpdates.iterator();
     	while (iu.hasNext()) {
     		Object[] u = iu.next();
-    		updates[i++] = new Object[] { u[0], u[1] }; 
+    		updates[i++] = new Object[] { u[0], dataUpdatePostprocessor != null ? dataUpdatePostprocessor.process(u[1]) : u[1] }; 
     	}
 		return updates;
+    }
+    
+    public void setDataUpdatePostprocessor(DataUpdatePostprocessor dataUpdatePostprocessor) {
+    	this.dataUpdatePostprocessor = dataUpdatePostprocessor;
     }
     
     public static void addUpdate(EntityUpdateType type, Object entity) {
