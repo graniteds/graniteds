@@ -26,7 +26,9 @@ package org.granite.tide.data {
     import mx.collections.IList;
     import mx.core.IUID;
     import mx.events.CollectionEvent;
-    import mx.events.CollectionEventKind;
+import mx.events.CollectionEventKind;
+import mx.events.CollectionEventKind;
+import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
     import mx.events.PropertyChangeEventKind;
     import mx.logging.ILogger;
@@ -453,13 +455,7 @@ package org.granite.tide.data {
 				var count:int, p:Object;
 	            var pce:PropertyChangeEvent = null, ce:CollectionEvent = null;
 				var location:int = event.location;
-				for each (ce in save) {
-					if (ce.kind == CollectionEventKind.REMOVE && ce.location > location)
-						location++;
-					else if (ce.kind == CollectionEventKind.ADD && ce.location < location)
-						location--;
-				}
-				
+
 	            for (var i:int = 0; i < save.length; i++) {						
 	                if (((event.kind == CollectionEventKind.ADD && save[i].kind == CollectionEventKind.REMOVE)
 	                    || (event.kind == CollectionEventKind.REMOVE && save[i].kind == CollectionEventKind.ADD))
@@ -467,11 +463,11 @@ package org.granite.tide.data {
 						&& isSame(event.items[0], save[i].items[0]) && location == save[i].location) {
 						
 	                    save.splice(i, 1);
-						// Adjust location of other events because an element added locally has been removed
+						// Adjust location of other saved events because an element added/removed locally has been removed/added
 						for each (ce in save) {
-							if (event.kind == CollectionEventKind.REMOVE && ce.location > event.location)
+							if (event.kind == CollectionEventKind.REMOVE && ce.kind == CollectionEventKind.ADD && ce.location > event.location)
 								ce.location--;
-							else if (event.kind == CollectionEventKind.ADD && ce.location < event.location)
+							else if (event.kind == CollectionEventKind.ADD && ce.kind == CollectionEventKind.REMOVE && ce.location > event.location)
 								ce.location++;
 						}
 						
@@ -513,8 +509,17 @@ package org.granite.tide.data {
 						found = true;
 					}
 	            }
-	            if (!found)
+	            if (!found) {
+                    // Adjust location of previously saved events because a local change has moved collection content
+                    for (var j:int = 0; j < save.length; j++) {
+                        if (event.kind == CollectionEventKind.REMOVE && save[j].kind == CollectionEventKind.REMOVE && event.location <= save[j].location && save[j].location > 0)
+                            save[j].location--;
+                        else if (event.kind == CollectionEventKind.ADD && save[j].kind == CollectionEventKind.ADD && event.location <= save[j].location)
+                            save[j].location++;
+                    }
+
 	                save.push(event);
+                }
 			}
 			
 			var newDirtyEntity:Boolean = isEntityChanged(owner);

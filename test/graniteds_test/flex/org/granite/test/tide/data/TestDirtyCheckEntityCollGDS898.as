@@ -60,7 +60,43 @@ package org.granite.test.tide.data
 			Assert.assertEquals("Saved events", 1, _ctx.meta_getSavedProperties()[person].contacts.length);
 			Assert.assertEquals("Saved event location", 0, _ctx.meta_getSavedProperties()[person].contacts[0].location);
         }
-		
+
+        [Test]
+        public function testDirtyCheckEntityCollection1():void {
+			var person:Person = new Person();
+			person.id = 1;
+			person.version = 0;
+			person.uid = "P1";
+			person.contacts = new PersistentSet(true);
+			_ctx.person = _ctx.meta_mergeExternalData(person);
+			person = Person(_ctx.person);
+
+			var contact:Contact = new Contact();
+			contact.id = 1;
+			contact.version = 0;
+			contact.uid = "C1";
+			contact.person = person;
+			contact.email = "toto@tutu.com";
+			person.contacts.addItem(contact);
+			var contact2:Contact = new Contact();
+			contact2.id = 2;
+			contact2.version = 0;
+			contact2.uid = "C2";
+			contact2.person = person;
+			contact2.email = "test@tutu.com";
+			person.contacts.addItemAt(contact2, 0);
+
+			Assert.assertTrue("Context dirty", _ctx.meta_dirty);
+
+			person.contacts.removeItemAt(1);
+
+			Assert.assertEquals("Saved events", 1, _ctx.meta_getSavedProperties()[person].contacts.length);
+			Assert.assertEquals("Saved event location", 0, _ctx.meta_getSavedProperties()[person].contacts[0].location);
+
+            person.contacts.removeItemAt(0);
+            Assert.assertFalse("Context dirty", _ctx.meta_dirty);
+        }
+
 		[Test]
 		public function testDirtyCheckEntityCollection2():void {
 			var person:Person = new Person();
@@ -100,6 +136,151 @@ package org.granite.test.tide.data
 			
 			Assert.assertEquals("Saved events", 1, _ctx.meta_getSavedProperties()[person].contacts.length);
 			Assert.assertEquals("Saved remove event location", 0, _ctx.meta_getSavedProperties()[person].contacts[0].location);
+
+            var contact4:Contact = new Contact();
+            contact4.id = 1;
+            contact4.version = 0;
+            contact4.uid = "C1";
+            contact4.person = person;
+            contact4.email = "toto@tutu.com";
+            person.contacts.addItemAt(contact4, 0);
+
+            Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
 		}
+
+        [Test]
+        public function testDirtyCheckEntityCollection3():void {
+            var person:Person = new Person();
+            person.id = 1;
+            person.version = 0;
+            person.uid = "P1";
+            person.contacts = new PersistentSet(true);
+            var contact:Contact = new Contact();
+            contact.id = 1;
+            contact.version = 0;
+            contact.uid = "C1";
+            contact.person = person;
+            contact.email = "t1@tutu.com";
+            person.contacts.addItem(contact);
+            var contact2:Contact = new Contact();
+            contact2.id = 2;
+            contact2.version = 0;
+            contact2.uid = "C2";
+            contact2.person = person;
+            contact2.email = "t2@tutu.com";
+            person.contacts.addItem(contact2);
+            var contact3:Contact = new Contact();
+            contact3.id = 3;
+            contact3.version = 0;
+            contact3.uid = "C3";
+            contact3.person = person;
+            contact3.email = "t3@tutu.com";
+            person.contacts.addItem(contact3);
+            var contact4:Contact = new Contact();
+            contact4.id = 4;
+            contact4.version = 0;
+            contact4.uid = "C4";
+            contact4.person = person;
+            contact4.email = "t4@tutu.com";
+            person.contacts.addItem(contact4);
+            var contact5:Contact = new Contact();
+            contact5.id = 5;
+            contact5.version = 0;
+            contact5.uid = "C5";
+            contact5.person = person;
+            contact5.email = "t5@tutu.com";
+            person.contacts.addItem(contact5);
+            var contact6:Contact = new Contact();
+            contact6.id = 6;
+            contact6.version = 0;
+            contact6.uid = "C6";
+            contact6.person = person;
+            contact6.email = "t6@tutu.com";
+            person.contacts.addItem(contact6);
+            _ctx.person = _ctx.meta_mergeExternalData(person);
+            person = Person(_ctx.person);
+
+            var c3:Contact = Contact(person.contacts.removeItemAt(2));
+
+            Assert.assertTrue("Context dirty after remove 1", _ctx.meta_dirty);
+
+            var c6:Contact = Contact(person.contacts.removeItemAt(4));
+
+            Assert.assertTrue("Context dirty after remove 2", _ctx.meta_dirty);
+
+            person.contacts.addItemAt(c3, 2);
+            person.contacts.addItemAt(c6, 5);
+
+            Assert.assertFalse("Context dirty", _ctx.meta_dirty);
+        }
+
+        [Test]
+        public function testDirtyCheckEntityCollection4():void {
+            var person:Person = new Person();
+            person.id = 1;
+            person.version = 0;
+            person.uid = "P1";
+            person.contacts = new PersistentSet(true);
+            var contact:Contact = new Contact();
+            contact.id = 1;
+            contact.version = 0;
+            contact.uid = "C1";
+            contact.person = person;
+            contact.email = "t1@tutu.com";
+            person.contacts.addItem(contact);
+            var contact2:Contact = new Contact();
+            contact2.id = 2;
+            contact2.version = 0;
+            contact2.uid = "C2";
+            contact2.person = person;
+            contact2.email = "t2@tutu.com";
+            person.contacts.addItem(contact2);
+            var contact3:Contact = new Contact();
+            contact3.id = 3;
+            contact3.version = 0;
+            contact3.uid = "C3";
+            contact3.person = person;
+            contact3.email = "t3@tutu.com";
+            person.contacts.addItem(contact3);
+            var contact4:Contact = new Contact();
+            contact4.id = 4;
+            contact4.version = 0;
+            contact4.uid = "C4";
+            contact4.person = person;
+            contact4.email = "t4@tutu.com";
+            person.contacts.addItem(contact4);
+            var contact5:Contact = new Contact();
+            contact5.id = 5;
+            contact5.version = 0;
+            contact5.uid = "C5";
+            contact5.person = person;
+            contact5.email = "t5@tutu.com";
+            person.contacts.addItem(contact5);
+            var contact6:Contact = new Contact();
+            contact6.id = 6;
+            contact6.version = 0;
+            contact6.uid = "C6";
+            contact6.person = person;
+            contact6.email = "t6@tutu.com";
+            person.contacts.addItem(contact6);
+            _ctx.person = _ctx.meta_mergeExternalData(person);
+            person = Person(_ctx.person);
+
+            var c3:Contact = Contact(person.contacts.removeItemAt(2));
+            var c6:Contact = Contact(person.contacts.removeItemAt(4));
+
+            person.contacts.addItemAt(c6, 1);
+            person.contacts.addItemAt(c3, 4);
+
+            Assert.assertTrue("Context dirty", _ctx.meta_dirty);
+
+            person.contacts.removeItemAt(1);
+            person.contacts.removeItemAt(3);
+
+            person.contacts.addItemAt(c6, 4);
+            person.contacts.addItemAt(c3, 2);
+
+            Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
+        }
     }
 }
