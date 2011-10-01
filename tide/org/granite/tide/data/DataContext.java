@@ -44,6 +44,7 @@ public class DataContext {
     
     private DataDispatcher dataDispatcher = null;
     private PublishMode publishMode = null;
+    private Object[][] updates = null;
     private DataUpdatePostprocessor dataUpdatePostprocessor = null; 
     
     
@@ -69,7 +70,7 @@ public class DataContext {
     
     private DataContext(Gravity gravity, String topic, Class<? extends DataTopicParams> dataTopicParamsClass, PublishMode publishMode) {
 		log.debug("Init Gravity data context for topic %s and mode %s", topic, publishMode);
-		dataDispatcher = new DefaultDataDispatcher(gravity, topic, dataTopicParamsClass);
+		this.dataDispatcher = new DefaultDataDispatcher(gravity, topic, dataTopicParamsClass);
 		this.publishMode = publishMode;
     }
 
@@ -105,9 +106,12 @@ public class DataContext {
     }
     
     public Object[][] getUpdates() {
+    	if (updates != null)
+    		return updates;
+    	
     	if (dataUpdates == null || dataUpdates.isEmpty())
     		return null;
-    	Object[][] updates = new Object[dataUpdates.size()][];
+    	updates = new Object[dataUpdates.size()][];
     	int i = 0;
     	Iterator<Object[]> iu = dataUpdates.iterator();
     	while (iu.hasNext()) {
@@ -135,6 +139,7 @@ public class DataContext {
     			}
     		}
     		dc.dataUpdates.add(new Object[] { type.name(), entity, priority });
+    		dc.updates = null;
     	}
     }
     
