@@ -712,7 +712,21 @@ package org.granite.tide.data {
         	
             var dest:Object = obj;
             var p:Object = null;
-            if (obj is IUID) {
+            var desc:EntityDescriptor = null;
+            if (obj is IEntity && !obj.meta::isInitialized()) {
+                desc = _context.meta_tide.getEntityDescriptor(IEntity(obj));
+                if (desc.idPropertyName != null) {
+                    p = _entitiesByUID.find(function(o:Object):Boolean {
+                        return (getQualifiedClassName(o) === getQualifiedClassName(obj) && obj[desc.idPropertyName] === o[desc.idPropertyName]);
+                    });
+
+                    if (p) {
+                        previous = p;
+                        dest = previous;
+                    }
+                }
+            }
+            else if (obj is IUID) {
                 p = _entitiesByUID.get(getQualifiedClassName(obj) + ":" + IUID(obj).uid);
                 if (p) {
 					// Trying to merge an entity that is already cached with itself: stop now, this is not necessary to go deeper in the object graph

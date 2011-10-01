@@ -86,6 +86,19 @@ package org.granite.collections {
 			
 			return uidObject;
 		}
+
+        public function find(matcher:Function):Object {
+            for (var i:int = 0; i < _table.length; i++) {
+                var dic:Dictionary = _table[i];
+                if (dic) {
+                    for (var o:Object in dic) {
+                        if (matcher(o))
+                            return o;
+                    }
+                }
+            }
+            return null;
+        }
 		
 		public function remove(uid:String):IUID {
 			var h:int = hash(uid);

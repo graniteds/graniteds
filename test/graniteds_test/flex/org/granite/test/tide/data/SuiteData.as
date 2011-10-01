@@ -42,6 +42,7 @@ package org.granite.test.tide.data
 		public var test28:org.granite.test.tide.data.TestMergeEntityXML;
 		public var test29:org.granite.test.tide.data.TestMergeLazyEntity;
 		public var test30:org.granite.test.tide.data.TestMergeLazyEntity2;
+		public var test30b:org.granite.test.tide.data.TestMergeEntityLazy;
 		public var test31:org.granite.test.tide.data.TestMergeMap;
 		public var test32:org.granite.test.tide.data.TestMergeMap2;
 		public var test33:org.granite.test.tide.data.TestMergeMap3;
