@@ -119,6 +119,24 @@
             <include name="granite-hibernate4.jar"/>
         </fileset>
     </path>
+	
+    <path id="spring.jar">
+        <fileset dir="${gds.lib}">
+        	<include name="aopalliance-1.0.jar"/>
+            <include name="asm-3.0.jar"/>
+            <include name="commons-collections.jar"/>
+            <include name="commons-logging.jar"/>
+        	<include name="org.springframework.*.jar"/>
+        	<include name="spring-*-3.0.jar"/>
+        	<include name="spring-test.jar"/>
+    	</fileset>
+    </path>
+    <path id="granite-spring.jar">
+        <fileset dir="${gds.build}">
+            <include name="granite-spring.jar"/>
+        </fileset>
+    </path>
+	
     <path id="seam.jar">
         <fileset dir="${gds.lib}">
             <include name="dom4j.jar"/>
@@ -135,6 +153,19 @@
             <include name="granite-seam21.jar"/>
         </fileset>
     </path>
+	
+    <path id="cdi.jar">
+        <fileset dir="${gds.lib}">
+            <include name="cdi-api.jar"/>
+            <include name="weld-*.jar"/>
+        	<include name="el-api.jar"/>
+        </fileset>
+    </path>
+    <path id="granite-cdi.jar">
+        <fileset dir="${gds.build}">
+            <include name="granite-cdi.jar"/>
+        </fileset>
+    </path>    
     
     <path id="gds.classpath">
         <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
@@ -142,10 +173,20 @@
         <path refid="log4j.jar"/>
         <path refid="hibernate.jar"/>
         <path refid="hibernate-validator.jar"/>
-        <path refid="seam.jar"/>
         <path refid="granite.jar"/>
         <path refid="granite-hibernate.jar"/>
+    </path>
+    <path id="gds.seam.classpath">
+        <path refid="seam.jar"/>
         <path refid="granite-seam.jar"/>
+    </path>
+    <path id="gds.spring.classpath">
+        <path refid="spring.jar"/>
+        <path refid="granite-spring.jar"/>
+    </path>
+    <path id="gds.cdi.classpath">
+        <path refid="cdi.jar"/>
+        <path refid="granite-cdi.jar"/>
     </path>
     <path id="test.classpath">
         <pathelement location="${gds.lib}/hsqldb.jar"/>
@@ -177,10 +218,11 @@
     
     <target name="tests.java" depends="build.javac" description="Run Java tests">
         <mkdir dir="test-reports/java"/>
-        
+    	
         <junit printsummary="yes" showoutput="false">
             <classpath>
                 <path refid="gds.classpath"/>
+                <path refid="gds.seam.classpath"/>
                 <path refid="test.classpath"/>
                 <pathelement path="classes"/>
             </classpath>
@@ -189,7 +231,10 @@
             
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
-                    <include name="**/*Test.java"/>
+                	<include name="**/*Test.java"/>
+                    <exclude name="**/seam/*Test.java"/>
+                    <exclude name="**/spring/*Test.java"/>
+                    <exclude name="**/cdi/*Test.java"/>
                     <exclude name="**/Hibernate*.java"/>
                 	<exclude name="**/EclipseLink*.java"/>
                     <exclude name="**/DataNucleus*.java"/>
@@ -198,7 +243,89 @@
                 </fileset>
             </batchtest>
         </junit>
+    	
+    	<antcall target="tests.seam"/>
+        <antcall target="tests.spring"/>
+        <antcall target="tests.cdi"/>
+        <antcall target="tests.hibernate"/>
+        <antcall target="tests.hibernate4"/>
+        <antcall target="tests.eclipselink"/>
+        <antcall target="tests.openjpa"/>
+        <antcall target="tests.datanucleus"/>
         
+    	<antcall target="tests.reports"/>
+    </target>
+    
+    <target name="tests.reports">
+        <junitreport todir="test-reports/java">
+            <fileset dir="./test-reports/java">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report todir="test-reports/java"/>
+        </junitreport>  
+    </target>
+    	
+    <target name="tests.seam" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false">
+            <classpath>
+                <path refid="gds.classpath"/>
+            	<path refid="gds.seam.classpath"/>
+                <path refid="test.classpath"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/seam/*Test.java"/>
+                    <exclude name="**/Abstract*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+    	
+    <target name="tests.spring" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false">
+            <classpath>
+                <path refid="gds.classpath"/>
+                <path refid="gds.spring.classpath"/>
+                <path refid="test.classpath"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/spring/*Test.java"/>
+                    <exclude name="**/Abstract*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+        
+    <target name="tests.cdi" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false">
+            <classpath>
+                <path refid="gds.classpath"/>
+                <path refid="gds.cdi.classpath"/>
+                <path refid="test.classpath"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/cdi/*Test.java"/>
+                    <exclude name="**/Abstract*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+        
+    <target name="tests.hibernate" depends="build.javac">        
         <junit printsummary="yes" showoutput="false" fork="true">
             <classpath>
                 <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
@@ -219,7 +346,9 @@
                 </fileset>
             </batchtest>
         </junit>
+    </target>
         
+    <target name="tests.hibernate4" depends="build.javac">        
         <junit printsummary="yes" showoutput="false">
             <classpath>
                 <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
@@ -240,7 +369,9 @@
                 </fileset>
             </batchtest>
         </junit>
+    </target>
         
+    <target name="tests.eclipselink" depends="build.javac">        
         <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
         	<jvmarg value="-javaagent:${gds.lib}/eclipselink.jar"/>
         	
@@ -264,7 +395,9 @@
                 </fileset>
             </batchtest>
         </junit>
+    </target>
         
+    <target name="tests.openjpa" depends="build.javac">        
         <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
     	   <jvmarg value="-javaagent:${gds.lib}/openjpa.jar"/>
         	
@@ -292,7 +425,9 @@
                 </fileset>
             </batchtest>
         </junit>
+    </target>
         
+    <target name="tests.datanucleus" depends="build.javac">        
         <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
         	<jvmarg value="-javaagent:${gds.lib}/datanucleus-enhancer.jar=-api=JPA"/>
         	
@@ -321,13 +456,6 @@
                 </fileset>
             </batchtest>
         </junit>
-        
-        <junitreport todir="test-reports/java">
-            <fileset dir="./test-reports/java">
-                <include name="TEST-*.xml"/>
-            </fileset>
-            <report todir="test-reports/java"/>
-        </junitreport>  
     </target>
     
     <!--

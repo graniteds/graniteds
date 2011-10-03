@@ -76,6 +76,15 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     private static final Logger log = Logger.getLogger(SpringMVCServiceContext.class);
 
     
+    public SpringMVCServiceContext() throws ServiceException {
+        super();
+    }
+    
+    public SpringMVCServiceContext(ApplicationContext springContext) throws ServiceException {
+        super(springContext);
+    }
+    
+    
     @Override
     public Object adjustInvokee(Object instance, String componentName, Set<Class<?>> componentClasses) {
     	for (Class<?> componentClass : componentClasses) {

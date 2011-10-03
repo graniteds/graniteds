@@ -51,6 +51,12 @@ public class SpringServiceFactory extends ServiceFactory {
     
     public static final String PERSISTENCE_MANAGER_BEAN_NAME = "persistence-manager-bean-name";
     public static final String ENTITY_MANAGER_FACTORY_BEAN_NAME = "entity-manager-factory-bean-name";
+    
+    private ApplicationContext springContext = null;
+    
+    public void setApplicationContext(ApplicationContext applicationContext) {
+    	this.springContext = applicationContext;
+    }
 
 
     @Override
@@ -99,7 +105,7 @@ public class SpringServiceFactory extends ServiceFactory {
             if (invoker == null) {
                 SpringServiceContext tideContext = null;
                 ServletContext sc = ((HttpGraniteContext)context).getServletContext();
-                ApplicationContext springContext = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
+                ApplicationContext springContext = this.springContext != null ? this.springContext : WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
                 Map<String, ?> beans = springContext.getBeansOfType(SpringServiceContext.class);
                 if (beans.size() > 1)
                     throw new RuntimeException("More than one SpringServiceContext bean found");
@@ -110,10 +116,10 @@ public class SpringServiceFactory extends ServiceFactory {
                 	String className = "org.granite.tide.spring.SpringMVCServiceContext";
                 	try {
                 		Class<SpringServiceContext> clazz = ClassUtil.forName(className, SpringServiceContext.class);
-                		tideContext = clazz.newInstance();
+                		tideContext = clazz.getConstructor(ApplicationContext.class).newInstance(springContext);
                 	}
                 	catch (Exception e) {
-                		tideContext = new SpringServiceContext();
+                		tideContext = new SpringServiceContext(springContext);
                 	}
                 }
                 

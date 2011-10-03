@@ -29,5 +29,32 @@
 	<classpathentry kind="lib" path="/graniteds/lib/eclipselink.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/hibernate-core-4.0.0.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar" sourcepath="C:/Dev/hibernate-distribution-3.6.5.Final/project/hibernate-core/src/main/java"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-test.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.aop.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.asm.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.beans.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.context.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.core.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.expression.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.instrument.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.instrument.tomcat.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.jdbc.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.jms.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.orm.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.transaction.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.web.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.web.servlet.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-acl-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-config-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-core-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-web-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/javax.inject.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/cdi-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-core.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-servlet.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-spi.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-se-core.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-core-test.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

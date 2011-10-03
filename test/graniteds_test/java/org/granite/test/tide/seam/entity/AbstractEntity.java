@@ -31,8 +31,10 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.Version;
 
+import org.granite.tide.data.DataPublishListener;
+
 @MappedSuperclass
-@EntityListeners(AbstractEntity.AbstractEntityListener.class)
+@EntityListeners({AbstractEntity.AbstractEntityListener.class, DataPublishListener.class})
 public abstract class AbstractEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;

@@ -44,5 +44,11 @@
         conversation-timeout="120000"/>
 
     <security:identity jaas-config-name="other"/>
+    
+    <transaction:entity-transaction entity-manager="#{entityManager}"/>
+    
+    <persistence:entity-manager-factory name="emf" persistence-unit-name="seam-pu" auto-create="true"/>
+    
+    <persistence:managed-persistence-context name="entityManager" entity-manager-factory="#{emf}"/>
 
 </components>

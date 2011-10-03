@@ -52,6 +52,7 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.jpa.EntityManagerFactoryInfo;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -61,7 +62,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  *  @author Sebastien Deleuze
  * 	@author William DRAI
  */
-public class SpringServiceContext extends TideServiceContext {
+public class SpringServiceContext extends TideServiceContext implements ApplicationContextAware {
 
     private static final long serialVersionUID = 1L;
     
@@ -70,7 +71,6 @@ public class SpringServiceContext extends TideServiceContext {
     private String persistenceManagerBeanName = null;
     private String entityManagerFactoryBeanName = null;
     
-    
     private static final Logger log = Logger.getLogger(SpringServiceContext.class);
                 
     public SpringServiceContext() throws ServiceException {
@@ -78,6 +78,16 @@ public class SpringServiceContext extends TideServiceContext {
         
         log.debug("Getting spring context from container");
         getSpringContext();
+    }
+    
+    public SpringServiceContext(ApplicationContext springContext) throws ServiceException {
+        super();
+        
+        this.springContext = springContext;
+    }
+    
+    public void setApplicationContext(ApplicationContext springContext) {
+    	this.springContext = springContext;
     }
 
     protected ApplicationContext getSpringContext() {
@@ -98,7 +108,7 @@ public class SpringServiceContext extends TideServiceContext {
     @Override
     public Object findComponent(String componentName, Class<?> componentClass) {
     	Object bean = null;
-    	String key = COMPONENT_ATTR + componentName;
+    	String key = COMPONENT_ATTR + (componentName != null ? componentName : "_CLASS_" + componentClass.getName());
     	
     	GraniteContext context = GraniteContext.getCurrentInstance();
     	if (context != null) {
