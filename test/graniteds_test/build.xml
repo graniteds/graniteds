@@ -202,6 +202,9 @@
             target="1.5" source="1.5">
             <classpath>
                 <path refid="gds.classpath"/>
+                <path refid="gds.seam.classpath"/>
+                <path refid="gds.spring.classpath"/>
+                <path refid="gds.cdi.classpath"/>
                 <path refid="test.classpath"/>
             	<pathelement location="${gds.lib}/eclipselink.jar"/>
             </classpath>
