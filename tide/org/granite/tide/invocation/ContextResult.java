@@ -89,10 +89,9 @@ public class ContextResult implements Serializable {
     
     @Override
     public String toString() {
-        if (expression == null)
-            return (componentName != null ? componentName : "") + (componentClassName != null ? "(" + componentClassName + ")" : "");
-        
-        return (componentName != null ? componentName : "") + (componentClassName != null ? "(" + componentClassName + ")" : "") + "." + expression;
+        return (componentName != null ? componentName : "") 
+        	+ (componentClassName != null ? "(" + componentClassName + ")" : "") 
+        	+ (expression != null ? "." + expression : "");
     }
 
     

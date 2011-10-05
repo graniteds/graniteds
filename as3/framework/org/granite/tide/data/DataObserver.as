@@ -31,6 +31,7 @@ package org.granite.tide.data {
     import org.granite.gravity.Consumer;
     import org.granite.util.ClassUtil;
     import org.granite.tide.BaseContext;
+	import org.granite.tide.Tide;
 	import org.granite.tide.IComponent;
 	import org.granite.tide.service.IServiceInitializer;
     import org.granite.tide.events.TideSubscriptionEvent;
@@ -68,6 +69,8 @@ package org.granite.tide.data {
 		public function meta_init(componentName:String, context:BaseContext):void {
 			if (!context.meta_isGlobal())
 				throw new Error("Cannot setup DataObserver on conversation context");
+			
+			context.meta_tide.setComponentRemoteSync(componentName, Tide.SYNC_NONE);
 			
 		    log.debug("init DataObserver {0}", componentName);
 			_context = context;

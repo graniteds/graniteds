@@ -20,9 +20,11 @@
 
 package org.granite.tide.cdi;
 
+import java.io.Serializable;
+
 import javax.enterprise.context.ContextNotActiveException;
-import javax.enterprise.event.Reception;
 import javax.enterprise.event.Observes;
+import javax.enterprise.event.Reception;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -34,15 +36,24 @@ import javax.inject.Inject;
  * 
  * @author William DRAI
  */
-public class TideEvents {
+public class TideEvents implements Serializable {
     
     
     @Inject
     private BeanManager manager;
     
+    private boolean reentrant = false;
+    
     
     public void processEvent(@Observes(notifyObserver=Reception.ALWAYS) @Any Object event) {
+    	if (reentrant || TideInvocation.get() == null) {
+    		// Ignore events outside of the current bean invocation
+    		return;
+    	}
+    	
     	try {
+    		reentrant = true;
+    		// Cannot inject service context as this observer is called very early before the full app initialization
     		@SuppressWarnings("unchecked")
     		Bean<CDIServiceContext> scBean = (Bean<CDIServiceContext>)manager.getBeans(CDIServiceContext.class).iterator().next();
     		CDIServiceContext serviceContext = (CDIServiceContext)manager.getReference(scBean, CDIServiceContext.class, manager.createCreationalContext(scBean));
@@ -51,6 +62,9 @@ public class TideEvents {
     	}
     	catch (ContextNotActiveException e) {
     		// Ignore event, no session context
+    	}
+    	finally {
+    		reentrant = false;
     	}
     }
 }

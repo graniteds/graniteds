@@ -98,6 +98,10 @@ package org.granite.tide {
         }
 
 		
+		protected function getInternalProperty(propertyName:*):* {
+			return super.getProperty(propertyName);
+		}
+		
 		protected function setInternalProperty(propertyName:*, value:*):void {
 			super.setProperty(propertyName, value);
 		}
@@ -109,7 +113,7 @@ package org.granite.tide {
             var val:Object = meta_internalSetProperty(propName, value, true);
         }
 
-        private function meta_internalSetProperty(propName:String, value:*, addUpdate:Boolean = false):* {
+        protected function meta_internalSetProperty(propName:String, value:*, addUpdate:Boolean = false, proxy:Boolean = true):* {
             var previousValue:Object = object[propName];
             
             var val:Object = value;
@@ -120,7 +124,7 @@ package org.granite.tide {
             else if (val == null) {
                 log.debug("setProperty (null) {0}.{1}", _name, propName);
             }
-            else if (val != null && !ObjectUtil.isSimple(val) && !(val is IList) && object.propertyIsEnumerable(propName)) {
+            else if (proxy && (val != null && !ObjectUtil.isSimple(val) && !(val is IList) && object.propertyIsEnumerable(propName))) {
                 log.debug("setProperty (complex) {0}.{1} > {2}", _name, propName, val);
                 val = new ComponentProperty(_name, propName, _context, val);
             }

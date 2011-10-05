@@ -26,6 +26,8 @@ package org.granite.tide.cdi {
     
     import mx.collections.ArrayCollection;
     import mx.collections.IList;
+    import mx.collections.ListCollectionView;
+    import mx.collections.Sort;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
@@ -33,6 +35,7 @@ package org.granite.tide.cdi {
     import mx.logging.Log;
     import mx.rpc.AbstractOperation;
     import mx.rpc.AsyncToken;
+    import mx.rpc.events.ResultEvent;
     import mx.utils.object_proxy;
 
     import org.granite.collections.IPersistentCollection;
@@ -156,14 +159,22 @@ package org.granite.tide.cdi {
 			if (_tide.getComponentRemoteSync(componentName) != Tide.SYNC_BIDIRECTIONAL)
 				return;
 			
+			if (meta_isGlobal() && _tide.getComponentScope(componentName) == Tide.SCOPE_CONVERSATION)
+				return;
+			
 			var val:Object = value;
 			if (val is IPropertyHolder)
 				val = IPropertyHolder(val).object;
 			
+			var component:* = meta_getInstance(componentName, false, true);
+			var alias:String = Type.forInstance(component).alias; //describeType(component).@alias.toXMLString();
+			var componentClassName:String = alias ? alias : null;
+			var realComponentName:String = componentName.indexOf(Tide.TYPED_IMPL_PREFIX) == 0 ? null : componentName;
+			
 			var found:Boolean = false;
 			for (var i:int = 0; i < _updates.length; i++) {
 				var u:ContextUpdate = _updates.getItemAt(i) as ContextUpdate;
-				if (u.componentName == componentName && u.expression == expr) {
+				if (u.componentName == realComponentName && u.componentClassName == componentClassName && u.expression == expr) {
 					u.value = val;
 					if (i < _updates.length-1) {
 						found = false;
@@ -173,17 +184,19 @@ package org.granite.tide.cdi {
 					else
 						found = true;
 				}
-				else if (u.componentName == componentName && u.expression != null && (expr == null || u.expression.indexOf(expr + ".") == 0)) {
+				else if (u.componentName == realComponentName && u.componentClassName == componentClassName && u.expression != null && (expr == null || u.expression.indexOf(expr + ".") == 0)) {
 					_updates.removeItemAt(i);
 					i--;
 				}
-				else if (u.componentName == componentName && expr != null && (u.expression == null || expr.indexOf(u.expression + ".") == 0))
+				else if (u.componentName == realComponentName && u.componentClassName == componentClassName && expr != null && (u.expression == null || expr.indexOf(u.expression + ".") == 0))
 					found = true;
 			}
 			
 			if (!found) {
-				log.debug("add new update {0}.{1}", componentName, expr);
-				_updates.addItem(new ContextUpdate(typed ? null : componentName, expr, val, _tide.getComponentScope(componentName)));
+				log.debug("add new update {0}", componentName + (componentClassName ? "(" + componentClassName + ")" : "") + (expr ? "." + expr : ""));
+				var cu:ContextUpdate = new ContextUpdate(realComponentName, expr, val, _tide.getComponentScope(componentName));
+				cu.componentClassName = componentClassName;
+				_updates.addItem(cu);
 			}
 		}
 		
@@ -193,17 +206,24 @@ package org.granite.tide.cdi {
 		 * 
 		 *  @param componentName name of the component/context variable
 		 *  @param expr EL expression to evaluate
+		 *  @param instance current component instance
 		 * 
 		 *  @return true if the result was not already present in the current context 
 		 */
-		public override function meta_addResult(componentName:String, expr:String):Boolean {
+		public override function meta_addResult(componentName:String, expr:String, instance:Object = null):Boolean {
 			if (!meta_tracking)
 				return false;
 			
 			if (_tide.getComponentRemoteSync(componentName) == Tide.SYNC_NONE)
 				return false;
 			
-			var component:* = meta_getInstance(componentName, false, true);
+			if (meta_isGlobal() && _tide.getComponentScope(componentName) == Tide.SCOPE_CONVERSATION)
+				return false;
+			
+			var component:* = instance != null ? instance : meta_getInstance(componentName, false, true);
+			if (component is Component && expr == null)
+				return false;
+			
 			var alias:String = Type.forInstance(component).alias; //describeType(component).@alias.toXMLString();
 			var componentClassName:String = alias ? alias : null;
 			
@@ -215,13 +235,13 @@ package org.granite.tide.cdi {
 			}
 			
 			// Check in last received results
-			var e:String = componentName + (expr != null ? "." + expr : "");
+			var e:String = componentName + (componentClassName != null ? "(" + componentClassName + ")" : "") + (expr != null ? "." + expr : "");
 			if (_lastResults.getItemIndex(e) >= 0)
 				return false;
 			
-			log.debug("addResult {0}({1}).{2}", componentName, componentClassName, expr);
+			log.debug("add new result {0}", e);
 			// TODO: should store somewhere if the client componentName is the same as the server bean name
-			var cr:ContextResult = new ContextResult(componentName.indexOf(Tide.TYPED_IMPL_PREFIX) == 0 ? null : componentName, expr)
+			var cr:ContextResult = new ContextResult(componentName, expr)
 			cr.componentClassName = componentClassName;
 			_results.push(cr);
 			return true;
@@ -318,7 +338,7 @@ package org.granite.tide.cdi {
 			// Keep only updates for identity component
 			for (var i:int = 0; i < _updates.length; i++) {
 				var u:ContextUpdate = _updates.getItemAt(i) as ContextUpdate;
-				if (u.componentName != identity.meta_name) {
+				if (u.componentClassName != Object(identity).meta_credentialsClassName) {
 					_updates.removeItemAt(i);
 					i--;
 				}
@@ -406,17 +426,27 @@ package org.granite.tide.cdi {
                 var resultMap:IList = invocationResult.results;
 
                 if (resultMap) {
-                    for (var k:int = 0; k < resultMap.length; k++) {
-                        var r:ContextUpdate = resultMap.getItemAt(k) as ContextUpdate;
+					log.debug("result conversationId {0}", conversationId);
+					
+					// Order the results by container, i.e. 'person.contacts' has to be evaluated after 'person'
+					var rmap:ListCollectionView = new ListCollectionView(resultMap);
+					rmap.sort = new Sort();
+					rmap.sort.compareFunction = meta_compareResults;
+					rmap.refresh();
+					
+                    for (var k:int = 0; k < rmap.length; k++) {
+                        var r:ContextUpdate = rmap.getItemAt(k) as ContextUpdate;
                         var val:Object = r.value;
         
                         log.debug("update expression {0}: {1}", r, val);
 						
                         var compName:String = r.componentName;
-                        if (compName == null)
-                        	compName = Tide.internalNameForTypedComponent(getQualifiedClassName(val));
-						
-						_lastResults.addItem(compName + (r.expression != null ? "." + r.expression : ""));
+						if (compName == null && val) {
+                            var t:Type = Type.forInstance(val);
+                            compName = Tide.internalNameForTypedComponent(t.name + '_' + t.id);
+                        }
+
+						_lastResults.addItem(compName + (r.componentClassName != null ? r.componentClassName : "") + (r.expression != null ? "." + r.expression : ""));
 
 						if (val != null) {
 							if (_tide.getComponentScope(compName) == Tide.SCOPE_UNKNOWN)
@@ -425,18 +455,51 @@ package org.granite.tide.cdi {
                         _tide.setComponentGlobal(compName, true);
 						_tide.setComponentRemoteSync(compName, Tide.SYNC_BIDIRECTIONAL);
                         
-                        var previous:Object = meta_getInstanceNoProxy(compName);
-                        
+						var obj:Object = meta_getInstanceNoProxy(compName);
+						var p:Array = r.expression != null ? r.expression.split(".") : [];
+						if (p.length > 1) {
+							for (var i:int = 0; i < p.length-1; i++)
+								obj = obj[p[i] as String];
+						}
+						else if (p.length == 0)
+							_tide.setComponentRemoteSync(compName, Tide.SYNC_BIDIRECTIONAL);
+						
+						var previous:Object = null;
+						var propName:String = null;
+						if (p.length > 0) {
+							propName = p[p.length-1] as String
+							
+							if (obj is IPropertyHolder)
+								previous = IPropertyHolder(obj).object[propName];
+							else if (obj != null)
+								previous = obj[propName];
+						}
+						else
+							previous = obj;
+						
                         // Don't merge with temporary properties
                         if (previous is ComponentProperty || previous is Component)
                             previous = null;
-                        
-                        val = meta_mergeExternal(val, previous, r.componentName 
-							? new ContextResult(r.componentName) 
-							: new TypedContextExpression(compName)
-						);
-    
-                        this[compName] = val;
+						
+						var res:IExpression = compName.indexOf(Tide.TYPED_IMPL_PREFIX) == 0
+							? new TypedContextExpression(compName, r.expression)
+							: new ContextResult(r.componentName, r.expression);
+						
+						if (!meta_isGlobal() && r.scope == Tide.SCOPE_SESSION)
+							val = _tide.getContext().meta_mergeExternal(val, previous, res);
+						else
+							val = meta_mergeExternal(val, previous, res);
+						
+						if (propName != null) {
+							if (obj is IPropertyHolder) {
+								var evt:ResultEvent = new ResultEvent(ResultEvent.RESULT, false, true, val);
+								IPropertyHolder(obj).meta_propertyResultHandler(propName, evt);
+							}
+							else if (obj != null)
+								obj[propName] = val;
+						}
+						else
+							this[compName] = val;
                     }
                 }
             }
@@ -454,6 +517,21 @@ package org.granite.tide.cdi {
             meta_tracking = true;
             
             if (ires) {
+				// Remove all received results from current results list
+				var newResults:Array = new Array();
+				for each (var cr:ContextResult in _results) {
+					var found:Boolean = false;
+					for each (var u:ContextUpdate in rmap) {
+						if (cr.matches(u.componentName, u.componentClassName, u.expression)) {
+							found = true;
+							break;
+						}
+					}
+					if (!found)
+						newResults.push(cr);
+				}
+				_results = newResults;
+				
 	        	// Dispatch received data update events
 	            if (InvocationResult(ires).updates)
 	            	meta_handleUpdateEvents(InvocationResult(ires).updates);
@@ -466,7 +544,7 @@ package org.granite.tide.cdi {
 	                    if (event.params[0] is Event)
 	                    	meta_dispatchEvent(event.params[0] as Event);
 	                    else
-							meta_internalRaiseEvent(event.eventType, event.params);
+							meta_internalRaiseEvent("$TideEvent$" + event.eventType, event.params);
 	                }
                 }
             }
@@ -475,6 +553,41 @@ package org.granite.tide.cdi {
             
             log.debug("result merged into local context");
         }
+		
+		
+		/**
+		 * 	@private
+		 *  Comparator for expression evaluation ordering
+		 * 
+		 *  @param r1 expression 1
+		 *  @param r2 expression 2
+		 *  @param fields unused
+		 * 
+		 *  @return comparison value
+		 */
+		private function meta_compareResults(r1:ContextUpdate, r2:ContextUpdate, fields:Array = null):int {
+			if (r1.componentClassName != null && r2.componentClassName != null && r1.componentClassName != r2.componentClassName)
+				return r1.componentClassName < r2.componentClassName ? -1 : 1;
+			
+			if (r1.componentName != r2.componentName)
+				return r1.componentName < r2.componentName ? -1 : 1;
+			
+			if (r1.expression == null)
+				return r2.expression == null ? 0 : -1;
+			
+			if (r2.expression == null)
+				return 1;
+			
+			if (r1.expression == r2.expression)
+				return 0;
+			
+			if (r1.expression.indexOf(r2.expression) == 0)
+				return 1;
+			if (r2.expression.indexOf(r1.expression) == 0)
+				return -1;
+			
+			return r1.expression < r2.expression ? -1 : 0; 
+		}
 		
 		
 		/**

@@ -54,5 +54,38 @@ package org.granite.tide.invocation {
         public var events:ArrayCollection;
         public var messages:ArrayCollection;
         public var keyedMessages:Object;
+		
+		
+		public function toString():String {
+			var sb:String = "InvocationResult ";
+			if (scope == 1)
+				sb += "(SESSION) ";
+			else if (scope == 2)
+				sb += "(CONVERSATION) ";
+			if (restrict)
+				sb += "(restricted) ";
+			sb += "{\n";
+			sb += "\tresult: " + (result != null ? result : "(null)");
+			if (results != null) {
+				sb += "\tresults: [";
+				for (var result:Object in results)
+					sb += (result != null ? result.toString() : "(null)") + " ";
+				sb += "]\n";
+			}
+			if (updates != null) {
+				sb += "\tupdates: [";
+				for (var update:Object in updates)
+					sb += update[0] + ":" + update[1] + " ";
+				sb += "\n";
+			}
+			if (events != null) {
+				sb += "\tevents: [";
+				for (var event:Object in events)
+					sb += event + " ";
+				sb += "]\n";
+			}
+			sb += "}";
+			return sb;
+		}
     }
 }

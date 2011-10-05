@@ -519,16 +519,19 @@ package org.granite.tide.impl {
 		                var create:Boolean = !(observer.getArgValue('create') === "false");
 		                var localOnly:Boolean = observer.getArgValue('localOnly') === "true";
 		                var eventTypes:String = observer.getArgValue();
+						var te:Type = null;
 		                if (eventTypes == null || StringUtil.trim(eventTypes).length == 0) {
 							if (method.parameters.length != 1)
 								throw new Error("Typed observer method should have one parameter: " + method.name);
-		                	eventTypes = "$TideEvent$" + Parameter(method.parameters[0]).type.name;
+							te = Parameter(method.parameters[0]).type;
+		                	eventTypes = "$TideEvent$" + (te.alias ? te.alias : te.name);
 						}
 						else if (method.parameters.length == 1 
 								&& Parameter(method.parameters[0]).type.getClass() != TideContextEvent 
 								&& Parameter(method.parameters[0]).type.isSubclassOf(EVENT_TYPE)) {
-							eventTypes = "$TideEvent$" + Parameter(method.parameters[0]).type.name + "@" + eventTypes; 
-						}
+							te = Parameter(method.parameters[0]).type;
+							eventTypes = "$TideEvent$" + (te.alias ? te.alias : te.name) + "@" + eventTypes;
+                        }
 		                var eventTypeArray:Array = eventTypes.split(",");
 		                for each (var eventType:String in eventTypeArray)
 		                	internalAddEventObserver(StringUtil.trim(eventType), name, method, remote, create, localOnly);
@@ -708,15 +711,15 @@ package org.granite.tide.impl {
 		 */
 		private function scanInjections(componentName:String, type:Type, modulePrefix:String, inConversation:Boolean, restrict:int):void {
 			TypeScanner.scanInjections(null, type,
-				function(context:BaseContext, field:Field, annotation:Annotation, sourcePropName:String, destPropName:Object, create:String, global:String):void {
+				function(context:BaseContext, field:Field, annotation:Annotation, sourcePropName:String, destPropName:Object, create:String, global:String, remote:String):void {
 					var name:String;
 					if (annotation.name == 'Inject') {
 	                    name = Tide.internalNameForTypedComponent(field.type.name + '_' + field.type.id);
 	                    
 	                    if ((!modulePrefix && !isComponent(name)) || (modulePrefix && !isComponent(modulePrefix + name))) {
 	                    	addComponentFromType(modulePrefix, name, field.type, 
-	                    		global == 'true', inConversation, null,
-	                    		create, Tide.RESTRICT_UNKNOWN
+	                    		global == 'true', inConversation, remote,
+	                    		remote == 'true' ? 'true' : create, Tide.RESTRICT_UNKNOWN
 	                    	);
 	                    }
 	                    
@@ -732,8 +735,8 @@ package org.granite.tide.impl {
 	                    
 	                    if ((!modulePrefix && !isComponent(name)) || (modulePrefix && !isComponent(modulePrefix + name))) {
 	                    	addComponentFromType(modulePrefix, name, field.type, 
-	                    		global == 'true', inConversation, null,
-	                    		create, Tide.RESTRICT_UNKNOWN
+	                    		global == 'true', inConversation, remote,
+								remote == 'true' ? 'true' : create, Tide.RESTRICT_UNKNOWN
 	                    	);
 	                    }
 					}

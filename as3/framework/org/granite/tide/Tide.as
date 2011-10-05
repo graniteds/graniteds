@@ -1444,12 +1444,21 @@ package org.granite.tide {
 		 *  @param tideResponder Tide responder for the remote call
 		 */
         public function loginSuccessHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            // Force reinitialization of all application at login
-            currentApplication().executeBindings(true);
-            
-            result(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
-            
-            initAfterLogin(sourceContext);
+			result(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
+			
+			if (isLoggedIn()) {
+				// Force reinitialization of all application at login
+				currentApplication().executeBindings(true);
+				
+				initAfterLogin(sourceContext);
+			}
+			else {
+				// Not logged in : consider as a login fault
+				dispatchEvent(new TidePluginEvent(PLUGIN_LOGOUT));
+				ro.logout();
+				
+				dispatchEvent(new TidePluginEvent(PLUGIN_LOGIN_FAULT, { sessionId: _sessionId }));
+			}
             
             _initializing = false;
         }

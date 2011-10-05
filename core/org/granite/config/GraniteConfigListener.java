@@ -22,10 +22,14 @@ package org.granite.config;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -42,8 +46,13 @@ import org.granite.config.flex.ServletServicesConfig;
 import org.granite.config.servlet3.FlexFilter;
 import org.granite.jmx.GraniteMBeanInitializer;
 import org.granite.logging.Logger;
+import org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer;
+import org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer;
+import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ExceptionConverter;
+import org.granite.messaging.service.ServiceFactory;
+import org.granite.messaging.service.SimpleServiceFactory;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.tide.TideComponentAnnotatedWithMatcher;
 import org.granite.messaging.service.tide.TideComponentInstanceOfMatcher;
@@ -134,7 +143,46 @@ public class GraniteConfigListener implements ServletContextListener {
     	
         FlexFilter flexFilter = flexFilterClass.getAnnotation(FlexFilter.class);
         
-    	for (Class<?> ti : flexFilter.tideInterfaces()) {
+        ConfigProvider configProvider = null;
+        
+        boolean useTide = flexFilter.tide();
+        String type = flexFilter.type();
+        Class<?> factoryClass = null;
+        Set<Class<?>> tideInterfaces = new HashSet<Class<?>>(Arrays.asList(flexFilter.tideInterfaces()));
+        Set<Class<? extends Annotation>> tideAnnotations = new HashSet<Class<? extends Annotation>>(Arrays.asList(flexFilter.tideAnnotations()));
+        
+        if (!flexFilter.configProviderClass().equals(ConfigProvider.class)) {
+        	try {
+        		configProvider = ClassUtil.newInstance(flexFilter.configProviderClass(), ConfigProvider.class);
+        		
+        		if (configProvider.useTide() != null)
+        			useTide = configProvider.useTide();
+        		
+        		if (configProvider.getType() != null)
+        			type = configProvider.getType();
+        		
+        		factoryClass = configProvider.getFactoryClass();
+        		
+        		if (configProvider.getTideInterfaces() != null)
+        			tideInterfaces.addAll(Arrays.asList(configProvider.getTideInterfaces()));
+        		
+        		if (configProvider.getTideAnnotations() != null)
+        			tideAnnotations.addAll(Arrays.asList(configProvider.getTideAnnotations()));
+			}
+			catch (Exception e) {
+				log.error(e, "Could not set config provider of type %s", flexFilter.configProviderClass().getName());
+			}
+        }
+        
+        if (!flexFilter.factoryClass().equals(ServiceFactory.class))
+        	factoryClass = flexFilter.factoryClass();
+        
+        if (factoryClass == null) {
+        	factoryClass = SimpleServiceFactory.class;
+        	useTide = false;
+        }
+        
+    	for (Class<?> ti : tideInterfaces) {
     		try {
     			graniteConfig.getTideComponentMatchers().add(new TideComponentInstanceOfMatcher(ti.getName(), false));
     			log.debug("Enabled components implementing %s for Tide remoting", ti);
@@ -143,7 +191,7 @@ public class GraniteConfigListener implements ServletContextListener {
     			log.error(e, "Could not add tide-component interface %s", ti);
     		}
     	}
-    	for (Class<? extends Annotation> ta : flexFilter.tideAnnotations()) {
+    	for (Class<? extends Annotation> ta : tideAnnotations) {
     		try {
     			graniteConfig.getTideComponentMatchers().add(new TideComponentAnnotatedWithMatcher(ta.getName(), false));
     			log.debug("Enabled components annotated with %s for Tide remoting", ta);
@@ -175,6 +223,21 @@ public class GraniteConfigListener implements ServletContextListener {
     		graniteConfig.registerExceptionConverter(ec);
 			log.debug("Registered exception converter %s", ec);
     	}
+    	if (configProvider != null) {
+    		for (ExceptionConverter ec : configProvider.findInstances(ExceptionConverter.class)) {
+    			graniteConfig.registerExceptionConverter(ec);
+    			log.debug("Registered exception converter %s", ec.getClass());
+    		}
+    	}
+    	
+    	if (flexFilter.useBigDecimal())
+    		graniteConfig.setExternalizersByType(BigDecimal.class.getName(), BigDecimalExternalizer.class.getName());
+    	
+    	if (flexFilter.useBigInteger())
+    		graniteConfig.setExternalizersByType(BigInteger.class.getName(), BigIntegerExternalizer.class.getName());
+    	
+    	if (flexFilter.useLong())
+    		graniteConfig.setExternalizersByType(Long.class.getName(), LongExternalizer.class.getName());
     	
     	if (!flexFilter.securityServiceClass().equals(SecurityService.class)) {
     		try {
@@ -184,6 +247,10 @@ public class GraniteConfigListener implements ServletContextListener {
         		throw new ServletException("Could not setup security service", e);
         	}
     	}
+    	else if (graniteConfig.getSecurityService() == null && configProvider != null) {
+			SecurityService securityService = configProvider.findInstance(SecurityService.class);
+			graniteConfig.setSecurityService(securityService);
+		}
     	else if (graniteConfig.getSecurityService() == null) {
     		String securityServiceClassName = null;
     		// Try auto-detect
@@ -223,6 +290,10 @@ public class GraniteConfigListener implements ServletContextListener {
         		throw new ServletException("Could not setup amf3 message interceptor", e);
         	}
         }
+        else if (graniteConfig.getAmf3MessageInterceptor() == null && configProvider != null) {
+        	AMF3MessageInterceptor amf3MessageInterceptor = configProvider.findInstance(AMF3MessageInterceptor.class);
+			graniteConfig.setAmf3MessageInterceptor(amf3MessageInterceptor);
+        }
         
         Channel channel = servicesConfig.findChannelById("graniteamf");
         if (channel == null) {
@@ -251,11 +322,10 @@ public class GraniteConfigListener implements ServletContextListener {
     	}
     	factoryProperties.put("lookup", lookup);
 
-        if (flexFilter.tide()) {
-        	Factory factory = servicesConfig.findFactoryById("tide-" + flexFilter.type() + "-factory");
+        if (useTide) {
+        	Factory factory = servicesConfig.findFactoryById("tide-" + type + "-factory");
         	if (factory == null) {
-        		factory = new Factory("tide-" + flexFilter.type() + "-factory", 
-        			flexFilter.factoryClass().getName(), factoryProperties);
+        		factory = new Factory("tide-" + type + "-factory", factoryClass.getName(), factoryProperties);
         		servicesConfig.addFactory(factory);
         	}
         	
@@ -266,15 +336,15 @@ public class GraniteConfigListener implements ServletContextListener {
 	        	List<String> channelIds = new ArrayList<String>();
 	        	channelIds.add("graniteamf");
 	        	List<String> tideRoles = flexFilter.tideRoles().length == 0 ? null : Arrays.asList(flexFilter.tideRoles());
-	        	Destination destination = new Destination(flexFilter.type(), channelIds, new XMap(), tideRoles, null, null);
-	        	destination.getProperties().put("factory", "tide-" + flexFilter.type() + "-factory");
+	        	Destination destination = new Destination(type, channelIds, new XMap(), tideRoles, null, null);
+	        	destination.getProperties().put("factory", "tide-" + type + "-factory");
 	        	if (!("".equals(flexFilter.entityManagerFactoryJndiName())))
 	        		destination.getProperties().put("entity-manager-factory-jndi-name", flexFilter.entityManagerFactoryJndiName());
 	        	else if (!("".equals(flexFilter.entityManagerJndiName())))
 	        		destination.getProperties().put("entity-manager-jndi-name", flexFilter.entityManagerJndiName());
 	        	if (!("".equals(flexFilter.validatorClassName())))
 	        		destination.getProperties().put("validator-class-name", flexFilter.validatorClassName());
-	        	service.getDestinations().put(flexFilter.type(), destination);
+	        	service.getDestinations().put(type, destination);
 	        	servicesConfig.addService(service);
         	}
             
@@ -284,7 +354,7 @@ public class GraniteConfigListener implements ServletContextListener {
         	log.info("Registered Tide service factory and destination");
         }
         else {
-        	Factory factory = new Factory(flexFilter.type() + "-factory", flexFilter.factoryClass().getName(), factoryProperties);
+        	Factory factory = new Factory(type + "-factory", factoryClass.getName(), factoryProperties);
         	servicesConfig.addFactory(factory);
         	
         	Service service = new Service("granite-service", "flex.messaging.services.RemotingService", 
@@ -293,7 +363,7 @@ public class GraniteConfigListener implements ServletContextListener {
             
             servicesConfig.scan(null);
         	
-        	log.info("Registered " + flexFilter.factoryClass() + " service factory");
+        	log.info("Registered " + factoryClass + " service factory");
         }
     }
 }

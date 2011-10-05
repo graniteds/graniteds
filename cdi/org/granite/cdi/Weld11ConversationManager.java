@@ -32,7 +32,7 @@ public class Weld11ConversationManager implements CDIConversationManager {
 
 	public Conversation initConversation(BeanManager beanManager, String conversationId) {
 	    ConversationContext conversationContext = ((BeanManagerImpl)beanManager).instance().select(HttpConversationContext.class).get();
-	    conversationContext.activate();
+	    conversationContext.activate(conversationId);
 	    
     	@SuppressWarnings("unchecked")
     	Bean<Conversation> conversationBean = (Bean<Conversation>)beanManager.getBeans(Conversation.class).iterator().next();

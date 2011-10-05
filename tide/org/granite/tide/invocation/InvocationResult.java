@@ -131,7 +131,7 @@ public class InvocationResult implements IInvocationResult {
     	else if (scope == 2)
     		sb.append("(CONVERSATION) ");
     	if (restrict)
-    		sb.append("(RESTRICTED) ");
+    		sb.append("(restricted) ");
     	sb.append("{\n");
     	sb.append("\tresult: ").append(result != null ? result : "(null)");
     	if (results != null) {

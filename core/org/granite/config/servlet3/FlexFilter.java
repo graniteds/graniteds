@@ -28,6 +28,7 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.granite.config.ConfigProvider;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.ServiceFactory;
@@ -46,9 +47,11 @@ public @interface FlexFilter {
 	
 	boolean tide() default false;
 	
-	String type();
+	String type() default "";
 	
-	Class<? extends ServiceFactory> factoryClass();
+	Class<? extends ConfigProvider> configProviderClass() default ConfigProvider.class;
+	
+	Class<? extends ServiceFactory> factoryClass() default ServiceFactory.class;
 	
 	Class<? extends SecurityService> securityServiceClass() default SecurityService.class;
 	
@@ -73,4 +76,10 @@ public @interface FlexFilter {
 	String entityManagerJndiName() default "";
 	
 	String validatorClassName() default "";
+	
+	boolean useBigDecimal() default false;
+	
+	boolean useBigInteger() default false;
+	
+	boolean useLong() default false;
 }

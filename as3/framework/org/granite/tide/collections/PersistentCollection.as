@@ -170,6 +170,7 @@ package org.granite.tide.collections {
 		}
 		
         
+		[Bindable("collectionChange")]
         override public function get length():int {
             if (_localInitializing || isInitialized())
                 return super.length;

@@ -483,6 +483,14 @@ public class GraniteConfig implements ScannedItemHandler {
 			log.error(e, "Could not instantiate exception converter: %s", exceptionConverterClass);
 		}
     }
+    
+    public void registerExceptionConverter(ExceptionConverter exceptionConverter) {
+    	for (ExceptionConverter ec : exceptionConverters) {
+    		if (ec.getClass() == exceptionConverter.getClass())
+    			return;
+    	}
+		exceptionConverters.add(exceptionConverter);
+    }
 
     public boolean hasSecurityService() {
         return securityService != null;

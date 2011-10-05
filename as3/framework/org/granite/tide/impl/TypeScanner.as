@@ -37,7 +37,7 @@ package org.granite.tide.impl {
             var sourcePropName:String,
             	destPropName:Object,
             	uri:String;
-            var create:String, global:String;
+            var create:String, global:String, remote:String;
             var annotation:Annotation;
             var argValue:String;
 
@@ -68,8 +68,9 @@ package org.granite.tide.impl {
 				
                 create = annotation.getArgValue('create', '');
                 global = annotation.getArgValue('global', '');
+				remote = annotation.getArgValue('remote', '');
 				
-				callback(context, field, annotation, sourcePropName, destPropName, create, global);
+				callback(context, field, annotation, sourcePropName, destPropName, create, global, remote);
 			}
         }
         

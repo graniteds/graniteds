@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.seam.framework {
+package org.granite.tide.collections {
     
     import flash.utils.Dictionary;
     
@@ -26,8 +26,8 @@ package org.granite.tide.seam.framework {
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
-    import mx.logging.ILogger;
-    import mx.logging.Log;
+	import mx.logging.ILogger;
+	import mx.logging.Log;
     
     import org.granite.tide.IComponent;
     import org.granite.tide.BaseContext;
@@ -40,7 +40,7 @@ package org.granite.tide.seam.framework {
 	[Bindable]
 	public class RemoteList extends ArrayCollection implements IComponent {
         
-        private static var log:ILogger = Log.getLogger("org.granite.tide.seam.framework.RemoteList");
+        private static var log:ILogger = Log.getLogger("org.granite.tide.collections.RemoteList");
 		
 		
 	    private var _componentName:String = null;

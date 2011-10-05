@@ -376,7 +376,7 @@ package org.granite.tide {
 		      	}
 	
 				TypeScanner.scanInjections(this, type, 
-					function(context:BaseContext, field:Field, annotation:Annotation, sourcePropName:String, destPropName:Object, create:String, global:String):void {
+					function(context:BaseContext, field:Field, annotation:Annotation, sourcePropName:String, destPropName:Object, create:String, global:String, remote:String):void {
 						if (field.type.getClass() === BaseContext || field.type.fastExtendsClass(Tide.QCN_BASECONTEXT))
 							instance[destPropName] = context;
 		                else if (field.type.getClass() === Subcontext) {
@@ -609,10 +609,11 @@ package org.granite.tide {
          * 
          *  @param componentName name of the component/context variable
          *  @param expr EL expression to evaluate
+		 *  @param instance current component instance
          * 
          *  @return true if the result was not already present in the current context 
          */
-        public function meta_addResult(componentName:String, propertyName:String):Boolean {
+        public function meta_addResult(componentName:String, propertyName:String, instance:Object = null):Boolean {
             return false;
         }
         
@@ -710,8 +711,11 @@ package org.granite.tide {
 	        }
         	
             var result:Object = base ? base.meta_internalGetProperty(baseName) : super.getProperty(name);
-            if (result != null)
+            if (result != null) {
+//                if (!base)
+//                    meta_addResult(name, null, result);
                 return result;
+			}
             
             if (_parentContext != null && _tide.isComponent(name) && !_tide.isSubcontext(name)) {
 				var parentContext:BaseContext = null;
@@ -736,6 +740,7 @@ package org.granite.tide {
             
             if (instance != null) {
 				log.debug("getInstance (create) {0}", name);
+				
         		setProperty(name, instance);
 			}
 
@@ -1104,8 +1109,9 @@ package org.granite.tide {
            	}
             
             // Tracking must not be enabled here: it's enabled later in setProperty
-//            var saveTracking:Boolean = _tracking;
-//            _tracking = true;
+            var saveTracking:Boolean = _tracking;
+			if (exprPath.length > 1)
+            	_tracking = true;
             w = bindProperty(component, propName, base, exprPath);
             var name:String = exprPath[0];
             var watchers:Array = _inWatchers[componentName] as Array;
@@ -1114,7 +1120,8 @@ package org.granite.tide {
                 _inWatchers[componentName] = watchers;
             }
             watchers.push(w);
-//            _tracking = saveTracking;
+			if (exprPath.length > 1)
+            	_tracking = saveTracking;
 
             log.debug("context.{0} bound to [In] {1}.{2}", contextPropName, componentName, propName);
 

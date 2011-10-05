@@ -23,7 +23,10 @@ package org.granite.tide.cdi;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,16 +40,19 @@ import javax.enterprise.context.SessionScoped;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.IllegalProductException;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
+import javax.persistence.Entity;
 import javax.servlet.http.HttpSession;
 
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.util.ClassGetter;
+import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceInvocationContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.tide.IInvocationCall;
@@ -64,6 +70,8 @@ import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationCall;
 import org.granite.tide.invocation.InvocationResult;
 import org.granite.util.ClassUtil;
+import org.granite.util.Reflections;
+import org.jboss.interceptor.util.proxy.TargetInstanceProxy;
 
 
 /**
@@ -82,6 +90,8 @@ public class CDIServiceContext extends TideServiceContext {
     private static final AnnotationLiteral<Default> DEFAULT_LITERAL = new AnnotationLiteral<Default>() {}; 
     
     private @Inject BeanManager manager;
+    
+    private @Inject TideInstrumentedBeans instrumentedBeans;
     
     private UserEvents userEvents;
     private @Inject TideUserEvents tideUserEvents;
@@ -134,11 +144,15 @@ public class CDIServiceContext extends TideServiceContext {
             tideUserEvents.unregisterSession(getSessionId());
     }
     
+    public void setLogin(boolean isLogin) {
+    	this.isLogin = isLogin;
+    }
+        
     
     @Inject
     private ResultsEval resultsEval;
     
-    private Map<ContextResult, Boolean> getResultsEval() {
+    public Map<ContextResult, Boolean> getResultsEval() {
     	return resultsEval.getResultsEval();
     }
     
@@ -346,6 +360,11 @@ public class CDIServiceContext extends TideServiceContext {
                 userEvents = tideUserEvents.getUserEvents(getSessionId());
         }
         
+        boolean instrumented = false;
+        Bean<?> bean = findBean(componentName, componentClass);
+        if (bean != null)
+        	instrumented = instrumentedBeans.getBean(bean.getBeanClass()) != null;
+        
         if (results != null) {
         	Map<ContextResult, Boolean> resultsEval = getResultsEval();
             for (Object result : results) {
@@ -370,6 +389,13 @@ public class CDIServiceContext extends TideServiceContext {
         
         TideInvocation tideInvocation = TideInvocation.init();
         tideInvocation.update(updates);
+        
+        if (!instrumented) {
+            // If no interception enabled, force the update of the context for the current component
+            // In other cases it will be done by the interceptor 
+            restoreContext(updates, null);
+            tideInvocation.updated();
+        }
     }
 
     /**
@@ -385,8 +411,15 @@ public class CDIServiceContext extends TideServiceContext {
         TideInvocation tideInvocation = TideInvocation.get();
         int scope = 3;
         boolean restrict = false;
+        
+		List<ContextUpdate> results = null;
+        if (!tideInvocation.isEvaluated()) {
+            // Do evaluation now if the interceptor has not been called
+            results = evaluateResults(null, false);
+        }
+        else
+            results = tideInvocation.getResults();
 
-		List<ContextUpdate> results = new ArrayList<ContextUpdate>(tideInvocation.getResults());
     	DataContext dataContext = DataContext.get();
 		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
 		
@@ -472,37 +505,119 @@ public class CDIServiceContext extends TideServiceContext {
     }
     
     
+    private static Object unproxy(Object obj) {
+    	// TODO: Works only with Weld !!
+        if (obj instanceof TargetInstanceProxy<?>) {
+        	try {
+        		return ((TargetInstanceProxy<?>)obj).getTargetInstance();
+        	}
+        	catch (IllegalProductException e) {
+        		return null;
+        	}
+        }
+        return obj;
+    }
+    
     /**
      * Evaluate updates in current server context
      * 
      * @param updates list of updates
      * @param target the target instance
      */
-    @SuppressWarnings("serial")
     public void restoreContext(List<ContextUpdate> updates, Object target) {
         if (updates == null)
             return;
         
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
-        
-        // Restore context
-        for (ContextUpdate update : updates) {
-            
-            log.debug("Before invocation: evaluating expression #0.#1", update.getComponentName(), update.getExpression());
-            
-            Set<Bean<?>> beans = manager.getBeans(update.getValue().getClass(), new AnnotationLiteral<Any>() {});
-            if (beans.isEmpty() && update.getComponentName() != null)
-            	beans = manager.getBeans(update.getComponentName());
-            
-            if (!beans.isEmpty()) {
-            	Bean<?> sourceBean = beans.iterator().next();
-            
-                Object previous = manager.getReference(sourceBean, Object.class, manager.createCreationalContext(sourceBean));
-                boolean disabled = previous != null && sourceBean != null 
-            		&& config.isComponentTideDisabled(sourceBean.getName(), beanClasses(sourceBean), previous);
-	            if (!disabled)
-	            	mergeExternal(update.getValue(), previous);
-            }
+        try {
+	        TideInvocation.get().lock();
+	        
+	        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+	        
+	        // Restore context
+	        for (ContextUpdate update : updates) {
+	            
+	            log.debug("Before invocation: evaluating expression #0(#1).#2", update.getComponentName(), update.getComponentClassName(), update.getExpression());
+	            
+	            Class<?> componentClass = update.getComponentClass();
+	            Bean<?> sourceBean = findBean(update.getComponentName(), componentClass);
+	            
+	            Object previous = null;
+	            if (update.getExpression() != null) {
+	                String[] path = update.getExpression().split("\\.");
+	                Object instance = manager.getReference(sourceBean, Object.class, manager.createCreationalContext(sourceBean));
+	                boolean disabled = instance != null 
+	            		&& config.isComponentTideDisabled(sourceBean.getName(), beanClasses(sourceBean), instance);
+	                if (!disabled) {
+	                	instance = unproxy(instance);
+	                	
+	                    Object bean = instance;
+	                    Object value = instance;
+	                    
+	                    if (update.getValue() != null) {
+	                        boolean getPrevious = true;
+	                        if (update.getValue().getClass().isPrimitive() || isImmutable(update.getValue())) {
+	                        	getPrevious = false;
+	                        }
+	                        else if (update.getValue().getClass().getAnnotation(Entity.class) != null) {
+	                            org.granite.util.Entity entity = new org.granite.util.Entity(update.getValue());
+	                            if (entity.getIdentifier() == null)
+	                                getPrevious = false;
+	                        }
+	                        if (getPrevious) {
+	                            try {
+	                                for (int i = 0; i < path.length; i++) {
+	                                    if (value == null)
+	                                        break;
+	                                    // Use modified Reflections for getter because of a bug in Seam 2.0.0
+	                                    Method getter = org.granite.util.Reflections.getGetterMethod(value.getClass(), path[i]);
+	                                    value = Reflections.invoke(getter, value);
+	                                    if (i < path.length-1)
+	                                        bean = value;
+	                                }
+	                            }
+	                            catch (IllegalArgumentException e) {
+	                                // No getter found to retrieve current value
+	                                log.warn(e, "Partial merge only");
+	                                value = null;
+	                            }
+	    	                    catch (Exception e) {
+	    	                    	throw new ServiceException("Could not get property: " + update.toString(), e);
+	    	                    }
+	                            previous = value;
+	                        }
+	                    }
+	                    
+	                    // Set new value
+	                    try {
+	                        if (bean != null) {
+	                            Method setter = Reflections.getSetterMethod(bean.getClass(), path[path.length-1]);
+	                            Type type = setter.getParameterTypes()[0];
+	                            value = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters().convert(update.getValue(), type);
+	                            // Merge entities into current persistent context if needed
+	                            value = mergeExternal(value, previous);
+	                            Reflections.invoke(setter, bean, value);
+	                        }
+	                    }
+	                    catch (Exception e) {
+	                    	throw new ServiceException("Could not restore property: " + update.toString(), e);
+	                    }
+	                }
+	            }
+	            else {
+	                previous = manager.getReference(sourceBean, Object.class, manager.createCreationalContext(sourceBean));	                
+	                boolean disabled = previous != null 
+	            		&& config.isComponentTideDisabled(sourceBean.getName(), beanClasses(sourceBean), previous);
+	                if (!disabled) {
+	                	previous = unproxy(previous);
+	                	
+		                // Merge context variable
+		            	mergeExternal(update.getValue(), previous);
+	                }
+	            }
+	        }
+        }
+        finally {
+        	TideInvocation.get().unlock();
         }
     }
     
@@ -522,51 +637,88 @@ public class CDIServiceContext extends TideServiceContext {
         if (nothing)
             return resultsMap;
         
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
-        
-        for (Map.Entry<ContextResult, Boolean> me : getResultsEval().entrySet()) {
-            if (!me.getValue())
-                continue;
-            
-            ContextResult res = me.getKey();
-            
-            Class<?> componentClass = res.getComponentClass();
-            Bean<?> targetBean = findBean(res.getComponentName(), componentClass);
-            String targetComponentName = targetBean.getName();
-            
-            boolean add = true;
-            Class<? extends Annotation> scopeType = targetBean.getScope();
-            Boolean restrict = res.getRestrict();
-            
-            Object value = res instanceof ScopedContextResult 
-            	? ((ScopedContextResult)res).getValue() 
-            	: manager.getReference(targetBean, Object.class, null);
-            
-            if (value != null && config.isComponentTideDisabled(targetComponentName, beanClasses(targetBean), value))
-                add = false;
-            
-            if (add) {
-            	getResultsEval().put(res, false);
-            	
-                if (value != null && classGetter != null) {
-                    classGetter.initialize(null, null, value);
-                    
-                    int scope = 3;
-                    if (scopeType == ConversationScoped.class)
-                    	scope = 2;
-                    else if (scopeType == SessionScoped.class)
-                    	scope = 1;
-                    
-                    resultsMap.add(new ContextUpdate(res.getComponentName(), null, value, scope, Boolean.TRUE.equals(restrict)));
-                    add = false;
-                }
-            }
-            
-            me.setValue(Boolean.FALSE);
+        try {
+        	TideInvocation.get().lock();
+	        	
+	        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+	        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+	        
+	        for (Map.Entry<ContextResult, Boolean> me : getResultsEval().entrySet()) {
+	            if (!me.getValue())
+	                continue;
+	            
+	            ContextResult res = me.getKey();
+	            
+	            Class<?> componentClass = res.getComponentClass();
+	            Bean<?> targetBean = findBean(res.getComponentName(), componentClass);
+	            if (targetBean == null) {
+	            	log.warn("Target bean " + res.getComponentName() + " of class " + componentClass + " not found");
+	            	continue;
+	            }
+	            String targetComponentName = targetBean.getName();
+	            
+	            boolean add = true;
+	            Class<? extends Annotation> scopeType = targetBean.getScope();
+	            Boolean restrict = res.getRestrict();
+	            
+	            Object value = res instanceof ScopedContextResult 
+	            	? ((ScopedContextResult)res).getValue() 
+	               	: manager.getReference(targetBean, Object.class, manager.createCreationalContext(targetBean));
+	            
+	            if (value != null && config.isComponentTideDisabled(targetComponentName, beanClasses(targetBean), value))
+	                add = false;
+	            
+	            if (add) {
+	            	getResultsEval().put(res, false);
+	            	
+	                String[] path = res.getExpression() != null ? res.getExpression().split("\\.") : new String[0];
+	                
+	                value = unproxy(value);
+	                
+	                if (value != null) {
+	                	try {
+		                    for (int i = 0; i < path.length; i++) {
+		                        if (value == null)
+		                            break;
+		                        try {
+		                        	Method getter = Reflections.getGetterMethod(value.getClass(), path[i]);
+		                        	value = Reflections.invoke(getter, value);
+		                        }
+		                        catch (IllegalArgumentException e) {
+		                        	// GDS-566
+		                        	add = false;
+		                        }		                    
+		                    }
+	                	}
+	                	catch (Exception e) {
+	                		throw new ServiceException("Could not evaluate expression " + res.toString(), e);
+	                	}
+	                }
+	                
+	                if (add && value != null && classGetter != null) {
+	                    classGetter.initialize(null, null, value);
+	                    
+	                    int scope = 3;
+	                    if (scopeType == ConversationScoped.class)
+	                    	scope = 2;
+	                    else if (scopeType == SessionScoped.class)
+	                    	scope = 1;
+	                    
+	                    ContextUpdate cu = new ContextUpdate(res.getComponentName(), res.getExpression(), value, scope, Boolean.TRUE.equals(restrict));
+	                    cu.setComponentClassName(res.getComponentClassName());
+	                    resultsMap.add(cu);
+	                    add = false;
+	                }
+	            }
+	            
+	            me.setValue(Boolean.FALSE);
+	        }
+	        
+	        return resultsMap;
         }
-        
-        return resultsMap;
+        finally {
+        	TideInvocation.get().unlock();
+        }
     }
 
 	@Inject
@@ -586,7 +738,17 @@ public class CDIServiceContext extends TideServiceContext {
 		return (obj1 != null && obj2 != null 
 				&& (obj1.getClass().isAnnotationPresent(TideBean.class) || obj2.getClass().isAnnotationPresent(TideBean.class)));
     }
-    
+	
+	
+	@SuppressWarnings("unchecked")
+	private static final Set<Class<?>> KNOWN_IMMUTABLES = new HashSet<Class<?>>(Arrays.asList(
+			String.class, Byte.class, Short.class, Integer.class, Long.class,
+	        Float.class, Double.class, Boolean.class, BigInteger.class, BigDecimal.class
+	));
+
+	public static boolean isImmutable(Object o) {
+	    return KNOWN_IMMUTABLES.contains(o.getClass()) || Enum.class.isInstance(o);
+	}
     
 //    /**
 //     * Implementations of intercepted asynchronous calls

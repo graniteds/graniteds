@@ -293,30 +293,32 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         
         graniteContext.getRequestMap().put(TideServiceInvoker.class.getName(), this);
         
-    	Converters converters = graniteContext.getGraniteConfig().getConverters();
-    	
-    	Set<Class<?>> componentClasses = tideContext.findComponentClasses(componentName, componentClass);
-    	for (Class<?> cClass : componentClasses) {
-    		try {
-    			Method m = cClass.getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
-    			for (int i = 0; i < m.getGenericParameterTypes().length; i++)
-    				context.getParameters()[i] = converters.convert(context.getParameters()[i], m.getGenericParameterTypes()[i]);
-    			
-    			break;
-    		}
-    		catch (NoSuchMethodException e) {
-    		}
-    	}
-    	
-    	for (Class<?> cClass : componentClasses) {
-        	DataEnabled dataEnabled = cClass.getAnnotation(DataEnabled.class);
-        	if (dataEnabled != null && !dataEnabled.useInterceptor()) {
-        		GraniteContext.getCurrentInstance().getRequestMap().put(DATAENABLED_HANDLED, true);
-        		DataContext.init(dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
-    			prepareDataObserver(dataEnabled);
-        		break;
-        	}
-    	}
+        if (componentName != null || componentClass != null) {
+	    	Converters converters = graniteContext.getGraniteConfig().getConverters();
+	    	
+	    	Set<Class<?>> componentClasses = tideContext.findComponentClasses(componentName, componentClass);
+	    	for (Class<?> cClass : componentClasses) {
+	    		try {
+	    			Method m = cClass.getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
+	    			for (int i = 0; i < m.getGenericParameterTypes().length; i++)
+	    				context.getParameters()[i] = converters.convert(context.getParameters()[i], m.getGenericParameterTypes()[i]);
+	    			
+	    			break;
+	    		}
+	    		catch (NoSuchMethodException e) {
+	    		}
+	    	}
+	    	
+	    	for (Class<?> cClass : componentClasses) {
+	        	DataEnabled dataEnabled = cClass.getAnnotation(DataEnabled.class);
+	        	if (dataEnabled != null && !dataEnabled.useInterceptor()) {
+	        		GraniteContext.getCurrentInstance().getRequestMap().put(DATAENABLED_HANDLED, true);
+	        		DataContext.init(dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
+	    			prepareDataObserver(dataEnabled);
+	        		break;
+	        	}
+	    	}
+        }
         
         Throwable error = null;
         try {

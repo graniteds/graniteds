@@ -18,17 +18,26 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.cdi;
+package org.granite.config;
 
-import org.granite.messaging.amf.io.util.externalizer.DefaultExternalizer;
-import org.granite.tide.annotations.TideEvent;
+import java.lang.annotation.Annotation;
+import java.util.Set;
 
+import org.granite.messaging.service.ServiceFactory;
 
-public class TideEventExternalizer extends DefaultExternalizer {
+public interface ConfigProvider {
+	
+	public <T> T findInstance(Class<T> type);
 
-	@Override
-	public int accept(Class<?> clazz) {
-		return clazz.isAnnotationPresent(TideEvent.class) ? 0 : -1;
-	}
-
+	public <T> Set<T> findInstances(Class<T> type);
+	
+	public Boolean useTide();
+	
+	public String getType();
+	
+	public Class<?>[] getTideInterfaces();
+	
+	public Class<? extends Annotation>[] getTideAnnotations();
+	
+	public Class<? extends ServiceFactory> getFactoryClass();
 }
