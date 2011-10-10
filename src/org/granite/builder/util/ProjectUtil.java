@@ -393,6 +393,7 @@ public class ProjectUtil {
 			return (file != null && file.exists());
 		}
 		
+		@SuppressWarnings("deprecation")
 		public URL toURL() throws IOException {
 			if (file == null)
 				return null;
