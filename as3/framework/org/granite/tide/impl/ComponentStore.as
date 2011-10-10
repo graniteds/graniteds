@@ -28,11 +28,11 @@ package org.granite.tide.impl {
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
 	import mx.collections.Sort;
-    import mx.core.IUIComponent;
-    import mx.events.FlexEvent;
-    import mx.logging.ILogger;
+	import mx.core.IUIComponent;
+	import mx.events.FlexEvent;
+	import mx.logging.ILogger;
 	import mx.logging.Log;
-    import mx.utils.ObjectUtil;
+	import mx.utils.ObjectUtil;
 	import mx.utils.StringUtil;
 	
 	import org.granite.reflect.Annotation;
@@ -299,14 +299,14 @@ package org.granite.tide.impl {
 		/**
 		 * 	Register a Tide module
 		 * 
-		 * 	@param module the module class or instance (that must implement ITideModule)
+		 * 	@param module the module class or instance (that may implement ITideModule)
 		 * 	@param appDomain the Flex application domain for modules loaded dynamically
 		 */
 		public function addModule(module:Object, appDomain:ApplicationDomain = null):void {
 		    if (appDomain != null)
 		        Type.registerDomain(appDomain);
 
-            var moduleClass:Class = module is Class ? module as Class : Type.forName(getQualifiedClassName(module)).getClass();
+            var moduleClass:Class = module is Class ? module as Class : Type.forName(getQualifiedClassName(module), appDomain).getClass();
 
             if (!(module is Class)) {
                 var refs:Object = _moduleRef[moduleClass];
@@ -335,7 +335,7 @@ package org.granite.tide.impl {
 		                ITideModule(moduleInstance).init(_tide);
 		        }
 		        catch (e:Error) {
-		            log.error("Module " + moduleClass + " initialization failed", e);
+		            log.error("Module {0} initialization failed: {1}", getQualifiedClassName(moduleClass), e);
 		            throw e; 
 		        }
 		        _moduleInitializing = null;
@@ -347,20 +347,24 @@ package org.granite.tide.impl {
         public function trackModuleCreation(moduleInstance:Object):void {
             if (_moduleComponents[moduleInstance] == null)
                 return;
+			log.info("Started tracking module {0}", getQualifiedClassName(moduleInstance));
             _moduleInitializing = moduleInstance;
             moduleInstance.addEventListener(FlexEvent.CREATION_COMPLETE, moduleCreationCompleteHandler, false, 0, true);
-            moduleInstance.addEventListener(FlexEvent.REMOVE, moduleRemoveHandler, false, 0, true);
+            moduleInstance.addEventListener(Event.REMOVED, moduleRemovedHandler, false, 0, true);
         }
 
         private function moduleCreationCompleteHandler(event:FlexEvent):void {
             event.target.removeEventListener(FlexEvent.CREATION_COMPLETE, moduleCreationCompleteHandler);
             _moduleInitializing = null;
+			log.info("Module {0} created", getQualifiedClassName(event.target));
         }
 
-        private function moduleRemoveHandler(event:FlexEvent):void {
-            event.target.removeEventListener(FlexEvent.REMOVE, moduleRemoveHandler);
-            if (_moduleComponents[event.target] != null)
+        private function moduleRemovedHandler(event:Event):void {
+            if (_moduleComponents[event.target] != null) {
+				event.target.removeEventListener(Event.REMOVED, moduleRemovedHandler);
                 removeModule(event.target);
+				log.info("Remved module {0}", getQualifiedClassName(event.target));
+			}				
         }
 
 
@@ -373,7 +377,9 @@ package org.granite.tide.impl {
             if (!(module is Class) && _moduleComponents[module] == null)
                 return;     // Module already removed
 
-            var moduleClass:Class = module is Class ? module as Class : Type.forName(getQualifiedClassName(module)).getClass();
+			var appDomain:ApplicationDomain = module is Class ? null : _moduleApplicationDomain[module];
+			
+			var moduleClass:Class = module is Class ? module as Class : Type.forName(getQualifiedClassName(module), appDomain).getClass();
 
             if (!(module is Class)) {
                 var refs:Object = _moduleRef[moduleClass];
@@ -386,13 +392,13 @@ package org.granite.tide.impl {
 		    var moduleInstance:Object = module is Class ? _modules[moduleClass] : module;
 		    if (moduleInstance == null)
 		        throw new Error("Module " + moduleClass + " not found");
-		        
+			
+			appDomain = _moduleApplicationDomain[moduleInstance];			
+					        
 		    var componentNames:Array = _moduleComponents[moduleInstance] as Array;
 		    for each (var name:String in componentNames)
 		        removeComponent(name);
 		        
-		    var appDomain:ApplicationDomain = _moduleApplicationDomain[moduleInstance];
-		    
 		    delete _moduleApplicationDomain[moduleInstance];
 		    delete _moduleComponents[moduleInstance];
 		    delete _modules[moduleClass];

@@ -27,12 +27,14 @@
 //            return true;
 //        }
 
-        [Inject] [Bindable]
+        [Inject]
+        [Bindable]
         public var context:Context;
 
-        [Inject] [Bindable]
+        [Inject]
+        [Bindable]
         public var personService:PersonService;
-    ]]></fx:Script>
+        ]]></fx:Script>
 
     <fx:Metadata>[Name]</fx:Metadata>
 

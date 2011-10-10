@@ -3,27 +3,32 @@
     xmlns:fx="http://ns.adobe.com/mxml/2009"
     xmlns:s="library://ns.adobe.com/flex/spark"
     xmlns:mx="library://ns.adobe.com/flex/mx"
-    preinitialize="Spring.getInstance().initApplication()">
+	initialize="init()"
+	implements="org.granite.test.IModuleHolder">
 
     <fx:Script><![CDATA[
-        import mx.core.IVisualElement;
-        import mx.events.ModuleEvent;
-        import mx.modules.IModuleInfo;
-        import mx.modules.ModuleManager;
+		import flash.net.registerClassAlias;
 		
-        import org.granite.tide.Tide;
-        import org.granite.tide.spring.Spring;
+		import mx.core.IVisualElement;
+		import mx.events.ModuleEvent;
+		import mx.modules.IModuleInfo;
+		import mx.modules.ModuleManager;
+		
+		import org.granite.test.tide.MachinService;
+		import org.granite.test.tide.TrucService;
+		import org.granite.tide.Tide;
+		import org.granite.tide.spring.Spring;
+		
+		
+		public function testModule():void {			
+		}
 
 		
-		[Bindable]
-		public var moduleDomain:ApplicationDomain = new ApplicationDomain(ApplicationDomain.currentDomain);
-
 		private function loadModule(modulePath:String):void {
-			moduleDomain = new ApplicationDomain(ApplicationDomain.currentDomain)
 			moduleLoader.url = modulePath;
 		}
 		
-		private function unloadModule(modulePath:String):void {
+		private function unloadModule():void {
 			moduleLoader.unloadModule();
 			moduleLoader.url = null;
 		}
@@ -84,20 +89,23 @@
 //        }
 //
 //        private function moduleUnloadHandler(event:ModuleEvent):void {
-//        }
+//        }*
+		
+			private function init():void {
+				// registerClassAlias("org.granite.test.tide.TrucService", TrucService);
+				// registerClassAlias("org.granite.test.tide.MachinService", MachinService);
+			}
 
         ]]></fx:Script>
 
     <s:VGroup>
         <s:Button label="Load module 1" click="loadModule('TestModule.swf')"/>
-        <s:Button label="Unload module 1" click="unloadModule('TestModule.swf')"/>
 
         <s:Button label="Load module 2" click="loadModule('TestModule2.swf')"/>
-        <s:Button label="Unload module 2" click="unloadModule('TestModule2.swf')"/>
+		
+		<s:Button label="Unload module" click="unloadModule()"/>
 
-        <mx:ModuleLoader id="moduleLoader" url="TestModule.swf"
-                         applicationDomain="{moduleDomain}"
-                         ready="Tide.getInstance().addModule(moduleLoader.child, moduleLoader.applicationDomain)"/>
+        <mx:ModuleLoader id="moduleLoader"/>
 
     </s:VGroup>
 </s:Application>
