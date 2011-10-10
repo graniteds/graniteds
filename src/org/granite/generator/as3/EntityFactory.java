@@ -34,7 +34,7 @@ public interface EntityFactory {
 	
 	public JavaType newEntity(JavaTypeFactory provider, Class<?> type, URL url);
 	
-	public boolean isId(JavaFieldProperty property);
+	public boolean isId(JavaFieldProperty fieldProperty);
 	
 	public boolean isVersion(JavaProperty property);
 	

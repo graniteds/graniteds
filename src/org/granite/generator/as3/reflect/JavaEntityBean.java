@@ -34,25 +34,22 @@ public class JavaEntityBean extends JavaBean {
 
     protected final List<JavaFieldProperty> identifiers;
     protected final JavaType idClass;
-    protected JavaFieldProperty version;
-    protected final List<JavaFieldProperty> lazyProperties;
+    protected JavaProperty version;
+    protected final List<JavaProperty> lazyProperties;
     
     public JavaEntityBean(JavaTypeFactory provider, Class<?> type, URL url) {
         super(provider, type, url);
 
         // Find identifiers.
         List<JavaFieldProperty> tmpIdentifiers = new ArrayList<JavaFieldProperty>();
-        List<JavaFieldProperty> tmpLazyProperties = new ArrayList<JavaFieldProperty>();
+        List<JavaProperty> tmpLazyProperties = new ArrayList<JavaProperty>();
         for (JavaProperty property : properties.values()) {
-            if (property instanceof JavaFieldProperty) {
-                JavaFieldProperty fieldProperty = (JavaFieldProperty)property;
-                if (provider.isId(fieldProperty))
-                    tmpIdentifiers.add(fieldProperty);
-                else if (provider.isVersion(fieldProperty))
-                	version = fieldProperty;
-                else if (provider.isLazy(fieldProperty))
-                	tmpLazyProperties.add(fieldProperty);
-            }
+            if (property instanceof JavaFieldProperty && provider.isId((JavaFieldProperty)property))
+                tmpIdentifiers.add((JavaFieldProperty)property);
+            else if (provider.isVersion(property))
+            	version = property;
+            else if (provider.isLazy(property))
+            	tmpLazyProperties.add(property);
         }
         this.identifiers = (tmpIdentifiers.isEmpty() ? null : Collections.unmodifiableList(tmpIdentifiers));
         this.lazyProperties = (tmpLazyProperties.isEmpty() ? null : Collections.unmodifiableList(tmpLazyProperties));
@@ -89,11 +86,11 @@ public class JavaEntityBean extends JavaBean {
     public boolean hasVersion() {
     	return version != null;
     }
-    public JavaFieldProperty getVersion() {
+    public JavaProperty getVersion() {
     	return version;
     }
     
-    public boolean isLazy(JavaFieldProperty property) {
+    public boolean isLazy(JavaProperty property) {
     	return lazyProperties != null && lazyProperties.contains(property);
     }
 }
