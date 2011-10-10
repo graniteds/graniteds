@@ -1525,6 +1525,21 @@ package org.granite.tide.data {
 				_mergeContext.merging = saveMerging;
 			}
         }
+		
+		/**
+		 *  Discard changes of all cached entities from last version received from the server
+		 */ 
+		public function resetAllEntities(cache:Dictionary):void {
+			var saveMerging:Boolean = _mergeContext.merging;
+			// Disable dirty check during reset of entity
+			try {
+				_mergeContext.merging = true;
+				_dirtyCheckContext.resetAllEntities(cache);
+			}
+			finally {
+				_mergeContext.merging = saveMerging;
+			}
+		}
 
 
         /**

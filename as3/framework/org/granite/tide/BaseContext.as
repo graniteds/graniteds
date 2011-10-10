@@ -1940,6 +1940,25 @@ package org.granite.tide {
             	_tracking = saveTracking;
 			}
         }
+		
+		
+		/**
+		 *  Discard changes of all cached entities from last version received from the server
+		 */ 
+		public function meta_resetAllEntities():void {
+			var cache:Dictionary = new Dictionary(true);
+			var saveTracking:Boolean = _tracking;
+			try {
+				_tracking = false;
+				_entityManager.resetAllEntities(cache);
+			}
+			catch (e:Error) {
+				log.error("Error resetting entities", e);
+			}
+			finally {
+				_tracking = saveTracking;
+			}
+		}
 
 
         /**

@@ -26,9 +26,9 @@ package org.granite.tide.data {
     import mx.collections.IList;
     import mx.core.IUID;
     import mx.events.CollectionEvent;
-import mx.events.CollectionEventKind;
-import mx.events.CollectionEventKind;
-import mx.events.CollectionEventKind;
+	import mx.events.CollectionEventKind;
+	import mx.events.CollectionEventKind;
+	import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
     import mx.events.PropertyChangeEventKind;
     import mx.logging.ILogger;
@@ -841,6 +841,29 @@ import mx.events.CollectionEventKind;
             // Must be here because entity reset may have triggered useless new saved properties
             markNotDirty(entity);
         }
+		
+		
+		/**
+		 *	@private
+		 *  Internal implementation of entity reset all
+		 */ 
+		public function resetAllEntities(cache:Dictionary):void {
+			var found:Boolean = false;
+			do {
+				found = false;
+				for (var entity:Object in _savedProperties) {
+					if (entity is IEntity) {
+						found = true;
+						resetEntity(IEntity(entity), cache);
+						break;
+					}
+				}
+			}
+			while (found);
+			
+			if (_dirtyCount > 0)
+				log.error("Incomplete reset of context, could be a bug");
+		}
         
         
         /**
