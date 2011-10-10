@@ -62,6 +62,28 @@ package ${jClass.as3Type.packageName} {
         } else {
             %> extends Component {<%
         }
+                
+///////////////////////////////////////////////////////////////////////////
+// Write Public Getter/Setter.
+
+    for (jProperty in jClass.properties) {
+        if (jProperty.readable || jProperty.writable) {%>
+<%
+            if (jProperty.writable) {%>
+        public <%= jProperty.writeOverride ? "override " : "" %>function set ${jProperty.name}(value:${jProperty.as3Type.name}):void {
+            super.meta_internalSetProperty("${jProperty.name}", value, true, false);
+        }<%
+            }
+            if (!jProperty.writable) {%>
+        [Bindable(event="propertyChange")]<%
+            } else {%>
+        [Bindable]<%
+            }%>
+        public <%= jProperty.readOverride ? "override " : "" %>function get ${jProperty.name}():${jProperty.as3Type.name} {
+            return super.getProperty("${jProperty.name}") as ${jProperty.as3Type.name};
+        }<%
+        }
+    }        
         
 ///////////////////////////////////////////////////////////////////////////
 // Write Methods.
