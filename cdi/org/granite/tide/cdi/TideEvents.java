@@ -38,8 +38,9 @@ import javax.inject.Inject;
  */
 public class TideEvents implements Serializable {
     
-    
-    @Inject
+	private static final long serialVersionUID = 1L;
+
+	@Inject
     private BeanManager manager;
     
     private boolean reentrant = false;

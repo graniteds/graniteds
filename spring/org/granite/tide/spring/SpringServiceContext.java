@@ -153,7 +153,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
             return bean;
         }
     	catch (NoSuchBeanDefinitionException nexc) {
-        	if (componentName.endsWith("Controller")) {
+        	if (componentName != null && componentName.endsWith("Controller")) {
         		try {
         			int idx = componentName.lastIndexOf(".");
         			String controllerName = idx > 0 
