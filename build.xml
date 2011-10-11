@@ -963,9 +963,9 @@
             <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
             <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
             <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
+            <link href="http://docs.jboss.org/hibernate/stable/core/javadocs/"/>
             <link href="http://docs.jboss.com/seam/2.2.0.GA/api/"/>
-            <link href="http://static.springsource.org/spring/docs/3.0.x/api/"/>
+            <link href="http://static.springsource.org/spring/docs/current/javadoc-api/"/>
             <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
 
         </javadoc>

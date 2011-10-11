@@ -71,7 +71,7 @@ public abstract class AbstractSecurityService implements SecurityService {
      * Decode credentails encoded in base 64 (in the form of "username:password"), as they have been
      * sent by a RemoteObject.
      * 
-     * @param credentails base 64 encoded credentials.
+     * @param credentials base 64 encoded credentials.
      * @return an array containing two decoded Strings, username and password.
      * @throws IllegalArgumentException if credentials isn't a String.
      * @throws SecurityServiceException if credentials are invalid (bad encoding or missing ':').

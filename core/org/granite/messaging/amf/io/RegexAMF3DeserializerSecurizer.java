@@ -58,7 +58,7 @@ public class RegexAMF3DeserializerSecurizer implements AMF3DeserializerSecurizer
 	 * Set this securizer pattern. Note that you may use whitespaces in your pattern in
 	 * order to improve readability: theses extra characters will be ignored.
 	 * 
-	 * @param a regex containing <strong>allowed</strong> class name patterns.
+	 * @param param a regex containing <strong>allowed</strong> class name patterns.
 	 * @throws java.util.regex.PatternSyntaxException if the given value isn't a valid
 	 * 		regex pattern.
 	 */
