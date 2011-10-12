@@ -26,11 +26,11 @@
 <project name="graniteds-maven" default="deploy.GDS" xmlns:artifact="urn:maven-artifact-ant"
          xmlns:openpgp="antlib:org.apache.commons.openpgp.ant">
 
-  <import file="../build.xml"/>
-
   <property file="../project.properties"/>
   <property file="../env.properties"/>
   <property file="auth.properties"/>
+
+  <import file="../build.xml"/>
 
   <!-- TODO: change the version before releasing, defined in ../project.properties file-->
   <property name="release.version" value="${GDS_VERSION}"/>
@@ -154,13 +154,13 @@
 
     <artifact:install pomRefId="granite-root-swc"/>
     <artifact:install pomRefId="granite-essentials-swc" file="../build/granite-essentials.swc">
-      <attach file="../build/sources/flex/granite-essentials-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-essentials-sources.jar" classifier="sources"/>
     </artifact:install>
     <artifact:install pomRefId="granite-swc" file="../build/granite.swc">
-      <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-sources.jar" classifier="sources"/>
     </artifact:install>
     <artifact:install pomRefId="granite-flex45-swc" file="../build/granite-flex45.swc">
-      <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-sources.jar" classifier="sources"/>
     </artifact:install>
   </target>
 
@@ -351,8 +351,8 @@
       </remoterepository>
       <attach file="../build/granite-essentials.swc.asc" type="swc.asc"/>
       <attach file="../build/poms/essentials-swc.pom.xml.asc" type="pom.asc"/>
-      <attach file="../build/sources/flex/granite-essentials-sources.jar" classifier="sources"/>
-      <attach file="../build/sources/flex/granite-essentials-sources.jar.asc" classifier="sources" type="jar.asc"/>
+      <attach file="../build/sources/as3/granite-essentials-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-essentials-sources.jar.asc" classifier="sources" type="jar.asc"/>
     </artifact:deploy>
 
     <artifact:deploy pomRefId="granite-swc" file="../build/granite.swc">
@@ -361,8 +361,8 @@
       </remoterepository>
       <attach file="../build/granite.swc.asc" type="swc.asc"/>
       <attach file="../build/poms/granite-swc.pom.xml.asc" type="pom.asc"/>
-      <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
-      <attach file="../build/sources/flex/granite-sources.jar.asc" classifier="sources" type="jar.asc"/>
+      <attach file="../build/sources/as3/granite-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-sources.jar.asc" classifier="sources" type="jar.asc"/>
     </artifact:deploy>
 
     <artifact:deploy pomRefId="granite-flex45-swc" file="../build/granite-flex45.swc">
@@ -371,8 +371,8 @@
       </remoterepository>
       <attach file="../build/granite-flex45.swc.asc" type="swc.asc"/>
       <attach file="../build/poms/granite-flex45-swc.pom.xml.asc" type="pom.asc"/>
-      <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
-      <attach file="../build/sources/flex/granite-sources.jar.asc" classifier="sources" type="jar.asc"/>
+      <attach file="../build/sources/as3/granite-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-sources.jar.asc" classifier="sources" type="jar.asc"/>
     </artifact:deploy>
   </target>
 

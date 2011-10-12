@@ -25,6 +25,9 @@
  !-->
 <project name="graniteds-flex45" default="build.swc">
 
+    <property file="env45.properties"/>
+    <property file="project.properties"/>
+
     <!--
      ! Flex 2 SDK tasks (mxmlc, compc, html-wrapper).
      !-->
