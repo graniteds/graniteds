@@ -39,7 +39,7 @@
     <!--
      ! Build GDS maven extra jars (sources & javadoc).
      !-->
-	<target name="build.maven.extra" depends="build.maven.source.jar,build.maven.javadoc.jar"/>
+	<target name="build.maven.extra" depends="@dot,build.maven.source.jar,build.maven.javadoc.jar"/>
   	
     <!--
      ! Build GDS maven source jars.

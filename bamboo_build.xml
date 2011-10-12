@@ -3,7 +3,7 @@
 
 	<property name="builderVersion" value="2.3.0.RC1"/>
 
-	<property name="eclipse.plugins" value="../../eclipse/plugins"/>
+	<property name="eclipse.plugins" value="/Applications/eclipse32/plugins"/>
 	
 	<property name="basews" value="${ws}"/>
 	<property name="baseos" value="${os}"/>
