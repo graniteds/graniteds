@@ -94,6 +94,7 @@ package org.granite.test.tide.framework
 		public var test26:org.granite.test.tide.framework.TestComponentObservers3;
 		public var test27:org.granite.test.tide.framework.TestComponentObservers4;
 		public var test27b:org.granite.test.tide.framework.TestComponentObservers5;
+        public var test27c:org.granite.test.tide.framework.TestComponentObservers6;
 		public var test28:org.granite.test.tide.framework.TestComponentObserversGDS549;
 		public var test29:org.granite.test.tide.framework.TestComponentOutjection;
 		public var test30:org.granite.test.tide.framework.TestComponentOutjectionForum3853;

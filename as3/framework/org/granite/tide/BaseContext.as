@@ -1311,8 +1311,10 @@ package org.granite.tide {
         	var params:Array = null;
         	var eventParam:Event = null;
         	if (event is TideUIEvent) {
-	        	eventType = TideUIEvent(event).eventType; 
+	        	eventType = TideUIEvent(event).eventType;
         		params = TideUIEvent(event).params;
+                if (params != null && params[0] is Event)
+                    eventType = "$TideEvent$" + getQualifiedClassName(params[0]);
         	}
         	else {
         		eventType = "$TideEvent$" + getQualifiedClassName(event);
