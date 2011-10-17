@@ -328,7 +328,7 @@ srv.channelSet.addChannel(new AMFChannel("graniteamf",
             </itemizedlist>
             </para>
             <programlisting role="JAVA">
-@RemoteDestination(id="person", source="personService", securityRoles={"user","admin"})
+@RemoteDestination(id="personService", source="personService", securityRoles={"user","admin"})
 public interface PersonService {
 }
 
@@ -806,13 +806,6 @@ public class PersonServiceBean implements PersonService {
             </programlisting>
         </section>
         
-        <section id="spring.tideremotingcontrollers">
-            <title>Remoting to Spring MVC Controllers</title>
-            <para>
-            TODO
-            </para>
-        </section>
-        
         <section id="spring.tidesecurity">
             <title>Integration with Spring Security</title>
             <para>
@@ -969,7 +962,7 @@ public function logout():void {
     </section>
     
     <section id="spring.messaging">
-       <title>Configuring Messaging (Gravity)</title>
+       <title>Messaging with Spring (Gravity)</title>
        <para>
        It is possible to configure the three kinds of Gravity topics directly in the Spring context instead of <literal>services-config.xml</literal>: 
        </para>
@@ -1028,5 +1021,13 @@ public function logout():void {
        This declaration supports all properties of the default ActiveMQ declaration in <literal>services-config.xml</literal> except for non local initial context
        environments (see the <link linkend="messaging.activemq">ActiveMQ Integration</link> section).
        </para>
+       <para>
+       Finally note that the <literal>Gravity</literal> singleton that is needed to push messages from the server (see <link linkend="messaging.servertoclient">here</link>)
+       is available as a bean in the Spring context and can be autowired by type with <literal>@Inject</literal> or <literal>@Autowired</literal> :
+       </para>
+       <programlisting role="JAVA">
+<![CDATA[@Inject
+private Gravity gravity;]]>
+       </programlisting>
     </section>
 </chapter>

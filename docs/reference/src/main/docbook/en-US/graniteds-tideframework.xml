@@ -150,6 +150,7 @@
        <programlisting role="AS3">     
 package com.myapp.controller {
 
+    [Bindable]
     public interface IHelloController {
     
         function hello(name:String):void;
@@ -211,8 +212,6 @@ package com.myapp.controller {
     <mx:Metadata>[Name]</mx:Metadata>
 
     <mx:Script>
-        import org.granite.tide.Component;
-        import org.granite.tide.events.TideResultEvent;
         import com.myapp.controller.IHelloController;
         
         [Bindable] [Inject]
@@ -225,13 +224,13 @@ package com.myapp.controller {
 </mx:Panel>]]>
        </programlisting>
        <para>
-       This already quite clean, and completely typesafe. The annotation <literal>[Inject]</literal> indicates that Tide should inject any managed
+       This is already quite clean, and completely typesafe. The annotation <literal>[Inject]</literal> indicates that Tide should inject any managed
        component which class extends or implements the specified type, contrary to the annotation <literal>[In]</literal> that is used to inject a 
        component by name. Here the instance of <literal>HelloController</literal> will be injected, in a test case you could easily configure an 
        alternative <literal>TestHelloController</literal> implementing the same interface.
        </para>
        <para>
-       This kind of architecture is inspired by JSF (JavaServerFaces) and works fine. However there is still a bit of coupling between the views and the controllers, 
+       This kind of architecture is inspired by JSF (Java Server Faces) and works fine. However there is still a bit of coupling between the views and the controllers, 
        and it does not really follow the usual event-based style of the Flex framework. To obtain a more pure MVC model, we have to add a model
        component that will hold the state of the application, and an event class dispatched through the Tide event bus to decouple the view and the controller: 
        </para>
@@ -254,6 +253,7 @@ package com.myapp.events {
        <programlisting role="AS3">     
 package com.myapp.model {
 
+    [Bindable]
     public interface IHelloModel {
     
         function get message():String;
@@ -538,8 +538,10 @@ public class MyComponent {
        <literal>tideContext.myComponent</literal> will return the unique instance of the component <literal>MyComponent</literal> that we have defined before.       
        </para>
        <para>
-       You can also retrieve the instance of a component that extends a particular type with <literal>tideContext.byType(MyComponent)</literal>. Of course
-       it is more useful when specifying an interface so you can get its configured implementation: <literal>tideContext.byType(IMyComponent)</literal>. 
+       You can also retrieve the instance of a component that extend a particular type with <literal>tideContext.byType(MyComponent)</literal>. Of course
+       it is more useful when specifying an interface so you can get its configured implementation: <literal>tideContext.byType(IMyComponent)</literal>.
+       When many implementations of an interface are expected to exist in the context, you can use <literal>tideContext.allByType(IMyComponent)</literal>
+       to retrieve all of them. 
        </para>
        <note><para>
        If no component has been registered with a particular name, <literal>tideContext.someName</literal> will by default return a client proxy for a remote 
@@ -1313,7 +1315,7 @@ public class TideTrace implements ITidePlugin {
 	    <para>
 	    If you have a big number of components to initialize, your main MXML application will quickly be polluted with lots of Tide initializations. 
 	    This can be cleaned up by implementing a Tide initialization module class, which just has to implement <literal>ITideModule</literal>. Then you can
-	    use <literal>addModule</literal> to call the initialization of a whole application module:
+	    use <literal>addModule</literal> to call the initialization of a whole application:
 	    </para>
         <programlisting role="AS3">
 Tide.getInstance().addModule(MyModule);
@@ -1330,10 +1332,10 @@ public class MyModule implements ITideModule {
 }
         </programlisting>
         <para>
-        You can think of it as a XML configuration file, such as Seam <literal>components.xml</literal> or Spring <literal>applicationContext.xml</literal>.
+        You can think of it as a XML configuration file, such as Seam <literal>components.xml</literal> or Spring <literal>context.xml</literal>.
         </para>
         <para>
-        Using Tide modules is necessary if you need to register components that are dynamically loaded from a Flex module. In this case, Tide will need to 
+        Using Tide modules is also necessary if you need to register components that are dynamically loaded from a Flex module. In this case, Tide will need to 
         know the Flex <literal>ApplicationDomain</literal> to which the component classes belong, and you have to pass it to the 
         <literal>Tide.addModule()</literal> method.
         </para>
@@ -1352,17 +1354,81 @@ public function loadModule(path:String):void {
 
 private function moduleReadyHandler(event:ModuleEvent):void {
     var loadedModule:Object = event.module.factory.create();
-    loadedModule.start(_moduleAppDomain);
+    Tide.getInstance().addModule(loadedModule, _moduleAppDomain);
 }]]>
         </programlisting>
+        <para>
+        Alternatively you can also use the Flex MX or Spark <literal>ModuleLoader</literal> components, and just ensure that you are using a specific application
+        domain when loading a module.
+        </para>
         <programlisting role="XML">
-<![CDATA[<mx:Module>
-    <mx:Script>
-        public function start(appDomain:ApplicationDomain = null):void {
-            Tide.getInstance().addModule(MyLoadedModule, appDomain);
-        }
-    </mx:Script>
-</mx:Module>]]>
+<![CDATA[<mx:ModuleLoader id="moduleLoader"
+    applicationDomain="{new ApplicationDomain(ApplicationDomain.currentDomain)}"
+    ready="Tide.getInstance().addModule(moduleLoader.child, moduleLoader.applicationDomain)"/>]]> 
         </programlisting>
+        <para>
+        You can then change the loaded module with this code :
+        </para>
+        <programlisting role="AS3">
+private function changeModule(modulePath:String):void {
+    if (moduleLoader.url != modulePath) {
+        moduleLoader.applicationDomain = new ApplicationDomain(ApplicationDomain.currentDomain);
+        moduleLoader.unloadModule();
+        moduleLoader.loadModule(modulePath);
+    }
+}
+        </programlisting>        
+ 	</section>
+ 	
+ 	<section id="tide.deeplinking">
+ 	      <title>Support for Deep Linking</title>
+ 	      <para>
+ 	      Flash/Flex provides an API to handle SEO friendly linking from the url of the swf. For example you may want to provide a simple url to access a particular
+ 	      resource : <literal>http://my.domain.com/shop/shop.html#product/display/tv</literal>.
+ 	      To have this working you have to generate the html wrapper with Flash Builder / Ant / Maven and use the html wrapper instead of accessing the 
+ 	      <literal>swf</literal> directly. See <ulink url="http://livedocs.adobe.com/flex/3/html/help.html?content=deep_linking_2.html">here</ulink> for more
+ 	      details on Flex deep linking. 
+ 	      </para>
+ 	      <para>
+ 	      Tide provides a way to integrate deep linking with the MVC framework. It uses a technique inspired by <literal>JAX-RS</literal> so that changes in the
+ 	      browser url will trigger a method on a component. It first requires to enable the corresponding Tide plugin just after the Tide initialization with :
+ 	      </para>
+ 	      <programlisting role="AS3">
+Tide.getInstance().initApplication();
+Tide.getInstance().addPlugin(TideUrlMapping.getInstance()); 	      
+ 	      </programlisting>
+ 	      <para>
+ 	      You will also need to keep the annotation <literal>[Path]</literal> in your compilation options in Flash Builder / Ant / Maven.
+ 	      </para>
+ 	      <para>
+ 	      Once enabled, the plugin will listen to browser url changes, and split the url after # in two parts. The part before the first slash will identify the 
+ 	      target controller, and the part after the first slash will determine the target method. 
+ 	      In the previous example, the controller has to be annotated with <literal>[Path("product")]</literal> and the method with <literal>[Path("display/tv")]</literal> :
+ 	      </para>
+ 	      <programlisting role="AS3">
+[Name("productController")]
+[Path("product")]
+public class ProductController {
+
+    [Path("display/tv")]
+    public function displayTv():void {
+        // Do something to display the TV...
+    }
+}
+ 	      </programlisting>
+ 	      <para>
+ 	      Of course you won't want to have a different method for each kind of resource so you can use placeholders that will match method arguments : 
+ 	      </para>
+          <programlisting role="AS3">
+[Name("productController")]
+[Path("product")]
+public class ProductController {
+
+    [Path("display/{0}")]
+    public function display(productType:String):void {
+        // Do something to display the product...
+    }
+}
+          </programlisting>
  	</section>
 </chapter>

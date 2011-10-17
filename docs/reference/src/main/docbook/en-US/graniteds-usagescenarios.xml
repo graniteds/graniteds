@@ -108,5 +108,13 @@
 			If you are not sure of what stack you should use, we advise that you consider this stack as this is currently the most powerful and easy to use.
 			</para>
 		</formalpara>
+		
+		<formalpara>
+		    <title>Tide/CDI/JPA2/Java EE 6 on JBoss 6/7 or GlassFish 3</title>
+		    <para>
+		    Well this is not really a "common" stack but at least it is the latest Java EE 6 standard. If you are on a Java EE 6 compliant application server,
+		    it is definitely the best option.
+		    </para>
+		</formalpara>
 	</section>
 </chapter>

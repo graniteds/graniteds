@@ -13,9 +13,9 @@
 	   </para>
 	   
 	   <formalpara>
-	       <title>A JodaDateTime2Date converter/reverter:</title>
+	       <title>A <literal>JodaDateTime2Date</literal> converter/reverter:</title>
 	       <para>
-	       Here is a complete implementation of a Joda DateTime converter/reverter:
+	       Here is a complete implementation of a Joda <literal>DateTime</literal> converter/reverter:
 	       </para>
 	   </formalpara>
 	   
@@ -67,8 +67,8 @@ public class JodaDateTime2Date extends Converter implements Reverter {
 	   </programlisting>
 	   
 	   <para>
-	   When you send an AS3 Date to the server, either as method parameter or as a bean field value, it is deserialized as <literal>java.util.Date</literal> object 
-	   and, if your target type is a <literal>org.joda.time.DateTime</literal> instance, it fails to find a matching method, 
+	   When you send an AS3 <literal>Date</literal> to the server, either as method parameter or as a bean field value, it is deserialized as 
+	   <literal>java.util.Date</literal> object and, if your target type is a <literal>org.joda.time.DateTime</literal> instance, it fails to find a matching method, 
 	   since it looks for a <literal>java.util.Date</literal> parameter, or to assign the bean value, issuing a <literal>ClassCastException</literal>.
 	   </para>
         
@@ -229,15 +229,70 @@ public interface SecurityService {
          </para>
      </section>
 	
-	<section id="extensibility.servicefactory">
-	   <title>Implementing a Service Factory</title>
+	<section id="extensibility.exceptionhandlers">
+	   <title>Custom Exception Handlers</title>
 	   <para>
-	   TODO
+	   The default exception handling mechanism of GraniteDS already provides a lot of flexibility with exception converters that can transform the exceptions
+	   caught on the server to meaningful errors on the Flex side. However if you need even more flexibility, you can completely replace the handling mechanism
+	   and provide you own exception handler. This is however not recommended with Tide as some features rely on proper exception conversions to work, but in this case
+	   you can simply extend the <literal>ExtendedExceptionHandler</literal> and add you custom behaviour. 
 	   </para>
+	   <para>
+       If you need special service exception handling, either to add extra informations or to mask implementation details, you may configure a 
+       custom implementation of <literal>ServiceExceptionHandler</literal> in <literal>services-config.xml</literal>:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<services-config>
+  ...
+  <factories>
+    <factory id="..." class="...">
+      <properties>
+        <service-exception-handler>
+          path.to.my.CustomServiceExceptionHandler
+        </service-exception-handler>
+        ...
+      </properties>
+    </factory>
+  </factories>
+  ...
+</services-config>]]>
+        </programlisting>
+        <para>
+        Your custom service exception handler must implement the <literal>org.granite.messaging.service.ServiceExceptionHandler</literal> interface. 
+        Note that it can of course extend the <literal>org.granite.messaging.service.DefaultServiceExceptionHandler</literal> class:
+        </para>
+        <programlisting role="JAVA">
+public ServiceException handleNoSuchMethodException(
+    Message request,
+    Destination destination,
+    Object invokee,
+    String method,
+    Object[] args,
+    NoSuchMethodException e
+);
+
+public ServiceException handleInvocationException(
+    ServiceInvocationContext context,
+    Throwable t
+);
+        </programlisting>
+        <para>
+        The first method is called whenever the service invoker cannot find any suitable method with the supplied name and arguments.
+        </para>
+        <para>
+        The second one is called whenever the method invocation throws an exception. Note that <literal>java.lang.reflect.InvocationTargetException</literal> are 
+        unwrapped (<literal>getTargetException</literal>) before <literal>handleInvocationException</literal> is called.
+        </para>
+        <para>
+        In both cases, the returned <literal>ServiceException</literal> will be thrown and serialized in a Flex <literal>ErrorMessage</literal> instead of the raw 
+        <literal>NoSuchMethodException e</literal> or <literal>Throwable t</literal> one.
+        </para>
 	</section>
 	
 	<section id="extensibility.messageinterceptor">
-	   <title>Registering a message interceptor</title>
+	   <title>Server Message Interceptors</title>
 	   <para>
 	   If you need to do some actions before and after each remote call, such as setting or accessing message headers, or doing some setup before request handling, 
 	   you can configure a custom <literal>AMF3MessageInterceptor</literal> in <literal>granite-config.xml</literal> :
@@ -261,8 +316,186 @@ public interface SecurityService {
         </programlisting>
         
         <para>
+        When using Spring or CDI, you will just have to declare a bean implementing <literal>AMF3MessageInterceptor</literal> in the framework context (with CDI, that
+        just means adding an implementation in the application archive).
+        </para>
+        
+        <para>
         Take care that some of the GraniteDS server frameworks integrations (CDI and Seam) already provide their own message interceptors. If you need to do something else, 
         you will have to override the existing interceptor and call <literal>super.before</literal> and <literal>super.after</literal>.
         </para>
+    </section>
+    
+    <section id="extensibility.classdescriptors">
+        <title>Custom Java or ActionScript3 Class Descriptors</title>
+        <para>
+        When a Java object is not <literal>Externalizable</literal> nor externalized by a GDS externalizer, it is serialized by means of the 
+        <literal>org.granite.messaging.amf.io.util.DefaultJavaClassDescriptor</literal>. This class controls which fields must be serialized and how to retrieve 
+        values from those fields.
+        </para>
+        <para>
+        In similar situations, but at deserialization time, the <literal>org.granite.messaging.amf.io.util.DefaultActionScriptClassDescriptor</literal> class controls 
+        how the corresponding Java object is instantiated and how values are set in this new instance.
+        </para>
+        <para>
+        You may write and plugin your own Java or ActionScript3 descriptors, for example:
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[public class MyJavaClassDescriptor
+    extends org.granite.messaging.amf.io.util.JavaClassDescriptor {
+
+    public MyJavaClassDescriptor(Class type) {
+        super(type);
+    }
+
+    @Override
+    protected List<Property> introspectProperties() {
+        // put your custom code here...
+    }
+}]]>
+        </programlisting>
+        <programlisting role="JAVA">
+<![CDATA[public class MyAS3ClassDescriptor
+    extends org.granite.messaging.amf.io.util.ActionScriptClassDescriptor {
+
+    public MyAS3ClassDescriptor(String type, byte encoding) {
+        super(type, encoding);
+    }
+
+    @Override
+    public void defineProperty(String name) {
+        // put your custom code here...
+    }
+
+    @Override
+    public Object newJavaInstance() {
+        // put your custom code here...
+    }
+}]]>
+        </programlisting>
+        <para>
+        Then, you have to declare these descriptors in your <literal>granite-config.xml</literal>:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+
+<granite-config>
+    <descriptors>
+        <descriptor
+            type="path.to.MyClass"
+            java="path.to.MyJavaClassDescriptor"
+            as3="path.to.MyAS3ClassDescriptor" />
+        <descriptor
+            instance-of="path.to.MyBaseClass"
+            java="path.to.MyJavaClassDescriptor"
+            as3="path.to.MyAS3ClassDescriptor" />
+        <!-- other descriptor configuration... -->
+    </descriptors>
+</granite-config>]]>
+        </programlisting>
+        <para>
+        You must use only one of <literal>type</literal> or <literal>instance-of</literal> attributes (i.e., should my descriptor(s) be used for all 
+        <literal>path.to.MyClass</literal> objects, or for all instances of <literal>path.to.MyBaseClass</literal>), you may use one of, or both, Java or AS3 attributes.
+        </para>
+    </section>
+    
+    <section id="extensibility.customser">
+        <title>Custom AMF3 (De)Serializers</title>
+        <para>
+        You may plug your own AMF3 serializer/deserializer.
+        A custom AMF3 serializer must implement <literal>java.io.ObjectOutput</literal> and have a special constructor signature:
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[public class MyAMF3Serializer implements java.io.ObjectOutput {
+
+    public MyAMF3Serializer(java.io.OutputStream out) {
+        // ...
+    }
+
+    // ObjectOutput implemention...
+}]]>
+        </programlisting>
+        <para>
+        Then, you must register this serializer in <literal>granite-config.xml</literal>:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+
+<granite-config>
+    <amf3-serializer type="path.to.MyAMF3Serializer"/>
+</granite-config>]]>
+        </programlisting>
+        <para>
+        A custom AMF3 deserializer must implement <literal>java.io.ObjectInput</literal> and have a special constructor signature:
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[public class MyAMF3Deserializer implements java.io.ObjectInput {
+
+    public MyAMF3Deserializer(java.io.InputStream in) {
+        // ...
+    }
+
+    // ObjectInput implemention...
+}]]>
+        </programlisting>
+        <para>
+        Then, you have to register this deserializer in <literal>granite-config.xml</literal>:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+
+<granite-config>
+    <amf3-deserializer type="path.to.MyAMF3Deserializer"/>
+</granite-config>]]>
+        </programlisting>
+        <para>
+        You may of course extend <literal>org.granite.messaging.amf.io.AMF3Serializer</literal> or <literal>org.granite.messaging.amf.io.AMF3Deserializer</literal> 
+        to override only some parts of the default AMF3 (de)serialization process, as all methods in thoses classes are public or protected.
+        </para>
+    </section>
+    
+    <section id="extensibility.invocationlisteners">
+        <title>ServiceInvocationListener (Advanced use only)</title>
+        <para>
+        If you need to listen to each service invocation method call, you may plugin a <literal>org.granite.messaging.service.ServiceInvocationListener</literal> 
+        implementation like this:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+
+<granite-config>
+    <invocation-listener type="path.to.MyServiceInvocationListener"/>
+</granite-config>]]>
+        </programlisting>
+        <para>
+        Your class must implement the <literal>org.granite.messaging.service.ServiceInvocationListener</literal> interface containing the following methods:
+        </para>
+        <programlisting role="JAVA">
+public Object[] beforeMethodSearch(Object invokee, String methodName, Object[] args);
+public void beforeInvocation(ServiceInvocationContext context);
+public void afterInvocationError(ServiceInvocationContext context, Throwable t);
+public Object afterInvocation(ServiceInvocationContext context, Object result);
+        </programlisting>
+        <warning><para>
+        Be very careful with those listeners as you may break the entire invocation process if you do not return proper args (<literal>beforeMethodSearch</literal>), 
+        if you modify the <literal>ServiceInvocationContext</literal> (<literal>beforeInvocation</literal>) or if you return a different object than the service 
+        method call result (<literal>afterInvocation</literal>)!
+        </para></warning>
     </section>
 </chapter>

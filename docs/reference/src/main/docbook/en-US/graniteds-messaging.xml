@@ -365,9 +365,9 @@ consumerFrance.subscribe();
             In order to enable Comet support in Tomcat, you must configure an <ulink url="http://tomcat.apache.org/tomcat-6.0-doc/aio.html">APR or NIO connector</ulink>.
             </para>
             <para>
-            At least for now, APR is the simplest to configure and the most reliable. 
+            At least for now, APR is the easiest to configure and the most reliable. 
             To configure APR, see documentation <ulink url="http://tomcat.apache.org/tomcat-6.0-doc/apr.html">here</ulink>. 
-            In Windows®, it's simply a matter of downloading a native <ulink url="http://tomcat.heanet.ie/native/">dll</ulink> and putting it 
+            On Windows®, it's simply a matter of downloading a native <ulink url="http://tomcat.heanet.ie/native/">dll</ulink> and putting it 
             in your <literal>WINDOWS/system32</literal> directory – while other and better configurations are possible.
             For more recent versions of Tomcat such as the one embedded in JBoss 5 or 6, you will need the latest APR library, 
             see <ulink src="http://tomcat.apache.org/download-native.cgi">here</ulink>.
@@ -611,6 +611,7 @@ consumerFrance.subscribe();
             <para>
             It first requires to get the <literal>Gravity</literal> object from the <literal>ServletContext</literal>. 
             It is set as an attribute named <literal>org.granite.gravity.Gravity</literal>.
+            When using Spring, Seam 2 or CDI, you can also get this object by injection (see the corresponding documentation).
             </para>
             <para>
             Then you can send messages of type <literal>flex.messaging.messages.Message</literal> by calling the method <literal>gravity.publish(message);</literal>.

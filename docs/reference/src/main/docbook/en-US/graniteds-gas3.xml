@@ -753,8 +753,107 @@ $ ant -lib /gas3libs -f build.xml {target}
 	<section id="gas3.maven">
 	   <title>Maven Plugin (Flexmojos)</title>
 	   <para>
-	   TODO
+	   The Gas3 generator is used as the default code generation tool in the Flexmojos plugin. To use it, you need to add the following part to your maven POM : 
 	   </para>
+	   <programlisting role="XML">
+<![CDATA[<build>
+    ...
+    <pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.flexmojos</groupId>
+                <artifactId>flexmojos-maven-plugin</artifactId>
+                <version>${flexmojos.version}</version>
+            </plugin>
+        </plugins>
+    </pluginManagement>
+    
+    <plugins>
+        <plugin>
+            <groupId>org.sonatype.flexmojos</groupId>
+            <artifactId>flexmojos-maven-plugin</artifactId>
+            <version>${flexmojos.version}</version>
+            <extensions>true</extensions>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>generate</goal>
+                    </goals>
+                    <configuration>
+                        <generatorToUse>graniteds21</generatorToUse>
+                        <baseOutputDirectory>${project.build.directory}/generated-sources</baseOutputDirectory>
+                        <outputDirectory>${project.build.directory}/../src/main/flex</outputDirectory>
+                        <extraOptions>
+                            <tide>true</tide>
+                            <uid>uid</uid>
+                            <entityFactory>org.granite.generator.as3.BVEntityFactory</entityFactory>
+                            <outputEnumToBaseOutputDirectory>false</outputEnumToBaseOutputDirectory>
+                        </extraOptions>
+                        <includeJavaClasses>
+                            <include>${package}.entities.**</include>
+                            <include>${package}.services.*Service</include>
+                        </includeJavaClasses>
+                    </configuration>
+                </execution>
+            </executions>
+            <dependencies>
+                <dependency>
+                    <groupId>javax.persistence</groupId>
+                    <artifactId>persistence-api</artifactId>
+                    <version>1.0</version>
+                </dependency> 
+                <dependency>
+                    <groupId>javax.validation</groupId>
+                    <artifactId>validation-api</artifactId>
+                    <version>1.0.0.GA</version>
+                </dependency> 
+                <dependency>
+                    <groupId>javax.jdo</groupId>
+                    <artifactId>jdo2-api</artifactId>
+                    <version>2.3-eb</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                    <version>1.6.0</version>
+                </dependency> 
+                <dependency>
+                    <groupId>antlr</groupId>
+                    <artifactId>antlr</artifactId>
+                    <version>2.7.7</version>
+                </dependency>     
+                <dependency>
+                    <groupId>asm</groupId>
+                    <artifactId>asm</artifactId>
+                    <version>2.2.3</version>
+                </dependency> 
+                <dependency>
+                    <groupId>com.thoughtworks.xstream</groupId>
+                    <artifactId>xstream</artifactId>
+                    <version>1.2.2</version>
+                </dependency> 
+                <dependency>
+                    <groupId>org.graniteds</groupId>
+                    <artifactId>granite-core</artifactId>
+                    <version>${graniteds.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.graniteds</groupId>
+                    <artifactId>granite-generator-share</artifactId>
+                    <version>${graniteds.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.graniteds</groupId>
+                    <artifactId>granite-generator</artifactId>
+                    <version>${graniteds.version}</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+        ...
+    </plugins>
+    ...
+</build>]]>
+	   </programlisting>
 	</section>
 	
 	<section id="gas3.templatelanguage">

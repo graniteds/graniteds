@@ -232,6 +232,80 @@ Object(myEntity.myCollection).withInitialized(function(collection:IList):void {
 });
 	   </programlisting>
 	</section>
+    
+    <section id="data.reverselazyloading">
+       <title>Reverse Lazy Loading</title>
+       <para>
+       Lazy loading greatly helps limiting the amount of data that is transferred between the server and the client. When receiving data from the server,
+       the lazy-loading state is managed by the JPA engine depending on what is done by the service, so only the necessary data is sent.
+       When sending objects to the server, the lazy-loading state depends on what has been or not loaded on the client context. As the lifespan of the entities
+       in the client context is much longer than in stateless services, there is a good chance that after a few time of running application, the whole object graph 
+       will be loaded on the client. That means that passing an entity as an argument to a remote method call will send the fully loaded object graph, whenever
+       maybe a single property has been modified on the main entity. For example :
+       </para>
+       <programlisting role="JAVA">
+public function savePerson():void {
+    person.lastName = "Test";
+    personService.save(person);   // This will send all loaded collections associated to the Person object
+}
+       </programlisting>
+       <para>
+       Obviously this is not very efficient. You can now ask Tide to limit the object graph before sending it.
+       It can be done manually in Flex with the following API :
+       </para>
+       <programlisting role="AS3">
+var uperson:Person = new EntityGraphUnintializer(tideContext).uninitializeEntityGraph(person) as Person;
+personService.save(uperson);    // This will send only the Person object without any loaded collection
+       </programlisting>
+       <para>
+       Here all loaded collections of the <literal>Person</literal> object will be uninitialized so <literal>uperson</literal> contains only the minimum of data 
+       to correctly merge your changes in the server persistence context. If there is a change deeper in the object graph, the uninitializer is able to detect it and will 
+       not uninitialize the corresponding graph so the server receives all changes.
+       </para>
+       <programlisting role="AS3">
+person.contacts.getItemAt(0).email = 'test@test.com';
+var uperson:Person = new EntityGraphUnintializer(tideContext).uninitializeEntityGraph(person) as Person;
+personService.save(uperson);    // This will send the Person object with only the contacts collection loaded
+       </programlisting>
+       <para>
+       Tide uses the client data tracking (the same used for dirty checking, see <link linkend="data.dirtycheck">below</link>) to determine which parts of the graph
+       need to be sent.
+       </para>
+       <para>
+       If you need to uninitialize more than one argument for a remote call, you have to use the same <literal>EntityGraphUninitializer</literal>. It is important 
+       because the uninitializer copies the entities in a temporary context before uninitializing their associations so the normal context keeps unchanged, and 
+       all processed entities have to share this same temporary context. 
+       </para>
+       <programlisting role="AS3">
+var egu:EntityGraphUnintializer = new EntityGraphUninitialize(tideContext);
+uperson1 = egu.uninitializeEntityGraph(person1);
+uperson2 = egu.uninitializeEntityGraph(person2);
+personService.save(uperson1, uperson2);
+        </programlisting>
+        <para>
+        Calling the <literal>EntityGraphUninitializer</literal> manually is a bit tedious and ugly, so there is a cleaner possibility when you are using 
+        generated typesafe service proxies. You can annotate your service method arguments with <literal>@org.granite.tide.data.Lazy</literal> :
+        </para>
+        <programlisting role="JAVA">
+public void save(@Lazy Person person) {
+}
+        </programlisting>
+        <para>
+        Gas3 will then generate a <literal>[Lazy]</literal> annotation on your service methods (so take care that you have added the [Lazy] annotation to your Flex 
+        metadata compilation configuration). Next in the Flex application, register the <literal>UninitializeArgumentPreprocessor</literal> component in Tide as follows :
+        </para>
+        <programlisting role="AS3">
+Tide.getInstance().addComponents([UninitializeArgumentPreprocessor]);
+        </programlisting>
+        <para>
+        Once you have done this, all calls to <literal>PersonService.save()</literal> will automatically use a properly uninitialized version of the <literal>person</literal> 
+        argument.
+        </para>
+        <para>
+        This new feature cannot be yet applied to local context variables (mostly used with Seam or CDI stateful components). Only method arguments can be processed, 
+        but this should cover be the vast majority of use cases. Support for context variables will come with GDS 3.0.
+        </para>
+    </section>
 	
 	<section id="data.dirtycheck">
 	   <title>Dirty Checking and Conflict Handling</title>
@@ -264,7 +338,7 @@ entity.meta_dirty
 	   <para>
 	   Note that this dirty flag only indicates if a direct property or collection of the entity has been changed, it does not indicate if something has changed
 	   deeper in the object graph (that would not make sense anyway for circular graphs). The correct way of knowing if any object has been changed in the context,
-	   you can use the property <literal>meta_dirty</literal> of the Tide context.
+	   is to use the property <literal>meta_dirty</literal> of the Tide context.
 	   </para>
 	   <programlisting role="XML">
 <![CDATA[<mx:Button label="Save" click="entityService.save()"
@@ -288,21 +362,31 @@ entity.meta_dirty
             </listitem>
    	   </orderedlist>
    	   Note that if you retrieve the same instance without version increment, the local changes won't be overwritten. In the previous example, if the server
-   	   returns the same instance with an unchanged version number of 0, the local instance will still be dirty.
+   	   returns the same instance with an unchanged version number of 0, the local instance will still be dirty. That means that you can still issue queries that return
+   	   a locally changed entity without losing the user changes.
    	   </para>
        
        <para>
-       One important issue with this programming model is how to implement a cancel button after step 2. If you use bidirectional data binding, the client view 
-       of the entity instance has already become dirty. As Tide always saves the local changes, it also provides a simple way of restoring the last stable state :
+       One nice possibility with this programming model is that you can easily implement a cancel button after step 2. If you use bidirectional data binding, the 
+       client view of the entity instance has already become dirty. As Tide always saves the local changes, it also provides a simple way of restoring the last stable 
+       state :
    	   </para>
    	   <programlisting role="AS3">
 private function restore():void {
     Managed.resetEntity(entity);
 }
    	   </programlisting>
+   	   <para>
+   	   You can also reset all entities in the context to their last stable state with :
+   	   </para>
+   	   <programlisting role="AS3">
+private function restoreAll():void {
+    tideContext.meta_resetAllEntities();
+}
+   	   </programlisting>
    	   
    	   <para>
-   	   If you look at the previous process in 3 steps, we assume that nobody else has changed the data the user is working on between 1 and 3. 
+   	   If you look at the previous process in 3 steps, we assume that nobody else has changed the data the user has been working on between 1 and 3. 
    	   In highly concurrent environments with read-write data, there are possibilities that someone else has modified the entity on the server between step 1 and step 3.
    	   </para>
    	   <para>
@@ -362,6 +446,40 @@ Tide.getInstance().addExceptionHandler(OptimisticLockExceptionHandler);
    	   to present a better alert message to the user.
    	   </para>
    	   
+   	   <para>When using the Hibernate native API (<literal>Session</literal>), the optimistick lock exception <literal>StaleObjectStateException</literal>
+   	   is unfortunately missing a critical information to allow for correct conflict handling (that is present in the JPA <literal>OptimistickLockException</literal>). 
+   	   In this case, you should use the provided Hibernate event wrappers that add the missing data to the Hibernate exception. Here is what is will look like when
+   	   configuring the <literal>SessionFactory</literal> with Spring :
+   	   </para>
+   	   <programlisting role="XML">
+<![CDATA[<bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="hibernateProperties">
+        <props>
+            <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+            <prop key="hibernate.show_sql">false</prop>
+            <prop key="hibernate.hbm2ddl.auto">update</prop>
+        </props>
+    </property>
+    <property name="eventListeners">
+        <map>
+            <entry key="merge"><bean class="org.granite.tide.hibernate.HibernateMergeListener"/></entry>
+            <entry key="create"><bean class="org.granite.tide.hibernate.HibernatePersistListener"/></entry>
+            <entry key="create-onflush"><bean class="org.granite.tide.hibernate.HibernatePersistOnFlushListener"/></entry>
+            <entry key="delete"><bean class="org.granite.tide.hibernate.HibernateDeleteListener"/></entry>
+            <entry key="update"><bean class="org.granite.tide.hibernate.HibernateSaveOrUpdateListener"/></entry>
+            <entry key="save-update"><bean class="org.granite.tide.hibernate.HibernateSaveOrUpdateListener"/></entry>
+            <entry key="save"><bean class="org.granite.tide.hibernate.HibernateSaveOrUpdateListener"/></entry>
+            <entry key="lock"><bean class="org.granite.tide.hibernate.HibernateLockListener"/></entry>
+            <entry key="flush"><bean class="org.granite.tide.hibernate.HibernateFlushListener"/></entry>
+            <entry key="auto-flush"><bean class="org.granite.tide.hibernate.HibernateAutoFlushListener"/></entry>
+        </map>
+    </property>
+    ...
+</bean>]]>
+   	   </programlisting>
+   	   
    	   <formalpara>
    	        <title>Integration with Client Conversations</title>
    	        <para>
@@ -394,7 +512,7 @@ tideContext.meta_mergeInGlobalContext()
 	<section id="data.validation">
 	   <title>Data Validation</title>
 	   <para>
-	   Tide integrates with Hibernate Validator 3.x and Bean Validation API (JSR 303) implementations, to propagate the server validation errors to the client 
+	   Tide integrates with Hibernate Validator 3.x and the Bean Validation API (JSR 303) implementations, and propagate the server validation errors to the client 
 	   UI components.
 	   </para>
 	   <para>
@@ -881,8 +999,7 @@ public abstract class MyEntity {
         Add the Tide data annotation on all services, example here with a Spring service:
         </para>
         <programlisting role="JAVA">
-@DataEnabled(topic="dataTopic", params=ObserveAllPublishAll.class, 
-  publish=PublishMode.ON_SUCCESS)
+@DataEnabled(topic="dataTopic", publish=PublishMode.ON_SUCCESS)
 public interface MyService {
     ...
 }
@@ -905,23 +1022,11 @@ public interface MyService {
             <literal>PublishMode.ON_COMMIT</literal> is not yet implemented.
             </listitem>
             <listitem>
-            <literal>params</literal>: a filter class that will define to which updates are sent to which clients. If you don't want any filtering, 
-            you can use the following class, otherwise see below for a more detailed explanation.
+            <literal>params</literal>: a filter class that will define to which updates are sent to which clients. By default there is no filtering, 
+            otherwise see below for a more detailed explanation.
             </listitem>
         </itemizedlist>
         </para>
-        <programlisting role="JAVA">
-public class ObserveAllPublishAll implements DataTopicParams {
-
-    @Override
-    public void observes(DataObserveParams params) {
-    }
-
-    @Override
-    public void publishes(DataPublishParams params, Object entity) {
-    }
-}
-        </programlisting>
         <formalpara>
             <title>Publishing Filters</title>
             <para>
@@ -978,19 +1083,150 @@ public void observes(DataObserveParams params) {
 (user = 'username' OR user = '__public__') AND (group = 'admin' OR group = 'superadmin')
         </programlisting>
         <formalpara>
+            <title>Publishing Modes</title>
+            <para>
+            There are three publishing modes :
+            <itemizedlist>
+                <listitem>
+                <literal>PublishMode.ON_SUCCESS</literal> is the easiest to use, and dispatch updates after each successful remote call, regardless of the actual
+                result of the transaction (if there is one). 
+                </listitem>
+                <listitem>
+                <literal>PublishMode.ON_COMMIT</literal> allows for a transactional behaviour, and does the dispatch only on transaction commit.
+                </listitem>
+                <listitem>
+                <literal>PublishMode.MANUAL</literal> lets you do the dispatch manually in your services when you want, giving the most control.
+                </listitem>
+            </itemizedlist>
+            </para>
+            <para>
+            By default only GraniteDS remoting calls are able to dispatch update messages with <literal>ON_SUCCESS</literal> or <literal>MANUAL</literal> modes.
+            If you need the <literal>ON_COMMIT</literal> mode, or need that services that are not called from Flex also trigger the dispatch, then you will have
+            to enable the Tide data dispatcher interceptor that will handle to updates in threads that are not managed by GraniteDS.
+            </para>
+            <para>
+            To enable the interceptor, it is necessary to indicate on the <literal>@DataEnabled</literal> annotation that there is one with the 
+            <literal>useInterceptor</literal> attribute :
+            </para>
+            <programlisting role="JAVA">
+@DataEnabled(topic="dataTopic", publishMode=PublishMode.ON_COMMIT, useInterceptor=true)
+public class MyService {
+}
+            </programlisting>
+            <para> 
+            There are four versions of the interceptor available for each supported framework : EJB3, Spring, Seam 2, CDI.
+            </para>
+            <para>
+            For Spring, add the advice to your context (take care that you need to reference the latest GraniteDS XSD version 2.3 to allow this) :
+            </para>
+            <programlisting role="XML">
+<![CDATA[<beans
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:graniteds="http://www.graniteds.org/config"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.3.0/granite-config-2.3.xsd">
+    ...
+<graniteds:tide-data-publishing-advice/>]]>            
+            </programlisting>
+            <para>
+            For Seam 2, there is nothing special to configure. The interceptor will be automatically enabled for all components having the <literal>@DataEnabled</literal>
+            annotation with <literal>useInterceptor=true</literal>.
+            </para>
+            <para>
+            For CDI, enable the interceptor in <literal>beans.xml</literal> :
+            </para>
+            <programlisting role="XML">
+<![CDATA[<beans
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">  
+    <interceptors>
+        <class>org.granite.tide.cdi.TideDataPublishingInterceptor</class>
+    </interceptors>
+</beans>]]>            
+            </programlisting>
+            <para>
+            For EJB 3, you can define a global interceptor in <literal>ejb-jar.xml</literal> :
+            </para>
+            <programlisting role="XML">
+<![CDATA[<assembly-descriptor>
+      <interceptor-binding>
+         <ejb-name>*</ejb-name>
+         <interceptor-class>org.granite.tide.ejb.TideDataPublishingInterceptor</interceptor-class>
+      </interceptor-binding>
+      ...
+</assembly-descriptor>]]>
+            </programlisting>
+            <para>
+            Or alternatively configure the interceptor on each EJB 3 :
+            </para>
+            <programlisting role="JAVA">
+@Stateless
+@Local(MyService.class)
+@Interceptors(TideDataPublishingInterceptor.class)
+@DataEnabled(topic="myTopic", publish=PublishMode.ON_COMMIT, useInterceptor=true)
+public class MyServiceBean {
+    ...
+}
+            </programlisting>
+        </formalpara>
+        <formalpara>
             <title>Manual Publishing</title>
             <para>
-            Even if automatic publishing with <literal>PublishMode.ON_SUCCESS</literal> is the easiest to use, it is important to take care that is not transactional, 
-            meaning that it will dispatch updates even if the transaction has not been committed but the remote call was successful.
-            If you need real transactional behaviour, it is more suitable to use manual publishing.
+            If you need full control on the publishing process, you can create your own interceptor or use the following API in your services :
             </para>
+            <programlisting role="JAVA">
+@DataEnabled(topic="dataTopic", params=DefaultDataTopicParams.class, publishMode=PublishMode.MANUAL, useInterceptor=true)
+public class MyService {
+
+    @Inject
+    private Gravity gravity;
+
+    public void doSomething() {
+        DataContext.init(gravity, "dataTopic", DefaultDataTopicParams.class, PublishMode.MANUAL);
+        try {
+            Object result = invocation.proceed();
+            DataContext.publish(PublishMode.MANUAL);
+            return result;
+        }
+        finally {
+            DataContext.remove();
+        }
+    }
+}
+            </programlisting>            
+	        <programlisting role="JAVA">
+@Interceptor
+public class CustomPublishInterceptor {
+
+    @Inject
+    private Gravity gravity;
+
+    @AroundInvoke
+    public Object aroundInvoke(InvocationContext invocation) throws Exception {
+        DataContext.init(gravity, "dataTopic", DefaultDataTopicParams.class, PublishMode.MANUAL);
+        try {
+            Object result = invocation.proceed();
+            DataContext.publish(PublishMode.MANUAL);
+            return result;
+        }
+        finally {
+            DataContext.remove();
+        }
+    }
+}
+	        </programlisting>
         </formalpara>
         
-        <para>
-        If your use JMS as transport, the better way to publish updates is to define a transactional topic and dispatch the updates manually inside the 
-        current transaction with an interceptor :
-        </para>
-        <programlisting role="JAVA">
+        <formalpara>
+            <title>Transactional Publishing</title>
+            <para>
+            You can setup a fully transactional dispatch by using the <literal>ON_COMMIT</literal> mode with a JMS transport. When using JMS transacted sessions
+            with the <literal>ON_COMMIT</literal> mode, you will ensure that only successful database updates will be dispatched. 
+            </para>
+            <programlisting role="XML">
 <![CDATA[<destination id="dataTopic">
     <properties>
         <jms>
@@ -1010,84 +1246,7 @@ public void observes(DataObserveParams params) {
     </channels>
     <adapter ref="jms"/>
 </destination>]]>
-        </programlisting>
-        <programlisting role="JAVA">
-@Interceptor
-public class DataPublishInterceptor {
-
-    @AroundInvoke
-    public Object aroundInvoke(InvocationContext invocation) throws Exception {
-        Object result = invocation.proceed();
-        DataContext.publish(PublishMode.MANUAL);
-        return result;
-    }
-}
-        </programlisting>
-        <para>
-        Alternatively you can use a framework-dependent synchronization to trigger the update on transaction commit, for example with EJB3 :
-        </para>
-		<programlisting role="JAVA">
-public class MyServiceImpl implements MyService, SessionSynchronization {
-    ...
-
-    public void afterBegin() {
-    }
-   
-    public void beforeCompletion() throws EJBException, RemoteException {
-    }
-   
-    public void afterCompletion(boolean success) throws EJBException, RemoteException {
-        if (success)
-            DataContext.publish(PublishMode.MANUAL);
-    }
-}
-        </programlisting>
-        <para>
-        Or with a Seam transactional event :
-        </para>
-        <programlisting role="JAVA">
-@Interceptor(within={TransactionInterceptor.class})
-public class DataPublishInterceptor extends AbstractInterceptor {
-
-    @AroundInvoke
-    public Object aroundInvoke(InvocationContext invocation) throws Exception {
-        Events.raiseTransactionSuccessEvent("my.app.graniteds.dispatchUpdate");
-        return invocation.proceed();
-    }
-}
-
-@Name("dataPublisher")
-public class DataPublisher {
-    @Observer("my.app.graniteds.dispatchUpdate")
-    public void dispatchUpdate() {
-        DataContext.publish(PublishMode.MANUAL);
-    }
-}
-        </programlisting>
-        <para>
-        Or finally with the JTA API :
-        </para>
-        <programlisting role="JAVA">
-@Interceptor
-public class DataPublishInterceptor implements Synchronization {
-
-    @AroundInvoke
-    public Object aroundInvoke(InvocationContext invocation) throws Exception {
-        InitialContext ic = new InitialContext();
-        TransactionManager tm = (TransactionManager)ic.lookup("TransactionManager");
-        Transaction t = tm.getTransaction();
-        t.registerSynchronization(this);
-        return invocation.proceed();
-    }
-
-    public void beforeCompletion() {
-    }
-
-    public void afterCompletion(int status) {
-        if (status == Status.STATUS_COMMITTED)
-            DataContext.publish(PublishMode.MANUAL);
-    }
-}
-        </programlisting>
+            </programlisting>
+        </formalpara>
     </section>
 </chapter>
