@@ -153,7 +153,7 @@ public class GraniteConfigListener implements ServletContextListener {
         
         if (!flexFilter.configProviderClass().equals(ConfigProvider.class)) {
         	try {
-        		configProvider = ClassUtil.newInstance(flexFilter.configProviderClass(), ConfigProvider.class);
+        		configProvider = ClassUtil.newInstance(flexFilter.configProviderClass(), new Class[] { ServletContext.class }, new Object[] { context });
         		
         		if (configProvider.useTide() != null)
         			useTide = configProvider.useTide();
@@ -251,7 +251,7 @@ public class GraniteConfigListener implements ServletContextListener {
 			SecurityService securityService = configProvider.findInstance(SecurityService.class);
 			graniteConfig.setSecurityService(securityService);
 		}
-    	else if (graniteConfig.getSecurityService() == null) {
+    	if (graniteConfig.getSecurityService() == null) {
     		String securityServiceClassName = null;
     		// Try auto-detect
     		try {
@@ -280,7 +280,6 @@ public class GraniteConfigListener implements ServletContextListener {
             	}
     		}
     	}
-
         
         if (!flexFilter.amf3MessageInterceptor().equals(AMF3MessageInterceptor.class)) {
         	try {
@@ -348,10 +347,10 @@ public class GraniteConfigListener implements ServletContextListener {
 	        	servicesConfig.addService(service);
         	}
             
-        	if (flexFilter.factoryClass().getName().equals("org.granite.tide.ejb.EjbServiceFactory"))
+        	if (factoryClass.getName().equals("org.granite.tide.ejb.EjbServiceFactory"))
         		servicesConfig.scan(null);
         	
-        	log.info("Registered Tide service factory and destination");
+        	log.info("Registered Tide " + factoryClass + " service factory and " + type + " destination");
         }
         else {
         	Factory factory = new Factory(type + "-factory", factoryClass.getName(), factoryProperties);

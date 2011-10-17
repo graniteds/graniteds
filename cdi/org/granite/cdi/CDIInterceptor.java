@@ -26,8 +26,6 @@ import java.util.Map;
 import javax.enterprise.context.Conversation;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
 import javax.servlet.ServletRequestEvent;
 
 import org.granite.context.GraniteContext;
@@ -72,45 +70,6 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
     			throw new RuntimeException("Could not load conversation manager for CDI implementation", f);
     		}
     	}
-    }
-    
-    
-    public static BeanManager lookupBeanManager() {
-		HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
-		BeanManager manager = (BeanManager)context.getServletContext().getAttribute(BeanManager.class.getName());
-		if (manager != null)
-			return manager;		
-		manager = (BeanManager)context.getServletContext().getAttribute("org.jboss.weld.environment.servlet.javax.enterprise.inject.spi.BeanManager");
-		if (manager != null)
-			return manager;
-		
-		InitialContext ic = null;
-	    try {
-			ic = new InitialContext();
-	    	// Standard JNDI binding
-	    	return (BeanManager)ic.lookup("java:comp/BeanManager");
-	    }
-	    catch (NameNotFoundException e) {
-	    	if (ic == null)
-	    		throw new RuntimeException("No InitialContext");
-	    	
-	    	// Weld/Tomcat
-	    	try {
-	    		return (BeanManager)ic.lookup("java:comp/env/BeanManager"); 
-	    	}
-	    	catch (Exception e1) { 	    	
-	    		// JBoss 5/6 (maybe obsolete in Weld 1.0+)
-		    	try {
-		    		return (BeanManager)ic.lookup("java:app/BeanManager");
-		    	}
-	    	    catch (Exception e2) {
-	    	    	throw new RuntimeException("Could not find Bean Manager", e2);
-	    	    }
-	    	}
-	    }
-	    catch (Exception e) {
-	    	throw new RuntimeException("Could not find Bean Manager", e);
-	    }
     }
     
     
@@ -162,7 +121,7 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
         		// Initialize CDI Context
 			    String conversationId = (String)amf3RequestMessage.getHeader(CONVERSATION_ID);
 			    
-			    BeanManager beanManager = lookupBeanManager();
+			    BeanManager beanManager = CDIUtils.lookupBeanManager(((HttpGraniteContext)context).getServletContext());
 			    
 			    Conversation conversation = conversationManager.initConversation(beanManager, conversationId);
 			    
@@ -205,7 +164,7 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
 			GraniteContext context = GraniteContext.getCurrentInstance();
 			
 			if (context instanceof HttpGraniteContext) {
-			    BeanManager beanManager = lookupBeanManager();
+			    BeanManager beanManager = CDIUtils.lookupBeanManager(((HttpGraniteContext)context).getServletContext());
 				try {
 					// Add conversation management headers to response
 					if (amf3ResponseMessage != null) {
