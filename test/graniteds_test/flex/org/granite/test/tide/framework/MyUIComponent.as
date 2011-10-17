@@ -7,6 +7,14 @@
 
 package org.granite.test.tide.framework {
 
+import flash.events.Event;
+
+import org.granite.tide.BaseContext;
+
+import org.granite.tide.Tide;
+import org.granite.tide.events.AbstractTideEvent;
+import org.granite.tide.events.TideEvent;
+
 import org.granite.tide.events.TideUIEvent;
 
 import spark.components.Panel;
@@ -16,7 +24,8 @@ import spark.components.Panel;
     public class MyUIComponent extends Panel {
 
         public function dispatch():void {
-            dispatchEvent(new TideUIEvent("org.test.myManagedEvent", new MyManagedEvent()));
+            var event:Event = new MyManagedEvent2();
+            dispatchEvent(new TideUIEvent(event.type, event));
         }
     }
 }

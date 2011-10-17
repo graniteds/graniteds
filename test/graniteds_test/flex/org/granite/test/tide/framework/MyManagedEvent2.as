@@ -12,7 +12,7 @@ package org.granite.test.tide.framework {
     public class MyManagedEvent2 extends Event {
 		
 		public function MyManagedEvent2():void {
-			super("myManagedEvent");
+			super("org.test.myManagedEvent");
 		}
     }
 }
