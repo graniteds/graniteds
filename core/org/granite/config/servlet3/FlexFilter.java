@@ -34,7 +34,6 @@ import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.ServiceFactory;
 import org.granite.messaging.service.annotations.RemoteDestination;
 import org.granite.messaging.service.security.SecurityService;
-import org.granite.tide.annotations.TideEnabled;
 
 
 @Inherited
@@ -58,7 +57,7 @@ public @interface FlexFilter {
 	
 	Class<?>[] tideInterfaces() default {};
 	
-	Class<? extends Annotation>[] tideAnnotations() default { RemoteDestination.class, TideEnabled.class };
+	Class<? extends Annotation>[] tideAnnotations() default { RemoteDestination.class };
 	
 	String[] tideNames() default {};
 	
