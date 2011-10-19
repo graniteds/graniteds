@@ -58,7 +58,8 @@ package org.granite.test.tide.framework
 	import org.granite.test.tide.framework.TestUIComponentGDS781b;
 	import org.granite.test.tide.framework.TestUIComponentModules;
 	import org.granite.test.tide.framework.TestEventInterceptor;
-	
+    // import org.granite.test.tide.framework.TestComponentFlexModules;
+
 	[Suite]
 	[RunWith("org.flexunit.runners.Suite")]
 	public class SuiteFramework
@@ -72,6 +73,7 @@ package org.granite.test.tide.framework
 		public var test7:org.granite.test.tide.framework.TestComponentInjection;
 		public var test8:org.granite.test.tide.framework.TestComponentInjection2;
 		public var test9:org.granite.test.tide.framework.TestComponentInjection3;
+        public var test9b:org.granite.test.tide.framework.TestComponentInjection4;
 		public var test10:org.granite.test.tide.framework.TestComponentInjectionForum4314;
 		public var test11:org.granite.test.tide.framework.TestComponentInjectionForum7129;
 		public var test12:org.granite.test.tide.framework.TestComponentInjectionGDS471;
@@ -92,6 +94,7 @@ package org.granite.test.tide.framework
 		public var test26:org.granite.test.tide.framework.TestComponentObservers3;
 		public var test27:org.granite.test.tide.framework.TestComponentObservers4;
 		public var test27b:org.granite.test.tide.framework.TestComponentObservers5;
+        public var test27c:org.granite.test.tide.framework.TestComponentObservers6;
 		public var test28:org.granite.test.tide.framework.TestComponentObserversGDS549;
 		public var test29:org.granite.test.tide.framework.TestComponentOutjection;
 		public var test30:org.granite.test.tide.framework.TestComponentOutjectionForum3853;
@@ -121,6 +124,6 @@ package org.granite.test.tide.framework
 		public var test54:org.granite.test.tide.framework.TestUIComponentGDS781b;
 		public var test55:org.granite.test.tide.framework.TestUIComponentModules;
 		public var test56:org.granite.test.tide.framework.TestEventInterceptor;
-		
+	//	public var test57:org.granite.test.tide.framework.TestComponentFlexModules;
 	}
 }

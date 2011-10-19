@@ -42,6 +42,7 @@ package org.granite.tide {
 		public var className:String;
         public var idPropertyName:String;
         public var versionPropertyName:String;
+        public var lazy:Object = {};
         public var mergeGDS20:Boolean;
         public var mergeGDS21:Boolean;
         
@@ -58,6 +59,10 @@ package org.granite.tide {
 			fields = type.getAnnotatedFieldNamesNoCache('Version');
 			if (fields.length > 0)
 				versionPropertyName = String(fields[0]);
+
+            fields = type.getAnnotatedFieldNamesNoCache('Lazy');
+            for each (var f:String in fields)
+                lazy[f] = true;
 
 			try {
 	        	if (Object(entity).meta::merge !== undefined) {

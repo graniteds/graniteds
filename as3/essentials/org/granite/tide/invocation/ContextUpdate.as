@@ -35,6 +35,7 @@ package org.granite.tide.invocation {
     public class ContextUpdate implements IExpression {
         
         private var _componentName:String;
+		private var _componentClassName:String;
         private var _expression:String;
         private var _value:Object;
         private var _scope:int;
@@ -58,6 +59,13 @@ package org.granite.tide.invocation {
             _componentName = componentName;
         }
         
+		public function get componentClassName():String {
+			return _componentClassName;
+		}
+		public function set componentClassName(componentClassName:String):void {
+			_componentClassName = componentClassName;
+		}
+		
         public function get expression():String {
             return _expression;
         }
@@ -87,12 +95,16 @@ package org.granite.tide.invocation {
         }
         
         public function get path():String {
-            return _componentName + (_expression ? "." + _expression : "");
+			return _componentName + (_expression ? "." + _expression : "");
         }
         
         
         public function toString():String {
-            return _componentName + "." + _expression + (_scope == 1 ? " (SESSION)" : (_scope == 2 ? " (CONVERSATION)" : "")) + (_restrict ? " (restricted)" : "");
+			return _componentName 
+				+ (_componentClassName != null ? "(" + _componentClassName + ")" : "")			
+				+ (_expression != null ? "." + _expression : "")
+				+ (_scope == 1 ? " (SESSION)" : (_scope == 2 ? " (CONVERSATION)" : "")) 
+				+ (_restrict ? " (restricted)" : "");
         }
     }
 }

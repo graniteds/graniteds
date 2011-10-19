@@ -37,7 +37,7 @@ import org.jboss.seam.framework.EntityHome;
 @Name("personHome")
 @Restrict("#{identity.loggedIn}")
 @TideEnabled
-@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_SUCCESS)
+@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_COMMIT, useInterceptor=true)
 public class PersonHome extends EntityHome<Person> {
 
     private static final long serialVersionUID = 1L;

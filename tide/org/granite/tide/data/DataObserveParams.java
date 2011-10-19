@@ -21,11 +21,14 @@
 package org.granite.tide.data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import static org.granite.tide.data.DataDispatcher.TIDE_DATA_TYPE_KEY;
+import static org.granite.tide.data.DataDispatcher.TIDE_DATA_TYPE_VALUE;
 
 
 
@@ -35,19 +38,19 @@ public class DataObserveParams implements Serializable {
 	
 	
 	private Map<String, Set<String>> params = new HashMap<String, Set<String>>();
+	private String selector = null;
 	
 	
 	public boolean isEmpty() {
-		return params.isEmpty();
-	}
-	
-	public Set<String> getParamNames() {
-		return params.keySet();
+		return selector == null && params.isEmpty();
 	}
 	
 	public boolean addValue(String paramName, String value) {
-		if (paramName == null || value == null)
-			throw new NullPointerException("paramName and value cannot be null");
+		if (paramName == null || value == null || paramName.trim().length() == 0 || value.trim().length() == 0)
+			throw new NullPointerException("paramName and value cannot be null or empty");
+		if (this.selector != null)
+			throw new IllegalArgumentException("Cannot mix manual and automatic selectors");
+		
 		Set<String> values = params.get(paramName);
 		if (values == null) {
 			values = new HashSet<String>();
@@ -56,8 +59,23 @@ public class DataObserveParams implements Serializable {
 		return values.add(value);
 	}
 	
+	public void setSelector(String selector) {
+		if (selector == null || selector.trim().length() == 0)
+			throw new NullPointerException("selector cannot be null or empty");
+		if (!this.params.isEmpty())
+			throw new IllegalArgumentException("Cannot mix manual and automatic selectors");
+		
+		this.selector = selector;
+	}
+	
 	
 	public void append(StringBuilder sb) {
+
+		if (selector != null) {
+			sb.append("(").append(selector).append(")");
+			return;
+		}
+
 		boolean f = true;
 		for (Map.Entry<String, Set<String>> me : params.entrySet()) {
 			if (f)
@@ -75,7 +93,7 @@ public class DataObserveParams implements Serializable {
 					if (ff)
 						ff = false;
 					else
-						sb.append(",");
+						sb.append(", ");
 					sb.append("'").append(value).append("'");
 				}
 				sb.append(")");
@@ -84,7 +102,7 @@ public class DataObserveParams implements Serializable {
 	}
     
     
-    public static boolean containsParams(List<DataObserveParams> selectors, DataObserveParams params) {
+    private static boolean containsParams(List<DataObserveParams> selectors, DataObserveParams params) {
     	for (DataObserveParams selector : selectors) {
     		if (selector.containsParams(params))
     			return true;
@@ -93,10 +111,63 @@ public class DataObserveParams implements Serializable {
     }	
     
     private boolean containsParams(DataObserveParams params) {
+    	if (this.selector != null && !this.selector.equals(params.selector))
+    		return false;
+    	
     	for (Map.Entry<String, Set<String>> me : params.params.entrySet()) {
-    		if (!this.params.get(me.getKey()).containsAll(me.getValue()))
+    		Set<String> values = this.params.get(me.getKey());
+    		if (values == null || !values.containsAll(me.getValue()))
     			return false;
     	}
-    	return true;
+    	
+    	return params.params.keySet().containsAll(this.params.keySet());
     }
+
+	public String updateDataSelector(String dataSelector, List<DataObserveParams> selectors) {
+		if (!containsParams(selectors, this)) {
+			if (!isEmpty()) {
+				List<DataObserveParams> sels = new ArrayList<DataObserveParams>(selectors);
+				selectors.clear();
+				for (DataObserveParams s : sels) {
+					if (!this.containsParams(s))
+						selectors.add(s);
+				}
+				selectors.add(this);
+			}
+			
+			return buildSelectorString(selectors);
+		}
+		else if (dataSelector == null) {
+			return TIDE_DATA_TYPE_KEY + " = 'UNINITIALIZED'";
+		}
+		return dataSelector;
+	}
+
+	private String buildSelectorString(List<DataObserveParams> selectors) {
+		StringBuilder sb = new StringBuilder(TIDE_DATA_TYPE_KEY + " = '" + TIDE_DATA_TYPE_VALUE + "'");
+		
+		if (!selectors.isEmpty()) {
+			sb.append(" AND (");
+			boolean first = true;
+			for (DataObserveParams selector : selectors) {
+				if (first)
+					first = false;
+				else
+					sb.append(" OR ");
+				sb.append("(");
+				selector.append(sb);
+				sb.append(")");
+			}
+			sb.append(")");
+		}
+		
+		return sb.toString();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		append(sb);
+		return sb.toString();
+	}
 }

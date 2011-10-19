@@ -30,12 +30,21 @@
     default GraniteDS configuration files <literal>services-config.xml</literal> and <literal>granite-config.xml</literal> for unsupported features. 
     </para>
     
-    <section id="cdi.nativesetup">
-        <title>CDI Servlet 3 Setup</title>
+    <section id="cdi.servlet3setup">
+        <title>Configuration with Servlet 3</title>
         <para>
         On Servlet 3 compliant containers, GraniteDS can use the new APIs to automatically register its own servlets and filters and thus does not need any
         particular configuration in <literal>web.xml</literal>. This automatic setup is triggered when GraniteDS finds a class annotated with
         <literal>@FlexFilter</literal> in one of the application archives:
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[@FlexFilter(configProvider=CDIConfigProvider.class)
+public class GraniteConfig {
+}]]>  
+        </programlisting>
+        <para>
+        The <literal>ConfigProvider</literal> class defines suitable default values for the CDI integration. It is possible however to override these values by setting
+        them in the annotation properties :        
         </para>
         <programlisting role="JAVA">
 <![CDATA[@FlexFilter(
@@ -48,69 +57,52 @@ public class GraniteConfig {
 }]]>  
         </programlisting>
         <para>
-        You also have to add an empty file <literal>WEB-INF/beans.xml</literal>.
+        As for any CDI application, don't forget to add a file <literal>WEB-INF/beans.xml</literal>, even empty.
+        Note than only the Tide API is currently supported out-of-the-box with CDI.
         </para>
-    </section>
-    
-    <section id="cdi.tide">
-       <title>Using the Tide API</title>
+        
         <para>
-        Most of what is described in the <link linkend="remoting.tideremoting">Tide Remoting</link> section applies for CDI, however GraniteDS also provides
-        a much improved integration with CDI when using the Tide client API.
+        The <literal>@FlexFilter</literal> declaration will setup an AMF processor for the specified url pattern, and the <literal>tide</literal> attribute 
+        specifies that you want a Tide-enabled service factory. The default url pattern for remoting <literal>/graniteamf/amf.txt</literal> and messaging
+        <literal>/gravityamf/amf.txt</literal>.
         </para>
-       
-       <section id="cdi.tideconfig">
-           <title>Configuration with Servlet 3</title>
-           <para>
-           This is by far the easiest way to use Tide with CDI, it just consists in creating a class annotated with <literal>@FlexFilter</literal>:
-           </para>
-           <programlisting role="JAVA">
-<![CDATA[@FlexFilter(
-        tide=true,
-        type="cdi",
-        factoryClass=CDIServiceFactory.class,
-        tideInterfaces={Identity.class}
-)
-public class GraniteConfig {
-}]]>
-           </programlisting>
-           
-           <para>
-           The <literal>@FlexFilter</literal> declaration will setup an AMF processor for the specified url pattern, and the <literal>tide</literal> attribute 
-           specifies that you want a Tide-enabled service factory. The default url pattern for remoting <literal>/graniteamf/amf.txt</literal> and messaging
-           <literal>/gravityamf/amf.txt</literal>.
-           </para>
-           
-           <para>
-           Other configurations can be done with <literal>flex-filter</literal>:
-            <itemizedlist>
-                <listitem>
-                <literal>tideAnnotations</literal> is equivalent to <literal>tide-component annotated-with=""</literal> in <literal>granite-config.xml</literal>. 
-                It allows to define the list of annotation names that enable remote access to CDI beans. <literal>@RemoteDestination</literal> and
-                <literal>@TideEnabled</literal> are always declared by default, but you can use any other one if you don't want a compilation dependency 
-                on the GraniteDS libraries.
-                </listitem>
-                <listitem>
-                <literal>tideInterfaces</literal> is equivalent to <literal>tide-component instance-of=""</literal> in <literal>granite-config.xml</literal>. 
-                It allows to define the list of interface/class names that enable remote access to CDI beans.
-                </listitem>
-                <listitem>
-                <literal>tideRoles</literal> allows to define a list of security roles that are required to access the Tide remote destination. 
-                In general it is not necessary to define this destination-wide security and you can only rely on Java EE security for fine-grained access to individual
-                beans.
-                </listitem>
-                <listitem>
-                <literal>exceptionConverters</literal> allows to define a list of server-side exception converters. 
-                It's the equivalent to <literal>exception-converters</literal> in <literal>granite-config.xml</literal>.
-                </listitem>
-                <listitem>
-                <literal>amf3MessageInterceptor</literal> allows to define a message interceptor. You have to define a class implementing 
-                <literal>AMFMessageInterceptor</literal>. It's highly recommended to subclass <literal>org.granite.cdi.CDIInterceptor</literal> 
-                and call <literal>super.before</literal> and <literal>super.after</literal> in your implementation.
-                </listitem>
-            </itemizedlist>
-            </para>
-       </section>
+        
+        <para>
+        Other configurations can be done with <literal>@FlexFilter</literal>:
+         <itemizedlist>
+             <listitem>
+             <literal>tideAnnotations</literal> is equivalent to <literal>tide-component annotated-with=""</literal> in <literal>granite-config.xml</literal>. 
+             It allows to define the list of annotation names that enable remote access to CDI beans. <literal>@RemoteDestination</literal> and
+             <literal>@TideEnabled</literal> are always declared by default, but you can use any other one if you don't want a compilation dependency 
+             on the GraniteDS libraries.
+             </listitem>
+             <listitem>
+             <literal>tideInterfaces</literal> is equivalent to <literal>tide-component instance-of=""</literal> in <literal>granite-config.xml</literal>. 
+             It allows to define the list of interface/class names that enable remote access to CDI beans.
+             </listitem>
+             <listitem>
+             <literal>tideRoles</literal> allows to define a list of security roles that are required to access the Tide remote destination. 
+             In general it is not necessary to define this destination-wide security and you can only rely on Java EE security for fine-grained access to individual
+             beans.
+             </listitem>
+             <listitem>
+             <literal>exceptionConverters</literal> allows to define a list of server-side exception converters. 
+             It's the equivalent to <literal>exception-converters</literal> in <literal>granite-config.xml</literal>.
+             </listitem>
+             <listitem>
+             <literal>amf3MessageInterceptor</literal> allows to define a message interceptor. You have to define a class implementing 
+             <literal>AMFMessageInterceptor</literal>. It's highly recommended to subclass <literal>org.granite.cdi.CDIInterceptor</literal> 
+             and call <literal>super.before</literal> and <literal>super.after</literal> in your implementation.
+             </listitem>
+         </itemizedlist>
+         </para>
+         
+         <para>
+         When using the <literal>ConfigProvider</literal> allows Tide to search in the CDI context for some of its configuration elements. For now,
+         it will lookup beans that implement <literal>ExceptionConverter</literal>, <literal>AMF3MessageInterceptor</literal> or <literal>SecurityService</literal>
+         and use the existing beans.  
+         </para>
+    </section>
        
         <section id="cdi.tidestdconfig">
           <title>Default Configuration</title>
@@ -193,18 +185,25 @@ public class GraniteConfig {
     </channels>
 
 </services-config>]]>    
-            </programlisting>
-            
-            <para>
-            The destination named <literal>cdi</literal> will be the one and only destination required for all Cdi destinations. 
-            </para>
-       </section>
+       </programlisting>
+       
+       <para>
+       The destination named <literal>cdi</literal> will be the one and only destination required for all CDI destinations. 
+       </para>
+   </section>
+    
+    <section id="cdi.tide">
+       <title>Using the Tide API</title>
+        <para>
+        Most of what is described in the <link linkend="remoting.tideremoting">Tide Remoting</link> section applies for CDI, however GraniteDS also provides
+        a much improved integration with CDI when using the Tide client API.
+        </para>
        
        <section id="cdi.tideremotingdi">
             <title>Basic Remoting with Dependency Injection</title>
             <para>
-            When using Cdi, the only difference on the client is that you have to use the <literal>Cdi</literal> singleton. Here is a simple example of 
-            remoting with an injected client proxy for an Cdi bean:
+            When using CDI, the only difference on the client is that you have to use the <literal>Cdi</literal> singleton. Here is a simple example of 
+            remoting with an injected client proxy for an CDI bean:
             </para>
                         
             <programlisting role="XML">
@@ -245,7 +244,7 @@ public class GraniteConfig {
             
             <para>
             This is almost identical to the standard Tide API described in the <link linkend="remoting.tideremoting">Tide remoting</link> section, and all other
-            methods apply for Cdi. 
+            methods apply for CDI. 
             </para>
        </section>
             
@@ -307,6 +306,11 @@ public class GraniteConfig {
     ...
 </mx:Application>]]>
             </programlisting>
+            
+            <para>
+            This typesafe mode allows to better detect API inconsistencies between the Flex application and the Java services, because the Flex compiler will immediately
+            warn you when a server method signature has changed (and Gas3 has regenerated the client proxy).
+            </para>
         </section>
        
        <section id="cdi.tideconversations">
@@ -371,9 +375,6 @@ var localContext:Context = Cdi.getInstance().getCdiContext(conversationId)
             When the conversation ends, the context object returned in the result events remains the local conversation context, to allow the Flex client 
             to get the last call resulting context variables. It is deleted just before the next remote component call on the global context.
            </para>
-           <warning><para>
-           Nested conversations are not supported in the current version
-           </para></warning>
        </section>
        
        <section id="cdi.tideevents">
@@ -526,5 +527,86 @@ public function logout():void {
             manually with <literal>identity.clearSecurityCache()</literal>, for example periodically in a <literal>Timer</literal>.
             </para>
         </section>
+    </section>
+    
+    <section id="cdi.messaging">
+       <title>Messaging with CDI (Gravity)</title>
+       <para>
+       As with EJB 3 and when using a servlet 3 compliant container, it is possible to configure the three kinds of Gravity topics in the configuration class 
+       annotated with <literal>@FlexFilter</literal>.
+       You can simply add variables to your configuration class annotated with <literal>@MessagingDestination</literal>, <literal>@JmsTopicDestination</literal>
+       or <literal>@ActiveMQTopicDestination</literal>, the name of the variable will be used as destination id.
+       </para>
+       <para>
+       Simple Topic:
+       </para>
+       <programlisting role="JAVA">
+<![CDATA[@FlexFilter()
+public class MyConfig {
+
+    @MessagingDestination(noLocal=true, sessionSelector=true)
+    AbstractMessagingDestination myTopic;
+}]]>
+       </programlisting>
+       <para>
+       This declaration supports the properties <literal>no-local</literal> and <literal>session-selector</literal> (see the <link linkend="messaging.configuration">
+       Messaging Configuration section</link>).
+       </para>
+       <para>
+       You can also define a secure destination by specifying a list of roles required to access the topic:
+       </para>
+       <programlisting role="JAVA">
+<![CDATA[@MessagingDestination(noLocal=true, sessionSelector=true, roles={ "admin", "user" })
+AbstractMessagingDestination myTopic;]]>
+       </programlisting>
+       
+       <para>
+       JMS Topic:
+       </para>
+       <programlisting role="JAVA">
+<![CDATA[@JMSTopicDestination(noLocal=true, 
+    sessionSelector=true, 
+    connectionFactory="ConnectionFactory", 
+    topicJndiName="topic/myTopic",
+    transactedSessions=true,
+    acknowledgeMode="AUTO_ACKNOWLEDGE", 
+    roles={ "admin", "user" })
+AbstractMessagingDestination myTopic;]]>
+       </programlisting>
+       <para>
+       This declaration supports all properties of the default JMS declaration in <literal>services-config.xml</literal> except for non local initial context
+       environments (see the <link linkend="messaging.jms">JMS Integration</link> section).
+       </para>
+       
+       <para>
+       ActiveMQ Topic:
+       </para>
+       <programlisting role="JAVA">
+<![CDATA[@ActiveMQTopicDestination(noLocal=true, 
+    sessionSelector=true, 
+    connectionFactory="ConnectionFactory", 
+    topicJndiName="topic/myTopic",
+    transactedSessions=true,
+    acknowledgeMode="AUTO_ACKNOWLEDGE",
+    brokerUrl="vm://localhost",
+    createBroker=true,
+    waitForStart=true,
+    durable=true,
+    fileStoreRoot="/opt/activemq/data",
+    roles={ "admin", "user" })
+AbstractMessagingDestination myTopic;]]>
+       </programlisting>
+       <para>
+       This declaration supports all properties of the default ActiveMQ declaration in <literal>services-config.xml</literal> except for non-local initial context
+       environments (see the <link linkend="messaging.activemq">ActiveMQ Integration</link> section).
+       </para>
+       <para>
+       Finally note that the <literal>Gravity</literal> singleton that is needed to push messages from the server (see <link linkend="messaging.servertoclient">here</link>)
+       is available as a CDI bean and can be injected in any component :
+       </para>
+       <programlisting role="JAVA">
+<![CDATA[@Inject
+private Gravity gravity;]]>
+       </programlisting>
     </section>
 </chapter>

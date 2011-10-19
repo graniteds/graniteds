@@ -76,7 +76,7 @@ package org.granite.gravity.channels {
         		cancelReconnectTimer();
         		internalConnect();
         	}
-        	else if (_reconnectCount == 0) {
+        	else if (_reconnectCount == 0 && channel.reconnectMaxAttempts > 0) {
         		_reconnectCount++;
         		internalConnect();
         	}
@@ -115,6 +115,11 @@ package org.granite.gravity.channels {
         private function internalConnect():void {
         	if (!_connecting) {
         		_connecting = true;
+
+	            // clear any previous connect messages to avoid multiple
+	            // reconnection after successive attempts.
+	        	_pending = new Array();
+
 	            var message:CommandMessage = createCommandMessage(CONNECT_OPERATION);
 	            internalQueue(new StreamMessageResponder(message, this));
         		_connecting = false;

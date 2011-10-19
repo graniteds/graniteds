@@ -30,11 +30,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.acegisecurity.AbstractAuthenticationManager;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
@@ -78,12 +80,20 @@ public class AcegiSecurityService extends AbstractSecurityService {
                 Authentication authentication = authenticationManager.authenticate(auth);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 httpRequest.getSession().setAttribute(SPRING_AUTHENTICATION_TOKEN, authentication);
-            } catch (BadCredentialsException e) {
-                throw SecurityServiceException.newInvalidCredentialsException(e.getMessage());
+            } 
+            catch (AuthenticationException e) {
+            	handleAuthenticationExceptions(e);
             }
         }
 
-        log.debug("Logged In!");
+        log.debug("User %s logged in", user);
+    }
+    
+    protected void handleAuthenticationExceptions(AuthenticationException e) {
+    	if (e instanceof BadCredentialsException || e instanceof UsernameNotFoundException)
+            throw SecurityServiceException.newInvalidCredentialsException(e.getMessage());
+        
+    	throw SecurityServiceException.newAuthenticationFailedException(e.getMessage());
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {

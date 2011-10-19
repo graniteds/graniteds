@@ -87,16 +87,24 @@ public class ScannerFactory {
 			InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("/org/jboss/version.properties");
 			if (is == null)
 				is = Thread.currentThread().getContextClassLoader().getResourceAsStream("org/jboss/version.properties");
-			props.load(is);
-			is.close();
-			int major = Integer.parseInt(props.getProperty("version.major"));
-			int minor = Integer.parseInt(props.getProperty("version.minor"));
+			if (is != null) {
+				// JBoss AS 4, 5, 6
+				props.load(is);
+				is.close();
+				int major = Integer.parseInt(props.getProperty("version.major"));
+				int minor = Integer.parseInt(props.getProperty("version.minor"));
+				
+				boolean isJBossVersion = major >= version && minor >= 0;
+				if (isJBossVersion)
+					log.trace("JBoss " + major + "." + minor + " detected");
+				
+				return isJBossVersion;
+			}
 			
-			boolean isJBossVersion = major >= version && minor >= 0;
-			if (isJBossVersion)
-				log.trace("JBoss " + major + "." + minor + " detected");
+			// JBoss AS 7 ?
+			log.trace("JBoss AS 7+ detected");
 			
-			return isJBossVersion;
+			return true;
 		}
 		catch (Throwable t) {
 			return false;

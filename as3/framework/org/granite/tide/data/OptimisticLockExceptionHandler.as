@@ -40,7 +40,6 @@ package org.granite.tide.data {
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IExceptionHandler;
-    import org.granite.tide.IPropertyHolder;
 
     use namespace flash_proxy;
     use namespace object_proxy;

@@ -28,7 +28,6 @@ package org.granite.test.util {
 	public class TestBasicMapGDS470
 	{
 		[Test]
-		[Test]
         public function testBasicMapGDS470():void {
 			var q:BasicMap = new BasicMap();
 			q.put("key1", new Object());

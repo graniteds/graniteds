@@ -30,11 +30,13 @@ package org.granite.tide.impl {
     public class TypedContextExpression implements IExpression {
         
         private var _componentName:String;
+		private var _expression:String;
         
         
-        public function TypedContextExpression(componentName:String) {
+		public function TypedContextExpression(componentName:String, expression:String = null) {
             super();
 			_componentName = componentName;
+			_expression = expression;
         }
         
         public function get componentName():String {
@@ -45,7 +47,7 @@ package org.granite.tide.impl {
         }
         
         public function get expression():String {
-            return null;
+			return _expression;
         }
         
         public function get path():String {

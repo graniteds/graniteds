@@ -123,7 +123,7 @@ package org.granite.util {
     		if (o == null)
     			return "null";
     		
-    		var name:String = getQualifiedClassName(o);
+    		var name:String = o is String ? String(o) : getQualifiedClassName(o);
 
 	        var index:int = name.indexOf("::");
 	        if (index != -1)

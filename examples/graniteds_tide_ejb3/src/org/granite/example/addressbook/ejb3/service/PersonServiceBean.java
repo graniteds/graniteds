@@ -25,10 +25,14 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.Local;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.interceptor.Interceptors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.granite.example.addressbook.entity.Person;
+import org.granite.tide.data.DataEnabled;
+import org.granite.tide.data.DataEnabled.PublishMode;
+import org.granite.tide.ejb.TideDataPublishingInterceptor;
 import org.jboss.annotation.security.SecurityDomain;
 
 
@@ -39,6 +43,8 @@ import org.jboss.annotation.security.SecurityDomain;
 @Stateless
 @Local(PersonService.class)
 @SecurityDomain("other")
+@Interceptors(TideDataPublishingInterceptor.class)
+@DataEnabled(topic="addressBookTopic", publish=PublishMode.ON_COMMIT, useInterceptor=true)
 public class PersonServiceBean implements PersonService {
 
     public PersonServiceBean() {

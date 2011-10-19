@@ -5,8 +5,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.servlet.ServletContext;
+
 import org.granite.config.GraniteConfig;
 import org.granite.config.ServletGraniteConfig;
+import org.granite.config.api.Configuration;
+import org.granite.config.api.internal.ConfigurationImpl;
 import org.granite.config.flex.Destination;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
@@ -46,7 +50,7 @@ public class AbstractTideTestCase {
     
     @Before
     public void setUp() throws Exception {
-        MockServletContext servletContext = new MockServletContext();
+    	ServletContext servletContext = initServletContext();
         ServletLifecycle.beginApplication(servletContext);
         new Initialization(servletContext).create().init();
         
@@ -61,6 +65,9 @@ public class AbstractTideTestCase {
         MockHttpServletRequest request = new MockHttpServletRequest(session);
         MockHttpServletResponse response = new MockHttpServletResponse();
         
+        Configuration cfg = new ConfigurationImpl();
+        cfg.setGraniteConfig("/WEB-INF/granite/granite-config-seam.xml");
+        servletContext.setAttribute(ServletGraniteConfig.GRANITE_CONFIG_CONFIGURATION_KEY, cfg);
         GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(servletContext);
         ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(servletContext);
         HttpGraniteContext.createThreadIntance(graniteConfig, servicesConfig, servletContext, request, response);
@@ -72,6 +79,10 @@ public class AbstractTideTestCase {
         @SuppressWarnings("unchecked")
         Destination destination = new Destination("seam", Collections.EMPTY_LIST, XMap.EMPTY_XMAP, null, null, null);
         invoker = new SeamServiceInvoker(destination, seamFactory);
+    }
+    
+    protected ServletContext initServletContext() {
+    	return new MockServletContext();
     }
     
     @After

@@ -29,10 +29,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.granite.example.addressbook.entity.Person;
+import org.granite.tide.data.DataEnabled;
+import org.granite.tide.data.DataEnabled.PublishMode;
 
 
 
 @Transactional
+@DataEnabled(topic="addressBookTopic", publish=PublishMode.ON_COMMIT, useInterceptor=true)
 public class PeopleServiceBean implements PeopleService {
 
 	@Inject

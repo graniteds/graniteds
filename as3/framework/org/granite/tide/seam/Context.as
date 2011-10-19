@@ -220,10 +220,11 @@ package org.granite.tide.seam {
          * 
          *  @param componentName name of the component/context variable
          *  @param expr EL expression to evaluate
+		 *  @param instance current instance of the component
          * 
          *  @return true if the result was not already present in the current context 
          */
-        public override function meta_addResult(componentName:String, expr:String):Boolean {
+        public override function meta_addResult(componentName:String, expr:String, instance:Object = null):Boolean {
             if (!meta_tracking)
                 return false;
                 
@@ -242,7 +243,7 @@ package org.granite.tide.seam {
             if (_lastResults.getItemIndex(e) >= 0)
                 return false;
             
-            log.debug("addResult {0}.{1}", componentName, expr);
+            log.debug("add new result {0}", e);
             _results.push(new ContextResult(componentName, expr));
             return true;
         }
@@ -540,7 +541,7 @@ package org.granite.tide.seam {
                 for each (var cr:ContextResult in _results) {
                     var found:Boolean = false;
                     for each (var u:ContextUpdate in rmap) {
-                        if (cr.matches(u.componentName, u.expression)) {
+                        if (cr.matches(u.componentName, null, u.expression)) {
                             found = true;
                             break;
                         }

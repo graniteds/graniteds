@@ -8,13 +8,15 @@ package org.granite.test.tide.cdi
     import mx.messaging.messages.ErrorMessage;
     import mx.messaging.messages.IMessage;
     import mx.rpc.AsyncToken;
-    import mx.rpc.Fault;
     import mx.rpc.IResponder;
     import mx.rpc.events.AbstractEvent;
     import mx.rpc.events.FaultEvent;
     import mx.rpc.events.ResultEvent;
-    
-    import org.granite.tide.invocation.ContextUpdate;
+
+import org.granite.reflect.Type;
+
+import org.granite.tide.invocation.ContextUpdate;
+    import org.granite.tide.invocation.ContextEvent;
     import org.granite.tide.invocation.InvocationCall;
     import org.granite.tide.invocation.InvocationResult;
     
@@ -87,7 +89,7 @@ package org.granite.test.tide.cdi
             return new FaultEvent(FaultEvent.FAULT, false, true, null, this, emsg);
         }
         
-        protected function buildResult(result:Object = null, results:Array = null):ResultEvent {
+        protected function buildResult(result:Object = null, results:Array = null, events:Array = null):ResultEvent {
             var msg:AcknowledgeMessage = new AcknowledgeMessage();
             var res:InvocationResult = new InvocationResult();
             res.result = result;
@@ -105,10 +107,22 @@ package org.granite.test.tide.cdi
                         u = new ContextUpdate(r, null, v);
                     if (rs.length > 2 && rs[2] == true)
                         u.scope = 2;
+                    if (rs.length > 3)
+                        u.componentClassName = rs[3] as String;
                     res.results.addItem(u);
                 }
             }
             res.events = new ArrayCollection();
+            if (events != null) {
+                for each (var e:Object in events) {
+                    if (e is String)
+                        res.events.addItem(new ContextEvent(e as String));
+                    else if (e is Array)
+                        res.events.addItem(new ContextEvent(e[0] as String, e[1] as Array));
+                    else
+                        res.events.addItem(new ContextEvent(Type.forInstance(e).alias, [ e, null ]))
+                }
+            }
             res.messages = new ArrayCollection();
             return new ResultEvent(ResultEvent.RESULT, false, false, res, this, msg);
         }

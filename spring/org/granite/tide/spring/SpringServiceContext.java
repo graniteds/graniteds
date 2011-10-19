@@ -43,6 +43,7 @@ import org.granite.tide.TideTransactionManager;
 import org.granite.tide.annotations.BypassTideMerge;
 import org.granite.tide.async.AsyncPublisher;
 import org.granite.tide.data.DataContext;
+import org.granite.tide.data.DataUpdatePostprocessor;
 import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationResult;
 import org.granite.util.ClassUtil;
@@ -51,6 +52,7 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.jpa.EntityManagerFactoryInfo;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -60,7 +62,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  *  @author Sebastien Deleuze
  * 	@author William DRAI
  */
-public class SpringServiceContext extends TideServiceContext {
+public class SpringServiceContext extends TideServiceContext implements ApplicationContextAware {
 
     private static final long serialVersionUID = 1L;
     
@@ -69,7 +71,6 @@ public class SpringServiceContext extends TideServiceContext {
     private String persistenceManagerBeanName = null;
     private String entityManagerFactoryBeanName = null;
     
-    
     private static final Logger log = Logger.getLogger(SpringServiceContext.class);
                 
     public SpringServiceContext() throws ServiceException {
@@ -77,6 +78,16 @@ public class SpringServiceContext extends TideServiceContext {
         
         log.debug("Getting spring context from container");
         getSpringContext();
+    }
+    
+    public SpringServiceContext(ApplicationContext springContext) throws ServiceException {
+        super();
+        
+        this.springContext = springContext;
+    }
+    
+    public void setApplicationContext(ApplicationContext springContext) {
+    	this.springContext = springContext;
     }
 
     protected ApplicationContext getSpringContext() {
@@ -97,7 +108,7 @@ public class SpringServiceContext extends TideServiceContext {
     @Override
     public Object findComponent(String componentName, Class<?> componentClass) {
     	Object bean = null;
-    	String key = COMPONENT_ATTR + componentName;
+    	String key = COMPONENT_ATTR + (componentName != null ? componentName : "_CLASS_" + componentClass.getName());
     	
     	GraniteContext context = GraniteContext.getCurrentInstance();
     	if (context != null) {
@@ -142,7 +153,7 @@ public class SpringServiceContext extends TideServiceContext {
             return bean;
         }
     	catch (NoSuchBeanDefinitionException nexc) {
-        	if (componentName.endsWith("Controller")) {
+        	if (componentName != null && componentName.endsWith("Controller")) {
         		try {
         			int idx = componentName.lastIndexOf(".");
         			String controllerName = idx > 0 
@@ -204,16 +215,18 @@ public class SpringServiceContext extends TideServiceContext {
     
     @Override
     public void prepareCall(ServiceInvocationContext context, IInvocationCall c, String componentName, Class<?> componentClass) {
+    	DataContext.init();
+    	
+    	DataUpdatePostprocessor dupp = (DataUpdatePostprocessor)findComponent(null, DataUpdatePostprocessor.class);
+    	if (dupp != null)
+    		DataContext.get().setDataUpdatePostprocessor(dupp);
     }
 
     @Override
     public IInvocationResult postCall(ServiceInvocationContext context, Object result, String componentName, Class<?> componentClass) {
 		List<ContextUpdate> results = null;
     	DataContext dataContext = DataContext.get();
-		Set<Object[]> dataUpdates = dataContext != null ? dataContext.getDataUpdates() : null;
-		Object[][] updates = null;
-		if (dataUpdates != null && !dataUpdates.isEmpty())
-			updates = dataUpdates.toArray(new Object[dataUpdates.size()][]);
+		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
 		
         InvocationResult ires = new InvocationResult(result, results);
     	if (context.getBean().getClass().isAnnotationPresent(BypassTideMerge.class))

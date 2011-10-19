@@ -20,10 +20,13 @@
 
 package org.granite.persistence {
 
-    import flash.utils.IDataInput;
+import flash.events.Event;
+import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
-    
-    import mx.core.IUID;
+
+import mx.core.EventPriority;
+
+import mx.core.IUID;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
@@ -40,7 +43,6 @@ package org.granite.persistence {
 
         private var _initializing:Boolean = false;
         private var _initialized:Boolean = false;
-		private var _lazy:Boolean = false;
         private var _metadata:String = null;
         private var _dirty:Boolean = false;
 
@@ -48,16 +50,10 @@ package org.granite.persistence {
         public function AbstractPersistentList(initialized:Boolean = true):void {
             _initialized = initialized;
             if (_initialized)
-    	        addEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler);
-			else
-				_lazy = true;
+    	        addEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler, false, 1000);
         }
 
 
-		final public function isLazy():Boolean {
-			return _lazy;
-		}
-		
         final public function isInitialized():Boolean {
             return _initialized;
         }
@@ -85,7 +81,6 @@ package org.granite.persistence {
         
         protected function internalClone(clazz:Class):AbstractPersistentList {
         	var coll:AbstractPersistentList = new clazz(_initialized) as AbstractPersistentList;
-			coll._lazy = _lazy;
         	coll._metadata = _metadata;
         	coll._dirty = _dirty;
         	if (_initialized) {
@@ -116,8 +111,6 @@ package org.granite.persistence {
                 _dirty = input.readObject() as Boolean;
                 super.readExternal(input);
             }
-			else
-				_lazy = true;
         }
 
         override public function writeExternal(output:IDataOutput):void {

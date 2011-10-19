@@ -63,6 +63,10 @@ package org.granite.tide.cdi {
         public function set context(context:BaseContext):void {
             _context = context;
         }
+		
+		public function get meta_credentialsClassName():String {
+			return "org.granite.tide.cdi.Identity";
+		}
         
         
         public function get loggedIn():Boolean {

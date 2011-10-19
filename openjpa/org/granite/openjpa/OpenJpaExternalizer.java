@@ -111,7 +111,7 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
     @Override
     public void readExternal(Object o, ObjectInput in) throws IOException, ClassNotFoundException, IllegalAccessException {
 
-        if (!isRegularEntity(o.getClass())) {
+        if (!isRegularEntity(o.getClass()) && !isEmbeddable(o.getClass())) {
         	log.debug("Delegating non regular entity reading to DefaultExternalizer...");
             super.readExternal(o, in);
         }
@@ -161,32 +161,34 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
         ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
         Class<?> oClass = classGetter.getClass(o);
 
-        if (!isRegularEntity(o.getClass())) { // @Embeddable or others...
+        if (!isRegularEntity(o.getClass()) && !isEmbeddable(o.getClass())) { // @Embeddable or others...
         	log.debug("Delegating non regular entity writing to DefaultExternalizer...");
             super.writeExternal(o, out);
         }
         else {
         	PersistenceCapable pco = (PersistenceCapable)o;
         	
-        	// Pseudo-proxy created for uninitialized entities (see below).
-        	if (Boolean.FALSE.equals(pco.pcGetDetachedState())) {
-            	// Write uninitialized flag.
-            	out.writeObject(Boolean.FALSE);
-            	// Write detached state.
-        		out.writeObject(null);
-        		// Write id.
-        		out.writeObject(null);
-        		return;
+        	if (isRegularEntity(o.getClass())) {
+	        	// Pseudo-proxy created for uninitialized entities (see below).
+	        	if (Boolean.FALSE.equals(pco.pcGetDetachedState())) {
+	            	// Write uninitialized flag.
+	            	out.writeObject(Boolean.FALSE);
+	            	// Write detached state.
+	        		out.writeObject(null);
+	        		// Write id.
+	        		out.writeObject(null);
+	        		return;
+	        	}
+	
+	        	// Write initialized flag.
+	        	out.writeObject(Boolean.TRUE);
+	
+	        	// Write detached state as a String, in the form of an hex representation
+	        	// of the serialized detached state.
+	        	byte[] detachedState = serializeDetachedState(pco);
+	        	char[] hexDetachedState = StringUtil.bytesToHexChars(detachedState);
+	            out.writeObject(new String(hexDetachedState));
         	}
-
-        	// Write initialized flag.
-        	out.writeObject(Boolean.TRUE);
-
-        	// Write detached state as a String, in the form of an hex representation
-        	// of the serialized detached state.
-        	byte[] detachedState = serializeDetachedState(pco);
-        	char[] hexDetachedState = StringUtil.bytesToHexChars(detachedState);
-            out.writeObject(new String(hexDetachedState));
 
             // Externalize entity fields.
             List<Property> fields = findOrderedFields(oClass);
@@ -258,6 +260,10 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
         return PersistenceCapable.class.isAssignableFrom(clazz) && (
         	clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(MappedSuperclass.class)
         );
+    }
+
+    protected boolean isEmbeddable(Class<?> clazz) {
+        return PersistenceCapable.class.isAssignableFrom(clazz) && clazz.isAnnotationPresent(Embeddable.class);
     }
     
     // Very hacky!

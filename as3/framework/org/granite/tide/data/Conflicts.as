@@ -52,7 +52,7 @@ package org.granite.tide.data {
             _entityManager = entityManager;
         }
         
-        public function addConflict(localEntity:IEntity, receivedEntity:IEntity):void {
+        public function addConflict(localEntity:IEntity, receivedEntity:Object):void {
         	var conflict:Conflict = new Conflict(this, localEntity, receivedEntity);
         	_conflicts.push(conflict);
         }
@@ -77,8 +77,11 @@ package org.granite.tide.data {
         	var saveTracking:Boolean = _context.meta_tracking;
         	_context.meta_tracking = false;
         	var modifiedEntity:Object = ObjectUtil.copy(conflict.localEntity);
+            // Reset the local entity to its last stable state
         	_context.meta_resetEntity(conflict.localEntity);
-        	_entityManager.mergeExternal(conflict.receivedEntity, conflict.localEntity);
+            // Merge with the incoming entity (to update version, id and all)
+            if (conflict.receivedEntity != null)
+        	    _entityManager.mergeExternal(conflict.receivedEntity, conflict.localEntity);
         	
         	_entityManager.resolveMergeConflicts(modifiedEntity, conflict.localEntity, true);
         	_context.meta_tracking = saveTracking;

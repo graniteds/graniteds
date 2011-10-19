@@ -268,6 +268,8 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         return new Object[] { methodName, new Object[] {} };
     }
 
+    
+    private static final String DATAENABLED_HANDLED = "org.granite.tide.invoker.dataEnabled";
 
     @Override
     protected void beforeInvocation(ServiceInvocationContext context) {
@@ -291,31 +293,31 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         
         graniteContext.getRequestMap().put(TideServiceInvoker.class.getName(), this);
         
-        if (componentName != null) {
-        	Converters converters = graniteContext.getGraniteConfig().getConverters();
-        	
-        	Set<Class<?>> componentClasses = tideContext.findComponentClasses(componentName, componentClass);
-        	for (Class<?> cClass : componentClasses) {
-        		try {
-        			Method m = cClass.getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
-        			for (int i = 0; i < m.getGenericParameterTypes().length; i++)
-        				context.getParameters()[i] = converters.convert(context.getParameters()[i], m.getGenericParameterTypes()[i]);
-        			
-        			break;
-        		}
-        		catch (NoSuchMethodException e) {
-        		}
-        	}
-        	
-        	for (Class<?> cClass : componentClasses) {
+        if (componentName != null || componentClass != null) {
+	    	Converters converters = graniteContext.getGraniteConfig().getConverters();
+	    	
+	    	Set<Class<?>> componentClasses = tideContext.findComponentClasses(componentName, componentClass);
+	    	for (Class<?> cClass : componentClasses) {
+	    		try {
+	    			Method m = cClass.getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
+	    			for (int i = 0; i < m.getGenericParameterTypes().length; i++)
+	    				context.getParameters()[i] = converters.convert(context.getParameters()[i], m.getGenericParameterTypes()[i]);
+	    			
+	    			break;
+	    		}
+	    		catch (NoSuchMethodException e) {
+	    		}
+	    	}
+	    	
+	    	for (Class<?> cClass : componentClasses) {
 	        	DataEnabled dataEnabled = cClass.getAnnotation(DataEnabled.class);
-	        	if (dataEnabled != null) {
+	        	if (dataEnabled != null && !dataEnabled.useInterceptor()) {
+	        		GraniteContext.getCurrentInstance().getRequestMap().put(DATAENABLED_HANDLED, true);
 	        		DataContext.init(dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
-	        		if (dataEnabled.auto())
-	        			prepareDataObserver(dataEnabled);
+	    			prepareDataObserver(dataEnabled);
 	        		break;
 	        	}
-        	}
+	    	}
         }
         
         Throwable error = null;
@@ -382,7 +384,11 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
     	}
     	
     	DataMergeContext.remove();
-    	publishDataUpdates();
+    	
+    	// DataContext has been setup by beforeInvocation
+		if (GraniteContext.getCurrentInstance().getRequestMap().get(DATAENABLED_HANDLED) != null)
+	    	publishDataUpdates();
+    	
 		DataContext.remove();
     	
     	return res;

@@ -1424,4 +1424,74 @@ private function loginFault(event:TideFaultEvent):void {
             </para>
        </section>
     </section>
+    
+    <section id="seam2.messaging">
+       <title>Messaging with Seam 2 (Gravity)</title>
+       <para>
+       It is possible to configure the three kinds of Gravity topics directly in the Seam XML configuration instead of <literal>services-config.xml</literal>: 
+       </para>
+       <para>
+       Simple Topic:
+       </para>
+       <programlisting role="XML">
+<![CDATA[<graniteds:messaging-destination id="myTopic"/>]]>
+       </programlisting>
+       <para>
+       This declaration supports the properties <literal>no-local</literal> and <literal>session-selector</literal> (see the <link linkend="messaging.configuration">
+       Messaging Configuration section</link>).
+       </para>
+       <para>
+       You can also define a secure destination by specifying a list of roles required to access the topic:
+       </para>
+       <programlisting role="XML">
+<![CDATA[<graniteds:messaging-destination id="myTopic">
+    <graniteds:roles>
+        <graniteds:role>admin</graniteds:role>
+    </graniteds:roles>
+<graniteds:messaging-destination/>]]>
+       </programlisting>
+       
+       <para>
+       JMS Topic:
+       </para>
+       <programlisting role="XML">
+<![CDATA[<graniteds:jms-messaging-destination id="myTopic"
+    connection-factory="ConnectionFactory"
+    destination-jndi-name="topic/MyTopic"
+    transacted-sessions="true"
+    acknowledge-mode="AUTO_ACKNOWLEDGE"/>]]>
+       </programlisting>
+       <para>
+       This declaration supports all properties of the default JMS declaration in <literal>services-config.xml</literal> except for non local initial context
+       environments (see the <link linkend="messaging.jms">JMS Integration</link> section).
+       </para>
+       
+       <para>
+       ActiveMQ Topic:
+       </para>
+       <programlisting role="XML">
+<![CDATA[<graniteds:activemq-messaging-destination id="myTopic"
+    connection-factory="ConnectionFactory"
+    destination-jndi-name="topic/MyTopic"
+    transacted-sessions="true"
+    acknowledge-mode="AUTO_ACKNOWLEDGE"
+    broker-url="vm://localhost"
+    create-broker="true"
+    wait-for-start="true"
+    durable="true"
+    file-store-root="/opt/activemq/data"/>]]>
+       </programlisting>
+       <para>
+       This declaration supports all properties of the default ActiveMQ declaration in <literal>services-config.xml</literal> except for non-local initial context
+       environments (see the <link linkend="messaging.activemq">ActiveMQ Integration</link> section).
+       </para>
+       <para>
+       Finally note that the <literal>Gravity</literal> singleton that is needed to push messages from the server (see <link linkend="messaging.servertoclient">here</link>)
+       is available as a Seam 2 component with the name <literal>org.granite.seam.gravity</literal> and can be injected in any component :
+       </para>
+       <programlisting role="JAVA">
+<![CDATA[@In("org.granite.seam.gravity")
+private Gravity gravity;]]>
+       </programlisting>
+    </section>
 </chapter>

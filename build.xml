@@ -66,9 +66,13 @@
                 <include name="appengine*.jar"/>
                 <include name="appserv-rt.jar"/>
                 <include name="catalina.jar"/>
+                <include name="interceptor-api.jar"/>
+                <include name="jboss-j2ee.jar"/>
+                <include name="cdi-api.jar"/>
                 <include name="ejb-api.jar"/>
                 <include name="jpa-2.0-api.jar"/>
                 <include name="javax.servlet.jar"/>
+                <include name="aopalliance-1.0.jar"/>
                 <include name="org.osgi.*.jar"/>
                 <include name="jboss-vfs*.jar"/>
                 <include name="weblogic*.jar"/>
@@ -141,6 +145,22 @@
         </javac>
         <copy todir="classes/hibernate">
             <fileset dir="hibernate">
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+
+        <!-- hibernate 4 -->
+        <mkdir dir="classes/hibernate4"/>
+        <javac destdir="classes/hibernate4" srcdir="hibernate4" target="1.5" source="1.5" debug="true">
+            <classpath>
+                <path refid="gds.classpath"/>
+                <dirset dir="classes/core"/>
+                <dirset dir="classes/tide"/>
+                <pathelement location="lib/hibernate-core-4.0.0.jar"/>
+            </classpath>
+        </javac>
+        <copy todir="classes/hibernate4">
+            <fileset dir="hibernate4">
                 <include name="**/*.properties"/>
             </fileset>
         </copy>
@@ -368,7 +388,12 @@
 	        <include name="**"/> 
 	      </fileset> 
 	    </jar> 
-	    <jar destfile="build/sources/java/granite-toplink-sources.jar"> 
+        <jar destfile="build/sources/java/granite-hibernate4-sources.jar"> 
+          <fileset dir="hibernate4"> 
+            <include name="**"/> 
+          </fileset> 
+        </jar> 
+	    <jar destfile="build/sources/java/granite-toplink-sources.jar">
 	      <fileset dir="toplink"> 
 	        <include name="**"/> 
 	      </fileset> 
@@ -435,18 +460,19 @@
 	      </fileset> 
           <fileset dir="tide">
             <include name="org/granite/tide/annotations/**.java"/>
+            <include name="org/granite/tide/data/Lazy.java"/>
           </fileset>
 	    </jar> 
 
 	    <!-- Build flex sources --> 
-	    <mkdir dir="build/sources/flex"/> 
-	    <jar destfile="build/sources/flex/granite-essentials-sources.jar"> 
+	    <mkdir dir="build/sources/as3"/> 
+	    <jar destfile="build/sources/as3/granite-essentials-sources.jar"> 
 	      <fileset dir="as3/essentials"> 
 	        <include name="**"/> 
 	      </fileset> 
 	    </jar> 
 
-	    <jar destfile="build/sources/flex/granite-sources.jar"> 
+	    <jar destfile="build/sources/as3/granite-sources.jar"> 
 	      <fileset dir="as3/framework"> 
 	        <include name="**"/> 
 	      </fileset> 
@@ -484,6 +510,7 @@
                 <pathelement path="classes/gravity/"/>
                 <pathelement path="classes/tide/"/>
                 <pathelement path="classes/hibernate/"/>
+                <pathelement path="classes/hibernate4/"/>
 	            <pathelement path="classes/beanvalidation/"/>
 	            <pathelement path="classes/toplink/"/>
 	            <pathelement path="classes/eclipselink/"/>
@@ -505,8 +532,8 @@
             <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
             <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
             <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
+            <link href="http://docs.jboss.com/seam/2.2.0.GA/api/"/>
+            <link href="http://static.springsource.org/spring/docs/3.0.x/api/"/>
             <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
 
         </javadoc>
@@ -514,601 +541,44 @@
 	      <fileset dir="build/docs/javadoc/granite-javadoc"> 
 	        <include name="**"/> 
 	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-cdi-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-cdi-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="cdi/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-cdi-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-cdi-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-hibernate-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-hibernate-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="hibernate/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-hibernate-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-hibernate-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-beanvalidation-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-beanvalidation-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="beanvalidation/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-beanvalidation-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-beanvalidation-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-toplink-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-toplink-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="toplink/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-toplink-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-toplink-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-eclipselink-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-eclipselink-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="eclipselink/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-eclipselink-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-eclipselink-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-openjpa-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-openjpa-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="openjpa/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-openjpa-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-openjpa-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-datanucleus-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-datanucleus-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="datanucleus/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-datanucleus-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-datanucleus-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-spring-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-spring-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="spring/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-spring-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-spring-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-seam-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-seam-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="seam/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-seam-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-seam-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-seam21-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-seam21-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="seam21/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-seam21-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-seam21-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
-
-        <mkdir dir="build/docs/javadoc/granite-guice-javadoc"/>
-        <javadoc
-        	useexternalfile="true"
-            source="1.5"
-            destdir="build/docs/javadoc/granite-guice-javadoc"
-            version="true"
-            author="true"
-            use="true"
-            linksource="true"
-            protected="true"
-            stylesheetfile="jdstyle.css"
-            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
-
-            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
-
-            <classpath>
-                <fileset dir="lib/">
-                    <include name="**/*.jar"/>
-                </fileset>
-	            <pathelement path="classes/core/"/>
-	            <pathelement path="classes/cdi/"/>
-                <pathelement path="classes/gravity/"/>
-                <pathelement path="classes/tide/"/>
-                <pathelement path="classes/hibernate/"/>
-	            <pathelement path="classes/beanvalidation/"/>
-	            <pathelement path="classes/toplink/"/>
-	            <pathelement path="classes/eclipselink/"/>
-	            <pathelement path="classes/openjpa/"/>
-	            <pathelement path="classes/datanucleus/"/>
-	            <pathelement path="classes/spring/"/>
-                <pathelement path="classes/seam/"/>
-                <pathelement path="classes/seam21/"/>
-	            <pathelement path="classes/guice/"/>
-            </classpath>
-
-            <fileset dir="guice/" includes="**/*.java"/>
-
-            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
-            <link href="http://download.oracle.com/javaee/6/api/"/>
-            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
-            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
-            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
-            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
-
-        </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-guice-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-guice-javadoc"> 
-	        <include name="**"/> 
-	      </fileset> 
-	    </jar> 
+	    </jar>
+		
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="hibernate"/>
+        </antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="hibernate4"/>
+        </antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="toplink"/>
+        </antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="eclipselink"/>
+        </antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="openjpa"/>
+        </antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="datanucleus"/>
+        </antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="beanvalidation"/>
+        </antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="spring"/>
+        </antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="seam"/>
+        </antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="seam21"/>
+        </antcall>
+		<antcall target="build.maven.javadoc.module">
+			<param name="moduleName" value="cdi"/>
+		</antcall>
+        <antcall target="build.maven.javadoc.module">
+            <param name="moduleName" value="guice"/>
+        </antcall>
 
         <mkdir dir="build/docs/javadoc/granite-generator-share-javadoc"/>
         <javadoc
@@ -1134,6 +604,7 @@
                 <pathelement path="classes/gravity/"/>
                 <pathelement path="classes/tide/"/>
                 <pathelement path="classes/hibernate/"/>
+                <pathelement path="classes/hibernate4/"/>
 	            <pathelement path="classes/beanvalidation/"/>
 	            <pathelement path="classes/toplink/"/>
 	            <pathelement path="classes/eclipselink/"/>
@@ -1154,6 +625,7 @@
   	        </fileset> 
             <fileset dir="tide">
               <include name="org/granite/tide/annotations/**.java"/>
+              <include name="org/granite/tide/data/Lazy.java"/>
             </fileset>
 
             <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
@@ -1162,8 +634,8 @@
             <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
             <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
             <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
+            <link href="http://docs.jboss.com/seam/2.2.0.GA/api/"/>
+            <link href="http://static.springsource.org/spring/docs/3.0.x/api/"/>
             <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
 
         </javadoc>
@@ -1173,6 +645,63 @@
 	      </fileset> 
 	    </jar> 
     </target>
+	
+	<target name="build.maven.javadoc.module">
+        <mkdir dir="build/docs/javadoc/granite-${moduleName}-javadoc"/>
+        <javadoc
+            useexternalfile="true"
+            source="1.5"
+            destdir="build/docs/javadoc/granite-${moduleName}-javadoc"
+            version="true"
+            author="true"
+            use="true"
+            linksource="true"
+            protected="true"
+            stylesheetfile="jdstyle.css"
+            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
+
+            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
+
+            <classpath>
+                <fileset dir="lib/">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <pathelement path="classes/core/"/>
+                <pathelement path="classes/cdi/"/>
+                <pathelement path="classes/gravity/"/>
+                <pathelement path="classes/tide/"/>
+                <pathelement path="classes/hibernate/"/>
+                <pathelement path="classes/hibernate4/"/>
+                <pathelement path="classes/beanvalidation/"/>
+                <pathelement path="classes/toplink/"/>
+                <pathelement path="classes/eclipselink/"/>
+                <pathelement path="classes/openjpa/"/>
+                <pathelement path="classes/datanucleus/"/>
+                <pathelement path="classes/spring/"/>
+                <pathelement path="classes/seam/"/>
+                <pathelement path="classes/seam21/"/>
+                <pathelement path="classes/guice/"/>
+            </classpath>
+
+            <fileset dir="${moduleName}/" includes="**/*.java"/>
+
+            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
+            <link href="http://download.oracle.com/javaee/6/api/"/>
+            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
+            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
+            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
+            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
+            <link href="http://docs.jboss.com/seam/2.2.0.GA/api/"/>
+            <link href="http://static.springsource.org/spring/docs/3.0.x/api/"/>
+            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
+
+        </javadoc>
+        <jar destfile="build/docs/javadoc/granite-${moduleName}-javadoc.jar"> 
+          <fileset dir="build/docs/javadoc/granite-${moduleName}-javadoc"> 
+            <include name="**"/> 
+          </fileset> 
+        </jar> 
+	</target>
 	
     <!--
      ! Build java jars.
@@ -1215,6 +744,11 @@
         </jar>
         <jar destfile="build/granite-hibernate.jar" manifest="build/META-INF/MANIFEST.MF">
             <fileset dir="classes/hibernate">
+                <include name="**"/>
+            </fileset>
+        </jar>
+        <jar destfile="build/granite-hibernate4.jar" manifest="build/META-INF/MANIFEST.MF">
+            <fileset dir="classes/hibernate4">
                 <include name="**"/>
             </fileset>
         </jar>
@@ -1287,6 +821,7 @@
            	</fileset>
         	<fileset dir="classes/tide">
                 <include name="org/granite/tide/annotations/**"/>
+        		<include name="org/granite/tide/data/Lazy.class"/>
             </fileset>
         </jar>
     </target>
@@ -1322,6 +857,8 @@
             	<include name="framework.swc"/>
             </compiler.external-library-path>
         	<define name="CONFIG::debugging" value="false"/>
+            <define name="CONFIG::flex40" value="true"/>
+            <define name="CONFIG::flex45" value="false"/>
         </compc>
         <zip basedir="build" update="true" keepcompression="true"
             destfile="build/granite-essentials.swc" includes="META-INF/MANIFEST.MF"/>
@@ -1336,6 +873,8 @@
                 <include name="granite-essentials.swc" />
             </compiler.library-path>
         	<define name="CONFIG::debugging" value="false"/>
+            <define name="CONFIG::flex40" value="true"/>
+            <define name="CONFIG::flex45" value="false"/>
         </compc>
         <zip basedir="build" update="true" keepcompression="true"
             destfile="build/granite.swc" includes="META-INF/MANIFEST.MF"/>
@@ -1391,6 +930,7 @@
                 <pathelement path="classes/gravity/"/>
                 <pathelement path="classes/tide/"/>
                 <pathelement path="classes/hibernate/"/>
+                <pathelement path="classes/hibernate4/"/>
 	            <pathelement path="classes/beanvalidation/"/>
 	            <pathelement path="classes/toplink/"/>
 	            <pathelement path="classes/eclipselink/"/>
@@ -1407,6 +947,7 @@
             <fileset dir="gravity/" includes="**/*.java"/>
             <fileset dir="tide/" includes="**/*.java"/>
             <fileset dir="hibernate/" includes="**/*.java"/>
+            <fileset dir="hibernate4/" includes="**/*.java"/>
             <fileset dir="beanvalidation/" includes="**/*.java"/>
             <fileset dir="toplink/" includes="**/*.java"/>
             <fileset dir="eclipselink/" includes="**/*.java"/>
@@ -1422,9 +963,9 @@
             <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
             <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
             <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
-            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
-            <link href="http://docs.jboss.com/seam/2.0.2.SP1/api/"/>
-            <link href="http://static.springframework.org/spring/docs/2.0.x/api/"/>
+            <link href="http://docs.jboss.org/hibernate/stable/core/javadocs/"/>
+            <link href="http://docs.jboss.com/seam/2.2.0.GA/api/"/>
+            <link href="http://static.springsource.org/spring/docs/current/javadoc-api/"/>
             <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
 
         </javadoc>
@@ -1454,7 +995,9 @@
             <arg line="-templates-path '${FLEX_HOME}/asdoc/templates'"/>
             <arg line="-main-title 'Granite Data Services API Documentation (${GDS_VERSION})'" />
             <arg line="-window-title 'Granite Data Services API Documentation - ${GDS_VERSION}'" />
-        	<arg line="-define=CONFIG::debugging,false" />
+        	<arg line="-define+=CONFIG::debugging,false" />
+            <arg line="-define+=CONFIG::flex40,true"/>
+        	<arg line="-define+=CONFIG::flex45,false"/>
         </exec>
     </target>
 
@@ -1522,5 +1065,73 @@
 			<property name="GDS_VERSION" value="${GDS_VERSION}"/>
 		</ant>
 	</target>
+    
+    <!--
+     ! Make GDS Platform.
+     !-->
+    <target name="platform">
+        
+    	<mkdir dir="distjars"/>
+    	<mkdir dir="distswcs"/>
+    	
+        <!-- GDS -->
+        <mkdir dir="graniteds"/>
+        <mkdir dir="graniteds/libraries"/>
+        <mkdir dir="graniteds/tools"/>
+        <mkdir dir="graniteds/sources"/>
+        <mkdir dir="graniteds/docs"/>
+
+        <copy todir="distjars">
+            <fileset dir="build">
+                <include name="*.jar"/>
+            </fileset>              
+        </copy>
+        <copy todir="distswcs">
+            <fileset dir="build">
+                <include name="*.swc"/>
+            </fileset>              
+        </copy>
+        <copy todir="graniteds/libraries">
+            <fileset dir="distswcs">
+                <include name="*.swc"/>
+            </fileset>
+            <fileset dir="distjars">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+    	<copy todir="graniteds/tools">
+            <fileset dir=".">
+                <include name="org.granite.builder_*.jar"/>
+            </fileset>
+    	</copy>
+        <copy todir="graniteds/sources">
+            <fileset dir="build/sources">
+                <include name="java/*-sources.jar"/>
+            </fileset>
+            <fileset dir="build/sources">
+                <include name="as3/*-sources.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="graniteds/docs">
+            <fileset dir="doc">
+                <include name="java/**"/>
+            </fileset>
+            <fileset dir="doc">
+                <include name="as3/**"/>
+            </fileset>
+        </copy>
+        <mkdir dir="graniteds/docs/reference"/>
+        <copy todir="graniteds/docs/reference">
+            <fileset dir="docs/reference/target/docbook/publish">
+                <include name="**/*"/>
+            </fileset>
+        </copy>
+
+        <zip destfile="${GDS_RELEASE}.zip">
+            <fileset dir=".">
+                <include name="graniteds/**"/>
+            </fileset>
+        </zip>
+    </target>
 
 </project>

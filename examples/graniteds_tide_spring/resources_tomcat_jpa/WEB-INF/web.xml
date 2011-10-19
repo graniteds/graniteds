@@ -20,9 +20,9 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 -->
 
-<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
     <display-name>GraniteDS Tide Spring</display-name>
     <description>GraniteDS Tide Spring Example Application</description>
@@ -59,8 +59,9 @@
 
     <servlet>
         <servlet-name>GravityServlet</servlet-name>
-        <servlet-class>org.granite.gravity.tomcat.GravityTomcatServlet</servlet-class>
+        <servlet-class>org.granite.gravity.servlet3.GravityAsyncServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
     </servlet>
     <servlet-mapping>
         <servlet-name>GravityServlet</servlet-name>

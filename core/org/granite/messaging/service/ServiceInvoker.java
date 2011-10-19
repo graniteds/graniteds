@@ -24,17 +24,24 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.granite.clustering.TransientReference;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.security.RemotingDestinationSecurizer;
-import org.granite.util.TransientReference;
 
 import flex.messaging.messages.RemotingMessage;
 
 /**
+ * Abstract base class for all service's methods calls. This class mainly implements a final
+ * invocation method which deals with parameter conversions, security and listeners.
+ * 
  * @author Franck WOLFF
+ *
+ * @see ServiceFactory
+ * @see ServiceInvocationListener
+ * @see ServiceExceptionHandler
  */
 @TransientReference
 public abstract class ServiceInvoker<T extends ServiceFactory> {
@@ -48,6 +55,13 @@ public abstract class ServiceInvoker<T extends ServiceFactory> {
 
     private ServiceExceptionHandler serviceExceptionHandler;
 
+    /**
+     * Constructs a new ServiceInvoker. This constructor is used by a dedicated {@link ServiceFactory}.
+     * 
+     * @param destination the remote destination of this service (services-config.xml).
+     * @param factory the factory that have called this constructor.
+     * @throws ServiceException if anything goes wrong.
+     */
     protected ServiceInvoker(Destination destination, T factory) throws ServiceException {
         this.destination = destination;
         this.factory = factory;
@@ -62,28 +76,85 @@ public abstract class ServiceInvoker<T extends ServiceFactory> {
             this.invocationListeners = null;
     }
 
+    /**
+     * Called at the beginning of the {@link #invoke(RemotingMessage)} method. Give a chance to modify the
+     * the services (invokee) about to be called. Does nothing by default. The default invokee object is
+     * created by actual implementations of this abstract class.
+     * 
+     * @param request the current remoting message (sent from Flex).
+     * @param methodName the name of the method to be called.
+     * @param args the method parameter values.
+     * @return the (possibly adjusted) invokee object.
+     * @throws ServiceException if anything goes wrong.
+     */
     protected Object adjustInvokee(RemotingMessage request, String methodName, Object[] args) throws ServiceException {
         return invokee;
     }
 
+    /**
+     * Called before the {@link #invoke(RemotingMessage)} method starts to search for a method named <tt>methodName</tt>
+     * with the arguments <tt>args</tt> on the invokee object. Give a chance to modify the method name or the paramaters.
+     * Does nothing by default.
+     * 
+     * @param invokee the service instance used for searching the method with the specified arguments.
+     * @param methodName the method name.
+     * @param args the arguments of the method.
+     * @return an array of containing the (possibly adjusted) method name and its arguments.
+     */
     protected Object[] beforeMethodSearch(Object invokee, String methodName, Object[] args) {
         return new Object[] { methodName, args };
     }
 
+    /**
+     * Called before the invocation of the services method. Does nothing by default.
+     * 
+     * @param context the current invocation context.
+     */
     protected void beforeInvocation(ServiceInvocationContext context) {
     }
 
+    /**
+     * Called after a failed invocation of the service's method. Returns <tt>false</tt> by default.
+     * 
+     * @param context the current invocation context.
+     * @param t the exception that caused the invocation failure.
+     * @return <tt>true</tt> if invocation should be retried, <tt>false</tt> otherwise.
+     */
     protected boolean retryInvocation(ServiceInvocationContext context, Throwable t) {
     	return false;
     }
 
+    /**
+     * Called after a failed invocation of the service's method, possibly after a new attempt (see
+     * {@link #retryInvocation(ServiceInvocationContext, Throwable)}. Does nothing by default.
+     * 
+     * @param context the current invocation context.
+     * @param error the exception that caused the invocation failure.
+     */
     protected void afterInvocationError(ServiceInvocationContext context, Throwable error) {
     }
 
+    /**
+     * Called after a successful invocation of the service's method. Does nothing by default.
+     * 
+     * @param context the current invocation context.
+     * @param result the result of the invocation (returned by the called method).
+     */
     protected Object afterInvocation(ServiceInvocationContext context, Object result) {
         return result;
     }
 
+    /**
+     * Call a service's method according to the informations contained in the given remoting message.
+     * This method is final and implements a standard way of calling a service's method, independent of
+     * the underlying framework (EJB3, Spring, Seam, etc.) It deals with security, parameter conversions,
+     * exception handling and offers several ways of listening (and possibly adjusting) the invocation
+     * process.
+     * 
+     * @param request the remoting message containing informations about the call.
+     * @return the result of the service's method invocation.
+     * @throws ServiceException if anything goes wrong (security, invocation target exception, etc.)
+     */
     public final Object invoke(RemotingMessage request) throws ServiceException {
 
         GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();

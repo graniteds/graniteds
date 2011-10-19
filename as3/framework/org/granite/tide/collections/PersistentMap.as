@@ -46,8 +46,8 @@ package org.granite.tide.collections {
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.IWrapper;
-    
-    
+
+
     use namespace flash_proxy;
     use namespace object_proxy;
     
@@ -87,6 +87,7 @@ package org.granite.tide.collections {
 		    _propertyName = propertyName;
 			_lazy = !collection.isInitialized();
 		    _map = IMap(collection);
+            _map.addEventListener(CollectionEvent.COLLECTION_CHANGE, mapChangeHandler, false, 0, true);
 		}
 		
         
@@ -94,10 +95,6 @@ package org.granite.tide.collections {
             return _map;
         }
         
-		public function isLazy():Boolean {
-			return IPersistentCollection(_map).isLazy();
-		}
-		
         public function isInitialized():Boolean {
             return IPersistentCollection(_map).isInitialized();
         }
@@ -196,11 +193,14 @@ package org.granite.tide.collections {
             return null;
         }
         
+		[Bindable("collectionChange")]
         override public function get length():int {
             if (_localInitializing || isInitialized())
                 return _map.length;
             
-	        return 1;     // Must be initialized to >0 to enable ItemPendingError at first getItemAt
+            requestInitialization();
+            return 0;
+//	        return 1;     // Must be initialized to >0 to enable ItemPendingError at first getItemAt
         }
         
         override public function get(key:*):* {
@@ -235,11 +235,9 @@ package org.granite.tide.collections {
         }
         
         override public function put(key:*, value:*):* {
-            if (_localInitializing || isInitialized()) {
-                _map.put(key, value);
-                return;
-            }
-            
+            if (_localInitializing || isInitialized())
+                return _map.put(key, value);
+
             throw new Error("Cannot modify uninitialized map: " + _entity + " property " + propertyName); 
         }
         
@@ -250,6 +248,10 @@ package org.granite.tide.collections {
             }
             _map.clear();
             initialize();
+        }
+
+        private function mapChangeHandler(event:CollectionEvent):void {
+            dispatchEvent(event);
         }
         
         

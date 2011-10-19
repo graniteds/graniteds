@@ -66,7 +66,7 @@ public class InvocationCall implements IInvocationCall {
     @Override
     public String toString() {
     	StringBuilder sb = new StringBuilder();
-    	sb.append(getClass().getName()).append("{\n");
+    	sb.append(getClass().getName()).append(" {\n");
     	if (listeners != null) {
     		sb.append("\tlisteners: [");
     		for (String listener : listeners)

@@ -19,12 +19,13 @@
 */
 
 package org.granite.tide {
-    
-	/**
+import org.granite.reflect.Method;
+
+/**
 	 * 	@author William DRAI
 	 */
 	public interface IArgumentPreprocessor {
 	    
-	    function preprocess(args:Array):Array;
+	    function preprocess(method:Method, args:Array):Array;
 	}
 }

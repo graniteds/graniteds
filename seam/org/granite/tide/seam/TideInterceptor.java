@@ -109,13 +109,13 @@ public class TideInterceptor extends AbstractInterceptor {
 
             AbstractSeamServiceContext tideContext = null;
             if (Contexts.isSessionContextActive()) 
-            	tideContext =(AbstractSeamServiceContext)Component.getInstance(AbstractSeamServiceContext.COMPONENT_NAME, true); 
+            	tideContext = (AbstractSeamServiceContext)Component.getInstance(AbstractSeamServiceContext.COMPONENT_NAME, true); 
             
             if (tideContext == null)
                 return invocation.proceed();
             
             // Ignore lifecycle methods
-            if (getComponent().isLifecycleMethod(invocation.getMethod())) {
+            if (SeamUtils.isLifecycleMethod(getComponent(), invocation.getMethod())) {
                 tideInvocation.lock();
 
                 Object result = invocation.proceed();

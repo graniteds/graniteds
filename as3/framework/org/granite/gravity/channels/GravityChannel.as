@@ -41,7 +41,6 @@ package org.granite.gravity.channels {
     import mx.messaging.events.ChannelFaultEvent;
     import mx.utils.ObjectUtil;
     import mx.utils.URLUtil;
-    import mx.controls.Alert;
 
     import org.granite.gravity.Consumer;
 
@@ -90,7 +89,7 @@ package org.granite.gravity.channels {
         }
 
 		public function set reconnectIntervalMs(value:Number):void {
-			if (isNaN(value) || value < 0 || value > Number.MAX_VALUE)
+			if (isNaN(value) || value <= 0 || value > Number.MAX_VALUE)
 				throw new Error("Reconnect interval must be in ]0, Number.MAX_VALUE]");
 			_reconnectIntervalMs = value;
 		}
@@ -100,7 +99,7 @@ package org.granite.gravity.channels {
 
 		public function set reconnectMaxAttempts(value:Number):void {
 			if (isNaN(value) || value < 0 || value > Number.MAX_VALUE)
-				throw new Error("Reconnect max attempts must be in ]0, Number.MAX_VALUE]");
+				throw new Error("Reconnect max attempts must be in [0, Number.MAX_VALUE]");
 			_reconnectMaxAttempts = value;
 		}
 		public function get reconnectMaxAttempts():Number {
@@ -205,7 +204,21 @@ package org.granite.gravity.channels {
                                 _tunnel.connect(resolveUri());
 
                             subscriptionId = response.headers[AbstractMessage.DESTINATION_CLIENT_ID_HEADER] as String;
-                            _consumers[subscriptionId] = responder.agent as Consumer;
+                            consumer = responder.agent as Consumer;
+                            
+                            // Remove any previous subscription since a Consumer can subscribe only once. Avoid
+                            // multiple re-subscription when reconnecting (server restart).
+                            var previousSubscriptionId:String = null;
+                            for (var id:String in _consumers) {
+                            	if (consumer === _consumers[id]) {
+                            		previousSubscriptionId = id;
+                            		break;
+                            	}
+                            }
+                            if (previousSubscriptionId != null)
+                            	delete _consumers[previousSubscriptionId];
+                            
+                            _consumers[subscriptionId] = consumer;
                         }
                         else if (command.operation == CommandMessage.UNSUBSCRIBE_OPERATION) {
                             subscriptionId = response.headers[AbstractMessage.DESTINATION_CLIENT_ID_HEADER] as String;

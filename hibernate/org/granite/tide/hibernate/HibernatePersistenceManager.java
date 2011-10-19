@@ -21,7 +21,9 @@
 package org.granite.tide.hibernate;
 
 import java.io.Serializable;
+import java.util.List;
 
+import org.granite.logging.Logger;
 import org.granite.tide.TideTransactionManager;
 import org.granite.tide.data.AbstractTidePersistenceManager;
 import org.granite.util.Entity;
@@ -34,6 +36,8 @@ import org.hibernate.SessionFactory;
  *
  */
 public class HibernatePersistenceManager extends AbstractTidePersistenceManager {
+	
+	private static final Logger log = Logger.getLogger(HibernatePersistenceManager.class);
 	
 	private SessionFactory sessionFactory;
 	
@@ -70,7 +74,11 @@ public class HibernatePersistenceManager extends AbstractTidePersistenceManager 
         for (String f : fetch) {
 	        Query q = sessionFactory.getCurrentSession().createQuery("select e from " + entity.getClass().getName() + " e left join fetch e." + f + " where e = :entity");
 	        q.setParameter("entity", entity);
-	        entity = q.uniqueResult();
+	        List<?> results = q.list();
+	        if (!results.isEmpty())
+	        	entity = results.get(0);
+	        else
+	        	log.warn("Could not find entity %s to initialize, id: %s", entity.getClass().getName(), id);  
         }
         return entity;
 	}

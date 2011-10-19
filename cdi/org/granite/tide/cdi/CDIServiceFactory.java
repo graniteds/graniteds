@@ -25,7 +25,7 @@ import java.util.Set;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
-import org.granite.cdi.CDIInterceptor;
+import org.granite.cdi.CDIUtils;
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
@@ -77,7 +77,7 @@ public class CDIServiceFactory extends ServiceFactory {
         }
 
         try {
-	        manager = CDIInterceptor.lookupBeanManager();
+	        manager = CDIUtils.lookupBeanManager(((HttpGraniteContext)graniteContext).getServletContext());
         }
         catch (Exception e) {
 	        log.warn("Unable to find the CDI Manager in JNDI, lookup in ServletContext");

@@ -67,14 +67,17 @@ package org.granite.tide.invocation {
         }
         
         
-        public function matches(componentName:String, expr:String):Boolean {
-            var ex:String = componentName + (expr ? "." + expr : "");
-            return path.indexOf(ex) == 0; 
+        public function matches(componentName:String, componentClassName:String, expr:String):Boolean {
+			if (_componentClassName != null && componentClassName != null 
+				&& (_componentClassName + (_expression ? "." + _expression : "")).indexOf(componentClassName + (expr ? "." + expr : "")) == 0) {
+				return true;
+			}
+            return path.indexOf(componentName + (expr ? "." + expr : "")) == 0; 
         }
         
         
         public function toString():String {
-            return _componentName + "(" + _componentClassName + ")." + _expression;
+            return _componentName + (_componentClassName != null ? "(" + _componentClassName + ")" : "") + (_expression != null ? "." + _expression : "");
         }
     }
 }

@@ -76,8 +76,12 @@ public class SeamSecurityService extends AbstractSecurityService {
         catch (LoginException e) {
             identity.login();   // Force add of login error messages
             
-            throw SecurityServiceException.newInvalidCredentialsException("User authentication failed");
+            handleAuthenticationExceptions(e);
         }
+    }
+    
+    protected void handleAuthenticationExceptions(LoginException e) {
+        throw SecurityServiceException.newInvalidCredentialsException("User authentication failed", e.getMessage());
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {

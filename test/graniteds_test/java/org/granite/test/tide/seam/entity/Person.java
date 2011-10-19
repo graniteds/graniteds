@@ -32,7 +32,6 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
-import org.hibernate.annotations.Cascade;
 import org.jboss.seam.annotations.Name;
 
 @Entity
@@ -57,8 +56,7 @@ public class Person extends AbstractEntity { // , DocumentedEntity {
     @Basic
     private String lastName;
     
-    @OneToMany(fetch=FetchType.LAZY, mappedBy="person")
-    @Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
+    @OneToMany(fetch=FetchType.LAZY, mappedBy="person", orphanRemoval=true)
     private Set<Contact> contacts = new HashSet<Contact>();
     
     @OneToOne(cascade=CascadeType.ALL, fetch=FetchType.EAGER)

@@ -70,7 +70,7 @@ public class Jetty6SecurityService extends AbstractSecurityService {
 
         request.getSession().setAttribute(JETTY6_AUTH, principal);
         
-        endLogin(graniteContext, credentials);
+        endLogin(credentials);
     }
 
 
@@ -89,7 +89,7 @@ public class Jetty6SecurityService extends AbstractSecurityService {
             reauth = true;
         }
 
-        if (principal == null && tryRelogin(graniteContext)) {
+        if (principal == null && tryRelogin()) {
         	principal = httpRequest.getUserPrincipal();
         	reauth = false;
         }
@@ -144,6 +144,6 @@ public class Jetty6SecurityService extends AbstractSecurityService {
 
         realm.disassociate(httpRequest.getUserPrincipal());
         
-        endLogout(graniteContext);
+        endLogout();
     }
 }

@@ -50,5 +50,30 @@ package org.granite.tide.invocation {
         public var listeners:ArrayCollection;
         public var updates:ArrayCollection;
         public var results:Array;
+		
+		
+		public function toString():String {
+			var sb:String = "InvocationCall {\n";
+			if (listeners != null) {
+				sb += "\tlisteners: [";
+				for (var listener:String in listeners)
+					sb += listener + " ";
+				sb += "]\n";
+			}
+			if (updates != null) {
+				sb += "\tupdates: [";
+				for (var update:Object in updates)
+					sb += update += " ";
+				sb += "]\n";
+			}
+			if (results != null) {
+				sb += "\tresults: [";
+				for (var result:Object in results)
+					sb += (result != null ? result.toString() : "(null)") + " ";
+				sb += "]\n";
+			}
+			sb += "}";
+			return sb;
+		}
     }
 }

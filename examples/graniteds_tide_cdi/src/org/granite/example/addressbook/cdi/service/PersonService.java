@@ -24,14 +24,11 @@ import javax.annotation.security.RolesAllowed;
 
 import org.granite.example.addressbook.entity.Person;
 import org.granite.messaging.service.annotations.RemoteDestination;
-import org.granite.tide.data.DataEnabled;
-import org.granite.tide.data.DataEnabled.PublishMode;
 
 
 
 @RolesAllowed({ "user" })
 @RemoteDestination
-@DataEnabled(topic="addressBookTopic", params=ObserveAllPublishAll.class, publish=PublishMode.ON_SUCCESS)
 public interface PersonService {
 
     public Person createPerson(Person person);

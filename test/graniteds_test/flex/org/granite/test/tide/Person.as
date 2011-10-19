@@ -31,6 +31,7 @@ package org.granite.test.tide {
         public function set contacts(value:ListCollectionView):void {
             _contacts = value;
         }
+        [Lazy]
         public function get contacts():ListCollectionView {
             return _contacts;
         }
@@ -70,6 +71,7 @@ package org.granite.test.tide {
         override public function readExternal(input:IDataInput):void {
             super.readExternal(input);
             if (meta::isInitialized()) {
+                _age = function(o:*):Number { return (o is Number ? o as Number : Number.NaN) } (input.readObject());
                 _contacts = input.readObject() as ListCollectionView;
                 _firstName = input.readObject() as String;
                 _lastName = input.readObject() as String;
@@ -79,6 +81,7 @@ package org.granite.test.tide {
         override public function writeExternal(output:IDataOutput):void {
             super.writeExternal(output);
             if (meta::isInitialized()) {
+                output.writeObject((_age is IPropertyHolder) ? IPropertyHolder(_age).object : _age);
                 output.writeObject((_contacts is IPropertyHolder) ? IPropertyHolder(_contacts).object : _contacts);
                 output.writeObject((_firstName is IPropertyHolder) ? IPropertyHolder(_firstName).object : _firstName);
                 output.writeObject((_lastName is IPropertyHolder) ? IPropertyHolder(_lastName).object : _lastName);

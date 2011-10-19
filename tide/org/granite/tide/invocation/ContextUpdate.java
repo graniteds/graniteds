@@ -32,6 +32,7 @@ public class ContextUpdate implements Serializable {
     
     
     private String componentName;
+    private String componentClassName;
     private String expression;
     private Object value;
     private int scope;
@@ -54,6 +55,30 @@ public class ContextUpdate implements Serializable {
     }
     public void setComponentName(String componentName) {
         this.componentName = componentName;
+    }
+    
+    public String getComponentClassName() {
+        return componentClassName;
+    }
+    public void setComponentClassName(String componentClassName) {
+        this.componentClassName = componentClassName;
+    }
+    
+    private Class<?> componentClass;
+    
+    public Class<?> getComponentClass() {
+    	if (componentClassName == null)
+    		return null;
+    	
+    	if (componentClass == null) {
+	    	try {
+	    		componentClass = Thread.currentThread().getContextClassLoader().loadClass(componentClassName);
+	    	}
+	    	catch (Exception e) {
+	    		throw new RuntimeException("Component class not found", e);
+	    	}
+    	}
+    	return componentClass;	    
     }
     
     public String getExpression() {
@@ -87,9 +112,10 @@ public class ContextUpdate implements Serializable {
     
     @Override
     public String toString() {
-        if (expression == null)
-            return componentName + (scope == 1 ? " (SESSION)" : (scope == 2 ? " (CONVERSATION)" : "")) + (restrict ? " (Restricted)" :"");
-        
-        return componentName + "." + expression + (scope == 1 ? " (SESSION)" : (scope == 2 ? " (CONVERSATION)" : "")) + (restrict ? " (Restricted)" :"");
+        return componentName 
+        	+ (componentClassName != null ? "(" + componentClassName + ")" : "") 
+        	+ (expression != null ? "." + expression : "")
+        	+ (scope == 1 ? " (SESSION)" : (scope == 2 ? " (CONVERSATION)" : "")) 
+        	+ (restrict ? " (restricted)" :"");
     }
 }

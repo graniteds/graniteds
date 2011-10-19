@@ -81,7 +81,7 @@ public class CDIInitializer implements Serializable {
 		if (pm == null) {
 		    pm = getPersistenceManager();
 			if (pm == null)
-			    throw new RuntimeException("TideInitializer is null, Entities with Lazy relationships have to be retrieved in a conversation");
+			    throw new RuntimeException("TideInitializer is null, Entities with lazy relationships have to be retrieved in a conversation");
 		}	
 		
 		return pm.attachEntity(entity, propertyNames);
@@ -119,14 +119,14 @@ public class CDIInitializer implements Serializable {
 				Iterator<EntityManager> iem = entityManagers.iterator();
 				EntityManager em = iem.hasNext() ? iem.next() : null;
 				if (em == null || iem.hasNext()) {
-					log.error("The application defines zero or more than one Persistence Unit, please define which one should be used for lazy loading in entity-manager-jndi-name");
+					log.warn("The application defines zero or more than one Persistence Unit, please define which one should be used for lazy loading in entity-manager-jndi-name");
 					return null;
 				}
 				return new JPAPersistenceManager(em);
 			}
 		}
 		catch (Exception e) {
-			log.error("Could not get EntityManager", e);
+			log.error(e, "Could not get EntityManager");
 		}
 		return null;
 	}

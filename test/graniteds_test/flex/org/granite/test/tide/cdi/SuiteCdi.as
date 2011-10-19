@@ -9,6 +9,7 @@ package org.granite.test.tide.cdi
 	{
 		public var test1:org.granite.test.tide.cdi.TestCdiInjectedCall;
 		public var test2:org.granite.test.tide.cdi.TestCdiInjectedEntityCall;
-		
+        public var test3:org.granite.test.tide.cdi.TestCdiRemoting;
+
 	}
 }

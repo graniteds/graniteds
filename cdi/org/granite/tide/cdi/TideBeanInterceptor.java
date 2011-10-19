@@ -20,31 +20,47 @@
 
 package org.granite.tide.cdi;
 
+import java.io.Serializable;
+
+import javax.enterprise.inject.spi.Bean;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
+import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.util.externalizer.DefaultExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedBean;
 
 
 @TideBean @ExternalizedBean(type=DefaultExternalizer.class) @Interceptor
-public class TideBeanInterceptor {
+public class TideBeanInterceptor implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
+	private static final Logger log = Logger.getLogger(TideBeanInterceptor.class);
 
 	@Inject
-	CDIServiceContext tideContext;
+	private CDIServiceContext tideContext;
+	
+	@Inject
+	private TideInstrumentedBeans instrumentedBeans;
+	
 	
 	@AroundInvoke
-	public Object doAround(InvocationContext context) throws Exception {
-		Object result = context.proceed();
+	public Object doAround(InvocationContext invocation) throws Exception {
+		Object result = invocation.proceed();
 		
-		String componentName = null;
-		if (context.getTarget().getClass().isAnnotationPresent(Named.class))
-			componentName = context.getTarget().getClass().getAnnotation(Named.class).value();
-		
-        tideContext.addResultEval(new ScopedContextResult(componentName, null, context.getTarget()));
+        Bean<?> bean = instrumentedBeans.getBean(invocation.getTarget().getClass());
+        if (bean == null)
+        	log.warn("Instrumented Bean not found for class " + invocation.getTarget().getClass());
+        else {
+    		String componentName = bean.getName();
+    		
+    		ScopedContextResult scr = new ScopedContextResult(componentName, null, invocation.getTarget());
+    		scr.setComponentClassName(bean.getBeanClass().getName());
+    		tideContext.addResultEval(scr);
+        }
 		
 		return result;
 	}

@@ -41,12 +41,12 @@ package org.granite.tide.data {
         private var _conflicts:Conflicts;
         
         private var _localEntity:IEntity;
-        private var _receivedEntity:IEntity;
+        private var _receivedEntity:Object;
         private var _resolved:Boolean = false;
         
 
 
-        public function Conflict(conflicts:Conflicts, localEntity:IEntity, receivedEntity:IEntity):void {
+        public function Conflict(conflicts:Conflicts, localEntity:IEntity, receivedEntity:Object):void {
             _conflicts = conflicts;
             _localEntity = localEntity;
             _receivedEntity = receivedEntity;
@@ -56,8 +56,12 @@ package org.granite.tide.data {
         	return _localEntity;
         }        
         
-        public function get receivedEntity():IEntity {
+        public function get receivedEntity():Object {
         	return _receivedEntity;
+        }
+
+        public function get isRemoval():Boolean {
+            return _receivedEntity == null;
         }
         
         public function get resolved():Boolean {

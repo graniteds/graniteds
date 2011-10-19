@@ -48,6 +48,7 @@ import org.granite.tide.annotations.BypassTideMerge;
 import org.granite.tide.async.AsyncPublisher;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataMergeContext;
+import org.granite.tide.data.DataUpdatePostprocessor;
 import org.granite.tide.invocation.ContextEvent;
 import org.granite.tide.invocation.ContextResult;
 import org.granite.tide.invocation.ContextUpdate;
@@ -388,6 +389,14 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
             }
         }
         
+        // Initialize an empty data context
+        DataContext.init();
+        
+		DataUpdatePostprocessor dataUpdatePostprocessor = (DataUpdatePostprocessor)Component.getInstance("org.granite.tide.seam.data.dataUpdatePreprocessor", true);
+		if (dataUpdatePostprocessor != null)
+			DataContext.get().setDataUpdatePostprocessor(dataUpdatePostprocessor);
+        
+        // Initialize invocation context with received changes to apply to the server context and results to return 
         TideInvocation tideInvocation = TideInvocation.init();
         tideInvocation.update(updates);
         
@@ -438,12 +447,11 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
         else
             results = tideInvocation.getResults();
         
+        // Retrieve data updates made during the call
     	DataContext dataContext = DataContext.get();
-		Set<Object[]> dataUpdates = dataContext != null ? dataContext.getDataUpdates() : null;
-		Object[][] updates = null;
-		if (dataUpdates != null && !dataUpdates.isEmpty())
-			updates = dataUpdates.toArray(new Object[dataUpdates.size()][]);
+		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
 		
+		// Build the invocation result
         InvocationResult res = new InvocationResult(result, results);
         res.setScope(scope);
         res.setRestrict(restrict);

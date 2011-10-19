@@ -26,11 +26,11 @@
 <project name="graniteds-maven" default="deploy.GDS" xmlns:artifact="urn:maven-artifact-ant"
          xmlns:openpgp="antlib:org.apache.commons.openpgp.ant">
 
-  <import file="../build.xml"/>
-
   <property file="../project.properties"/>
   <property file="../env.properties"/>
   <property file="auth.properties"/>
+
+  <import file="../build.xml"/>
 
   <!-- TODO: change the version before releasing, defined in ../project.properties file-->
   <property name="release.version" value="${GDS_VERSION}"/>
@@ -66,6 +66,7 @@
     <artifact:pom id="granite-root" file="${build.pom.dir}/root.pom.xml"/>
     <artifact:pom id="granite-core" file="${build.pom.dir}/core.pom.xml"/>
     <artifact:pom id="granite-hibernate" file="${build.pom.dir}/hibernate.pom.xml"/>
+    <artifact:pom id="granite-hibernate4" file="${build.pom.dir}/hibernate4.pom.xml"/>
     <artifact:pom id="granite-toplink" file="${build.pom.dir}/toplink.pom.xml"/>
     <artifact:pom id="granite-eclipselink" file="${build.pom.dir}/eclipselink.pom.xml"/>
     <artifact:pom id="granite-datanucleus" file="${build.pom.dir}/datanucleus.pom.xml"/>
@@ -80,6 +81,7 @@
     <artifact:pom id="granite-root-swc" file="${build.pom.dir}/root-swc.pom.xml"/>
     <artifact:pom id="granite-essentials-swc" file="${build.pom.dir}/essentials-swc.pom.xml"/>
     <artifact:pom id="granite-swc" file="${build.pom.dir}/granite-swc.pom.xml"/>
+    <artifact:pom id="granite-flex45-swc" file="${build.pom.dir}/granite-flex45-swc.pom.xml"/>
   </target>
 
   <path id="maven-ant-tasks.classpath" path="../lib/maven-ant-tasks.jar"/>
@@ -104,6 +106,10 @@
     <artifact:install pomRefId="granite-hibernate" file="../build/granite-hibernate.jar">
       <attach file="../build/sources/java/granite-hibernate-sources.jar" classifier="sources"/>
       <attach file="../build/docs/javadoc/granite-hibernate-javadoc.jar" classifier="javadoc"/>
+    </artifact:install>
+    <artifact:install pomRefId="granite-hibernate4" file="../build/granite-hibernate4.jar">
+      <attach file="../build/sources/java/granite-hibernate4-sources.jar" classifier="sources"/>
+      <attach file="../build/docs/javadoc/granite-hibernate4-javadoc.jar" classifier="javadoc"/>
     </artifact:install>
     <artifact:install pomRefId="granite-datanucleus" file="../build/granite-datanucleus.jar">
       <attach file="../build/sources/java/granite-datanucleus-sources.jar" classifier="sources"/>
@@ -148,10 +154,13 @@
 
     <artifact:install pomRefId="granite-root-swc"/>
     <artifact:install pomRefId="granite-essentials-swc" file="../build/granite-essentials.swc">
-      <attach file="../build/sources/flex/granite-essentials-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-essentials-sources.jar" classifier="sources"/>
     </artifact:install>
     <artifact:install pomRefId="granite-swc" file="../build/granite.swc">
-      <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-sources.jar" classifier="sources"/>
+    </artifact:install>
+    <artifact:install pomRefId="granite-flex45-swc" file="../build/granite-flex45.swc">
+      <attach file="../build/sources/as3/granite-sources.jar" classifier="sources"/>
     </artifact:install>
   </target>
 
@@ -192,6 +201,18 @@
       <attach file="../build/sources/java/granite-hibernate-sources.jar.asc" classifier="sources" type="jar.asc"/>
       <attach file="../build/docs/javadoc/granite-hibernate-javadoc.jar" classifier="javadoc"/>
       <attach file="../build/docs/javadoc/granite-hibernate-javadoc.jar.asc" classifier="javadoc" type="jar.asc"/>
+    </artifact:deploy>
+
+    <artifact:deploy pomRefId="granite-hibernate4" file="../build/granite-hibernate4.jar">
+      <remoterepository id="${remote.repo.id}" url="${remote.repo.url}">
+        <authentication username="${remote.repo.user}" password="${remote.repo.password}"/>
+      </remoterepository>
+      <attach file="../build/granite-hibernate4.jar.asc" type="jar.asc"/>
+      <attach file="../build/poms/hibernate4.pom.xml.asc" type="pom.asc"/>
+      <attach file="../build/sources/java/granite-hibernate4-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/java/granite-hibernate4-sources.jar.asc" classifier="sources" type="jar.asc"/>
+      <attach file="../build/docs/javadoc/granite-hibernate4-javadoc.jar" classifier="javadoc"/>
+      <attach file="../build/docs/javadoc/granite-hibernate4-javadoc.jar.asc" classifier="javadoc" type="jar.asc"/>
     </artifact:deploy>
 
     <artifact:deploy pomRefId="granite-toplink" file="../build/granite-toplink.jar">
@@ -330,8 +351,8 @@
       </remoterepository>
       <attach file="../build/granite-essentials.swc.asc" type="swc.asc"/>
       <attach file="../build/poms/essentials-swc.pom.xml.asc" type="pom.asc"/>
-      <attach file="../build/sources/flex/granite-essentials-sources.jar" classifier="sources"/>
-      <attach file="../build/sources/flex/granite-essentials-sources.jar.asc" classifier="sources" type="jar.asc"/>
+      <attach file="../build/sources/as3/granite-essentials-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-essentials-sources.jar.asc" classifier="sources" type="jar.asc"/>
     </artifact:deploy>
 
     <artifact:deploy pomRefId="granite-swc" file="../build/granite.swc">
@@ -340,8 +361,18 @@
       </remoterepository>
       <attach file="../build/granite.swc.asc" type="swc.asc"/>
       <attach file="../build/poms/granite-swc.pom.xml.asc" type="pom.asc"/>
-      <attach file="../build/sources/flex/granite-sources.jar" classifier="sources"/>
-      <attach file="../build/sources/flex/granite-sources.jar.asc" classifier="sources" type="jar.asc"/>
+      <attach file="../build/sources/as3/granite-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-sources.jar.asc" classifier="sources" type="jar.asc"/>
+    </artifact:deploy>
+
+    <artifact:deploy pomRefId="granite-flex45-swc" file="../build/granite-flex45.swc">
+      <remoterepository id="${remote.repo.id}" url="${remote.repo.url}">
+        <authentication username="${remote.repo.user}" password="${remote.repo.password}"/>
+      </remoterepository>
+      <attach file="../build/granite-flex45.swc.asc" type="swc.asc"/>
+      <attach file="../build/poms/granite-flex45-swc.pom.xml.asc" type="pom.asc"/>
+      <attach file="../build/sources/as3/granite-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/as3/granite-sources.jar.asc" classifier="sources" type="jar.asc"/>
     </artifact:deploy>
   </target>
 

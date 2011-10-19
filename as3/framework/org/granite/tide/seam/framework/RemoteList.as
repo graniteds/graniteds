@@ -85,6 +85,7 @@ package org.granite.tide.seam.framework {
 			return super.refresh();
 		}
 		
+		[Bindable("collectionChange")]
 		public override function get length():int {
 			if (!_initialized) {
 				_initialized = true;

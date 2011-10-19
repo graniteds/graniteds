@@ -18,7 +18,7 @@
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-spring.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-seam2.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-ee6cdi.xml" />
-   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-guice.xml" />
+   	<!--xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-guice.xml" /-->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-validation.xml" />
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-reflection.xml" />
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-bignumbers.xml" />

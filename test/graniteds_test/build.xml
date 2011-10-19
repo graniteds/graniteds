@@ -85,6 +85,22 @@
             <include name="commons-collections.jar"/>
         </fileset>
     </path>
+    <path id="hibernate4.jar">
+        <fileset dir="${gds.lib}">
+            <include name="jpa-2.0-api.jar"/>
+            <include name="hibernate-core-4.0.0.jar"/>
+            <include name="hibernate-entitymanager-4.0.0.jar"/>
+            <include name="hibernate-commons-annotations-3.2.0.Final.jar"/>
+            <include name="dom4j.jar"/>
+            <include name="antlr-2.7.7.jar"/>
+            <include name="asm-1.5.3.jar"/>
+            <include name="cglib-2.1_3.jar"/>
+            <include name="javassist.jar"/>
+            <include name="jta.jar"/>
+            <include name="commons-collections.jar"/>
+            <include name="jboss-logging.jar"/>
+        </fileset>
+    </path>
     <path id="hibernate-validator.jar">
         <fileset dir="${gds.lib}">
             <include name="hibernate-validator.jar"/>
@@ -98,6 +114,29 @@
             <include name="granite-hibernate.jar"/>
         </fileset>
     </path>
+    <path id="granite-hibernate4.jar">
+        <fileset dir="${gds.build}">
+            <include name="granite-hibernate4.jar"/>
+        </fileset>
+    </path>
+	
+    <path id="spring.jar">
+        <fileset dir="${gds.lib}">
+        	<include name="aopalliance-1.0.jar"/>
+            <include name="asm-3.0.jar"/>
+            <include name="commons-collections.jar"/>
+            <include name="commons-logging.jar"/>
+        	<include name="org.springframework.*.jar"/>
+        	<include name="spring-*-3.0.jar"/>
+        	<include name="spring-test.jar"/>
+    	</fileset>
+    </path>
+    <path id="granite-spring.jar">
+        <fileset dir="${gds.build}">
+            <include name="granite-spring.jar"/>
+        </fileset>
+    </path>
+	
     <path id="seam.jar">
         <fileset dir="${gds.lib}">
             <include name="dom4j.jar"/>
@@ -114,6 +153,19 @@
             <include name="granite-seam21.jar"/>
         </fileset>
     </path>
+	
+    <path id="cdi.jar">
+        <fileset dir="${gds.lib}">
+            <include name="cdi-api.jar"/>
+            <include name="weld-*.jar"/>
+        	<include name="el-api.jar"/>
+        </fileset>
+    </path>
+    <path id="granite-cdi.jar">
+        <fileset dir="${gds.build}">
+            <include name="granite-cdi.jar"/>
+        </fileset>
+    </path>    
     
     <path id="gds.classpath">
         <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
@@ -121,10 +173,20 @@
         <path refid="log4j.jar"/>
         <path refid="hibernate.jar"/>
         <path refid="hibernate-validator.jar"/>
-        <path refid="seam.jar"/>
         <path refid="granite.jar"/>
         <path refid="granite-hibernate.jar"/>
+    </path>
+    <path id="gds.seam.classpath">
+        <path refid="seam.jar"/>
         <path refid="granite-seam.jar"/>
+    </path>
+    <path id="gds.spring.classpath">
+        <path refid="spring.jar"/>
+        <path refid="granite-spring.jar"/>
+    </path>
+    <path id="gds.cdi.classpath">
+        <path refid="cdi.jar"/>
+        <path refid="granite-cdi.jar"/>
     </path>
     <path id="test.classpath">
         <pathelement location="${gds.lib}/hsqldb.jar"/>
@@ -140,7 +202,11 @@
             target="1.5" source="1.5">
             <classpath>
                 <path refid="gds.classpath"/>
+                <path refid="gds.seam.classpath"/>
+                <path refid="gds.spring.classpath"/>
+                <path refid="gds.cdi.classpath"/>
                 <path refid="test.classpath"/>
+            	<pathelement location="${gds.lib}/eclipselink.jar"/>
             </classpath>
         </javac>
         <copy todir="classes">
@@ -155,10 +221,11 @@
     
     <target name="tests.java" depends="build.javac" description="Run Java tests">
         <mkdir dir="test-reports/java"/>
-        
-        <junit printsummary="yes" showoutput="true">
+    	
+        <junit printsummary="yes" showoutput="false">
             <classpath>
                 <path refid="gds.classpath"/>
+                <path refid="gds.seam.classpath"/>
                 <path refid="test.classpath"/>
                 <pathelement path="classes"/>
             </classpath>
@@ -167,12 +234,32 @@
             
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
-                    <include name="**/*Test.java"/>
+                	<include name="**/*Test.java"/>
+                    <exclude name="**/seam/*Test.java"/>
+                    <exclude name="**/spring/*Test.java"/>
+                    <exclude name="**/cdi/*Test.java"/>
+                    <exclude name="**/Hibernate*.java"/>
+                	<exclude name="**/EclipseLink*.java"/>
+                    <exclude name="**/DataNucleus*.java"/>
+                    <exclude name="**/OpenJpa*.java"/>
                     <exclude name="**/Abstract*.java"/>
                 </fileset>
             </batchtest>
         </junit>
+    	
+    	<antcall target="tests.seam"/>
+        <antcall target="tests.spring"/>
+        <antcall target="tests.cdi"/>
+        <antcall target="tests.hibernate"/>
+        <antcall target="tests.hibernate4"/>
+        <antcall target="tests.eclipselink"/>
+        <antcall target="tests.openjpa"/>
+        <antcall target="tests.datanucleus"/>
         
+    	<antcall target="tests.reports"/>
+    </target>
+    
+    <target name="tests.reports">
         <junitreport todir="test-reports/java">
             <fileset dir="./test-reports/java">
                 <include name="TEST-*.xml"/>
@@ -180,15 +267,224 @@
             <report todir="test-reports/java"/>
         </junitreport>  
     </target>
+    	
+    <target name="tests.seam" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false">
+            <classpath>
+                <path refid="gds.classpath"/>
+            	<path refid="gds.seam.classpath"/>
+                <path refid="test.classpath"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/seam/*Test.java"/>
+                    <exclude name="**/Abstract*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+    	
+    <target name="tests.spring" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false">
+            <classpath>
+                <path refid="gds.classpath"/>
+                <path refid="gds.spring.classpath"/>
+                <path refid="test.classpath"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/spring/*Test.java"/>
+                    <exclude name="**/Abstract*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+        
+    <target name="tests.cdi" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false">
+            <classpath>
+                <path refid="gds.classpath"/>
+                <path refid="gds.cdi.classpath"/>
+                <path refid="test.classpath"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/cdi/*Test.java"/>
+                    <exclude name="**/Abstract*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+        
+    <target name="tests.hibernate" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false" fork="true">
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <path refid="log4j.jar"/>
+                <path refid="hibernate.jar"/>
+                <path refid="granite.jar"/>
+                <path refid="granite-hibernate.jar"/>
+                <pathelement location="${gds.lib}/h2.jar"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/Hibernate3*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+        
+    <target name="tests.hibernate4" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false">
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <path refid="log4j.jar"/>
+                <path refid="hibernate4.jar"/>
+                <path refid="granite.jar"/>
+                <path refid="granite-hibernate4.jar"/>
+                <pathelement location="${gds.lib}/h2.jar"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/Hibernate4*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+        
+    <target name="tests.eclipselink" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
+        	<jvmarg value="-javaagent:${gds.lib}/eclipselink.jar"/>
+        	
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <pathelement location="${gds.lib}/jpa-2.0-api.jar"/>
+                <pathelement location="${gds.lib}/jta.jar"/>
+                <pathelement location="${gds.lib}/eclipselink.jar"/>
+                <path refid="granite.jar"/>
+                <pathelement location="${gds.build}/granite-eclipselink.jar"/>
+                <pathelement location="${gds.lib}/h2.jar"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/EclipseLink*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+        
+    <target name="tests.openjpa" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
+    	   <jvmarg value="-javaagent:${gds.lib}/openjpa.jar"/>
+        	
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <pathelement location="${gds.lib}/jpa-2.0-api.jar"/>
+                <pathelement location="${gds.lib}/jta.jar"/>
+                <pathelement location="${gds.lib}/openjpa.jar"/>
+                <pathelement location="${gds.lib}/commons-lang.jar"/>
+                <pathelement location="${gds.lib}/commons-logging.jar"/>
+                <pathelement location="${gds.lib}/commons-collections.jar"/>
+                <pathelement location="${gds.lib}/serp.jar"/>
+                <path refid="granite.jar"/>
+                <pathelement location="${gds.build}/granite-openjpa.jar"/>
+                <pathelement location="${gds.lib}/hsqldb.jar"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/OpenJpa*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+        
+    <target name="tests.datanucleus" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
+        	<jvmarg value="-javaagent:${gds.lib}/datanucleus-enhancer.jar=-api=JPA"/>
+        	
+             <classpath>
+                 <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                 <path refid="main.jar"/>
+                 <pathelement location="${gds.lib}/jpa-2.0-api.jar"/>
+                 <pathelement location="${gds.lib}/jdo2-api-2.3-eb.jar"/>
+                 <pathelement location="${gds.lib}/jta.jar"/>
+                 <pathelement location="${gds.lib}/datanucleus-core.jar"/>
+                 <pathelement location="${gds.lib}/datanucleus-rdbms.jar"/>
+                 <pathelement location="${gds.lib}/datanucleus-jpa.jar"/>
+                 <pathelement location="${gds.lib}/datanucleus-enhancer.jar"/>
+                 <pathelement location="${gds.lib}/asm-3.0.jar"/>
+                 <path refid="granite.jar"/>
+                 <pathelement location="${gds.build}/granite-datanucleus.jar"/>
+                 <pathelement location="${gds.lib}/h2.jar"/>
+                 <pathelement path="classes"/>
+             </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/DataNucleus*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
     
     <!--
      ! Build swf (if swf is out of date).
      !-->
     <target name="build.mxmlc" description="Build Flex tests swf">
         <mkdir dir="${gds.test}/swf"/>
+        <antcall target="build.module">
+            <param name="moduleName" value="TestRunner.mxml"/>
+            <param name="targetName" value="tests.swf"/>
+        </antcall>
+        <antcall target="build.module">
+            <param name="moduleName" value="TestModule.mxml"/>
+            <param name="targetName" value="module.swf"/>
+        </antcall>
+        <antcall target="build.module">
+            <param name="moduleName" value="TestModule2.mxml"/>
+            <param name="targetName" value="module2.swf"/>
+        </antcall>
+    </target>
+
+    <target name="build.module" description="Build Flex tests swf">
+        <mkdir dir="${gds.test}/swf"/>
         <mxmlc
-            output="${gds.test}/swf/tests.swf"
-            file="${gds.test}/flex/TestRunner.mxml"
+            output="${gds.test}/swf/${targetName}"
+            file="${gds.test}/flex/${moduleName}"
             use-network="false"
             debug="true">
 
@@ -196,7 +492,7 @@
 
             <source-path path-element="${FLEX_HOME_TESTS}/frameworks"/>
             <source-path path-element="${gds.test}/flex"/>
-            
+
             <!-- Standard annotations -->
             <keep-as3-metadata name="Bindable"/>
             <keep-as3-metadata name="Managed"/>
@@ -207,6 +503,7 @@
             <!-- Tide annotations -->
             <keep-as3-metadata name="Id"/>
             <keep-as3-metadata name="Version"/>
+            <keep-as3-metadata name="Lazy"/>
             <keep-as3-metadata name="Name"/>
             <keep-as3-metadata name="In"/>
             <keep-as3-metadata name="Inject"/>
@@ -216,6 +513,8 @@
             <keep-as3-metadata name="Observer"/>
             <keep-as3-metadata name="PostConstruct"/>
             <keep-as3-metadata name="Destroy"/>
+
+            <!-- FlexUnit annotations -->
             <keep-as3-metadata name="Test"/>
             <keep-as3-metadata name="Ignore"/>
             <keep-as3-metadata name="Suite"/>
@@ -230,15 +529,15 @@
             <compiler.library-path dir="${gds.build}" append="true">
                 <include name="granite.swc"/>
             </compiler.library-path>
-            
+
             <compiler.library-path dir="${gds.test}/libs" append="true">
                 <include name="flexunit*-4.1.0.swc"/>
             </compiler.library-path>
-            
+
             <compiler.headless-server>true</compiler.headless-server>
         </mxmlc>
     </target>
-    
+
     <target name="tests.flex" depends="build.mxmlc" description="Run Flex tests">
         <mkdir dir="${gds.test}/test-reports/flex"/>
         <flexunit swf="${gds.test}/swf/tests.swf" todir="${gds.test}/test-reports/flex" headless="true" localTrusted="true" verbose="true"/>

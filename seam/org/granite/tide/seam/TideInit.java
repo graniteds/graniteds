@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.granite.tide.annotations.BypassTideInterceptor;
 import org.granite.tide.async.AsyncPublisher;
+import org.granite.tide.data.DataEnabled;
 import org.granite.tide.seam.async.TideAsynchronousInterceptor;
 import org.jboss.seam.Component;
 import org.jboss.seam.Namespace;
@@ -403,6 +404,20 @@ public class TideInit {
             newSortServer = true;
         }
         
+        if (component.beanClassHasAnnotation(DataEnabled.class) && component.getBeanClass().getAnnotation(DataEnabled.class).useInterceptor()) {
+        	found = false;
+	        for (Interceptor i : li) {
+	            if (i.getUserInterceptorClass().equals(TideDataPublishingInterceptor.class)) {
+	                found = true;
+	                break;
+	            }
+	        }
+	        if (!found) {
+	            component.addInterceptor(new Interceptor(new TideDataPublishingInterceptor(), component));
+	            newSortServer = true;
+	        }
+        }
+ 
         // Check if AsyncPublisher installed
         AsyncPublisher asyncPublisher = (AsyncPublisher)Component.getInstance("org.granite.tide.seam.async.publisher");
         if (asyncPublisher != null) {

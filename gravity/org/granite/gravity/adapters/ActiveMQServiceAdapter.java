@@ -71,8 +71,16 @@ public class ActiveMQServiceAdapter extends JMSServiceAdapter {
 	            else
 	                sb.append("&broker.persistent=false");
             }
-            
-            jmsConnectionFactory = new ActiveMQConnectionFactory(sb.toString());
+
+            String brokerURL = sb.toString();
+            if (destinationProperties.get("server/username") != null && !"".equals(destinationProperties.get("server/username").trim()) 
+            		&& destinationProperties.get("server/password") != null && !"".equals(destinationProperties.get("server/password").trim())) {
+            	String username = destinationProperties.get("server/username");
+            	String password = destinationProperties.get("server/password"); 
+                jmsConnectionFactory = new ActiveMQConnectionFactory(username, password, brokerURL);
+            }
+            else
+            	jmsConnectionFactory = new ActiveMQConnectionFactory(brokerURL);
         }
         catch (Exception e) {
             throw new ServiceException("Error when configuring JMS Adapter", e);

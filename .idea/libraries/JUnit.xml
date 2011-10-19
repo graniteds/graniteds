@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="JUnit">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/test/graniteds_test/lib/junit-4.8.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

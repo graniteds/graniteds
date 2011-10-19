@@ -31,6 +31,7 @@ import org.granite.logging.Logger;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.util.ClassUtil;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.ServletContextAware;
@@ -41,6 +42,7 @@ public class SpringGraniteConfig extends AbstractFrameworkGraniteConfig implemen
 	
 	private static final Logger log = Logger.getLogger(SpringGraniteConfig.class);
 
+	@Autowired(required=false)
     private ServletContext servletContext = null;
     private ApplicationContext applicationContext = null;
 

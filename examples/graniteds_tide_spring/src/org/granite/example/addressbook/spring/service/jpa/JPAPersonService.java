@@ -30,7 +30,7 @@ import javax.persistence.Query;
 
 import org.granite.example.addressbook.entity.Contact;
 import org.granite.example.addressbook.entity.Person;
-import org.granite.example.addressbook.spring.service.ObserveAllPublishAll;
+import org.granite.example.addressbook.spring.service.AddressBookParams;
 import org.granite.example.addressbook.spring.service.PersonService;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataEnabled.PublishMode;
@@ -39,7 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
-@DataEnabled(topic="addressBookTopic", params=ObserveAllPublishAll.class, publish=PublishMode.ON_SUCCESS, auto=false)
+@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_COMMIT, useInterceptor=true)
 public class JPAPersonService implements PersonService {
 
 	@PersistenceContext

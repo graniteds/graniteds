@@ -48,6 +48,9 @@ public class SecurityServiceBeanDefinitionParser extends AbstractSingleBeanDefin
         if (authenticationManager != null && authenticationManager.trim().length() > 0)
         	builder.addPropertyReference("authenticationManager", authenticationManager);
     	
+        boolean allowAnonymousAccess = Boolean.valueOf(element.hasAttribute("allow-anonymous-access"));
+        	builder.addPropertyValue("allowAnonymousAccess", allowAnonymousAccess);
+        
         String securityContextRepository = element.getAttribute("security-context-repository");
         if (securityContextRepository != null && securityContextRepository.trim().length() > 0)
         	builder.addPropertyReference("securityContextRepository", securityContextRepository);

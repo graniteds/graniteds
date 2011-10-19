@@ -20,6 +20,7 @@
 
 package org.granite.messaging.amf.io.util;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -30,6 +31,8 @@ public interface ClassGetter {
     public Class<?> getClass(Object o);
     
     public boolean isEntity(Object o);
+    
+    public Serializable getIdentifier(Object o);
     
     public List<Object[]> getFieldValues(Object obj);
 

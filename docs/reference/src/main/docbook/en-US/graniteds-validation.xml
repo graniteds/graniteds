@@ -439,7 +439,7 @@ public class PersonBase implements IExternalizable {
         You should then register this new constraint in the validation framework:
         </para>
         <programlisting role="AS3">
-ValidatorFactory.getIntance().registerConstraintClass(PersonChecker);
+ValidatorFactory.getInstance().registerConstraintClass(PersonChecker);
         </programlisting>
         <para>
         Because Flex annotations have no specific implementation, you may then directly use the constraint annotation in the <literal>Person</literal> class:
@@ -514,7 +514,7 @@ bean.addEventListener(
 );
 
 ...
-ValidatorFactory.getIntance().validate(bean);
+ValidatorFactory.getInstance().validate(bean);
         </programlisting>
         <para>
         It may be however very tedious to add such listeners to all your beans and to write the code for displaying or reseting error messages for all inputs.

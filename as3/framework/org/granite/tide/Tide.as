@@ -22,38 +22,25 @@ package org.granite.tide {
 	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-	import flash.display.LoaderInfo;
-	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.events.TimerEvent;
-	import flash.net.LocalConnection;
 	import flash.system.ApplicationDomain;
 	import flash.utils.Dictionary;
 	import flash.utils.IExternalizable;
-	import flash.utils.Proxy;
-	import flash.utils.Timer;
-	import flash.utils.flash_proxy;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	
 	import mx.binding.BindabilityInfo;
-	import mx.binding.utils.BindingUtils;
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
-	import mx.collections.Sort;
 	import mx.controls.Alert;
 	import mx.core.Application;
 	import mx.core.IUIComponent;
 	import mx.core.mx_internal;
-	import mx.events.PropertyChangeEvent;
 	import mx.logging.ILogger;
 	import mx.logging.Log;
-	import mx.managers.SystemManager;
-	import mx.messaging.config.ServerConfig;
 	import mx.messaging.events.ChannelFaultEvent;
 	import mx.messaging.events.MessageEvent;
-	import mx.messaging.messages.AsyncMessage;
 	import mx.messaging.messages.ErrorMessage;
 	import mx.messaging.messages.IMessage;
 	import mx.rpc.AbstractOperation;
@@ -61,31 +48,22 @@ package org.granite.tide {
 	import mx.rpc.Fault;
 	import mx.rpc.Responder;
 	import mx.rpc.events.FaultEvent;
-	import mx.rpc.events.InvokeEvent;
 	import mx.rpc.events.ResultEvent;
-	import mx.rpc.remoting.mxml.Operation;
 	import mx.rpc.remoting.mxml.RemoteObject;
 	import mx.utils.DescribeTypeCache;
 	import mx.utils.DescribeTypeCacheRecord;
-	import mx.utils.ObjectProxy;
 	import mx.utils.ObjectUtil;
-	import mx.utils.StringUtil;
-	
+
 	import org.granite.reflect.Annotation;
-	import org.granite.reflect.Field;
 	import org.granite.reflect.Method;
-	import org.granite.reflect.Parameter;
 	import org.granite.reflect.Type;
-	import org.granite.tide.IComponent;
 	import org.granite.tide.collections.PersistentCollection;
 	import org.granite.tide.collections.PersistentMap;
 	import org.granite.tide.events.IEventInterceptor;
 	import org.granite.tide.events.TideContextEvent;
-	import org.granite.tide.events.TideEvent;
 	import org.granite.tide.events.TideFaultEvent;
 	import org.granite.tide.events.TidePluginEvent;
 	import org.granite.tide.events.TideResultEvent;
-	import org.granite.tide.impl.ComponentFactory;
 	import org.granite.tide.impl.ComponentInfo;
 	import org.granite.tide.impl.ComponentStore;
 	import org.granite.tide.impl.ContextManager;
@@ -94,11 +72,9 @@ package org.granite.tide {
 	import org.granite.tide.rpc.IInvocationInterceptor;
 	import org.granite.tide.rpc.InitializerResponder;
 	import org.granite.tide.rpc.TideOperation;
-	import org.granite.tide.service.DefaultServiceInitializer;
 	import org.granite.tide.service.IServiceInitializer;
 	import org.granite.tide.validators.ValidatorResponder;
-	import org.granite.util.ClassUtil;
-    
+
 
 	[Bindable]
     /**
@@ -374,7 +350,11 @@ package org.granite.tide {
 		 *  @return top level application
 		 */
 		private function currentApplication():Object {
-			var app:Object = Application.application;
+			var app:Object = null;
+			// Application.application seems to break Flex 4.5 mobile applications
+			CONFIG::flex40 {
+				app = Application.application;
+			}
 			if (app == null) {
 				// Flex 4 spark application
 				var flexGlobals:Class = getDefinitionByName("mx.core.FlexGlobals") as Class;
@@ -450,8 +430,8 @@ package org.granite.tide {
 		 *  @param type type required at injection point
 		 *  @return array of injection points [ componentName, propertyName ]
 		 */
-		public function getInjectionPoints(typeName:String):Array {
-			return _componentStore.getInjectionPoints(typeName);
+		public function getInjectionPoints(type:Type):Array {
+			return _componentStore.getInjectionPoints(type);
 		}
 		
 		
@@ -631,20 +611,20 @@ package org.granite.tide {
 		/**
 		 * 	Register a Tide module
 		 * 
-		 * 	@param moduleClass the module class (that must implement ITideModule)
+		 * 	@param module the module class or instance
 		 * 	@param appDomain the Flex application domain for modules loaded dynamically
 		 */
-		public function addModule(moduleClass:Class, appDomain:ApplicationDomain = null):void {
-			_componentStore.addModule(moduleClass, appDomain);
+		public function addModule(module:Object, appDomain:ApplicationDomain = null):void {
+			_componentStore.addModule(module, appDomain);
 		}
 		
 		/**
 		 * 	Unregister a Tide module
 		 * 
-		 * 	@param moduleClass the module class (that must implement ITideModule)
+		 * 	@param module the module class or instance
 		 */
-		public function removeModule(moduleClass:Class):void {
-			_componentStore.removeModule(moduleClass);
+		public function removeModule(module:Object):void {
+			_componentStore.removeModule(module);
         }
 		
 		
@@ -677,6 +657,23 @@ package org.granite.tide {
 		public function addComponent(name:String, type:Class, inConversation:Boolean = false, autoCreate:Boolean = true, restrict:int = RESTRICT_UNKNOWN, overrideIfPresent:Boolean = true):void {
 		    _componentStore.internalAddComponent(name, Type.forClass(type), null, inConversation, autoCreate, restrict, overrideIfPresent);
 		}
+
+        /**
+         * 	Register a Tide component from an existing instance
+         *
+         *  @param instance component instance
+         * 	@param name component name
+         * 	@param type component class
+         *  @param inConversation true if the component is conversation-scoped
+         */
+        public function addComponentFromInstance(instance:Object, name:String, inConversation:Boolean = false):void {
+            if (!isComponent(name)) {
+                _componentStore.trackModuleCreation(instance);
+
+                var componentClass:Class = Type.forInstance(instance).getClass();
+                _tide.addComponent(name, componentClass, inConversation, false);
+            }
+        }
 		
 		/**
 		 * 	Register many Tide components at once
@@ -689,10 +686,9 @@ package org.granite.tide {
 		    	var t:Type = Type.forClass(type);
 				var nameAnno:Annotation = t.getAnnotationNoCache("Name");
 				var componentName:String = nameAnno != null ? nameAnno.getArgValue() : null;
-		    	if (!componentName) {
-		    		componentName = ClassUtil.getUnqualifiedClassName(type);
-		    		componentName = internalNameForTypedComponent(componentName.substring(0, 1).toLowerCase() + componentName.substring(1));
-		    	}
+		    	if (!componentName)
+		    		componentName = Tide.internalNameForTypedComponent(t.name + '_' + t.id);
+
 				var module:String = nameAnno ? nameAnno.getArgValue("module") : null;
 				var scope:String = nameAnno ? nameAnno.getArgValue("scope") : null;
 				var create:String = nameAnno ? nameAnno.getArgValue("create") : null;
@@ -1448,12 +1444,21 @@ package org.granite.tide {
 		 *  @param tideResponder Tide responder for the remote call
 		 */
         public function loginSuccessHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            // Force reinitialization of all application at login
-            currentApplication().executeBindings(true);
-            
-            result(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
-            
-            initAfterLogin(sourceContext);
+			result(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
+			
+			if (isLoggedIn()) {
+				// Force reinitialization of all application at login
+				currentApplication().executeBindings(true);
+				
+				initAfterLogin(sourceContext);
+			}
+			else {
+				// Not logged in : consider as a login fault
+				dispatchEvent(new TidePluginEvent(PLUGIN_LOGOUT));
+				ro.logout();
+				
+				dispatchEvent(new TidePluginEvent(PLUGIN_LOGIN_FAULT, { sessionId: _sessionId }));
+			}
             
             _initializing = false;
         }

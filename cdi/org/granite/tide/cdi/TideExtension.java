@@ -20,22 +20,36 @@
 
 package org.granite.tide.cdi;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.AnnotatedConstructor;
 import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import javax.enterprise.inject.spi.ProcessBean;
+import javax.enterprise.inject.spi.ProcessProducerField;
+import javax.enterprise.inject.spi.ProcessProducerMethod;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
+import javax.inject.Named;
 
+import org.granite.logging.Logger;
+import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedBean;
 import org.granite.messaging.service.annotations.RemoteDestination;
 import org.granite.tide.annotations.TideEnabled;
 
@@ -45,39 +59,97 @@ import org.granite.tide.annotations.TideEnabled;
  */
 public class TideExtension implements Extension {
 	
+	private static final Logger log = Logger.getLogger(TideExtension.class);
+	
+	
 	@Inject
 	BeanManager manager;
 
+	private Bean<?> tideInstrumentedBeans = null;
+	private Map<Type, Bean<?>> instrumentedBeans = new HashMap<Type, Bean<?>>();
+	private Map<Object, Type> producedBeans = new HashMap<Object, Type>();
+	
 	
 	public <X> void processAnnotatedType(@Observes ProcessAnnotatedType<X> event) {
 		AnnotatedType<X> annotatedType = event.getAnnotatedType();
 		
 		boolean tideComponent = false;
+		boolean tideBean = false;
 		for (Type type : annotatedType.getTypeClosure()) {
+			if (type instanceof ParameterizedType)
+				type = ((ParameterizedType)type).getRawType();
 			if (type instanceof Class<?> 
-				&& (((Class<?>)type).isAnnotationPresent(RemoteDestination.class) || ((Class<?>)type).isAnnotationPresent(TideEnabled.class))) {
+				&& (((Class<?>)type).isAnnotationPresent(RemoteDestination.class) 
+					|| ((Class<?>)type).isAnnotationPresent(TideEnabled.class)
+					|| ((Class<?>)type).isAnnotationPresent(Named.class)
+					|| ((Class<?>)type).isAnnotationPresent(RequestScoped.class))) {
 				tideComponent = true;
+				break;
+			}
+			if (type instanceof Class<?> 
+				&& ((Serializable.class.isAssignableFrom((Class<?>)type) && ((Class<?>)type).isAnnotationPresent(Named.class)) 
+					|| ((Class<?>)type).isAnnotationPresent(ExternalizedBean.class))) {
+				tideBean = true;
 				break;
 			}
 		}
 		
-		if (tideComponent)
-			event.setAnnotatedType(new TideComponentAnnotatedType<X>(annotatedType));
+		if (tideComponent || tideBean)
+			event.setAnnotatedType(new TideAnnotatedType<X>(annotatedType, tideComponent, tideBean));
 	}
 	
+	public <X> void processBean(@Observes ProcessBean<X> event) {
+		if (event.getAnnotated().isAnnotationPresent(TideComponent.class) || event.getAnnotated().isAnnotationPresent(TideBean.class)) {
+			instrumentedBeans.put(event.getAnnotated().getBaseType(), event.getBean());
+			log.info("Processed instrumented Tide component " + event.getBean().toString());
+		}
+		
+		Bean<?> bean = event.getBean();
+		if (event instanceof ProcessProducerMethod<?, ?>) {
+			Type type = ((ProcessProducerMethod<?, ?>)event).getAnnotatedProducerMethod().getDeclaringType().getBaseType();			
+			producedBeans.put(((ProcessProducerMethod<?, ?>)event).getAnnotatedProducerMethod().getBaseType(), type);
+			if (bean.getName() != null)
+				producedBeans.put(bean.getName(), type);
+		}
+		else if (event instanceof ProcessProducerField<?, ?>) {
+			Type type = ((ProcessProducerField<?, ?>)event).getAnnotatedProducerField().getDeclaringType().getBaseType();
+			producedBeans.put(((ProcessProducerField<?, ?>)event).getAnnotatedProducerField().getBaseType(), type);
+			if (bean.getName() != null)
+				producedBeans.put(bean.getName(), type);
+		}
+		
+		if (event.getBean().getBeanClass().equals(TideInstrumentedBeans.class))
+			tideInstrumentedBeans = event.getBean();
+	}
+	
+	public void processAfterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
+		TideInstrumentedBeans ib = (TideInstrumentedBeans)manager.getReference(tideInstrumentedBeans, TideInstrumentedBeans.class, 
+				manager.createCreationalContext(tideInstrumentedBeans));
+		ib.setBeans(instrumentedBeans);
+		ib.setProducedBeans(producedBeans);
+	}
+	
+	public void processAfterDeploymentValidation(@Observes AfterDeploymentValidation event, BeanManager manager) {
+	}
+	
+
 	
 	@SuppressWarnings("serial")
-	public static class TideComponentAnnotatedType<T> implements AnnotatedType<T> {
+	public static class TideAnnotatedType<T> implements AnnotatedType<T> {
 		
 		private final AnnotatedType<T> annotatedType;
 		private final Annotation componentQualifier = new AnnotationLiteral<TideComponent>() {};
+		private final Annotation beanQualifier = new AnnotationLiteral<TideBean>() {};
 		private final Set<Annotation> annotations;
 		
 		
-		public TideComponentAnnotatedType(AnnotatedType<T> annotatedType) {
+		public TideAnnotatedType(AnnotatedType<T> annotatedType, boolean component, boolean bean) {
 			this.annotatedType = annotatedType;
 			annotations = new HashSet<Annotation>(annotatedType.getAnnotations());
-			annotations.add(componentQualifier);
+			if (component)
+				annotations.add(componentQualifier);
+			if (bean)
+				annotations.add(beanQualifier);
 		}
 
 		public Set<AnnotatedConstructor<T>> getConstructors() {
@@ -99,7 +171,9 @@ public class TideExtension implements Extension {
 		@SuppressWarnings("unchecked")
 		public <X extends Annotation> X getAnnotation(Class<X> annotationClass) {
 			if (annotationClass.equals(TideComponent.class))
-				return (X)componentQualifier;			
+				return (X)componentQualifier;
+			if (annotationClass.equals(TideBean.class))
+				return (X)beanQualifier;
 			return annotatedType.getAnnotation(annotationClass);
 		}
 
@@ -116,7 +190,9 @@ public class TideExtension implements Extension {
 		}
 
 		public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
-			if (annotationClass.equals(TideComponent.class))
+			if (annotationClass.equals(TideComponent.class) && annotations.contains(componentQualifier))
+				return true;			
+			if (annotationClass.equals(TideBean.class) && annotations.contains(beanQualifier))
 				return true;			
 			return annotatedType.isAnnotationPresent(annotationClass);
 		}

@@ -27,22 +27,19 @@
 
     <display-name>GraniteDS Tide/CDI</display-name>
     <description>GraniteDS Tide/CDI Example Application</description>
-	
-	
-	<!-- Weld/JBoss 6 integration does not work with asynchronous servlets 3: WELD-44 -->
-    <servlet>
-        <servlet-name>GravityServlet</servlet-name>
-        <servlet-class>org.granite.gravity.jbossweb.GravityJBossWebServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>GravityServlet</servlet-name>
-        <url-pattern>/gravityamf/*</url-pattern>
-    </servlet-mapping>
-
-
+    
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
+    
+    <login-config>
+        <auth-method>Custom</auth-method>
+    </login-config>
+    <security-role>
+        <role-name>user</role-name>
+    </security-role>
+    <security-role>
+        <role-name>admin</role-name>
+    </security-role>
 
 </web-app>

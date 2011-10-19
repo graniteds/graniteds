@@ -542,6 +542,9 @@ private function resultHandler(event:TideResultEvent):void {
 	        The result of the remote call will be merged in the provided products collection instance. 
 	        It is thus mandatory to provide a non null object instance, and this kind of merge will work with real objects and collections but not 
 	        with simple types (such as <literal>String</literal>, <literal>Number</literal>, ...), ...
+	        Note that trying to merge a managed entity will work only if the received entity has the same <literal>uid</literal> than the source entity. This is a normal
+	        behaviour to avoir breaking existing object associations in the local context. So this merge feature is mostly suitable for retrieving collections so you 
+	        are sure that the same instance of the collection is kept in sync. 
 	        </para>
         </section>
                 
@@ -578,7 +581,7 @@ Tide.getInstance().addComponentWithFactory("serviceInitializer", DefaultServiceI
 	    </section>
         
         <section id="remoting.tideintercept">
-            <title>Message Interceptors</title>
+            <title>Client Message Interceptors</title>
             <para>
             If you need some common behaviour for all remote calls, such as showing/hiding a wait screen at each call or setting custom headers, 
             you can implement a message interceptor that will be called before and after each call.
@@ -706,7 +709,7 @@ public class EntityNotFoundExceptionHandler implements IExceptionHandler {
                 <literal>Tide.busy</literal> is a bindable property that can be used to determine if there is currently a remote call in progress.
                 </listitem>
                 <listitem>
-                <literal>Tide.disconnected</literal> is a bindable property that can be used to determine is the network connection is currently broken. 
+                <literal>Tide.disconnected</literal> is a bindable property that can be used to determine if the network connection is currently broken. 
                 If becomes false when a network error is detected and set to true after each successful call.
                 </listitem>
             </itemizedlist>
@@ -1175,6 +1178,194 @@ public class MyBean {
 	        Note also that Gas3 uses this annotation when it generates ActionScript3 bean so you'll find an extra <literal>square</literal> member field 
 	        in your generated <literal>MyBean.as</literal>.
 	        </para> 
+        </section>
+        
+        <section id="remoting.classgetters">
+            <title>Custom Class Getters</title>
+            <para>
+            A problem with the default AMF3 serialization is to get the true class name of an object in special cases. For example, a simple 
+            <literal>myObject.getClass().getName()</literal> with a proxied entity bean would return <literal>org.hibernate.proxy.HibernateProxy</literal> instead of 
+            the underlying entity bean class name. In order to get through this kind of problem, you must configure a class getter.
+            Other methods of <literal>ClassGetter</literal> are also used by Tide to determine some internal properties of the managed objects, such as their 
+            JPA initialization state. 
+            </para>
+            <para>
+            Class getters are generally used in conjunction with externalizers.
+            For example, the full configuration for an application using Hibernate entities would be (without autoscan):
+            </para>
+            <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+
+<granite-config>
+  <class-getter type="org.granite.hibernate.HibernateClassGetter"/>
+
+  <externalizers>
+    <externalizer type="org.granite.hibernate.HibernateExternalizer">
+      <include instance-of="test.granite.ejb3.entity.AbstractEntity"/>
+    </externalizer>
+  </externalizers>
+</granite-config>]]>
+            </programlisting>
+            <para>
+            The <literal>org.granite.hibernate.HibernateClassGetter</literal> class is used in order to retreive the correct entity class name from a proxy. 
+            You may write and plug your own class getter in a similar way.
+            </para>
+        </section>
+        
+        <section id="remoting.instanciators">
+            <title>Instantiators</title>
+            <para>
+            At deserialization time, from Flex to Java, GraniteDS must instantiate and populate new JavaBeans with serialized data. The population issue 
+            (strictly private field), as we have seen before, is addressed by externalizers. But there is still a problem with classes that do not declare a default 
+            constructor. How do we instantiate those classes with meaningful parameters at deserialization time?
+            </para>
+            <para>
+            When GraniteDS encounters classes without a default constructor, it tries to instantiate them by using the Sun JVM <literal>sun.reflect.ReflectionFactory</literal> 
+            class that bypasses this limitation. Then, if it can successfully instantiate this kind of class, fields deserialization follows the standard process 
+            with or without externalization. This solution has three serious limitations however: it only works with a Sun JVM, it does not take care of complex 
+            initialization you may have put in your custom contructor, and it cannot simply work with classes that should be created via a static method, such as singletons.
+            </para>
+            <para>
+            With GraniteDS <emphasis>instantiators</emphasis>, you may control the instantiation process, delaying the actual instantiation of the class after all its serialized data 
+            has been read.
+            </para>
+            <formalpara>
+                <title>Built-in Instantiators</title>
+                <para>
+                Two instantiators come with GDS:
+                <itemizedlist>
+                    <listitem>
+                    <literal>org.granite.messaging.amf.io.util.instantiator.EnumInstantiator</literal>: This instantiator is used in order to get an <literal>Enum</literal> constant 
+                    value from an <literal>Enum</literal> class and value (the <literal>String</literal> representation of the constant), by means of the 
+                    <literal>java.lang.Enum.valueOf(Class&lt;? extends Enum&gt; enumType, String name)</literal> method.
+                    </listitem>
+                    <listitem>
+                    <literal>org.granite.hibernate.HibernateProxyInstantiator</literal>: It is used when GDS needs to recreate an <literal>HibernateProxy</literal>. 
+                    See source code for details.
+                    </listitem>
+                </itemizedlist>
+                Note that those instantiators do not require an entry in <literal>granite-config.xml</literal>, they are respectively used by the 
+                <literal>EnumExternalizer</literal>, <literal>HibernateExternalizer</literal>, and <literal>TopLinkExternalizer</literal>.
+                </para>
+            </formalpara>
+            <formalpara>
+                <title>Custom Instantiators</title>
+                <para>
+                Let's say you have a JavaBean like this one:
+                </para>
+                <programlisting role="JAVA">
+<![CDATA[package org.test;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
+public class MyBean {
+
+    private final static Map<String, MyBean> beans = new HashMap<String, MyBean>();
+
+    private final String name;
+    private final String encodedName;
+
+    protected MyBean(String name) {
+        this.name = name;
+        try {
+            this.encodedName = URLEncoder.encode(name, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static MyBean getInstance(String name) {
+        MyBean bean = null;
+        synchronized (beans) {
+            bean = beans.get(name);
+            if (bean == null) {
+                bean = new MyBean(name);
+                beans.put(name, bean);
+            }
+        }
+        return bean;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getEncodedName() {
+        return encodedName;
+    }
+}]]>
+             </programlisting>
+            <para>
+            With this kind of Java class, even with the help of the GDS <literal>DefaultExternalizer</literal> and the Sun <literal>ReflectionFactory</literal> facility, 
+            you will not be able to get the cached instance of your bean and the <literal>encodedName</literal> field will not be correctly initialized. 
+            Instead, a new instance of <literal>MyBean</literal> would be created with a simulated default constructor and the name field would be assigned with 
+            serialized data.
+            </para>
+            <para>
+            The solution is to write a custom instantiator that will be used at deserialization time:
+            </para>
+            <programlisting role="JAVA">
+<![CDATA[
+package org.test;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
+
+import org.granite.messaging.amf.io.util.instantiator.AbstractInstanciator;
+
+public class MyBeanInstanciator extends AbstractInstanciator<MyBean> {
+
+    private static final long serialVersionUID = -1L;
+
+    private static final List<String> orderedFields;
+    static {
+        List<String> of = new ArrayList<String>(1);
+        of.add("name");
+        orderedFields = Collections.unmodifiableList(of);
+    }
+
+    @Override
+    public List<String> getOrderedFieldNames() {
+        return orderedFields;
+    }
+
+    @Override
+    public MyBean newInstance() {
+        return MyBean.getInstance((String)get("name"));
+    }
+}]]>
+            </programlisting>
+            <para>
+            You should finally use a <literal>granite-config.xml</literal> file as follows in order to use your instantiator:
+            </para>
+            <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+
+<granite-config>
+  <externalizers>
+    <externalizer type="org.granite.messaging.amf.io.util.externalizer.DefaultExternalizer">
+      <include type="org.test.MyBean"/>
+    </externalizer>
+  </externalizers>
+
+  <instanciators>
+    <instanciator type="org.test.MyBean">org.test.MyBeanInstanciator</instanciator>
+  </instanciators>
+</granite-config>]]>
+            </programlisting>
+            </formalpara>
         </section>
 	</section>
 	

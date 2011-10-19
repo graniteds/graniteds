@@ -156,7 +156,7 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
         session.setNote(Constants.SESS_USERNAME_NOTE, decoded[0]);
         session.setNote(Constants.SESS_PASSWORD_NOTE, decoded[1]);
         
-        endLogin(context, credentials);
+        endLogin(credentials);
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {
@@ -172,7 +172,7 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
         if (session != null) {
         	request.setAuthType(session.getAuthType());
         	principal = session.getPrincipal();
-        	if (principal == null && tryRelogin(graniteContext))
+        	if (principal == null && tryRelogin())
         		principal = session.getPrincipal();
         }
         request.setUserPrincipal(principal);
@@ -221,7 +221,7 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
             session.removeNote(Constants.SESS_USERNAME_NOTE);
             session.removeNote(Constants.SESS_PASSWORD_NOTE);
             
-            endLogout(context);
+            endLogout();
             
             session.expire();
         }

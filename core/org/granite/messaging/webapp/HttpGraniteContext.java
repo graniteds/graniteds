@@ -31,11 +31,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.granite.clustering.TransientReference;
+import org.granite.clustering.TransientReferenceHolder;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
-import org.granite.util.TransientReference;
-import org.granite.util.TransientReferenceHolder;
 
 /**
  * @author Franck WOLFF

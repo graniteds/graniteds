@@ -5,7 +5,9 @@ package org.granite.test.tide.data
     import mx.data.utils.Managed;
     
     import org.flexunit.Assert;
-    import org.granite.test.tide.Contact;
+import org.granite.persistence.PersistentMap;
+import org.granite.persistence.PersistentSet;
+import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
@@ -139,5 +141,53 @@ package org.granite.test.tide.data
 			
 			Assert.assertFalse("Context not dirty after item removed", _ctx.meta_dirty);
 		}
+
+        [Test]
+        public function testDirtyCheckEntityMap():void {
+            var person:Person9 = new Person9();
+            person.id = 1;
+            person.uid = "P1";
+            person.version = 0;
+            person.firstName = "toto";
+            person.contacts = new PersistentSet(true);
+            person.testMap = new PersistentMap(true);
+            _ctx.person = _ctx.meta_mergeExternalData(person);
+            person = Person9(person);
+
+            Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
+
+            person.testMap.put("test", "test");
+
+            Assert.assertTrue("Context dirty after put", _ctx.meta_dirty);
+
+            Managed.resetEntity(person);
+
+            Assert.assertFalse("Context not dirty after reset", _ctx.meta_dirty);
+        }
+
+        [Test]
+        public function testDirtyCheckEntityMap2():void {
+            var person:Person9 = new Person9();
+            person.id = 1;
+            person.uid = "P1";
+            person.version = 0;
+            person.firstName = "toto";
+            person.contacts = new PersistentSet(true);
+            person.testMap = new PersistentMap(true);
+            person.testMap.put("test", "test");
+            _ctx.person = _ctx.meta_mergeExternalData(person);
+            person = Person9(person);
+
+            Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
+
+            person.testMap.put("test", "toto");
+
+            Assert.assertTrue("Context dirty after put", _ctx.meta_dirty);
+
+            Managed.resetEntity(person);
+
+            Assert.assertFalse("Context not dirty after reset", _ctx.meta_dirty);
+            Assert.assertEquals("Map reset", "test", person.testMap.get("test"));
+        }
     }
 }

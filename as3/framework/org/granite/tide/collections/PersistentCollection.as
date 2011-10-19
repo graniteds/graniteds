@@ -88,10 +88,6 @@ package org.granite.tide.collections {
             return list;
         }
         
-		public function isLazy():Boolean {
-			return IPersistentCollection(list).isLazy();
-		}
-		
         public function isInitialized():Boolean {
             return IPersistentCollection(list).isInitialized();
         }
@@ -174,6 +170,7 @@ package org.granite.tide.collections {
 		}
 		
         
+		[Bindable("collectionChange")]
         override public function get length():int {
             if (_localInitializing || isInitialized())
                 return super.length;

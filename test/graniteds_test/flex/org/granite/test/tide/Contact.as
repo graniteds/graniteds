@@ -28,7 +28,8 @@ package org.granite.test.tide {
         public function get email():String {
             return _email;
         }
-        
+
+        [Lazy]
         public function set person(value:Person):void {
             _person = value;
         }
