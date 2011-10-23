@@ -1,65 +1,5 @@
 package org.granite.test.tide.framework
 {
-	import org.granite.test.tide.framework.MyComponent3;
-	import org.granite.test.tide.framework.MyComponentConversation3;
-	import org.granite.test.tide.framework.TestAnnotatedComponent;
-	import org.granite.test.tide.framework.TestComponentConversations;
-	import org.granite.test.tide.framework.TestComponentConversations2;
-	import org.granite.test.tide.framework.TestComponentEventScope;
-	import org.granite.test.tide.framework.TestComponentInOut;
-	import org.granite.test.tide.framework.TestComponentInjection;
-	import org.granite.test.tide.framework.TestComponentInjection2;
-	import org.granite.test.tide.framework.TestComponentInjection3;
-	import org.granite.test.tide.framework.TestComponentInjectionForum4314;
-	import org.granite.test.tide.framework.TestComponentInjectionForum7129;
-	import org.granite.test.tide.framework.TestComponentInjectionGDS471;
-	import org.granite.test.tide.framework.TestComponentInjectionGDS477;
-	import org.granite.test.tide.framework.TestComponentInjectionGDS480;
-	import org.granite.test.tide.framework.TestComponentInjectionGDS482;
-	import org.granite.test.tide.framework.TestComponentInjectionGDS676;
-	import org.granite.test.tide.framework.TestComponentInjectionGDS844;
-	import org.granite.test.tide.framework.TestComponentModules;
-	import org.granite.test.tide.framework.TestComponentModules2;
-	import org.granite.test.tide.framework.TestComponentNestedConversations;
-	import org.granite.test.tide.framework.TestComponentNestedConversations2;
-	import org.granite.test.tide.framework.TestComponentNoName;
-	import org.granite.test.tide.framework.TestComponentNoName2;
-	import org.granite.test.tide.framework.TestComponentObservers;
-	import org.granite.test.tide.framework.TestComponentObservers2;
-	import org.granite.test.tide.framework.TestComponentObservers3;
-	import org.granite.test.tide.framework.TestComponentObservers4;
-	import org.granite.test.tide.framework.TestComponentObservers5;
-	import org.granite.test.tide.framework.TestComponentObserversGDS549;
-	import org.granite.test.tide.framework.TestComponentOutjection;
-	import org.granite.test.tide.framework.TestComponentOutjectionForum3853;
-	import org.granite.test.tide.framework.TestComponentOutjectionGDS427;
-	import org.granite.test.tide.framework.TestComponentOutjectionGDS449;
-	import org.granite.test.tide.framework.TestComponentOutjectionGDS481;
-	import org.granite.test.tide.framework.TestComponentOutjectionGDS745;
-	import org.granite.test.tide.framework.TestComponentProduces;
-	import org.granite.test.tide.framework.TestComponentProduces2;
-	import org.granite.test.tide.framework.TestComponentScan;
-	import org.granite.test.tide.framework.TestComponentSubcontexts;
-	import org.granite.test.tide.framework.TestComponentSubcontexts2;
-	import org.granite.test.tide.framework.TestComponentSubcontexts3;
-	import org.granite.test.tide.framework.TestComponentSubcontexts4;
-	import org.granite.test.tide.framework.TestComponentSubcontextsGDS555;
-	import org.granite.test.tide.framework.TestComponentSubcontextsGDS627;
-	import org.granite.test.tide.framework.TestComponentTideModules;
-	import org.granite.test.tide.framework.TestComponentTideModules2;
-	import org.granite.test.tide.framework.TestSimpleComponent;
-	import org.granite.test.tide.framework.TestTypedInjection;
-	import org.granite.test.tide.framework.TestTypedInjection2;
-	import org.granite.test.tide.framework.TestTypedInjection3;
-	import org.granite.test.tide.framework.TestTypedLookup;
-	import org.granite.test.tide.framework.TestTypedRemoteInjection;
-	import org.granite.test.tide.framework.TestUIComponent;
-	import org.granite.test.tide.framework.TestUIComponentGDS781;
-	import org.granite.test.tide.framework.TestUIComponentGDS781b;
-	import org.granite.test.tide.framework.TestUIComponentModules;
-	import org.granite.test.tide.framework.TestEventInterceptor;
-    // import org.granite.test.tide.framework.TestComponentFlexModules;
-
 	[Suite]
 	[RunWith("org.flexunit.runners.Suite")]
 	public class SuiteFramework
@@ -117,6 +57,7 @@ package org.granite.test.tide.framework
 		public var test47:org.granite.test.tide.framework.TestTypedInjection;
 		public var test48:org.granite.test.tide.framework.TestTypedInjection2;
 		public var test49:org.granite.test.tide.framework.TestTypedInjection3;
+		public var test49b:org.granite.test.tide.framework.TestTypedInjection4;
 		public var test50:org.granite.test.tide.framework.TestTypedLookup;
 		public var test51:org.granite.test.tide.framework.TestTypedRemoteInjection;
 		public var test52:org.granite.test.tide.framework.TestUIComponent;
