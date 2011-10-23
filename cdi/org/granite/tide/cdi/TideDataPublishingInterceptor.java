@@ -52,7 +52,7 @@ public class TideDataPublishingInterceptor {
 	private Instance<DataUpdatePostprocessor> dataUpdatePostprocessor;
 	
 	@Inject
-	Event<TideDataPublishingEvent> dataPublishingEvent;
+	private Event<TideDataPublishingEvent> dataPublishingEvent;
 	
     @AroundInvoke
     public Object processPublishData(InvocationContext invocationContext) throws Throwable {

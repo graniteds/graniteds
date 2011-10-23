@@ -58,7 +58,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 			
 			servletContext.setAttribute(GraniteConfigListener.GRANITE_CONFIG_ATTRIBUTE, clazz);
 			
-			servletContext.addListener(GraniteConfigListener.class);
+		    servletContext.addListener(new GraniteConfigListener());
 			
 			if (servletContext.getFilterRegistration("AMFMessageFilter") == null) {
 				FilterRegistration.Dynamic graniteFilter = servletContext.addFilter("AMFMessageFilter", AMFMessageFilter.class);

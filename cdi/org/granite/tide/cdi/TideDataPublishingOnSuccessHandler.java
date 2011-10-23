@@ -22,7 +22,7 @@ package org.granite.tide.cdi;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.TransactionPhase;
-import javax.inject.Inject;
+import javax.enterprise.inject.Instance;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
@@ -42,10 +42,14 @@ public class TideDataPublishingOnSuccessHandler {
 	
 	private static final Logger log = Logger.getLogger(TideDataPublishingOnSuccessHandler.class);
 	
-	@Inject
-	UserTransaction ut;
-	
-    public void doPublish(@Observes(during=TransactionPhase.BEFORE_COMPLETION) TideDataPublishingEvent event) {
+    public void doPublish(@Observes(during=TransactionPhase.BEFORE_COMPLETION) TideDataPublishingEvent event, Instance<UserTransaction> uts) {
+        if (uts.isUnsatisfied() || uts.isAmbiguous()) {
+            // No JTA UserTransaction, probably a servlet container
+            // Anyway we should not be here
+            return;
+        }
+
+        UserTransaction ut = uts.get();        
     	try {
 			if (!(ut.getStatus() == Status.STATUS_MARKED_ROLLBACK || ut.getStatus() == Status.STATUS_ROLLING_BACK || ut.getStatus() == Status.STATUS_ROLLING_BACK))
 				DataContext.publish(PublishMode.ON_COMMIT);
