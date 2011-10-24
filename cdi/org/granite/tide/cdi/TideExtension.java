@@ -101,7 +101,7 @@ public class TideExtension implements Extension {
 	public <X> void processBean(@Observes ProcessBean<X> event) {
 		if (event.getAnnotated().isAnnotationPresent(TideComponent.class) || event.getAnnotated().isAnnotationPresent(TideBean.class)) {
 			instrumentedBeans.put(event.getAnnotated().getBaseType(), event.getBean());
-			log.info("Processed instrumented Tide component " + event.getBean().toString());
+			log.info("Instrumented Tide component %s", event.getBean().toString());
 		}
 		
 		Bean<?> bean = event.getBean();
