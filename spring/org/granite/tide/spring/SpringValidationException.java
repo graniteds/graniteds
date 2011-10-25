@@ -23,7 +23,7 @@ package org.granite.tide.spring;
 import org.springframework.validation.Errors;
 
 
-public class SpringValidationException extends Exception {
+public class SpringValidationException extends RuntimeException {
 	
 	private static final long serialVersionUID = 1L;
 	
