@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.granite.generator.as3.reflect.JavaMethod.MethodType;
-import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty;
 import org.granite.messaging.service.annotations.IgnoredMethod;
 import org.granite.messaging.service.annotations.RemoteDestination;
 
@@ -145,11 +144,7 @@ public class JavaRemoteDestination extends JavaAbstractType {
 			methods = type.getDeclaredMethods();
 		
 		for (Method method : methods) {
-			if (Modifier.isPublic(method.getModifiers()) &&
-				!Modifier.isStatic(method.getModifiers()) &&
-				!method.isAnnotationPresent(IgnoredMethod.class) &&
-				!((method.getName().startsWith("get") || method.getName().startsWith("is")) && method.getParameterTypes().length == 0) &&
-				!(method.getName().startsWith("set") && method.getParameterTypes().length == 1 && method.getReturnType() == void.class)) {
+			if (shouldGenerateMethod(method)) {
 				for (Class<?> clazz : method.getParameterTypes()) {
 					if (clazz.isMemberClass() && !clazz.isEnum()) {
 						throw new UnsupportedOperationException(
@@ -165,6 +160,13 @@ public class JavaRemoteDestination extends JavaAbstractType {
 
 		return methodMap;
 	}
+	
+	protected boolean shouldGenerateMethod(Method method) {
+		return 
+			Modifier.isPublic(method.getModifiers())
+			&& !Modifier.isStatic(method.getModifiers())
+			&& !method.isAnnotationPresent(IgnoredMethod.class);
+	}	
 
 	protected Map<String, JavaMethodProperty> initProperties() {
         Map<String, JavaMethodProperty> propertyMap = new LinkedHashMap<String, JavaMethodProperty>();
@@ -183,33 +185,28 @@ public class JavaRemoteDestination extends JavaAbstractType {
 		List<Object[]> tmp = new ArrayList<Object[]>();
 		
 		for (Method method : methods) {
-			if (Modifier.isPublic(method.getModifiers()) &&
-				!Modifier.isStatic(method.getModifiers()) &&
-				!method.isAnnotationPresent(IgnoredProperty.class) &&
-				(((method.getName().startsWith("get") || method.getName().startsWith("is")) && method.getParameterTypes().length == 0) ||
-				  (method.getName().startsWith("set") && method.getParameterTypes().length == 1 && method.getReturnType() == void.class))) {
+			if (shouldGenerateProperty(method)) {				
+				for (Class<?> clazz : method.getParameterTypes())
+					addToImports(provider.getJavaImport(clazz));
+				addToImports(provider.getJavaImport(method.getReturnType()));
 				
-					for (Class<?> clazz : method.getParameterTypes())
-						addToImports(provider.getJavaImport(clazz));
-					addToImports(provider.getJavaImport(method.getReturnType()));
-					
-					String propertyName = Introspector.decapitalize(method.getName().startsWith("is") ? method.getName().substring(2) : method.getName().substring(3));
-	
-					Object[] property = null;
-					for (Object[] mp : tmp) {
-						if (mp[0].equals(propertyName)) {
-							property = mp;
-							break;
-						}
+				String propertyName = Introspector.decapitalize(method.getName().startsWith("is") ? method.getName().substring(2) : method.getName().substring(3));
+
+				Object[] property = null;
+				for (Object[] mp : tmp) {
+					if (mp[0].equals(propertyName)) {
+						property = mp;
+						break;
 					}
-					if (property == null) {
-						property = new Object[] { propertyName, null, null };
-						tmp.add(property);
-					}
-					if (method.getName().startsWith("set"))
-						property[2] = method;
-					else
-						property[1] = method;
+				}
+				if (property == null) {
+					property = new Object[] { propertyName, null, null };
+					tmp.add(property);
+				}
+				if (method.getName().startsWith("set"))
+					property[2] = method;
+				else
+					property[1] = method;
 			}
 		}
 		
@@ -221,6 +218,10 @@ public class JavaRemoteDestination extends JavaAbstractType {
 		
 		return propertyMap;
 	}
+	
+	protected boolean shouldGenerateProperty(Method method) {
+		return false;
+	}	
 
 	
 	public JavaInterface convertToJavaInterface() {
