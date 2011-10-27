@@ -20,8 +20,8 @@
 
 package org.granite.tide.validators {
 
+    import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
-	import flash.utils.Dictionary;
     
     import mx.collections.IList;
     import mx.collections.errors.ItemPendingError;
@@ -33,14 +33,15 @@ package org.granite.tide.validators {
     
     import org.granite.collections.IPersistentCollection;
     import org.granite.meta;
-	import org.granite.validation.ConstraintViolationEvent;
-	import org.granite.validation.ValidationEvent;
     import org.granite.tide.BaseContext;
     import org.granite.tide.IComponent;
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IExceptionHandler;
     import org.granite.tide.IPropertyHolder;
+    import org.granite.tide.events.TideValidatorEvent;
+    import org.granite.validation.ConstraintViolationEvent;
+    import org.granite.validation.ValidationEvent;
 
     use namespace flash_proxy;
     use namespace object_proxy;
@@ -87,6 +88,11 @@ package org.granite.tide.validators {
 						rootBean.dispatchEvent(new ConstraintViolationEvent(violation));
 					
 					rootBean.dispatchEvent(new ValidationEvent(ValidationEvent.END_VALIDATION));
+				}
+
+				if (context.hasEventListener(TideValidatorEvent.INVALID)) {
+					var event:TideValidatorEvent = new TideValidatorEvent(TideValidatorEvent.INVALID, context, null, false, false, invalidValues);
+					context.dispatchEvent(event);
 				}
 			}
         }

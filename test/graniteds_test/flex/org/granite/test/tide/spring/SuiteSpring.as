@@ -5,6 +5,7 @@ package org.granite.test.tide.spring
 	public class SuiteSpring
 	{
 		public var test7:org.granite.test.tide.spring.TestSpringFaultExtendedData;
+		public var test7b:org.granite.test.tide.spring.TestSpringFaultValidation;
 		public var test6:org.granite.test.tide.spring.TestSpringExceptionHandler;
 		public var test4:org.granite.test.tide.spring.TestSpringRetryAfterFault;
 		public var test2:org.granite.test.tide.spring.TestSpringClientPagedQuery;
