@@ -27,7 +27,8 @@
         as3Imports.add("org.granite.tide.BaseContext");
         as3Imports.add("org.granite.tide.ITideResponder");
     }
-    
+	as3Imports.add("mx.rpc.AsyncToken");
+	
 
     for (jImport in jClass.imports) {
         if (jImport.as3Type.hasPackage() && jImport.as3Type.packageName != jClass.as3Type.packageName)
@@ -111,31 +112,31 @@ package ${jClass.as3Type.packageName} {
                 %>${names[count]}:${pType.name}<%
                 count++;
             }
-            if (count > 0) {%>, <% }%>resultHandler:Object = null, faultHandler:Function = null):void {
+            if (count > 0) {%>, <% }%>resultHandler:Object = null, faultHandler:Function = null):AsyncToken {
             if (faultHandler != null)
-                callProperty("${jMethod.name}"<%
+                return callProperty("${jMethod.name}"<%
 
             count = 0; 
             for (pType in jMethod.getAs3ParameterTypes()) {
                 %>, ${names[count]}<%
                 count++;
-            }%>, resultHandler, faultHandler);
+            }%>, resultHandler, faultHandler) as AsyncToken;
             else if (resultHandler is Function || resultHandler is ITideResponder)
-                callProperty("${jMethod.name}"<% 
+                return callProperty("${jMethod.name}"<% 
 
             count = 0;
             for (pType in jMethod.getAs3ParameterTypes()) {
                 %>, ${names[count]}<%
                 count++;
-            }%>, resultHandler);
+            }%>, resultHandler) as AsyncToken;
             else if (resultHandler == null)
-                callProperty("${jMethod.name}"<% 
+                return callProperty("${jMethod.name}"<% 
 
             count = 0;
             for (pType in jMethod.getAs3ParameterTypes()) {
                 %>, ${names[count]}<%
                 count++;
-            }%>);
+            }%>) as AsyncToken;
             else
                 throw new Error("Illegal argument to remote call (last argument should be Function or ITideResponder): " + resultHandler);
         }<%        
