@@ -43,8 +43,8 @@ import org.granite.test.tide.*;
             var src:Contact3 = Contact3(obj);
             super.meta::merge(em, obj);
             if (meta::isInitialized()) {
-               	em.meta_mergeExternal(src._email, _email, null, this, 'email', function setter(o:*):void{_email = o as String}) as String;
-                em.meta_mergeExternal(src._person, _person, null, this, 'person', function setter(o:*):void{_person = o as Person9}) as Person;
+               	em.meta_mergeExternal(src._email, _email, null, this, 'email', function setter(o:*):void{_email = o as String}, false);
+                em.meta_mergeExternal(src._person, _person, null, this, 'person', function setter(o:*):void{_person = o as Person9}, false);
             }
         }
 

@@ -353,8 +353,8 @@ package org.granite.tide.data {
 				var save:Object = _savedProperties[entity];
 				var unsaved:Boolean = !save;
 				
-				if (unsaved || desc.versionPropertyName == null || 
-					(save[desc.versionPropertyName] != Object(owner)[desc.versionPropertyName] 
+				if (unsaved || (desc.versionPropertyName != null && 
+					save[desc.versionPropertyName] != Object(owner)[desc.versionPropertyName] 
 						&& !(isNaN(save[desc.versionPropertyName]) && isNaN(Object(owner)[desc.versionPropertyName])))) {
 					
 					save = new Object();
@@ -408,6 +408,11 @@ package org.granite.tide.data {
 		 */ 
 		public function entityEmbeddedChangeHandler(event:PropertyChangeEvent):void {
 			var owner:Object = _context.meta_getOwnerEntity(event.target);
+			if (owner == null) {
+				log.warn("Owner entity not found for embedded object {0}, cannot process dirty checking", BaseContext.toString(event.target));
+				return;
+			}
+			
 			if (owner is Array && owner[0] is IEntity)
 				entityPropertyChangeHandler(IEntity(owner[0]), event.target, event.property as String, event.oldValue, event.newValue);
 		}
@@ -423,6 +428,11 @@ package org.granite.tide.data {
             var oldDirty:Boolean = _dirtyCount > 0;
             
 			var ownerEntity:Object = _context.meta_getOwnerEntity(event.target);
+			if (ownerEntity == null) {
+				log.warn("Owner entity not found for collection {0}, cannot process dirty checking", BaseContext.toString(event.target));
+				return;
+			}
+			
 			var owner:Object = ownerEntity[0]
 			var propName:String = String(ownerEntity[1]);
 			
@@ -432,12 +442,13 @@ package org.granite.tide.data {
 			var esave:Object = _savedProperties[owner];
 			var unsaved:Boolean = !esave;
 			
-			if (unsaved || desc.versionPropertyName == null || 
+			if (unsaved || (desc.versionPropertyName != null && 
 				(esave[desc.versionPropertyName] != Object(owner)[desc.versionPropertyName] 
-					&& !(isNaN(esave[desc.versionPropertyName]) && isNaN(Object(owner)[desc.versionPropertyName])))) {
+					&& !(isNaN(esave[desc.versionPropertyName]) && isNaN(Object(owner)[desc.versionPropertyName]))))) {
 
 				esave = new Object();
-				esave[desc.versionPropertyName] = Object(owner)[desc.versionPropertyName];
+				if (desc.versionPropertyName != null)
+					esave[desc.versionPropertyName] = Object(owner)[desc.versionPropertyName];
 				_savedProperties[owner] = esave;
 				if (unsaved)
 					_dirtyCount++;
@@ -544,6 +555,10 @@ package org.granite.tide.data {
 			var oldDirty:Boolean = _dirtyCount > 0;
 			
 			var ownerEntity:Object = _context.meta_getOwnerEntity(event.target);
+			if (ownerEntity == null) {
+				log.warn("Owner entity not found for map {0}, cannot process dirty checking", BaseContext.toString(event.target));
+				return;
+			}
 			var owner:Object = ownerEntity[0]
 			var propName:String = String(ownerEntity[1]);
 			
@@ -553,12 +568,13 @@ package org.granite.tide.data {
 			var esave:Object = _savedProperties[owner];
 			var unsaved:Boolean = !esave;
 			
-			if (unsaved || desc.versionPropertyName == null || 
+			if (unsaved || (desc.versionPropertyName != null && 
 				(esave[desc.versionPropertyName] != Object(owner)[desc.versionPropertyName] 
-					&& !(isNaN(esave[desc.versionPropertyName]) && isNaN(Object(owner)[desc.versionPropertyName])))) {
+					&& !(isNaN(esave[desc.versionPropertyName]) && isNaN(Object(owner)[desc.versionPropertyName]))))) {
 				
 				esave = new Object();
-				esave[desc.versionPropertyName] = Object(owner)[desc.versionPropertyName];
+				if (desc.versionPropertyName != null)
+					esave[desc.versionPropertyName] = Object(owner)[desc.versionPropertyName];
 				_savedProperties[owner] = esave;
 				if (unsaved)
 					_dirtyCount++;
@@ -754,7 +770,7 @@ package org.granite.tide.data {
             var a:int;
             var z:int;
             var ce:CollectionEvent;
-            var savedArray:Array;
+            var savedArray:Array
             var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(entity);
             
             var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
@@ -763,23 +779,28 @@ package org.granite.tide.data {
                     continue;
                 
                 var val:Object = entity[p];
-                var o:Object;
+                var o:Object, removed:Array = null;
 				if (val is IList && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
 					savedArray = save ? save[p] as Array : null;
 					if (savedArray) {
 						for (a = savedArray.length-1; a >= 0; a--) {
 							ce = savedArray[a] as CollectionEvent;
 							if (ce.kind == CollectionEventKind.ADD) {
+								if (removed == null)
+									removed = [];
 								for (z = 0; z < ce.items.length; z++)
-									ce.target.removeItemAt(ce.location);
+									removed.push(ce.target.removeItemAt(ce.location));
 							}
 							else if (ce.kind == CollectionEventKind.REMOVE) {
 								for (z = 0; z < ce.items.length; z++)
 									ce.target.addItemAt(ce.items[z], ce.location+z); 
 							}
 							else if (ce.kind == CollectionEventKind.REPLACE) {
-								for (z = 0; z < ce.items.length; z++)
-									ce.target.setItemAt(ce.items[z].oldValue, ce.location+z);
+								if (removed == null)
+									removed = [];
+								for (z = 0; z < ce.items.length; z++) {
+									removed.push(ce.target.setItemAt(ce.items[z].oldValue, ce.location+z));
+								}
 							}
 						}
 						
@@ -790,6 +811,12 @@ package org.granite.tide.data {
 						if (o is IEntity)
 							resetEntity(IEntity(o), cache);
 					}
+					if (removed != null) {
+						for each (o in removed) {
+							if (o is IEntity)
+								resetEntity(IEntity(o), cache);
+						}
+					}
 				}
 				else if (val is IMap && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
 					var map:IMap = IMap(val);
@@ -798,16 +825,23 @@ package org.granite.tide.data {
 						for (a = savedArray.length-1; a >= 0; a--) {
 							ce = savedArray[a] as CollectionEvent;
 							if (ce.kind == CollectionEventKind.ADD) {
-								for (z = 0; z < ce.items.length; z++)
-									map.remove(ce.items[z][0]);
+								if (removed == null)
+									removed = [];
+								for (z = 0; z < ce.items.length; z++) {
+									removed.push(map.remove(ce.items[z][0]));
+									removed.push(ce.items[z][0]);
+								}
 							}
 							else if (ce.kind == CollectionEventKind.REMOVE) {
 								for (z = 0; z < ce.items.length; z++)
 									map.put(ce.items[z][0], ce.items[z][1]);
 							}
 							else if (ce.kind == CollectionEventKind.REPLACE) {
-								for (z = 0; z < ce.items.length; z++)
-									map.put(ce.items[z].property, ce.items[z].oldValue);
+								if (removed == null)
+									removed = [];
+								for (z = 0; z < ce.items.length; z++) {
+									removed.push(map.put(ce.items[z].property, ce.items[z].oldValue));
+								}
 							}
 						}
 						
@@ -820,6 +854,12 @@ package org.granite.tide.data {
 							resetEntity(IEntity(key), cache);
 						if (value is IEntity)
 							resetEntity(IEntity(value), cache);
+					}
+					if (removed != null) {
+						for each (o in removed) {
+							if (o is IEntity)
+								resetEntity(IEntity(o), cache);
+						}
 					}
 				}
 				else if (save && (ObjectUtil.isSimple(val) || ObjectUtil.isSimple(save[p]))) {

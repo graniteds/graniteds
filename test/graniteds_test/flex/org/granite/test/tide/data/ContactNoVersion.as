@@ -6,8 +6,8 @@
  */
 
 package org.granite.test.tide.data {
-
-    import org.granite.test.tide.*;
+	
+	import org.granite.test.tide.*;
 
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
@@ -18,12 +18,11 @@ package org.granite.test.tide.data {
 	use namespace meta;
 
 	[Managed]
-    [RemoteClass(alias="org.granite.test.tide.data.Contact4")]
-    public class Contact4 extends AbstractEntity {
+    [RemoteClass(alias="org.granite.test.tide.data.ContactNoVersion")]
+    public class ContactNoVersion extends AbstractEntityNoVersion {
 
-        private var _address:Address;
         private var _email:String;
-        private var _person:Person11;
+        private var _person:PersonNoVersion;
 
         public function set email(value:String):void {
             _email = value;
@@ -32,45 +31,34 @@ package org.granite.test.tide.data {
             return _email;
         }
 
-        [Lazy]
-        public function set person(value:Person11):void {
+        public function set person(value:PersonNoVersion):void {
             _person = value;
         }
-        public function get person():Person11 {
+        [Lazy]
+        public function get person():PersonNoVersion {
             return _person;
         }
 
-        [Lazy]
-        public function set address(value:Address):void {
-            _address = value;
-        }
-        public function get address():Address {
-            return _address;
-        }
-
        	override meta function merge(em:IEntityManager, obj:*):void {
-            var src:Contact4 = Contact4(obj);
+            var src:ContactNoVersion = ContactNoVersion(obj);
             super.meta::merge(em, obj);
             if (meta::isInitialized()) {
-                em.meta_mergeExternal(src._address, _address, null, this, 'address', function setter(o:*):void{_address = o as Address}, false);
-               	em.meta_mergeExternal(src._email, _email, null, this, 'email', function setter(o:*):void{_email = o as String}, false);
-                em.meta_mergeExternal(src._person, _person, null, this, 'person', function setter(o:*):void{_person = o as Person11}, false);
+               	em.meta_mergeExternal(src._email, _email, null, this, 'email', function setter(o:*):void{_email = o as String});
+                em.meta_mergeExternal(src._person, _person, null, this, 'person', function setter(o:*):void{_person = o as PersonNoVersion});
             }
         }
 
         override public function readExternal(input:IDataInput):void {
             super.readExternal(input);
             if (meta::isInitialized()) {
-                _address = input.readObject() as Address;
                 _email = input.readObject() as String;
-                _person = input.readObject() as Person11;
+                _person = input.readObject() as PersonNoVersion;
             }
         }
 
         override public function writeExternal(output:IDataOutput):void {
             super.writeExternal(output);
             if (meta::isInitialized()) {
-                output.writeObject((_address is IPropertyHolder) ? IPropertyHolder(_address).object : _address);
                 output.writeObject((_email is IPropertyHolder) ? IPropertyHolder(_email).object : _email);
                 output.writeObject((_person is IPropertyHolder) ? IPropertyHolder(_person).object : _person);
             }

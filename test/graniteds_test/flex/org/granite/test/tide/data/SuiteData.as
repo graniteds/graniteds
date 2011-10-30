@@ -16,6 +16,7 @@ package org.granite.test.tide.data
 		public var test7d:org.granite.test.tide.data.TestDirtyCheckEntityLazy;
 		public var test7e:org.granite.test.tide.data.TestDirtyCheckEntityFilter;
 		public var test7f:org.granite.test.tide.data.TestDirtyCheckEntityCollGDS898;
+		public var test7g:org.granite.test.tide.data.TestDirtyCheckEntityNoVersion;
 		public var test8:org.granite.test.tide.data.TestEntityRefs;
 		public var test8b:org.granite.test.tide.data.TestManagedEntity;
 		public var test9:org.granite.test.tide.data.TestMergeCollection;
@@ -53,6 +54,7 @@ package org.granite.test.tide.data
 		public var test38:org.granite.test.tide.data.TestResetEntityGDS667;
 		public var test39:org.granite.test.tide.data.TestResetEntityGDS668;
         public var test39b:org.granite.test.tide.data.TestResetEntityAllGDS920;
+		public var test39c:org.granite.test.tide.data.TestResetEntityNoVersion;
         public var test40:org.granite.test.tide.data.TestEntityCollectionRefs;
         public var test41:org.granite.test.tide.data.TestUninitAssociations;
         public var test42:org.granite.test.tide.data.TestUninitArguments;
