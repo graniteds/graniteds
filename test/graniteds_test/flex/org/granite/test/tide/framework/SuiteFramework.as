@@ -22,6 +22,7 @@ package org.granite.test.tide.framework
 		public var test15:org.granite.test.tide.framework.TestComponentInjectionGDS482;
 		public var test16:org.granite.test.tide.framework.TestComponentInjectionGDS676;
 		public var test16b:org.granite.test.tide.framework.TestComponentInjectionGDS844;
+		public var test16c:org.granite.test.tide.framework.TestComponentInjectionProxy;
 		public var test17:org.granite.test.tide.framework.TestComponentInOut;
 		public var test18:org.granite.test.tide.framework.TestComponentModules;
 		public var test19:org.granite.test.tide.framework.TestComponentModules2;
