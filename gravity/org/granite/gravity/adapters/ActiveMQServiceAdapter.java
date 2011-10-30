@@ -24,6 +24,7 @@ import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.command.ActiveMQTopic;
+import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
 import org.granite.util.XMap;
 
@@ -31,6 +32,8 @@ import org.granite.util.XMap;
  * @author William DRAI
  */
 public class ActiveMQServiceAdapter extends JMSServiceAdapter {
+
+    private static final Logger log = Logger.getLogger(ActiveMQServiceAdapter.class);
 
     @Override
     public void configure(XMap adapterProperties, XMap destinationProperties) throws ServiceException {
@@ -46,6 +49,24 @@ public class ActiveMQServiceAdapter extends JMSServiceAdapter {
                 acknowledgeMode = Session.DUPS_OK_ACKNOWLEDGE;
             if ("javax.jms.TextMessage".equals(destinationProperties.get("jms/message-type")))
                 textMessages = true;
+            
+            if (Boolean.TRUE.toString().equals(destinationProperties.get("jms/no-local")))
+                noLocal = true;
+
+            if (Boolean.TRUE.toString().equals(destinationProperties.get("session-selector")))
+                sessionSelector = true;
+            
+            failoverRetryInterval = destinationProperties.get("jms/failover-retry-interval", Long.TYPE, DEFAULT_FAILOVER_RETRY_INTERVAL);
+            if (failoverRetryInterval <= 0) {
+                log.warn("Illegal failover retry interval: %d (using default %d)", failoverRetryInterval, DEFAULT_FAILOVER_RETRY_INTERVAL);
+                failoverRetryInterval = DEFAULT_FAILOVER_RETRY_INTERVAL;
+            }
+            
+            failoverRetryCount = destinationProperties.get("jms/failover-retry-count", Integer.TYPE, DEFAULT_FAILOVER_RETRY_COUNT);
+            if (failoverRetryCount <= 0) {
+                log.warn("Illegal failover retry count: %s (using default %d)", failoverRetryCount, DEFAULT_FAILOVER_RETRY_COUNT);
+                failoverRetryCount = DEFAULT_FAILOVER_RETRY_COUNT;
+            }
 
             StringBuilder sb = null;
             if (destinationProperties.get("server/broker-url") != null && !"".equals(destinationProperties.get("server/broker-url").trim())) {

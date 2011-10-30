@@ -373,6 +373,8 @@ public class JMSServiceAdapter extends ServiceAdapter {
         }
         
         public void internalSend(Map<String, ?> headers, Object msg, String messageId, String correlationId, long timestamp, long timeToLive) throws Exception {
+            String topic = (String)headers.get(AsyncMessage.SUBTOPIC_HEADER);
+                
             if (jmsProducerSession == null) {
                 jmsProducerSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
                 log.debug("Created JMS Producer Session for channel %s (transacted: %s, ack: %s)", channel.getId(), transactedSessions, acknowledgeMode);

@@ -85,7 +85,7 @@ public class DataContext {
     }
     
     public static void remove() {
-		log.debug("Remove Gravity data context");
+		log.debug("Remove data context");
     	dataContext.remove();
     }
     
