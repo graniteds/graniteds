@@ -293,11 +293,11 @@ package ${jClass.as3Type.packageName} {
             if (jProperty.readable || jProperty.writable) {%>
 <%
                 if (jProperty.writable) {%>
-        public function set ${jProperty.name}(value:${jProperty.as3Type.name}):void {
+        public function set ${jProperty.name}<% if (jProperty.name == jProperty.as3Type.name) { %>_<% } %>(value:${jProperty.as3Type.name}):void {
         }<%
                 }
                 if (jProperty.readable) {%>
-        public function get ${jProperty.name}():${jProperty.as3Type.name} {
+        public function get ${jProperty.name}<% if (jProperty.name == jProperty.as3Type.name) { %>_<% } %>():${jProperty.as3Type.name} {
             return ${jProperty.as3Type.nullValue};
         }<%
                 }
@@ -325,7 +325,7 @@ package ${jClass.as3Type.packageName} {
     }
 
     for (jProperty in jClass.properties) {%>
-               em.meta_mergeExternal(src._${jProperty.name}, _${jProperty.name}, null, this, '${jProperty.name}', function setter(o:*):void{_${jProperty.name} = o as ${jProperty.as3Type.name}}, ${jProperty.externalizedProperty});<%
+               em.meta_mergeExternal(src._${jProperty.name}, _${jProperty.name}, null, this, '${jProperty.name}<% if (jProperty.name == jProperty.as3Type.name) { %>_<% } %>', function setter(o:*):void{_${jProperty.name} = o as ${jProperty.as3Type.name}}, ${jProperty.externalizedProperty});<%
     }%>
             }<%
 

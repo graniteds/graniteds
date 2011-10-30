@@ -181,11 +181,11 @@ package ${jClass.as3Type.packageName} {
             if (jProperty.readable || jProperty.writable) {%>
 <%
                 if (jProperty.writable) {%>
-        public function set ${jProperty.name}(value:${jProperty.as3Type.name}):void {
+        public function set ${jProperty.name}<% if (jProperty.name == jProperty.as3Type.name) { %>_<% } %>(value:${jProperty.as3Type.name}):void {
         }<%
                 }
                 if (jProperty.readable) {%>
-        public function get ${jProperty.name}():${jProperty.as3Type.name} {
+        public function get ${jProperty.name}<% if (jProperty.name == jProperty.as3Type.name) { %>_<% } %>():${jProperty.as3Type.name} {
             return ${jProperty.as3Type.nullValue};
         }<%
                 }
