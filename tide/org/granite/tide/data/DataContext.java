@@ -95,7 +95,11 @@ public class DataContext {
     
     private final Set<Object[]> dataUpdates = new TreeSet<Object[]>(new Comparator<Object[]>() {
 		public int compare(Object[] o1, Object[] o2) {
-			return (Integer)o1[2] - (Integer)o2[2];
+		    if (!((Integer)o1[2]).equals(o2[2]))
+		        return (Integer)o1[2] - (Integer)o2[2];
+		    if (!o1[1].equals(o2[1]))
+		        return o1[1].hashCode() - o2[1].hashCode();
+		    return ((EntityUpdateType)o1[0]).ordinal() - ((EntityUpdateType)o2[0]).ordinal();
 		}
     });
     private boolean published = false;
@@ -126,7 +130,7 @@ public class DataContext {
     }
     
     public static void addUpdate(EntityUpdateType type, Object entity) {
-    	addUpdate(type, entity, 0);
+    	addUpdate(type, entity, 0);    	
     }
     public static void addUpdate(EntityUpdateType type, Object entity, int priority) {
     	DataContext dc = get();
