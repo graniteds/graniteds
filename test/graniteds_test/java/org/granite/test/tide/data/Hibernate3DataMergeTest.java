@@ -21,7 +21,7 @@ import org.granite.context.SimpleGraniteContext;
 import org.hibernate.ejb.Ejb3Configuration;
 import org.junit.Test;
 
-public class HibernateMergeTest {
+public class Hibernate3DataMergeTest {
 	
 	private EntityManagerFactory entityManagerFactory;
 	private EntityManager entityManager;
@@ -31,11 +31,11 @@ public class HibernateMergeTest {
 		Ejb3Configuration configuration = new Ejb3Configuration()
 			.addAnnotatedClass(Entree.class)
 			.addAnnotatedClass(EntreeObs.class)
-			.setProperty("hibernate.dialect", org.hibernate.dialect.HSQLDialect.class.getName())
+			.setProperty("hibernate.dialect", org.hibernate.dialect.H2Dialect.class.getName())
 			.setProperty("hibernate.hbm2ddl.auto", "create-drop")
 			.setProperty("hibernate.show_sql", "true")
-			.setProperty("hibernate.connection.driver_class", org.hsqldb.jdbcDriver.class.getName())
-			.setProperty("hibernate.connection.url", "jdbc:hsqldb:mem:test-publish")
+			.setProperty("hibernate.connection.driver_class", "org.h2.Driver")
+			.setProperty("hibernate.connection.url", "jdbc:h2:mem:test-publish")
 			.setProperty("hibernate.connection.username", "sa")
 			.setProperty("hibernate.connection.password", "");
 		

@@ -17,7 +17,7 @@ import org.granite.tide.data.DefaultDataTopicParams;
 import org.hibernate.ejb.Ejb3Configuration;
 import org.junit.Test;
 
-public class HibernateDataPublishTest {
+public class Hibernate3DataPublishTest {
 	
 	private EntityManagerFactory entityManagerFactory;
 	private EntityManager entityManager;
@@ -28,13 +28,13 @@ public class HibernateDataPublishTest {
 			.addAnnotatedClass(AbstractEntity0.class)
 			.addAnnotatedClass(Order3.class)
 			.addAnnotatedClass(LineItem.class)
-			.setProperty("hibernate.dialect", org.hibernate.dialect.HSQLDialect.class.getName())
-			.setProperty("hibernate.hbm2ddl.auto", "create-drop")
-			.setProperty("hibernate.show_sql", "true")
-			.setProperty("hibernate.connection.driver_class", org.hsqldb.jdbcDriver.class.getName())
-			.setProperty("hibernate.connection.url", "jdbc:hsqldb:mem:test-publish")
-			.setProperty("hibernate.connection.username", "sa")
-			.setProperty("hibernate.connection.password", "");
+            .setProperty("hibernate.dialect", org.hibernate.dialect.H2Dialect.class.getName())
+            .setProperty("hibernate.hbm2ddl.auto", "create-drop")
+            .setProperty("hibernate.show_sql", "true")
+            .setProperty("hibernate.connection.driver_class", "org.h2.Driver")
+            .setProperty("hibernate.connection.url", "jdbc:h2:mem:test-publish")
+            .setProperty("hibernate.connection.username", "sa")
+            .setProperty("hibernate.connection.password", "");
 		
 		entityManagerFactory = configuration.buildEntityManagerFactory();
 	}
