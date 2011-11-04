@@ -341,6 +341,7 @@
             <fileset dir="cdi">
             	<include name="**/*.xml"/>
                 <include name="**/*.properties"/>
+            	<include name="META-INF/services/**"/>
             </fileset>
         </copy>
 

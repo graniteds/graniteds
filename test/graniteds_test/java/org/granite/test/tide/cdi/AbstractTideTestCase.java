@@ -108,6 +108,7 @@ public class AbstractTideTestCase {
         response = new MockHttpServletResponse();        
         
         Configuration cfg = new ConfigurationImpl();
+        cfg.setFlexServicesConfig("/WEB-INF/flex/services-config-cdi.xml");
         cfg.setGraniteConfig("/WEB-INF/granite/granite-config-cdi.xml");
         servletContext.setAttribute(ServletGraniteConfig.GRANITE_CONFIG_CONFIGURATION_KEY, cfg);
         GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(servletContext);
