@@ -63,6 +63,7 @@ public class AbstractTideTestCase implements ApplicationContextAware {
         
         Configuration cfg = new ConfigurationImpl();
         cfg.setGraniteConfig("/WEB-INF/granite/granite-config-spring.xml");
+        cfg.setFlexServicesConfig("/WEB-INF/flex/services-config-spring.xml");
         servletContext.setAttribute(ServletGraniteConfig.GRANITE_CONFIG_CONFIGURATION_KEY, cfg);
         GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(servletContext);
         ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(servletContext);
