@@ -216,6 +216,9 @@
                 <include name="WEB-INF/**"/>
                 <include name="META-INF/**"/>
             </fileset>
+        	<fileset dir="java">
+        		<include name="**/*.xml"/>
+        	</fileset>
         </copy>
     </target>
     
