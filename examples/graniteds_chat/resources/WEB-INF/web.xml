@@ -54,12 +54,13 @@
     <servlet>
     	<description>The servlet class used for Producer/Consumer operations</description>
         <servlet-name>GravityServlet</servlet-name>
-        <servlet-class>org.granite.gravity.jbossweb.GravityJBossWebServlet</servlet-class>
 
 		<!--
 		Use GravityTomcatServlet for Tomcat 6+ and JBoss 4.2+ (< 5+) servers.
+        -->
         <servlet-class>org.granite.gravity.tomcat.GravityTomcatServlet</servlet-class>
 
+		<!--
 		Use GravityJBossWebServlet for JBoss 5+ servers.
         <servlet-class>org.granite.gravity.jbossweb.GravityJBossWebServlet</servlet-class>
 
