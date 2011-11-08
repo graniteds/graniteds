@@ -24,16 +24,11 @@ package org.granite.example.addressbook.ejb3.service;
 import org.granite.config.servlet3.FlexFilter;
 import org.granite.gravity.config.AbstractMessagingDestination;
 import org.granite.gravity.config.servlet3.MessagingDestination;
-import org.granite.tide.ejb.EjbIdentity;
-import org.granite.tide.ejb.EjbServiceFactory;
+import org.granite.tide.ejb.EjbConfigProvider;
 
 
-@FlexFilter(
-		tide=true,
-		type="ejb",
-		factoryClass=EjbServiceFactory.class,
-		entityManagerJndiName="java:comp/env/ejb-pc",
-		tideInterfaces={EjbIdentity.class}
+@FlexFilter(configProviderClass=EjbConfigProvider.class,
+		entityManagerJndiName="java:comp/env/ejb-pc"
 )
 public class GraniteConfig {
 
