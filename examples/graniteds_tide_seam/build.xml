@@ -27,19 +27,19 @@
 	<property name="services.config" value=""/>
 	
 	<!-- Default configuration: WAR for JBoss
+        -->
 	<property name="war.packaging" value="yes"/>
 	<property name="seam.lib" value="yes"/>
 	<property name="gds-hibernate.lib" value="yes"/>
 	<property name="gds-seam.lib" value="yes"/>
-    -->
 	
 	<!-- Alternative configuration for JBoss 5.x
-    -->
 	<property name="war.packaging" value="yes"/>
 	<property name="seam.lib" value="yes"/>
 	<property name="gds-hibernate.lib" value="yes"/>	
 	<property name="gds-seam.lib" value="yes"/>
 	<property name="resources.dir" value="resources_jboss5"/>
+        -->
 	
 	<!-- Alternative configuration for GlassFish V2 with TopLink using JPA API
 	<property name="war.packaging" value="yes"/>
