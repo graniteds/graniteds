@@ -21,15 +21,19 @@
 package org.granite.seam;
 
 import org.granite.gravity.GravityManager;
+import org.granite.tide.annotations.BypassTideInterceptor;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Factory;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
+import org.jboss.seam.annotations.intercept.BypassInterceptors;
 import org.jboss.seam.contexts.ServletLifecycle;
 
 
 @Name("org.granite.seam.gravityFactory")
 @Scope(ScopeType.STATELESS)
+@BypassInterceptors
+@BypassTideInterceptor
 public class SeamGravityFactoryBean {
 	
 	@Factory(value="org.granite.seam.gravity", autoCreate=true, scope=ScopeType.EVENT)

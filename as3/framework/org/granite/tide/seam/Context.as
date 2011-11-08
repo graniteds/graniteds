@@ -344,13 +344,6 @@ package org.granite.tide.seam {
                     i--;
                 }
             }
-			for (i = 0; i < _results.length; i++) {
-				var r:ContextResult = _results[i] as ContextResult;
-				if (r.componentName != identity.meta_name) {
-					_results.splice(i, 1);
-					i--;
-				}
-			}
 			
 			var token:AsyncToken = super.meta_login(identity, username, password, resultHandler, faultHandler);
             
@@ -383,13 +376,6 @@ package org.granite.tide.seam {
                     i--;
                 }
             }
-			for (i = 0; i < _results.length; i++) {
-				var r:ContextResult = _results[i] as ContextResult;
-				if (r.componentName != identity.meta_name) {
-					_results.splice(i, 1);
-					i--;
-				}
-			}
             
             var token:AsyncToken = super.meta_isLoggedIn(identity, resultHandler, faultHandler);
             
