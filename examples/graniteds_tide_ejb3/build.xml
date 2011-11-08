@@ -25,7 +25,7 @@
     <property name="Name" value="GraniteDS Tide EJB3 Example"/>
     <property name="example.name" value="graniteds-tide-ejb3"/>
 	
-	<!-- Default configuration: exploded EAR for JBoss
+	<!-- Default configuration: exploded EAR for JBoss 4.x
 	-->
 	<property name="exploded.ear.packaging" value="yes"/>
 	<property name="gds-hibernate.lib" value="yes"/>	
@@ -36,6 +36,18 @@
 	<property name="resources.dir" value="resources_jboss5"/>
 	-->
 	
+	<!-- Alternative configuration for JBoss 6.x with Hibernate 3.5 using JPA API
+	<property name="war.packaging" value="yes"/>
+	<property name="resources.dir" value="resources_jboss6"/>
+	<property name="gds-hibernate.lib" value="yes"/>	
+	-->
+	
+	<!-- Alternative configuration for JBoss AS 7 with Hibernate 4 using JPA API
+	<property name="war.packaging" value="yes"/>
+	<property name="resources.dir" value="resources_jbossas7"/>
+	<property name="gds-hibernate4.lib" value="yes"/>	
+	-->
+
 	<!-- Alternative configuration for GlassFish V2 with TopLink using JPA API
 	<property name="ear.packaging" value="yes"/>
 	<property name="separate-persistence-unit" value="yes"/>
@@ -44,16 +56,10 @@
 	-->
 	
 	<!-- Alternative configuration for GlassFish V3 with EclipseLink using JPA API
+	-->
 	<property name="war.packaging" value="yes"/>
 	<property name="resources.dir" value="resources_glassfishv3"/>
 	<property name="gds-eclipselink.lib" value="yes"/>	
-	-->
-	
-	<!-- Alternative configuration for JBoss 6 M2+ with Hibernate using JPA API
-	<property name="war.packaging" value="yes"/>
-	<property name="resources.dir" value="resources_jboss6"/>
-	<property name="gds-hibernate.lib" value="yes"/>	
-	-->
 
 	<property name="services.config" value=""/>
 	<property name="flex.application" value="Persons"/>

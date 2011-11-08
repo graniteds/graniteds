@@ -30,10 +30,16 @@
 	<property name="gds-beanvalidation.lib" value="yes"/>
 	<property name="jpa.api" value="yes"/>
 		
-	<!-- Default configuration for JBoss 6.0 M3+ with Hibernate 3.5 using JPA API
+	<!-- Default configuration for JBoss 6.x with Hibernate 3.5 using JPA API
 	-->
 	<property name="war.packaging" value="yes"/>
 	<property name="gds-hibernate.lib" value="yes"/>
+	
+	<!-- Alternative configuration for JBoss AS 7 with Hibernate 4 using JPA API
+	<property name="war.packaging" value="yes"/>
+	<property name="gds-hibernate4.lib" value="yes"/>
+	<property name="resources.dir" value="resources_jbossas7"/>
+	-->
 	
 	<!-- Alternative configuration for GlassFish V3 with EclipseLink using JPA API
 	<property name="war.packaging" value="yes"/>

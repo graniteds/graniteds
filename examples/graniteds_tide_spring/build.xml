@@ -29,13 +29,13 @@
     <!--property name="spring2.lib" value="yes"/-->
 	<property name="gds-spring.lib" value="yes"/>
 		
-	<!-- Default configuration for JBoss with Spring+Hibernate using JPA API
+	<!-- Default configuration for JBoss 4.x with Spring+Hibernate using JPA API
     -->
 	<property name="war.packaging" value="yes"/>
 	<property name="gds-hibernate.lib" value="yes"/>
 	<property name="jpa.api" value="yes"/>
 		
-	<!-- Alternative configuration for JBoss 5+ with Spring+Hibernate using JPA API
+	<!-- Alternative configuration for JBoss 5.x with Spring+Hibernate using JPA API
 	<property name="war.packaging" value="yes"/>
 	<property name="gds-hibernate.lib" value="yes"/>
 	<property name="jpa.api" value="yes"/>

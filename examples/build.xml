@@ -160,6 +160,9 @@
 	<fileset id="granite-hibernate.jar" dir="${gds.build}">
 		<include name="granite-hibernate.jar" if="gds-hibernate.lib"/>
 	</fileset>
+	<fileset id="granite-hibernate4.jar" dir="${gds.build}">
+		<include name="granite-hibernate4.jar" if="gds-hibernate4.lib"/>
+	</fileset>
 	<fileset id="toplink.jar" dir="${gds.lib}">
 		<include name="toplink*.jar" if="toplink.lib"/>
 	</fileset>
@@ -419,6 +422,7 @@
 			<lib refid="seam-deps.jar"/>
 			<lib refid="seamcore.jar"/>
     		<lib refid="granite-hibernate.jar"/>
+    		<lib refid="granite-hibernate4.jar"/>
     		<lib refid="granite-toplink.jar"/>
     		<lib refid="granite-eclipselink.jar"/>
     		<lib refid="granite-openjpa.jar"/>
@@ -462,6 +466,7 @@
 			<fileset refid="seam.jar"/>
 			<fileset refid="seam-deps.jar"/>
 			<fileset refid="granite-hibernate.jar"/>
+			<fileset refid="granite-hibernate4.jar"/>
 			<fileset refid="granite-toplink.jar"/>
 			<fileset refid="granite-eclipselink.jar"/>
 			<fileset refid="granite-openjpa.jar"/>

@@ -20,6 +20,7 @@
 
 package org.granite.config;
 
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -304,7 +305,7 @@ public class GraniteConfigListener implements ServletContextListener {
 
     	XMap factoryProperties = new XMap();
     	String lookup = "java:global/{context.root}/{capitalized.component.name}Bean";
-    	if (context.getClass().getClassLoader().getClass().getName().startsWith("org.jboss"))
+    	if (isJBoss6())
     		lookup = "{capitalized.component.name}Bean/local";
     	if (!("".equals(flexFilter.ejbLookup())))
     		lookup = flexFilter.ejbLookup();
@@ -365,4 +366,15 @@ public class GraniteConfigListener implements ServletContextListener {
         	log.info("Registered " + factoryClass + " service factory");
         }
     }
+	
+	private static boolean isJBoss6() {
+		try {
+			InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("/org/jboss/version.properties");
+			if (is != null)
+				return true;
+		}
+		catch (Throwable t) {
+		}
+		return false;
+	}
 }
