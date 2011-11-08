@@ -24,16 +24,12 @@ package org.granite.example.addressbook.cdi.service;
 import org.granite.config.servlet3.FlexFilter;
 import org.granite.gravity.config.AbstractMessagingDestination;
 import org.granite.gravity.config.servlet3.MessagingDestination;
+import org.granite.tide.cdi.CDIConfigProvider;
 import org.granite.tide.cdi.CDIServiceFactory;
 import org.granite.tide.cdi.Identity;
 
 
-@FlexFilter(
-		tide=true,
-		type="cdi",
-		factoryClass=CDIServiceFactory.class,
-		tideInterfaces={Identity.class}
-)
+@FlexFilter(configProviderClass=CDIConfigProvider.class)
 public class GraniteConfig {
 
 	@MessagingDestination(noLocal=true, sessionSelector=true)
