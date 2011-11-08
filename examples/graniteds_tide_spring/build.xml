@@ -24,16 +24,16 @@
 
     <property name="Name" value="GraniteDS Tide Spring Example"/>
     <property name="example.name" value="graniteds-tide-spring"/>
-	
+		
 	<property name="spring3.lib" value="yes"/>
     <!--property name="spring2.lib" value="yes"/-->
 	<property name="gds-spring.lib" value="yes"/>
 		
 	<!-- Default configuration for JBoss with Spring+Hibernate using JPA API
+    -->
 	<property name="war.packaging" value="yes"/>
 	<property name="gds-hibernate.lib" value="yes"/>
 	<property name="jpa.api" value="yes"/>
-    -->
 		
 	<!-- Alternative configuration for JBoss 5+ with Spring+Hibernate using JPA API
 	<property name="war.packaging" value="yes"/>
@@ -53,7 +53,6 @@
     -->
 	
 	<!-- Alternative configuration for Tomcat with Spring+Hibernate using JPA API
-    -->
 	<property name="war.packaging" value="yes"/>
 	<property name="log4j.lib" value="yes"/>
 	<property name="hsqldb.lib" value="yes"/>
@@ -62,6 +61,7 @@
 	<property name="gds-hibernate.lib" value="yes"/>
 	<property name="jpa.api" value="yes"/>
 	<property name="resources.dir" value="resources_tomcat_jpa"/>
+    -->
 	
 	<!-- Alternative configuration for Tomcat with Spring+DataNucleus using JPA API
 	<property name="war.packaging" value="yes"/>

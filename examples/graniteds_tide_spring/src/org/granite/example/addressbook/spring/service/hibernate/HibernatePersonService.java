@@ -42,7 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
-@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_COMMIT, useInterceptor=true)
+@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_SUCCESS, useInterceptor=true)
 public class HibernatePersonService implements PersonService {
 
 	@Autowired
@@ -50,7 +50,7 @@ public class HibernatePersonService implements PersonService {
     
     
     protected Session getSession() {
-        return sessionFactory.getCurrentSession();
+        return (Session)sessionFactory.getCurrentSession();
     }
 
     

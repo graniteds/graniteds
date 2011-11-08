@@ -28,7 +28,7 @@
   	xsi:schemaLocation="
     	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
         http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
-       	http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.1.0/granite-config-2.1.xsd">
+       	http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.3.0/granite-config-2.3.xsd">
   	
   	<graniteds:flex-filter url-pattern="/*" tide="true">
   		<graniteds:tide-annotations>
@@ -37,17 +37,9 @@
   	</graniteds:flex-filter>
   	
   	<graniteds:tide-identity/>
+  	
+  	<graniteds:tide-data-publishing-advice/>  	
     
     <graniteds:messaging-destination id="addressBookTopic" no-local="true" session-selector="true"/>
-
-    <!-- Data publishing aspect -->
-    <!--
-    <bean id="dataPublishingAdvice" class="org.granite.tide.spring.SpringDataPublishingAspect" autowire="byType"/>
-    <aop:config>
-         <aop:aspect id="dataPublishingAspect" ref="dataPublishingAdvice">
-             <aop:around method="processPublishData" pointcut="@within(org.granite.tide.data.DataEnabled) &amp;&amp; @within(dataEnabled))"/>
-         </aop:aspect>
-    </aop:config>
-    -->
 
 </beans>

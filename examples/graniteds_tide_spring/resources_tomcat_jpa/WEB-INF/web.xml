@@ -59,7 +59,7 @@
 
     <servlet>
         <servlet-name>GravityServlet</servlet-name>
-        <servlet-class>org.granite.gravity.servlet3.GravityAsyncServlet</servlet-class>
+        <servlet-class>org.granite.gravity.tomcat.GravityTomcatServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
     </servlet>

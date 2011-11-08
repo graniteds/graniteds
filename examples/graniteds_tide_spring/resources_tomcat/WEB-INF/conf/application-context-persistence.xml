@@ -67,7 +67,7 @@
 				<entry key="post-insert"><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></entry>
 				<entry key="post-delete"><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></entry>
 				<entry key="post-update"><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></entry>
-				<!-- Listeners that provide correct handling of StateObjectStateException for Hibernate Session API -->
+
 				<entry key="merge"><bean class="org.granite.tide.hibernate.HibernateMergeListener"/></entry>
                 <entry key="create"><bean class="org.granite.tide.hibernate.HibernatePersistListener"/></entry>
                 <entry key="create-onflush"><bean class="org.granite.tide.hibernate.HibernatePersistOnFlushListener"/></entry>

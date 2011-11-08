@@ -39,7 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
-@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_COMMIT, useInterceptor=true)
+@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_SUCCESS, useInterceptor=true)
 public class JPAPersonService implements PersonService {
 
 	@PersistenceContext
