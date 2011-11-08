@@ -31,6 +31,7 @@ package org.granite.gravity.channels {
     import flash.net.URLRequestMethod;
     import flash.net.ObjectEncoding;
     import flash.utils.ByteArray;
+	import flash.utils.getQualifiedClassName;
 
     import mx.messaging.MessageResponder;
     import mx.messaging.events.ChannelFaultEvent;
@@ -40,8 +41,6 @@ package org.granite.gravity.channels {
     import mx.messaging.messages.CommandMessage;
     import mx.messaging.messages.ErrorMessage;
     import mx.utils.ObjectUtil;
-    
-    import org.granite.util.ClassUtil;
 
 	[ExcludeClass]
     /**
@@ -123,7 +122,7 @@ package org.granite.gravity.channels {
                 }
             }
             catch (e:Error) {
-                _channel.streamDisconnectFailed(this, "Client." + ClassUtil.getUnqualifiedClassName(this) + ".DisconnectFailed", e);
+                _channel.streamDisconnectFailed(this, "Client." + getUnqualifiedClassName(this) + ".DisconnectFailed", e);
             }
             finally {
                 _stream = null;
@@ -178,7 +177,7 @@ package org.granite.gravity.channels {
                 	_state = STATE_IDLE;
                     _pending = _sent;
                     _sent = new Array();
-                    dispatchFaultEvent("Client." + ClassUtil.getUnqualifiedClassName(this) + ".SendError", ObjectUtil.toString(e), e);
+                    dispatchFaultEvent("Client." + getUnqualifiedClassName(this) + ".SendError", ObjectUtil.toString(e), e);
                 }
             }
         }
@@ -225,7 +224,7 @@ package org.granite.gravity.channels {
         protected function streamHttpStatusListener(event:HTTPStatusEvent):void {
             if (event.status != 0 && event.status != 200) {
             	try {
-                	dispatchFaultEvent("Client." + ClassUtil.getUnqualifiedClassName(this) + ".HttpStatus", String(event.status), event);
+                	dispatchFaultEvent("Client." + getUnqualifiedClassName(this) + ".HttpStatus", String(event.status), event);
                 }
                 finally {
 	            	_state = STATE_IDLE;
@@ -237,7 +236,7 @@ package org.granite.gravity.channels {
 
         protected function streamIoErrorListener(event:IOErrorEvent):void {
             try {
-            	dispatchFaultEvent("Client." + ClassUtil.getUnqualifiedClassName(this) + ".IOError", event.text, event);
+            	dispatchFaultEvent("Client." + getUnqualifiedClassName(this) + ".IOError", event.text, event);
             }
             finally {
             	_state = STATE_IDLE;
@@ -246,7 +245,7 @@ package org.granite.gravity.channels {
 
         protected function streamSecurityErrorListener(event:SecurityErrorEvent):void {
             try {
-            	dispatchFaultEvent("Client." + ClassUtil.getUnqualifiedClassName(this) + ".SecurityError", event.text, event);
+            	dispatchFaultEvent("Client." + getUnqualifiedClassName(this) + ".SecurityError", event.text, event);
             }
             finally {
             	_state = STATE_IDLE;
@@ -259,5 +258,19 @@ package org.granite.gravity.channels {
             	fault.rootCause = rootCause;
             _channel.dispatchEvent(fault);
         }
+		
+		protected function getUnqualifiedClassName(o:Object):String {
+			if (o == null)
+				return "null";
+			
+			var name:String = o is String ? String(o) : getQualifiedClassName(o);
+			
+			var index:int = name.indexOf("::");
+			if (index != -1)
+				name = name.substr(index + 2);
+			
+			return name;
+		}
+
     }
 }
