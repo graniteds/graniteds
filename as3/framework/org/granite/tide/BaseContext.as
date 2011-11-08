@@ -1109,9 +1109,9 @@ package org.granite.tide {
            	}
             
             // Tracking must not be enabled here: it's enabled later in setProperty
-            var saveTracking:Boolean = _tracking;
-			if (exprPath.length > 1)
-            	_tracking = true;
+//            var saveTracking:Boolean = _tracking;
+//			if (exprPath.length > 1)
+//            	_tracking = true;
             w = bindProperty(component, propName, base, exprPath);
             var name:String = exprPath[0];
             var watchers:Array = _inWatchers[componentName] as Array;
@@ -1120,8 +1120,8 @@ package org.granite.tide {
                 _inWatchers[componentName] = watchers;
             }
             watchers.push(w);
-			if (exprPath.length > 1)
-            	_tracking = saveTracking;
+//			if (exprPath.length > 1)
+//            	_tracking = saveTracking;
 
             log.debug("context.{0} bound to [In] {1}.{2}", contextPropName, componentName, propName);
 
