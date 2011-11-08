@@ -178,7 +178,7 @@ package ${jClass.as3Type.packageName} {
             );
         }
         
-        meta <%= (jClass.hasSuperclass() ? "override " : "") %>function defineProxy(id:${jClass.firstIdentifier.as3Type.name}):void {
+        meta <%= (jClass.hasSuperclass() && jClass.superclass.hasIdentifiers() ? "override " : "") %>function defineProxy(id:${jClass.firstIdentifier.as3Type.name}):void {
             __initialized = false;
             _${jClass.firstIdentifier.name} = id;
         }

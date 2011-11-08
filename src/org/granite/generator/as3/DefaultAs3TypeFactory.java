@@ -20,6 +20,7 @@
 
 package org.granite.generator.as3;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -77,6 +78,7 @@ public class DefaultAs3TypeFactory implements As3TypeFactory {
         java2As3Type.put(URI.class, As3Type.STRING);
 
         java2As3Type.put(Object.class, As3Type.OBJECT);
+        java2As3Type.put(Serializable.class, As3Type.OBJECT);
 
         java2As3Type.put(Enum.class, As3Type.ENUM);
     }
