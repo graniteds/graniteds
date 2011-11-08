@@ -31,7 +31,7 @@ import org.jboss.seam.framework.EntityQuery;
 
 @Restrict("#{identity.loggedIn}")
 @TideEnabled
-@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_COMMIT, useInterceptor=true)
+@DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_SUCCESS, useInterceptor=true)
 public class PeopleQuery extends EntityQuery<Person> {
 
     private static final long serialVersionUID = 1L;

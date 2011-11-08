@@ -21,9 +21,7 @@
 package org.granite.example.addressbook.entity;
 
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
 
 /**
  * @author Franck WOLFF
@@ -42,9 +40,6 @@ public class Address extends AbstractEntity {
     private String zipcode;
     @Basic
     private String city;
-
-    @ManyToOne(cascade=CascadeType.ALL)
-    private Country country;
 
 
     public String getAddress1() {
@@ -73,12 +68,5 @@ public class Address extends AbstractEntity {
     }
     public void setZipcode(String zipcode) {
         this.zipcode = zipcode;
-    }
-
-    public Country getCountry() {
-        return country;
-    }
-    public void setCountry(Country country) {
-        this.country = country;
     }
 }
