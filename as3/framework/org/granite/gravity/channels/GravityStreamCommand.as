@@ -21,6 +21,7 @@
 package org.granite.gravity.channels {
 
     import flash.events.Event;
+	//import flash.events.IOErrorEvent;
     import flash.utils.ByteArray;
     
     import mx.logging.Log;
@@ -32,8 +33,6 @@ package org.granite.gravity.channels {
     import mx.messaging.messages.AcknowledgeMessage;
     import mx.messaging.messages.AsyncMessage;
     import mx.utils.ObjectUtil;
-    
-    import org.granite.util.ClassUtil;
 
 	[ExcludeClass]
     /**
@@ -124,11 +123,24 @@ package org.granite.gravity.channels {
             if (request is CommandMessage) {
                 var command:CommandMessage = (request as CommandMessage);
                 if (command.operation == CommandMessage.CLIENT_PING_OPERATION)
-                    channel.streamConnectFailed(this, "Client." + ClassUtil.getUnqualifiedClassName(this) + ".ConnectFailed");
+                    channel.streamConnectFailed(this, "Client." + getUnqualifiedClassName(this) + ".ConnectFailed");
                 else
-                    channel.streamDisconnectFailed(this, "Client." + ClassUtil.getUnqualifiedClassName(this) + ".DisconnectFailed");
+                    channel.streamDisconnectFailed(this, "Client." + getUnqualifiedClassName(this) + ".DisconnectFailed");
             }
         }
+
+//		override protected function streamIoErrorListener(event:IOErrorEvent):void {
+//			requeueSentMessage();
+//			super.streamIoErrorListener(event);
+//		}
+//		
+//		protected function requeueSentMessage():void {
+//			if (_sent != null && _sent.length > 0) {
+//				for (var i:int = 0; i < _sent.length; i++)
+//					_pending.unshift(_sent[i]);
+//				_sent = new Array();
+//			}
+//		}
 
         ///////////////////////////////////////////////////////////////////////
         // Listeners.
@@ -153,7 +165,7 @@ package org.granite.gravity.channels {
                 }
             }
             catch (e:Error) {
-                dispatchFaultEvent("Client." + ClassUtil.getUnqualifiedClassName(this) + ".Read", ObjectUtil.toString(e), event);
+                dispatchFaultEvent("Client." + getUnqualifiedClassName(this) + ".Read", ObjectUtil.toString(e), event);
             	log.debug("streamCompleteListener: {0}", ObjectUtil.toString(e));
             }
             finally {

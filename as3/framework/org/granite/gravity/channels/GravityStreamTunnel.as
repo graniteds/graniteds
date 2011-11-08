@@ -36,8 +36,6 @@ package org.granite.gravity.channels {
     import mx.messaging.messages.ErrorMessage;
     import mx.messaging.messages.AsyncMessage;
     import mx.utils.ObjectUtil;
-    
-    import org.granite.util.ClassUtil;
 
 	[ExcludeClass]
     /**
@@ -90,7 +88,7 @@ package org.granite.gravity.channels {
             }
             else {
             	dispatchFaultEvent(
-            		"Client." + ClassUtil.getUnqualifiedClassName(this) + ".ReconnectErrorMax",
+            		"Client." + getUnqualifiedClassName(this) + ".ReconnectErrorMax",
             		"Reconnect attempts reached maximum: " + channel.reconnectMaxAttempts + " (giving up)"
             	);
             	try {
@@ -193,7 +191,7 @@ package org.granite.gravity.channels {
 	            }
             }
             catch (e:Error) {
-            	dispatchFaultEvent("Client." + ClassUtil.getUnqualifiedClassName(this) + ".Read", ObjectUtil.toString(e), event);
+            	dispatchFaultEvent("Client." + getUnqualifiedClassName(this) + ".Read", ObjectUtil.toString(e), event);
                 log.debug("streamCompleteListener: {0}", ObjectUtil.toString(e));
             }
             finally {
@@ -219,7 +217,7 @@ package org.granite.gravity.channels {
         }
 
         override internal function internalStatus(request:IMessage, response:IMessage):void {
-            channel.streamConnectFailed(this, "Client." + ClassUtil.getUnqualifiedClassName(this) + ".ConnectFailed");
+            channel.streamConnectFailed(this, "Client." + getUnqualifiedClassName(this) + ".ConnectFailed");
         }
 
         ///////////////////////////////////////////////////////////////////////
