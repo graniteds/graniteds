@@ -26,7 +26,6 @@ import java.util.Map;
 
 import javax.ejb.Local;
 import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -34,7 +33,6 @@ import javax.persistence.Query;
 import org.granite.example.addressbook.entity.Person;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataEnabled.PublishMode;
-import org.granite.tide.ejb.TideDataPublishingInterceptor;
 
 
 
@@ -43,8 +41,7 @@ import org.granite.tide.ejb.TideDataPublishingInterceptor;
  */
 @Stateless
 @Local(PeopleService.class)
-@Interceptors(TideDataPublishingInterceptor.class)
-@DataEnabled(topic="addressBookTopic", publish=PublishMode.ON_COMMIT, useInterceptor=true)
+@DataEnabled(topic="addressBookTopic", publish=PublishMode.ON_SUCCESS)
 public class PeopleServiceBean implements PeopleService {
 
 	@PersistenceContext
