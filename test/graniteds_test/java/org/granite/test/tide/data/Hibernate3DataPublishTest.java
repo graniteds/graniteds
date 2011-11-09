@@ -54,8 +54,12 @@ public class Hibernate3DataPublishTest {
 		entityManager.remove(entity);
 	}
 	protected void flush() {
+		flush(true);
+	}
+	protected void flush(boolean commit) {
 		entityManager.flush();
-		tx.commit();
+		if (commit)
+			tx.commit();
 	}
 	protected void flushOnly() {
 		entityManager.flush();
@@ -141,5 +145,41 @@ public class Hibernate3DataPublishTest {
         Set<Object[]> updates = DataContext.get().getDataUpdates();
         
         Assert.assertEquals("2 updates", 2, updates.size());
+    }
+    
+    @Test
+    public void testSimpleChanges3() throws Exception {
+        initPersistence();
+        
+        Order3 o = new Order3(null, null, "O1");
+        o.setDescription("Order");
+        o.setLineItems(new HashSet<LineItem>());
+        LineItem i1 = new LineItem(null, null, "I1");
+        i1.setDescription("Item 1");
+        i1.setOrder(o);
+        o.getLineItems().add(i1);
+        open();
+        o = save(o);
+        flush();
+        Long orderId = o.getId();
+        close();
+        
+        DataContext.remove();
+        DataContext.init(new DefaultDataDispatcher(null, "testTopic", DefaultDataTopicParams.class), PublishMode.MANUAL);
+        
+        open();
+        o = find(Order3.class, orderId);
+        LineItem i2 = new LineItem(null, null, "I2");
+        i2.setDescription("Item 2");
+        i2.setOrder(o);
+        o.getLineItems().add(i2);
+        flush(false);
+        i2.setDescription("Item 2b");
+        flush();
+        close();
+        
+        Set<Object[]> updates = DataContext.get().getDataUpdates();
+        
+        Assert.assertEquals("3 updates", 3, updates.size());
     }
 }

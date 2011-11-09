@@ -120,7 +120,7 @@ public class DataContext {
     	Iterator<Object[]> iu = dataUpdates.iterator();
     	while (iu.hasNext()) {
     		Object[] u = iu.next();
-    		updates[i++] = new Object[] { u[0], dataUpdatePostprocessor != null ? dataUpdatePostprocessor.process(u[1]) : u[1] }; 
+    		updates[i++] = new Object[] { ((EntityUpdateType)u[0]).name(), dataUpdatePostprocessor != null ? dataUpdatePostprocessor.process(u[1]) : u[1] }; 
     	}
 		return updates;
     }
@@ -142,7 +142,7 @@ public class DataContext {
     				return;
     			}
     		}
-    		dc.dataUpdates.add(new Object[] { type.name(), entity, priority });
+    		dc.dataUpdates.add(new Object[] { type, entity, priority });
     		dc.updates = null;
     	}
     }
