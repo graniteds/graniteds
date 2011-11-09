@@ -56,10 +56,10 @@
 	-->
 	
 	<!-- Alternative configuration for GlassFish V3 with EclipseLink using JPA API
-	-->
 	<property name="war.packaging" value="yes"/>
 	<property name="resources.dir" value="resources_glassfishv3"/>
 	<property name="gds-eclipselink.lib" value="yes"/>	
+	-->
 
 	<property name="services.config" value=""/>
 	<property name="flex.application" value="Persons"/>
