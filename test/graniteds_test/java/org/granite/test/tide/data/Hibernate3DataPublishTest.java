@@ -2,7 +2,6 @@ package org.granite.test.tide.data;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -108,9 +107,11 @@ public class Hibernate3DataPublishTest {
         flush();
         close();
         
-        Set<Object[]> updates = DataContext.get().getDataUpdates();
+        Object[][] updates = DataContext.get().getUpdates();
         
-        Assert.assertEquals("1 update", 1, updates.size());
+        Assert.assertEquals("1 update", 1, updates.length);
+        Assert.assertEquals("REMOVE", updates[0][0]);
+        Assert.assertEquals(i2, updates[0][1]);
     }
     
     @Test
@@ -142,9 +143,13 @@ public class Hibernate3DataPublishTest {
         flush();
         close();
         
-        Set<Object[]> updates = DataContext.get().getDataUpdates();
+        Object[][] updates = DataContext.get().getUpdates();
         
-        Assert.assertEquals("2 updates", 2, updates.size());
+        Assert.assertEquals("2 updates", 2, updates.length);
+        Assert.assertEquals("PERSIST", updates[0][0]);
+        Assert.assertEquals(i2, updates[0][1]);
+        Assert.assertEquals("UPDATE", updates[1][0]);
+        Assert.assertEquals(o, updates[1][1]);
     }
     
     @Test
@@ -178,8 +183,14 @@ public class Hibernate3DataPublishTest {
         flush();
         close();
         
-        Set<Object[]> updates = DataContext.get().getDataUpdates();
+        Object[][] updates = DataContext.get().getUpdates();
         
-        Assert.assertEquals("3 updates", 3, updates.size());
+        Assert.assertEquals("3 updates", 3, updates.length);
+        Assert.assertEquals("PERSIST", updates[0][0]);
+        Assert.assertEquals(i2, updates[0][1]);
+        Assert.assertEquals("UPDATE", updates[1][0]);
+        Assert.assertEquals(i2, updates[1][1]);
+        Assert.assertEquals("UPDATE", updates[2][0]);
+        Assert.assertEquals(o, updates[2][1]);
     }
 }
