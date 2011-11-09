@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="org.granite.builder" default="build.jars" basedir=".">
 
-	<property name="builderVersion" value="2.3.0.RC1"/>
+	<property name="builderVersion" value="2.3.0.GA"/>
 
 	<property name="eclipse.plugins" value="/Applications/eclipse32/plugins"/>
 	
