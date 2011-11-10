@@ -471,25 +471,34 @@ public class GraniteConfig implements ScannedItemHandler {
     }
     
     public void registerExceptionConverter(Class<? extends ExceptionConverter> exceptionConverterClass) {
+        registerExceptionConverter(exceptionConverterClass, false);
+    }
+    public void registerExceptionConverter(Class<? extends ExceptionConverter> exceptionConverterClass, boolean first) {
     	for (ExceptionConverter ec : exceptionConverters) {
     		if (ec.getClass() == exceptionConverterClass)
     			return;
     	}
 		try {
 			ExceptionConverter exceptionConverter = ClassUtil.newInstance(exceptionConverterClass, ExceptionConverter.class);
-			exceptionConverters.add(exceptionConverter);
+	        if (first)
+	            exceptionConverters.add(0, exceptionConverter);
+	        else
+	            exceptionConverters.add(exceptionConverter);
 		} 
 		catch (Exception e) {
 			log.error(e, "Could not instantiate exception converter: %s", exceptionConverterClass);
 		}
     }
     
-    public void registerExceptionConverter(ExceptionConverter exceptionConverter) {
+    public void registerExceptionConverter(ExceptionConverter exceptionConverter, boolean first) {
     	for (ExceptionConverter ec : exceptionConverters) {
     		if (ec.getClass() == exceptionConverter.getClass())
     			return;
     	}
-		exceptionConverters.add(exceptionConverter);
+    	if (first)
+            exceptionConverters.add(0, exceptionConverter);
+    	else
+    	    exceptionConverters.add(exceptionConverter);
     }
 
     public boolean hasSecurityService() {
