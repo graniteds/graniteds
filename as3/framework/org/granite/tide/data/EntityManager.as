@@ -786,7 +786,7 @@ package org.granite.tide.data {
                 desc = _context.meta_tide.getEntityDescriptor(IEntity(dest));
 
                 if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
-                    if (_context.meta_tide.getEntityDescriptor(IEntity(parent)).lazy[propertyName]) {
+                    if (!isNaN(obj[desc.idPropertyName]) && _context.meta_tide.getEntityDescriptor(IEntity(parent)).lazy[propertyName]) {
                         dest.meta::defineProxy(obj[desc.idPropertyName]);
                         return dest;
                     }
