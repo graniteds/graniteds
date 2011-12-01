@@ -112,7 +112,7 @@
 	
 	<xs:element name="security-service">		
         <xs:annotation>
-			<xs:documentation></xs:documentation>
+			<xs:documentation>Spring Security service implementation</xs:documentation>
 		</xs:annotation>
         
         <xs:complexType mixed="true">
@@ -122,6 +122,8 @@
     <xs:attributeGroup name="attlist.SecurityService">
         <xs:attribute name="authentication-manager" type="xs:string"/>
         <xs:attribute name="allow-anonymous-access" type="xs:boolean" default="false"/>
+        <xs:attribute name="authentication-trust-resolver" type="xs:string"/>
+        <xs:attribute name="session-authentication-strategy" type="xs:string"/>
         <xs:attribute name="security-context-repository" type="xs:string"/>
         <xs:attribute name="security-interceptor" type="xs:string"/>
     </xs:attributeGroup>
