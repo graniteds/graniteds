@@ -499,24 +499,29 @@ package org.granite.tide.data {
 	                }
 					else if (event.kind == CollectionEventKind.REPLACE && save[i].kind == CollectionEventKind.REPLACE
 						&& event.items.length == 1 && save[i].items.length == 1
-						&& event.location == save[i].location
-						&& isSame(event.items[0].oldValue, save[i].items[0].newValue)
-						&& isSame(event.items[0].newValue, save[i].items[0].oldValue)) {
+						&& event.location == save[i].location) {
 						
-						save.splice(i, 1);
-						if (save.length == 0) {
-							delete esave[propName];
-							count = 0;
-							for (p in esave) {
-								if (p != desc.versionPropertyName)
-									count++;
+						if (isSame(event.items[0].oldValue, save[i].items[0].newValue)
+							&& isSame(event.items[0].newValue, save[i].items[0].oldValue)) {
+							
+							save.splice(i, 1);
+							if (save.length == 0) {
+								delete esave[propName];
+								count = 0;
+								for (p in esave) {
+									if (p != desc.versionPropertyName)
+										count++;
+								}
+								if (count == 0) {
+									delete _savedProperties[owner];
+									_dirtyCount--;
+								}
 							}
-							if (count == 0) {
-								delete _savedProperties[owner];
-								_dirtyCount--;
-							}
+							i--;
 						}
-						i--;
+						else {
+							save[i].items[0].newValue = event.items[0].newValue;
+						}
 						found = true;
 					}
 	            }
@@ -615,24 +620,29 @@ package org.granite.tide.data {
 	                }
 					else if (event.kind == CollectionEventKind.REPLACE && save[i].kind == CollectionEventKind.REPLACE
 						&& event.items.length == 1 && save[i].items.length == 1
-						&& event.items[0].property == save[i].property
-						&& event.items[0].oldValue == save[i].items[0].newValue
-						&& event.items[0].newValue == save[i].items[0].oldValue) {
+						&& event.items[0].property == save[i].items[0].property) {
 						
-						save.splice(i, 1);
-						if (save.length == 0) {
-							delete esave[propName];
-							count = 0;
-							for (p in esave) {
-								if (p != desc.versionPropertyName)
-									count++;
+						if (isSame(event.items[0].oldValue, save[i].items[0].newValue)
+							&& isSame(event.items[0].newValue, save[i].items[0].oldValue)) {
+						
+							save.splice(i, 1);
+							if (save.length == 0) {
+								delete esave[propName];
+								count = 0;
+								for (p in esave) {
+									if (p != desc.versionPropertyName)
+										count++;
+								}
+								if (count == 0) {
+									delete _savedProperties[owner];
+									_dirtyCount--;
+								}
 							}
-							if (count == 0) {
-								delete _savedProperties[owner];
-								_dirtyCount--;
-							}
+							i--;
 						}
-						i--;
+						else {
+							save[i].items[0].newValue = event.items[0].newValue;
+						}
 						found = true;
 					}
 	            }
