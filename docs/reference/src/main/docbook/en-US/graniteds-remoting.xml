@@ -1257,7 +1257,8 @@ public class MyBean {
                 <para>
                 Let's say you have a JavaBean like this one:
                 </para>
-                <programlisting role="JAVA">
+            </formalpara>
+            <programlisting role="JAVA">
 <![CDATA[package org.test;
 
 import java.util.Map;
@@ -1301,7 +1302,7 @@ public class MyBean {
         return encodedName;
     }
 }]]>
-             </programlisting>
+            </programlisting>
             <para>
             With this kind of Java class, even with the help of the GDS <literal>DefaultExternalizer</literal> and the Sun <literal>ReflectionFactory</literal> facility, 
             you will not be able to get the cached instance of your bean and the <literal>encodedName</literal> field will not be correctly initialized. 
@@ -1365,7 +1366,6 @@ public class MyBeanInstanciator extends AbstractInstanciator<MyBean> {
   </instanciators>
 </granite-config>]]>
             </programlisting>
-            </formalpara>
         </section>
 	</section>
 	
