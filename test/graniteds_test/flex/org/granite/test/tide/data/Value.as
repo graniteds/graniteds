@@ -28,6 +28,10 @@ package org.granite.test.tide.data {
     public class Value extends AbstractEntity {
 
 		private var _name:String;
+		
+		public function Value(name:String = null):void {
+			_name = name;
+		}
         
         
         public function set name(value:String):void {
