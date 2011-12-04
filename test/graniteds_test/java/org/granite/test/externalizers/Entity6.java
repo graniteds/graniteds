@@ -22,6 +22,7 @@ package org.granite.test.externalizers;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -37,7 +38,7 @@ public class Entity6 {
 	@Version
 	private Long version;
 	
-	@ManyToOne
+	@ManyToOne(fetch=FetchType.LAZY)
 	private Entity5 entity5;
 	
 	@Basic

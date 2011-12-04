@@ -139,6 +139,26 @@ public abstract class AbstractJPAExternalizerTest {
 		Assert.assertTrue("Entity2", obj instanceof Entity2);
 		providerSpecificAsserts((Entity2)obj);
 	}
+    
+    @Test
+    public void testSerializationUnmanagedEntity() throws Exception {
+        Entity6 e6 = new Entity6();
+        e6.setName("Test");
+        
+        GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
+        ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+        out.writeObject(e6);        
+        GraniteContext.release();
+        
+        InputStream is = new ByteArrayInputStream(baos.toByteArray());
+        gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+        Object obj = in.readObject();
+        GraniteContext.release();
+        
+        Assert.assertTrue("Entity6", obj instanceof Entity6);
+    }
 	
 	protected void providerSpecificAsserts(Entity2 obj) {
 	}

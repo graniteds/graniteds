@@ -249,7 +249,7 @@ public class EclipseLinkExternalizer extends DefaultExternalizer {
                 }
                 else {
                     ValueHolderInterface vh = (ValueHolderInterface)field.getProperty(o);
-                    if (!vh.isInstantiated())
+                    if (vh != null && !vh.isInstantiated())
                         lazyFieldNames.add(field.getName().substring("_persistence_".length(), field.getName().length()-3));
                 }
             }
