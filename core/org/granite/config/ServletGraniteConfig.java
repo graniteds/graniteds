@@ -374,7 +374,7 @@ public class ServletGraniteConfig implements ServletGraniteConfigMBean {
 	public String showExternalizersByType() {
 		List<String> names = new ArrayList<String>(config.getExternalizersByType().size());
 		for (Map.Entry<String, Externalizer> e : config.getExternalizersByType().entrySet()) {
-			if (GraniteConfig.EXTERNALIZER_FACTORY.getNullInstance() != e.getValue())
+			if (config.EXTERNALIZER_FACTORY.getNullInstance() != e.getValue())
 				names.add(e.getKey() + "=" + e.getValue().getClass().getName());
 		}
 		return MBeanUtil.format(names.toArray(new String[names.size()]), true);

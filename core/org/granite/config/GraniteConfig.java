@@ -80,10 +80,10 @@ public class GraniteConfig implements ScannedItemHandler {
     private static final String GRANITE_CONFIG_PUBLIC_ID = "-//Granite Data Services//DTD granite-config internal//EN";
     private static final String GRANITE_CONFIG_PROPERTIES = "META-INF/granite-config.properties";
 
-    static final ExternalizerFactory EXTERNALIZER_FACTORY = new ExternalizerFactory();
-    static final ActionScriptClassDescriptorFactory ASC_DESCRIPTOR_FACTORY = new ActionScriptClassDescriptorFactory();
-    static final JavaClassDescriptorFactory JC_DESCRIPTOR_FACTORY = new JavaClassDescriptorFactory();
-    static final TideComponentMatcherFactory TIDE_COMPONENT_MATCHER_FACTORY = new TideComponentMatcherFactory();
+    final ExternalizerFactory EXTERNALIZER_FACTORY = new ExternalizerFactory();
+    final ActionScriptClassDescriptorFactory ASC_DESCRIPTOR_FACTORY = new ActionScriptClassDescriptorFactory();
+    final JavaClassDescriptorFactory JC_DESCRIPTOR_FACTORY = new JavaClassDescriptorFactory();
+    final TideComponentMatcherFactory TIDE_COMPONENT_MATCHER_FACTORY = new TideComponentMatcherFactory();
 
     ///////////////////////////////////////////////////////////////////////////
     // Instance fields.
