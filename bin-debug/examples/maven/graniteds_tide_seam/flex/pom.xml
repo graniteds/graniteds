@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.graniteds.examples.tide_seam.poms</groupId>
+    <artifactId>flex</artifactId>
+    <version>2.2.0.SP1</version>
+  </parent>
+
+  <groupId>org.graniteds.examples.tide_seam</groupId>
+  <artifactId>flex</artifactId>
+  <version>2.2.0.SP1</version>
+  <packaging>swf</packaging>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.flexmojos</groupId>
+        <artifactId>flexmojos-maven-plugin</artifactId>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <phase>process-sources</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <!-- Compiler configuration -->
+          <sourcePaths>
+            <sourcePath>${basedir}/src/main/flex</sourcePath>
+            <sourcePath>${project.build.directory}/generated-sources/flexmojos</sourcePath>
+          </sourcePaths>
+          <!-- Generator configuration -->
+          <includeJavaClasses>
+            <includeJavaClass>test.granite.ejb3.entity.*</includeJavaClass>
+          </includeJavaClasses>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.graniteds</groupId>
+      <artifactId>granite-essentials-swc</artifactId>
+      <type>swc</type>
+    </dependency>
+    <dependency>
+      <groupId>org.graniteds</groupId>
+      <artifactId>granite-swc</artifactId>
+      <type>swc</type>
+    </dependency>
+
+    <!-- Use for generation purposes -->
+    <dependency>
+      <groupId>org.graniteds.examples.tide_seam</groupId>
+      <artifactId>core</artifactId>
+      <version>2.2.0.SP1</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>

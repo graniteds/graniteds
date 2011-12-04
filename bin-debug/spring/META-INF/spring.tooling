@@ -1,0 +1,4 @@
+# Tooling related information for the graniteds namespace
+http\://www.graniteds.org/config@name=GraniteDS Namespace
+http\://www.graniteds.org/config@prefix=graniteds
+http\://www.graniteds.org/config@icon=org/graniteds/spring/graniteds.gif

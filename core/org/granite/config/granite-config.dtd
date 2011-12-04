@@ -34,7 +34,8 @@
     security?,
     tide-components?,
     message-selector?,
-    gravity?
+    gravity?,
+    exception-log-levels?
 )>
 <!ATTLIST granite-config
 	scan (true|false) "false"
@@ -64,6 +65,9 @@
 <!ELEMENT converters (
 	converter*
 )>
+<!ELEMENT exception-log-levels (
+	loglevel*
+)>
 <!ATTLIST converters
 	override (true|false) "false"
 >
@@ -71,7 +75,11 @@
 <!ATTLIST converter
 	type CDATA #REQUIRED
 >
-
+<!ELEMENT loglevel EMPTY>
+<!ATTLIST loglevel
+	code CDATA #REQUIRED
+	level CDATA #REQUIRED
+>
 <!ELEMENT method-matcher EMPTY>
 <!ATTLIST method-matcher
 	type CDATA #REQUIRED

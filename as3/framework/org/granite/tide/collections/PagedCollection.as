@@ -108,7 +108,7 @@ package org.granite.tide.collections {
 		
 		// GDS-712
 		public var multipleSort:Boolean = true;
-		
+		public var rowCounts:int=0;
 		public var dispatchResetOnInit:Boolean = Tide.detectFlex4();		
 		public var throwIPEDuringResponders:Boolean = false;
 		public var triggerRefreshOnIPEWithoutResponder:Boolean = false;
@@ -370,6 +370,7 @@ package org.granite.tide.collections {
 			// log.debug("findResult page {0} ({1} - {2})", page, nextFirst, nextLast);
 			
 			var newCount:int = result.resultCount;
+			rowCounts=newCount;
 			if (newCount != _count) {
 			    var pce:PropertyChangeEvent = PropertyChangeEvent.createUpdateEvent(this, "length", _count, newCount); 
 				_count = newCount;

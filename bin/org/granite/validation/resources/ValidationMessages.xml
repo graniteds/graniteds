@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<properties>
+	<entry key="javax.validation.constraints.AssertFalse.message">must be false</entry>
+	<entry key="javax.validation.constraints.AssertTrue.message">must be true</entry>
+	<entry key="javax.validation.constraints.DecimalMax.message">must be less than or equal to {value}</entry>
+	<entry key="javax.validation.constraints.DecimalMin.message">must be greater than or equal to {value}</entry>
+	<entry key="javax.validation.constraints.Digits.message">numeric value out of bounds (&lt;{integer} digits&gt;.&lt;{fraction} digits&gt; expected)</entry>
+	<entry key="javax.validation.constraints.Future.message">must be in the future</entry>
+	<entry key="javax.validation.constraints.Max.message">must be less than or equal to {value}</entry>
+	<entry key="javax.validation.constraints.Min.message">must be greater than or equal to {value}</entry>
+	<entry key="javax.validation.constraints.NotNull.message">may not be null</entry>
+	<entry key="javax.validation.constraints.Null.message">must be null</entry>
+	<entry key="javax.validation.constraints.Past.message">must be in the past</entry>
+	<entry key="javax.validation.constraints.Pattern.message">must match "{regexp}"</entry>
+	<entry key="javax.validation.constraints.Size.message">size must be between {min} and {max}</entry>
+</properties>

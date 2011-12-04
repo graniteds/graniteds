@@ -139,6 +139,7 @@ public class GraniteConfig implements ScannedItemHandler {
     
     // Exception converters
     private final List<ExceptionConverter> exceptionConverters = new ArrayList<ExceptionConverter>();
+    private final Map<String, String> exceptionLogLevels = new HashMap<String, String>();
 
     // Tide-enabled Components configuration.
     private final ConcurrentHashMap<String, Object[]> enabledTideComponentsByName = new ConcurrentHashMap<String, Object[]>();
@@ -307,6 +308,10 @@ public class GraniteConfig implements ScannedItemHandler {
             
             if (ExceptionConverter.class.isAssignableFrom(clazz)) {
                 try {
+                	for (ExceptionConverter ec : exceptionConverters) {
+                		if (ec.getClass() == clazz)
+                			return;
+                	}
                     exceptionConverters.add(ClassUtil.newInstance(clazz, ExceptionConverter.class));
                 } catch (Exception e) {
                 	if (!clazz.getName().equals("org.granite.tide.hibernate.HibernateValidatorExceptionConverter"))	// GDS-582
@@ -470,7 +475,12 @@ public class GraniteConfig implements ScannedItemHandler {
         return exceptionConverters;
     }
     
-    public void registerExceptionConverter(Class<? extends ExceptionConverter> exceptionConverterClass) {
+    public Map<String, String> getExceptionLogLevels() {
+		return exceptionLogLevels;
+	}
+
+
+	public void registerExceptionConverter(Class<? extends ExceptionConverter> exceptionConverterClass) {
     	for (ExceptionConverter ec : exceptionConverters) {
     		if (ec.getClass() == exceptionConverterClass)
     			return;
@@ -551,6 +561,7 @@ public class GraniteConfig implements ScannedItemHandler {
         loadCustomExternalizers(element, custom);
         loadCustomDescriptors(element, custom);
         loadCustomExceptionConverters(element, custom);
+        loadCustomExceptionLogLevels(element, custom);
         loadCustomTideComponents(element, custom);
         loadCustomSecurity(element, custom);
         loadCustomMessageSelector(element, custom);
@@ -770,13 +781,27 @@ public class GraniteConfig implements ScannedItemHandler {
             ExceptionConverter converter = null;
             try {
                 converter = (ExceptionConverter)ClassUtil.newInstance(type);
+                for (ExceptionConverter ec : exceptionConverters) {
+            		if (ec.getClass() == converter.getClass())
+            			return;
+            	}
                 exceptionConverters.add(converter);
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not construct exception converter: " + type, e);
             }
         }
     }
-
+    private void loadCustomExceptionLogLevels(XMap element, boolean custom) {
+    	 XMap logLevels = element.getOne("exception-log-levels");
+         if (logLevels != null) {
+             for (XMap logLevel : logLevels.getAll("loglevel")) {
+                 String code = logLevel.get("@code");
+                 String level = logLevel.get("@level");
+                 exceptionLogLevels.put(code,level);
+             }
+         }
+    }
+    
     private void loadCustomTideComponents(XMap element, boolean custom) {
         for (XMap component : element.getAll("tide-components/tide-component")) {
             boolean disabled = Boolean.TRUE.toString().equals(component.get("@disabled"));
