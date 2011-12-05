@@ -39,7 +39,11 @@ public class TideDataPublishingAdviceBeanDefinitionParser implements BeanDefinit
 
 
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		AopAutoProxyConfigurer.configureAutoProxyCreator(element, parserContext);
+	    String mode = element.getAttribute("mode");
+	    if ("proxy".equals(mode))
+	        AopAutoProxyConfigurer.configureAutoProxyCreator(element, parserContext);
+	    else if ("aspectj".equals(mode))
+	        AspectJAopAutoProxyConfigurer.configureAutoProxyCreator(element, parserContext);
 		return null;
 	}
 
@@ -58,14 +62,47 @@ public class TideDataPublishingAdviceBeanDefinitionParser implements BeanDefinit
 				interceptorDef.setSource(parserContext.extractSource(element));
 				interceptorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 				interceptorDef.getPropertyValues().addPropertyValue("gravity", new RuntimeBeanReference(FlexFilterBeanDefinitionParser.GRAVITY_FACTORY_BEAN_NAME));
+				String postprocessorRef = element.getAttribute("data-update-postprocessor");
+				if (postprocessorRef != null && postprocessorRef.trim().length() > 0)
+				    interceptorDef.getPropertyValues().addPropertyValue("dataUpdatePostprocessor", new RuntimeBeanReference(postprocessorRef));
 
 				RootBeanDefinition advisorDef = new RootBeanDefinition(TideDataPublishingAdvisor.class);
 				advisorDef.setSource(parserContext.extractSource(element));
 				advisorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 				advisorDef.getPropertyValues().addPropertyValue("dataPublishingInterceptor", interceptorDef);
+                String order = element.getAttribute("order");
+                if (order != null && order.trim().length() > 0)
+                    advisorDef.getPropertyValues().addPropertyValue("order", Integer.parseInt(order));                 
 
 				parserContext.registerBeanComponent(new BeanComponentDefinition(advisorDef, DATA_PUBLISHING_ADVISOR_BEAN_NAME));
 			}
 		}
 	}
+	
+	
+    /**
+     * Inner class to just introduce an AOP framework dependency when actually in proxy mode.
+     */
+    private static class AspectJAopAutoProxyConfigurer {
+
+        public static void configureAutoProxyCreator(Element element, ParserContext parserContext) {
+            AopNamespaceUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(parserContext, element);
+
+            if (!parserContext.getRegistry().containsBeanDefinition(DATA_PUBLISHING_ADVISOR_BEAN_NAME)) {
+                // Create the TransactionInterceptor definition.
+                RootBeanDefinition aspectDef = new RootBeanDefinition(TideDataPublishingAspect.class);
+                aspectDef.setSource(parserContext.extractSource(element));
+                aspectDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+                aspectDef.getPropertyValues().addPropertyValue("gravity", new RuntimeBeanReference(FlexFilterBeanDefinitionParser.GRAVITY_FACTORY_BEAN_NAME));
+                String postprocessorRef = element.getAttribute("data-update-postprocessor");
+                if (postprocessorRef != null && postprocessorRef.trim().length() > 0)
+                    aspectDef.getPropertyValues().addPropertyValue("dataUpdatePostprocessor", new RuntimeBeanReference(postprocessorRef));
+                String order = element.getAttribute("order");
+                if (order != null && order.trim().length() > 0)
+                    aspectDef.getPropertyValues().addPropertyValue("order", Integer.parseInt(order));                 
+
+                parserContext.registerBeanComponent(new BeanComponentDefinition(aspectDef, DATA_PUBLISHING_ADVISOR_BEAN_NAME));
+            }
+        }
+    }
 }

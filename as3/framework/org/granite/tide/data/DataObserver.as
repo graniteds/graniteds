@@ -23,18 +23,21 @@ package org.granite.tide.data {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.getQualifiedClassName;
-    import mx.logging.ILogger;
-    import mx.logging.Log;
-    import mx.messaging.events.MessageAckEvent;
+	
+	import mx.logging.ILogger;
+	import mx.logging.Log;
+	import mx.messaging.events.ChannelFaultEvent;
+	import mx.messaging.events.MessageAckEvent;
+	import mx.messaging.events.MessageEvent;
 	import mx.messaging.events.MessageFaultEvent;
-    import mx.messaging.events.MessageEvent;
-    import org.granite.gravity.Consumer;
-    import org.granite.util.ClassUtil;
-    import org.granite.tide.BaseContext;
-	import org.granite.tide.Tide;
+	
+	import org.granite.gravity.Consumer;
+	import org.granite.tide.BaseContext;
 	import org.granite.tide.IComponent;
+	import org.granite.tide.Tide;
+	import org.granite.tide.events.TideSubscriptionEvent;
 	import org.granite.tide.service.IServiceInitializer;
-    import org.granite.tide.events.TideSubscriptionEvent;
+	import org.granite.util.ClassUtil;
     
 
 	[Bindable]
@@ -100,6 +103,7 @@ package org.granite.tide.data {
 		    _consumer.subscribe();
 			_consumer.addEventListener(MessageAckEvent.ACKNOWLEDGE, subscribeHandler);
 			_consumer.addEventListener(MessageFaultEvent.FAULT, subscribeFaultHandler);
+			_consumer.addEventListener(ChannelFaultEvent.FAULT, subscribeFaultHandler);
 		    _consumer.addEventListener(MessageEvent.MESSAGE, messageHandler);
 		}
 		
@@ -107,13 +111,15 @@ package org.granite.tide.data {
 			log.info("destination {0} subscribed", meta_name);
 			_consumer.removeEventListener(MessageAckEvent.ACKNOWLEDGE, subscribeHandler);
 			_consumer.removeEventListener(MessageFaultEvent.FAULT, subscribeFaultHandler);
+			_consumer.removeEventListener(ChannelFaultEvent.FAULT, subscribeFaultHandler);
 			dispatchEvent(new TideSubscriptionEvent(TideSubscriptionEvent.TOPIC_SUBSCRIBED));
 		}
 		
-		private function subscribeFaultHandler(event:MessageFaultEvent):void {
+		private function subscribeFaultHandler(event:Event):void {
 			log.error("destination {0} could not be subscribed: {1}", meta_name, event.toString());
 			_consumer.removeEventListener(MessageAckEvent.ACKNOWLEDGE, subscribeHandler);
 			_consumer.removeEventListener(MessageFaultEvent.FAULT, subscribeFaultHandler);
+			_consumer.removeEventListener(ChannelFaultEvent.FAULT, subscribeFaultHandler);
 			dispatchEvent(new TideSubscriptionEvent(TideSubscriptionEvent.TOPIC_SUBSCRIBED_FAULT));
 		}
 
@@ -121,10 +127,11 @@ package org.granite.tide.data {
 		 *  Unsubscribe the data topic
 		 */
 		public function unsubscribe():void {
-			if (!_consumer.connected)
+			if (!_consumer.connected || !_consumer.subscribed)
 				return;
 		    _consumer.addEventListener(MessageAckEvent.ACKNOWLEDGE, unsubscribeHandler);
 			_consumer.addEventListener(MessageFaultEvent.FAULT, unsubscribeFaultHandler);
+			_consumer.addEventListener(ChannelFaultEvent.FAULT, unsubscribeFaultHandler);
 		    _context.meta_tide.checkWaitForLogout();
 		    _consumer.unsubscribe();
 		}
@@ -133,15 +140,17 @@ package org.granite.tide.data {
 			log.info("destination {0} unsubscribed", meta_name);
 		    _consumer.removeEventListener(MessageAckEvent.ACKNOWLEDGE, unsubscribeHandler);
 			_consumer.removeEventListener(MessageFaultEvent.FAULT, unsubscribeFaultHandler);
-		    _consumer.disconnect();
+			_consumer.removeEventListener(ChannelFaultEvent.FAULT, unsubscribeFaultHandler);
+	    	_consumer.disconnect();
 		    _context.meta_tide.tryLogout();
 			dispatchEvent(new TideSubscriptionEvent(TideSubscriptionEvent.TOPIC_UNSUBSCRIBED));
 		}
 		
-		private function unsubscribeFaultHandler(event:MessageFaultEvent):void {
+		private function unsubscribeFaultHandler(event:Event):void {
 			log.error("destination {0} could not be unsubscribed: {1}", meta_name, event.toString());
 			_consumer.removeEventListener(MessageAckEvent.ACKNOWLEDGE, unsubscribeHandler);
 			_consumer.removeEventListener(MessageFaultEvent.FAULT, unsubscribeFaultHandler);
+			_consumer.removeEventListener(ChannelFaultEvent.FAULT, unsubscribeFaultHandler);
 			_consumer.disconnect();
 			_context.meta_tide.tryLogout();
 			dispatchEvent(new TideSubscriptionEvent(TideSubscriptionEvent.TOPIC_UNSUBSCRIBED_FAULT));

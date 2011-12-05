@@ -20,6 +20,7 @@
 
 package flex.messaging.messages;
 
+import org.apache.log4j.Logger;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.security.SecurityServiceException;
 
@@ -34,6 +35,8 @@ import java.util.Map;
 public class ErrorMessage extends AcknowledgeMessage {
 
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger log = Logger.getLogger("org.granite.logging.ExceptionStackTrace");
 
     private String faultCode = "Server.Call.Failed";
     private String faultDetail;
@@ -91,16 +94,20 @@ public class ErrorMessage extends AcknowledgeMessage {
         }
         else if (t != null) {
             this.faultString = t.getMessage();
-            this.faultDetail = getStackTrace(t);
+            this.faultDetail = t.getMessage();
         }
 
         if (!(t instanceof SecurityServiceException)) {
             for (Throwable root = t; root != null; root = root.getCause())
                 rootCause = root;
         }
+        if (rootCause != null && !log.isDebugEnabled())
+            rootCause = ((Throwable)rootCause).getMessage();
     }
 
     private String getStackTrace(Throwable t) {
+    	if (!log.isDebugEnabled())
+    		return "";
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
         return sw.toString().replace("\r\n", "\n").replace('\r', '\n');

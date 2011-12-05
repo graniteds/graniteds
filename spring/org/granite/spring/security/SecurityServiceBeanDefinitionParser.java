@@ -62,6 +62,14 @@ public class SecurityServiceBeanDefinitionParser extends AbstractSingleBeanDefin
         String securityInterceptor = element.getAttribute("security-interceptor");
         if (securityInterceptor != null && securityInterceptor.trim().length() > 0)
         	builder.addPropertyReference("securityInterceptor", securityInterceptor);
+        
+        String authenticationTrustResolver = element.getAttribute("authentication-trust-resolver");
+        if (authenticationTrustResolver != null && authenticationTrustResolver.trim().length() > 0)
+            builder.addPropertyReference("authenticationTrustResolver", authenticationTrustResolver);
+        
+        String sessionAuthenticationStrategy = element.getAttribute("session-authentication-strategy");
+        if (sessionAuthenticationStrategy != null && sessionAuthenticationStrategy.trim().length() > 0)
+            builder.addPropertyReference("sessionAuthenticationStrategy", sessionAuthenticationStrategy);
     }
 
     @Override

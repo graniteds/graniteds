@@ -41,6 +41,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -49,6 +50,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.session.SessionAuthenticationException;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
 import org.springframework.security.web.context.HttpRequestResponseHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -57,6 +61,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * @author Bouiaw
+ * @author wdrai
  */
 public class SpringSecurity3Service extends AbstractSecurityService {
         
@@ -66,8 +71,10 @@ public class SpringSecurity3Service extends AbstractSecurityService {
     private static final String SECURITY_SERVICE_APPLIED = "__spring_security_granite_service_applied";
 	
 	private AuthenticationManager authenticationManager = null;
+	private AuthenticationTrustResolverImpl authenticationTrustResolver = new AuthenticationTrustResolverImpl();
 	private SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 	private AbstractSpringSecurity3Interceptor securityInterceptor = null;
+	private SessionAuthenticationStrategy sessionAuthenticationStrategy = new SessionFixationProtectionStrategy();
 	private String authenticationManagerBeanName = null;
 	private boolean allowAnonymousAccess = false;
 	private Method getRequest = null;
@@ -103,6 +110,12 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 	public void setSecurityInterceptor(AbstractSpringSecurity3Interceptor securityInterceptor) {
 		this.securityInterceptor = securityInterceptor;
 	}
+	
+	public void setSessionAuthenticationStrategy(SessionAuthenticationStrategy sessionAuthenticationStrategy) {
+		if (sessionAuthenticationStrategy == null)
+			throw new NullPointerException("SessionAuthenticationStrategy cannot be null");
+		this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
+	}
 
     public void configure(Map<String, String> params) {
         log.debug("Configuring with parameters %s: ", params);
@@ -130,6 +143,18 @@ public class SpringSecurity3Service extends AbstractSecurityService {
             
             try {
                 Authentication authentication = authenticationManager.authenticate(auth);
+                
+                if (authentication != null && !authenticationTrustResolver.isAnonymous(authentication)) {
+                	try {
+                		sessionAuthenticationStrategy.onAuthentication(authentication, httpRequest, graniteContext.getResponse());
+                    } 
+                	catch (SessionAuthenticationException e) {
+                        log.debug(e, "SessionAuthenticationStrategy rejected the authentication object");
+                        SecurityContextHolder.clearContext();
+                        handleAuthenticationExceptions(e);
+                        return;
+                    }                
+                }
                 
                 HttpRequestResponseHolder holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
     	        SecurityContext securityContext = securityContextRepository.loadContext(holder);

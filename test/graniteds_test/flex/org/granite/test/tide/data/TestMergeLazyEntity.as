@@ -1,12 +1,11 @@
 package org.granite.test.tide.data
 {
     import org.flexunit.Assert;
-    
     import org.granite.meta;
-    import org.granite.tide.BaseContext;
-    import org.granite.tide.Tide;
     import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
+    import org.granite.tide.BaseContext;
+    import org.granite.tide.Tide;
     
     
     public class TestMergeLazyEntity 
@@ -63,5 +62,23 @@ package org.granite.test.tide.data
         	
         	Assert.assertTrue("Person still initialized", contact.person.meta::isInitialized());
         }
+		
+		
+		[Test]
+		public function testMergeLazyEntity2():void {
+			var contact:Contact4 = new Contact4();
+			contact.id = 1;
+			contact.uid = "C1";
+			contact.version = 0;
+			
+			contact = Contact4(_ctx.meta_mergeExternal(contact));
+			
+			contact.person = new Person11();
+			
+			var tmp:BaseContext = _ctx.newTemporaryContext();
+			var c:Contact4 = Contact4(tmp.meta_mergeFromContext(_ctx, contact, false, true));
+			
+			Assert.assertTrue("Person initialized", c.person.meta::isInitialized());
+		}
     }
 }

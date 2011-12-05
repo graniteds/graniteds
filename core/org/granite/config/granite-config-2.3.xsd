@@ -112,7 +112,7 @@
 	
 	<xs:element name="security-service">		
         <xs:annotation>
-			<xs:documentation></xs:documentation>
+			<xs:documentation>Spring Security service implementation</xs:documentation>
 		</xs:annotation>
         
         <xs:complexType mixed="true">
@@ -122,6 +122,8 @@
     <xs:attributeGroup name="attlist.SecurityService">
         <xs:attribute name="authentication-manager" type="xs:string"/>
         <xs:attribute name="allow-anonymous-access" type="xs:boolean" default="false"/>
+        <xs:attribute name="authentication-trust-resolver" type="xs:string"/>
+        <xs:attribute name="session-authentication-strategy" type="xs:string"/>
         <xs:attribute name="security-context-repository" type="xs:string"/>
         <xs:attribute name="security-interceptor" type="xs:string"/>
     </xs:attributeGroup>
@@ -257,10 +259,26 @@
         <xs:attribute name="object-identity-retrieval-strategy" type="xs:string"/>
     </xs:attributeGroup>
     
+    <xs:simpleType name="adviceMode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="proxy"/>
+            <xs:enumeration value="aspectj"/>
+        </xs:restriction>
+    </xs:simpleType> 
+  
     <xs:element name="tide-data-publishing-advice">       
         <xs:annotation>
             <xs:documentation></xs:documentation>
         </xs:annotation>
+        
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="graniteds:attlist.TideDataPublishingAdvice" />
+        </xs:complexType>
     </xs:element>
+    <xs:attributeGroup name="attlist.TideDataPublishingAdvice">
+        <xs:attribute name="order" type="xs:int"/>
+        <xs:attribute name="mode" type="adviceMode" default="proxy"/>
+        <xs:attribute name="data-update-postprocessor" type="xs:string"/>
+    </xs:attributeGroup>
     
 </xs:schema>

@@ -28,6 +28,7 @@ import javax.servlet.ServletContext;
 
 import org.granite.config.AbstractFrameworkGraniteConfig;
 import org.granite.logging.Logger;
+import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.util.ClassUtil;
 import org.springframework.beans.factory.InitializingBean;
@@ -69,6 +70,10 @@ public class SpringGraniteConfig extends AbstractFrameworkGraniteConfig implemen
     
     public void afterPropertiesSet() throws IOException, SAXException {
     	init(servletContext, "org/granite/spring/granite-config-spring.xml");
+    	
+    	Map<String, ExceptionConverter> exceptionConvertersMap = applicationContext.getBeansOfType(ExceptionConverter.class);
+    	for (ExceptionConverter exceptionConverter : exceptionConvertersMap.values())
+    	    getGraniteConfig().registerExceptionConverter(exceptionConverter, true);
     	
     	if (getGraniteConfig().getSecurityService() == null) {
     		Map<String, ?> servicesMap = applicationContext.getBeansOfType(SecurityService.class);

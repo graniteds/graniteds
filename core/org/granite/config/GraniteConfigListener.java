@@ -221,12 +221,12 @@ public class GraniteConfigListener implements ServletContextListener {
     	}
         
     	for (Class<? extends ExceptionConverter> ec : flexFilter.exceptionConverters()) {
-    		graniteConfig.registerExceptionConverter(ec);
+    		graniteConfig.registerExceptionConverter(ec, true);
 			log.debug("Registered exception converter %s", ec);
     	}
     	if (configProvider != null) {
     		for (ExceptionConverter ec : configProvider.findInstances(ExceptionConverter.class)) {
-    			graniteConfig.registerExceptionConverter(ec);
+    			graniteConfig.registerExceptionConverter(ec, true);
     			log.debug("Registered exception converter %s", ec.getClass());
     		}
     	}
