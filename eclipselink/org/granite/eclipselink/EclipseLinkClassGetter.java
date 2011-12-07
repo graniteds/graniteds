@@ -79,9 +79,34 @@ public class EclipseLinkClassGetter extends DefaultClassGetter {
     
     @Override
     public boolean isInitialized(Object owner, String propertyName, Object propertyValue) {
-        if (propertyValue instanceof ValueHolderInterface)
+        Object value = propertyValue;
+        if (owner != null) {
+            Field vhf = null;
+            Class<?> c = owner.getClass();
+            while (c != null && c != Object.class) {
+                for (Field f : c.getDeclaredFields()) {
+                    if (f.getName().equals("_persistence_" + propertyName + "_vh")) {
+                        vhf = f;
+                        break;
+                    }
+                }
+                if (vhf != null)
+                    break;
+                c = c.getSuperclass();
+            }
+            if (vhf != null) {
+                try {
+                    vhf.setAccessible(true);
+                    value = vhf.get(owner);
+                }
+                catch (Exception e) {
+                    log.error(e, "Could not get persistence ValueHolder " + propertyName + " for class " + owner.getClass());
+                }
+            }
+        }        
+        if (value instanceof ValueHolderInterface)
             return ((ValueHolderInterface)propertyValue).isInstantiated();
-        else if (propertyValue instanceof IndirectContainer)
+        else if (value instanceof IndirectContainer)
             return ((IndirectContainer)propertyValue).isInstantiated();
         
         return true;
@@ -96,7 +121,8 @@ public class EclipseLinkClassGetter extends DefaultClassGetter {
     }
     
     @Override
-    public List<Object[]> getFieldValues(Object obj, Object dest) {
+    public List<Object
+    []> getFieldValues(Object obj, Object dest) {
         List<Object[]> fieldValues = new ArrayList<Object[]>();
         
         List<String> topLinkVhs = new ArrayList<String>();
