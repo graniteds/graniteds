@@ -137,7 +137,8 @@ public abstract class AbstractJPAExternalizerTest {
 		GraniteContext.release();
 		
 		Assert.assertTrue("Entity2", obj instanceof Entity2);
-		Assert.assertFalse("Entity 2 entities not loaded", Persistence.getPersistenceUtil().isLoaded(((Entity2)obj).getEntity(), "entities"));
+		if (gc.getGraniteConfig().getClassGetter().getClass().getName().indexOf("hibernate") >= 0)
+		    Assert.assertFalse("Entity 2 entities not loaded", gc.getGraniteConfig().getClassGetter().isInitialized(((Entity2)obj).getEntity(), "entities", ((Entity2)obj).getEntity().getEntities()));
 	}
     
     @Test
@@ -183,13 +184,12 @@ public abstract class AbstractJPAExternalizerTest {
         
         e7 = entityManager.find(Entity7.class, e7.getId());
         
-        Assert.assertFalse("Entity8 not loaded", Persistence.getPersistenceUtil().isLoaded(e7, "entity8"));
-        
         entityManager.flush();
         et.commit();
         entityManager.close();
         
         GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        
         ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
         ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
         
@@ -203,7 +203,7 @@ public abstract class AbstractJPAExternalizerTest {
         GraniteContext.release();
         
         Assert.assertTrue("Entity7", obj instanceof Entity7);
-        Assert.assertFalse("Entity8 not loaded", Persistence.getPersistenceUtil().isLoaded(obj, "entity8"));
+        Assert.assertFalse("Entity8 not loaded", gc.getGraniteConfig().getClassGetter().isInitialized(obj, "entity8", ((Entity7)obj).getEntity8()));
     }
     
     @Test
@@ -231,8 +231,6 @@ public abstract class AbstractJPAExternalizerTest {
         
         e7 = entityManager.find(Entity7.class, e7.getId());
         
-        Assert.assertFalse("Entity8 not loaded", Persistence.getPersistenceUtil().isLoaded(e7, "entity8"));
-        
         gc.getGraniteConfig().getClassGetter().initialize(e7, "entity8", e7.getEntity8());
         
         entityManager.flush();
@@ -251,6 +249,6 @@ public abstract class AbstractJPAExternalizerTest {
         GraniteContext.release();
         
         Assert.assertTrue("Entity7", obj instanceof Entity7);
-        Assert.assertTrue("Entity8 loaded", Persistence.getPersistenceUtil().isLoaded(obj, "entity8"));
+        Assert.assertTrue("Entity8 loaded", gc.getGraniteConfig().getClassGetter().isInitialized(obj, "entity8", ((Entity7)obj).getEntity8()));
     }
 }
