@@ -105,9 +105,9 @@ public class EclipseLinkClassGetter extends DefaultClassGetter {
             }
         }        
         if (value instanceof ValueHolderInterface)
-            return ((ValueHolderInterface)propertyValue).isInstantiated();
+            return ((ValueHolderInterface)value).isInstantiated();
         else if (value instanceof IndirectContainer)
-            return ((IndirectContainer)propertyValue).isInstantiated();
+            return ((IndirectContainer)value).isInstantiated();
         
         return true;
     }
