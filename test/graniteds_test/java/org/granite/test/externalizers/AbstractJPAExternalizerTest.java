@@ -137,7 +137,7 @@ public abstract class AbstractJPAExternalizerTest {
 		GraniteContext.release();
 		
 		Assert.assertTrue("Entity2", obj instanceof Entity2);
-		providerSpecificAsserts((Entity2)obj);
+		Assert.assertFalse("Entity 2 entities not loaded", Persistence.getPersistenceUtil().isLoaded(((Entity2)obj).getEntity(), "entities"));
 	}
     
     @Test
@@ -159,7 +159,98 @@ public abstract class AbstractJPAExternalizerTest {
         
         Assert.assertTrue("Entity6", obj instanceof Entity6);
     }
-	
-	protected void providerSpecificAsserts(Entity2 obj) {
-	}
+    
+    @Test
+    public void testSerializationProxy() throws Exception {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityTransaction et = entityManager.getTransaction();
+        et.begin();
+        
+        Entity8 e8 = new Entity8();
+        e8.setName("Test");
+        Entity7 e7 = new Entity7();
+        e7.setName("Test");
+        e7.setEntity8(e8);
+        entityManager.persist(e7);
+        
+        entityManager.flush();
+        et.commit();
+        entityManager.close();
+        
+        entityManager = entityManagerFactory.createEntityManager();     
+        et = entityManager.getTransaction();
+        et.begin();
+        
+        e7 = entityManager.find(Entity7.class, e7.getId());
+        
+        Assert.assertFalse("Entity8 not loaded", Persistence.getPersistenceUtil().isLoaded(e7, "entity8"));
+        
+        entityManager.flush();
+        et.commit();
+        entityManager.close();
+        
+        GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
+        ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+        
+        out.writeObject(e7);        
+        GraniteContext.release();
+        
+        InputStream is = new ByteArrayInputStream(baos.toByteArray());
+        gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+        Object obj = in.readObject();
+        GraniteContext.release();
+        
+        Assert.assertTrue("Entity7", obj instanceof Entity7);
+        Assert.assertFalse("Entity8 not loaded", Persistence.getPersistenceUtil().isLoaded(obj, "entity8"));
+    }
+    
+    @Test
+    public void testSerializationProxy2() throws Exception {
+        GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityTransaction et = entityManager.getTransaction();
+        et.begin();
+        
+        Entity8 e8 = new Entity8();
+        e8.setName("Test");
+        Entity7 e7 = new Entity7();
+        e7.setName("Test");
+        e7.setEntity8(e8);
+        entityManager.persist(e7);
+        
+        entityManager.flush();
+        et.commit();
+        entityManager.close();
+        
+        entityManager = entityManagerFactory.createEntityManager();     
+        et = entityManager.getTransaction();
+        et.begin();
+        
+        e7 = entityManager.find(Entity7.class, e7.getId());
+        
+        Assert.assertFalse("Entity8 not loaded", Persistence.getPersistenceUtil().isLoaded(e7, "entity8"));
+        
+        gc.getGraniteConfig().getClassGetter().initialize(e7, "entity8", e7.getEntity8());
+        
+        entityManager.flush();
+        et.commit();
+        entityManager.close();
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
+        ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+        out.writeObject(e7);        
+        GraniteContext.release();
+        
+        InputStream is = new ByteArrayInputStream(baos.toByteArray());
+        gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+        Object obj = in.readObject();
+        GraniteContext.release();
+        
+        Assert.assertTrue("Entity7", obj instanceof Entity7);
+        Assert.assertTrue("Entity8 loaded", Persistence.getPersistenceUtil().isLoaded(obj, "entity8"));
+    }
 }

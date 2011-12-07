@@ -279,12 +279,14 @@ public class HibernateExternalizer extends DefaultExternalizer {
         ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
         Class<?> oClass = classGetter.getClass(o);
 
+        String detachedState = null;
+        
         if (o instanceof HibernateProxy) {        	
             HibernateProxy proxy = (HibernateProxy)o;
+            detachedState = getProxyDetachedState(proxy);
 
             // Only write initialized flag & detachedState & entity id if proxy is uninitialized.
             if (proxy.getHibernateLazyInitializer().isUninitialized()) {
-            	String detachedState = getProxyDetachedState(proxy);
             	Serializable id = proxy.getHibernateLazyInitializer().getIdentifier();
             	log.debug("Writing uninitialized HibernateProxy %s with id %s", detachedState, id);
             	
@@ -311,9 +313,9 @@ public class HibernateExternalizer extends DefaultExternalizer {
 	            // Write initialized flag.
 	            out.writeObject(Boolean.TRUE);
 	            // Write detachedState.
-	            out.writeObject(null);
+	            out.writeObject(detachedState);
         	}
-	          
+	        
             // Externalize entity fields.
             List<Property> fields = findOrderedFields(oClass, false);
             log.debug("Writing entity %s with fields %s", o.getClass().getName(), fields);

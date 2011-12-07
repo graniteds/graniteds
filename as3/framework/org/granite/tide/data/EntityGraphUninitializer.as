@@ -130,7 +130,7 @@ package org.granite.tide.data {
                         dirty = true;
                     else if (desc != null && v is IEntity && desc.lazy[p] && !traversed) {
                         var proxy:Object = Type.forInstance(v).constructor.newInstance();
-                        proxy.meta::defineProxy(v[_context.meta_tide.getEntityDescriptor(IEntity(v)).idPropertyName]);
+                        proxy.meta::defineProxy(v);
                         entity[p] = proxy;
                     }
                 }

@@ -21,6 +21,7 @@ package org.granite.test.tide {
     use namespace tide;
 
     [Managed]
+	[Lazy]
     [RemoteClass(alias="org.granite.test.tide.Classification")]
     public class Classification extends AbstractEntity {
 
@@ -39,6 +40,7 @@ package org.granite.test.tide {
         public function set subclasses(value:ListCollectionView):void {
             _subclasses = value;
         }
+		[Lazy]
         public function get subclasses():ListCollectionView {
             return _subclasses;
         }
@@ -46,6 +48,7 @@ package org.granite.test.tide {
 		public function set superclasses(value:ListCollectionView):void {
 			_superclasses = value;
 		}
+		[Lazy]
 		public function get superclasses():ListCollectionView {
 			return _superclasses;
 		}

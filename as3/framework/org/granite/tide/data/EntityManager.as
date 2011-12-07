@@ -786,8 +786,9 @@ package org.granite.tide.data {
                 desc = _context.meta_tide.getEntityDescriptor(IEntity(dest));
 
                 if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
-                    if (!isNaN(obj[desc.idPropertyName]) && _context.meta_tide.getEntityDescriptor(IEntity(parent)).lazy[propertyName]) {
-                        dest.meta::defineProxy(obj[desc.idPropertyName]);
+                    if (desc.versionPropertyName != null && !isNaN(obj[desc.versionPropertyName]) 
+							&& _context.meta_tide.getEntityDescriptor(IEntity(parent)).lazy[propertyName]) {
+                        dest.meta::defineProxy(obj);
                         return dest;
                     }
                 }
@@ -929,7 +930,7 @@ package org.granite.tide.data {
             if (previous && previous is IList)
                 list = IList(previous);
             else if (_mergeContext.sourceContext != null)
-            	list = ObjectUtil.copy(coll) as IList;
+				list = Type.forInstance(coll).constructor.newInstance() as IList;
             else
                 list = coll;
                             
@@ -1053,7 +1054,7 @@ package org.granite.tide.data {
         private function mergeArray(array:Array, previous:Object, expr:IExpression, parent:Object = null, propertyName:String = null):Array {
             log.debug("mergeArray: {0} previous {1}", BaseContext.toString(array), BaseContext.toString(previous));
             
-            var prevArray:Array = previous is Array ? previous as Array : new Array();
+            var prevArray:Array = previous is Array && _mergeContext.sourceContext == null ? previous as Array : new Array();
             if (prevArray.length > 0 && prevArray !== array)
                 prevArray.splice(0, prevArray.length);
             _entityCache[array] = prevArray;
@@ -1129,7 +1130,7 @@ package org.granite.tide.data {
             if (previous && previous is IMap)
                 m = IMap(previous);
             else if (_mergeContext.sourceContext != null)
-            	m = ObjectUtil.copy(map) as IMap;
+				m = Type.forInstance(map).constructor.newInstance() as IMap;
             else
                 m = map;
             _entityCache[map] = m;

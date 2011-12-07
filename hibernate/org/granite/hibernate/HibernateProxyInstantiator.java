@@ -42,6 +42,8 @@ public class HibernateProxyInstantiator extends AbstractInstantiator<HibernatePr
     private Serializable id;
 
     public HibernateProxyInstantiator(ConcurrentHashMap<String, ProxyFactory> proxyFactories, String detachedState) {
+        if (detachedState == null)
+            throw new IllegalStateException("Cannot create Hibernate proxy without detachedState");
         this.proxyFactories = proxyFactories;
         this.detachedState = detachedState;
     }

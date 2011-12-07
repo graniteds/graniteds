@@ -36,7 +36,8 @@ package org.granite.test.tide.data
             contact.version = 0;
             contact.uid = "C1";
             contact.person = new Person();
-            contact.person.meta::defineProxy(1);
+			contact.person.id = 1;
+            contact.person.meta::defineProxy();
 
             _ctx.meta_mergeExternalData(contact);
 
@@ -64,6 +65,33 @@ package org.granite.test.tide.data
             var c:Contact = Contact(tmpctx.meta_mergeFromContext(_ctx, contact2, false, true));
 
         	Assert.assertFalse("Person assoc proxied", c.meta::isInitialized("person"));
+		}
+		
+		[Test]
+		public function TestUninitializeSimpleAssociations():void {
+			var contact:Contact3 = new Contact3();
+			contact.id = 1;
+			contact.version = 0;
+			contact.uid = "C1";
+			contact.email = "toto@toto.com";
+			var person:Person9 = new Person9();
+			person.id = 1;
+			person.version = 0;
+			person.uid = "P1";
+			person.lastName = "Toto";
+			person.meta::detachedState = "blabla";
+			contact.person = person;
+			
+			contact = Contact3(_ctx.meta_mergeExternalData(contact));
+			
+			contact.email = "tutu@toto.com";
+			
+			var tmpctx:BaseContext = _ctx.newTemporaryContext();
+			var c:Contact3 = Contact3(tmpctx.meta_mergeFromContext(_ctx, contact, false, true));
+			
+			Assert.assertFalse("Person assoc proxied", c.meta::isInitialized("person"));
+			Assert.assertEquals("Person detachedState", "blabla", c.person.meta::detachedState);
+			
 		}
     }
 }
