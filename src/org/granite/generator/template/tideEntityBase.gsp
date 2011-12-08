@@ -182,13 +182,16 @@ package ${jClass.as3Type.packageName} {
             __initialized = false;
             _${jClass.firstIdentifier.name} = id;
         }
-        meta <%= (jClass.hasSuperclass() && jClass.superclass.hasIdentifiers() ? "override " : "") %>function defineProxy3(obj:* = null):void {
+        meta <%= (jClass.hasSuperclass() && jClass.superclass.hasIdentifiers() ? "override " : "") %>function defineProxy3(obj:* = null):Boolean {
             if (obj != null) {
                 var src:${jClass.as3Type.name}Base = ${jClass.as3Type.name}Base(obj);
+                if (src.__detachedState == null)
+                    return false;
                 _${jClass.firstIdentifier.name} = src._${jClass.firstIdentifier.name};
                 __detachedState = src.__detachedState;
             }
-            __initialized = false;            
+            __initialized = false;
+            return true;          
         }
         
         [Bindable(event="dirtyChange")]
