@@ -38,7 +38,7 @@ package org.granite.test.tide.data
 			c1.email = "test@test.com";
 			var p2:Person9 = new Person9();
 			p2.id = 1;
-			p2.meta::defineProxy();
+			p2.meta::defineProxy3();
 			c1.person = p2;
 			var coll:ArrayCollection = new ArrayCollection([c1]);
 			var coll2:ArrayCollection = ArrayCollection(_ctx.meta_mergeExternalData(coll));

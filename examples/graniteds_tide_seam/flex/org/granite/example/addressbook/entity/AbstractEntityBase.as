@@ -47,10 +47,14 @@ package org.granite.example.addressbook.entity {
             );
         }
         
-        meta function defineProxy(id:Number):void {
-            __initialized = false;
-            _id = id;
-        }
+		meta function defineProxy3(obj:* = null):void {
+			if (obj != null) {
+				var src:AbstractEntity = AbstractEntity(obj);
+				_id = src._id;
+				__detachedState = src.__detachedState;
+			}
+			__initialized = false;
+		}
         
         [Bindable(event="dirtyChange")]
 		public function get meta_dirty():Boolean {

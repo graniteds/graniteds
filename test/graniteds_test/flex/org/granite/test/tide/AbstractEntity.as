@@ -54,7 +54,7 @@ package org.granite.test.tide {
 		meta function get detachedState():String {
 			return __detachedState;
 		}
-        meta function defineProxy(obj:* = null):void {
+        meta function defineProxy3(obj:* = null):void {
 			if (obj != null) {
 				var src:AbstractEntity = AbstractEntity(obj);
 				_id = src._id;

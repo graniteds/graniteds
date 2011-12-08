@@ -37,7 +37,7 @@ package org.granite.test.tide.data
             contact.uid = "C1";
             contact.person = new Person();
 			contact.person.id = 1;
-            contact.person.meta::defineProxy();
+            contact.person.meta::defineProxy3();
 
             _ctx.meta_mergeExternalData(contact);
 
