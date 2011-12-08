@@ -47,10 +47,17 @@ package org.granite.test.tide {
         meta function setInitialized(init:Boolean):void {
         	__initialized = init;
         }
-        meta function defineProxy(id:Number):void {
-            __initialized = false;
-            _id = id;
-        }
+		meta function defineProxy3(obj:* = null):Boolean {
+			if (obj != null) {
+				var src:AbstractEntityNoVersion = AbstractEntityNoVersion(obj);
+				if (src.__detachedState == null)
+					return false;
+				_id = src._id;
+				__detachedState = src.__detachedState;
+			}
+			__initialized = false;
+			return true;
+		}
 
 		[Id]
         public function get id():Number {

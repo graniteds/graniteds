@@ -47,19 +47,22 @@ package org.granite.example.addressbook.entity {
             );
         }
 
-        meta function defineProxy3(obj:* = null):void {
+        meta function defineProxy3(obj:* = null):Boolean {
             if (obj != null) {
                 var src:AbstractEntity = AbstractEntity(obj);
+				if (src.__detachedState == null)
+					return false;
                 _id = src._id;
                 __detachedState = src.__detachedState;
             }
             __initialized = false;
+			return true;
         }
 
         [Bindable(event="dirtyChange")]
-	public function get meta_dirty():Boolean {
+		public function get meta_dirty():Boolean {
             return Managed.getProperty(this, "meta_dirty", false);
-	}
+		}
 
         public function set createdBy(value:String):void {
             _createdBy = value;

@@ -1,17 +1,20 @@
 package org.granite.test.tide.data
 {
-import mx.data.utils.Managed;
-
+    import mx.collections.ArrayCollection;
+    import mx.data.utils.Managed;
+    
     import org.flexunit.Assert;
     import org.granite.collections.IPersistentCollection;
     import org.granite.meta;
-import org.granite.persistence.PersistentMap;
-import org.granite.persistence.PersistentSet;
+    import org.granite.persistence.PersistentMap;
+    import org.granite.persistence.PersistentSet;
     import org.granite.test.tide.Address;
-import org.granite.test.tide.Contact;
-import org.granite.test.tide.data.Contact4;
+    import org.granite.test.tide.Classification;
+    import org.granite.test.tide.Contact;
+    import org.granite.test.tide.data.Contact4;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
+    import org.granite.tide.data.ChangeRef;
     import org.granite.tide.data.EntityGraphUninitializer;
 
 
@@ -33,15 +36,18 @@ import org.granite.test.tide.data.Contact4;
             person.id = 1;
             person.version = 0;
             person.uid = "P1";
+			person.meta::detachedState = "bla";
             person.contacts = new PersistentSet(true);
             var contact:Contact4 = new Contact4();
             contact.id = 1;
             contact.version = 0;
             contact.uid = "C1";
+			contact.meta::detachedState = "bla";
             var address:Address = new Address();
             address.id = 1;
             address.version = 0;
             address.uid = "A1";
+			address.meta::detachedState = "bla";
             contact.address = address;
             contact.person = person;
             person.contacts.addItem(contact);
@@ -89,15 +95,18 @@ import org.granite.test.tide.data.Contact4;
             person.id = 1;
             person.version = 0;
             person.uid = "P1";
+			person.meta::detachedState = "bla";
             person.contacts = new PersistentSet(true);
             var contact:Contact4 = new Contact4();
             contact.id = 1;
             contact.version = 0;
             contact.uid = "C1";
+			contact.meta::detachedState = "bla";
             var address:Address = new Address();
             address.id = 1;
             address.version = 0;
             address.uid = "A1";
+			address.meta::detachedState = "bla";
             contact.address = address;
             contact.person = person;
             person.contacts.addItem(contact);
@@ -204,6 +213,30 @@ import org.granite.test.tide.data.Contact4;
 
             Assert.assertFalse("Contacts coll initialized", p.meta::isInitialized("contacts"));
             Assert.assertTrue("Map initialized", p.meta::isInitialized("map"));
+		}
+		
+		[Test]
+		public function TestUninitializeArguments5():void {
+			var cl1:Classification = new Classification();
+			cl1.id = 1;
+			cl1.uid = "CL1";
+			cl1.version = 0;
+			cl1.name = "CL1";
+			cl1.subclasses = new PersistentSet();
+			cl1.superclasses = new PersistentSet();
+			
+			cl1 = Classification(_ctx.meta_mergeExternalData(cl1));
+			
+			var cl2:Classification = new Classification();
+			cl2.uid = "CL2";
+			cl2.subclasses = new ArrayCollection();
+			cl2.superclasses = new ArrayCollection();
+			cl2.superclasses.addItem(cl1);
+			cl1.subclasses.addItem(cl2);
+			
+			var c:Classification = new EntityGraphUninitializer(_ctx).uninitializeEntityGraph(cl2) as Classification;
+			
+			Assert.assertTrue("Existing classification initialized", c.superclasses.getItemAt(0).meta::isInitialized());
 		}
     }
 }

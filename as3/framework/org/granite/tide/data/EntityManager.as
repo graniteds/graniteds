@@ -788,8 +788,8 @@ package org.granite.tide.data {
                 if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
                     if (desc.versionPropertyName != null && !isNaN(obj[desc.versionPropertyName]) 
 							&& _context.meta_tide.getEntityDescriptor(IEntity(parent)).lazy[propertyName]) {
-                       	dest.meta::defineProxy3(obj);
-                        return dest;
+                       	if (dest.meta::defineProxy3(obj))	// Only if entity can be proxied (has a detachedState)
+                        	return dest;
                     }
                 }
 

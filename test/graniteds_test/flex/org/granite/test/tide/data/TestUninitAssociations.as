@@ -1,8 +1,11 @@
 package org.granite.test.tide.data
 {
+    import mx.collections.ArrayCollection;
+    
     import org.flexunit.Assert;
     import org.granite.meta;
     import org.granite.persistence.PersistentSet;
+    import org.granite.test.tide.Classification;
     import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
     import org.granite.tide.BaseContext;
@@ -45,6 +48,7 @@ package org.granite.test.tide.data
             person2.id = 1;
         	person2.version = 0;
             person2.uid = "P1";
+			person2.meta::detachedState = "P1bla";
             person2.contacts = new PersistentSet(true);
         	var contact2:Contact = new Contact();
             contact2.id = 1;
@@ -65,6 +69,7 @@ package org.granite.test.tide.data
             var c:Contact = Contact(tmpctx.meta_mergeFromContext(_ctx, contact2, false, true));
 
         	Assert.assertFalse("Person assoc proxied", c.meta::isInitialized("person"));
+			Assert.assertEquals("Person assoc detachedState", "P1bla", c.person.meta::detachedState);
 		}
 		
 		[Test]
@@ -92,6 +97,31 @@ package org.granite.test.tide.data
 			Assert.assertFalse("Person assoc proxied", c.meta::isInitialized("person"));
 			Assert.assertEquals("Person detachedState", "blabla", c.person.meta::detachedState);
 			
+		}
+		
+		[Test]
+		public function TestUninitializeToManyAssociations():void {
+			var cl1:Classification = new Classification();
+			cl1.id = 1;
+			cl1.uid = "CL1";
+			cl1.version = 0;
+			cl1.name = "CL1";
+			cl1.subclasses = new PersistentSet();
+			cl1.superclasses = new PersistentSet();
+			
+			cl1 = Classification(_ctx.meta_mergeExternalData(cl1));
+			
+			var cl2:Classification = new Classification();
+			cl2.uid = "CL2";
+			cl2.subclasses = new ArrayCollection();
+			cl2.superclasses = new ArrayCollection();
+			cl2.superclasses.addItem(cl1);
+			cl1.subclasses.addItem(cl2);
+			
+			var tmpctx:BaseContext = _ctx.newTemporaryContext();
+			var cl:Classification = Classification(tmpctx.meta_mergeFromContext(_ctx, cl2, false, true));
+			
+			Assert.assertTrue("Classification not uninitialized", cl.superclasses.getItemAt(0).meta::isInitialized());
 		}
     }
 }
