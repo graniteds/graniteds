@@ -178,7 +178,11 @@ package ${jClass.as3Type.packageName} {
             );
         }
         
-        meta <%= (jClass.hasSuperclass() && jClass.superclass.hasIdentifiers() ? "override " : "") %>function defineProxy(obj:* = null):void {
+        meta <%= (jClass.hasSuperclass() && jClass.superclass.hasIdentifiers() ? "override " : "") %>function defineProxy(id:${jClass.firstIdentifier.as3Type.name}):void {
+            __initialized = false;
+            _${jClass.firstIdentifier.name} = id;
+        }
+        meta <%= (jClass.hasSuperclass() && jClass.superclass.hasIdentifiers() ? "override " : "") %>function defineProxy3(obj:* = null):void {
             if (obj != null) {
                 var src:${jClass.as3Type.name}Base = ${jClass.as3Type.name}Base(obj);
                 _${jClass.firstIdentifier.name} = src._${jClass.firstIdentifier.name};
