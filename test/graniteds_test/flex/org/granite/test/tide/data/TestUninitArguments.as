@@ -14,7 +14,6 @@ package org.granite.test.tide.data
     import org.granite.test.tide.data.Contact4;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
-    import org.granite.tide.data.ChangeRef;
     import org.granite.tide.data.EntityGraphUninitializer;
 
 
