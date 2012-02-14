@@ -19,13 +19,15 @@
 */
 
 package org.granite.collections {
+	
+	import flash.events.IEventDispatcher;
 
     /**
      * 	Interface for collections that can be lazily initialized 
      * 
      * 	@author Franck WOLFF
      */
-    public interface IPersistentCollection {
+    public interface IPersistentCollection extends IEventDispatcher {
 
         function isInitialized():Boolean;
 

@@ -52,6 +52,9 @@ package org.granite.tide.collections {
     use namespace object_proxy;
     
 
+	[Event(name="initialize", type="mx.events.CollectionEvent")]
+	[Event(name="uninitialize", type="mx.events.CollectionEvent")]
+	
     /**
      * 	Internal implementation of persistent map handling automatic lazy loading.<br/>
      *  Used for wrapping persistent map received from the server.<br/>
@@ -62,6 +65,9 @@ package org.granite.tide.collections {
 	public class PersistentMap extends BasicMap implements IPersistentCollection, IPropertyHolder, IWrapper {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.collections.PersistentMap");
+		
+		public static const INITIALIZE:String = "initialize";
+		public static const UNINITIALIZE:String = "uninitialize";
 		
 	    private var _entity:IEntity = null;
 	    private var _propertyName:String = null;
@@ -144,10 +150,9 @@ package org.granite.tide.collections {
             	_initializationCallback = null;
             }
             
-            var ce:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, 
-                CollectionEventKind.REFRESH);
-            dispatchEvent(ce);
-            
+            dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.REFRESH));            
+			dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, INITIALIZE));
+			
             log.debug("initialized");
         }
         
@@ -157,9 +162,8 @@ package org.granite.tide.collections {
         	_initializationCallback = null;
             _localInitializing = false;
             
-            var ce:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, 
-                CollectionEventKind.RESET);
-            dispatchEvent(ce);
+            dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));			
+			dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, UNINITIALIZE));
         }
         
         
