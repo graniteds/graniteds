@@ -48,6 +48,7 @@ package org.granite.test.tide.data
 		public var test32:org.granite.test.tide.data.TestMergeMap2;
 		public var test33:org.granite.test.tide.data.TestMergeMap3;
 		public var test34:org.granite.test.tide.data.TestResetEntityBigNumber;
+		public var test34b:org.granite.test.tide.data.TestResetEntityByteArray;
 		public var test35:org.granite.test.tide.data.TestResetEntityEnum;
 		public var test36:org.granite.test.tide.data.TestResetEntityEnum2;
 		public var test37:org.granite.test.tide.data.TestResetEntityGDS453;
