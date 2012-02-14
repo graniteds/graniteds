@@ -34,6 +34,8 @@ package org.granite.gravity {
     import mx.utils.ObjectUtil;
     import mx.controls.Alert;
 
+	
+	[Event(name="message", type="mx.messaging.events.MessageEvent")]
 
     /**
      *	Gravity-specific implementation of the Consumer message agent
