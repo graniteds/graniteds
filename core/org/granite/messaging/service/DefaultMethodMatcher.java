@@ -36,7 +36,6 @@ import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.service.annotations.IgnoredMethod;
 import org.granite.messaging.service.annotations.RemoteDestination;
-import org.granite.tide.annotations.TideEnabled;
 import org.granite.util.StringUtil;
 
 import flex.messaging.messages.Message;
@@ -133,9 +132,9 @@ public class DefaultMethodMatcher implements MethodMatcher {
     
     protected Method resolveMatchingMethod(List<Method> methods) {
         Method method = null;
-        // Prefer methods of interfaces/classes marked with @RemoteDestination or @TideEnabled
+        // Prefer methods of interfaces/classes marked with @RemoteDestination
         for (Method m : methods) {
-            if (m.getDeclaringClass().isAnnotationPresent(RemoteDestination.class) || m.getDeclaringClass().isAnnotationPresent(TideEnabled.class)) {
+            if (m.getDeclaringClass().isAnnotationPresent(RemoteDestination.class)) {
                 method = m;
                 break;
             }
