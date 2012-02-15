@@ -24,12 +24,19 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
+import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
+import org.granite.messaging.service.annotations.IgnoredMethod;
+import org.granite.messaging.service.annotations.RemoteDestination;
+import org.granite.tide.annotations.TideEnabled;
 import org.granite.util.StringUtil;
 
 import flex.messaging.messages.Message;
@@ -39,7 +46,10 @@ import flex.messaging.messages.Message;
  * @author Pedro GONCALVES
  */
 public class DefaultMethodMatcher implements MethodMatcher {
+	
+	private static final Logger log = Logger.getLogger(DefaultMethodMatcher.class);
 
+	
     public ServiceInvocationContext findServiceMethod(
         Message message,
         Destination destination,
@@ -58,7 +68,15 @@ public class DefaultMethodMatcher implements MethodMatcher {
         if (params == null || params.length == 0)
             serviceMethod = serviceClass.getMethod(methodName, (Class[])null);
         else {
-            for (Method method : serviceClass.getMethods()) {
+            List<Method> matchingMethods = new ArrayList<Method>();
+            
+            List<Method> methods = new ArrayList<Method>();
+            for (Class<?> serviceInterface : serviceClass.getInterfaces())
+                methods.addAll(Arrays.asList(serviceInterface.getMethods()));
+            
+            methods.addAll(Arrays.asList(serviceClass.getMethods()));
+            
+            for (Method method : methods) {
 
                 if (!methodName.equals(method.getName()))
                     continue;
@@ -67,14 +85,23 @@ public class DefaultMethodMatcher implements MethodMatcher {
                 if (paramTypes.length != params.length)
                     continue;
                 
+                // Methods marked with @IgnoredMethod cannot be called remotely
+                if (method.isAnnotationPresent(IgnoredMethod.class))
+                	continue;
+                
                 if (serviceClassGenericType != null)
                     findAndChange(paramTypes, serviceClassGenericType);
 
                 convertersArray = getConvertersArray(converters, params, paramTypes);
-                if (convertersArray != null) {
-                    serviceMethod = method;
-                    break;
-                }
+                if (convertersArray != null)
+                    matchingMethods.add(method);
+            }
+            
+            if (matchingMethods.size() == 1)
+                serviceMethod = matchingMethods.get(0);
+            else if (matchingMethods.size() > 1) {
+                // Multiple matches found
+                serviceMethod = resolveMatchingMethod(matchingMethods);
             }
         }
 
@@ -103,7 +130,23 @@ public class DefaultMethodMatcher implements MethodMatcher {
         }
         return values;
     }
-
+    
+    protected Method resolveMatchingMethod(List<Method> methods) {
+        Method method = null;
+        // Prefer methods of interfaces/classes marked with @RemoteDestination or @TideEnabled
+        for (Method m : methods) {
+            if (m.getDeclaringClass().isAnnotationPresent(RemoteDestination.class) || m.getDeclaringClass().isAnnotationPresent(TideEnabled.class)) {
+                method = m;
+                break;
+            }
+        }
+        if (method != null)
+            return method;
+        
+        log.warn("Ambiguous method match for " + methods.get(0).getName() + ", selecting first found " + methods.get(0));        
+        return methods.get(0);
+    }
+    
     /**
      * If there is only one TypeVariable in method's argument list, it will be replaced
      * by the type of the superclass of the service.
