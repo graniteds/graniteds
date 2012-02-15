@@ -832,7 +832,8 @@
      !-->
     <target name="check.swc">
         <uptodate property="skip.compc" targetfile="build/granite.swc">
-            <srcfiles dir= "as3" includes="**/*.as"/>
+            <srcfiles dir="as3" includes="**/*.as"/>
+        	<srcfiles dir="as3" includes="**/metadata.xml"/>
         </uptodate>
     </target>
     <target name="build.swc" depends="check.swc" unless="skip.compc">
@@ -867,6 +868,7 @@
         <compc output="build/granite.swc" use-network="false" warn-missing-namespace-decl="false">
             <source-path path-element="as3/framework"/>
             <include-sources dir="as3/framework" includes="**/*.as"/>
+        	<include-file name="metadata.xml" path="as3/framework/metadata.xml"/>     
             <compiler.external-library-path dir="${FLEX_HOME}/frameworks/libs" append="true">
             	<include name="framework.swc"/>
             </compiler.external-library-path>
