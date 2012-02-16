@@ -227,7 +227,7 @@ package ${jClass.as3Type.packageName} {
         [Lazy]<%
                     }
                     if (!jProperty.writable) {%>
-        [Bindable(event="unused")]<%
+        [Bindable(event="propertyChange")]<%
         			}
                     if (jClass.metaClass.hasProperty(jClass, 'constraints') && jClass.constraints[jProperty] != null) {
                     	for (cons in jClass.constraints[jProperty]) {%>

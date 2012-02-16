@@ -21,12 +21,12 @@
 --%><%
     Set as3Imports = new TreeSet();
 
+	as3Imports.add("flash.utils.flash_proxy");
     if (!jClass.hasSuperclass()) {
-        as3Imports.add("flash.utils.flash_proxy");
         as3Imports.add("org.granite.tide.Component");
         as3Imports.add("org.granite.tide.BaseContext");
-        as3Imports.add("org.granite.tide.ITideResponder");
     }
+    as3Imports.add("org.granite.tide.ITideResponder");
 	as3Imports.add("mx.rpc.AsyncToken");
 	
 
