@@ -20,7 +20,7 @@
 
 package flex.messaging.messages;
 
-import org.apache.log4j.Logger;
+import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.security.SecurityServiceException;
 
