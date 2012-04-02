@@ -228,37 +228,55 @@ public class JMSServiceAdapter extends ServiceAdapter {
 
     @Override
     public Object invoke(Channel fromClient, AsyncMessage message) {
-        try {
-            JMSClient jmsClient = connectJMSClient(fromClient, message.getDestination());
-            jmsClient.send(message);
+    	String topicId = (String)message.getHeader(AsyncMessage.SUBTOPIC_HEADER);
+    	
+    	if (getSecurityPolicy().canPublish(fromClient, topicId, message)) {
+    		try {
+	            JMSClient jmsClient = connectJMSClient(fromClient, message.getDestination());
+	            jmsClient.send(message);
+	
+	            AsyncMessage reply = new AcknowledgeMessage(message);
+	            reply.setMessageId(message.getMessageId());
+	
+	            return reply;
+	        }
+	        catch (Exception e) {
+	        	log.error(e, "Error sending message");
+	            ErrorMessage error = new ErrorMessage(message, null);
+	            error.setFaultString("JMS Adapter error " + e.getMessage());
+	
+	            return error;
+	        }
+    	}
 
-            AsyncMessage reply = new AcknowledgeMessage(message);
-            reply.setMessageId(message.getMessageId());
-
-            return reply;
-        }
-        catch (Exception e) {
-        	log.error(e, "Error sending message");
-            ErrorMessage error = new ErrorMessage(message, null);
-            error.setFaultString("JMS Adapter error " + e.getMessage());
-
-            return error;
-        }
+    	log.debug("Channel %s tried to publish a message to topic %s", fromClient, topicId);
+    	ErrorMessage error = new ErrorMessage(message, null);
+    	error.setFaultString("Server.Publish.Denied");
+        return error;
     }
 
     @Override
     public Object manage(Channel fromChannel, CommandMessage message) {
-        if (message.getOperation() == CommandMessage.SUBSCRIBE_OPERATION) {
-            try {
-                JMSClient jmsClient = connectJMSClient(fromChannel, message.getDestination());
-                jmsClient.subscribe(message);
+    	String topicId = (String)message.getHeader(AsyncMessage.SUBTOPIC_HEADER);
 
-                AsyncMessage reply = new AcknowledgeMessage(message);
-                return reply;
-            }
-            catch (Exception e) {
-                throw new RuntimeException("JMSAdapter subscribe error on topic: " + message, e);
-            }
+        if (message.getOperation() == CommandMessage.SUBSCRIBE_OPERATION) {
+        	if (getSecurityPolicy().canSubscribe(fromChannel, topicId, message)) {
+	            try {
+	                JMSClient jmsClient = connectJMSClient(fromChannel, message.getDestination());
+	                jmsClient.subscribe(message);
+	
+	                AsyncMessage reply = new AcknowledgeMessage(message);
+	                return reply;
+	            }
+	            catch (Exception e) {
+	                throw new RuntimeException("JMSAdapter subscribe error on topic: " + message, e);
+	            }
+        	}
+
+        	log.debug("Channel %s tried to subscribe to topic %s", fromChannel, topicId);
+        	ErrorMessage error = new ErrorMessage(message, null);
+            error.setFaultString("Server.Subscribe.Denied");
+            return error;
         }
         else if (message.getOperation() == CommandMessage.UNSUBSCRIBE_OPERATION) {
             try {

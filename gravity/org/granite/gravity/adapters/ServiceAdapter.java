@@ -23,23 +23,26 @@ package org.granite.gravity.adapters;
 import org.granite.config.flex.Destination;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
+import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
+import org.granite.util.ClassUtil;
 import org.granite.util.XMap;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.CommandMessage;
-import flex.messaging.messages.Message;
 
 /**
  * @author William DRAI
  */
 public abstract class ServiceAdapter {
 
+    private static final Logger log = Logger.getLogger(ServiceAdapter.class);
+
     private String id;
     private Gravity gravity;
     private Destination destination;
     private Object adapterState;
-    private SecurityPolicy securityPolicy = new DefaultPolicy();
+    private SecurityPolicy securityPolicy = new DefaultSecurityPolicy();
 
 
     public String getId() {
@@ -79,6 +82,15 @@ public abstract class ServiceAdapter {
 
 
     public void configure(XMap adapterProperties, XMap destinationProperties) throws ServiceException {
+    	String securityPolicy = adapterProperties.get("security-policy");
+    	if (securityPolicy != null) {
+    		try {
+    			this.securityPolicy = ClassUtil.newInstance(securityPolicy, SecurityPolicy.class);
+    		}
+    		catch (Exception e) {
+    			log.error(e, "Could not create instance of %s (using default security policy)", securityPolicy);
+    		}
+    	}
     }
 
     public void start() throws ServiceException {
@@ -91,20 +103,4 @@ public abstract class ServiceAdapter {
     public abstract Object manage(Channel fromClient, CommandMessage message);
 
     public abstract Object invoke(Channel fromClient, AsyncMessage message);
-
-
-    private static class DefaultPolicy implements SecurityPolicy {
-
-        public boolean canCreate(Channel client, String channel, Message message)  {
-            return client != null;
-        }
-
-        public boolean canSubscribe(Channel client, String channel, Message message) {
-            return client != null;
-        }
-
-        public boolean canPublish(Channel client, String channel, Message message) {
-            return client != null;
-        }
-    }
 }
