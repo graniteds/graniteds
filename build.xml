@@ -743,6 +743,26 @@
                 <include name="**"/>
             </fileset>
         </jar>
+        <jar destfile="build/granite-client.jar" manifest="core/META-INF/MANIFEST.MF">
+            <fileset dir="classes/core">
+                <include name="**"/>
+            	<exclude name="org/granite/clustering/**"/>
+            	<exclude name="org/granite/config/flex/Servlet*"/>
+            	<exclude name="org/granite/config/servlet3/**"/>
+            	<exclude name="org/granite/messaging/amf/process/*Processor.class"/>
+            	<exclude name="org/granite/messaging/persistence/**"/>
+            	<exclude name="org/granite/messaging/webapp/**"/>
+            	<exclude name="org/granite/osgi/**"/>
+            	<exclude name="META-INF/**"/>
+            </fileset>
+            <fileset dir="classes/tide">
+                <include name="org/granite/tide/Expression.class"/>
+                <include name="org/granite/tide/IInvocation*.class"/>
+                <include name="org/granite/tide/IUID.class"/>
+                <include name="org/granite/tide/TideMessage.class"/>
+                <include name="org/granite/tide/invocation/**"/>
+            </fileset>
+        </jar>
         <jar destfile="build/granite-hibernate.jar" manifest="build/META-INF/MANIFEST.MF">
             <fileset dir="classes/hibernate">
                 <include name="**"/>
