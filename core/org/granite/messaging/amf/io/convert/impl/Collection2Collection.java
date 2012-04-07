@@ -83,9 +83,22 @@ public class Collection2Collection extends Converter {
             if (targetComponentType != null) {
 
                 Class<?> targetClass = ClassUtil.classOfType(targetType);
-                if (targetClass.isInstance(value) &&
-                    (targetComponentType.equals(Object.class) || targetComponentType instanceof WildcardType))
-                    return value;
+                if (targetClass.isInstance(value)) {
+                	if (targetComponentType.equals(Object.class) || targetComponentType instanceof WildcardType)
+                		return value;
+                	
+                	if (targetComponentType instanceof Class<?>) {
+	                	boolean check = true;
+	                	for (Object e : c) {
+	                		if (!((Class<?>)targetComponentType).isInstance(e)) {
+	                			check = false;
+	                			break;
+	                		}
+	                	}
+	                	if (check)
+	                		return value;
+                	}
+                }
 
                 Collection<Object> targetInstance = null;
                 try {

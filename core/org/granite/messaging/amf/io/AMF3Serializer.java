@@ -47,6 +47,7 @@ import org.granite.messaging.amf.io.util.JavaClassDescriptor;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.util.ClassUtil;
 import org.granite.util.XMLUtil;
+import org.granite.util.XMLUtilFactory;
 import org.w3c.dom.Document;
 
 import flex.messaging.io.ArrayCollection;
@@ -77,7 +78,7 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     protected final boolean externalizeBigDecimal
     	= (context.getGraniteConfig().getExternalizer(BigDecimal.class.getName()) != null);
 
-    protected final XMLUtil xmlUtil = new XMLUtil();
+    protected final XMLUtil xmlUtil = XMLUtilFactory.getXMLUtil();
     
     protected final boolean warnOnChannelIdMissing;
 

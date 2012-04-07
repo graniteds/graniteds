@@ -7,10 +7,6 @@
 
 package flex.messaging.io;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -24,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.granite.logging.Logger;
+import org.granite.util.Introspector;
+import org.granite.util.PropertyDescriptor;
 
 
 /**
@@ -213,20 +211,14 @@ public class ASRecordSet extends ASObject {
         List<String> names = new ArrayList<String> ();
         Object firstBean = list.get(0);
         
-        PropertyDescriptor[] properties = null;
-        try {
-        	BeanInfo beanInfo = Introspector.getBeanInfo(firstBean.getClass());
-        	properties = beanInfo.getPropertyDescriptors();
-        } catch (IntrospectionException e) {
-        }
+        PropertyDescriptor[] properties = Introspector.getPropertyDescriptors(firstBean.getClass());
         if (properties == null)
         	properties = new PropertyDescriptor[0];
         
         for (int i = 0; i < properties.length; i++) {
             PropertyDescriptor descriptor = properties[i];
-            if (!ignoreProperty(descriptor, ignoreProperties)) {
-                names.add(descriptor.getDisplayName());
-            }
+            if (!ignoreProperty(descriptor, ignoreProperties))
+                names.add(descriptor.getName());
         }
         String[] columnNames = new String[names.size()];
         columnNames = names.toArray(columnNames);

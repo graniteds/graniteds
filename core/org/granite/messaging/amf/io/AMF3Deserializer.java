@@ -42,6 +42,7 @@ import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.io.util.instantiator.AbstractInstantiator;
 import org.granite.util.ClassUtil;
 import org.granite.util.XMLUtil;
+import org.granite.util.XMLUtilFactory;
 import org.w3c.dom.Document;
 
 /**
@@ -63,7 +64,7 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
 
     protected final AMF3DeserializerSecurizer securizer = context.getGraniteConfig().getAmf3DeserializerSecurizer();
 
-    protected final XMLUtil xmlUtil = new XMLUtil();
+    protected final XMLUtil xmlUtil = XMLUtilFactory.getXMLUtil();
 
     protected final boolean debug;
     protected final boolean debugMore;

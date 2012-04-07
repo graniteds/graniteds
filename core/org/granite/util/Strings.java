@@ -7,8 +7,6 @@
 
 package org.granite.util;
 
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
@@ -42,8 +40,7 @@ public class Strings
    public static String toString(Object component)
    {
       try {
-         PropertyDescriptor[] props = Introspector.getBeanInfo( component.getClass() )
-               .getPropertyDescriptors();
+         PropertyDescriptor[] props = Introspector.getPropertyDescriptors(component.getClass());
          StringBuilder builder = new StringBuilder();
          for (PropertyDescriptor descriptor : props)
          {

@@ -20,9 +20,6 @@
 
 package org.granite.hibernate;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -36,6 +33,8 @@ import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.service.ServiceException;
 import org.granite.util.ClassUtil;
+import org.granite.util.Introspector;
+import org.granite.util.PropertyDescriptor;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.AbstractComponentType;
@@ -113,13 +112,7 @@ public class ProxyFactory {
         }
 
         if (type == null) {
-            PropertyDescriptor[] propertyDescriptors = null;
-            try {
-                BeanInfo info = Introspector.getBeanInfo(persistentClass);
-                propertyDescriptors = info.getPropertyDescriptors();
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Could not find id in: " + persistentClass, e);
-            }
+            PropertyDescriptor[] propertyDescriptors = Introspector.getPropertyDescriptors(persistentClass);
 
             for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
                 Method method = propertyDescriptor.getReadMethod();

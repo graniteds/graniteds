@@ -33,6 +33,10 @@ public class ServiceException extends RuntimeException {
     private final String code;
     private final String detail;
     private final Map<String,Object> extendedData;
+    
+    public ServiceException() {
+    	this(null, null, null, null);
+    }
 
     public ServiceException(String message) {
         this(message, null, null, null);

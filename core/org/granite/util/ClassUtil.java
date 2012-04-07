@@ -20,15 +20,11 @@
 
 package org.granite.util;
 
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -168,54 +164,7 @@ public abstract class ClassUtil {
     public static String getPackageName(Class<?> clazz) {
         return clazz.getPackage() != null ? clazz.getPackage().getName() : "";
     }
-
-    public static PropertyDescriptor[] getProperties(Class<?> clazz) {
-        try {
-        	PropertyDescriptor[] properties = Introspector.getBeanInfo(clazz).getPropertyDescriptors();
-        	Field[] fields = clazz.getDeclaredFields();
-        	for (Field field : fields) {
-        		if (Boolean.class.equals(field.getType())) {
-        			boolean found = false;
-        			for (PropertyDescriptor property : properties) {
-        				if (property.getName().equals(field.getName())) {
-        					found = true;
-        					if (property.getReadMethod() == null) {
-        						try {
-        							Method readMethod = clazz.getDeclaredMethod(getIsMethodName(field.getName()));
-        							if (Modifier.isPublic(readMethod.getModifiers()) && !Modifier.isStatic(readMethod.getModifiers()))
-        								property.setReadMethod(readMethod);
-        						}
-        						catch (NoSuchMethodException e) {
-        						}
-        					}
-        					break;
-        				}
-        			}
-        			if (!found) {
-						try {
-							Method readMethod = clazz.getDeclaredMethod(getIsMethodName(field.getName()));
-							if (Modifier.isPublic(readMethod.getModifiers()) && !Modifier.isStatic(readMethod.getModifiers())) {
-								PropertyDescriptor[] propertiesTmp = new PropertyDescriptor[properties.length + 1];
-								System.arraycopy(properties, 0, propertiesTmp, 0, properties.length);
-								propertiesTmp[properties.length] = new PropertyDescriptor(field.getName(), readMethod, null);
-								properties = propertiesTmp;
-							}
-						}
-						catch (NoSuchMethodException e) {
-						}
-        			}
-        		}
-        	}
-            return properties;
-        } catch (Exception e) {
-            throw new RuntimeException("Could not introspect properties of class: " + clazz, e);
-        }
-    }
     
-    private static String getIsMethodName(String name) {
-    	return "is" + name.substring(0, 1).toUpperCase() + name.substring(1);
-    }
-
     public static ClassLoader getClassLoader(Class<?> clazz) {
         return (clazz.getClassLoader() != null ? clazz.getClassLoader() : ClassLoader.getSystemClassLoader());
     }

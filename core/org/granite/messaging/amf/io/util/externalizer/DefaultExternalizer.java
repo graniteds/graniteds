@@ -20,8 +20,6 @@
 
 package org.granite.messaging.amf.io.util.externalizer;
 
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -52,6 +50,8 @@ import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedPro
 import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty;
 import org.granite.messaging.amf.io.util.instantiator.AbstractInstantiator;
 import org.granite.util.ClassUtil;
+import org.granite.util.Introspector;
+import org.granite.util.PropertyDescriptor;
 import org.granite.util.XMap;
 
 /**
@@ -170,7 +170,7 @@ public class DefaultExternalizer implements Externalizer {
         if (fields == null) {
         	if (dynamicClass)
         		Introspector.flushFromCaches(clazz);
-            PropertyDescriptor[] propertyDescriptors = ClassUtil.getProperties(clazz);
+            PropertyDescriptor[] propertyDescriptors = Introspector.getPropertyDescriptors(clazz);
             Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
 
             fields = new ArrayList<Property>();
@@ -244,6 +244,10 @@ public class DefaultExternalizer implements Externalizer {
     }
     
     protected boolean isPropertyIgnored(Field field) {
+    	return false;
+    }
+
+    protected boolean isPropertyIgnored(Method method) {
     	return false;
     }
 

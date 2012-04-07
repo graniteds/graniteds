@@ -24,12 +24,15 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.List;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
+import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
+import org.granite.messaging.service.annotations.RemoteDestination;
 import org.granite.util.StringUtil;
 
 import flex.messaging.messages.Message;
@@ -39,6 +42,8 @@ import flex.messaging.messages.Message;
  * @author Pedro GONCALVES
  */
 public class DefaultMethodMatcher implements MethodMatcher {
+    
+    private static final Logger log = Logger.getLogger(DefaultMethodMatcher.class);
 
     public ServiceInvocationContext findServiceMethod(
         Message message,
@@ -102,6 +107,22 @@ public class DefaultMethodMatcher implements MethodMatcher {
                 values[i] = convertersArray[i].convert(values[i], targetTypes[i]);
         }
         return values;
+    }
+    
+    protected Method resolveMatchingMethod(List<Method> methods) {
+        Method method = null;
+        // Prefer methods of interfaces/classes marked with @RemoteDestination
+        for (Method m : methods) {
+            if (m.getDeclaringClass().isAnnotationPresent(RemoteDestination.class)) {
+                method = m;
+                break;
+            }
+        }
+        if (method != null)
+            return method;
+        
+        log.warn("Ambiguous method match for " + methods.get(0).getName() + ", selecting first found " + methods.get(0));        
+        return methods.get(0);
     }
 
     /**
