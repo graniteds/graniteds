@@ -20,16 +20,13 @@
 
 package org.granite.gravity;
 
-import javax.servlet.ServletConfig;
 
 /**
  * @author Franck WOLFF
  */
-public interface ChannelFactory {
-
-	public void init(GravityConfig gravityConfig, ServletConfig servletConfig);
+public interface ChannelFactory<C extends Channel> {
 	
-    public Channel newChannel(String id);
+    public C newChannel(String id);
 
     public void destroy();
 }

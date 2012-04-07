@@ -59,7 +59,7 @@ public class GravityManager {
 	 * @return a newly created and started Gravity instance or previously started one.
 	 * @throws ServletException if something goes wrong (GravityFactory not found, Gravity.start() error, etc.)
 	 */
-    public static Gravity start(ServletConfig servletConfig, ChannelFactory channelFactory) throws ServletException {
+    public static Gravity start(ServletConfig servletConfig) throws ServletException {
     	Gravity gravity = null;
     	
     	ServletContext context = servletConfig.getServletContext();
@@ -75,8 +75,7 @@ public class GravityManager {
 	            if (flexFilterClass != null)
 	            	configureServices(context, flexFilterClass);
 		
-		        GravityConfig gravityConfig = new GravityConfig(graniteConfig, channelFactory);
-		        channelFactory.init(gravityConfig, servletConfig);
+		        GravityConfig gravityConfig = new GravityConfig(graniteConfig);
 		        
 		        String gravityFactory = gravityConfig.getGravityFactory();
 		        try {

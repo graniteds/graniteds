@@ -20,12 +20,10 @@
 
 package org.granite.gravity.jetty;
 
-import javax.servlet.ServletConfig;
-
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AsyncHttpContext;
+import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityConfig;
-import org.granite.gravity.GravityManager;
 import org.granite.gravity.MessageReceivingException;
 import org.granite.logging.Logger;
 import org.mortbay.util.ajax.Continuation;
@@ -41,8 +39,8 @@ public class ContinuationChannel extends AbstractChannel {
 
     private Continuation continuation = null;
 
-    public ContinuationChannel(ServletConfig servletConfig, GravityConfig gravityConfig, String id) {
-    	super(servletConfig, gravityConfig, id);
+    public ContinuationChannel(Gravity gravity, String id, ContinuationChannelFactory factory) {
+    	super(gravity, id, factory);
     }
 
     public void setContinuation(Continuation continuation) {
@@ -85,7 +83,7 @@ public class ContinuationChannel extends AbstractChannel {
 		if (message == null)
 			throw new NullPointerException("message cannot be null");
 
-		GravityConfig gravityConfig = GravityManager.getGravity(getServletContext()).getGravityConfig();
+		GravityConfig gravityConfig = gravity.getGravityConfig();
 		
 		receivedQueueLock.lock();
 		try {

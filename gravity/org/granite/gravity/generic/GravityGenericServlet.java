@@ -22,7 +22,6 @@ package org.granite.gravity.generic;
 
 import java.io.IOException;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,10 +44,6 @@ public class GravityGenericServlet extends AbstractGravityServlet {
 
     private static final Logger log = Logger.getLogger(GravityGenericServlet.class);
 
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-    	super.init(config, new GenericChannelFactory());
-    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -56,6 +51,7 @@ public class GravityGenericServlet extends AbstractGravityServlet {
     	log.debug("doPost: from %s:%d", request.getRemoteAddr(), request.getRemotePort());
 
 		Gravity gravity = GravityManager.getGravity(getServletContext());
+		GenericChannelFactory channelFactory = new GenericChannelFactory(gravity);
 		
 		try {
 			// Setup context (thread local GraniteContext, etc.)
@@ -67,7 +63,7 @@ public class GravityGenericServlet extends AbstractGravityServlet {
 			if (connect != null) {
 				try {
 					String channelId = (String)connect.getClientId();
-					GenericChannel channel = (GenericChannel)gravity.getChannel(channelId);
+					GenericChannel channel = gravity.getChannel(channelFactory, channelId);
 					// Reset channel continuation instance and deliver pending messages.
 					synchronized (channel) {
 						channel.reset();
@@ -92,7 +88,7 @@ public class GravityGenericServlet extends AbstractGravityServlet {
                 Message amf3Request = amf3Requests[i];
                 
                 // Ask gravity to create a specific response (will be null for connect request from tunnel).
-                Message amf3Response = gravity.handleMessage(amf3Request);
+                Message amf3Response = gravity.handleMessage(channelFactory, amf3Request);
                 String channelId = (String)amf3Request.getClientId();
                 
                 // Mark current channel (if any) as accessed.
@@ -104,7 +100,7 @@ public class GravityGenericServlet extends AbstractGravityServlet {
                     if (amf3Requests.length > 1)
                         throw new IllegalArgumentException("Only one request is allowed on tunnel.");
 
-                	GenericChannel channel = (GenericChannel)gravity.getChannel(channelId);
+                	GenericChannel channel = (GenericChannel)gravity.getChannel(channelFactory, channelId);
                 	if (channel == null)
                 		throw new NullPointerException("No channel on tunnel connect");
 

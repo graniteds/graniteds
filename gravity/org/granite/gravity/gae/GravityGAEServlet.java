@@ -23,7 +23,6 @@ package org.granite.gravity.gae;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,12 +53,6 @@ public class GravityGAEServlet extends AbstractGravityServlet {
 
 
     @Override
-    public void init(ServletConfig config) throws ServletException {
-    	super.init(config, new GAEChannelFactory());
-    }
-
-
-    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doPost(req,resp);
     }
@@ -68,6 +61,7 @@ public class GravityGAEServlet extends AbstractGravityServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		Gravity gravity = GravityManager.getGravity(getServletContext());
+		GAEChannelFactory channelFactory = new GAEChannelFactory((GAEGravity)gravity);
 		
 		try {
 			// Setup context (thread local GraniteContext, etc.)
@@ -85,7 +79,7 @@ public class GravityGAEServlet extends AbstractGravityServlet {
                 Message amf3Request = amf3Requests[i];
                 
                 // Ask gravity to create a specific response (will be null for connect request from tunnel).
-                Message amf3Response = gravity.handleMessage(amf3Request);
+                Message amf3Response = gravity.handleMessage(channelFactory, amf3Request);
                 String channelId = (String)amf3Request.getClientId();
                 
                 // Mark current channel (if any) as accessed.
@@ -97,7 +91,7 @@ public class GravityGAEServlet extends AbstractGravityServlet {
                     if (amf3Requests.length > 1)
                         throw new IllegalArgumentException("Only one request is allowed on tunnel.");
 
-                	GAEChannel channel = (GAEChannel)gravity.getChannel(channelId);
+                	GAEChannel channel = gravity.getChannel(channelFactory, channelId);
                 	if (channel == null)
                 		throw new NullPointerException("No channel on connect");
                 	

@@ -20,11 +20,9 @@
 
 package org.granite.gravity.generic;
 
-import javax.servlet.ServletConfig;
-
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.GravityConfig;
+import org.granite.gravity.Gravity;
 import org.granite.gravity.MessageReceivingException;
 import org.granite.logging.Logger;
 
@@ -39,8 +37,8 @@ public class GenericChannel extends AbstractChannel {
 
     private WaitingContinuation continuation = null;
 
-    public GenericChannel(ServletConfig servletConfig, GravityConfig gravityConfig, String id) {
-    	super(servletConfig, gravityConfig, id);
+    public GenericChannel(Gravity gravity, String id, GenericChannelFactory factory) {
+    	super(gravity, id, factory);
     }
 
     public void setContinuation(WaitingContinuation continuation) {

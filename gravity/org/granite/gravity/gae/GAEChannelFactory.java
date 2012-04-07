@@ -21,14 +21,17 @@
 package org.granite.gravity.gae;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Channel;
 
 /**
  * @author William DRAI
  */
-public class GAEChannelFactory extends AbstractChannelFactory {
+public class GAEChannelFactory extends AbstractChannelFactory<GAEChannel> {
+	
+	public GAEChannelFactory(GAEGravity gravity) {
+		super(gravity);
+	}
 
-    public Channel newChannel(String id) {
-        return new GAEChannel(getServletConfig(), getGravityConfig(), id);
+    public GAEChannel newChannel(String id) {
+        return new GAEChannel((GAEGravity)getGravity(), id, this);
     }
 }

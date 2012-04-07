@@ -23,6 +23,7 @@ package org.granite.gravity.gae;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.gravity.Channel;
+import org.granite.gravity.ChannelFactory;
 import org.granite.gravity.DefaultGravity;
 import org.granite.gravity.GravityConfig;
 import org.granite.gravity.Subscription;
@@ -59,20 +60,21 @@ public class GAEGravity extends DefaultGravity {
     // Channel's operations.
 
     @Override
-    protected Channel createChannel() {
-    	Channel channel = getGravityConfig().getChannelFactory().newChannel(UUIDUtil.randomUUID());
+    protected <C extends Channel> C createChannel(ChannelFactory<C> channelFactory) {
+    	C channel = channelFactory.newChannel(UUIDUtil.randomUUID());
     	Expiration expiration = Expiration.byDeltaMillis((int)getGravityConfig().getChannelIdleTimeoutMillis());
         gaeCache.put(CHANNEL_PREFIX + channel.getId(), channel, expiration);
     	gaeCache.put(GAEChannel.MSG_COUNT_PREFIX + channel.getId(), 0L, expiration);
         return channel;
     }
 
-    @Override
-    public Channel getChannel(String channelId) {
+    @SuppressWarnings("unchecked")
+	@Override
+    public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
         if (channelId == null)
             return null;
 
-        return (Channel)gaeCache.get(CHANNEL_PREFIX + channelId);
+        return (C)gaeCache.get(CHANNEL_PREFIX + channelId);
     }
 
 
@@ -85,7 +87,7 @@ public class GAEGravity extends DefaultGravity {
         if (channel != null) {
             for (Subscription subscription : channel.getSubscriptions()) {
             	Message message = subscription.getUnsubscribeMessage();
-            	handleMessage(message, true);
+            	handleMessage(channel.getFactory(), message, true);
             }
 
             channel.destroy();

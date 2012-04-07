@@ -23,7 +23,6 @@ package org.granite.gravity.servlet3;
 import java.io.IOException;
 
 import javax.servlet.AsyncContext;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,10 +44,6 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 
 	private static final Logger log = Logger.getLogger(GravityAsyncServlet.class);
     
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-    	super.init(config, new AsyncChannelFactory());
-    }
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -60,6 +55,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 			throw new ServletException("Gravity Servlet3 implementation doesn't support dispatch(...) mode");
 
 		Gravity gravity = GravityManager.getGravity(getServletContext());
+		AsyncChannelFactory channelFactory = new AsyncChannelFactory(gravity);
         
 		try {
             initializeRequest(gravity, request, response);
@@ -75,7 +71,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
                 Message amf3Request = amf3Requests[i];
 
                 // Ask gravity to create a specific response (will be null for connect request from tunnel).
-                Message amf3Response = gravity.handleMessage(amf3Request);
+                Message amf3Response = gravity.handleMessage(channelFactory, amf3Request);
                 String channelId = (String)amf3Request.getClientId();
                 
                 // Mark current channel (if any) as accessed.
@@ -87,7 +83,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
                     if (amf3Requests.length > 1)
                         throw new IllegalArgumentException("Only one connect request is allowed on tunnel.");
 
-                    AsyncChannel channel = (AsyncChannel)gravity.getChannel(channelId);
+                    AsyncChannel channel = gravity.getChannel(channelFactory, channelId);
                     if (channel == null)
                 		throw new NullPointerException("No channel on tunnel connect");
                     

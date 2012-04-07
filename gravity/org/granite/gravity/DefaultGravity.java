@@ -68,7 +68,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     private static final Logger log = Logger.getLogger(Gravity.class);
 
     private final Map<String, Object> applicationMap = new HashMap<String, Object>();
-    private final ConcurrentHashMap<String, TimeChannel> channels = new ConcurrentHashMap<String, TimeChannel>();
+    private final ConcurrentHashMap<String, TimeChannel<?>> channels = new ConcurrentHashMap<String, TimeChannel<?>>();
     
     private GravityConfig gravityConfig = null;
     private ServicesConfig servicesConfig = null;
@@ -125,7 +125,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         	if (!started) {
 	            adapterFactory = new AdapterFactory(this);
 	            internalStart();
-	            serverChannel = new ServerChannel(this, gravityConfig, ServerChannel.class.getName());
+	            serverChannel = new ServerChannel(this, ServerChannel.class.getName(), null);
 	            started = true;
         	}
         }
@@ -222,12 +222,6 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		return gravityConfig.getGravityFactory();
 	}
 
-    public String getChannelFactoryName() {
-    	if (gravityConfig.getChannelFactory() != null)
-    		return gravityConfig.getChannelFactory().getClass().getName();
-    	return null;
-	}
-
 	public long getChannelIdleTimeoutMillis() {
 		return gravityConfig.getChannelIdleTimeoutMillis();
 	}
@@ -319,15 +313,15 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     ///////////////////////////////////////////////////////////////////////////
     // Channel's operations.
     
-    protected Channel createChannel() {
-    	Channel channel = gravityConfig.getChannelFactory().newChannel(UUIDUtil.randomUUID());
-    	TimeChannel timeChannel = new TimeChannel(channel);
+    protected <C extends Channel> C createChannel(ChannelFactory<C> channelFactory) {
+    	C channel = channelFactory.newChannel(UUIDUtil.randomUUID());
+    	TimeChannel<C> timeChannel = new TimeChannel<C>(channel);
         for (int i = 0; channels.putIfAbsent(channel.getId(), timeChannel) != null; i++) {
             if (i >= 10)
                 throw new RuntimeException("Could not find random new clientId after 10 iterations");
             channel.destroy();
-            channel = gravityConfig.getChannelFactory().newChannel(UUIDUtil.randomUUID());
-            timeChannel = new TimeChannel(channel);
+            channel = channelFactory.newChannel(UUIDUtil.randomUUID());
+            timeChannel = new TimeChannel<C>(channel);
         }
 
         String channelId = channel.getId();
@@ -350,23 +344,24 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         return channel;
     }
 
-	public Channel getChannel(String channelId) {
+	public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
         if (channelId == null)
             return null;
 
-        TimeChannel timeChannel = channels.get(channelId);
+        @SuppressWarnings("unchecked")
+		TimeChannel<C> timeChannel = (TimeChannel<C>)channels.get(channelId);
         if (timeChannel == null) {
 	        // Look for existing channel id/subscriptions in distributed data (clustering).
         	try {
 	        	GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
 	        	if (gdd != null && gdd.hasChannelId(channelId)) {
 	        		log.debug("Found channel id in distributed data: %s", channelId);
-	        		Channel channel = gravityConfig.getChannelFactory().newChannel(channelId);
-	    	    	timeChannel = new TimeChannel(channel);
+	        		C channel = channelFactory.newChannel(channelId);
+	    	    	timeChannel = new TimeChannel<C>(channel);
 	    	        if (channels.putIfAbsent(channelId, timeChannel) == null) {
 	    	        	for (CommandMessage subscription : gdd.getSubscriptions(channelId)) {
 	    	        		log.debug("Resubscribing channel: %s - %s", channelId, subscription);
-	    	        		handleSubscribeMessage(subscription, false);
+	    	        		handleSubscribeMessage(channelFactory, subscription, false);
 	    	        	}
 	    	        	access(channelId);
 	    	        }
@@ -396,7 +391,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 			log.error(e, "Could not remove channel id from distributed data: %s", channelId);
 		}
         
-        TimeChannel timeChannel = channels.get(channelId);
+        TimeChannel<?> timeChannel = channels.get(channelId);
         Channel channel = null;
         if (timeChannel != null) {
         	try {
@@ -413,7 +408,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	            for (Subscription subscription : channel.getSubscriptions()) {
 	            	try {
 		            	Message message = subscription.getUnsubscribeMessage();
-		            	handleMessage(message, true);
+		            	handleMessage(channel.getFactory(), message, true);
 	            	}
 	            	catch (Exception e) {
 	            		log.error(e, "Error while unsubscribing channel: %s from subscription: %s", channel, subscription);
@@ -435,7 +430,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     
     public boolean access(String channelId) {
     	if (channelId != null) {
-	    	TimeChannel timeChannel = channels.get(channelId);
+	    	TimeChannel<?> timeChannel = channels.get(channelId);
 	    	if (timeChannel != null) {
 	    		synchronized (timeChannel) {
 	    			TimerTask timerTask = timeChannel.getTimerTask();
@@ -477,11 +472,11 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     ///////////////////////////////////////////////////////////////////////////
     // Incoming message handling.
 
-    public Message handleMessage(Message message) {
-    	return handleMessage(message, false);
+    public Message handleMessage(final ChannelFactory<?> channelFactory, Message message) {
+    	return handleMessage(channelFactory, message, false);
     }
 
-    public Message handleMessage(Message message, boolean skipInterceptor) {
+    public Message handleMessage(final ChannelFactory<?> channelFactory, final Message message, boolean skipInterceptor) {
 
         AMF3MessageInterceptor interceptor = null;
         if (!skipInterceptor)
@@ -503,22 +498,22 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	                return handleSecurityMessage(command);
 	
 	            case CommandMessage.CLIENT_PING_OPERATION:
-	                return handlePingMessage(command);
+	                return handlePingMessage(channelFactory, command);
 	            case CommandMessage.CONNECT_OPERATION:
-	                return handleConnectMessage(command);
+	                return handleConnectMessage(channelFactory, command);
 	            case CommandMessage.DISCONNECT_OPERATION:
-	                return handleDisconnectMessage(command);
+	                return handleDisconnectMessage(channelFactory, command);
 	            case CommandMessage.SUBSCRIBE_OPERATION:
-	                return handleSubscribeMessage(command);
+	                return handleSubscribeMessage(channelFactory, command);
 	            case CommandMessage.UNSUBSCRIBE_OPERATION:
-	                return handleUnsubscribeMessage(command);
+	                return handleUnsubscribeMessage(channelFactory, command);
 	
 	            default:
 	                throw new UnsupportedOperationException("Unsupported command operation: " + command);
 	            }
 	        }
 	
-	        reply = handlePublishMessage((AsyncMessage)message);
+	        reply = handlePublishMessage(channelFactory, (AsyncMessage)message);
         }
         finally {
 	        if (interceptor != null)
@@ -558,12 +553,12 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     public Message publishMessage(Channel fromChannel, AsyncMessage message) {
         initThread();
 
-        return handlePublishMessage(message, fromChannel != null ? fromChannel : serverChannel);
+        return handlePublishMessage(null, message, fromChannel != null ? fromChannel : serverChannel);
     }
 
-    private Message handlePingMessage(CommandMessage message) {
+    private Message handlePingMessage(ChannelFactory<?> channelFactory, CommandMessage message) {
         
-    	Channel channel = createChannel();
+    	Channel channel = createChannel(channelFactory);
     	
         AsyncMessage reply = new AcknowledgeMessage(message);
         reply.setClientId(channel.getId());
@@ -612,8 +607,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         return response;
     }
 
-    private Message handleConnectMessage(CommandMessage message) {
-        Channel client = getChannel((String)message.getClientId());
+    private Message handleConnectMessage(final ChannelFactory<?> channelFactory, CommandMessage message) {
+        Channel client = getChannel(channelFactory, (String)message.getClientId());
 
         if (client == null)
             return handleUnknownClientMessage(message);
@@ -621,8 +616,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         return null;
     }
 
-    private Message handleDisconnectMessage(CommandMessage message) {
-        Channel client = getChannel((String)message.getClientId());
+    private Message handleDisconnectMessage(final ChannelFactory<?> channelFactory, CommandMessage message) {
+        Channel client = getChannel(channelFactory, (String)message.getClientId());
         if (client == null)
             return handleUnknownClientMessage(message);
 
@@ -634,11 +629,11 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         return reply;
     }
 
-    private Message handleSubscribeMessage(final CommandMessage message) {
-    	return handleSubscribeMessage(message, true);
+    private Message handleSubscribeMessage(final ChannelFactory<?> channelFactory, final CommandMessage message) {
+    	return handleSubscribeMessage(channelFactory, message, true);
     }
     
-    private Message handleSubscribeMessage(final CommandMessage message, final boolean saveMessageInSession) {
+    private Message handleSubscribeMessage(final ChannelFactory<?> channelFactory, final CommandMessage message, final boolean saveMessageInSession) {
 
         final GraniteContext context = GraniteContext.getCurrentInstance();
 
@@ -656,7 +651,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 			@Override
 			public Object invoke() throws Exception {
 		        // Subscribe...
-		        Channel channel = getChannel((String)message.getClientId());
+		        Channel channel = getChannel(channelFactory, (String)message.getClientId());
 		        if (channel == null)
 		            return handleUnknownClientMessage(message);
 
@@ -726,7 +721,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
         // Check security 2 (security service).
         GraniteConfig config = context.getGraniteConfig();
-        if (config.hasSecurityService()) {
+        if (config.hasSecurityService() && context instanceof HttpGraniteContext) {
             try {
                 return (Message)config.getSecurityService().authorize(invocationContext);
             } 
@@ -743,8 +738,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         }
     }
 
-    private Message handleUnsubscribeMessage(CommandMessage message) {
-    	Channel channel = getChannel((String)message.getClientId());
+    private Message handleUnsubscribeMessage(final ChannelFactory<?> channelFactory, CommandMessage message) {
+    	Channel channel = getChannel(channelFactory, (String)message.getClientId());
         if (channel == null)
             return handleUnknownClientMessage(message);
 
@@ -784,11 +779,11 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     protected void postManage(Channel channel) {
     }
 
-    private Message handlePublishMessage(AsyncMessage message) {
-    	return handlePublishMessage(message, null);
+    private Message handlePublishMessage(final ChannelFactory<?> channelFactory, final AsyncMessage message) {
+    	return handlePublishMessage(channelFactory, message, null);
     }
     
-    private Message handlePublishMessage(final AsyncMessage message, final Channel channel) {
+    private Message handlePublishMessage(final ChannelFactory<?> channelFactory, final AsyncMessage message, final Channel channel) {
 
         GraniteContext context = GraniteContext.getCurrentInstance();
 
@@ -808,7 +803,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		        // Publish...
 		        Channel fromChannel = channel;
 		        if (fromChannel == null)
-		        	fromChannel = getChannel((String)message.getClientId());
+		        	fromChannel = getChannel(channelFactory, (String)message.getClientId());
 		        if (fromChannel == null)
 		            return handleUnknownClientMessage(message);
 
@@ -880,17 +875,9 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Gravity gravity;
-
-		public ServerChannel(Gravity gravity, GravityConfig gravityConfig, String channelId) {
-    		super(null, gravityConfig, channelId);
-    		this.gravity = gravity;
+		public ServerChannel(Gravity gravity, String channelId, ChannelFactory<ServerChannel> factory) {
+    		super(gravity, channelId, factory);
     	}
-
-		@Override
-		public Gravity getGravity() {
-			return gravity;
-		}
 
 		@Override
 		public void receive(AsyncMessage message) throws MessageReceivingException {

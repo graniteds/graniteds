@@ -21,14 +21,18 @@
 package org.granite.gravity.jetty;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Channel;
+import org.granite.gravity.Gravity;
 
 /**
  * @author William DRAI
  */
-public class ContinuationChannelFactory extends AbstractChannelFactory {
+public class ContinuationChannelFactory extends AbstractChannelFactory<ContinuationChannel> {
+	
+	public ContinuationChannelFactory(Gravity gravity) {
+		super(gravity);
+	}
 
-	public Channel newChannel(String id) {
-		return new ContinuationChannel(getServletConfig(), getGravityConfig(), id);
+	public ContinuationChannel newChannel(String id) {
+		return new ContinuationChannel(getGravity(), id, this);
 	}
 }

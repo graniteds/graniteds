@@ -21,14 +21,18 @@
 package org.granite.gravity.generic;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Channel;
+import org.granite.gravity.Gravity;
 
 /**
  * @author William DRAI
  */
-public class GenericChannelFactory extends AbstractChannelFactory {
+public class GenericChannelFactory extends AbstractChannelFactory<GenericChannel> {
+	
+	public GenericChannelFactory(Gravity gravity) {
+		super(gravity);
+	}
 
-	public Channel newChannel(String id) {
-		return new GenericChannel(getServletConfig(), getGravityConfig(), id);
+	public GenericChannel newChannel(String id) {
+		return new GenericChannel(getGravity(), id, this);
 	}
 }

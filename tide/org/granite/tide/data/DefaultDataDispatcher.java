@@ -29,6 +29,7 @@ import org.granite.clustering.GraniteDistributedData;
 import org.granite.clustering.GraniteDistributedDataFactory;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
+import org.granite.gravity.ChannelFactory;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
@@ -54,8 +55,6 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 
     
     private Gravity gravity = null;
-    private String clientId = null;
-    private String subscriptionId = null;
     
     
 	public DefaultDataDispatcher(Gravity gravity, String topicName, Class<? extends DataTopicParams> dataTopicParamsClass) {
@@ -77,15 +76,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
 			
 			clientId = gdd.getDestinationClientId(topicName);
-			if (clientId == null) {
-				log.debug("Gravity channel clientId not defined, data dispatch disabled");
-				return;
-			}
 			subscriptionId = gdd.getDestinationSubscriptionId(topicName);
-			if (subscriptionId == null) {
-				log.debug("Gravity channel subscriptionId not defined, data dispatch disabled");
-				return;
-			}
 		}
 		else {
 			if (gravity == null) {
@@ -120,7 +111,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 				
 				message.setHeader(CommandMessage.SELECTOR_HEADER, dataSelector);
 				
-				gravity.handleMessage(message, true);
+				gravity.handleMessage(null, message, true);
 				
 				log.debug("Topic %s data selector changed: %s", topicName, dataSelector);
 			}
@@ -129,15 +120,21 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 	
 	@Override
 	public void publishUpdate(Map<String, String> params, Object body) {
-		Channel channel = gravity.getChannel(clientId);
 		AsyncMessage message = new AsyncMessage();
-		message.setClientId(clientId);
 		message.setDestination(topicName);
 		for (Entry<String, String> hh : params.entrySet())
 			message.setHeader(hh.getKey(), hh.getValue());
 		message.setBody(body);
 		
-		Message resultMessage = gravity.publishMessage(channel, message);
+		Message resultMessage = null;
+		if (clientId != null) {
+			Channel channel = gravity.getChannel(null, clientId);
+			message.setClientId(clientId);
+			resultMessage = gravity.publishMessage(channel, message);
+		}
+		else
+			resultMessage = gravity.publishMessage(message);
+		
 		if (resultMessage instanceof ErrorMessage)
 			log.error("Could not dispatch data update on topic %s, message %s", topicName, resultMessage.toString());
 		else

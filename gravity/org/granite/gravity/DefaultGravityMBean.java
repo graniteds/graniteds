@@ -71,9 +71,6 @@ public interface DefaultGravityMBean {
 
     @MBeanAttribute(description="Client advice for reconnection max attempts")
 	public int getReconnectMaxAttempts();
-
-    @MBeanAttribute(description="Container specific Channel factory class name")
-	public String getChannelFactoryName();
 	
 	@MBeanAttribute(description="Maximum number of channels that may be queued in the Gravity pool")
     public int getQueueCapacity();

@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
+import org.granite.gravity.ChannelFactory;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.gravity.GravityServletUtil;
@@ -55,7 +56,7 @@ public class GravityWebLogicServlet extends AbstractAsyncServlet {
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		
-		GravityServletUtil.init(config, new WebLogicChannelFactory());
+		GravityServletUtil.init(config);
 		
 		int scavangeInterval = ServletParams.get(
 			config,
@@ -71,6 +72,7 @@ public class GravityWebLogicServlet extends AbstractAsyncServlet {
 	@Override
 	protected boolean doRequest(RequestResponseKey key) throws IOException, ServletException {
 		Gravity gravity = GravityManager.getGravity(getServletContext());
+		WebLogicChannelFactory channelFactory = new WebLogicChannelFactory(gravity);
         
 		HttpServletRequest request = key.getRequest();
 		HttpServletResponse response = key.getResponse();
@@ -89,7 +91,7 @@ public class GravityWebLogicServlet extends AbstractAsyncServlet {
                 Message amf3Request = amf3Requests[i];
 
                 // Ask gravity to create a specific response (will be null for connect request from tunnel).
-                Message amf3Response = gravity.handleMessage(amf3Request);
+                Message amf3Response = gravity.handleMessage(channelFactory, amf3Request);
                 String channelId = (String)amf3Request.getClientId();
                 
                 // Mark current channel (if any) as accessed.
@@ -101,7 +103,7 @@ public class GravityWebLogicServlet extends AbstractAsyncServlet {
                     if (amf3Requests.length > 1)
                         throw new IllegalArgumentException("Only one connect request is allowed on tunnel.");
 
-                    WebLogicChannel channel = (WebLogicChannel)gravity.getChannel(channelId);
+                    WebLogicChannel channel = gravity.getChannel(channelFactory, channelId);
                     if (channel == null)
                 		throw new NullPointerException("No channel on tunnel connect");
                     
@@ -152,9 +154,11 @@ public class GravityWebLogicServlet extends AbstractAsyncServlet {
 	@Override
 	protected void doTimeout(RequestResponseKey key) throws IOException, ServletException {
 		Gravity gravity = GravityManager.getGravity(getServletContext());
+		WebLogicChannelFactory channelFactory = new WebLogicChannelFactory(gravity);
+		
 		CommandMessage amf3Request = GravityServletUtil.getConnectMessage(key.getRequest());
 		String channelId = (String)amf3Request.getClientId();
-		WebLogicChannel channel = (WebLogicChannel)gravity.getChannel(channelId);
+		WebLogicChannel channel = gravity.getChannel(channelFactory, channelId);
 		channel.setRequestResponseKey(null);
 	}
 }

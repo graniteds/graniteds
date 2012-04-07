@@ -67,14 +67,14 @@ public interface Gravity extends ShutdownListener {
     public void stop() throws Exception;
     public void stop(boolean now) throws Exception;
 
-    public Channel getChannel(String channelId);
+    public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId);
     public Channel removeChannel(String channelId);
     public boolean access(String channelId);
     public void execute(AsyncChannelRunner runnable);
     public boolean cancel(AsyncChannelRunner runnable);
 
-    public Message handleMessage(Message message);
-    public Message handleMessage(Message message, boolean skipInterceptor);
+    public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message);
+    public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message, boolean skipInterceptor);
     public Message publishMessage(AsyncMessage message);
     public Message publishMessage(Channel fromChannel, AsyncMessage message);
 }

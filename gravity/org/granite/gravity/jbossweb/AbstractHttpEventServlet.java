@@ -48,14 +48,6 @@ public abstract class AbstractHttpEventServlet extends AbstractGravityServlet im
     private boolean longPollingTimeoutSupported = true;
 
     ///////////////////////////////////////////////////////////////////////////
-    // Initialization.
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-       super.init(config, new JBossWebChannelFactory());
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     // Abstract methods.
 
 	public abstract CometIO createCometIO();

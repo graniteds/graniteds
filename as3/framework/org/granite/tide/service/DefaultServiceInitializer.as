@@ -28,7 +28,10 @@ package org.granite.tide.service {
     import mx.messaging.Channel;
     import mx.messaging.ChannelSet;
 	import mx.messaging.channels.AMFChannel;
+	import mx.messaging.channels.SecureAMFChannel;
+	import org.granite.tide.Tide;
     import org.granite.gravity.channels.GravityChannel;
+	import org.granite.gravity.channels.SecureGravityChannel;
     
 
     /**
@@ -41,11 +44,12 @@ package org.granite.tide.service {
 		private var _graniteChannelSet:ChannelSet;
 		private var _gravityChannelSet:ChannelSet;
 		
-		private var _contextRoot:String = "";
-		private var _serverName:String = "{server.name}";
-		private var _serverPort:String = "{server.port}";
-		private var _graniteUrlMapping:String = "/graniteamf/amf.txt";		// .txt for stupid bug in IE8
-		private var _gravityUrlMapping:String = "/gravityamf/amf.txt";
+		protected var _secure:Boolean = false;
+		protected var _contextRoot:String = "";
+		protected var _serverName:String = "{server.name}";
+		protected var _serverPort:String = "{server.port}";
+		protected var _graniteUrlMapping:String = "/graniteamf/amf.txt";		// .txt for stupid bug in IE8
+		protected var _gravityUrlMapping:String = "/gravityamf/amf.txt";
         
 
 		/**
@@ -54,9 +58,14 @@ package org.granite.tide.service {
 		 * 	@param name component name
 		 *  @param context current context
 		 */
-        public function DefaultServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = null, gravityUrlMapping:String = null) {
+        public function DefaultServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = null, gravityUrlMapping:String = null, secure:Boolean = false) {
             super();
             _contextRoot = contextRoot;
+			var application:Object = Tide.currentApplication();
+			if (application.url && application.url.indexOf("https") == 0)
+				_secure = true;
+			else
+				_secure = secure;
             if (graniteUrlMapping != null)
             	_graniteUrlMapping = graniteUrlMapping;
             if (gravityUrlMapping != null)
@@ -66,6 +75,10 @@ package org.granite.tide.service {
         public function set contextRoot(contextRoot:String):void {
         	_contextRoot = contextRoot;
         }
+
+		public function set secure(secure:Boolean):void {
+			_secure = secure;
+		}
         
         public function set serverName(serverName:String):void {
         	_serverName = serverName;
@@ -84,14 +97,18 @@ package org.granite.tide.service {
         }
         
         protected function get protocol():String {
-        	return "http";
+        	return secure ? "https" : "http";
         }
         
         protected function newAMFChannel(id:String, uri:String):Channel {
+			if (_secure)
+				return new SecureAMFChannel(id, url);
         	return new AMFChannel(id, uri);
         }
         
         protected function newGravityChannel(id:String, uri:String):Channel {
+			if (_secure)
+				return new SecureGravityChannel(id, url);
         	return new GravityChannel(id, uri);
         }
         

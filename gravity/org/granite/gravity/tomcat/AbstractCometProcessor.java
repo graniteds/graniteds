@@ -47,14 +47,6 @@ public abstract class AbstractCometProcessor extends AbstractGravityServlet impl
     private boolean longPollingTimeoutSupported = true;
 
     ///////////////////////////////////////////////////////////////////////////
-    // Initialization.
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-    	super.init(config, new TomcatChannelFactory());
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     // Abstract methods.
 
 	public abstract CometIO createCometIO();
