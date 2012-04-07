@@ -674,7 +674,7 @@ package org.granite.validation {
 				value = null;
 				nulled = true;
 			}
-
+			
 			var leafTypeProperty:Array = getLeafTypeProperty(Type.forInstance(entity), component.validationSubField);
 			
 			var violations:Array = ValidatorFactory.getInstance().validateValue(
