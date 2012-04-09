@@ -349,7 +349,7 @@ package org.granite.tide {
 		 * 
 		 *  @return top level application
 		 */
-		private function currentApplication():Object {
+		public static function currentApplication():Object {
 			var app:Object = null;
 			// Application.application seems to break Flex 4.5 mobile applications
 			CONFIG::flex40 {

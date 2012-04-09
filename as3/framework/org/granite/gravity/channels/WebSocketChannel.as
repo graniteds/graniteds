@@ -88,7 +88,7 @@ package org.granite.gravity.channels {
         }
 
         override protected function internalConnect():void {
-            _webSocket = new WebSocket(1, resolveUri(), [ "gravity" ], "", "", 0, "", "");
+            _webSocket = new WebSocket(1, resolveUri(), [ "gravity" ], "", "", "");
             _webSocket.addEventListener(WebSocketEvent.OPEN, onOpen);
 			_webSocket.addEventListener(WebSocketEvent.ERROR, onError);
 			_webSocket.addEventListener(WebSocketEvent.CLOSE, onClose);

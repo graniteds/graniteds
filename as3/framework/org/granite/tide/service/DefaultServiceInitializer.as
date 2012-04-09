@@ -97,18 +97,18 @@ package org.granite.tide.service {
         }
         
         protected function get protocol():String {
-        	return secure ? "https" : "http";
+        	return _secure ? "https" : "http";
         }
         
         protected function newAMFChannel(id:String, uri:String):Channel {
 			if (_secure)
-				return new SecureAMFChannel(id, url);
+				return new SecureAMFChannel(id, uri);
         	return new AMFChannel(id, uri);
         }
         
         protected function newGravityChannel(id:String, uri:String):Channel {
 			if (_secure)
-				return new SecureGravityChannel(id, url);
+				return new SecureGravityChannel(id, uri);
         	return new GravityChannel(id, uri);
         }
         

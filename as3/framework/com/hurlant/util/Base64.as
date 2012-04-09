@@ -6,12 +6,14 @@
  * This library is free.  You can redistribute it and/or modify it.
  */
 package com.hurlant.util{
+	
     import flash.utils.ByteArray;
+	import flash.utils.getDefinitionByName;
 
     public class Base64
     {
-        private static const _encodeChars : Vector.<int> = InitEncoreChar();
-        private static const _decodeChars : Vector.<int> = InitDecodeChar();
+        private static const _encodeChars : Object = InitEncodeChar();
+        private static const _decodeChars : Object = InitDecodeChar();
 
         public static function encodeByteArray(data : ByteArray) : String
         {
@@ -140,9 +142,16 @@ package com.hurlant.util{
             return bytes.readUTFBytes(bytes.length);
         }
 
-        public static function InitEncoreChar() : Vector.<int>
+        public static function InitEncodeChar() : Object
         {
-            var encodeChars : Vector.<int> = new Vector.<int>();
+            var encodeChars : Object;
+			try {
+				var vec:Class = getDefinitionByName("__AS3__.vec::Vector.<int>") as Class;
+				encodeChars = new vec();
+			}
+			catch (e:Error) {
+				encodeChars = new Array();
+			}
             // We could push the number directly, but i think it's nice to see the characters (with no overhead on encode/decode)
             var chars : String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
             for (var i : int = 0; i < 64; i++)
@@ -163,9 +172,16 @@ package com.hurlant.util{
             return encodeChars;
         }
 
-        public static function InitDecodeChar() : Vector.<int>
+        public static function InitDecodeChar() : Object
         {
-            var decodeChars : Vector.<int> = new Vector.<int>();
+			var decodeChars : Object;
+			try {
+				var vec:Class = getDefinitionByName("__AS3__.vec::Vector.<int>") as Class;
+				decodeChars = new vec();
+			}
+			catch (e:Error) {
+				decodeChars = new Array();
+			}
 
             decodeChars.push(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

@@ -8,7 +8,6 @@
  */
 package com.hurlant.crypto.symmetric
 {
-	import com.hurlant.crypto.tests.TestCase;
 	import flash.utils.ByteArray;
 
 	/**

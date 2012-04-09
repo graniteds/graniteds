@@ -9,7 +9,6 @@
 package com.hurlant.crypto.symmetric
 {
 	import com.hurlant.crypto.prng.Random;
-	import com.hurlant.crypto.tests.TestCase;
 	import com.hurlant.util.Memory;
 	
 	import flash.utils.ByteArray;
