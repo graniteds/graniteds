@@ -23,8 +23,16 @@ public class PolicyFileServer implements Runnable {
 		this.serverPort = serverPort;
 	}
 	
+	public void setAllowDomains(String[] domains) {
+		this.allowDomains = domains;
+	}
+	
+	public void setAllowPorts(String[] ports) {
+		this.allowPorts = ports;
+	}
+	
 	public void start() {
-		policyServer = new Thread(new PolicyFileServer(), "FlashPolicyFileServer");
+		policyServer = new Thread(this, "FlashPolicyFileServer:" + serverPort);
 		policyServer.start();
 	}
 	
@@ -51,7 +59,7 @@ public class PolicyFileServer implements Runnable {
 		    	
 			    ByteBuffer buf = ByteBuffer.allocate(100);
 			    int size = socket.read(buf);
-			    if (size > 0) {
+			    if (size == 23) {
 			    	byte[] req = new byte[size];
 			    	buf.get(req, 0, size);
 			    	String request = new String(req, "UTF-8");

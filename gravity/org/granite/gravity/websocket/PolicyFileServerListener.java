@@ -36,6 +36,8 @@ public class PolicyFileServerListener implements ServletContextListener {
 					ports[i] = a[i].substring(idx+1);
 				}
 			}
+			server.setAllowDomains(domains);
+			server.setAllowPorts(ports);
 		}
 		
 		server.start();

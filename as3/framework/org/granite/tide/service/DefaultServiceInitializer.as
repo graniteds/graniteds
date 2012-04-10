@@ -60,12 +60,27 @@ package org.granite.tide.service {
 		 */
         public function DefaultServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = null, gravityUrlMapping:String = null, secure:Boolean = false) {
             super();
-            _contextRoot = contextRoot;
 			var application:Object = Tide.currentApplication();
+			
 			if (application.url && application.url.indexOf("https") == 0)
 				_secure = true;
 			else
 				_secure = secure;
+			
+			if (!contextRoot && application.url) {
+				var idx:int = application.url.indexOf("://");
+				if (idx > 0) {
+					idx = application.url.indexOf("/", idx+3);
+					if (idx > 0) {
+						var idx2:int = application.url.indexOf("/", idx+1);
+						if (idx2 > 0 && idx2 > idx)
+							_contextRoot = application.url.substring(idx, idx2);
+					}
+				}
+			}
+			else
+				_contextRoot = contextRoot;
+
             if (graniteUrlMapping != null)
             	_graniteUrlMapping = graniteUrlMapping;
             if (gravityUrlMapping != null)
