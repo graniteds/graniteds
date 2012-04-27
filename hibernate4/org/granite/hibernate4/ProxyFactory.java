@@ -39,6 +39,7 @@ import org.granite.util.ClassUtil;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.CompositeType;
+import org.hibernate.util.ReflectHelper;
 
 
 /**
@@ -52,6 +53,7 @@ public class ProxyFactory {
 
     private final Method getProxyFactory;
     private final Method getProxy;
+    private final boolean classOverridesEqualsParameter;
 
     public ProxyFactory(String initializerClassName) {
         try {
@@ -60,10 +62,23 @@ public class ProxyFactory {
         	// class with the same signature.
             Class<?> initializerClass = ClassUtil.forName(initializerClassName);
             getProxyFactory = initializerClass.getMethod("getProxyFactory", new Class[]{Class.class, Class[].class});
-            getProxy = initializerClass.getMethod("getProxy", new Class[]{
-                Class.class, String.class, Class.class, Class[].class, Method.class, Method.class,
-                CompositeType.class, Serializable.class, SessionImplementor.class
-            });
+            
+            // Hibernate 4.0.1 has an extra boolean parameter in last position: classOverridesEquals.
+            Method getProxy = null;
+            try {
+	            getProxy = initializerClass.getMethod("getProxy", new Class[]{
+	                Class.class, String.class, Class.class, Class[].class, Method.class, Method.class,
+	                CompositeType.class, Serializable.class, SessionImplementor.class
+	            });
+            }
+            catch (NoSuchMethodException e) {
+                getProxy = initializerClass.getMethod("getProxy", new Class[]{
+                	Class.class, String.class, Class.class, Class[].class, Method.class, Method.class,
+                    CompositeType.class, Serializable.class, SessionImplementor.class, Boolean.TYPE
+                });
+            }
+            this.getProxy = getProxy;
+            this.classOverridesEqualsParameter = (getProxy.getParameterTypes().length == 10);
         } catch (Exception e) {
             throw new ServiceException("Could not introspect initializer class: " + initializerClassName, e);
         }
@@ -82,7 +97,11 @@ public class ProxyFactory {
                 id = (Serializable)config.getConverters().convert(id, identifierType);
             }
 
-            // Get Proxy
+            // Get Proxy (with or without the extra parameter classOverridesEquals)
+            if (classOverridesEqualsParameter) {
+                return (HibernateProxy)getProxy.invoke(null, new Object[]{
+                	factory, entityName, persistentClass, INTERFACES, null, null, null, id, null, ReflectHelper.overridesEquals(persistentClass)});
+            }
             return (HibernateProxy)getProxy.invoke(null, new Object[]{factory, entityName, persistentClass, INTERFACES, null, null, null, id, null});
         } catch (Exception e) {
             throw new ServiceException("Error with proxy description: " + persistentClassName + '/' + entityName + " and id: " + id, e);
