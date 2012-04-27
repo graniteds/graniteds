@@ -100,7 +100,7 @@ public class GravityGenericServlet extends AbstractGravityServlet {
                     if (amf3Requests.length > 1)
                         throw new IllegalArgumentException("Only one request is allowed on tunnel.");
 
-                	GenericChannel channel = (GenericChannel)gravity.getChannel(channelFactory, channelId);
+                	GenericChannel channel = gravity.getChannel(channelFactory, channelId);
                 	if (channel == null)
                 		throw new NullPointerException("No channel on tunnel connect");
 

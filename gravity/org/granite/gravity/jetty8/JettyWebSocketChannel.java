@@ -5,18 +5,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.HashMap;
 import java.util.LinkedList;
+
+import javax.servlet.ServletContext;
 
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocket.OnBinaryMessage;
 import org.granite.context.GraniteContext;
-import org.granite.context.SimpleGraniteContext;
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityConfig;
 import org.granite.logging.Logger;
+import org.granite.messaging.webapp.ServletGraniteContext;
 
 import flex.messaging.messages.AcknowledgeMessage;
 import flex.messaging.messages.AsyncMessage;
@@ -27,18 +28,23 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	
 	private static final Logger log = Logger.getLogger(JettyWebSocketChannel.class);
 	
+	private ServletContext servletContext;
 	private Connection connection;
 
 	
-	public JettyWebSocketChannel(Gravity gravity, String id, JettyWebSocketChannelFactory factory) {
+	public JettyWebSocketChannel(Gravity gravity, String id, JettyWebSocketChannelFactory factory, ServletContext servletContext) {
     	super(gravity, id, factory);
+    	this.servletContext = servletContext;
     }
 
 	public void onOpen(Connection connection) {
 		this.connection = connection;
+		this.connection.setMaxIdleTime((int)getGravity().getGravityConfig().getChannelIdleTimeoutMillis());
+		
+		log.debug("WebSocket connection onOpen");
 		
 		try {
-			initializeRequest(getGravity());
+			initializeRequest();
 			
 			// Return an acknowledge message with the server-generated clientId
 			AcknowledgeMessage message = new AcknowledgeMessage();
@@ -57,11 +63,14 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	}
 
 	public void onClose(int closeCode, String message) {
+		log.debug("WebSocket connection onClose %d, %s", closeCode, message);
 	}
 
 	public void onMessage(byte[] data, int offset, int length) {
+		log.debug("WebSocket connection onMessage %d", data.length);
+		
 		try {
-			initializeRequest(getGravity());
+			initializeRequest();
 			
 			Message[] messages = deserialize(getGravity(), data, offset, length);
 
@@ -103,8 +112,8 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 		}
 	}
 	
-	private static Gravity initializeRequest(Gravity gravity) {
-		SimpleGraniteContext.createThreadIntance(gravity.getGraniteConfig(), gravity.getServicesConfig(), new HashMap<String, Object>());
+	private Gravity initializeRequest() {
+		ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId);
 		return gravity;
 	}
 
@@ -163,6 +172,9 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 				receivedQueueLock.unlock();
 			}
 			
+			if (!connection.isOpen())
+				return false;
+			
 			AsyncMessage[] messagesArray = new AsyncMessage[messages.size()];
 			int i = 0;
 			for (AsyncMessage message : messages)
@@ -170,9 +182,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 			
 			// Setup serialization context (thread local)
 			Gravity gravity = getGravity();
-	        GraniteContext context = SimpleGraniteContext.createThreadIntance(
-	            gravity.getGraniteConfig(), gravity.getServicesConfig(), new HashMap<String, Object>()
-	        );
+	        GraniteContext context = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId);
 	        
 	        os = new ByteArrayOutputStream(500);
 	        ObjectOutput amf3Serializer = context.getGraniteConfig().newAMF3Serializer(os);

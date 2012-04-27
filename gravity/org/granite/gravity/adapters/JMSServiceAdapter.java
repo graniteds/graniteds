@@ -41,7 +41,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.granite.clustering.GraniteDistributedDataFactory;
+import org.granite.clustering.DistributedDataFactory;
 import org.granite.clustering.TransientReference;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
@@ -485,11 +485,10 @@ public class JMSServiceAdapter extends ServiceAdapter {
         }
         
         public void subscribe(String selector, String destination, String topic) throws Exception {
-        	if (GraniteContext.getCurrentInstance() instanceof HttpGraniteContext) {
-        		String subscriptionId = GraniteDistributedDataFactory.getInstance().getDestinationSubscriptionId(destination);
-        		if (subscriptionId != null)
-        			internalSubscribe(subscriptionId, selector, destination, topic);
-        	}
+        	DistributedDataFactory distributedDataFactory = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory();
+    		String subscriptionId = distributedDataFactory.getInstance().getDestinationSubscriptionId(destination);
+    		if (subscriptionId != null)
+    			internalSubscribe(subscriptionId, selector, destination, topic);
         }
         
         private void internalSubscribe(String subscriptionId, String selector, String destination, String topic) throws Exception {

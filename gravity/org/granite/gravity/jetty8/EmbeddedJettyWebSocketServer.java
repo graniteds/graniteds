@@ -2,7 +2,9 @@ package org.granite.gravity.jetty8;
 
 import java.util.HashMap;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
@@ -21,6 +23,7 @@ public class EmbeddedJettyWebSocketServer extends Server {
 	
 	private static final Logger log = Logger.getLogger(EmbeddedJettyWebSocketServer.class);
 
+	private final ServletContext servletContext;
 	private int serverPort = 81;
 	
 	public void setServerPort(int serverPort) {
@@ -28,7 +31,9 @@ public class EmbeddedJettyWebSocketServer extends Server {
 	}
 	
 	
-    public EmbeddedJettyWebSocketServer() {
+    public EmbeddedJettyWebSocketServer(ServletContext servletContext) {
+    	this.servletContext = servletContext;
+    	
     	SelectChannelConnector connector = new SelectChannelConnector();
         connector.setPort(serverPort);
         addConnector(connector);
@@ -36,15 +41,22 @@ public class EmbeddedJettyWebSocketServer extends Server {
         WebSocketHandler handler = new WebSocketHandler() {           		
             public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) {
         		Gravity gravity = GravityManager.getGravity(request.getServletContext());
-        		JettyWebSocketChannelFactory channelFactory = new JettyWebSocketChannelFactory(gravity);
+        		JettyWebSocketChannelFactory channelFactory = new JettyWebSocketChannelFactory(gravity, EmbeddedJettyWebSocketServer.this.servletContext);
         		
         		try {
-        	        SimpleGraniteContext.createThreadIntance(
+        			String clientId = request.getParameter("GDSClientId");
+        			String sessionId = null;
+        			HttpSession session = request.getSession(false);
+        			if (session != null)
+        				sessionId = session.getId();
+        			if (request.getHeader("GDSSessionId") != null)
+        				sessionId = request.getHeader("GDSSessionId");
+        			
+        	        SimpleGraniteContext.createThreadInstance(
         	                gravity.getGraniteConfig(), gravity.getServicesConfig(),
+        	                sessionId, 
         	                new HashMap<String, Object>()
         	        );
-        			
-        			String clientId = request.getParameter("GDSClientId");
         			
         			log.info("WebSocket connection " + protocol);
         			

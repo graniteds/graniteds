@@ -28,7 +28,7 @@ import flex.messaging.messages.CommandMessage;
 /**
  * @author Franck WOLFF
  */
-public interface GraniteDistributedData {
+public interface DistributedData {
 
 	// SecurityService credentials.
 	
@@ -58,6 +58,9 @@ public interface GraniteDistributedData {
 	
 	public String getDestinationSubscriptionId(String destination);
 	public void setDestinationSubscriptionId(String destination, String subscriptionId);
+	
+	public Object[] getDestinationDataSelectors(String destination);
+	public void setDestinationDataSelectors(String destination, Object[] selectors);
 	
 	public String getDestinationSelector(String destination);
 	public void setDestinationSelector(String destination, String selector);

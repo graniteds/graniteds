@@ -30,8 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpSession;
 
-import org.granite.clustering.GraniteDistributedData;
-import org.granite.clustering.GraniteDistributedDataFactory;
+import org.granite.clustering.DistributedData;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
 import org.granite.config.flex.ServicesConfig;
@@ -328,7 +327,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         
         // Save channel id in distributed data (clustering).
         try {
-	        GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+	        DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 	        if (gdd != null) {
         		log.debug("Saving channel id in distributed data: %s", channelId);
 	        	gdd.addChannelId(channelId);
@@ -353,7 +352,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         if (timeChannel == null) {
 	        // Look for existing channel id/subscriptions in distributed data (clustering).
         	try {
-	        	GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+	        	DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 	        	if (gdd != null && gdd.hasChannelId(channelId)) {
 	        		log.debug("Found channel id in distributed data: %s", channelId);
 	        		C channel = channelFactory.newChannel(channelId);
@@ -381,7 +380,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
         // Remove existing channel id/subscriptions in distributed data (clustering).
         try {
-	        GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+	        DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 	        if (gdd != null) {
         		log.debug("Removing channel id from distributed data: %s", channelId);
 	        	gdd.removeChannelId(channelId);
@@ -536,9 +535,13 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     // Other Public API methods.
 
     public GraniteContext initThread() {
+    	return initThread(null);
+    }
+    
+    public GraniteContext initThread(String sessionId) {
         GraniteContext context = GraniteContext.getCurrentInstance();
         if (context == null)
-            context = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, applicationMap);
+            context = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, sessionId, applicationMap);
         return context;
     }
     
@@ -665,9 +668,9 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		        if (context instanceof HttpGraniteContext)
 		        	session = ((HttpGraniteContext)context).getSession(false);
 
-		        GraniteDistributedData gdd = null;
+		        DistributedData gdd = null;
 		        if (session != null) {
-		        	gdd = GraniteDistributedDataFactory.getInstance();
+		        	gdd = graniteConfig.getDistributedDataFactory().getInstance();
 
 		        	if (Boolean.TRUE.toString().equals(destination.getProperties().get("session-selector"))) {
 		        		String selector = gdd.getDestinationSelector(destination.getId());
@@ -754,7 +757,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         if (!(reply instanceof ErrorMessage)) {
         	// Remove subscription message in distributed data (clustering).
         	try {
-		        GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+		        DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 		        if (gdd != null) {
 		        	String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
 		        	log.debug("Removing subscription message from channel info: %s - %s", channel.getId(), subscriptionId);

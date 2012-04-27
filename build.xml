@@ -746,7 +746,9 @@
         <jar destfile="build/granite-client.jar" manifest="core/META-INF/MANIFEST.MF">
             <fileset dir="classes/core">
                 <include name="**"/>
-            	<exclude name="org/granite/clustering/**"/>
+            	<exclude name="org/granite/clustering/*Session*.class"/>
+            	<exclude name="org/granite/clustering/Transient*.class"/>
+            	<exclude name="org/granite/config/granite-config.xml"/>
             	<exclude name="org/granite/config/flex/Servlet*"/>
             	<exclude name="org/granite/config/servlet3/**"/>
             	<exclude name="org/granite/messaging/amf/process/*Processor.class"/>

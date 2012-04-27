@@ -34,7 +34,8 @@
     security?,
     tide-components?,
     message-selector?,
-    gravity?
+    gravity?,
+    distributed-data-factory?
 )>
 <!ATTLIST granite-config
 	scan (true|false) "false"
@@ -155,6 +156,11 @@
 
 <!ELEMENT message-selector EMPTY>
 <!ATTLIST message-selector
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT distributed-data-factory EMPTY>
+<!ATTLIST distributed-data-factory
 	type CDATA #REQUIRED
 >
 

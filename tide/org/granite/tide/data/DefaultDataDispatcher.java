@@ -23,13 +23,10 @@ package org.granite.tide.data;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.http.HttpSession;
-
-import org.granite.clustering.GraniteDistributedData;
-import org.granite.clustering.GraniteDistributedDataFactory;
+import org.granite.clustering.DistributedData;
+import org.granite.clustering.DistributedDataFactory;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
-import org.granite.gravity.ChannelFactory;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
@@ -64,16 +61,15 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 		if (gravity == null && graniteContext == null)
 			return;
 		
-		if (graniteContext instanceof HttpGraniteContext) {
+		DistributedDataFactory distributedDataFactory = graniteContext.getGraniteConfig().getDistributedDataFactory();		
+		DistributedData gdd = distributedDataFactory.getInstance();
+		if (gdd != null) {
 			this.gravity = GravityManager.getGravity(((HttpGraniteContext)graniteContext).getServletContext());
 			
-			HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
-			if (this.gravity == null || session == null) {
+			if (this.gravity == null) {
 				log.debug("Gravity not found or HTTP session not found, data dispatch disabled");
 				return;
 			}
-			sessionId = session.getId();
-			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
 			
 			clientId = gdd.getDestinationClientId(topicName);
 			subscriptionId = gdd.getDestinationSubscriptionId(topicName);
@@ -94,10 +90,9 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 	
 	@Override
 	protected void changeDataSelector(String dataSelector) {
-		HttpSession session = ((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSession(false);
-		
-		if (session != null) {
-			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+		DistributedDataFactory distributedDataFactory = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory();		
+		DistributedData gdd = distributedDataFactory.getInstance();
+		if (gdd != null) {
 			String clientId = gdd.getDestinationClientId(topicName);
 			String subscriptionId = gdd.getDestinationSubscriptionId(topicName);
 			

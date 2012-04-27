@@ -37,6 +37,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.granite.clustering.DistributedDataFactory;
 import org.granite.config.api.Configuration;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.RemoteClass;
@@ -157,6 +158,9 @@ public class GraniteConfig implements ScannedItemHandler {
     
     // Gravity configuration.
     private XMap gravityConfig;
+    
+    // Clustering
+    private DistributedDataFactory distributedDataFactory;
 
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
@@ -529,6 +533,10 @@ public class GraniteConfig implements ScannedItemHandler {
 	public XMap getGravityConfig() {
 		return gravityConfig;
 	}
+	
+	public DistributedDataFactory getDistributedDataFactory() {
+		return distributedDataFactory;
+	}
 
     public Constructor<?> getMessageSelectorConstructor() {
         return messageSelectorConstructor;
@@ -568,6 +576,7 @@ public class GraniteConfig implements ScannedItemHandler {
         loadCustomSecurity(element, custom);
         loadCustomMessageSelector(element, custom);
         loadCustomGravity(element, custom);
+        loadCustomDistributedDataFactory(element, custom);
 
         if (this.scan)
             scanConfig(graniteConfigProperties);
@@ -625,6 +634,18 @@ public class GraniteConfig implements ScannedItemHandler {
                 amf3MessageInterceptor = (AMF3MessageInterceptor)ClassUtil.newInstance(type);
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not construct amf3 message interceptor: " + type, e);
+            }
+        }
+    }
+    
+    private void loadCustomDistributedDataFactory(XMap element, boolean custom) {
+        XMap distributedDataFactory = element.getOne("distributed-data-factory");
+        if (distributedDataFactory != null) {
+            String type = distributedDataFactory.get("@type");
+            try {
+            	this.distributedDataFactory = (DistributedDataFactory)ClassUtil.newInstance(type);
+            } catch (Exception e) {
+                throw new GraniteConfigException("Could not construct build distributed data factory: " + type, e);
             }
         }
     }

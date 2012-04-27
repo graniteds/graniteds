@@ -26,13 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.http.HttpSession;
-
-import org.granite.clustering.GraniteDistributedData;
-import org.granite.clustering.GraniteDistributedDataFactory;
+import org.granite.clustering.DistributedData;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
-import org.granite.messaging.webapp.HttpGraniteContext;
 
 import flex.messaging.messages.AsyncMessage;
 
@@ -56,9 +52,6 @@ import flex.messaging.messages.AsyncMessage;
  *  @author William Drai
  */
 public abstract class AbstractDataDispatcher implements DataDispatcher {
-    
-    private static final String TIDE_DATA_SELECTORS_KEY_PREFIX = "org.granite.tide.dataSelectors.";
-
 
 	private static final Logger log = Logger.getLogger(AbstractDataDispatcher.class);
 
@@ -90,31 +83,32 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 			// Collect selector parameters from component
 			params = new DataObserveParams();
 			paramsProvider.observes(params);
-		}
-		
+		}		
 		
 		// Ensure that the current Gravity consumer listens about this data topic and params
 		GraniteContext graniteContext = GraniteContext.getCurrentInstance();
-		if (!(graniteContext instanceof HttpGraniteContext))
+		if (graniteContext == null)
 			return;
 		
-		GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
-		HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
+		DistributedData gdd = graniteContext.getGraniteConfig().getDistributedDataFactory().getInstance();
 		
-		@SuppressWarnings("unchecked")
-		List<DataObserveParams> selectors = (List<DataObserveParams>)session.getAttribute(TIDE_DATA_SELECTORS_KEY_PREFIX + topicName);
-		if (selectors == null) {
-			selectors = new ArrayList<DataObserveParams>();
-			session.setAttribute(TIDE_DATA_SELECTORS_KEY_PREFIX + topicName, selectors);
-		}
+		List<DataObserveParams> selectors = DataObserveParams.fromSerializableForm(gdd.getDestinationDataSelectors(topicName));
+		List<DataObserveParams> newSelectors = new ArrayList<DataObserveParams>(selectors);
 		
 		boolean dataSelectorChanged = false;
 		String dataSelector = gdd.getDestinationSelector(topicName);
 		if (params != null) {
-			String newDataSelector = params.updateDataSelector(dataSelector, selectors);
+			String newDataSelector = params.updateDataSelector(dataSelector, newSelectors);
 			dataSelectorChanged = !newDataSelector.equals(dataSelector);
-			if (dataSelectorChanged)
+			if (dataSelectorChanged) {
+				log.debug("Data selector changed: %s", newDataSelector);
 				gdd.setDestinationSelector(topicName, newDataSelector);
+			}
+		}
+		
+		if (!DataObserveParams.containsSame(selectors, newSelectors)) {
+			log.debug("Selectors changed: %s", newSelectors);
+			gdd.setDestinationDataSelectors(topicName, DataObserveParams.toSerializableForm(newSelectors));
 		}
 		
 		if (!enabled)

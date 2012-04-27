@@ -20,23 +20,11 @@
 
 package org.granite.clustering;
 
-import org.granite.logging.Logger;
 
 /**
  * @author Franck WOLFF
  */
-public class GraniteDistributedDataFactory {
+public interface DistributedDataFactory {
 
-	private static final Logger log = Logger.getLogger(GraniteDistributedDataFactory.class);
-
-	public static GraniteDistributedData getInstance() {
-		Class<? extends GraniteDistributedData> gddClass = SessionGraniteDistributedData.class;
-		try {
-			return gddClass.newInstance();
-		}
-		catch (Exception e) {
-			log.debug(e, "Could not create instance of: %s", gddClass);
-			return null;
-		}
-	}
+	public DistributedData getInstance();
 }

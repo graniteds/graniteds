@@ -52,6 +52,7 @@ public abstract class AbstractChannel implements Channel {
     private static final Logger log = Logger.getLogger(AbstractChannel.class);
 
     protected final String id;
+    protected final String sessionId;
     protected final Gravity gravity;
     protected final ChannelFactory<? extends Channel> factory;
     // protected final ServletConfig servletConfig;
@@ -75,6 +76,8 @@ public abstract class AbstractChannel implements Channel {
         	throw new NullPointerException("id cannot be null");
         
         this.id = id;
+    	GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+    	this.sessionId = graniteContext != null ? graniteContext.getSessionId() : null;
         this.gravity = gravity;
         this.factory = factory;
         

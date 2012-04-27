@@ -8,7 +8,7 @@ public class EmbeddedJettyWebSocketServerListener implements ServletContextListe
 	private EmbeddedJettyWebSocketServer server = null;
 
 	public void contextInitialized(ServletContextEvent sce) {
-		server = new EmbeddedJettyWebSocketServer();
+		server = new EmbeddedJettyWebSocketServer(sce.getServletContext());
 		
 		String serverPort = sce.getServletContext().getInitParameter("embedded-jetty-websocket-server-port");
 		if (serverPort != null) {

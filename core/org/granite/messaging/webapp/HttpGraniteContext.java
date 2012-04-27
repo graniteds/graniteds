@@ -20,7 +20,6 @@
 
 package org.granite.messaging.webapp;
 
-import java.util.AbstractMap;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
@@ -74,7 +73,7 @@ public class HttpGraniteContext extends GraniteContext {
         HttpServletRequest request,
         HttpServletResponse response) {
 
-        super(graniteConfig, servicesConfig);
+        super(graniteConfig, servicesConfig, request.getSession(false) != null ? request.getSession().getId() : null);
         this.context = context;
         this.request = request;
         this.response = response;
@@ -141,166 +140,6 @@ public class HttpGraniteContext extends GraniteContext {
         if (requestMap == null)
             requestMap = new RequestMap(request);
         return requestMap;
-    }
-}
-
-abstract class BaseContextMap<T,U> extends AbstractMap<T,U> {
-
-    protected static final String KEY_STRING_ERROR = "Key should be a non null String: ";
-
-    @Override
-    public void clear() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void putAll(Map<? extends T, ? extends U> t) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public U remove(Object key) {
-        throw new UnsupportedOperationException();
-    }
-
-    static class Entry<T,U> implements Map.Entry<T,U> {
-
-        private final T key;
-        private final U value;
-
-        Entry(T key, U value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public T getKey() {
-            return key;
-        }
-
-        public U getValue() {
-            return value;
-        }
-
-        public U setValue(U value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int hashCode() {
-            return ((key == null ? 0 : key.hashCode()) ^ (value == null ? 0 : value.hashCode()));
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this)
-                return true;
-
-            if (obj == null || !(obj instanceof Map.Entry<?, ?>))
-                return false;
-
-            Map.Entry<?, ?> input = (Map.Entry<?, ?>)obj;
-            Object inputKey = input.getKey();
-            Object inputValue = input.getValue();
-
-            if (inputKey == key || (inputKey != null && inputKey.equals(key))) {
-                if (inputValue == value || (inputValue != null && inputValue.equals(value)))
-                    return true;
-            }
-            return false;
-        }
-    }
-}
-
-class InitialisationMap extends BaseContextMap<String, String> {
-
-    private ServletContext servletContext = null;
-
-    InitialisationMap(ServletContext servletContext) {
-        if (servletContext == null)
-            throw new NullPointerException("servletContext is null");
-        this.servletContext = servletContext;
-    }
-
-    @Override
-    public String get(Object key) {
-        if (!(key instanceof String))
-            return null;
-        return servletContext.getInitParameter(key.toString());
-    }
-
-    @Override
-    public String put(String key, String value) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Set<Map.Entry<String, String>> entrySet() {
-        Set<Map.Entry<String, String>> entries = new HashSet<Map.Entry<String, String>>();
-        for (Enumeration<?> e = servletContext.getInitParameterNames(); e.hasMoreElements();) {
-            String key = (String)e.nextElement();
-            entries.add(new Entry<String, String>(key, servletContext.getInitParameter(key)));
-        }
-        return entries;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof InitialisationMap))
-            return false;
-        return super.equals(obj);
-    }
-}
-
-class ApplicationMap extends BaseContextMap<String, Object> {
-
-    private ServletContext servletContext = null;
-
-    ApplicationMap(ServletContext servletContext) {
-        if (servletContext == null)
-            throw new NullPointerException("servletContext is null");
-        this.servletContext = servletContext;
-    }
-
-    @Override
-    public Object get(Object key) {
-        if (!(key instanceof String))
-            return null;
-       return servletContext.getAttribute(key.toString());
-    }
-
-    @Override
-    public Object put(String key, Object value) {
-        if (key == null)
-            throw new IllegalArgumentException(KEY_STRING_ERROR + key);
-        Object result = servletContext.getAttribute(key);
-        servletContext.setAttribute(key, value);
-        return (result);
-    }
-
-    @Override
-    public Object remove(Object key) {
-        if (!(key instanceof String))
-            return null;
-        Object result = servletContext.getAttribute(key.toString());
-        servletContext.removeAttribute(key.toString());
-        return result;
-    }
-
-    @Override
-    public Set<Map.Entry<String, Object>> entrySet() {
-        Set<Map.Entry<String, Object>> entries = new HashSet<Map.Entry<String, Object>>();
-        for (Enumeration<?> e = servletContext.getAttributeNames(); e.hasMoreElements();) {
-            String key = (String)e.nextElement();
-            entries.add(new Entry<String, Object>(key, servletContext.getAttribute(key)));
-        }
-        return entries;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ApplicationMap))
-            return false;
-        return super.equals(obj);
     }
 }
 

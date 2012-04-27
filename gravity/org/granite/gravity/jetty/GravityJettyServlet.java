@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.ChannelFactory;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;

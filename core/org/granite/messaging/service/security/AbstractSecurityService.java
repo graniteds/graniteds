@@ -22,8 +22,8 @@ package org.granite.messaging.service.security;
 
 import java.io.UnsupportedEncodingException;
 
-import org.granite.clustering.GraniteDistributedData;
-import org.granite.clustering.GraniteDistributedDataFactory;
+import org.granite.clustering.DistributedData;
+import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageProcessor;
 import org.granite.util.Base64;
@@ -117,7 +117,7 @@ public abstract class AbstractSecurityService implements SecurityService {
      */
 	protected void endLogin(Object credentials) {
 		try {
-			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+			DistributedData gdd = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory().getInstance();
 			if (gdd != null)
 				gdd.setCredentials(credentials);
 		}
@@ -137,7 +137,7 @@ public abstract class AbstractSecurityService implements SecurityService {
 	 */
     protected boolean tryRelogin() {
     	try {
-			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+			DistributedData gdd = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory().getInstance();
 			if (gdd != null) {
 				Object credentials = gdd.getCredentials();
 	        	if (credentials != null) {
@@ -164,7 +164,7 @@ public abstract class AbstractSecurityService implements SecurityService {
      */
 	protected void endLogout() {
 		try {
-			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+			DistributedData gdd = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory().getInstance();
 			if (gdd != null)
 				gdd.removeCredentials();
 		}

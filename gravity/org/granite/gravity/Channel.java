@@ -34,7 +34,7 @@ public interface Channel {
     
     public Gravity getGravity();
     
-    public ChannelFactory getFactory();
+    public ChannelFactory<?> getFactory();
 
     public Subscription addSubscription(String destination, String subTopicId, String subscriptionId, boolean noLocal);
     public Collection<Subscription> getSubscriptions();

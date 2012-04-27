@@ -30,11 +30,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 import javax.servlet.ServletException;
 
 import org.granite.config.flex.Channel;
@@ -67,11 +72,13 @@ import org.granite.util.XMap;
 /**
  * @author William DRAI
  */
-public class GraniteConfigListener implements ServletContextListener {
+public class GraniteConfigListener implements ServletContextListener, HttpSessionListener {
 
     private static final String GRANITE_CONFIG_SHUTDOWN_KEY = GraniteConfig.class.getName() + "_SHUTDOWN";
     public static final String GRANITE_CONFIG_ATTRIBUTE = "org.granite.config.flexFilter";
     public static final String GRANITE_MBEANS_ATTRIBUTE = "registerGraniteMBeans";
+    
+    public static final String GRANITE_SESSION_MAP = "org.granite.config.sessionMap";
 
     private static final Logger log = Logger.getLogger(GraniteConfigListener.class);
 
@@ -90,6 +97,9 @@ public class GraniteConfigListener implements ServletContextListener {
             
             if (flexFilterClass != null)
             	configureServices(context, flexFilterClass);
+            
+            Map<String, HttpSession> sessionMap = new ConcurrentHashMap<String, HttpSession>(200);
+            sce.getServletContext().setAttribute(GRANITE_SESSION_MAP, sessionMap);
             
             if (gConfig.isRegisterMBeans()) {
             	GraniteMBeanInitializer.registerMBeans(context, 
@@ -376,5 +386,20 @@ public class GraniteConfigListener implements ServletContextListener {
 		catch (Throwable t) {
 		}
 		return false;
+	}
+
+	
+	public void sessionCreated(HttpSessionEvent se) {
+		@SuppressWarnings("unchecked")
+		Map<String, HttpSession> sessionMap = (Map<String, HttpSession>)se.getSession().getServletContext().getAttribute(GRANITE_SESSION_MAP);
+		if (sessionMap != null)
+			sessionMap.put(se.getSession().getId(), se.getSession());
+	}
+
+	public void sessionDestroyed(HttpSessionEvent se) {
+		@SuppressWarnings("unchecked")
+		Map<String, HttpSession> sessionMap = (Map<String, HttpSession>)se.getSession().getServletContext().getAttribute(GRANITE_SESSION_MAP);
+		if (sessionMap != null)
+			sessionMap.remove(se.getSession().getId());
 	}
 }

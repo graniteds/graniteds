@@ -29,16 +29,13 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
-import org.granite.context.GraniteContext;
-import org.granite.messaging.webapp.HttpGraniteContext;
-
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.CommandMessage;
 
 /**
  * @author Franck WOLFF
  */
-public class SessionGraniteDistributedData implements GraniteDistributedData {
+public class SessionDistributedData implements DistributedData {
 
 	private static final String KEY_PREFIX = "__GDD__";
 	private static final String CREDENTIALS_KEY = KEY_PREFIX + "CREDENTIALS";
@@ -47,21 +44,11 @@ public class SessionGraniteDistributedData implements GraniteDistributedData {
 	private static final String DESTINATION_CLIENTID_KEY_PREFIX = "org.granite.gravity.channel.clientId.";
 	private static final String DESTINATION_SUBSCRIPTIONID_KEY_PREFIX = "org.granite.gravity.channel.subscriptionId.";
 	private static final String DESTINATION_SELECTOR_KEY_PREFIX = KEY_PREFIX + "org.granite.gravity.selector.";
+	private static final String DESTINATION_DATA_SELECTORS_KEY_PREFIX = KEY_PREFIX + "org.granite.gravity.dataSelectors.";
 	
 	private final HttpSession session;
 
-	private static HttpSession getSession() {
-		GraniteContext context = GraniteContext.getCurrentInstance();
-		if (context instanceof HttpGraniteContext)
-			return ((HttpGraniteContext)context).getSession(false);
-		return null;
-	}
-	
-	public SessionGraniteDistributedData() {
-		this(getSession());
-	}
-	
-	public SessionGraniteDistributedData(HttpSession session) {
+	public SessionDistributedData(HttpSession session) {
 		if (session == null)
 			throw new NullPointerException("HTTP session cannot be null");
 		this.session = session;
@@ -195,5 +182,13 @@ public class SessionGraniteDistributedData implements GraniteDistributedData {
 	
 	public void setDestinationSelector(String destination, String selector) {
 		session.setAttribute(DESTINATION_SELECTOR_KEY_PREFIX + destination, selector);
+	}
+	
+	public Object[] getDestinationDataSelectors(String destination) {
+		return (Object[])session.getAttribute(DESTINATION_DATA_SELECTORS_KEY_PREFIX + destination);
+	}
+	
+	public void setDestinationDataSelectors(String destination, Object[] selectors) {
+		session.setAttribute(DESTINATION_DATA_SELECTORS_KEY_PREFIX + destination, selectors);
 	}
 }
