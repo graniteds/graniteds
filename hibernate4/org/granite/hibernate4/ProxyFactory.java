@@ -62,7 +62,7 @@ public class ProxyFactory {
             getProxyFactory = initializerClass.getMethod("getProxyFactory", new Class[]{Class.class, Class[].class});
             getProxy = initializerClass.getMethod("getProxy", new Class[]{
                 Class.class, String.class, Class.class, Class[].class, Method.class, Method.class,
-                CompositeType.class, Serializable.class, SessionImplementor.class
+                CompositeType.class, Serializable.class, SessionImplementor.class, boolean.class
             });
         } catch (Exception e) {
             throw new ServiceException("Could not introspect initializer class: " + initializerClassName, e);
@@ -83,10 +83,23 @@ public class ProxyFactory {
             }
 
             // Get Proxy
-            return (HibernateProxy)getProxy.invoke(null, new Object[]{factory, entityName, persistentClass, INTERFACES, null, null, null, id, null});
+            return (HibernateProxy)getProxy.invoke(null, new Object[]{factory, entityName, persistentClass, INTERFACES, null, null, null, id, null, overridesEquals(persistentClass)});
         } catch (Exception e) {
             throw new ServiceException("Error with proxy description: " + persistentClassName + '/' + entityName + " and id: " + id, e);
         }
+    }
+
+    private static boolean overridesEquals(Class aClass) {
+        Method[] declaredMethods = aClass.getDeclaredMethods();
+        for (Method m : declaredMethods) {
+            if (m.getName().equals("equals")) {
+                Class<?>[] parameterTypes = m.getParameterTypes();
+                if (parameterTypes.length == 1 && parameterTypes[0].equals(Object.class)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     protected Type getIdentifierType(Class<?> persistentClass) {
