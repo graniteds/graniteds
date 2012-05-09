@@ -22,6 +22,7 @@ package org.granite.util;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -287,5 +288,30 @@ public abstract class ClassUtil {
 		}
 		
 		throw new NoSuchMethodException("Could not find method: " + signature + " in class: " + clazz);
+    }
+    
+    public static boolean isAnnotationPresent(Method m, Class<? extends Annotation> annotationClass) {
+    	if (m.isAnnotationPresent(annotationClass))
+    		return true;
+    	return isAnnotationPresent(m.getDeclaringClass(), m.getName(), m.getParameterTypes(), annotationClass);
+    }
+    
+    public static boolean isAnnotationPresent(Class<?> clazz, String name, Class<?>[] parameterTypes, Class<? extends Annotation> annotationClass) {
+    	try {
+    		if (clazz.getDeclaredMethod(name, parameterTypes).isAnnotationPresent(annotationClass))
+    			return true;
+    	}
+    	catch (Exception e) {
+    	}
+    	
+    	for (Class<?> interfaze : clazz.getInterfaces()) {
+    		if (isAnnotationPresent(interfaze, name, parameterTypes, annotationClass))
+    			return true;
+    	}
+    	
+    	if (clazz.getSuperclass() != null && isAnnotationPresent(clazz.getSuperclass(), name, parameterTypes, annotationClass))
+    		return true;
+    		
+    	return false;
     }
 }
