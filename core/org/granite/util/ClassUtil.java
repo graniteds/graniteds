@@ -221,7 +221,7 @@ public abstract class ClassUtil {
     }
 
     public static URL findResource(Class<?> clazz) {
-        if (clazz.isArray())
+        while (clazz.isArray())
             clazz = clazz.getComponentType();
         if (clazz.isPrimitive())
             return null;
