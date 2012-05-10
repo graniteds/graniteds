@@ -37,15 +37,16 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
+import org.apache.tools.ant.types.ZipFileSet;
 import org.granite.generator.Generator;
 import org.granite.generator.Output;
 import org.granite.generator.TemplateUri;
 import org.granite.generator.Transformer;
 import org.granite.generator.as3.As3TypeFactory;
 import org.granite.generator.as3.DefaultAs3TypeFactory;
+import org.granite.generator.as3.DefaultEntityFactory;
 import org.granite.generator.as3.DefaultRemoteDestinationFactory;
 import org.granite.generator.as3.EntityFactory;
-import org.granite.generator.as3.DefaultEntityFactory;
 import org.granite.generator.as3.JavaAs3GroovyConfiguration;
 import org.granite.generator.as3.JavaAs3GroovyTransformer;
 import org.granite.generator.as3.JavaAs3Input;
@@ -94,6 +95,7 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
     
     private Path classpath = null;
     private List<FileSet> fileSets = new ArrayList<FileSet>();
+    private List<ZipFileSet> zipFileSets = new ArrayList<ZipFileSet>();
 
     private List<PackageTranslator> translators = new ArrayList<PackageTranslator>();
 
@@ -202,6 +204,10 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
         fileSets.add(fileSet);
     }
 
+	public void addZipfileset(ZipFileSet zipFileSet) {
+		zipFileSets.add(zipFileSet);
+    }
+
     public void setClasspath(Path path) {
         if (classpath == null)
             classpath = path;
@@ -236,10 +242,10 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
         try {
             loader.setThreadContextLoader();
 
+            filesetClasses = new HashMap<Class<?>, File>();
+
             // Build a Set of all ".class" files in filesets (ignoring nested classes).
             log("Loading all Java classes referenced by inner fileset(s) {", Project.MSG_INFO);
-
-            filesetClasses = new HashMap<Class<?>, File>();
             for (FileSet fileSet : fileSets) {
                 DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
                 scanner.setCaseSensitive(true);
@@ -274,6 +280,50 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
                         log("Skipping non class file: " + name, Project.MSG_WARN);
                 }
             }
+            log("}", Project.MSG_INFO);
+                        
+            // Add all ".class" files from zipfilesets (ignoring nested classes).
+            log("Loading all Java classes referenced by inner zipfileset(s) {", Project.MSG_INFO);
+            
+            for (ZipFileSet zipFileSet : zipFileSets) {
+            	File zip = zipFileSet.getSrc(getProject());
+            	if (zip == null)
+            		throw new BuildException("zipfileset must use the src attribute");
+            	if (!zip.getName().endsWith(".jar"))
+            		throw new BuildException("Zipfileset src isn't a '.jar' file: " + zip);
+            	
+            	log("  -- scanning: " + zip + " --", Project.MSG_INFO);
+
+                DirectoryScanner scanner = zipFileSet.getDirectoryScanner(getProject());
+                scanner.setCaseSensitive(true);
+                scanner.scan();
+                
+                StringBuilder sb = new StringBuilder("    ");
+                String[] names = scanner.getIncludedFiles();
+                for (String name : names) {
+                    if (name.endsWith(".class")) {
+                        log(name, Project.MSG_VERBOSE);
+                        try {
+	                        String jClassName = name.substring(0, name.length() - 6).replace(File.separatorChar, '.');
+                            Class<?> jClass = loader.loadClass(jClassName);
+                            
+                            if (!jClass.isMemberClass() || jClass.isEnum()) {
+	                            sb.setLength(4);
+	                            sb.append(jClass.toString());
+	                            log(sb.toString(), Project.MSG_INFO);
+	
+	                            filesetClasses.put(jClass, zip);
+                            }
+	                    } catch (Exception e) {
+	                        log(getStackTrace(e));
+	                        throw new BuildException("Could not load Java class file: " + name, e);
+	                    }
+                    }
+                    else
+                        log("Skipping non class file: " + name, Project.MSG_WARN);
+                }
+            }
+            
             log("}", Project.MSG_INFO);
 
             log("Setting up the generator...", Project.MSG_INFO);
@@ -409,7 +459,7 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
             log("}", Project.MSG_INFO);
             log("Files affected: " + count +  (count == 0 ? " (nothing to do)." : "."));
         } finally {
-            loader.resetThreadContextLoader();
+        	loader.resetThreadContextLoader();
         }
     }
 
