@@ -868,6 +868,8 @@ public class DefaultConvertersTest {
     public static interface I {/**/}
     public static class A implements I {/**/}
     public static class B extends A {/**/}
+    public static class C<T> {C<? extends T> c = this;}
+    public static class D<T> {D<T> d = this;}
 
 	public static abstract class AbstractParent<T extends AbstractParent> {
 		T parent;
@@ -889,6 +891,8 @@ public class DefaultConvertersTest {
     public void testCompatibility() {
         A a = new A();
         B b = new B();
+        C<A> ca = new C<A>();
+        D<A> da = new D<A>();
 
         Converter converter = converters.getConverter(b, A.class);
         assertNotNull(converter);
@@ -911,6 +915,32 @@ public class DefaultConvertersTest {
         assertTrue(converter.canConvert(c, targetType));
         result = converter.convert(c, targetType);
         assertTrue(result == c);
+        
+        // test whether Compatibility converter is found for wildcarded generic field C.c
+        try {
+        	targetType = C.class.getDeclaredField("c").getGenericType();
+        }
+        catch (NoSuchFieldException e) {
+        	fail("Could not get field 'c' in class: " + C.class);
+        }
+        converter = converters.getConverter(ca.c, targetType);
+        assertNotNull(converter);
+        assertEquals(Compatibility.class, converter.getClass());
+        result = converter.convert(ca.c, targetType);
+        assertTrue(result == ca.c);
+
+        // test whether Compatibility converter is found for generic field D.d
+        try {
+	        targetType = D.class.getDeclaredField("d").getGenericType();
+	    }
+	    catch (NoSuchFieldException e) {
+	    	fail("Could not get field 'd' in class: " + D.class);
+	    }
+        converter = converters.getConverter(da.d, targetType);
+        assertNotNull(converter);
+        assertEquals(Compatibility.class, converter.getClass());
+        result = converter.convert(da.d, targetType);
+        assertTrue(result == da.d);
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -22,6 +22,7 @@ package org.granite.messaging.amf.io.convert.impl;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 
 import org.granite.messaging.amf.io.convert.Converter;
@@ -52,7 +53,7 @@ public class Compatibility extends Converter {
                 if (pTypeArgs == null || pTypeArgs.length == 0)
                     return true;
                 for (Type pTypeArg : pTypeArgs) {
-                    if (!(pTypeArg instanceof WildcardType || pTypeArg.equals(Object.class)))
+                    if (!(pTypeArg instanceof WildcardType || pTypeArg instanceof TypeVariable || pTypeArg.equals(Object.class))) 
                         return false;
                 }
                 return true;
