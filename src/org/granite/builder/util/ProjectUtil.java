@@ -129,11 +129,19 @@ public class ProjectUtil {
     }
     
     public static File getProjectFile(IProject project) {
-        return new File(project.getLocationURI()).getAbsoluteFile();
+        try {
+			return FileUtil.getLocationFile(project);
+		} catch (CoreException e) {
+			throw new RuntimeException("Could not get " + project + " location file", e);
+		}
     }
     
     public static URI getProjectURI(IProject project) {
-        return project.getLocationURI();
+        try {
+			return FileUtil.getLocationURI(project);
+		} catch (CoreException e) {
+			throw new RuntimeException("Could not get " + project + " location URI", e);
+		}
     }
     
     public static List<CpEntry> getFullClasspath(IJavaProject project) throws CoreException {

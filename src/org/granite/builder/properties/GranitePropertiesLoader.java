@@ -24,7 +24,9 @@ import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.granite.builder.properties.GraniteProperties;
+import org.granite.builder.util.FileUtil;
 import org.granite.builder.util.XStreamUtil;
 
 /**
@@ -60,7 +62,12 @@ public class GranitePropertiesLoader {
 	}
 	
     public static File getPropertiesFile(IProject project) {
-        return new File(project.getFile(FILE_NAME).getLocationURI());
+    	try {
+    		return FileUtil.getLocationFile(project.getFile(FILE_NAME));
+    	}
+    	catch (CoreException e) {
+    		throw new RuntimeException("Could not get " + FILE_NAME + " location file", e);
+    	}
     }
     
     public static boolean exists(IProject project) {

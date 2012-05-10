@@ -85,7 +85,7 @@ public class FlexConfigGenerator {
 		}
 		Collections.sort(asClasses);
 		
-		File flexConfigFile = new File(project.getFile(FILE_NAME).getLocationURI());
+		File flexConfigFile = FileUtil.getLocationFile(project.getFile(FILE_NAME));
 		
 		StringBuilder sb = new StringBuilder(1024);
 		sb.append(PREFIX);
