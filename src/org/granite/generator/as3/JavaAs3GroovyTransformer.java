@@ -112,7 +112,7 @@ public class JavaAs3GroovyTransformer
 		
 		// Write in memory (step 1).
 		PublicByteArrayOutputStream pbaos = new PublicByteArrayOutputStream(8192);
-		output.getTemplate().execute(bindings, new PrintWriter(new OutputStreamWriter(pbaos)));
+		output.getTemplate().execute(bindings, new PrintWriter(new OutputStreamWriter(pbaos, "UTF-8")));
 		
 		// If no exceptions were raised, write to file (step 2).
 		OutputStream stream = null;
