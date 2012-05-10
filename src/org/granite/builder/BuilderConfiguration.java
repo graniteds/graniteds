@@ -278,20 +278,20 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 		if (loader == null) {
 			try {
 				List<URL> classpath = new ArrayList<URL>();
-				for (CpEntry entry : ProjectUtil.getFullClasspath(getJavaProject())) {
+				for (CpEntry entry : ProjectUtil.getFullResolvedClasspath(getJavaProject())) {
 					if (entry.getKind() == CpeKind.CONTAINER_JAR) {
 						for (CpEntry cEntry : entry.getChildren())
-							classpath.add(cEntry.toURL());
+							addToClasspath(classpath, cEntry.toURL());
 					}
 					else
-						classpath.add(entry.toURL());
+						addToClasspath(classpath, entry.toURL());
 				}
 				
 				for (Gas3Classpath gas3Classpath : getProperties().getGas3().getClasspaths()) {
 					File file = new File(gas3Classpath.getPath());
 					if (file.exists()) {
 						try {
-							classpath.add(file.toURI().toURL());
+							addToClasspath(classpath, file.toURI().toURL());
 						} catch (MalformedURLException e) {
 							// Should never happen...
 						}
@@ -301,13 +301,13 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 				for (Gas3Project gas3Project : getProperties().getGas3().getProjects()) {
 					IProject dependentProject = ProjectUtil.getProject(getJavaProject().getProject(), gas3Project.getPath());
 					if (ProjectUtil.isGraniteProject(dependentProject)) {
-						for (CpEntry entry : ProjectUtil.getFullClasspath(JavaCore.create(dependentProject))) {
+						for (CpEntry entry : ProjectUtil.getFullResolvedClasspath(JavaCore.create(dependentProject))) {
 							if (entry.getKind() == CpeKind.CONTAINER_JAR) {
 								for (CpEntry cEntry : entry.getChildren())
-									classpath.add(cEntry.toURL());
+									addToClasspath(classpath, cEntry.toURL());
 							}
 							else
-								classpath.add(entry.toURL());
+								addToClasspath(classpath, entry.toURL());
 						}
 					}
 				}
@@ -328,5 +328,10 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 			}
 		}
 		return loader;
+	}
+	
+	private void addToClasspath(List<URL> classpath, URL url) {
+		if (!classpath.contains(url))
+			classpath.add(url);
 	}
 }

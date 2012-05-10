@@ -130,7 +130,7 @@ public class ProjectUtil {
     
     public static File getProjectFile(IProject project) {
         try {
-			return FileUtil.getLocationFile(project);
+			return FileUtil.getLocationFile(project).getAbsoluteFile();
 		} catch (CoreException e) {
 			throw new RuntimeException("Could not get " + project + " location file", e);
 		}
@@ -144,7 +144,15 @@ public class ProjectUtil {
 		}
     }
     
+    public static List<CpEntry> getFullResolvedClasspath(IJavaProject project) throws CoreException {
+    	return getFullClasspath(project, project.getResolvedClasspath(true));
+    }
+    
     public static List<CpEntry> getFullClasspath(IJavaProject project) throws CoreException {
+    	return getFullClasspath(project, project.getRawClasspath());
+    }
+        
+    public static List<CpEntry> getFullClasspath(IJavaProject project, IClasspathEntry[] classpathEntries) throws CoreException {
     	List<CpEntry> classpath = new ArrayList<CpEntry>();
 
     	IWorkspaceRoot workspace = project.getProject().getWorkspace().getRoot();
@@ -157,7 +165,7 @@ public class ProjectUtil {
                 File file = workspace.findMember(path).getLocation().toFile();
                 classpath.add(new CpEntry(path.makeRelative().toString(), path, file, CpEntry.CpeKind.PROJECT_OUTPUT_DIR));
 	    	}
-	    	for (IClasspathEntry cpe : project.getRawClasspath()) {
+	    	for (IClasspathEntry cpe : classpathEntries) {
 	    		if (cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE && cpe.getOutputLocation() != null) {
                     path = cpe.getOutputLocation();
                     File file = workspace.findMember(path).getLocation().toFile();
@@ -166,7 +174,7 @@ public class ProjectUtil {
 	    	}
         	
         	// Project jars.
-            for (IClasspathEntry cpe : project.getRawClasspath()) {
+            for (IClasspathEntry cpe : classpathEntries) {
                 if (cpe.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
                     path = cpe.getPath();
                     if (path != null) {
@@ -183,7 +191,7 @@ public class ProjectUtil {
             }
             
             // Containers jars/directories.
-            for (IClasspathEntry cpe : project.getRawClasspath()) {
+            for (IClasspathEntry cpe : classpathEntries) {
                 if (cpe.getEntryKind() == IClasspathEntry.CPE_CONTAINER) {
 	    			path = cpe.getPath();
 	    			IClasspathContainer container = JavaCore.getClasspathContainer(path, project);
