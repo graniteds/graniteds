@@ -31,7 +31,8 @@ package org.granite.gravity {
 
         private var _topic:String = null;
         private var _username:String = null;
-        private var _password:String = null;
+		private var _password:String = null;
+		private var _charset:String = null;
 
         public function get topic():String {
             return _topic;
@@ -40,22 +41,23 @@ package org.granite.gravity {
             _topic = value;
         }
         
-        public function setIdentity(username:String, password:String):void {
+        public function setIdentity(username:String, password:String, charset:String = null):void {
             _username = username;
-            _password = password;
+			_password = password;
+			_charset = charset;
             
             if (connected)
                 doAuthenticate();
         }
         protected function doAuthenticate():void {
             if (_username != null || _password != null) {
-                setCredentials(_username, _password);
-                _username = _password = null;
+				setCredentials(_username, _password, _charset);
+                _username = _password = _charset = null;
             }
         }
         override public function logout():void {
             super.logout();
-            _username = _password = null;
+            _username = _password = _charset = null;
         }
     }
 }

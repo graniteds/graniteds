@@ -130,8 +130,8 @@ package org.granite.tide.seam {
 		}
 		
 		
-		public override function login(ctx:BaseContext, component:IComponent, username:String, password:String, responder:ITideResponder = null):AsyncToken {
-			super.login(ctx, component, username, password, responder);
+		public override function login(ctx:BaseContext, component:IComponent, username:String, password:String, responder:ITideResponder = null, charset:String = null):AsyncToken {
+			super.login(ctx, component, username, password, responder, charset);
 			
 			return invokeComponent(ctx, component, "login", [], responder, true, loginSuccessHandler, loginFaultHandler);
 		}

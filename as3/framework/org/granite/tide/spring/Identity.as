@@ -99,8 +99,8 @@ package org.granite.tide.spring {
         }
         
         
-        public function login(username:String, password:String, resultHandler:Function = null, faultHandler:Function = null):void {
-            _context.meta_login(this, username, password, resultHandler, faultHandler);
+        public function login(username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):void {
+            _context.meta_login(this, username, password, resultHandler, faultHandler, charset);
         }
         
         

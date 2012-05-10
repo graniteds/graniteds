@@ -332,7 +332,7 @@ package org.granite.tide.cdi {
 		 * 
 		 *  @return the operation token
 		 */
-		public override function meta_login(identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
+		public override function meta_login(identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):AsyncToken {
 			meta_traceCall();
 			
 			// Keep only updates for identity component
@@ -344,7 +344,7 @@ package org.granite.tide.cdi {
 				}
 			}
 			
-			var token:AsyncToken = super.meta_login(identity, username, password, resultHandler, faultHandler);
+			var token:AsyncToken = super.meta_login(identity, username, password, resultHandler, faultHandler, charset);
 			
 			_updates.removeAll();
 			

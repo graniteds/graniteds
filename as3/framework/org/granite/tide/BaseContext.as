@@ -1588,10 +1588,10 @@ package org.granite.tide {
          *  
          *  @return operation token
          */
-        public function meta_login(identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
+        public function meta_login(identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):AsyncToken {
             var responder:TideResponder = new TideResponder(resultHandler, faultHandler);
 
-            return _tide.login(this, identity, username, password, responder);
+            return _tide.login(this, identity, username, password, responder, charset);
         }
         
         /**
