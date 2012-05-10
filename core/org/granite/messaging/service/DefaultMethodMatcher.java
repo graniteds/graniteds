@@ -62,12 +62,11 @@ public class DefaultMethodMatcher implements MethodMatcher {
         Class<?> serviceClass = service.getClass();
         Type serviceClassGenericType = getGenericType(serviceClass);
 
-        Converter[] convertersArray = null;
-        Method serviceMethod = null;
+        MatchingMethod match = null;
         if (params == null || params.length == 0)
-            serviceMethod = serviceClass.getMethod(methodName, (Class[])null);
+            match = new MatchingMethod(serviceClass.getMethod(methodName, (Class[])null), null);
         else {
-            List<Method> matchingMethods = new ArrayList<Method>();
+            List<MatchingMethod> matchingMethods = new ArrayList<MatchingMethod>();
             
             List<Method> methods = new ArrayList<Method>();
             for (Class<?> serviceInterface : serviceClass.getInterfaces())
@@ -91,25 +90,25 @@ public class DefaultMethodMatcher implements MethodMatcher {
                 if (serviceClassGenericType != null)
                     findAndChange(paramTypes, serviceClassGenericType);
 
-                convertersArray = getConvertersArray(converters, params, paramTypes);
+                Converter[] convertersArray = getConvertersArray(converters, params, paramTypes);
                 if (convertersArray != null)
-                    matchingMethods.add(method);
+                    matchingMethods.add(new MatchingMethod(method, convertersArray));
             }
             
             if (matchingMethods.size() == 1)
-                serviceMethod = matchingMethods.get(0);
+            	match = matchingMethods.get(0);
             else if (matchingMethods.size() > 1) {
                 // Multiple matches found
-                serviceMethod = resolveMatchingMethod(matchingMethods);
+                match = resolveMatchingMethod(matchingMethods, serviceClass);
             }
         }
 
-        if (serviceMethod == null)
+        if (match == null)
             throw new NoSuchMethodException(serviceClass.getName() + '.' + methodName + StringUtil.toString(params));
 
-        params = convert(convertersArray, params, serviceMethod.getGenericParameterTypes());
+        params = convert(match.convertersArray, params, match.serviceMethod.getGenericParameterTypes());
 
-        return new ServiceInvocationContext(message, destination, service, serviceMethod, params);
+        return new ServiceInvocationContext(message, destination, service, match.serviceMethod, params);
     }
 
     protected Converter[] getConvertersArray(Converters converters, Object[] values, Type[] targetTypes) {
@@ -130,19 +129,26 @@ public class DefaultMethodMatcher implements MethodMatcher {
         return values;
     }
     
-    protected Method resolveMatchingMethod(List<Method> methods) {
-        Method method = null;
+    protected MatchingMethod resolveMatchingMethod(List<MatchingMethod> methods, Class<?> serviceClass) {
+
         // Prefer methods of interfaces/classes marked with @RemoteDestination
-        for (Method m : methods) {
-            if (m.getDeclaringClass().isAnnotationPresent(RemoteDestination.class)) {
-                method = m;
-                break;
-            }
+        for (MatchingMethod m : methods) {
+            if (m.serviceMethod.getDeclaringClass().isAnnotationPresent(RemoteDestination.class))
+                return m;
         }
-        if (method != null)
-            return method;
         
-        log.warn("Ambiguous method match for " + methods.get(0).getName() + ", selecting first found " + methods.get(0));        
+        // Then prefer method declared by the serviceClass (with EJBs, we have always 2 methods, one in the interface,
+        // the other in the proxy, and the @RemoteDestination annotation cannot be find on the proxy class even
+        // it is present on the original class).
+        List<MatchingMethod> serviceClassMethods = new ArrayList<MatchingMethod>();
+        for (MatchingMethod m : methods) {
+            if (m.serviceMethod.getDeclaringClass().equals(serviceClass))
+            	serviceClassMethods.add(m);
+        }
+        if (serviceClassMethods.size() == 1)
+        	return serviceClassMethods.get(0);
+        
+        log.warn("Ambiguous method match for " + methods.get(0).serviceMethod.getName() + ", selecting first found " + methods.get(0).serviceMethod);        
         return methods.get(0);
     }
     
@@ -185,5 +191,21 @@ public class DefaultMethodMatcher implements MethodMatcher {
         	// fallback...
         }
         return null;
+    }
+    
+    private static class MatchingMethod {
+    	
+    	public final Method serviceMethod;
+    	public final Converter[] convertersArray;
+
+    	public MatchingMethod(Method serviceMethod, Converter[] convertersArray) {
+			this.serviceMethod = serviceMethod;
+			this.convertersArray = convertersArray;
+		}
+
+		@Override
+		public String toString() {
+			return "MatchingMethod {serviceMethod=" + serviceMethod + ", convertersArray=" + (convertersArray != null ? Arrays.toString(convertersArray) : "[]") + "}";
+		}
     }
 }
