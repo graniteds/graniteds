@@ -95,8 +95,8 @@ public class TomcatSecurityService extends AbstractSecurityService {
             throw new NullPointerException("Could not find Tomcat container for: " + (serviceId != null ? serviceId : "(default)"));
     }
 
-    public void login(Object credentials) throws SecurityServiceException {
-        String[] decoded = decodeBase64Credentials(credentials);
+    public void login(Object credentials, String charset) throws SecurityServiceException {
+        String[] decoded = decodeBase64Credentials(credentials, charset);
 
         HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = context.getRequest();
@@ -116,7 +116,7 @@ public class TomcatSecurityService extends AbstractSecurityService {
         session.setNote(Constants.SESS_USERNAME_NOTE, decoded[0]);
         session.setNote(Constants.SESS_PASSWORD_NOTE, decoded[1]);
         
-    	endLogin(credentials);
+    	endLogin(credentials, charset);
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {

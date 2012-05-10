@@ -60,8 +60,8 @@ public class AcegiSecurityService extends AbstractSecurityService {
         log.debug("Configuring with parameters (NOOP) %s: ", params);
     }
 
-    public void login(Object credentials) {
-        List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials));
+    public void login(Object credentials, String charset) {
+        List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials, charset));
 
         HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = context.getRequest();
@@ -80,6 +80,8 @@ public class AcegiSecurityService extends AbstractSecurityService {
                 Authentication authentication = authenticationManager.authenticate(auth);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 httpRequest.getSession().setAttribute(SPRING_AUTHENTICATION_TOKEN, authentication);
+
+                endLogin(credentials, charset);
             } 
             catch (AuthenticationException e) {
             	handleAuthenticationExceptions(e);

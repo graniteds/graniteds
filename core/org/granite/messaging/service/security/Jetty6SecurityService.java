@@ -50,8 +50,8 @@ public class Jetty6SecurityService extends AbstractSecurityService {
     }
 
 
-    public void login(Object credentials) throws SecurityServiceException {
-        String[] decoded = decodeBase64Credentials(credentials);
+    public void login(Object credentials, String charset) throws SecurityServiceException {
+        String[] decoded = decodeBase64Credentials(credentials, charset);
 
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
@@ -70,7 +70,7 @@ public class Jetty6SecurityService extends AbstractSecurityService {
 
         request.getSession().setAttribute(JETTY6_AUTH, principal);
         
-        endLogin(credentials);
+        endLogin(credentials, charset);
     }
 
 

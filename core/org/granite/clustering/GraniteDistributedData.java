@@ -37,6 +37,11 @@ public interface GraniteDistributedData {
 	public void setCredentials(Object credentials);
 	public void removeCredentials();
 	
+	public String getCredentialsCharset();
+	public boolean hasCredentialsCharset();
+	public void setCredentialsCharset(String credentialsCharset);
+	public void removeCredentialsCharset();
+	
 	// Gravity channels/subscriptions.
 	
 	public void addChannelId(String channelId);

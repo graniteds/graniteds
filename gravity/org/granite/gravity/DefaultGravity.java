@@ -589,7 +589,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
             SecurityService securityService = config.getSecurityService();
             try {
                 if (message.isLoginOperation())
-                    securityService.login(message.getBody());
+                    securityService.login(message.getBody(), (String)message.getHeader(Message.CREDENTIALS_CHARSET_HEADER));
                 else
                     securityService.logout();
             }

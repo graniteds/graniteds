@@ -50,8 +50,8 @@ public class SeamSecurityService extends AbstractSecurityService {
     public void configure(Map<String, String> params) {
     }
 
-    public void login(Object credentials) throws SecurityServiceException {
-        String[] decoded = decodeBase64Credentials(credentials);
+    public void login(Object credentials, String charset) throws SecurityServiceException {
+        String[] decoded = decodeBase64Credentials(credentials, charset);
         
         Contexts.getSessionContext().set("org.granite.seam.login", Boolean.TRUE);
         
@@ -72,6 +72,8 @@ public class SeamSecurityService extends AbstractSecurityService {
         identity.setPassword(decoded[1]);
         try {
             identity.authenticate();
+
+            endLogin(credentials, charset);
         }
         catch (LoginException e) {
             identity.login();   // Force add of login error messages
