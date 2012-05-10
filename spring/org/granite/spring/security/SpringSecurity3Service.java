@@ -125,8 +125,8 @@ public class SpringSecurity3Service extends AbstractSecurityService {
         	allowAnonymousAccess = true;
     }
     
-    public void login(Object credentials) {
-        List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials));
+    public void login(Object credentials, String charset) {
+        List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials, charset));
 
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
@@ -166,6 +166,8 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 	            catch (Exception e) {
 	            	log.error(e, "Could not save context after authentication");
 	            }
+
+	            endLogin(credentials, charset);
             } 
             catch (AuthenticationException e) {
             	handleAuthenticationExceptions(e);

@@ -51,9 +51,9 @@ public abstract class AbstractSecurityService implements SecurityService {
      */
     protected void startAuthorization(AbstractSecurityContext context) throws SecurityServiceException {
         // Get credentials set with RemoteObject.setRemoteCredentials() and login.
-        Object credentials = context.getMessage().getHeaders().get(Message.REMOTE_CREDENTIALS_HEADER);
+        Object credentials = context.getMessage().getHeader(Message.REMOTE_CREDENTIALS_HEADER);
         if (credentials != null && !("".equals(credentials)))
-            login(credentials);
+            login(credentials, (String)context.getMessage().getHeader(Message.REMOTE_CREDENTIALS_CHARSET_HEADER));
     }
 
     /**
@@ -76,15 +76,18 @@ public abstract class AbstractSecurityService implements SecurityService {
      * @throws IllegalArgumentException if credentials isn't a String.
      * @throws SecurityServiceException if credentials are invalid (bad encoding or missing ':').
      */
-    protected String[] decodeBase64Credentials(Object credentials) {
+    protected String[] decodeBase64Credentials(Object credentials, String charset) {
         if (!(credentials instanceof String))
             throw new IllegalArgumentException("Credentials should be a non null String: " +
                 (credentials != null ? credentials.getClass().getName() : null));
 
+        if (charset == null)
+        	charset = "ISO-8859-1";
+        
         byte[] bytes = Base64.decode((String)credentials);
-        String decoded = "";
+        String decoded;
         try {
-        	decoded = new String(bytes, "ISO-8859-1");
+        	decoded = new String(bytes, charset);
         }
         catch (UnsupportedEncodingException e) {
             throw SecurityServiceException.newInvalidCredentialsException("ISO-8859-1 encoding not supported ???");
@@ -115,11 +118,13 @@ public abstract class AbstractSecurityService implements SecurityService {
      * 
      * @param credentials the credentials to be saved in distributed data.
      */
-	protected void endLogin(Object credentials) {
+	protected void endLogin(Object credentials, String charset) {
 		try {
 			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
-			if (gdd != null)
+			if (gdd != null) {
 				gdd.setCredentials(credentials);
+				gdd.setCredentialsCharset(charset);
+			}
 		}
 		catch (Exception e) {
 			log.error(e, "Could not save credentials in distributed data");
@@ -141,8 +146,9 @@ public abstract class AbstractSecurityService implements SecurityService {
 			if (gdd != null) {
 				Object credentials = gdd.getCredentials();
 	        	if (credentials != null) {
+	        		String charset = gdd.getCredentialsCharset();
 	        		try {
-	        			login(credentials);
+	        			login(credentials, charset);
 		        		return true;
 	        		}
 	        		catch (SecurityServiceException e) {
@@ -165,8 +171,10 @@ public abstract class AbstractSecurityService implements SecurityService {
 	protected void endLogout() {
 		try {
 			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
-			if (gdd != null)
+			if (gdd != null) {
 				gdd.removeCredentials();
+				gdd.removeCredentialsCharset();
+			}
 		}
 		catch (Exception e) {
 			log.error(e, "Could not remove credentials from distributed data");

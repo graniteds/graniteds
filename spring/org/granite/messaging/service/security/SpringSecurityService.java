@@ -72,8 +72,8 @@ public class SpringSecurityService extends AbstractSecurityService {
 		this.securityInterceptor = securityInterceptor;
 	}
     
-    public void login(Object credentials) {
-        List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials));
+    public void login(Object credentials, String charset) {
+        List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials, charset));
 
         HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = context.getRequest();
@@ -94,6 +94,8 @@ public class SpringSecurityService extends AbstractSecurityService {
                 securityContext.setAuthentication(authentication);
                 SecurityContextHolder.setContext(securityContext);
                 saveSecurityContextInSession(securityContext, 0);
+
+                endLogin(credentials, charset);
             } 
             catch (AuthenticationException e) {
             	handleAuthenticationExceptions(e);

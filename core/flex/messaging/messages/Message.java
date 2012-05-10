@@ -29,7 +29,9 @@ import java.util.Map;
 public interface Message extends Serializable {
 
     public static final String ENDPOINT_HEADER = "DSEndpoint";
+    public static final String CREDENTIALS_CHARSET_HEADER = "DSCredentialsCharset";
     public static final String REMOTE_CREDENTIALS_HEADER = "DSRemoteCredentials";
+    public static final String REMOTE_CREDENTIALS_CHARSET_HEADER = "DSRemoteCredentialsCharset";
     public static final String DS_ID_HEADER = "DSId";
 
     public static final String HIDDEN_CREDENTIALS = "****** (credentials)";
