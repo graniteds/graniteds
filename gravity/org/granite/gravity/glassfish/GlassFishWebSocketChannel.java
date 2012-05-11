@@ -104,8 +104,8 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 		}
 	}
 	
-	private static Gravity initializeRequest(Gravity gravity) {
-		SimpleGraniteContext.createThreadIntance(gravity.getGraniteConfig(), gravity.getServicesConfig(), new HashMap<String, Object>());
+	private Gravity initializeRequest(Gravity gravity) {
+		SimpleGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>());
 		return gravity;
 	}
 
@@ -164,6 +164,9 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 				receivedQueueLock.unlock();
 			}
 			
+	        if (!websocket.isConnected())
+	        	return false;
+	        
 			AsyncMessage[] messagesArray = new AsyncMessage[messages.size()];
 			int i = 0;
 			for (AsyncMessage message : messages)
@@ -171,8 +174,8 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 			
 			// Setup serialization context (thread local)
 			Gravity gravity = getGravity();
-	        GraniteContext context = SimpleGraniteContext.createThreadIntance(
-	            gravity.getGraniteConfig(), gravity.getServicesConfig(), new HashMap<String, Object>()
+	        GraniteContext context = SimpleGraniteContext.createThreadInstance(
+	            gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>()
 	        );
 	        
 	        os = new ByteArrayOutputStream(500);
@@ -182,7 +185,7 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 	        
 	        amf3Serializer.writeObject(messagesArray);
 	        
-	        websocket.send(os.toByteArray());
+        	websocket.send(os.toByteArray());
 	        
 	        return true; // Messages were delivered, http context isn't valid anymore.
 		}

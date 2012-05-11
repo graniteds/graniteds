@@ -28,7 +28,6 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.ObjectName;
-import javax.servlet.http.HttpSession;
 
 import org.granite.clustering.DistributedData;
 import org.granite.config.GraniteConfig;
@@ -47,6 +46,7 @@ import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.security.SecurityServiceException;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.util.ClassUtil;
 import org.granite.util.UUIDUtil;
 
 import flex.messaging.messages.AcknowledgeMessage;
@@ -312,8 +312,15 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     ///////////////////////////////////////////////////////////////////////////
     // Channel's operations.
     
-    protected <C extends Channel> C createChannel(ChannelFactory<C> channelFactory) {
-    	C channel = channelFactory.newChannel(UUIDUtil.randomUUID());
+    protected <C extends Channel> C createChannel(ChannelFactory<C> channelFactory, String clientId) {
+    	C channel = null;
+    	if (clientId != null) {
+    		channel = getChannel(channelFactory, clientId);
+	    	if (channel != null)
+	    		return channel;
+    	}
+    	
+    	channel = channelFactory.newChannel(UUIDUtil.randomUUID());
     	TimeChannel<C> timeChannel = new TimeChannel<C>(channel);
         for (int i = 0; channels.putIfAbsent(channel.getId(), timeChannel) != null; i++) {
             if (i >= 10)
@@ -330,7 +337,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	        DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 	        if (gdd != null) {
         		log.debug("Saving channel id in distributed data: %s", channelId);
-	        	gdd.addChannelId(channelId);
+	        	gdd.addChannelId(channelId, channelFactory.getClass().getName());
 	        }
         }
         catch (Exception e) {
@@ -343,11 +350,11 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         return channel;
     }
 
+    @SuppressWarnings("unchecked")
 	public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
         if (channelId == null)
             return null;
 
-        @SuppressWarnings("unchecked")
 		TimeChannel<C> timeChannel = (TimeChannel<C>)channels.get(channelId);
         if (timeChannel == null) {
 	        // Look for existing channel id/subscriptions in distributed data (clustering).
@@ -355,6 +362,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	        	DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 	        	if (gdd != null && gdd.hasChannelId(channelId)) {
 	        		log.debug("Found channel id in distributed data: %s", channelId);
+	        		String channelFactoryClassName = gdd.getChannelFactoryClassName(channelId);
+	        		channelFactory = ClassUtil.newInstance(channelFactoryClassName, ChannelFactory.class);
 	        		C channel = channelFactory.newChannel(channelId);
 	    	    	timeChannel = new TimeChannel<C>(channel);
 	    	        if (channels.putIfAbsent(channelId, timeChannel) == null) {
@@ -367,7 +376,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	        	}
         	}
         	catch (Exception e) {
-    			log.error(e, "Could not recreate channel/sunscriptions from distributed data: %s", channelId);
+    			log.error(e, "Could not recreate channel/subscriptions from distributed data: %s", channelId);
         	}
         }
 
@@ -521,11 +530,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         
         if (reply != null) {
 	        GraniteContext context = GraniteContext.getCurrentInstance();
-	        if (context instanceof HttpGraniteContext) {
-	            HttpSession session = ((HttpGraniteContext)context).getRequest().getSession(false);
-	            if (session != null)
-	                reply.setHeader("org.granite.sessionId", session.getId());
-	        }
+	        if (context.getSessionId() != null)
+	        	reply.setHeader("org.granite.sessionId", context.getSessionId());
         }
         
         return reply;
@@ -561,7 +567,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
     private Message handlePingMessage(ChannelFactory<?> channelFactory, CommandMessage message) {
         
-    	Channel channel = createChannel(channelFactory);
+    	Channel channel = createChannel(channelFactory, (String)message.getClientId());
     	
         AsyncMessage reply = new AcknowledgeMessage(message);
         reply.setClientId(channel.getId());
@@ -664,17 +670,11 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		            message.setHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER, subscriptionId);
 		        }
 		        
-		        HttpSession session = null;
-		        if (context instanceof HttpGraniteContext)
-		        	session = ((HttpGraniteContext)context).getSession(false);
-
-		        DistributedData gdd = null;
-		        if (session != null) {
-		        	gdd = graniteConfig.getDistributedDataFactory().getInstance();
-
+		        DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
+		        if (gdd != null) {
 		        	if (Boolean.TRUE.toString().equals(destination.getProperties().get("session-selector"))) {
 		        		String selector = gdd.getDestinationSelector(destination.getId());
-		        		log.debug("Session selector found in session %s: %s", session.getId(), selector);
+		        		log.debug("Session selector found: %s", selector);
 		        		if (selector != null)
 		        			message.setHeader(CommandMessage.SELECTOR_HEADER, selector);
 		        	}

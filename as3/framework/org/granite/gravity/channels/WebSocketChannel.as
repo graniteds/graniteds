@@ -24,6 +24,7 @@ package org.granite.gravity.channels {
     import flash.net.*;
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
+	import flash.utils.Timer;
     
     import mx.logging.ILogger;
     import mx.logging.Log;
@@ -59,7 +60,11 @@ package org.granite.gravity.channels {
 
         private var _webSocket:WebSocket = null;
         private var _clientId:String = null;
-
+		private var _sessionId:String = null;
+		
+		private var _reconnectMaxAttempts:int = 5;
+		private var _reconnectIntervalMillis:int = 60000;
+		
         private var _consumers:Dictionary = new Dictionary();
 
         ///////////////////////////////////////////////////////////////////////
@@ -76,9 +81,16 @@ package org.granite.gravity.channels {
             return _clientId;
         }
 
-        override public function get protocol():String {
+        public override function get protocol():String {
             return 'ws';
         }
+		
+		public function set sessionId(sessionId:String):void {
+			if (sessionId != _sessionId) {
+				_sessionId = sessionId;
+				log.info("Received sessionId {0}", sessionId);
+			}				
+		}
 
         ///////////////////////////////////////////////////////////////////////
         // Protected operations.
@@ -88,7 +100,13 @@ package org.granite.gravity.channels {
         }
 
         override protected function internalConnect():void {
-            _webSocket = new WebSocket(1, resolveUri(), [ "gravity" ], "", "", "");
+			var headers:String = "";
+			if (_clientId != null)
+				headers += "GDSClientId: " + _clientId + "\r\n";
+			if (_sessionId != null)
+				headers += "GDSSessionId: " + _sessionId + "\r\n";
+			
+            _webSocket = new WebSocket(1, resolveUri(), [ "gravity" ], "", "", headers);
             _webSocket.addEventListener(WebSocketEvent.OPEN, onOpen);
 			_webSocket.addEventListener(WebSocketEvent.ERROR, onError);
 			_webSocket.addEventListener(WebSocketEvent.CLOSE, onClose);
@@ -124,16 +142,40 @@ package org.granite.gravity.channels {
         }
 		
 		private function onOpen(event:WebSocketEvent):void {
-			
+			_reconnectAttempts = 0;
 		}
 		
 		private function onClose(event:WebSocketEvent):void {
-			
+			_reconnectAttempts = 0;
+			_webSocket = null;
 		}
 		
+		private var _reconnectAttempts:int = 0;
+		private var _reconnectTimer:Timer = null;
+		
 		private function onError(event:WebSocketEvent):void {
-			if (_clientId == null)
-				connectFailed(ChannelFaultEvent.createEvent(this, false, event.message as String));
+			if (_clientId == null) {
+				connectFailed(ChannelFaultEvent.createEvent(this, false, "Could not connect channel " + event.code + " " + (event.message as String)));
+				return;
+			}
+			
+			if (connected) {
+				if (_reconnectAttempts >= _reconnectMaxAttempts) {
+					internalDisconnect();
+					
+					connectFailed(ChannelFaultEvent.createEvent(this, false, "Channel disconnected " + event.code + " " + (event.message as String)));
+					return;
+				}
+				
+				_reconnectTimer = new Timer(_reconnectIntervalMillis, 1);
+				_reconnectTimer.addEventListener(TimerEvent.TIMER, function(te:TimerEvent):void {
+					_reconnectAttempts++;
+					
+					// If the channel should be connected, try to reconnect
+					log.info("Connection lost (code {0}, msg {1}), reconnect channel (retry #{2})", event.code, event.message, _reconnectAttempts);
+					internalConnect();
+				});
+			}
 		}
 		
 		private function onBinary(event:WebSocketEvent):void {
@@ -151,6 +193,13 @@ package org.granite.gravity.channels {
 			var messageResponder:MessageResponder;
 			if (message is AcknowledgeMessage && AcknowledgeMessage(message).correlationId == "OPEN_CONNECTION") {
 				_clientId = message.clientId;
+				var advice:Object = message.body;
+				if (advice) {
+					_reconnectIntervalMillis = advice['reconnect-interval-ms'];
+					_reconnectMaxAttempts = advice['reconnect-max-attempts'];
+				}
+				log.info("Connection opened, received clientId {0}", clientId);			
+				
 				connectSuccess();
 			}
 			else if (message is AcknowledgeMessage) {

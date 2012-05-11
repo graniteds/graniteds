@@ -299,7 +299,7 @@ package org.granite.tide {
 		public function get sessionId():String {
 			return _sessionId;
 		} 
-				
+		
 		/**
 		 * 	@private
 		 * 	Is it the first remote call ?
@@ -1834,8 +1834,10 @@ package org.granite.tide {
          */ 
         private function extractContext(sourceContext:BaseContext, event:MessageEvent, fromFault:Boolean = false):BaseContext {
             var sessionId:String = event.message.headers['org.granite.sessionId'];
-            if (sessionId != null)
+            if (sessionId != _sessionId) {
                 _sessionId = sessionId;
+				dispatchEvent(new Event("GDSSessionIdChanged"));
+			}
             
             processInterceptors(event.message, false);    
             

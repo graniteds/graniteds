@@ -51,7 +51,7 @@ import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.AMF3Deserializer;
 import org.granite.messaging.amf.io.AMF3Serializer;
 import org.granite.messaging.service.ServiceException;
-import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.XMap;
 
 import flex.messaging.messages.AcknowledgeMessage;
@@ -208,8 +208,8 @@ public class JMSServiceAdapter extends ServiceAdapter {
             jmsClient = new JMSClientImpl(client);
             jmsClient.connect();
             jmsClients.put(client.getId(), jmsClient);
-            if (sessionSelector && GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)
-                ((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSessionMap().put(JMSClient.JMSCLIENT_KEY_PREFIX + destination, jmsClient);
+            if (sessionSelector && GraniteContext.getCurrentInstance() instanceof ServletGraniteContext)
+                ((ServletGraniteContext)GraniteContext.getCurrentInstance()).getSessionMap().put(JMSClient.JMSCLIENT_KEY_PREFIX + destination, jmsClient);
             log.debug("JMS client connected for channel " + client.getId());
         }
         return jmsClient;
@@ -220,8 +220,8 @@ public class JMSServiceAdapter extends ServiceAdapter {
         if (jmsClient != null && !jmsClient.hasActiveConsumer()) {
             jmsClient.close();
             jmsClients.remove(client.getId());
-            if (sessionSelector && GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)
-                ((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSessionMap().remove(JMSClient.JMSCLIENT_KEY_PREFIX + destination);
+            if (sessionSelector && GraniteContext.getCurrentInstance() instanceof ServletGraniteContext)
+                ((ServletGraniteContext)GraniteContext.getCurrentInstance()).getSessionMap().remove(JMSClient.JMSCLIENT_KEY_PREFIX + destination);
             log.debug("JMS client closed for channel " + client.getId());
         }
     }

@@ -67,11 +67,8 @@ public abstract class AMF3MessageProcessor {
 	            interceptor.after(request, response);
         }
         
-        if (context instanceof HttpGraniteContext) {
-            HttpSession session = ((HttpGraniteContext)context).getRequest().getSession(false);
-            if (session != null)
-                response.setHeader("org.granite.sessionId", session.getId());
-        }
+        if (context.getSessionId() != null)
+            response.setHeader("org.granite.sessionId", context.getSessionId());
         
         return response;
     }

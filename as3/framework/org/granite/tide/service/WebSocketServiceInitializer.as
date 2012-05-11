@@ -20,9 +20,11 @@ along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 package org.granite.tide.service {
 	
+	import flash.events.Event;
 	import mx.messaging.Channel;
 	
 	import org.granite.gravity.channels.WebSocketChannel;
+	import org.granite.tide.Tide;
 	import org.granite.tide.service.DefaultServiceInitializer;
 	
 	public class WebSocketServiceInitializer extends DefaultServiceInitializer {
@@ -32,6 +34,12 @@ package org.granite.tide.service {
 		public function WebSocketServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = null, gravityUrlMapping:String = null, secure:Boolean = false, embedded:Boolean = false) {
 			super(contextRoot, graniteUrlMapping, gravityUrlMapping, secure);
 			_embedded = embedded;
+			
+			Tide.getInstance().addEventListener("GDSSessionIdChanged", function(event:Event):void {
+				for each (var channel:WebSocketChannel in gravityChannelSet.channels) {
+					channel.sessionId = Tide.getInstance().sessionId;
+				}
+			});
 		}
 		
 		protected override function newGravityChannel(id:String, uri:String):Channel {

@@ -73,16 +73,22 @@ public class SessionDistributedData implements DistributedData {
 		session.removeAttribute(CREDENTIALS_KEY);
 	}
 
-	public void addChannelId(String channelId) {
+	public void addChannelId(String channelId, String channelFactoryClassName) {
 		if (channelId == null)
 			throw new NullPointerException("channelId cannot be null");
-		session.setAttribute(CHANNELID_KEY_PREFIX + channelId, Boolean.TRUE);
+		session.setAttribute(CHANNELID_KEY_PREFIX + channelId, channelFactoryClassName);
 	}
 
 	public boolean hasChannelId(String channelId) {
 		if (channelId == null)
 			return false;
-		return (session.getAttribute(CHANNELID_KEY_PREFIX + channelId) != null);
+		return session.getAttribute(CHANNELID_KEY_PREFIX + channelId) != null;
+	}
+	
+	public String getChannelFactoryClassName(String channelId) {
+		if (channelId == null)
+			return null;
+		return (String)session.getAttribute(CHANNELID_KEY_PREFIX + channelId);
 	}
 
 	public void removeChannelId(String channelId) {

@@ -20,15 +20,10 @@
 
 package org.granite.clustering;
 
-import java.util.Map;
-
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
-import org.granite.config.GraniteConfigListener;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
-import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.messaging.webapp.ServletGraniteContext;
 
 /**
@@ -42,18 +37,11 @@ public class SessionDistributedDataFactory implements DistributedDataFactory {
 	public DistributedData getInstance() {
 		HttpSession session = null;
 		GraniteContext context = GraniteContext.getCurrentInstance();
-		if (context instanceof HttpGraniteContext)
-			session = ((HttpGraniteContext)context).getSession(false);
-		else if (context instanceof ServletGraniteContext) {
-			ServletContext servletContext = ((ServletGraniteContext)context).getServletContext();
-			@SuppressWarnings("unchecked")
-			Map<String, HttpSession> sessionMap = (Map<String, HttpSession>)servletContext.getAttribute(GraniteConfigListener.GRANITE_SESSION_MAP);
-			if (sessionMap != null)
-				session = sessionMap.get(context.getSessionId());
-		}
+		if (context instanceof ServletGraniteContext)
+			session = ((ServletGraniteContext)context).getSession(false);
 		
 		if (session == null) {
-			log.warn("Could not get distributed data, no HTTP session");
+			log.debug("Could not get distributed data, no session or session expired");
 			return null;
 		}
 		

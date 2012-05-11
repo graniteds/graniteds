@@ -39,8 +39,9 @@ public interface DistributedData {
 	
 	// Gravity channels/subscriptions.
 	
-	public void addChannelId(String channelId);
+	public void addChannelId(String channelId, String channelFactoryClassName);
 	public boolean hasChannelId(String channelId);
+	public String getChannelFactoryClassName(String channelId);
 	public void removeChannelId(String channelId);
 	public Set<String> getChannelIds();
 	public void clearChannelIds();

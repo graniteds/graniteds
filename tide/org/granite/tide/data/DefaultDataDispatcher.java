@@ -30,7 +30,7 @@ import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
-import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.CommandMessage;
@@ -58,13 +58,13 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 		super(topicName, dataTopicParamsClass);
 		
 		GraniteContext graniteContext = GraniteContext.getCurrentInstance();
-		if (gravity == null && graniteContext == null)
+		if (gravity == null && (graniteContext == null || !(graniteContext instanceof ServletGraniteContext)))
 			return;
 		
 		DistributedDataFactory distributedDataFactory = graniteContext.getGraniteConfig().getDistributedDataFactory();		
 		DistributedData gdd = distributedDataFactory.getInstance();
 		if (gdd != null) {
-			this.gravity = GravityManager.getGravity(((HttpGraniteContext)graniteContext).getServletContext());
+			this.gravity = GravityManager.getGravity(((ServletGraniteContext)graniteContext).getServletContext());
 			
 			if (this.gravity == null) {
 				log.debug("Gravity not found or HTTP session not found, data dispatch disabled");
@@ -73,6 +73,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 			
 			clientId = gdd.getDestinationClientId(topicName);
 			subscriptionId = gdd.getDestinationSubscriptionId(topicName);
+			sessionId = graniteContext.getSessionId();
 		}
 		else {
 			if (gravity == null) {

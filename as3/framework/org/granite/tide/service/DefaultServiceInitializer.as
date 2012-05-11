@@ -127,7 +127,7 @@ package org.granite.tide.service {
         	return new GravityChannel(id, uri);
         }
         
-        private function get graniteChannelSet():ChannelSet {
+		protected function get graniteChannelSet():ChannelSet {
         	if (_graniteChannelSet == null) {
 				_graniteChannelSet = new ChannelSet();
 				_graniteChannelSet.addChannel(newAMFChannel("graniteamf", protocol + "://" + _serverName + ":" + _serverPort + _contextRoot + _graniteUrlMapping));
@@ -135,7 +135,7 @@ package org.granite.tide.service {
         	return _graniteChannelSet;
         }
         
-        private function get gravityChannelSet():ChannelSet {
+        protected function get gravityChannelSet():ChannelSet {
         	if (_gravityChannelSet == null) {
 				_gravityChannelSet = new ChannelSet();
 				_gravityChannelSet.addChannel(newGravityChannel("gravityamf", protocol + "://" + _serverName + ":" + _serverPort + _contextRoot + _gravityUrlMapping));

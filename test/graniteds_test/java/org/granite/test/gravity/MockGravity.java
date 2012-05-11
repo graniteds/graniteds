@@ -8,6 +8,7 @@ import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.AsyncChannelRunner;
 import org.granite.gravity.Channel;
+import org.granite.gravity.ChannelFactory;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityConfig;
 import org.granite.gravity.adapters.ServiceAdapter;
@@ -34,7 +35,7 @@ public class MockGravity implements Gravity {
 	public void execute(AsyncChannelRunner arg0) {
 	}
 
-	public Channel getChannel(String channelId) {
+	public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
 		return null;
 	}
 
@@ -58,7 +59,11 @@ public class MockGravity implements Gravity {
 		return null;
 	}
 
-	public Message handleMessage(Message arg0, boolean arg1) {
+	public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message) {
+		return null;
+	}
+
+	public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message, boolean b) {
 		return null;
 	}
 

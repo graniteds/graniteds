@@ -31,11 +31,6 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 		this.gravity = gravity;
 		this.mapping = Pattern.compile(".*" + mapping.replace("*", ".*") + "$");
 	}
-	
-//	@Override
-//	public WebSocket createWebSocket(ProtocolHandler protocolHandler, WebSocketListener... listeners) {
-//		return new GlassFishWebSocket(protocolHandler, listeners);
-//	}
 
 	@Override
 	public List<String> getSupportedProtocols(List<String> subProtocol) {
@@ -49,8 +44,8 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 		GlassFishWebSocketChannelFactory channelFactory = new GlassFishWebSocketChannelFactory(gravity);
 		
 		try {
-	        SimpleGraniteContext.createThreadIntance(
-	                gravity.getGraniteConfig(), gravity.getServicesConfig(),
+	        SimpleGraniteContext.createThreadInstance(
+	                gravity.getGraniteConfig(), gravity.getServicesConfig(), null, 
 	                new HashMap<String, Object>()
 	        );
 			

@@ -76,7 +76,7 @@ public class Hibernate3DataMergeTest {
 		InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("org/granite/test/tide/data/granite-config.xml");
 		GraniteConfig graniteConfig = new GraniteConfig(null, is, null, "test");
 		ServicesConfig servicesConfig = new ServicesConfig(null, null, false);
-		GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		
 		open();
 		
@@ -126,7 +126,7 @@ public class Hibernate3DataMergeTest {
 		InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("org/granite/test/tide/data/granite-config.xml");
 		GraniteConfig graniteConfig = new GraniteConfig(null, is, null, "test");
 		ServicesConfig servicesConfig = new ServicesConfig(null, null, false);
-		GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		
 		open();
 		

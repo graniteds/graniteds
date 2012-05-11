@@ -30,57 +30,45 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.granite.clustering.TransientReference;
-import org.granite.clustering.TransientReferenceHolder;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
-import org.granite.context.GraniteContext;
 
 /**
  * @author Franck WOLFF
  */
-public class HttpGraniteContext extends GraniteContext {
+public class HttpGraniteContext extends ServletGraniteContext {
 
 	private static final String SESSION_LOCK_KEY = HttpGraniteContext.class.getName() + ".LOCK";
 	
-    private final ServletContext context;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
 
-    private InitialisationMap initialisationMap = null;
-    private ApplicationMap applicationMap = null;
-    private SessionMap sessionMap = null;
     private RequestMap requestMap = null;
 
 
     public static HttpGraniteContext createThreadIntance(
         GraniteConfig graniteConfig,
         ServicesConfig servicesConfig,
-        ServletContext context,
+        ServletContext servletContext,
         HttpServletRequest request,
         HttpServletResponse response) {
 
-        HttpGraniteContext graniteContext = new HttpGraniteContext(graniteConfig, servicesConfig, context, request, response);
+        HttpGraniteContext graniteContext = new HttpGraniteContext(graniteConfig, servicesConfig, servletContext, request, response);
         setCurrentInstance(graniteContext);
         return graniteContext;
     }
 
 
-    private HttpGraniteContext(
+    protected HttpGraniteContext(
         GraniteConfig graniteConfig,
         ServicesConfig servicesConfig,
-        ServletContext context,
+        ServletContext servletContext,
         HttpServletRequest request,
         HttpServletResponse response) {
 
-        super(graniteConfig, servicesConfig, request.getSession(false) != null ? request.getSession().getId() : null);
-        this.context = context;
+        super(graniteConfig, servicesConfig, servletContext, null);
         this.request = request;
         this.response = response;
-    }
-
-    public ServletContext getServletContext() {
-        return context;
     }
 
     public HttpServletRequest getRequest() {
@@ -90,11 +78,18 @@ public class HttpGraniteContext extends GraniteContext {
     public HttpServletResponse getResponse() {
         return response;
     }
+    
+    @Override
+    public String getSessionId() {
+    	return request.getSession(false) != null ? request.getSession().getId() : null;
+    }
 
+    @Override
     public HttpSession getSession(boolean create) {
         return request.getSession(create);
     }
 
+    @Override
     public HttpSession getSession() {
         return request.getSession(true);
     }
@@ -109,20 +104,6 @@ public class HttpGraniteContext extends GraniteContext {
 		return lock;
 	}
 
-
-	@Override
-    public Map<String, String> getInitialisationMap() {
-        if (initialisationMap == null)
-            initialisationMap = new InitialisationMap(context);
-        return initialisationMap;
-    }
-
-    @Override
-    public Map<String, Object> getApplicationMap() {
-        if (applicationMap == null)
-            applicationMap = new ApplicationMap(context);
-        return applicationMap;
-    }
 
 	@Override
     public Map<String, Object> getSessionMap() {
@@ -140,78 +121,6 @@ public class HttpGraniteContext extends GraniteContext {
         if (requestMap == null)
             requestMap = new RequestMap(request);
         return requestMap;
-    }
-}
-
-class SessionMap extends BaseContextMap<String, Object> {
-
-    private HttpServletRequest request = null;
-
-    SessionMap(HttpServletRequest request) {
-        if (request == null)
-            throw new NullPointerException("request is null");
-        this.request = request;
-    }
-
-    @Override
-    public Object get(Object key) {
-        if (!(key instanceof String))
-            return null;
-        Object value = getSession().getAttribute(key.toString());
-        if (value instanceof TransientReferenceHolder)
-        	return ((TransientReferenceHolder)value).get();
-        return value;
-    }
-
-    @Override
-    public Object put(String key, Object value) {
-        if (key == null)
-            throw new IllegalArgumentException(KEY_STRING_ERROR + key);
-        HttpSession session = getSession();
-        Object result = session.getAttribute(key);
-        if (result instanceof TransientReferenceHolder)
-        	result = ((TransientReferenceHolder)result).get();
-        if (value != null && value.getClass().isAnnotationPresent(TransientReference.class))
-        	value = new TransientReferenceHolder(value);
-        session.setAttribute(key, value);
-        return result;
-    }
-
-    @Override
-    public Object remove(Object key) {
-        if (!(key instanceof String))
-            return null;
-        HttpSession session = getSession();
-        Object result = session.getAttribute(key.toString());
-        if (result instanceof TransientReferenceHolder)
-        	result = ((TransientReferenceHolder)result).get();
-        session.removeAttribute(key.toString());
-        return result;
-    }
-
-    @Override
-    public Set<Map.Entry<String, Object>> entrySet() {
-        Set<Map.Entry<String, Object>> entries = new HashSet<Map.Entry<String, Object>>();
-        HttpSession session = getSession();
-        for (Enumeration<?> e = session.getAttributeNames(); e.hasMoreElements(); ) {
-            String key = (String)e.nextElement();
-            Object value = session.getAttribute(key);
-            if (value instanceof TransientReferenceHolder)
-            	value = ((TransientReferenceHolder)value).get();
-            entries.add(new Entry<String, Object>(key, value));
-        }
-        return entries;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof SessionMap))
-            return false;
-        return super.equals(obj);
-    }
-
-    private HttpSession getSession() {
-        return request.getSession(true);
     }
 }
 

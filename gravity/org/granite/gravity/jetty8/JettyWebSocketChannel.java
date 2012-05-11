@@ -19,7 +19,6 @@ import org.granite.gravity.GravityConfig;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.ServletGraniteContext;
 
-import flex.messaging.messages.AcknowledgeMessage;
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
 
@@ -30,12 +29,17 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	
 	private ServletContext servletContext;
 	private Connection connection;
+	private Message connectAckMessage;
 
 	
 	public JettyWebSocketChannel(Gravity gravity, String id, JettyWebSocketChannelFactory factory, ServletContext servletContext) {
     	super(gravity, id, factory);
     	this.servletContext = servletContext;
     }
+	
+	public void setConnectAckMessage(Message ackMessage) {
+		this.connectAckMessage = ackMessage;
+	}
 
 	public void onOpen(Connection connection) {
 		this.connection = connection;
@@ -47,10 +51,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 			initializeRequest();
 			
 			// Return an acknowledge message with the server-generated clientId
-			AcknowledgeMessage message = new AcknowledgeMessage();
-			message.setCorrelationId("OPEN_CONNECTION");
-			message.setClientId(id);
-	        byte[] resultData = serialize(getGravity(), new Message[] { message });
+	        byte[] resultData = serialize(getGravity(), new Message[] { connectAckMessage });
 	        
 			connection.sendMessage(resultData, 0, resultData.length);
 		}

@@ -60,8 +60,15 @@ public class GAEGravity extends DefaultGravity {
     // Channel's operations.
 
     @Override
-    protected <C extends Channel> C createChannel(ChannelFactory<C> channelFactory) {
-    	C channel = channelFactory.newChannel(UUIDUtil.randomUUID());
+    protected <C extends Channel> C createChannel(ChannelFactory<C> channelFactory, String channelId) {
+    	C channel = null;
+    	if (channelId != null) {
+    		channel = getChannel(channelFactory, channelId);
+    		if (channel != null)
+    			return channel;
+    	}
+    	
+    	channel = channelFactory.newChannel(UUIDUtil.randomUUID());
     	Expiration expiration = Expiration.byDeltaMillis((int)getGravityConfig().getChannelIdleTimeoutMillis());
         gaeCache.put(CHANNEL_PREFIX + channel.getId(), channel, expiration);
     	gaeCache.put(GAEChannel.MSG_COUNT_PREFIX + channel.getId(), 0L, expiration);

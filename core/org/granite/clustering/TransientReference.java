@@ -30,11 +30,11 @@ import java.lang.annotation.Target;
 /**
  * This annotation is intended to be used on classes that need to be cached in an HTTP session
  * without being replicated in a clustered environment. It will however only work in conjunction
- * with the session map returned by an <tt>HttpGraniteContext</tt> instance. 
+ * with the session map returned by an <tt>ServletGraniteContext</tt> instance. 
  * 
  * @author Franck WOLFF
  * 
- * @see org.granite.messaging.webapp.HttpGraniteContext
+ * @see org.granite.messaging.webapp.ServletGraniteContext
  * @see TransientReferenceHolder
  */
 @Retention(RetentionPolicy.RUNTIME)

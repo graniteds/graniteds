@@ -38,7 +38,7 @@ import javax.servlet.http.HttpSession;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.adapters.JMSClient;
 import org.granite.logging.Logger;
-import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 
 /**
  *  Implementation for data update dispatchers using JMS to dispatch updates.
@@ -65,15 +65,15 @@ public class JMSDataDispatcher extends AbstractDataDispatcher {
 		this.transacted = transacted;
 		
 		GraniteContext graniteContext = GraniteContext.getCurrentInstance();
-		if (graniteContext instanceof HttpGraniteContext) {
-			HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
+		if (graniteContext instanceof ServletGraniteContext) {
+			HttpSession session = ((ServletGraniteContext)graniteContext).getSession(false);
 			if (session == null) {
 				log.debug("Gravity not found or HTTP session not found, data dispatch disabled");
 				return;
 			}
 			sessionId = session.getId();
 			
-			jmsClient = (JMSClient)((HttpGraniteContext)graniteContext).getSessionMap().get(JMSClient.JMSCLIENT_KEY_PREFIX + topicName);
+			jmsClient = (JMSClient)((ServletGraniteContext)graniteContext).getSessionMap().get(JMSClient.JMSCLIENT_KEY_PREFIX + topicName);
 		}
 		else {
 			// Server initiated dispatcher

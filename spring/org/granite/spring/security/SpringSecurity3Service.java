@@ -314,8 +314,12 @@ public class SpringSecurity3Service extends AbstractSecurityService {
             // Don't create a dependency to javax.ejb in SecurityService...
             if (t instanceof SecurityException ||
                 t instanceof AccessDeniedException ||
-                "javax.ejb.EJBAccessException".equals(t.getClass().getName()))
+                "javax.ejb.EJBAccessException".equals(t.getClass().getName())) {
                 throw SecurityServiceException.newAccessDeniedException(t.getMessage());
+            }
+            else if (t instanceof AuthenticationException) {
+            	throw SecurityServiceException.newNotLoggedInException(t.getMessage());
+            }
         }
     }
 
