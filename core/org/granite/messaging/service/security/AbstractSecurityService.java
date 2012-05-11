@@ -41,8 +41,18 @@ public abstract class AbstractSecurityService implements SecurityService {
     private static final Logger log = Logger.getLogger(AbstractSecurityService.class);
 
     public static final String AUTH_TYPE = "granite-security";
-    
+
     /**
+     * A default implementation of the basic login method, passing null as the extra charset
+     * parameter. Mainly here for compatibility purpose.
+     * 
+     * @param credentials the login:password pair (must be a base64/ISO-8859-1 encoded string).
+     */
+    public void login(Object credentials) throws SecurityServiceException {
+    	login(credentials, null);
+	}
+
+	/**
      * Try to login by using remote credentials (see Flex method RemoteObject.setRemoteCredentials()).
      * This method must be called at the beginning of {@link SecurityService#authorize(AbstractSecurityContext)}.
      * 
