@@ -590,6 +590,24 @@ $ ant -lib /gas3libs -f build.xml {target}
         you may safely add your code to the inherited bean.
         </para>
 
+        <para>
+        Since Gas3 version 2.3.2, you can also use Ant <literal>zipfileset</literal>s if you want to generate AS3 classes from an existing jar. Note that
+        the jar must be in the classpath:
+        </para>
+
+        <programlisting role="XML">
+<![CDATA[<target name="generate.as3">
+    <gas3 outputdir="as3">
+        <classpath>
+            <pathelement location="lib/myclasses.jar"/>
+        </classpath>
+        <zipfileset src="lib/myclasses.jar">
+            <include name="com/myapp/entity/**/*.class"/>
+        </zipfileset>
+    </gas3>
+</target>]]>
+        </programlisting>
+
         <formalpara>
             <title>Packages Translations</title>
             <para>

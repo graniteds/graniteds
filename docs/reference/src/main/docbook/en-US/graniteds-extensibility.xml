@@ -182,6 +182,8 @@ public interface SecurityService {
 
     public void login(Object credentials) throws SecurityServiceException;
 
+    public void login(Object credentials, String charset) throws SecurityServiceException; // Since 2.3.2.
+
     public Object authorize(AbstractSecurityContext context) throws Exception;
 
     public void logout() throws SecurityServiceException;
@@ -205,7 +207,9 @@ public interface SecurityService {
                <literal>RemoteObject</literal>'s method. Note that these method calls do not fire any request by themselves but only pass credentials on 
                the next destination service method call. The <literal>login</literal> method is responsible for creating and exposing a <literal>java.security.Principal</literal> 
                or throwing an appropriate <literal>org.granite.messaging.service.security.SecurityServiceException</literal> if credentials are invalid. 
-               Note that credentials are a Base64 string with the common <literal>"username:password"</literal> format.
+               Note that credentials are a Base64 string with the common <literal>"username:password"</literal> format. Since version 2.3.2, an additional login
+               method with an extra <literal>charset</literal> parameter is available, so you can now use the <literal>RemoteObject.setCredentials(user, pass, charset)</literal>
+               and specify the charset used in the username/password string (default is ISO-8859-1).
                </listitem>
                <listitem>
                <literal>authorize</literal>: This method is called upon each and every service method call invocations (<literal>RemoteObject</literal>) 
