@@ -435,8 +435,9 @@ package org.test {
             <literal>"Show debug informations in console"</literal>: If enabled, Gas3 will display more information during the generation process.
             </listitem>
             <listitem>
-            <literal>"Generate a Flex Builder configuration file"</literal>: If enabled, Gas3 will generate a <literal>flex-config.xml</literal> 
-            that may be used in your compiler options. Useful to make sure that all generated AS3 beans will be included in your SWF.
+            <literal>"Generate a Flex Builder configuration file"</literal>: If enabled, Gas3 will generate a <literal>granite-flex-config.xml</literal> 
+            that may be used in your compiler options. Useful to make sure that all generated AS3 beans will be included in your SWF. Note that
+            all AS3 files present in a Gas3 output directory (even those which are not generated) will be added to the config file.
             </listitem>
             <listitem>
             <literal>"Use org.granite.math.Long"</literal>: If enabled, Gas3 will generate AS3 <literal>Long</literal> properties for 
