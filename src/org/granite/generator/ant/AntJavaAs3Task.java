@@ -510,6 +510,21 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
 	public List<PackageTranslator> getTranslators() {
 		return translators;
 	}
+	
+	public PackageTranslator getPackageTranslator(String packageName) {
+        PackageTranslator translator = null;
+
+        int weight = 0;
+        for (PackageTranslator t : getTranslators()) {
+            int w = t.match(packageName);
+            if (w > weight) {
+                weight = w;
+                translator = t;
+            }
+        }
+		
+        return translator;
+	}
 
 	public String getUid() {
 		return uid;

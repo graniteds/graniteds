@@ -29,9 +29,15 @@ public interface Listener {
 	public static final String MSG_FILE_EXISTS_NO_OVER = "output file already exists and must not be overwritten";
 	public static final String MSG_FILE_OUTDATED = "output file is outdated";
 	public static final String MSG_FILE_UPTODATE = "output file is up-to-date";
+	public static final String MSG_FILE_REMOVED = "Java file has been removed";
 
 	public void generating(Input<?> input, Output<?> output);
 	public void generating(String file, String message);
+	
+	public void removing(Input<?> input, Output<?> output);
+	public void removing(String file, String message);
+
+	
 	public void skipping(Input<?> input, Output<?> output);
 	public void skipping(String file, String message);
 	

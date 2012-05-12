@@ -21,11 +21,15 @@
 package org.granite.builder;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -35,6 +39,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.granite.builder.properties.Gas3Source;
@@ -46,10 +51,12 @@ import org.granite.builder.util.FlexConfigGenerator;
 import org.granite.builder.util.JavaClassInfo;
 import org.granite.builder.util.ProjectUtil;
 import org.granite.generator.Generator;
+import org.granite.generator.Listener;
 import org.granite.generator.Output;
 import org.granite.generator.Transformer;
 import org.granite.generator.as3.JavaAs3Input;
 import org.granite.generator.as3.JavaAs3Output;
+import org.granite.generator.as3.PackageTranslator;
 
 /**
  * @author Franck WOLFF
@@ -239,6 +246,12 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
     ///////////////////////////////////////////////////////////////////////////
     // Incremental Build.
 
+    /*
+     * TODO: this part should be refactored, it assumes several things about
+     * generated (.as extension, Base suffix, etc.) which should be deferred
+     * to transformers...
+     */
+    
     private GenerationResult incrementalBuild(IResourceDelta delta, IProgressMonitor monitor) throws CoreException {
         monitor.beginTask("Granite Incremental Build", PROGRESS_TOTAL);
         IncrementalBuildVisitor visitor = new IncrementalBuildVisitor(monitor);
@@ -261,6 +274,7 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
 
         public boolean visit(IResourceDelta delta) throws CoreException {
             IResource resource = delta.getResource();
+            String extension = resource.getFileExtension();
 
             Output<?>[] outputs = null;
             
@@ -274,7 +288,8 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
                 break;
             case IResourceDelta.REMOVED:
             	if (!result.generateFlexConfig)
-            		result.generateFlexConfig = "as".equals(resource.getFileExtension());
+            		result.generateFlexConfig = "as".equals(extension);
+            	outputs = remove(resource, monitor);
                 break;
             case IResourceDelta.CHANGED:
                 if (!resource.isAccessible() || resource.isPhantom())
@@ -307,7 +322,7 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
         return config;
     }
 
-    private Output<?>[] generate(IResource resource, IProgressMonitor monitor) /*throws CoreException*/ {
+    private Output<?>[] generate(IResource resource, IProgressMonitor monitor) {
         if (resource instanceof IFile && "class".equals(resource.getFileExtension())) {
             IFile file = (IFile)resource;
                         
@@ -337,17 +352,102 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
 	            }
             } catch (Throwable t) {
             	listener.error("", t);
-            	
-//            	if (t instanceof CoreException)
-//            		throw (CoreException)t;
-//            	if (t.getCause() instanceof CoreException)
-//            		throw (CoreException)t.getCause();
-//                throw new CoreException(ProjectUtil.createErrorStatus(
-//                    "Could not generate AS3 bean for: " + file.getProjectRelativePath() + " - " + t.toString(), null
-//                ));
             }
         }
         
         return null;
+    }
+    
+    private Output<?>[] remove(IResource resource, IProgressMonitor monitor) {
+        if (resource instanceof IFile && "java".equals(resource.getFileExtension())) {
+            try {
+                IPath resourcePath = resource.getFullPath();
+                IPath resourceSourceFolder = null;
+                
+	            List<IPath> sourceFolders = ProjectUtil.getSourceFolders(config.getJavaProject());
+	            for (IPath sourceFolder : sourceFolders) {
+	            	if (sourceFolder.isPrefixOf(resourcePath)) {
+	            		resourceSourceFolder = sourceFolder;
+	            		break;
+	            	}
+	            }
+	            
+	            if (resourceSourceFolder == null)
+	            	return null;
+            
+	            String relativeJavaFile = resourcePath.makeRelativeTo(resourceSourceFolder).toPortableString();
+	            Gas3Source source = config.getProperties().getGas3().getMatchingSource(
+	            	resourceSourceFolder.makeRelativeTo(config.getJavaProject().getPath()).toPortableString(),
+	            	relativeJavaFile
+	            );
+	            
+	            if (source != null) {
+	            	
+	            	String packageName = "";
+	            	String className = relativeJavaFile.substring(0, relativeJavaFile.length() - 5);
+	            	
+	            	int lastSlash = className.lastIndexOf('/');
+	            	if (lastSlash != -1) {
+	            		packageName = className.substring(0, lastSlash).replace('/', '.');
+	            		PackageTranslator translator =  config.getPackageTranslator(packageName);
+	            		if (translator != null)
+	            			packageName = translator.translate(packageName);
+	            		className = className.substring(lastSlash + 1);
+	            	}
+	            	
+	            	
+		            monitor.subTask("Removing AS3 code for: " + resource.getProjectRelativePath().toString());
+		            try {
+		            	JavaAs3Input input = new BuilderJavaAs3Input(null, null, source);
+		            	File outputDir = config.getBaseOutputDir(input);
+		            	
+		            	String outputPrefix = outputDir.getName() + File.separator + packageName.replace('.', File.separatorChar) + File.separator + className;
+		            	final Pattern pattern = Pattern.compile("^.*" + Pattern.quote(outputPrefix) + "(\\$.*)?(Base)?\\.as$");
+		            	List<File> matches = listFiles(outputDir, new FileFilter() {
+							public boolean accept(File file) {
+								return pattern.matcher(file.getPath()).matches();
+							}
+		            	});
+		            	
+		            	if (!matches.isEmpty()) {
+			            	Output<?>[] outputs = new Output<?>[matches.size()];
+			            	for (int i = 0; i < matches.size(); i++) {
+			            		File file = matches.get(i);
+			            		File renameToFile = new File(file.getParentFile(), file.getName() + "." + System.currentTimeMillis() + ".hid");
+			            		outputs[i] = new JavaAs3Output(null, null, renameToFile.getParentFile(), renameToFile, true, Listener.MSG_FILE_REMOVED);
+			            		listener.removing(input, outputs[i]);
+			            		file.renameTo(renameToFile);
+			            	}
+			            	
+			            	return outputs;
+		            	}
+		            } finally {
+		                monitor.worked(1);
+		            }
+	            }
+	        } catch (Throwable t) {
+            	listener.error("", t);
+            }
+        }
+        
+        return null;
+    }
+    
+    private List<File> listFiles(File root, FileFilter filter) {
+    	final List<File> files = new ArrayList<File>();
+    	listFiles(files, root, filter);
+    	return files;
+    }
+
+    private void listFiles(final List<File> files, final File parent, final FileFilter filter) {
+    	parent.listFiles(new FileFilter() {
+			public boolean accept(File file) {
+				if (file.isDirectory())
+					listFiles(files, file, filter);
+				if (filter.accept(file))
+					files.add(file);
+				return false;
+			}
+    	});
     }
 }

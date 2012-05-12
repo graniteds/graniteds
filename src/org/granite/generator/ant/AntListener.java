@@ -48,6 +48,12 @@ public class AntListener implements Listener {
 		log("  Generating: " + file + " (" + message + ")", Project.MSG_INFO, null);
 	}
 
+	public void removing(Input<?> input, Output<?> output) {
+	}
+
+	public void removing(String file, String message) {
+	}
+
 	public void skipping(Input<?> input, Output<?> output) {
 		log("  Skipping: " + output.getDescription() + " (" + output.getMessage() + ")", Project.MSG_DEBUG, null);
 	}

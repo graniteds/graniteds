@@ -48,7 +48,7 @@ public class JavaAs3Output implements Output<As3Type> {
 	
 	public JavaAs3Output(JavaType javaType, Template template, File dir, File file, boolean outdated, String message) {
 		this.javaType = javaType;
-		this.targetType = javaType.getAs3Type();
+		this.targetType = (javaType != null ? javaType.getAs3Type() : null);
 		this.template = template;
 		this.dir = dir;
 		this.file = file;

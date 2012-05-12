@@ -62,6 +62,9 @@ public class JavaAs3GroovyTransformer
 	extends AbstractGroovyTransformer<JavaAs3Input, JavaAs3Output, JavaAs3GroovyConfiguration>
 	implements JavaTypeFactory {
 
+	private static final String GENERATED_FILE_EXTENSION = "as";
+	private static final String GENERATED_BASE_SUFFIX = "Base";
+	
 	protected final Map<Class<?>, JavaType> javaTypes = new HashMap<Class<?>, JavaType>();
     protected final Map<Class<?>, JavaImport> javaImports = new HashMap<Class<?>, JavaImport>();
 
@@ -148,13 +151,14 @@ public class JavaAs3GroovyTransformer
             .append(File.separatorChar)
             .append(as3Type.getQualifiedName().replace('.', File.separatorChar))
             .append(getOutputFileSuffix(input, template))
-            .append(".as");
+            .append('.')
+            .append(GENERATED_FILE_EXTENSION);
 
         return new File(sb.toString());
     }
     
     protected String getOutputFileSuffix(JavaAs3Input input, GroovyTemplate template) {
-    	return template.isBase() ? "Base" : "";
+    	return template.isBase() ? GENERATED_BASE_SUFFIX : "";
     }
     
     protected boolean isOutdated(JavaAs3Input input, GroovyTemplate template, File outputFile, boolean hasBaseTemplate) {
@@ -187,17 +191,8 @@ public class JavaAs3GroovyTransformer
         if (getConfig().getTranslators().isEmpty() || clazz.getPackage() == null)
             return as3Type;
 
-        PackageTranslator translator = null;
-
         String packageName = clazz.getPackage().getName();
-        int weight = 0;
-        for (PackageTranslator t : getConfig().getTranslators()) {
-            int w = t.match(packageName);
-            if (w > weight) {
-                weight = w;
-                translator = t;
-            }
-        }
+        PackageTranslator translator = getConfig().getPackageTranslator(packageName);
 
         if (translator != null)
             as3Type = new As3Type(translator.translate(packageName), as3Type.getName());

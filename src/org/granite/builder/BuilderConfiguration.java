@@ -211,6 +211,21 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 		}
 		return translators;
 	}
+	
+	public PackageTranslator getPackageTranslator(String packageName) {
+        PackageTranslator translator = null;
+
+        int weight = 0;
+        for (PackageTranslator t : getTranslators()) {
+            int w = t.match(packageName);
+            if (w > weight) {
+                weight = w;
+                translator = t;
+            }
+        }
+		
+        return translator;
+	}
 
 	public String getUid() {
 		return getProperties().getGas3().getUid();

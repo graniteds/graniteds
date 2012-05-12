@@ -45,6 +45,14 @@ public class BuilderListener implements Listener {
 		BuilderConsole.println("Generating: " + file + " (" + message + ")");
 	}
 
+	public void removing(Input<?> input, Output<?> output) {
+		BuilderConsole.println("Hidding: " + output.getDescription() + " (" + output.getMessage() + ")");
+	}
+
+	public void removing(String file, String message) {
+		BuilderConsole.println("Hidding: " + file + " (" + message + ")");
+	}
+
 	public void skipping(Input<?> input, Output<?> output) {
 		BuilderConsole.println("Skipping: " + output.getDescription() + " (" + output.getMessage() + ")", MessageType.DEBUG);
 	}

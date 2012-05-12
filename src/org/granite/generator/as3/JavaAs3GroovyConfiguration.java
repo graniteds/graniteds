@@ -37,6 +37,7 @@ public interface JavaAs3GroovyConfiguration extends GroovyConfiguration {
     
 	public As3TypeFactory getAs3TypeFactory();
     public List<PackageTranslator> getTranslators();
+    public PackageTranslator getPackageTranslator(String packageName);
 	public EntityFactory getEntityFactory();
 	public RemoteDestinationFactory getRemoteDestinationFactory();
     
