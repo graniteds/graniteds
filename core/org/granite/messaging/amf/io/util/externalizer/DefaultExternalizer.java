@@ -115,7 +115,7 @@ public class DefaultExternalizer implements Externalizer {
             log.debug("Reading bean %s with fields %s", o.getClass().getName(), fields);
             for (Property field : fields) {
                 Object value = in.readObject();
-                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class)))
+                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class, true)))
                 	field.setProperty(o, value);
             }
         }
@@ -209,7 +209,7 @@ public class DefaultExternalizer implements Externalizer {
                     for (PropertyDescriptor property : propertyDescriptors) {
                         Method getter = property.getReadMethod();
                         if (getter != null &&
-                            getter.isAnnotationPresent(ExternalizedProperty.class) &&
+                            ClassUtil.isAnnotationPresent(getter, ExternalizedProperty.class) &&
                             getter.getDeclaringClass().equals(c) &&
                             !allFieldNames.contains(property.getName())) {
 

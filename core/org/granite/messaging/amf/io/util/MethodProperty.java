@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import org.granite.messaging.amf.io.convert.Converters;
+import org.granite.util.ClassUtil;
 
 /**
  * @author Franck WOLFF
@@ -43,23 +44,36 @@ public class MethodProperty extends Property {
     }
 
     @Override
-    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass, boolean recursive) {
         if (getter != null) {
             if (getter.isAnnotationPresent(annotationClass))
                 return true;
+            if (recursive && ClassUtil.isAnnotationPresent(getter, annotationClass))
+            	return true;
         }
-        if (setter != null)
-            return setter.isAnnotationPresent(annotationClass);
+        if (setter != null) {
+            if (setter.isAnnotationPresent(annotationClass))
+            	return true;
+            if (recursive && ClassUtil.isAnnotationPresent(setter, annotationClass))
+            	return true;
+        }
         return false;
     }
 
     @Override
-	public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-    	if (getter != null && getter.isAnnotationPresent(annotationClass))
-    		return getter.getAnnotation(annotationClass);
-    	if (setter != null)
-    		return setter.getAnnotation(annotationClass);
-		return null;
+	public <T extends Annotation> T getAnnotation(Class<T> annotationClass, boolean recursive) {
+    	T annotation = null;
+    	if (getter != null) {
+    		annotation = getter.getAnnotation(annotationClass);
+    		if (annotation == null && recursive)
+    			annotation = ClassUtil.getAnnotation(getter, annotationClass);
+    	}
+    	if (annotation == null && setter != null) {
+    		annotation = setter.getAnnotation(annotationClass);
+    		if (annotation == null && recursive)
+    			annotation = ClassUtil.getAnnotation(setter, annotationClass);
+    	}
+		return annotation;
 	}
 
 	@Override

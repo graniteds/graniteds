@@ -53,8 +53,16 @@ public abstract class Property {
     public abstract void setProperty(Object instance, Object value, boolean convert);
     public abstract Object getProperty(Object instance);
     public abstract Type getType();
-    public abstract boolean isAnnotationPresent(Class<? extends Annotation> annotationClass);
-    public abstract <T extends Annotation> T getAnnotation(Class<T> annotationClass);
+    
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+    	return isAnnotationPresent(annotationClass, false);
+    }
+    public abstract boolean isAnnotationPresent(Class<? extends Annotation> annotationClass, boolean recursive);
+
+    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+    	return getAnnotation(annotationClass, false);
+    }
+    public abstract <T extends Annotation> T getAnnotation(Class<T> annotationClass, boolean recursive);
 
     protected Object convert(Object value) {
         return converters.convert(value, getType());

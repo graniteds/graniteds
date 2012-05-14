@@ -23,6 +23,7 @@ package org.granite.util;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -290,28 +291,86 @@ public abstract class ClassUtil {
 		throw new NoSuchMethodException("Could not find method: " + signature + " in class: " + clazz);
     }
     
-    public static boolean isAnnotationPresent(Method m, Class<? extends Annotation> annotationClass) {
-    	if (m.isAnnotationPresent(annotationClass))
-    		return true;
-    	return isAnnotationPresent(m.getDeclaringClass(), m.getName(), m.getParameterTypes(), annotationClass);
+    public static boolean isAnnotationPresent(AnnotatedElement elmt, Class<? extends Annotation> annotationClass) {
+    	return getAnnotation(elmt, annotationClass) != null;
     }
     
-    public static boolean isAnnotationPresent(Class<?> clazz, String name, Class<?>[] parameterTypes, Class<? extends Annotation> annotationClass) {
+    public static <T extends Annotation> T getAnnotation(AnnotatedElement elmt, Class<T> annotationClass) {
+    	T annotation = elmt.getAnnotation(annotationClass);
+    	if (elmt instanceof Field || annotation != null)
+    		return annotation;
+    	
+    	if (elmt instanceof Method) {
+    		Method m = (Method)elmt;
+    		return getMethodAnnotation(m.getDeclaringClass(), m.getName(), m.getParameterTypes(), annotationClass);
+    	}
+    	
+    	if (elmt instanceof Constructor) {
+    		Constructor<?> c = (Constructor<?>)elmt;
+    		return getConstructorAnnotation(c.getDeclaringClass(), annotationClass);
+    	}
+    	
+    	if (elmt instanceof Class) {
+    		Class<?> c = (Class<?>)elmt;
+    		return getClassAnnotation(c.getDeclaringClass(), annotationClass);
+    	}
+    	
+    	throw new RuntimeException("Unsupported annotated element: " + elmt);
+    }
+    
+    public static <T extends Annotation> T getMethodAnnotation(Class<?> clazz, String name, Class<?>[] parameterTypes, Class<T> annotationClass) {
+    	T annotation = null;
+    	
     	try {
-    		if (clazz.getDeclaredMethod(name, parameterTypes).isAnnotationPresent(annotationClass))
-    			return true;
+    		annotation = clazz.getDeclaredMethod(name, parameterTypes).getAnnotation(annotationClass);
     	}
-    	catch (Exception e) {
-    	}
-    	
-    	for (Class<?> interfaze : clazz.getInterfaces()) {
-    		if (isAnnotationPresent(interfaze, name, parameterTypes, annotationClass))
-    			return true;
+    	catch (NoSuchMethodException e) {
+    		// fallback...
     	}
     	
-    	if (clazz.getSuperclass() != null && isAnnotationPresent(clazz.getSuperclass(), name, parameterTypes, annotationClass))
-    		return true;
+    	if (annotation == null) {
+	    	for (Class<?> interfaze : clazz.getInterfaces()) {
+	    		annotation = getMethodAnnotation(interfaze, name, parameterTypes, annotationClass);
+	    		if (annotation != null)
+	    			break;
+	    	}
+    	}
+    	
+    	if (annotation == null && clazz.getSuperclass() != null)
+    		annotation = getMethodAnnotation(clazz.getSuperclass(), name, parameterTypes, annotationClass);
     		
-    	return false;
+    	return annotation;
+    }
+    
+    public static <T extends Annotation> T getConstructorAnnotation(Class<?> clazz, Class<T> annotationClass) {
+    	T annotation = null;
+    	
+    	for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+    		annotation = constructor.getAnnotation(annotationClass);
+    		if (annotation != null)
+    			break;
+    	}
+    	
+    	if (annotation == null && clazz.getSuperclass() != null)
+    		annotation = getConstructorAnnotation(clazz.getSuperclass(), annotationClass);
+    		
+    	return annotation;
+    }
+    
+    public static <T extends Annotation> T getClassAnnotation(Class<?> clazz, Class<T> annotationClass) {
+    	T annotation = clazz.getAnnotation(annotationClass);
+    	
+    	if (annotation == null) {
+	    	for (Class<?> interfaze : clazz.getInterfaces()) {
+	    		annotation = getClassAnnotation(interfaze, annotationClass);
+	    		if (annotation != null)
+	    			break;
+	    	}
+    	}
+    	
+    	if (annotation == null && clazz.getSuperclass() != null)
+    		annotation = getClassAnnotation(clazz.getSuperclass(), annotationClass);
+    		
+    	return annotation;
     }
 }

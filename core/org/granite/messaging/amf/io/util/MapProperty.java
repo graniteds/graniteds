@@ -36,12 +36,12 @@ public class MapProperty extends Property {
     }
 
     @Override
-    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass, boolean recursive) {
         return false;
     }
 
     @Override
-	public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+	public <T extends Annotation> T getAnnotation(Class<T> annotationClass, boolean recursive) {
 		return null;
 	}
 

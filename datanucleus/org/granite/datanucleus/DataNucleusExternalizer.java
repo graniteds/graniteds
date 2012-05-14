@@ -142,7 +142,7 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
                 
                 Object value = in.readObject();
                 
-                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class))) {
+                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class, true))) {
                 	
                 	// (Un)Initialized collections/maps.
                 	if (value instanceof AbstractExternalizablePersistentCollection)
