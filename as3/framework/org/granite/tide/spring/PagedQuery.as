@@ -136,7 +136,7 @@ package org.granite.tide.spring {
 					if (sort != null) {
 						order = new Array();
 						desc = new Array();
-						for each (var s:SortField in sort.fields) {
+						for each (var s:ISortField in sort.fields) {
 							order.push(s.name);
 							desc.push(s.descending);
 						}
