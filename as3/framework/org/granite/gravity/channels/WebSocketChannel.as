@@ -161,8 +161,6 @@ package org.granite.gravity.channels {
 			
 			if (connected) {
 				if (_reconnectAttempts >= _reconnectMaxAttempts) {
-					internalDisconnect();
-					
 					connectFailed(ChannelFaultEvent.createEvent(this, false, "Channel disconnected " + event.code + " " + (event.message as String)));
 					return;
 				}
