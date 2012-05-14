@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.granite.generator.as3.As3Type;
 import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
+import org.granite.util.ClassUtil;
 
 /**
  * @author Franck WOLFF
@@ -56,7 +57,7 @@ public class JavaMethodProperty implements JavaProperty {
         this.as3Type = provider.getAs3Type(type);
         this.externalizedProperty = (
         	readMethod != null &&
-        	readMethod.getMember().isAnnotationPresent(ExternalizedProperty.class)
+        	ClassUtil.isAnnotationPresent(readMethod.getMember(), ExternalizedProperty.class)
         );
     }
 

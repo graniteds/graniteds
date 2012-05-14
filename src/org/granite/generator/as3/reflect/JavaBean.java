@@ -40,6 +40,7 @@ import org.granite.generator.as3.reflect.JavaMethod.MethodType;
 import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
 import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty;
 import org.granite.tide.annotations.TideEvent;
+import org.granite.util.ClassUtil;
 
 /**
  * @author Franck WOLFF
@@ -213,7 +214,7 @@ public class JavaBean extends JavaAbstractType {
             for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
                 if (propertyDescriptor.getReadMethod() != null &&
                     propertyDescriptor.getReadMethod().getDeclaringClass().equals(type) &&
-                    propertyDescriptor.getReadMethod().isAnnotationPresent(ExternalizedProperty.class) &&
+                    ClassUtil.isAnnotationPresent(propertyDescriptor.getReadMethod(), ExternalizedProperty.class) &&
                     !propertyMap.containsKey(propertyDescriptor.getName())) {
 
                     JavaMethod readMethod = new JavaMethod(propertyDescriptor.getReadMethod(), MethodType.GETTER);
