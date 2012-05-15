@@ -104,6 +104,33 @@ package org.granite.test.tide.data
 			
 			Assert.assertEquals("Proxy merged", "P1", p1.uid);
 		}
+		
+		[Test]
+		public function testMergeEntityLazyGDS997c():void {
+			
+			var p1:PersonNoVersion = new PersonNoVersion();
+			p1.id = 1;
+			p1.uid = "P1";
+			p1.lastName = "Test";
+			var c1:ContactNoVersion = new ContactNoVersion();
+			c1.id = 1;
+			c1.uid = "C1";
+			c1.email = "test@test.com";
+			c1.person = p1;
+			c1 = ContactNoVersion(_ctx.meta_mergeExternalData(c1));		
+			
+			var p2:PersonNoVersion = new PersonNoVersion();
+			p2.id = 1;
+			p2.meta::defineProxy3();
+			var c2:ContactNoVersion = new ContactNoVersion();
+			c2.id = 1;
+			c2.uid = "C1";
+			c2.email = "test@test.com";
+			c2.person = p2;
+			_ctx.meta_mergeExternalData(c2);
+			
+			Assert.assertTrue("Proxy ignored", p1.meta::isInitialized());
+		}
     }
 
 }
