@@ -25,8 +25,8 @@
 		xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 		version="3.0">
 
-    <display-name>GraniteDS Tide/CDI</display-name>
-    <description>GraniteDS Tide/CDI Example Application</description>
+    <display-name>GraniteDS Tide/EJB3</display-name>
+    <description>GraniteDS Tide/EJB3 Example Application</description>
 
  	<servlet>
   		<servlet-name>GravityServlet</servlet-name>
