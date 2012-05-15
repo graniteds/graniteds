@@ -463,15 +463,26 @@ package org.granite.tide.data {
 				|| (isNaN(esave[desc.versionPropertyName]) && isNaN(Object(owner)[desc.versionPropertyName])))) {
 				
 	            var found:Boolean = false;
-				var count:int, p:Object;
+				var count:int, p:Object, i:int, j:int;
 	            var pce:PropertyChangeEvent = null, ce:CollectionEvent = null;
 				var location:int = event.location;
+				
+				var actualLocations:Array = [];
+				for (i = 0; i < save.length; i++) {
+					actualLocations[i] = save[i].location;
+                    for (j = 0; j < i; j++) {
+                        if (save[j].kind == CollectionEventKind.REMOVE && actualLocations[i] <= save[j].location)
+                            actualLocations[j]--;
+						else if (save[j].kind == CollectionEventKind.ADD && actualLocations[i] <= save[j].location)
+							actualLocations[j]++;
+					}
+				}
 
-	            for (var i:int = 0; i < save.length; i++) {						
+	            for (i = 0; i < save.length; i++) {						
 	                if (((event.kind == CollectionEventKind.ADD && save[i].kind == CollectionEventKind.REMOVE)
 	                    || (event.kind == CollectionEventKind.REMOVE && save[i].kind == CollectionEventKind.ADD))
 	                    && event.items.length == 1 && save[i].items.length == 1 
-						&& isSame(event.items[0], save[i].items[0]) && location == save[i].location) {
+						&& isSame(event.items[0], save[i].items[0]) && location == actualLocations[i]) {
 						
 	                    save.splice(i, 1);
 						// Adjust location of other saved events because an element added/removed locally has been removed/added
@@ -499,7 +510,7 @@ package org.granite.tide.data {
 	                }
 					else if (event.kind == CollectionEventKind.REPLACE && save[i].kind == CollectionEventKind.REPLACE
 						&& event.items.length == 1 && save[i].items.length == 1
-						&& event.location == save[i].location) {
+						&& event.location == actualLocations[i]) {
 						
 						if (isSame(event.items[0].oldValue, save[i].items[0].newValue)
 							&& isSame(event.items[0].newValue, save[i].items[0].oldValue)) {
@@ -525,17 +536,8 @@ package org.granite.tide.data {
 						found = true;
 					}
 	            }
-	            if (!found) {
-                    // Adjust location of previously saved events because a local change has moved collection content
-                    for (var j:int = 0; j < save.length; j++) {
-                        if (event.kind == CollectionEventKind.REMOVE && save[j].kind == CollectionEventKind.REMOVE && event.location <= save[j].location && save[j].location > 0)
-                            save[j].location--;
-                        else if (event.kind == CollectionEventKind.ADD && save[j].kind == CollectionEventKind.ADD && event.location <= save[j].location)
-                            save[j].location++;
-                    }
-
+	            if (!found)
 	                save.push(event);
-                }
 			}
 			
 			var newDirtyEntity:Boolean = isEntityChanged(owner);
@@ -777,8 +779,7 @@ package org.granite.tide.data {
             cache[entity] = entity;
             
             var save:Object = _savedProperties[entity];
-            var a:int;
-            var z:int;
+            var a:int, b:int, z:int;
             var ce:CollectionEvent;
             var savedArray:Array
             var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(entity);
