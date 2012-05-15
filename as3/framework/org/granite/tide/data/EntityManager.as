@@ -717,7 +717,7 @@ package org.granite.tide.data {
                 desc = _context.meta_tide.getEntityDescriptor(IEntity(obj));
                 if (desc.idPropertyName != null) {
                     p = _entitiesByUID.find(function(o:Object):Boolean {
-                        return (getQualifiedClassName(o) === getQualifiedClassName(obj) && obj[desc.idPropertyName] === o[desc.idPropertyName]);
+                        return (getQualifiedClassName(o) === getQualifiedClassName(obj) && objectEquals(obj[desc.idPropertyName], o[desc.idPropertyName]));
                     });
 
                     if (p) {
@@ -1463,7 +1463,7 @@ package org.granite.tide.data {
 	            		// Compare with identifier for uninitialized entities
 	            		var edesc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(obj1));
 	            		if (edesc.idPropertyName != null)
-	            			return obj1[edesc.idPropertyName] == obj2[edesc.idPropertyName];
+	            			return objectEquals(obj1[edesc.idPropertyName], obj2[edesc.idPropertyName]);
 	            	}
 	            }
 	            catch (e:ReferenceError) {

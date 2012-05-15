@@ -1,11 +1,10 @@
 package org.granite.test.tide.data
 {
-    import org.flexunit.Assert;
-    
     import mx.collections.ArrayCollection;
-
+    
+    import org.flexunit.Assert;
+    import org.granite.math.Long;
     import org.granite.meta;
-
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
 
@@ -45,6 +44,66 @@ package org.granite.test.tide.data
 			
 			Assert.assertStrictlyEquals("Contact attached to person", p1, coll2.getItemAt(0).person);
         }
+		
+		[Test]
+		public function testMergeEntityLazyGDS997a():void {
+			var p1:Person9 = new Person9();
+			p1.id = 1;
+			p1.meta::defineProxy3();
+			var c1:Contact3 = new Contact3();
+			c1.id = 1;
+			c1.uid = "C1";
+			c1.version = 0;
+			c1.email = "test@test.com";
+			c1.person = p1;
+			c1 = Contact3(_ctx.meta_mergeExternalData(c1));
+			
+			var p2:Person9 = new Person9();
+			p2.id = 1;
+			p2.uid = "P1";
+			p2.version = 0;
+			p2.lastName = "Test";
+			var c2:Contact3 = new Contact3();
+			c2.id = 1;
+			c2.uid = "C1";
+			c2.version = 0;
+			c2.email = "test@test.com";
+			c2.person = p2;
+			
+			_ctx.meta_mergeExternalData(c2);
+			
+			Assert.assertEquals("Proxy merged", "P1", p1.uid);
+		}
+		
+		[Test]
+		public function testMergeEntityLazyGDS997b():void {
+			var p1:Person9b = new Person9b();
+			p1.id = new Long(1);
+			p1.meta::defineProxy3();
+			var c1:Contact3b = new Contact3b();
+			c1.id = new Long(1);
+			c1.uid = "C1";
+			c1.version = new Long(0);
+			c1.email = "test@test.com";
+			c1.person = p1;
+			c1 = Contact3b(_ctx.meta_mergeExternalData(c1));
+			
+			var p2:Person9b = new Person9b();
+			p2.id = new Long(1);
+			p2.uid = "P1";
+			p2.version = new Long(0);
+			p2.lastName = "Test";
+			var c2:Contact3b = new Contact3b();
+			c2.id = new Long(1);
+			c2.uid = "C1";
+			c2.version = new Long(0);
+			c2.email = "test@test.com";
+			c2.person = p2;
+
+			_ctx.meta_mergeExternalData(c2);
+			
+			Assert.assertEquals("Proxy merged", "P1", p1.uid);
+		}
     }
 
 }
