@@ -11,6 +11,7 @@
 			import org.flexunit.runner.FlexUnitCore;
 			import org.flexunit.runner.Request;
 			import org.granite.test.math.*;
+			import org.granite.test.validation.*;
 			import org.granite.test.tide.cdi.*;
 			import org.granite.test.tide.data.*;
 			import org.granite.test.tide.ejb.*;
@@ -28,6 +29,7 @@
 					[
 						SuiteUtil,
 						SuiteMath,
+						SuiteValidation,
 					 	SuiteFramework,
 						SuiteData,
 					 	SuiteEjb,
