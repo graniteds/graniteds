@@ -258,6 +258,7 @@
         <antcall target="tests.eclipselink"/>
         <antcall target="tests.openjpa"/>
         <antcall target="tests.datanucleus"/>
+        <antcall target="tests.datanucleus.jdo"/>
         
     	<antcall target="tests.reports"/>
     </target>
@@ -435,7 +436,7 @@
         
     <target name="tests.datanucleus" depends="build.javac">        
         <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
-        	<jvmarg value="-javaagent:${gds.lib}/datanucleus-enhancer.jar=-api=JPA"/>
+        	<jvmarg value="-javaagent:${gds.lib}/datanucleus-enhancer.jar=-api=JPA,org.granite.test.externalizers"/>
         	
              <classpath>
                  <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
@@ -463,7 +464,36 @@
             </batchtest>
         </junit>
     </target>
-    
+	    
+	<target name="tests.datanucleus.jdo" depends="build.javac">        
+	    <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
+	    	<jvmarg value="-javaagent:${gds.lib}/datanucleus-enhancer.jar=-api=JDO,org.granite.test.externalizers"/>
+	    	
+	         <classpath>
+	             <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+	             <path refid="main.jar"/>
+	             <pathelement location="${gds.lib}/jdo2-api-2.3-eb.jar"/>
+	             <pathelement location="${gds.lib}/jta.jar"/>
+	             <pathelement location="${gds.lib}/datanucleus-core.jar"/>
+	             <pathelement location="${gds.lib}/datanucleus-rdbms.jar"/>
+	             <pathelement location="${gds.lib}/datanucleus-enhancer.jar"/>
+	             <pathelement location="${gds.lib}/asm-3.0.jar"/>
+	             <path refid="granite.jar"/>
+	             <pathelement location="${gds.build}/granite-datanucleus.jar"/>
+	             <pathelement location="${gds.lib}/h2.jar"/>
+	             <pathelement path="classes"/>
+	         </classpath>
+	        
+	        <formatter type="xml"/>
+	        
+	        <batchtest todir="test-reports/java" fork="true">
+	            <fileset dir="java">
+	                <include name="**/JDODataNucleus*Test.java"/>
+	            </fileset>
+	        </batchtest>
+	    </junit>
+	</target>    
+	
     <!--
      ! Build swf (if swf is out of date).
      !-->
