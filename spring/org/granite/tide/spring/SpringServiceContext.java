@@ -20,6 +20,7 @@
 
 package org.granite.tide.spring;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -191,25 +192,71 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
     			return classes;
     	}
     	
+        Object bean = findComponent(componentName, componentClass);
+        classes = buildComponentClasses(bean);        
+        if (classes == null)
+        	return null;
+        
+        if (context != null)
+        	context.getRequestMap().put(key, classes);
+        return classes;
+    }
+    
+    protected Set<Class<?>> buildComponentClasses(Object bean) {
+        Set<Class<?>> classes = new HashSet<Class<?>>();
+        for (Class<?> i : bean.getClass().getInterfaces())
+        	classes.add(i);
+        
         try {
-            Object bean = findComponent(componentName, componentClass);
-            classes = new HashSet<Class<?>>();
-            for (Class<?> i : bean.getClass().getInterfaces())
-            	classes.add(i);
-            
-            while (bean instanceof Advised)
-            	bean = ((Advised)bean).getTargetSource().getTarget();
-            
-            classes.add(AopUtils.getTargetClass(bean));
-            
-            if (context != null)
-            	context.getRequestMap().put(key, classes);
-            return classes;
+	        while (bean instanceof Advised)
+	        	bean = ((Advised)bean).getTargetSource().getTarget();
+	        
+	        classes.add(AopUtils.getTargetClass(bean));
         }
         catch (Exception e) {
-            log.warn(e, "Could not get class for component " + componentName);
-            return null;
+            log.warn(e, "Could not get AOP class for component " + bean.getClass());
+        	return null;
         }
+        
+        return classes;
+    }
+    
+    protected boolean isBeanAnnotationPresent(Object bean, Class<? extends Annotation> annotationClass) {
+    	if (bean.getClass().isAnnotationPresent(annotationClass))
+    		return true;
+        
+        try {
+	        while (bean instanceof Advised)
+	        	bean = ((Advised)bean).getTargetSource().getTarget();
+	        
+	        if (AopUtils.getTargetClass(bean).isAnnotationPresent(annotationClass))
+	        	return true;
+        }
+        catch (Exception e) {
+            log.warn(e, "Could not get AOP class for component " + bean.getClass());
+        }
+        
+        return false;
+    }
+    
+    protected boolean isBeanMethodAnnotationPresent(Object bean, String methodName, Class<?>[] methodArgTypes, Class<? extends Annotation> annotationClass) {
+    	try {
+    		Method m = bean.getClass().getMethod(methodName, methodArgTypes);
+    		if (m.isAnnotationPresent(annotationClass))
+    			return true;
+    		
+	        while (bean instanceof Advised)
+	        	bean = ((Advised)bean).getTargetSource().getTarget();
+	        
+    		m = AopUtils.getTargetClass(bean).getMethod(methodName, methodArgTypes);
+	        if (m.isAnnotationPresent(annotationClass))
+	        	return true;
+		}
+    	catch (Exception e) {
+    		log.warn("Could not find bean method", e);
+    	}
+    	
+    	return false;
     }
 
     
@@ -229,9 +276,9 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
 		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
 		
         InvocationResult ires = new InvocationResult(result, results);
-    	if (context.getBean().getClass().isAnnotationPresent(BypassTideMerge.class))
+    	if (isBeanAnnotationPresent(context.getBean(), BypassTideMerge.class))
     		ires.setMerge(false);
-    	else if (context.getMethod().isAnnotationPresent(BypassTideMerge.class))
+    	else if (isBeanMethodAnnotationPresent(context.getBean(), context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
 			ires.setMerge(false);
     	
         ires.setUpdates(updates);

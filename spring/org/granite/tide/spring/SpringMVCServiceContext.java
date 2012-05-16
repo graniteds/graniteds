@@ -299,17 +299,11 @@ public class SpringMVCServiceContext extends SpringServiceContext {
         InvocationResult ires = new InvocationResult(result, results);
         if (component == null)
         	component = context.getBean();
-    	if (component.getClass().isAnnotationPresent(BypassTideMerge.class))
+    	if (isBeanAnnotationPresent(component, BypassTideMerge.class))
     		ires.setMerge(false);
     	else if (!(context.getParameters().length > 0 && context.getParameters()[0] instanceof ControllerRequestWrapper)) {
-        	try {
-        		Method m = component.getClass().getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
-        		if (m.isAnnotationPresent(BypassTideMerge.class))
-        			ires.setMerge(false);
-    		}
-        	catch (Exception e) {
-        		log.warn("Could not find bean method", e);
-        	}
+    		if (isBeanMethodAnnotationPresent(component, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
+    			ires.setMerge(false);
     	}
     	
         ires.setUpdates(updates);
