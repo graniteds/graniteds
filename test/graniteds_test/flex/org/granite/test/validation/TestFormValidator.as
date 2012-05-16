@@ -47,5 +47,33 @@ package org.granite.test.validation
 			
 			Assert.assertTrue("Text 4 validated", form.fv.validateEntity());
 		}
+		
+		[Test]
+		public function testFormValidatorDeep():void {
+			var model:Model = new Model();
+			model.field = new Field();
+			
+			var form:Form2 = new Form2();
+			form.model = model;
+			UIImpersonator.addChild(form);
+			
+			form.textArea1.text = "test";
+			
+			Assert.assertFalse("Text 1 not validated", form.fv.validateEntity());
+			
+			form.textArea1.text = "testLongEnough";			
+			
+			Assert.assertTrue("Text 1 validated", form.fv.validateEntity());
+			
+			form.textArea2.text = "test";			
+			
+			Assert.assertFalse("Text 2 not validated", form.fv.validateEntity());
+			
+			form.textArea2.text = "testLongEnough";			
+			
+			Assert.assertTrue("Text 2 validated", form.fv.validateEntity());
+			
+		}
+			
 	}
 }

@@ -28,6 +28,7 @@ package org.granite.validation {
 	
 	import mx.binding.Binding;
 	import mx.core.Container;
+	import mx.core.IMXMLObject;
 	import mx.core.UIComponent;
 	import mx.core.mx_internal;
 	import mx.events.FlexEvent;
@@ -113,6 +114,8 @@ package org.granite.validation {
 
 		public static const UNHANDLED_VIOLATIONS:String = "unhandledViolations";
 		
+		protected var _id:String;
+		
 		/** @private */
 		protected var _form:Object;
 		/** @private */
@@ -154,7 +157,18 @@ package org.granite.validation {
 		 */
 		public var groups:Array = null;
 		
+		/**
+		 * The path of the entity to be used when the entity which will be validated 
+		 * is not the root of the bindings.
+		 */
+		public var entityPath:String = null;
 		
+		/**
+		 * Array of property names that will be considered prioritarity as candidates for UI input bindings.
+		 * Can be used to disambiguate some cases where the component cannot reliably determine which
+		 * property holds the binding.
+		 * Values can be added/removed by the user is necessary.
+		 */
 		public static var prioritaryComponentProperties:Array = [ "text", "selected", "selectedDate", "selectedItem", "selectedIndex" ];
 		
 		/**
@@ -604,6 +618,8 @@ package org.granite.validation {
 				var property:String = null;
 				var matchLevel:int = 0;
 				
+				var modelPropertyRoot = "";
+				
 				// Lookup in existing bindings
 				for each (var binding:Binding in bindings) {
 					var destString:String = binding.mx_internal::destString;
@@ -620,7 +636,11 @@ package org.granite.validation {
 						if (binding.twoWayCounterpart) {
 							var twoWayCounterpartDestString:String = binding.twoWayCounterpart.mx_internal::destString;
 							if (twoWayCounterpartDestString.indexOf(".") > 0) {
-								modelProp = twoWayCounterpartDestString.substring(twoWayCounterpartDestString.indexOf(".") + 1);
+								if (entityPath != null && twoWayCounterpartDestString.indexOf(entityPath) == 0)
+									modelProp = twoWayCounterpartDestString.substring(entityPath.length + 1);
+								else
+									modelProp = twoWayCounterpartDestString.substring(twoWayCounterpartDestString.indexOf(".") + 1);
+								
 								if (component.validationSubField && modelProp != component.validationSubField)
 									level = 0;
 								else
@@ -632,10 +652,14 @@ package org.granite.validation {
 					}
 					
 					if (binding.twoWayCounterpart) {
-						var twoWayCounterpartDestString:String = binding.twoWayCounterpart.mx_internal::destString;
+						twoWayCounterpartDestString = binding.twoWayCounterpart.mx_internal::destString;
 						if (twoWayCounterpartDestString.indexOf(".") > 0 && twoWayCounterpartDestString.substring(0, twoWayCounterpartDestString.indexOf(".")) == component.id) {
-							inputProp = twoWayCounterpartDestString.substring(twoWayCounterpartDestString.indexOf(".") + 1);							
-							modelProp = destString.substring(destString.indexOf(".") + 1);
+							inputProp = twoWayCounterpartDestString.substring(twoWayCounterpartDestString.indexOf(".") + 1);
+							
+							if (entityPath != null && destString.indexOf(entityPath) == 0)
+								modelProp = destString.substring(entityPath.length + 1);
+							else
+								modelProp = destString.substring(destString.indexOf(".") + 1);
 							
 							if (component.validationSubField && modelProp != component.validationSubField)
 								level = 0;
@@ -645,7 +669,7 @@ package org.granite.validation {
 					}
 					
 					if (inputProp && prioritaryComponentProperties.indexOf(inputProp) >= 0)
-						level++;
+						level += 5;
 					
 					if (level > matchLevel) {
 						inputProperty = inputProp;
