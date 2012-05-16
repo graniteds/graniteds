@@ -57,6 +57,7 @@ package org.granite.test.tide.data
         public var test39b:org.granite.test.tide.data.TestResetEntityAllGDS920;
 		public var test39c:org.granite.test.tide.data.TestResetEntityNoVersion;
 		public var test39d:org.granite.test.tide.data.TestResetEntityMap;
+		public var test39e:org.granite.test.tide.data.TestResetEntityColl;
         public var test40:org.granite.test.tide.data.TestEntityCollectionRefs;
         public var test41:org.granite.test.tide.data.TestUninitAssociations;
         public var test42:org.granite.test.tide.data.TestUninitArguments;

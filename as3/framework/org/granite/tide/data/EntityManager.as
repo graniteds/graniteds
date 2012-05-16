@@ -751,7 +751,6 @@ package org.granite.tide.data {
 
 			try {
 	        	if (obj is IEntity && !obj.meta::isInitialized() && objectEquals(previous, obj)) {
-	                desc = _context.meta_tide.getEntityDescriptor(IEntity(obj));
 	        		// Don't overwrite existing entity with an uninitialized proxy
         			log.debug("ignored received uninitialized proxy");
                     // Don't mark the object not dirty as we only received a proxy
