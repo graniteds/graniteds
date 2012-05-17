@@ -618,8 +618,6 @@ package org.granite.validation {
 				var property:String = null;
 				var matchLevel:int = 0;
 				
-				var modelPropertyRoot = "";
-				
 				// Lookup in existing bindings
 				for each (var binding:Binding in bindings) {
 					var destString:String = binding.mx_internal::destString;
