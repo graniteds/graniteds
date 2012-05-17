@@ -208,7 +208,7 @@
                 <path refid="test.classpath"/>
             	<pathelement location="${gds.lib}/eclipselink.jar"/>
             	<pathelement location="${gds.lib}/datanucleus-core.jar"/>
-            	<pathelement location="${gds.lib}/jdo-api-2.3-eb.jar"/>
+            	<pathelement location="${gds.lib}/jdo2-api-2.3-eb.jar"/>
             </classpath>
         </javac>
         <copy todir="classes">
