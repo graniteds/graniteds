@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.granite.generator.as3.reflect.JavaType;
 import org.granite.generator.as3.reflect.JavaTypeFactory;
+import org.granite.generator.as3.reflect.JavaValidatableBean;
 import org.granite.generator.as3.reflect.JavaValidatableEntityBean;
 
 
@@ -43,6 +44,11 @@ public class HVEntityFactory extends DefaultEntityFactory {
 		NAME_CONVERSIONS.put("Length", "Size");
 	}
 
+	@Override
+	public JavaType newBean(JavaTypeFactory provider, Class<?> type, URL url) {
+		return new JavaValidatableBean(provider, type, url, "org.hibernate.validator.ValidatorClass", SPECIAL_ANNOTATIONS, NAME_CONVERSIONS);
+	}
+	
 	@Override
 	public JavaType newEntity(JavaTypeFactory provider, Class<?> type, URL url) {
 		return new JavaValidatableEntityBean(provider, type, url, "org.hibernate.validator.ValidatorClass", SPECIAL_ANNOTATIONS, NAME_CONVERSIONS);

@@ -39,7 +39,6 @@ import org.granite.generator.Input;
 import org.granite.generator.Listener;
 import org.granite.generator.TemplateUri;
 import org.granite.generator.as3.reflect.JavaAbstractType.GenerationType;
-import org.granite.generator.as3.reflect.JavaBean;
 import org.granite.generator.as3.reflect.JavaEnum;
 import org.granite.generator.as3.reflect.JavaFieldProperty;
 import org.granite.generator.as3.reflect.JavaImport;
@@ -232,7 +231,7 @@ public class JavaAs3GroovyTransformer
 				javaType = getConfig().getEntityFactory().newEntity(this, clazz, url);
 	            break;
 			case BEAN:
-	            javaType = new JavaBean(this, clazz, url);
+				javaType = getConfig().getEntityFactory().newBean(this, clazz, url);
 	            break;
 	        default:
 	        	throw new RuntimeException("Uknown class kind: " + kind);

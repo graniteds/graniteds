@@ -39,6 +39,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Version;
 
+import org.granite.generator.as3.reflect.JavaBean;
 import org.granite.generator.as3.reflect.JavaEntityBean;
 import org.granite.generator.as3.reflect.JavaFieldProperty;
 import org.granite.generator.as3.reflect.JavaProperty;
@@ -52,6 +53,10 @@ public class DefaultEntityFactory implements EntityFactory {
 		return clazz.isAnnotationPresent(Entity.class) ||
     		clazz.isAnnotationPresent(MappedSuperclass.class) ||
     		clazz.isAnnotationPresent(PersistenceCapable.class);
+	}
+	
+	public JavaType newBean(JavaTypeFactory provider, Class<?> type, URL url) {
+		return new JavaBean(provider, type, url);
 	}
 	
 	public JavaType newEntity(JavaTypeFactory provider, Class<?> type, URL url) {

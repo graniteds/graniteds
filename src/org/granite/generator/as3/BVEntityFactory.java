@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.granite.generator.as3.reflect.JavaType;
 import org.granite.generator.as3.reflect.JavaTypeFactory;
+import org.granite.generator.as3.reflect.JavaValidatableBean;
 import org.granite.generator.as3.reflect.JavaValidatableEntityBean;
 
 
@@ -36,6 +37,12 @@ public class BVEntityFactory extends DefaultEntityFactory {
 	
 	private static final List<String> SPECIAL_ANNOTATIONS = Collections.singletonList("javax.validation.Valid");
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public JavaType newBean(JavaTypeFactory provider, Class<?> type, URL url) {
+		return new JavaValidatableBean(provider, type, url, "javax.validation.Constraint", SPECIAL_ANNOTATIONS, Collections.EMPTY_MAP);
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public JavaType newEntity(JavaTypeFactory provider, Class<?> type, URL url) {

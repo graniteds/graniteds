@@ -32,6 +32,8 @@ public interface EntityFactory {
 
 	public boolean isEntity(Class<?> clazz);
 	
+	public JavaType newBean(JavaTypeFactory provider, Class<?> type, URL url);
+	
 	public JavaType newEntity(JavaTypeFactory provider, Class<?> type, URL url);
 	
 	public boolean isId(JavaFieldProperty fieldProperty);
