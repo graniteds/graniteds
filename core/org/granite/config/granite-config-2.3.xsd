@@ -126,6 +126,7 @@
         <xs:attribute name="session-authentication-strategy" type="xs:string"/>
         <xs:attribute name="security-context-repository" type="xs:string"/>
         <xs:attribute name="security-interceptor" type="xs:string"/>
+        <xs:attribute name="password-encoder" type="xs:string"/>
     </xs:attributeGroup>
 	
     
