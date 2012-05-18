@@ -113,8 +113,10 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 		if (params != null) {
 			String newDataSelector = params.updateDataSelector(dataSelector, selectors);
 			dataSelectorChanged = !newDataSelector.equals(dataSelector);
-			if (dataSelectorChanged)
+			if (dataSelectorChanged) {
 				gdd.setDestinationSelector(topicName, newDataSelector);
+				dataSelector = newDataSelector;
+			}
 		}
 		
 		if (!enabled)
