@@ -17,8 +17,7 @@ Require-Bundle: org.eclipse.ui,
  org.apache.ant,
  org.eclipse.core.filesystem
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .,
- bin/,
+Bundle-ClassPath: bin/,
  lib/ejb3-persistence.jar,
  lib/jdo2-api-2.2.jar,
  lib/granite-generator-share.jar,
