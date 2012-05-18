@@ -41,6 +41,8 @@ import org.granite.builder.properties.Gas3Template;
 import org.granite.builder.properties.GraniteProperties;
 import org.granite.builder.util.SWTUtil;
 import org.granite.generator.TemplateUri;
+import org.granite.generator.as3.DefaultAs3TypeFactory;
+import org.granite.generator.as3.LCDSAs3TypeFactory;
 import org.granite.generator.as3.reflect.JavaType.Kind;
 import org.granite.generator.template.StandardTemplateUris;
 
@@ -123,14 +125,25 @@ public class TemplatesPanel extends Composite {
 			}
 		});
 		
+		final Button removeButton = SWTUtil.newButton(buttons, "Remove", false, new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				removeTemplatesHandler(e);
+			}
+		});
+		
 		SWTUtil.newButton(buttons, "Reset to default", true, new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				properties.getGas3().setAs3TypeFactory(DefaultAs3TypeFactory.class.getName());
+				
 				properties.getGas3().getTemplates().clear();
 				properties.getGas3().getTemplates().addAll(GraniteProperties.getDefaultProperties().getGas3().getTemplates());
+				
 				for (TreeItem item : templatesTree.getItems())
 					item.dispose();
-				initialized = false;
+
+						initialized = false;
 				initializeContent();
 			}
 		});
@@ -138,14 +151,57 @@ public class TemplatesPanel extends Composite {
 		SWTUtil.newButton(buttons, "Use Tide", true, new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				properties.getGas3().setAs3TypeFactory(DefaultAs3TypeFactory.class.getName());
+
 				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
+				if (template.getTemplateUris().length < 2)
+					template.setUri(StandardTemplateUris.ENTITY, false);
 				template.setUri(StandardTemplateUris.TIDE_ENTITY_BASE, true);
+				
 				template = properties.getGas3().getTemplate(Kind.REMOTE_DESTINATION);
+				if (template.getTemplateUris().length < 2)
+					template.setUri(StandardTemplateUris.REMOTE, false);
 				template.setUri(StandardTemplateUris.TIDE_REMOTE_BASE, true);
+				
 				template = properties.getGas3().getTemplate(Kind.BEAN);
+				if (template.getTemplateUris().length < 2)
+					template.setUri(StandardTemplateUris.BEAN, false);
 				template.setUri(StandardTemplateUris.TIDE_BEAN_BASE, true);
+
+				template = properties.getGas3().getTemplate(Kind.ENUM);
+				if (template.getTemplateUris().length == 0)
+					template.setUri(StandardTemplateUris.ENUM, false);
+
 				for (TreeItem item : templatesTree.getItems())
 					item.dispose();
+				
+				initialized = false;
+				initializeContent();
+			}
+		});
+		
+		SWTUtil.newButton(buttons, "Use LCDS", true, new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				properties.getGas3().setAs3TypeFactory(LCDSAs3TypeFactory.class.getName());
+
+				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
+				template.setUris("");
+
+				template = properties.getGas3().getTemplate(Kind.REMOTE_DESTINATION);
+				template.setUris("");
+				
+				template = properties.getGas3().getTemplate(Kind.BEAN);
+				if (template.getTemplateUris().length < 2)
+					template.setUri(StandardTemplateUris.BEAN, false);
+				template.setUri(StandardTemplateUris.LCDS_BEAN_BASE, true);
+
+				template = properties.getGas3().getTemplate(Kind.ENUM);
+				template.setUris("");
+				
+				for (TreeItem item : templatesTree.getItems())
+					item.dispose();
+				
 				initialized = false;
 				initializeContent();
 			}
@@ -156,6 +212,7 @@ public class TemplatesPanel extends Composite {
 			public void widgetSelected(SelectionEvent e) {
 				// Enable/Disable buttons based on selected tree item.
 				editButton.setEnabled(templatesTree.getSelection() != null && templatesTree.getSelection().length > 0);
+				removeButton.setEnabled(templatesTree.getSelection() != null && templatesTree.getSelection().length > 0);
 			}
 		});
 	}
@@ -201,5 +258,18 @@ public class TemplatesPanel extends Composite {
 			else if (kindItem.getItemCount() > 1)
 				kindItem.getItem(1).dispose();
 		}
+	}
+	
+	private void removeTemplatesHandler(SelectionEvent e) {
+		if (templatesTree.getSelection() == null || templatesTree.getSelection().length == 0)
+			return;
+		
+		TreeItem kindItem = templatesTree.getSelection()[0];
+		if (kindItem.getParentItem() == null) {
+			for (TreeItem child : kindItem.getItems())
+				child.dispose();
+		}
+		else
+			kindItem.dispose();
 	}
 }

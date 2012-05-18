@@ -46,8 +46,8 @@ import org.granite.builder.util.StringUtil;
  */
 public class IncludeExcludeOutputDialog extends SelectionStatusDialog {
 
-	private static final Pattern CLUSION_PATTERN = Pattern.compile("[a-zA-Z_0-9\\*\\.\\$\\?/]+");
-	private static final Pattern OUTPUT_PATTERN = Pattern.compile("[a-zA-Z_0-9\\-\\.\\/]*");
+	private static final Pattern CLUSION_PATTERN = Pattern.compile("[\\w\\*\\.\\$\\?/]+(\\[(\\w+=\\w+)(,\\w+=\\w+)*\\])?");
+	private static final Pattern OUTPUT_PATTERN = Pattern.compile("[\\w\\-\\.\\/]*");
 	
 	private final String[] initialValues;
 	
