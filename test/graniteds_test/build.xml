@@ -246,6 +246,7 @@
                     <exclude name="**/Hibernate*.java"/>
                 	<exclude name="**/EclipseLink*.java"/>
                     <exclude name="**/DataNucleus*.java"/>
+                    <exclude name="**/JDODataNucleus*.java"/>
                     <exclude name="**/OpenJpa*.java"/>
                     <exclude name="**/Abstract*.java"/>
                 </fileset>
