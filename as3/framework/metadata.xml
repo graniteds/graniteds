@@ -60,7 +60,7 @@
 		<context name="method"/>
 		
 		<attribute name="" type="String" description="Observed event types (can be separated by commas)"/>
-		<attribute name="remote" type="Boolean"
+		<attribute name="remote" type="Boolean" defaultValue="false" required="false" description="True if the event will be received from the server"/>
 	</metadata>
 
 
