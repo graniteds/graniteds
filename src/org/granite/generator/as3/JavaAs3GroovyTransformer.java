@@ -132,6 +132,7 @@ public class JavaAs3GroovyTransformer
         Map<String, Object> bindings = new HashMap<String, Object>();
         bindings.put("gVersion", Generator.VERSION);
         bindings.put("jClass", input.getJavaType());
+        bindings.put("fAttributes", input.getAttributes());
         return bindings;
     }
 

@@ -20,6 +20,8 @@
 
 package org.granite.builder.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,7 +48,7 @@ import org.granite.builder.util.StringUtil;
 /**
  * @author Franck WOLFF
  */
-public class OptionsPanel extends Composite {
+public class OptionsPanel extends Composite implements PropertyChangeListener {
 
 	private static final String TRANSLATOR_SEPARATOR = " -> ";
 	
@@ -171,9 +173,17 @@ public class OptionsPanel extends Composite {
 	        externalizeBigDecimal.setSelection(properties.getGas3().isExternalizeBigDecimal());
 	        
 			initialized = true;
+	        
+	        this.properties.getGas3().removePropertyChangeListener(this);
+	        this.properties.getGas3().addPropertyChangeListener(this);
 		}
 	}
     
+	public void propertyChange(PropertyChangeEvent evt) {
+		initialized = false;
+		initializeContent();
+	}
+
 	private void initializeComponents() {
         setLayout(new GridLayout());
 

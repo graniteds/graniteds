@@ -21,7 +21,10 @@
 package org.granite.builder.properties;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.granite.builder.util.StringUtil;
@@ -47,7 +50,7 @@ public class Gas3Source implements Validable, Comparable<Gas3Source> {
 	@XStreamAsAttribute
 	private String output;
 
-	private transient List<Pattern> includePatterns;
+	private transient Map<Pattern, Map<String, String>> includePatterns;
 	private transient List<Pattern> excludePatterns;
 	
 	public Gas3Source(String path, String includes, String excludes, String output) {
@@ -68,12 +71,31 @@ public class Gas3Source implements Validable, Comparable<Gas3Source> {
 				return false;
 		}
 		
-		for (Pattern pattern : includePatterns) {
+		for (Pattern pattern : includePatterns.keySet()) {
 			if (pattern.matcher(file).matches())
 				return true;
 		}
 
 		return includePatterns.isEmpty();
+	}
+	
+	public Map<String, String> getAttributes(String path, String file) {
+		if (!this.path.equals(path))
+			return null;
+		
+		compilePatterns();
+		
+		for (Pattern pattern : excludePatterns) {
+			if (pattern.matcher(file).matches())
+				return null;
+		}
+		
+		for (Pattern pattern : includePatterns.keySet()) {
+			if (pattern.matcher(file).matches())
+				return includePatterns.get(pattern);
+		}
+
+		return (includePatterns.isEmpty() ? new HashMap<String, String>() : null);
 	}
 
 	public String getPath() {
@@ -159,13 +181,28 @@ public class Gas3Source implements Validable, Comparable<Gas3Source> {
 	private void compilePatterns() {
 		if (includePatterns == null) {
 			if (includePatterns == null)
-				includePatterns = new ArrayList<Pattern>();
+				includePatterns = new IdentityHashMap<Pattern, Map<String, String>>();
 			else
 				includePatterns.clear();
 			if (includes != null) {
 				for (String include : StringUtil.split(includes, ';')) {
+					Map<String, String> attributes = new HashMap<String, String>();
+					int index = include.indexOf('[');
+					if (index != -1) {
+						try {
+							for (String attribute : StringUtil.split(include.substring(index + 1, include.length() - 1), ',')) {
+								String[] keyValue = attribute.split(Pattern.quote("="), 2);
+								attributes.put(keyValue[0], keyValue[1]);
+							}
+						}
+						catch (Exception e) {
+							System.err.println("Illegal include pattern '" + include + "': " + e);
+						}
+						include = include.substring(0, index);
+					}
+					include = include.trim();
 					if (include.length() > 0)
-						includePatterns.add(Pattern.compile(StringUtil.regexifyPathPattern(include)));
+						includePatterns.put(Pattern.compile(StringUtil.regexifyPathPattern(include)), attributes);
 				}
 			}
 		}

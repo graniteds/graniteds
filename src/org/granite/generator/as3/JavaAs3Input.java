@@ -21,6 +21,8 @@
 package org.granite.generator.as3;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.granite.generator.Input;
 import org.granite.generator.as3.reflect.JavaType;
@@ -32,11 +34,17 @@ public class JavaAs3Input implements Input<Class<?>> {
 
 	private final Class<?> type;
 	private final File file;
+	private final Map<String, String> attributes;
 	private JavaType javaType = null;
 	
 	public JavaAs3Input(Class<?> type, File file) {
+		this(type, file, null);
+	}
+	
+	public JavaAs3Input(Class<?> type, File file, Map<String, String> attributes) {
 		this.type = type;
 		this.file = file;
+		this.attributes = (attributes != null ? attributes : new HashMap<String, String>());
 	}
 
 	public Class<?> getType() {
@@ -53,6 +61,10 @@ public class JavaAs3Input implements Input<Class<?>> {
 
 	public JavaType getJavaType() {
 		return javaType;
+	}
+
+	public Map<String, String> getAttributes() {
+		return attributes;
 	}
 
 	public void setJavaType(JavaType javaType) {
