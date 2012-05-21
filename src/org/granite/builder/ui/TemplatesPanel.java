@@ -154,23 +154,19 @@ public class TemplatesPanel extends Composite {
 				properties.getGas3().setAs3TypeFactory(DefaultAs3TypeFactory.class.getName());
 
 				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
-				if (template.getTemplateUris().length < 2)
-					template.setUri(StandardTemplateUris.ENTITY, false);
+				template.setUri(StandardTemplateUris.ENTITY, false);
 				template.setUri(StandardTemplateUris.TIDE_ENTITY_BASE, true);
 				
 				template = properties.getGas3().getTemplate(Kind.REMOTE_DESTINATION);
-				if (template.getTemplateUris().length < 2)
-					template.setUri(StandardTemplateUris.REMOTE, false);
+				template.setUri(StandardTemplateUris.REMOTE, false);
 				template.setUri(StandardTemplateUris.TIDE_REMOTE_BASE, true);
 				
 				template = properties.getGas3().getTemplate(Kind.BEAN);
-				if (template.getTemplateUris().length < 2)
-					template.setUri(StandardTemplateUris.BEAN, false);
+				template.setUri(StandardTemplateUris.BEAN, false);
 				template.setUri(StandardTemplateUris.TIDE_BEAN_BASE, true);
 
 				template = properties.getGas3().getTemplate(Kind.ENUM);
-				if (template.getTemplateUris().length == 0)
-					template.setUri(StandardTemplateUris.ENUM, false);
+				template.setUri(StandardTemplateUris.ENUM, false);
 
 				for (TreeItem item : templatesTree.getItems())
 					item.dispose();
@@ -186,14 +182,14 @@ public class TemplatesPanel extends Composite {
 				properties.getGas3().setAs3TypeFactory(LCDSAs3TypeFactory.class.getName());
 
 				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
-				template.setUris("");
+				template.setUri(StandardTemplateUris.BEAN, false);
+				template.setUri(StandardTemplateUris.LCDS_BEAN_BASE, true);
 
 				template = properties.getGas3().getTemplate(Kind.REMOTE_DESTINATION);
 				template.setUris("");
 				
 				template = properties.getGas3().getTemplate(Kind.BEAN);
-				if (template.getTemplateUris().length < 2)
-					template.setUri(StandardTemplateUris.BEAN, false);
+				template.setUri(StandardTemplateUris.BEAN, false);
 				template.setUri(StandardTemplateUris.LCDS_BEAN_BASE, true);
 
 				template = properties.getGas3().getTemplate(Kind.ENUM);
