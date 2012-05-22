@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.JarURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -41,18 +42,25 @@ import java.util.jar.JarEntry;
 public class URIUtil {
 
     public static final String CLASSPATH_SCHEME = "class";
+    public static final String FILE_SCHEME = "file";
 
     public static String normalize(String uri) {
-    	
     	if (uri == null)
     		return null;
-    	
-    	if (File.separatorChar == '\\' && uri.startsWith("file://"))
-    		uri = uri.replace('\\', '/');
+    	return uri.replace('\\', '/').replace(" ", "%20");
+    }
 
-    	uri = uri.replace(" ", "%20");
-    	
-    	return uri;
+    public static boolean isFileURI(String path) {
+    	try {
+			return isFileURI(new URI(normalize(path)));
+		} catch (URISyntaxException e) {
+			return false;
+		}
+    }
+
+    public static boolean isFileURI(URI uri) {
+    	// scheme.length() == 1 -> assume drive letter.
+    	return uri.getScheme() == null || uri.getScheme().length() <= 1 || FILE_SCHEME.equals(uri.getScheme());
     }
     
     public static InputStream getInputStream(URI uri, ClassLoader loader) throws IOException {
@@ -68,8 +76,8 @@ public class URIUtil {
 	                throw new IOException("Resource not found exception: " + uri);
         	}
         }
-        else if (scheme == null || scheme.length() <= 1) // scheme.length() == 1 -> assume drive letter.
-            is = new FileInputStream(uri.toString());
+        else if (isFileURI(uri))
+            is = new FileInputStream(uri.getSchemeSpecificPart());
         else
             is = uri.toURL().openStream();
 
