@@ -26,6 +26,7 @@ import java.lang.reflect.Type;
 
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.util.ClassUtil;
+import org.granite.util.ClassUtil.DeclaredAnnotation;
 
 /**
  * @author Franck WOLFF
@@ -65,13 +66,19 @@ public class MethodProperty extends Property {
     	T annotation = null;
     	if (getter != null) {
     		annotation = getter.getAnnotation(annotationClass);
-    		if (annotation == null && recursive)
-    			annotation = ClassUtil.getAnnotation(getter, annotationClass);
+    		if (annotation == null && recursive) {
+    			DeclaredAnnotation<T> declaredAnnotation = ClassUtil.getAnnotation(getter, annotationClass);
+    			if (declaredAnnotation != null)
+    				annotation = declaredAnnotation.annotation;
+    		}
     	}
     	if (annotation == null && setter != null) {
     		annotation = setter.getAnnotation(annotationClass);
-    		if (annotation == null && recursive)
-    			annotation = ClassUtil.getAnnotation(setter, annotationClass);
+    		if (annotation == null && recursive) {
+    			DeclaredAnnotation<T> declaredAnnotation = ClassUtil.getAnnotation(setter, annotationClass);
+    			if (declaredAnnotation != null)
+    				annotation = declaredAnnotation.annotation;
+    		}
     	}
 		return annotation;
 	}

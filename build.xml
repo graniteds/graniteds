@@ -814,6 +814,7 @@
     	<jar destfile="build/granite-generator-share.jar" manifest="build/META-INF/MANIFEST.MF">
             <fileset dir="classes/core">
                 <include name="org/granite/util/ClassUtil.class"/>
+                <include name="org/granite/util/ClassUtil$*.class"/>
                 <include name="org/granite/util/URIUtil.class"/>
                 <include name="org/granite/messaging/amf/io/util/Property.class"/>
                 <include name="org/granite/messaging/amf/io/util/externalizer/Externalizer.class"/>

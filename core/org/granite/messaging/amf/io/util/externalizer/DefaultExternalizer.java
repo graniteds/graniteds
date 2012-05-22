@@ -53,6 +53,7 @@ import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty
 import org.granite.messaging.amf.io.util.instantiator.AbstractInstantiator;
 import org.granite.util.ClassUtil;
 import org.granite.util.XMap;
+import org.granite.util.ClassUtil.DeclaredAnnotation;
 
 /**
  * @author Franck WOLFF
@@ -170,7 +171,8 @@ public class DefaultExternalizer implements Externalizer {
         if (fields == null) {
         	if (dynamicClass)
         		Introspector.flushFromCaches(clazz);
-            PropertyDescriptor[] propertyDescriptors = ClassUtil.getProperties(clazz);
+            
+        	PropertyDescriptor[] propertyDescriptors = ClassUtil.getProperties(clazz);
             Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
 
             fields = new ArrayList<Property>();
@@ -208,10 +210,11 @@ public class DefaultExternalizer implements Externalizer {
                 if (propertyDescriptors != null) {
                     for (PropertyDescriptor property : propertyDescriptors) {
                         Method getter = property.getReadMethod();
-                        if (getter != null &&
-                            ClassUtil.isAnnotationPresent(getter, ExternalizedProperty.class) &&
-                            getter.getDeclaringClass().equals(c) &&
-                            !allFieldNames.contains(property.getName())) {
+                        if (getter != null && !allFieldNames.contains(property.getName())) {
+                            
+                        	DeclaredAnnotation<ExternalizedProperty> annotation = ClassUtil.getAnnotation(getter, ExternalizedProperty.class);
+                        	if (annotation == null || (annotation.declaringClass != c && !annotation.declaringClass.isInterface()))
+                        		continue;
 
                             newFields.add(new MethodProperty(
                                 converters,
