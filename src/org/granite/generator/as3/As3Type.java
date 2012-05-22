@@ -45,7 +45,8 @@ public class As3Type {
     public static final As3Type BYTE_ARRAY = new As3Type("flash.utils", "ByteArray");
     public static final As3Type DICTIONARY = new As3Type("flash.utils", "Dictionary");
 
-    public static final As3Type ARRAY_COLLECTION = new As3Type("mx.collections", "ListCollectionView");
+    public static final As3Type LIST_COLLECTION_VIEW = new As3Type("mx.collections", "ListCollectionView");
+    public static final As3Type ARRAY_COLLECTION = new As3Type("mx.collections", "ArrayCollection");
     public static final As3Type ILIST = new As3Type("mx.collections", "IList");
     public static final As3Type IMAP = new As3Type("org.granite.collections", "IMap");
     public static final As3Type ENUM = new As3Type("org.granite.util", "Enum");

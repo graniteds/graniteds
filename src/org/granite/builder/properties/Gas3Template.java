@@ -71,10 +71,14 @@ public class Gas3Template implements Validable {
 
 	public TemplateUri[] getTemplateUris() {
 		if (templateUris == null) {
-			String[] uriArray = StringUtil.split(uris, ';');
-			templateUris = new TemplateUri[uriArray.length];
-			for (int i = uriArray.length - 1; i >= 0; i--)
-				templateUris[i] = new TemplateUri(uriArray[i], i > 0);
+			if (uris.length() == 0 || uris.charAt(0) == ';')
+				templateUris = new TemplateUri[0];
+			else {
+				String[] uriArray = StringUtil.split(uris, ';');
+				templateUris = new TemplateUri[uriArray.length];
+				for (int i = uriArray.length - 1; i >= 0; i--)
+					templateUris[i] = new TemplateUri(uriArray[i], i > 0);
+			}
 		}
 		return templateUris;
 	}

@@ -21,6 +21,7 @@
 package org.granite.builder;
 
 import java.io.File;
+import java.util.Map;
 
 import org.granite.builder.properties.Gas3Source;
 import org.granite.generator.as3.JavaAs3Input;
@@ -32,8 +33,8 @@ public class BuilderJavaAs3Input extends JavaAs3Input {
 
 	private final Gas3Source gas3Source;
 	
-	public BuilderJavaAs3Input(Class<?> type, File file, Gas3Source gas3Source) {
-		super(type, file);
+	public BuilderJavaAs3Input(Class<?> type, File file, Gas3Source gas3Source, Map<String, String> attributes) {
+		super(type, file, attributes);
 		if (gas3Source == null)
 			throw new NullPointerException("gas3Source cannot be null");
 		this.gas3Source = gas3Source;

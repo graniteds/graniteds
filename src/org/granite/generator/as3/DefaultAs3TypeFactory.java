@@ -120,7 +120,7 @@ public class DefaultAs3TypeFactory implements As3TypeFactory {
                     as3Type = As3Type.ARRAY;
             }
             else if (Collection.class.isAssignableFrom(jType)) {
-                as3Type = As3Type.ARRAY_COLLECTION;
+                as3Type = As3Type.LIST_COLLECTION_VIEW;
             }
             else if (Map.class.isAssignableFrom(jType)) {
                 as3Type = As3Type.IMAP;

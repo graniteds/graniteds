@@ -20,6 +20,8 @@
 
 package org.granite.builder.properties;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +34,7 @@ import org.granite.generator.as3.reflect.JavaType.Kind;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
  * @author Franck WOLFF
@@ -39,6 +42,9 @@ import com.thoughtworks.xstream.annotations.XStreamImplicit;
 @XStreamAlias(value="gas3")
 public class Gas3 implements Validable {
 
+	@XStreamOmitField
+	private PropertyChangeSupport _pcs = null;
+	
 	@XStreamAsAttribute
 	private String uid;
 
@@ -85,6 +91,7 @@ public class Gas3 implements Validable {
 	private Set<Gas3Translator> translators;
 
 	public Gas3() {
+		_pcs = new PropertyChangeSupport(this);
 	}
 
 	public Gas3(String uid, String as3TypeFactory, String entityFactory, String remoteDestinationFactory) {
@@ -92,6 +99,8 @@ public class Gas3 implements Validable {
 		this.as3TypeFactory = as3TypeFactory;
 		this.entityFactory = entityFactory;
 		this.remoteDestinationFactory = remoteDestinationFactory;
+		
+		_pcs = new PropertyChangeSupport(this);
 	}
 
 	public String getUid() {
@@ -107,7 +116,10 @@ public class Gas3 implements Validable {
 	}
 
 	public void setAs3TypeFactory(String as3TypeFactory) {
+		String old = this.as3TypeFactory;
 		this.as3TypeFactory = as3TypeFactory;
+		if (_pcs != null)
+			_pcs.firePropertyChange("as3TypeFactory", old, as3TypeFactory);
 	}
 
 	public String getEntityFactory() {
@@ -268,4 +280,28 @@ public class Gas3 implements Validable {
 				validable.validate(results);
 		}
 	}
+
+	public void addPropertyChangeListener(String name, PropertyChangeListener listener) {
+		if (_pcs == null)
+			_pcs = new PropertyChangeSupport(this);
+        _pcs.addPropertyChangeListener(name, listener);
+    }
+
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		if (_pcs == null)
+			_pcs = new PropertyChangeSupport(this);
+        _pcs.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(String name, PropertyChangeListener listener) {
+		if (_pcs == null)
+			_pcs = new PropertyChangeSupport(this);
+        _pcs.removePropertyChangeListener(name, listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+		if (_pcs == null)
+			_pcs = new PropertyChangeSupport(this);
+        _pcs.removePropertyChangeListener(listener);
+    }
 }
