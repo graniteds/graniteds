@@ -23,6 +23,7 @@ package org.granite.generator.as3.reflect;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Collection;
@@ -41,6 +42,7 @@ import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedPro
 import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty;
 import org.granite.tide.annotations.TideEvent;
 import org.granite.util.ClassUtil;
+import org.granite.util.ClassUtil.DeclaredAnnotation;
 
 /**
  * @author Franck WOLFF
@@ -211,15 +213,19 @@ public class JavaBean extends JavaAbstractType {
 
         // Getter annotated by @ExternalizedProperty.
         if (propertyDescriptors != null) {
-            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-                if (propertyDescriptor.getReadMethod() != null &&
-                    propertyDescriptor.getReadMethod().getDeclaringClass().equals(type) &&
-                    ClassUtil.isAnnotationPresent(propertyDescriptor.getReadMethod(), ExternalizedProperty.class) &&
-                    !propertyMap.containsKey(propertyDescriptor.getName())) {
+            for (PropertyDescriptor property : propertyDescriptors) {
+            	Method getter = property.getReadMethod();
+                if (getter != null &&
+                	getter.getDeclaringClass().equals(type) &&
+                    !propertyMap.containsKey(property.getName())) {
+                    
+                	DeclaredAnnotation<ExternalizedProperty> annotation = ClassUtil.getAnnotation(getter, ExternalizedProperty.class);
+                	if (annotation == null || (annotation.declaringClass != type && !annotation.declaringClass.isInterface()))
+                		continue;
 
-                    JavaMethod readMethod = new JavaMethod(propertyDescriptor.getReadMethod(), MethodType.GETTER);
-                    JavaMethodProperty property = new JavaMethodProperty(provider, propertyDescriptor.getName(), readMethod, null);
-                    propertyMap.put(propertyDescriptor.getName(), property);
+                    JavaMethod readMethod = new JavaMethod(getter, MethodType.GETTER);
+                    JavaMethodProperty methodProperty = new JavaMethodProperty(provider, property.getName(), readMethod, null);
+                    propertyMap.put(property.getName(), methodProperty);
                 }
             }
         }
