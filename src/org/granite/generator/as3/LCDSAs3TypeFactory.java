@@ -83,6 +83,9 @@ public class LCDSAs3TypeFactory implements As3TypeFactory {
             else if (jType.isEnum()) {
             	as3Type = As3Type.STRING;
             }
+            else if ("javassist.bytecode.ByteArray".equals(jType.getName())) {
+            	as3Type = As3Type.BYTE_ARRAY;
+            }
             else if (jType.isArray()) {
                 Class<?> componentType = jType.getComponentType();
                 if (Byte.class.equals(componentType) || Byte.TYPE.equals(componentType))
