@@ -20,10 +20,13 @@
 
 package org.granite.generator;
 
+import java.io.File;
+
 /**
  * @author Franck WOLFF
  */
 public interface Configuration {
 	
 	public ClassLoader getClassLoader();
+	public File getWorkingDirectory();
 }
