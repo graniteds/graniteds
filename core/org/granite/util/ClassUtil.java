@@ -29,6 +29,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -295,10 +296,16 @@ public abstract class ClassUtil {
     	return getAnnotation(elmt, annotationClass) != null;
     }
     
-    public static <T extends Annotation> T getAnnotation(AnnotatedElement elmt, Class<T> annotationClass) {
+    public static <T extends Annotation> DeclaredAnnotation<T> getAnnotation(AnnotatedElement elmt, Class<T> annotationClass) {
     	T annotation = elmt.getAnnotation(annotationClass);
-    	if (elmt instanceof Field || annotation != null)
-    		return annotation;
+    	
+    	if (annotation != null) {
+    		Class<?> declaringClass = (elmt instanceof Member ? ((Member)elmt).getDeclaringClass() : (Class<?>)elmt);
+    		return new DeclaredAnnotation<T>(annotation, elmt, declaringClass);
+    	}
+    	
+    	if (elmt instanceof Field)
+    		return null;
     	
     	if (elmt instanceof Method) {
     		Method m = (Method)elmt;
@@ -318,59 +325,87 @@ public abstract class ClassUtil {
     	throw new RuntimeException("Unsupported annotated element: " + elmt);
     }
     
-    public static <T extends Annotation> T getMethodAnnotation(Class<?> clazz, String name, Class<?>[] parameterTypes, Class<T> annotationClass) {
-    	T annotation = null;
+    public static <T extends Annotation> DeclaredAnnotation<T> getMethodAnnotation(Class<?> clazz, String name, Class<?>[] parameterTypes, Class<T> annotationClass) {
+    	DeclaredAnnotation<T> declaredAnnotation = null;
     	
     	try {
-    		annotation = clazz.getDeclaredMethod(name, parameterTypes).getAnnotation(annotationClass);
+    		Method method = clazz.getDeclaredMethod(name, parameterTypes);
+    		T annotation = clazz.getDeclaredMethod(name, parameterTypes).getAnnotation(annotationClass);
+    		if (annotation != null)
+    			declaredAnnotation = new DeclaredAnnotation<T>(annotation, method, clazz);
     	}
     	catch (NoSuchMethodException e) {
     		// fallback...
     	}
     	
-    	if (annotation == null) {
+    	if (declaredAnnotation == null && clazz.getSuperclass() != null)
+    		declaredAnnotation = getMethodAnnotation(clazz.getSuperclass(), name, parameterTypes, annotationClass);
+    	
+    	if (declaredAnnotation == null) {
 	    	for (Class<?> interfaze : clazz.getInterfaces()) {
-	    		annotation = getMethodAnnotation(interfaze, name, parameterTypes, annotationClass);
-	    		if (annotation != null)
+	    		declaredAnnotation = getMethodAnnotation(interfaze, name, parameterTypes, annotationClass);
+	    		if (declaredAnnotation != null)
 	    			break;
 	    	}
     	}
-    	
-    	if (annotation == null && clazz.getSuperclass() != null)
-    		annotation = getMethodAnnotation(clazz.getSuperclass(), name, parameterTypes, annotationClass);
     		
-    	return annotation;
+    	return declaredAnnotation;
     }
     
-    public static <T extends Annotation> T getConstructorAnnotation(Class<?> clazz, Class<T> annotationClass) {
-    	T annotation = null;
+    public static <T extends Annotation> DeclaredAnnotation<T> getConstructorAnnotation(Class<?> clazz, Class<T> annotationClass) {
+    	DeclaredAnnotation<T> declaredAnnotation = null;
     	
     	for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
-    		annotation = constructor.getAnnotation(annotationClass);
-    		if (annotation != null)
+    		T annotation = constructor.getAnnotation(annotationClass);
+    		if (annotation != null) {
+    			declaredAnnotation = new DeclaredAnnotation<T>(annotation, constructor, clazz);
     			break;
+    		}
     	}
     	
-    	if (annotation == null && clazz.getSuperclass() != null)
-    		annotation = getConstructorAnnotation(clazz.getSuperclass(), annotationClass);
+    	if (declaredAnnotation == null && clazz.getSuperclass() != null)
+    		declaredAnnotation = getConstructorAnnotation(clazz.getSuperclass(), annotationClass);
     		
-    	return annotation;
+    	return declaredAnnotation;
     }
     
-    public static <T extends Annotation> T getClassAnnotation(Class<?> clazz, Class<T> annotationClass) {
-    	T annotation = clazz.getAnnotation(annotationClass);
+    public static <T extends Annotation> DeclaredAnnotation<T> getClassAnnotation(Class<?> clazz, Class<T> annotationClass) {
+    	DeclaredAnnotation<T> declaredAnnotation = null;
     	
-    	if (annotation == null) {
-	    	for (Class<?> interfaze : clazz.getInterfaces()) {
-	    		annotation = getClassAnnotation(interfaze, annotationClass);
-	    		if (annotation != null)
-	    			break;
+    	T annotation = clazz.getAnnotation(annotationClass);
+    	if (annotation != null)
+    		declaredAnnotation = new DeclaredAnnotation<T>(annotation, clazz, clazz);
+    	else {
+	    	if (clazz.getSuperclass() != null)
+	    		declaredAnnotation = getClassAnnotation(clazz.getSuperclass(), annotationClass);
+	    	
+	    	if (declaredAnnotation == null) {
+	    		for (Class<?> interfaze : clazz.getInterfaces()) {
+		    		declaredAnnotation = getClassAnnotation(interfaze, annotationClass);
+		    		if (declaredAnnotation != null)
+		    			break;
+		    	}
 	    	}
     	}
-    	
-    	if (annotation == null && clazz.getSuperclass() != null)
-    		annotation = getClassAnnotation(clazz.getSuperclass(), annotationClass);
     		
-    	return annotation;
+    	return declaredAnnotation;
+    }
+    
+    public static class DeclaredAnnotation<T extends Annotation> {
+
+    	public final T annotation;
+    	public final AnnotatedElement annotatedElement;
+    	public final Class<?> declaringClass;
+		
+    	public DeclaredAnnotation(T annotation, AnnotatedElement annotatedElement, Class<?> declaringClass) {
+			this.annotation = annotation;
+			this.annotatedElement = annotatedElement;
+			this.declaringClass = declaringClass;
+		}
+
+		@Override
+		public String toString() {
+			return getClass().getName() + "{annotation=" + annotation + ", annotatedElement=" + annotatedElement + ", declaringClass=" + declaringClass + "}";
+		}
     }
 }
