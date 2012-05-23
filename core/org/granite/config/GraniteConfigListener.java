@@ -261,24 +261,30 @@ public class GraniteConfigListener implements ServletContextListener {
     		}
     		catch (ClassNotFoundException e1) {
     			try {
-    				ClassUtil.forName("weblogic.servlet.security.ServletAuthentication");
-    				securityServiceClassName = "org.granite.messaging.service.security.WebLogicSecurityService";
+    				ClassUtil.forName("org.eclipse.jetty.server.Request");
+        			securityServiceClassName = "org.granite.messaging.service.security.Jetty7SecurityService";
     			}
-    			catch (ClassNotFoundException e2) {
-        			try {
-        				ClassUtil.forName("com.sun.appserv.server.LifecycleEvent");
-            			securityServiceClassName = "org.granite.messaging.service.security.GlassFishV3SecurityService";
-        			}
-        			catch (ClassNotFoundException e3) {
-        				securityServiceClassName = "org.granite.messaging.service.security.Tomcat7SecurityService";
-        			}
+    			catch (ClassNotFoundException e1b) {
+	    			try {
+	    				ClassUtil.forName("weblogic.servlet.security.ServletAuthentication");
+	    				securityServiceClassName = "org.granite.messaging.service.security.WebLogicSecurityService";
+	    			}
+	    			catch (ClassNotFoundException e2) {
+	        			try {
+	        				ClassUtil.forName("com.sun.appserv.server.LifecycleEvent");
+	            			securityServiceClassName = "org.granite.messaging.service.security.GlassFishV3SecurityService";
+	        			}
+	        			catch (ClassNotFoundException e3) {
+	        				securityServiceClassName = "org.granite.messaging.service.security.Tomcat7SecurityService";
+	        			}
+	    			}
+	        		try {
+	        			graniteConfig.setSecurityService((SecurityService)ClassUtil.newInstance(securityServiceClassName));
+	            	}
+	            	catch (Exception e) {
+	            		throw new ServletException("Could not setup security service " + securityServiceClassName, e);
+	            	}
     			}
-        		try {
-        			graniteConfig.setSecurityService((SecurityService)ClassUtil.newInstance(securityServiceClassName));
-            	}
-            	catch (Exception e) {
-            		throw new ServletException("Could not setup security service", e);
-            	}
     		}
     	}
         
