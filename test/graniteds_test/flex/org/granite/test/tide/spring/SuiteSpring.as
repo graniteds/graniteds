@@ -13,5 +13,6 @@ package org.granite.test.tide.spring
 		public var test5:org.granite.test.tide.spring.TestSpringServerPagedQuery;
 		public var test1:org.granite.test.tide.spring.TestGrailsPagedQuery;
         public var test8:org.granite.test.tide.spring.TestSpringUninitPreprocessor;
+		public var test9:org.granite.test.tide.spring.TestSpringComponentRestrict;
 	}
 }
