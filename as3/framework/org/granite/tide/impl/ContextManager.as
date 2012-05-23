@@ -222,7 +222,7 @@ package org.granite.tide.impl {
             
             var globalCtx:BaseContext = BaseContext(_ctx[Tide.DEFAULT_CONTEXT]);
 			for each (var ctx:BaseContext in _ctx) {
-			    if (ctx.contextId != Tide.DEFAULT_CONTEXT && ctx.parentContext === globalCtx)
+			    if (ctx.contextId != Tide.DEFAULT_CONTEXT && ctx.meta_parentContext === globalCtx)
 			        destroyContext(ctx.contextId, force);
 			}
 			globalCtx.meta_clear(force);
