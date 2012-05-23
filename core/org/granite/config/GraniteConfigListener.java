@@ -310,11 +310,21 @@ public class GraniteConfigListener implements ServletContextListener {
         }
 
     	XMap factoryProperties = new XMap();
-    	String lookup = "java:global/{context.root}/{capitalized.component.name}Bean";
-    	if (isJBoss6())
-    		lookup = "{capitalized.component.name}Bean/local";
-    	if (!("".equals(flexFilter.ejbLookup())))
-    		lookup = flexFilter.ejbLookup();
+    	String lookup = null;
+        if (useTide) {
+	    	lookup = "java:global/{context.root}/{capitalized.component.name}Bean";
+	    	if (isJBoss6())
+	    		lookup = "{capitalized.component.name}Bean/local";
+	    	if (!("".equals(flexFilter.ejbLookup())))
+	    		lookup = flexFilter.ejbLookup();
+        }
+        else {
+	    	lookup = "java:global/{context.root}/{capitalized.destination.id}Bean";
+	    	if (isJBoss6())
+	    		lookup = "{capitalized.destination.id}Bean/local";
+	    	if (!("".equals(flexFilter.ejbLookup())))
+	    		lookup = flexFilter.ejbLookup();
+        }
     	if (lookup.indexOf("{context.root}") >= 0) {
     		try {
     			// Call by reflection because of JDK 1.4

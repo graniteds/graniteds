@@ -32,6 +32,11 @@ public class AsyncRequestListener implements AsyncListener {
 	
 	private final AsyncChannel channel;
 
+	// Should not be used, here to avoid a deployment warning on JBoss AS 7
+	public AsyncRequestListener() {
+		this.channel = null;
+	}
+	
 	public AsyncRequestListener(AsyncChannel channel) {
 		this.channel = channel;
 	}
