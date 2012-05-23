@@ -27,6 +27,8 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 
 /**
  * @author Franck WOLFF
@@ -50,4 +52,17 @@ public class FileUtil {
 		IFileStore store = EFS.getStore(uri);
 		return store.toLocalFile(0, null);
 	}
+	
+	public static IPath makeRelativeTo(IPath parent, IPath child) {
+		String parentFullPath = parent.makeAbsolute().toPortableString();
+		String childFullPath = child.makeAbsolute().toPortableString();
+		
+		if (childFullPath.startsWith(parentFullPath)) {
+			String relativePath = childFullPath.substring(parentFullPath.length());
+			if (relativePath.startsWith("/"))
+				relativePath = relativePath.substring(1, relativePath.length());
+			return new Path(relativePath);
+		}
+		return child;
+ 	}
 }

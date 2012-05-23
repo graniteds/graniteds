@@ -47,6 +47,7 @@ import org.granite.builder.properties.Gas3Transformer;
 import org.granite.builder.properties.GranitePropertiesLoader;
 import org.granite.builder.ui.AddNatureWizard;
 import org.granite.builder.util.BuilderUtil;
+import org.granite.builder.util.FileUtil;
 import org.granite.builder.util.FlexConfigGenerator;
 import org.granite.builder.util.JavaClassInfo;
 import org.granite.builder.util.ProjectUtil;
@@ -376,9 +377,9 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
 	            if (resourceSourceFolder == null)
 	            	return null;
             
-	            String relativeJavaFile = resourcePath.makeRelativeTo(resourceSourceFolder).toPortableString();
+	            String relativeJavaFile = FileUtil.makeRelativeTo(resourceSourceFolder, resourcePath).toPortableString();
 	            Gas3Source source = config.getProperties().getGas3().getMatchingSource(
-	            	resourceSourceFolder.makeRelativeTo(config.getJavaProject().getPath()).toPortableString(),
+	            	FileUtil.makeRelativeTo(config.getJavaProject().getPath(), resourceSourceFolder).toPortableString(),
 	            	relativeJavaFile
 	            );
 	            

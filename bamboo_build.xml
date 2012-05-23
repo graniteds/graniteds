@@ -140,8 +140,8 @@
 	</target>
 
 	<target name="gather.bin.parts" depends="init" if="destination.temp.folder">
-		<mkdir dir="${destination.temp.folder}/org.granite.builder_${builderVersion}"/>
-		<copy todir="${destination.temp.folder}/org.granite.builder_${builderVersion}" failonerror="true" overwrite="false">
+		<mkdir dir="${destination.temp.folder}/org.granite.builder_${builderVersion}/bin"/>
+		<copy todir="${destination.temp.folder}/org.granite.builder_${builderVersion}/bin" failonerror="true" overwrite="false">
 			<fileset dir="${build.result.folder}/@dot">
 				<include name="**"/>
 			</fileset>
@@ -150,7 +150,7 @@
 			<fileset dir="${basedir}">
 				<include name="plugin.xml"/>
 				<include name="META-INF/"/>
-				<include name="bin/"/>
+				<!--include name="bin/"/-->
 				<include name="LICENSE.txt"/>
 				<include name="README.txt"/>
 				<include name="lib/"/>

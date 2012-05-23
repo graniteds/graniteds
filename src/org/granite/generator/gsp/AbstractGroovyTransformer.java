@@ -20,6 +20,7 @@
 
 package org.granite.generator.gsp;
 
+import java.io.FileNotFoundException;
 import java.net.URI;
 
 import org.granite.generator.Input;
@@ -52,13 +53,23 @@ public abstract class AbstractGroovyTransformer<I extends Input<?>, O extends Ou
     	return getTemplate(templateUri.getUri(), templateUri.isBase());
     }
 
-    protected GroovyTemplate getTemplate(String uri, boolean base) throws TemplateUriException {
+    protected GroovyTemplate getTemplate(String path, boolean base) throws TemplateUriException {
     	GroovyTemplateFactory factory = getTemplateFactory();
         try {
-        	uri = URIUtil.normalize(uri);
-            return factory.getTemplate(new URI(uri), base);
+        	path = URIUtil.normalize(path);
+        	URI uri = new URI(path);
+        	String schemeSpecificPart = uri.getSchemeSpecificPart();
+        	if (schemeSpecificPart == null || schemeSpecificPart.length() == 0)
+        		throw new FileNotFoundException("Template path cannot be empty: " + uri);
+        	
+        	if (URIUtil.isFileURI(uri) && !URIUtil.isAbsolute(uri)) {
+        		URI parent = getConfig().getWorkingDirectory().toURI();
+        		if (parent != null)
+        			uri = parent.resolve(uri.getRawSchemeSpecificPart());
+        	}
+            return factory.getTemplate(uri, base);
         } catch (Exception e) {
-            throw new TemplateUriException(uri, e);
+            throw new TemplateUriException(path, e);
         }
     }
 }

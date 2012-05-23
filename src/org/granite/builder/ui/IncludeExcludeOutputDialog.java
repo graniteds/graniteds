@@ -46,7 +46,8 @@ import org.granite.builder.util.StringUtil;
  */
 public class IncludeExcludeOutputDialog extends SelectionStatusDialog {
 
-	private static final Pattern CLUSION_PATTERN = Pattern.compile("[\\w\\*\\.\\$\\?/]+(\\[(\\w+=\\w+)(,\\w+=\\w+)*\\])?");
+	private static final Pattern INCLUDE_PATTERN = Pattern.compile("[\\w\\*\\.\\$\\?/]+(\\[(\\w+=\\w+)(,\\w+=\\w+)*\\])?");
+	private static final Pattern EXCLUDE_PATTERN = Pattern.compile("[\\w\\*\\.\\$\\?/]+");
 	private static final Pattern OUTPUT_PATTERN = Pattern.compile("[\\w\\-\\.\\/]*");
 	
 	private final String[] initialValues;
@@ -142,7 +143,7 @@ public class IncludeExcludeOutputDialog extends SelectionStatusDialog {
 					"Add Inclusion Pattern",
 					"Allowed wildcards are '?', '*' and '**'",
 					null,
-					CLUSION_PATTERN
+					INCLUDE_PATTERN
 				);
 				if (pattern != null && pattern.trim().length() > 0)
 					includes.add(pattern.trim());
@@ -157,7 +158,7 @@ public class IncludeExcludeOutputDialog extends SelectionStatusDialog {
 					"Edit Inclusion Pattern",
 					"Allowed wildcards are '?', '*' and '**'",
 					includes.getItem(selectedIndex),
-					CLUSION_PATTERN
+					INCLUDE_PATTERN
 				);
 				includes.setItem(selectedIndex, pattern.trim());
 			}
@@ -210,7 +211,7 @@ public class IncludeExcludeOutputDialog extends SelectionStatusDialog {
 					"Add Exclusion Pattern",
 					"Allowed wildcards are '?', '*' and '**'",
 					null,
-					CLUSION_PATTERN
+					EXCLUDE_PATTERN
 				);
 				if (pattern != null && pattern.trim().length() > 0)
 					excludes.add(pattern.trim());
@@ -225,7 +226,7 @@ public class IncludeExcludeOutputDialog extends SelectionStatusDialog {
 					"Edit Exclusion Pattern",
 					"Allowed wildcards are '?', '*' and '**'",
 					excludes.getItem(selectedIndex),
-					CLUSION_PATTERN
+					EXCLUDE_PATTERN
 				);
 				excludes.setItem(selectedIndex, pattern.trim());
 			}

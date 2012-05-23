@@ -544,6 +544,10 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
 		return groovyTemplateFactory;
 	}
 
+	public File getWorkingDirectory() {
+		return getProject().getBaseDir();
+	}
+
     ///////////////////////////////////////////////////////////////////////////
     // Utilities.
 

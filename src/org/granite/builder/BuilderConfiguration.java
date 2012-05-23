@@ -349,4 +349,8 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 		if (!classpath.contains(url))
 			classpath.add(url);
 	}
+
+	public File getWorkingDirectory() {
+		return ProjectUtil.getProjectFile(project);
+	}
 }
