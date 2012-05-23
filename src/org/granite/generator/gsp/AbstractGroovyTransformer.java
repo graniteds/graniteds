@@ -62,7 +62,7 @@ public abstract class AbstractGroovyTransformer<I extends Input<?>, O extends Ou
         	if (schemeSpecificPart == null || schemeSpecificPart.length() == 0)
         		throw new FileNotFoundException("Template path cannot be empty: " + uri);
         	
-        	if (URIUtil.isFileURI(uri) && schemeSpecificPart.charAt(0) != '/') {
+        	if (URIUtil.isFileURI(uri) && !URIUtil.isAbsolute(uri)) {
         		URI parent = getConfig().getWorkingDirectory().toURI();
         		if (parent != null)
         			uri = parent.resolve(uri.getRawSchemeSpecificPart());
