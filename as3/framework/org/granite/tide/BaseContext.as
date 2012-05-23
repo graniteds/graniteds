@@ -444,7 +444,7 @@ package org.granite.tide {
             if (obj is IComponent) {
                 if (restrict)
                     IComponent(obj).meta_clear();
-                remove = _contextId != null || force;
+                remove = _contextId != null || force || restrict;
             }
             else if (obj is IUIComponent || obj is IEntity || obj is IList || (obj != null && ObjectUtil.isSimple(obj))) {
                 remove = _contextId != null || force || restrict;
