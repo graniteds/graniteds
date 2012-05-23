@@ -673,6 +673,19 @@ private function validationHandler(event:TideValidatorEvent):void {
         Just like the paged collections of LCDS, everything works only if there is a correct <literal>uid</literal> property on the entities. 
         It is thus recommended to use the Tide templates for the Gas3 generator, which provide a default implementation of <literal>uid</literal> if there is none.
         </para>
+        <para>
+        The default <literal>AsyncListView</literal> does not support automatic propagation of the UI control sorting to its data provider.
+        Tide provides an alternative <literal>SortableAsyncListView</literal> that works in all cases.
+        </para>
+        <programlisting role="XML">
+<![CDATA[
+<s:VGroup ...
+    xmlns:c="org.granite.tide.collections.*">
+
+<s:DataGrid ...>
+    <c:SortableAsyncListView list="{people}"/>
+</s:DataGrid>]]>
+        </programlisting>
         
         <formalpara>
             <title>Server-side Implementation</title>

@@ -95,7 +95,7 @@ public class JodaDateTime2Date extends Converter implements Reverter {
 
 <!DOCTYPE granite-config PUBLIC
     "-//Granite Data Services//DTD granite-config internal//EN"
-    "http://www.graniteds.org/public/dtd/2.1.0/granite-config.dtd">
+    "http://www.graniteds.org/public/dtd/2.3.0/granite-config.dtd">
 
 <granite-config>
   <converters>
@@ -385,7 +385,7 @@ public ServiceException handleInvocationException(
 
 <!DOCTYPE granite-config PUBLIC
     "-//Granite Data Services//DTD granite-config internal//EN"
-    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+    "http://www.graniteds.org/public/dtd/2.3.0/granite-config.dtd">
 
 <granite-config>
     <descriptors>
@@ -431,7 +431,7 @@ public ServiceException handleInvocationException(
 
 <!DOCTYPE granite-config PUBLIC
     "-//Granite Data Services//DTD granite-config internal//EN"
-    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+    "http://www.graniteds.org/public/dtd/2.3.0/granite-config.dtd">
 
 <granite-config>
     <amf3-serializer type="path.to.MyAMF3Serializer"/>
@@ -458,7 +458,7 @@ public ServiceException handleInvocationException(
 
 <!DOCTYPE granite-config PUBLIC
     "-//Granite Data Services//DTD granite-config internal//EN"
-    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+    "http://www.graniteds.org/public/dtd/2.3.0/granite-config.dtd">
 
 <granite-config>
     <amf3-deserializer type="path.to.MyAMF3Deserializer"/>
@@ -481,7 +481,7 @@ public ServiceException handleInvocationException(
 
 <!DOCTYPE granite-config PUBLIC
     "-//Granite Data Services//DTD granite-config internal//EN"
-    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+    "http://www.graniteds.org/public/dtd/2.3.0/granite-config.dtd">
 
 <granite-config>
     <invocation-listener type="path.to.MyServiceInvocationListener"/>
