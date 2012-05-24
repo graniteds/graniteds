@@ -41,7 +41,7 @@
                  http://jboss.com/products/seam/bpm http://jboss.com/products/seam/bpm-2.0.xsd
                  http://jboss.com/products/seam/components http://jboss.com/products/seam/components-2.0.xsd
                  http://jboss.com/products/seam/framework http://jboss.com/products/seam/framework-2.0.xsd
-                 http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.1.0/granite-config-2.1.xsd">
+                 http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.3.0/granite-config-2.3.xsd">
 
 
     <core:init jndi-pattern="graniteds-tide-seam/#{ejbName}/local" debug="true"/>
@@ -51,14 +51,14 @@
 
     <persistence:entity-manager-factory name="entityManagerFactory" persistence-unit-name="seam-pu"/>
 
-    <persistence:managed-persistence-context name="entityManager" entity-manager-factory="#{entityManagerFactory}"/>
+    <persistence:managed-persistence-context name="entityManager" entity-manager-factory="#{entityManagerFactory}" scope="event"/>
 
     <security:identity jaas-config-name="other"/>
 
 
-    <component name="examplePerson" class="org.granite.example.addressbook.entity.Person"/>
+    <component name="examplePerson" class="org.granite.example.addressbook.entity.Person" scope="event"/>
 
-    <component name="people" class="org.granite.example.addressbook.seam.service.PeopleQuery">
+    <component name="people" class="org.granite.example.addressbook.seam.service.PeopleQuery" scope="event">
     	<property name="ejbql">select p from Person p where (p.createdBy = '#{identity.credentials.username}' or p.restricted = 0)</property>
     	<property name="max-results">36</property>
     	<property name="restrictions">
