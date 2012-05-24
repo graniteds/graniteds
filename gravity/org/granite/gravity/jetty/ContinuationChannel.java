@@ -58,7 +58,7 @@ public class ContinuationChannel extends AbstractChannel {
         }
     }
     
-    public void reset() {
+    public void close() {
     	try {
             if (this.continuation != null)
                 this.continuation.reset();
@@ -128,7 +128,7 @@ public class ContinuationChannel extends AbstractChannel {
 		}
 		finally {
 			synchronized (this) {
-				reset();
+				close();
 			}
 		}
 	}

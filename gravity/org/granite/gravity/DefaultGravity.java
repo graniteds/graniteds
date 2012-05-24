@@ -891,6 +891,9 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		public Gravity getGravity() {
 			return gravity;
 		}
+		
+		public void close() {
+		}		
 
 		@Override
 		public void receive(AsyncMessage message) throws MessageReceivingException {

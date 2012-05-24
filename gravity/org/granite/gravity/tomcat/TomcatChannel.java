@@ -153,14 +153,18 @@ public class TomcatChannel extends AbstractChannel {
 			super.destroy();
 		}
 		finally {
-			CometEvent event = this.event.getAndSet(null);
-			if (event != null) {
-				try {
-					event.close();
-				}
-				catch (Exception e) {
-					log.debug(e, "Could not close event: %s for channel: %s", EventUtil.toString(event), this);
-				}
+			close();
+		}
+	}
+	
+	public void close() {
+		CometEvent event = this.event.getAndSet(null);
+		if (event != null) {
+			try {
+				event.close();
+			}
+			catch (Exception e) {
+				log.debug(e, "Could not close event: %s for channel: %s", EventUtil.toString(event), this);
 			}
 		}
 	}

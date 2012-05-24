@@ -133,14 +133,18 @@ public class WebLogicChannel extends AbstractChannel {
 			super.destroy();
 		}
 		finally {
-			RequestResponseKey key = this.key.getAndSet(null);
-			if (key != null) {
-				try {
-					key.getResponse().getOutputStream().close();
-				}
-				catch (Exception e) {
-					log.debug(e, "Could not close key: %s for channel: %s", key, this);
-				}
+			close();
+		}
+	}
+	
+	public void close() {
+		RequestResponseKey key = this.key.getAndSet(null);
+		if (key != null) {
+			try {
+				key.getResponse().getOutputStream().close();
+			}
+			catch (Exception e) {
+				log.debug(e, "Could not close key: %s for channel: %s", key, this);
 			}
 		}
 	}

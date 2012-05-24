@@ -47,5 +47,6 @@ public interface Channel {
 	public boolean runReceive();
 	public boolean runReceived(AsyncHttpContext asyncHttpContext);
     
+	public void close();
     public void destroy();
 }

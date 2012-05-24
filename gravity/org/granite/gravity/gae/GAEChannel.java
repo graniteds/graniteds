@@ -87,6 +87,9 @@ public class GAEChannel implements Channel, Serializable {
     }
     
     
+    public void close() {
+    }
+    
 	public void destroy() {
     	Long msgCount = msgCount();
     	if (msgCount != null) {

@@ -153,14 +153,18 @@ public class AsyncChannel extends AbstractChannel {
 			super.destroy();
 		}
 		finally {
-			AsyncContext asyncContext = this.asyncContext.getAndSet(null);
-			if (asyncContext != null) {
-				try {
-					asyncContext.complete();
-				}
-				catch (Exception e) {
-					log.debug(e, "Could not close asyncContext: %s for channel: %s", asyncContext, this);
-				}
+			close();
+		}
+	}
+	
+	public void close() {
+		AsyncContext asyncContext = this.asyncContext.getAndSet(null);
+		if (asyncContext != null) {
+			try {
+				asyncContext.complete();
+			}
+			catch (Exception e) {
+				log.debug(e, "Could not close asyncContext: %s for channel: %s", asyncContext, this);
 			}
 		}
 	}

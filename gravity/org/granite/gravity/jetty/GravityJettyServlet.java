@@ -73,7 +73,7 @@ public class GravityJettyServlet extends AbstractGravityServlet {
 
 				// Reset channel continuation instance and deliver pending messages.
 				synchronized (channel) {
-					channel.reset();
+					channel.close();
 					channel.runReceived(new AsyncHttpContext(request, response, connect));
 				}
 				
