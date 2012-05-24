@@ -148,7 +148,7 @@ public abstract class AbstractSecurityService implements SecurityService {
 	 * 
 	 * @return <tt>true</tt> if relogin was successful, <tt>false</tt> otherwise.
 	 * 
-	 * @see #endLogin(Object)
+	 * @see #endLogin(Object, String)
 	 */
     protected boolean tryRelogin() {
     	try {
@@ -176,7 +176,7 @@ public abstract class AbstractSecurityService implements SecurityService {
      * Try to remove credentials previously saved in distributed data. This method must be called in the
      * {@link SecurityService#logout()} method.
      * 
-	 * @see #endLogin(Object)
+	 * @see #endLogin(Object, String)
      */
 	protected void endLogout() {
 		try {
