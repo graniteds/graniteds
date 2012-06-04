@@ -5,7 +5,7 @@
 <bookinfo>
    <title>GraniteDS Documentation</title>
    <subtitle>Reference Guide</subtitle>
-   <releaseinfo>2.3.0</releaseinfo>
+   <releaseinfo>2.3.2</releaseinfo>
 
    <xi:include href="graniteds-author_group.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
 </bookinfo>
