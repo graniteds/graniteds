@@ -1825,16 +1825,19 @@ package org.granite.tide {
          */
         public function meta_mergeFromContext(sourceContext:BaseContext, obj:Object, externalData:Boolean = false, uninitializing:Boolean = false):Object {
         	var saveSourceContext:BaseContext = _entityManager.sourceContext;
-    		_entityManager.sourceContext = sourceContext;
-			_entityManager.uninitializing = uninitializing;
-        	
-        	var next:Object = externalData
-				? meta_mergeExternalData(obj, null, _tide.sessionId + '$')	// Force handling of external data
-				: meta_mergeExternal(obj);
-        	
-    		_entityManager.sourceContext = saveSourceContext;
-			_entityManager.uninitializing = false;
-    		return next;
+			try {
+	    		_entityManager.sourceContext = sourceContext;
+				_entityManager.uninitializing = uninitializing;
+	        	
+	        	var next:Object = externalData
+					? meta_mergeExternalData(obj, null, _tide.sessionId + '$')	// Force handling of external data
+					: meta_mergeExternal(obj);
+			}
+			finally {
+	    		_entityManager.sourceContext = saveSourceContext;
+				_entityManager.uninitializing = false;
+			}
+	    	return next;
         }
         
         

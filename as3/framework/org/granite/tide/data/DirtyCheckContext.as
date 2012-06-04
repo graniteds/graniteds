@@ -277,6 +277,8 @@ package org.granite.tide.data {
 				return true;
 			}
 			else if (val1 is IList && val2 is IList) {
+				if ((val1 is IPersistentCollection && !val1.isInitialized()) || (val2 is IPersistentCollection && !val2.isInitialized()))
+					return false;
 				if (val1.length != val2.length)
 					return false;
 				for (idx = 0; idx < val1.length; idx++) {
@@ -286,6 +288,8 @@ package org.granite.tide.data {
 				return true;
 			}
 			else if (val1 is IMap && val2 is IMap) {
+				if ((val1 is IPersistentCollection && !val1.isInitialized()) || (val2 is IPersistentCollection && !val2.isInitialized()))
+					return false;
 				if (val1.length != val2.length)
 					return false;
 				for each (e in val1.keySet) {
