@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.granite.config.api.Configuration;
 import org.granite.logging.Logger;
+import org.granite.messaging.amf.RemoteClass;
 import org.granite.messaging.amf.io.AMF3Deserializer;
 import org.granite.messaging.amf.io.AMF3DeserializerSecurizer;
 import org.granite.messaging.amf.io.AMF3Serializer;
@@ -136,6 +137,9 @@ public class GraniteConfig implements ScannedItemHandler {
     private final ConcurrentHashMap<String, Class<? extends ActionScriptClassDescriptor>> as3DescriptorsByType
         = new ConcurrentHashMap<String, Class<? extends ActionScriptClassDescriptor>>();
     private final Map<String, String> as3DescriptorsByInstanceOf = new HashMap<String, String>();
+    
+    // Client class aliases
+    private final ConcurrentHashMap<String, String> aliases = new ConcurrentHashMap<String, String>();
     
     // Exception converters
     private final List<ExceptionConverter> exceptionConverters = new ArrayList<ExceptionConverter>();
@@ -768,7 +772,18 @@ public class GraniteConfig implements ScannedItemHandler {
             }
         }
     }
+    
+    public String getTypeForAlias(String alias) {
+    	return aliases.containsKey(alias) ? aliases.get(alias) : alias;
+    }
+    
+    public void registerClassAlias(Class<?> clazz) {
+    	RemoteClass remoteClass = clazz.getAnnotation(RemoteClass.class);
+    	if (remoteClass != null)
+    		aliases.put(remoteClass.value(), clazz.getName());
+    }
 
+    
     /**
      * Read custom class exception converters
      * Converter must have 'type' attribute
