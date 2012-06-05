@@ -77,14 +77,14 @@ public abstract class AbstractJPAExternalizerTest {
 		et.commit();
 		entityManager.close();
 		
-		GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
 		out.writeObject(e5);		
 		GraniteContext.release();
 		
 		InputStream is = new ByteArrayInputStream(baos.toByteArray());
-		gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
 		Object obj = in.readObject();
 		GraniteContext.release();
@@ -124,14 +124,14 @@ public abstract class AbstractJPAExternalizerTest {
 		et.commit();
 		entityManager.close();
 		
-		GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
 		out.writeObject(e2);		
 		GraniteContext.release();
 		
 		InputStream is = new ByteArrayInputStream(baos.toByteArray());
-		gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
 		Object obj = in.readObject();
 		GraniteContext.release();
@@ -146,14 +146,14 @@ public abstract class AbstractJPAExternalizerTest {
         Entity6 e6 = new Entity6();
         e6.setName("Test");
         
-        GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
         ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
         ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
         out.writeObject(e6);        
         GraniteContext.release();
         
         InputStream is = new ByteArrayInputStream(baos.toByteArray());
-        gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
         ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
         Object obj = in.readObject();
         GraniteContext.release();
@@ -188,7 +188,7 @@ public abstract class AbstractJPAExternalizerTest {
         et.commit();
         entityManager.close();
         
-        GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
         ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
@@ -197,7 +197,7 @@ public abstract class AbstractJPAExternalizerTest {
         GraniteContext.release();
         
         InputStream is = new ByteArrayInputStream(baos.toByteArray());
-        gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
         ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
         Object obj = in.readObject();
         GraniteContext.release();
@@ -208,7 +208,7 @@ public abstract class AbstractJPAExternalizerTest {
     
     @Test
     public void testSerializationProxy2() throws Exception {
-        GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         EntityTransaction et = entityManager.getTransaction();
@@ -243,7 +243,7 @@ public abstract class AbstractJPAExternalizerTest {
         GraniteContext.release();
         
         InputStream is = new ByteArrayInputStream(baos.toByteArray());
-        gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+        gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
         ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
         Object obj = in.readObject();
         GraniteContext.release();

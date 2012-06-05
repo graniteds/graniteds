@@ -250,6 +250,10 @@ public class DefaultExternalizer implements Externalizer {
     	return false;
     }
 
+    protected boolean isPropertyIgnored(Method method) {
+    	return false;
+    }
+
     protected <T> Constructor<T> findDefaultConstructor(Class<T> clazz) {
         Constructor<T> constructor = null;
 

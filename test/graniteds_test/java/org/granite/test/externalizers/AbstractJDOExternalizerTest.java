@@ -70,14 +70,14 @@ public abstract class AbstractJDOExternalizerTest {
 		persistenceManager.currentTransaction().commit();
 		persistenceManager.close();
 		
-		GraniteContext gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
 		out.writeObject(e5);		
 		GraniteContext.release();
 		
 		InputStream is = new ByteArrayInputStream(baos.toByteArray());
-		gc = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
 		Object obj = in.readObject();
 		GraniteContext.release();

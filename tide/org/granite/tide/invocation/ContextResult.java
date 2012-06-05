@@ -22,11 +22,13 @@ package org.granite.tide.invocation;
 
 import java.io.Serializable;
 
+import org.granite.tide.Expression;
+
 
 /**
  * @author William DRAI
  */
-public class ContextResult implements Serializable {
+public class ContextResult implements Serializable, Expression {
 
     private static final long serialVersionUID = 1L;
     
@@ -84,6 +86,18 @@ public class ContextResult implements Serializable {
     
     public Boolean getRestrict() {
         return null;
+    }
+    
+    public String getPath() {
+        return componentName + (expression != null ? "." + expression : "");
+    }
+    
+    public boolean matches(String componentName, String componentClassName, String expr) {
+        if (this.componentClassName != null && componentClassName != null 
+            && (this.componentClassName + (this.expression != null ? "." + this.expression : "")).indexOf(componentClassName + (expr != null ? "." + expr : "")) == 0) {
+            return true;
+        }
+        return getPath().indexOf(componentName + (expr != null ? "." + expr : "")) == 0; 
     }
 
     

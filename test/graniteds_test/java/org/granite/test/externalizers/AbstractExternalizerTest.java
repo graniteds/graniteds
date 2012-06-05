@@ -16,7 +16,7 @@ public class AbstractExternalizerTest {
 	public void before() throws Exception {
 		GraniteConfig graniteConfig = new GraniteConfig(null, null, null, null);
 		ServicesConfig servicesConfig = new ServicesConfig(null, null, false);
-		SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 	}
 	
 	@After

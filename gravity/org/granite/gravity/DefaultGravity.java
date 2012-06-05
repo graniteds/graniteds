@@ -543,7 +543,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     public GraniteContext initThread() {
         GraniteContext context = GraniteContext.getCurrentInstance();
         if (context == null)
-            context = SimpleGraniteContext.createThreadIntance(graniteConfig, servicesConfig, applicationMap);
+            context = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, applicationMap);
         return context;
     }
     

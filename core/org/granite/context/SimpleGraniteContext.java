@@ -33,7 +33,7 @@ public class SimpleGraniteContext extends GraniteContext {
     private Map<String, Object> applicationMap;
 
 
-    public static SimpleGraniteContext createThreadIntance(
+    public static SimpleGraniteContext createThreadInstance(
         GraniteConfig graniteConfig,
         ServicesConfig servicesConfig,
         Map<String, Object> applicationMap) {
