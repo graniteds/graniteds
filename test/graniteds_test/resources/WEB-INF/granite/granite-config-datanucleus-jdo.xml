@@ -1,4 +1,9 @@
-/*
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE granite-config PUBLIC "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+
+<!--
   GRANITE DATA SERVICES
   Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
 
@@ -16,15 +21,16 @@
 
   You should have received a copy of the GNU Library General Public License
   along with this library; if not, see <http://www.gnu.org/licenses/>.
-*/
+-->
 
-package org.granite.tide;
+<granite-config>
 
-import java.io.Serializable;
-
-
-/**
- * @author William DRAI
- */
-public interface IInvocationCall extends Serializable {
-}
+	<class-getter type="org.granite.datanucleus.DataNucleusClassGetter"/>
+    
+    <externalizers>
+        <externalizer type="org.granite.datanucleus.DataNucleusExternalizer">
+            <include instance-of="javax.jdo.spi.PersistenceCapable"/>
+        </externalizer>
+    </externalizers>
+    
+</granite-config>

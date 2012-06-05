@@ -42,6 +42,23 @@ import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.Message;
 
 /**
+ * Asynchronous servlet support for WebLogic 9.1+ servers.
+ * <br /><br />
+ * Usage:
+ * <pre>
+ * &lt;servlet&gt;
+ *     &lt;servlet-name&gt;GravityServlet&lt;/servlet-name&gt;
+ *     &lt;servlet-class&gt;org.granite.gravity.weblogic.GravityWebLogicServlet&lt;/servlet-class&gt;
+ *     
+ *     (optional parameter, default is 40,000 milliseconds)
+ *     &lt;init-param&gt;
+ *         &lt;param-name&gt;scavangeInterval&lt;/param-name&gt;
+ *         &lt;param-value&gt;40000&lt;/param-value&gt;
+ *     &lt;/init-param&gt;
+ *     
+ * &lt;/servlet&gt;
+ * </pre>
+ * 
  * @author Franck WOLFF
  */
 public class GravityWebLogicServlet extends AbstractAsyncServlet {

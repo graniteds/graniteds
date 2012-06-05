@@ -56,5 +56,7 @@
 	<classpathentry kind="lib" path="/graniteds/lib/weld-spi.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/weld-se-core.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/weld-core-test.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jdo2-api-2.3-eb.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/datanucleus-core.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

@@ -133,10 +133,10 @@ package org.granite.tide.seam.security {
          *  @param resultHandler optional result handler
          *  @param faultHandler optional fault handler 
          */  
-        public function login(resultHandler:Function = null, faultHandler:Function = null):void {
+        public function login(resultHandler:Function = null, faultHandler:Function = null, charset:String = null):void {
             var l:Boolean = loggedIn;    // Force evaluation of loggedIn state
             
-            _context.meta_login(this, object.username, object.password, resultHandler, faultHandler);
+            _context.meta_login(this, object.username, object.password, resultHandler, faultHandler, charset);
         }
         
         private function loginSuccessHandler(event:TideContextEvent):void {

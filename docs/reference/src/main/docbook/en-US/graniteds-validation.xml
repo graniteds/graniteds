@@ -391,6 +391,9 @@ public class PersonBase implements IExternalizable {
         You may then use the <literal>ValidationFactory</literal> in order to validate your ActionScript 3 bean, and the same constraints will be applied 
         on the Flex and the Java sides.
         </para>
+        <para>
+        This works for plain Java beans and entity beans.
+        </para>
     </section>
     
     <section id="validation.customconstraints">
@@ -566,6 +569,17 @@ ValidatorFactory.getInstance().validate(bean);
         then automatically displayed or cleared depending on the validation result.
         </para>
         <para>
+        Note that the binding with the target entity should be direct (e.g. not <literal>entity="{model.entity}"</literal> but <literal>entity="{entity}"</literal>.
+        If not possible or too complex, you can specify a property <literal>entityPath</literal> to indicate the validator that it should bind to a deeper
+        element in the object graph. 
+        </para>
+        <programlisting role="XML">
+<![CDATA[<fx:Declarations>
+    <v:FormValidator id="fValidator" form="{personForm}" entity="{model.person}" entityPath="model"/>
+</fx:Declarations>
+]]>
+		</programlisting>        
+        <para>
         The global validation of the person bean will be performed when the user click on the <emphasis>"Save"</emphasis> button. However, class-level 
         constraint violations (such as the <literal>PersonChecker</literal> constraint) cannot be automatically associated to an input, and these violations 
         prevent the <literal>fValidator.validateEntity()</literal> call to succeed while nothing cannot be automatically displayed to the user.
@@ -689,6 +703,12 @@ public class Person {
         This time, you have to set manually input values into your bean, but this will work with Flex 3 as well and these subfields may contain a path 
         to a subproperty: for example, if you have an <literal>Address</literal> bean in your <literal>Person</literal> bean, you could write 
         <literal>validationSubField="address.address1"</literal>.
+        </para>
+        <para>
+        A last option to help the <literal>FormValidator</literal> detect the data bindings is to define a global list of properties which will be
+        considered as UI component targets for bindings. By default, <literal>text</literal>, <literal>selected</literal>, <literal>selectedDate</literal>, 
+        <literal>selectedItem</literal> and <literal>selectedIndex</literal> are prioritarily considered for binding detection so most standard controls
+        work correctly (for example <literal>TextInput</literal>, <literal>TextArea</literal>, <literal>CheckBox</literal> or <literal>DatePicker</literal>).
         </para>
     </section>
     

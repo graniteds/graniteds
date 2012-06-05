@@ -101,6 +101,7 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 			String newDataSelector = params.updateDataSelector(dataSelector, newSelectors);
 			dataSelectorChanged = !newDataSelector.equals(dataSelector);
 			if (dataSelectorChanged) {
+<<<<<<< HEAD
 				log.debug("Data selector changed: %s", newDataSelector);
 				gdd.setDestinationSelector(topicName, newDataSelector);
 			}
@@ -109,6 +110,11 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 		if (!DataObserveParams.containsSame(selectors, newSelectors)) {
 			log.debug("Selectors changed: %s", newSelectors);
 			gdd.setDestinationDataSelectors(topicName, DataObserveParams.toSerializableForm(newSelectors));
+=======
+				gdd.setDestinationSelector(topicName, newDataSelector);
+				dataSelector = newDataSelector;
+			}
+>>>>>>> e23f8a89355a9f26edd9772c97bfa3f9a81970fe
 		}
 		
 		if (!enabled)

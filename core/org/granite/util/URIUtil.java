@@ -30,10 +30,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.JarURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.jar.JarEntry;
+import java.util.regex.Pattern;
 
 /**
  * @author Franck WOLFF
@@ -41,35 +43,70 @@ import java.util.jar.JarEntry;
 public class URIUtil {
 
     public static final String CLASSPATH_SCHEME = "class";
+    public static final String FILE_SCHEME = "file";
+    public static final Pattern WINDOWS_DRIVE_PATTERN = Pattern.compile("^[a-zA-Z]\\:.*$");
 
     public static String normalize(String uri) {
-    	
     	if (uri == null)
     		return null;
-    	
-    	if (File.separatorChar == '\\' && uri.startsWith("file://"))
-    		uri = uri.replace('\\', '/');
-
-    	uri = uri.replace(" ", "%20");
-    	
+    	uri = uri.replace('\\', '/').replace(" ", "%20");
+    	while (uri.indexOf("//") != -1)
+    		uri = uri.replace("//", "/");
     	return uri;
+    }
+
+    public static boolean isFileURI(String path) throws URISyntaxException {
+    	return isFileURI(new URI(normalize(path)));
+    }
+
+    public static boolean isFileURI(URI uri) {
+    	// scheme.length() == 1 -> assume windows drive letter.
+    	return uri.getScheme() == null || uri.getScheme().length() <= 1 || FILE_SCHEME.equals(uri.getScheme());
+    }
+    
+    public static boolean isAbsolute(String path) throws URISyntaxException {
+    	return isAbsolute(new URI(normalize(path)));
+    }
+    
+    public static boolean isAbsolute(URI uri) {
+    	String schemeSpecificPart = uri.getSchemeSpecificPart();
+    	if (schemeSpecificPart == null || schemeSpecificPart.length() == 0)
+    		return uri.isAbsolute();
+    	
+    	String scheme = uri.getScheme();
+    	if (scheme == null)
+    		return schemeSpecificPart.charAt(0) == '/';
+    	if (FILE_SCHEME.equals(scheme))
+    		return schemeSpecificPart.charAt(0) == '/' || WINDOWS_DRIVE_PATTERN.matcher(schemeSpecificPart).matches();
+    	return true;
+    }
+    
+    public static String getSchemeSpecificPart(String path) throws URISyntaxException {
+    	return getSchemeSpecificPart(new URI(normalize(path)));
+    }
+    
+    public static String getSchemeSpecificPart(URI uri) {
+    	if (uri.getScheme() != null && uri.getScheme().length() <= 1)
+    		return uri.getScheme() + ":" + uri.getSchemeSpecificPart();
+    	return uri.getSchemeSpecificPart();
     }
     
     public static InputStream getInputStream(URI uri, ClassLoader loader) throws IOException {
         InputStream is = null;
 
         String scheme = uri.getScheme();
+        String path = getSchemeSpecificPart(uri);
         if (CLASSPATH_SCHEME.equals(scheme)) {
         	if (loader != null)
-        		is = loader.getResourceAsStream(uri.getSchemeSpecificPart());
+        		is = loader.getResourceAsStream(path);
         	if (is == null) {
-        		is = Thread.currentThread().getContextClassLoader().getResourceAsStream(uri.getSchemeSpecificPart());
+        		is = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
 	            if (is == null)
 	                throw new IOException("Resource not found exception: " + uri);
         	}
         }
-        else if (scheme == null || scheme.length() <= 1) // scheme.length() == 1 -> assume drive letter.
-            is = new FileInputStream(uri.toString());
+        else if (isFileURI(uri))
+            is = new FileInputStream(path);
         else
             is = uri.toURL().openStream();
 

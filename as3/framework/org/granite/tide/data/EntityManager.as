@@ -717,7 +717,7 @@ package org.granite.tide.data {
                 desc = _context.meta_tide.getEntityDescriptor(IEntity(obj));
                 if (desc.idPropertyName != null) {
                     p = _entitiesByUID.find(function(o:Object):Boolean {
-                        return (getQualifiedClassName(o) === getQualifiedClassName(obj) && obj[desc.idPropertyName] === o[desc.idPropertyName]);
+                        return (getQualifiedClassName(o) === getQualifiedClassName(obj) && objectEquals(obj[desc.idPropertyName], o[desc.idPropertyName]));
                     });
 
                     if (p) {
@@ -751,14 +751,11 @@ package org.granite.tide.data {
 
 			try {
 	        	if (obj is IEntity && !obj.meta::isInitialized() && objectEquals(previous, obj)) {
-	                desc = _context.meta_tide.getEntityDescriptor(IEntity(obj));
-	        		// Don't overwrite existing entity with an uninitialized proxy when optimistic locking is defined
-	        		if (desc.versionPropertyName != null) {
-	        			log.debug("ignored received uninitialized proxy");
-                        // Should we mark the object not dirty as we only received a proxy ??
-	        			_dirtyCheckContext.markNotDirty(previous);
-		    			return previous;
-		    		}
+	        		// Don't overwrite existing entity with an uninitialized proxy
+        			log.debug("ignored received uninitialized proxy");
+                    // Don't mark the object not dirty as we only received a proxy
+        			// _dirtyCheckContext.markNotDirty(previous);
+	    			return previous;
 	        	}
 	            
 	            if (dest is IEntity && !dest.meta::isInitialized())
@@ -1463,7 +1460,7 @@ package org.granite.tide.data {
 	            		// Compare with identifier for uninitialized entities
 	            		var edesc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(obj1));
 	            		if (edesc.idPropertyName != null)
-	            			return obj1[edesc.idPropertyName] == obj2[edesc.idPropertyName];
+	            			return objectEquals(obj1[edesc.idPropertyName], obj2[edesc.idPropertyName]);
 	            	}
 	            }
 	            catch (e:ReferenceError) {

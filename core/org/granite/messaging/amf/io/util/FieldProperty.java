@@ -39,12 +39,12 @@ public class FieldProperty extends Property {
     }
 
     @Override
-    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass, boolean recursive) {
         return field.isAnnotationPresent(annotationClass);
     }
 
     @Override
-	public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+	public <T extends Annotation> T getAnnotation(Class<T> annotationClass, boolean recursive) {
 		return field.getAnnotation(annotationClass);
 	}
 

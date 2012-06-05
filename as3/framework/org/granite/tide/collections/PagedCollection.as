@@ -88,6 +88,8 @@ package org.granite.tide.collections {
 		 * 	@private
 		 */
         protected var _max:int;           // Page size
+		protected var _clientMax:int	  // Page size as specified on the client
+		protected var _clientMaxSet:Boolean = false;
 		/**
 		 * 	@private
 		 */
@@ -165,6 +167,8 @@ package org.granite.tide.collections {
 		 */
 		public function set maxResults(max:int):void {
 			_max = max;
+			_clientMax = max;
+			_clientMaxSet = true;
 		}
 		
 		
@@ -186,12 +190,18 @@ package org.granite.tide.collections {
 		 * 	Clear collection content
 		 */
 		public function clear():void {
-			handleResult({ resultList: new ArrayCollection(), resultCount: 0, firstResult: 0, maxResults: _max });
+			_ipes = null;
+			clearLocalIndex();
+			_list = null;
+			_first = 0;
+			_last = 0;
+			_count = 0;
+			if (_clientMaxSet)
+				_max = _clientMax;
+			_fullRefresh = false;
+			_filterRefresh = false;
 			_initializing = true;
 			_initSent = false;
-			clearLocalIndex();
-			_first = 0;
-			_last = _first+_max;
 		}
     	
     	
@@ -233,7 +243,7 @@ package org.granite.tide.collections {
 			if (sort != null) {
 				sort.compareFunction = nullCompare;
 				if (sort.fields != null && sort.fields.length != _sortFieldListenersSet) {
-					for each (var field:SortField in sort.fields)
+					for each (var field:Object in sort.fields)
 						field.addEventListener("descendingChanged", sortFieldChangeHandler, false, 0, true);
 					_sortFieldListenersSet = sort.fields.length;
 				}
@@ -508,7 +518,7 @@ package org.granite.tide.collections {
             public override function set sort(newSort:Sort):void {
                 // Track changes on sort fields
                 if (sort != null && sort.fields != null) {
-                    for each (var field:SortField in sort.fields)
+                    for each (var field:Object in sort.fields)
                         field.removeEventListener("descendingChanged", sortFieldChangeHandler);
                 }
                 _sortFieldListenersSet = 0;
@@ -527,7 +537,7 @@ package org.granite.tide.collections {
             public override function set sort(newSort:ISort):void {
                 // Track changes on sort fields
                 if (sort != null && sort.fields != null) {
-                    for each (var field:SortField in sort.fields)
+                    for each (var field:Object in sort.fields)
                         field.removeEventListener("descendingChanged", sortFieldChangeHandler);
                 }
                 _sortFieldListenersSet = 0;

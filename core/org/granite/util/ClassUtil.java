@@ -20,10 +20,14 @@
 
 package org.granite.util;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -170,7 +174,7 @@ public abstract class ClassUtil {
     }
 
     public static URL findResource(Class<?> clazz) {
-        if (clazz.isArray())
+        while (clazz.isArray())
             clazz = clazz.getComponentType();
         if (clazz.isPrimitive())
             return null;
@@ -236,5 +240,122 @@ public abstract class ClassUtil {
 		}
 		
 		throw new NoSuchMethodException("Could not find method: " + signature + " in class: " + clazz);
+    }
+    
+    public static boolean isAnnotationPresent(AnnotatedElement elmt, Class<? extends Annotation> annotationClass) {
+    	return getAnnotation(elmt, annotationClass) != null;
+    }
+    
+    public static <T extends Annotation> DeclaredAnnotation<T> getAnnotation(AnnotatedElement elmt, Class<T> annotationClass) {
+    	T annotation = elmt.getAnnotation(annotationClass);
+    	
+    	if (annotation != null) {
+    		Class<?> declaringClass = (elmt instanceof Member ? ((Member)elmt).getDeclaringClass() : (Class<?>)elmt);
+    		return new DeclaredAnnotation<T>(annotation, elmt, declaringClass);
+    	}
+    	
+    	if (elmt instanceof Field)
+    		return null;
+    	
+    	if (elmt instanceof Method) {
+    		Method m = (Method)elmt;
+    		return getMethodAnnotation(m.getDeclaringClass(), m.getName(), m.getParameterTypes(), annotationClass);
+    	}
+    	
+    	if (elmt instanceof Constructor) {
+    		Constructor<?> c = (Constructor<?>)elmt;
+    		return getConstructorAnnotation(c.getDeclaringClass(), annotationClass);
+    	}
+    	
+    	if (elmt instanceof Class) {
+    		Class<?> c = (Class<?>)elmt;
+    		return getClassAnnotation(c.getDeclaringClass(), annotationClass);
+    	}
+    	
+    	throw new RuntimeException("Unsupported annotated element: " + elmt);
+    }
+    
+    public static <T extends Annotation> DeclaredAnnotation<T> getMethodAnnotation(Class<?> clazz, String name, Class<?>[] parameterTypes, Class<T> annotationClass) {
+    	DeclaredAnnotation<T> declaredAnnotation = null;
+    	
+    	try {
+    		Method method = clazz.getDeclaredMethod(name, parameterTypes);
+    		T annotation = clazz.getDeclaredMethod(name, parameterTypes).getAnnotation(annotationClass);
+    		if (annotation != null)
+    			declaredAnnotation = new DeclaredAnnotation<T>(annotation, method, clazz);
+    	}
+    	catch (NoSuchMethodException e) {
+    		// fallback...
+    	}
+    	
+    	if (declaredAnnotation == null && clazz.getSuperclass() != null)
+    		declaredAnnotation = getMethodAnnotation(clazz.getSuperclass(), name, parameterTypes, annotationClass);
+    	
+    	if (declaredAnnotation == null) {
+	    	for (Class<?> interfaze : clazz.getInterfaces()) {
+	    		declaredAnnotation = getMethodAnnotation(interfaze, name, parameterTypes, annotationClass);
+	    		if (declaredAnnotation != null)
+	    			break;
+	    	}
+    	}
+    		
+    	return declaredAnnotation;
+    }
+    
+    public static <T extends Annotation> DeclaredAnnotation<T> getConstructorAnnotation(Class<?> clazz, Class<T> annotationClass) {
+    	DeclaredAnnotation<T> declaredAnnotation = null;
+    	
+    	for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+    		T annotation = constructor.getAnnotation(annotationClass);
+    		if (annotation != null) {
+    			declaredAnnotation = new DeclaredAnnotation<T>(annotation, constructor, clazz);
+    			break;
+    		}
+    	}
+    	
+    	if (declaredAnnotation == null && clazz.getSuperclass() != null)
+    		declaredAnnotation = getConstructorAnnotation(clazz.getSuperclass(), annotationClass);
+    		
+    	return declaredAnnotation;
+    }
+    
+    public static <T extends Annotation> DeclaredAnnotation<T> getClassAnnotation(Class<?> clazz, Class<T> annotationClass) {
+    	DeclaredAnnotation<T> declaredAnnotation = null;
+    	
+    	T annotation = clazz.getAnnotation(annotationClass);
+    	if (annotation != null)
+    		declaredAnnotation = new DeclaredAnnotation<T>(annotation, clazz, clazz);
+    	else {
+	    	if (clazz.getSuperclass() != null)
+	    		declaredAnnotation = getClassAnnotation(clazz.getSuperclass(), annotationClass);
+	    	
+	    	if (declaredAnnotation == null) {
+	    		for (Class<?> interfaze : clazz.getInterfaces()) {
+		    		declaredAnnotation = getClassAnnotation(interfaze, annotationClass);
+		    		if (declaredAnnotation != null)
+		    			break;
+		    	}
+	    	}
+    	}
+    		
+    	return declaredAnnotation;
+    }
+    
+    public static class DeclaredAnnotation<T extends Annotation> {
+
+    	public final T annotation;
+    	public final AnnotatedElement annotatedElement;
+    	public final Class<?> declaringClass;
+		
+    	public DeclaredAnnotation(T annotation, AnnotatedElement annotatedElement, Class<?> declaringClass) {
+			this.annotation = annotation;
+			this.annotatedElement = annotatedElement;
+			this.declaringClass = declaringClass;
+		}
+
+		@Override
+		public String toString() {
+			return getClass().getName() + "{annotation=" + annotation + ", annotatedElement=" + annotatedElement + ", declaringClass=" + declaringClass + "}";
+		}
     }
 }

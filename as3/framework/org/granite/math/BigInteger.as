@@ -864,6 +864,16 @@ package org.granite.math {
 		}
 		
 		///////////////////////////////////////////////////////////////////////
+		// Utilities.
+		
+		internal function clone():BigInteger {
+			var clone:BigInteger = new BigInteger();
+			clone._mbi = _mbi.clone();
+			clone._sign = _sign;
+			return clone;
+		}
+		
+		///////////////////////////////////////////////////////////////////////
 		// IExternalizable implementation.
 		
 		/**

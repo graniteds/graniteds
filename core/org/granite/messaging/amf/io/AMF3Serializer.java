@@ -116,7 +116,9 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
 	            if (converters.hasReverters())
 	                o = converters.revert(o);
 	
-	            if (o instanceof String || o instanceof Character)
+		        if (o == null)
+		            write(AMF3_NULL);
+		        else if (o instanceof String || o instanceof Character)
 	                writeAMF3String(o.toString());
 	            else if (o instanceof Boolean)
 	                write(((Boolean)o).booleanValue() ? AMF3_BOOLEAN_TRUE : AMF3_BOOLEAN_FALSE);

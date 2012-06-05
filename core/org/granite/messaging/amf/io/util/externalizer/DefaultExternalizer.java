@@ -53,6 +53,7 @@ import org.granite.util.ClassUtil;
 import org.granite.util.Introspector;
 import org.granite.util.PropertyDescriptor;
 import org.granite.util.XMap;
+import org.granite.util.ClassUtil.DeclaredAnnotation;
 
 /**
  * @author Franck WOLFF
@@ -115,7 +116,7 @@ public class DefaultExternalizer implements Externalizer {
             log.debug("Reading bean %s with fields %s", o.getClass().getName(), fields);
             for (Property field : fields) {
                 Object value = in.readObject();
-                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class)))
+                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class, true)))
                 	field.setProperty(o, value);
             }
         }
@@ -170,7 +171,8 @@ public class DefaultExternalizer implements Externalizer {
         if (fields == null) {
         	if (dynamicClass)
         		Introspector.flushFromCaches(clazz);
-            PropertyDescriptor[] propertyDescriptors = Introspector.getPropertyDescriptors(clazz);
+            
+        	PropertyDescriptor[] propertyDescriptors = ClassUtil.getProperties(clazz);
             Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
 
             fields = new ArrayList<Property>();
@@ -208,10 +210,11 @@ public class DefaultExternalizer implements Externalizer {
                 if (propertyDescriptors != null) {
                     for (PropertyDescriptor property : propertyDescriptors) {
                         Method getter = property.getReadMethod();
-                        if (getter != null &&
-                            getter.isAnnotationPresent(ExternalizedProperty.class) &&
-                            getter.getDeclaringClass().equals(c) &&
-                            !allFieldNames.contains(property.getName())) {
+                        if (getter != null && !allFieldNames.contains(property.getName())) {
+                            
+                        	DeclaredAnnotation<ExternalizedProperty> annotation = ClassUtil.getAnnotation(getter, ExternalizedProperty.class);
+                        	if (annotation == null || (annotation.declaringClass != c && !annotation.declaringClass.isInterface()))
+                        		continue;
 
                             newFields.add(new MethodProperty(
                                 converters,

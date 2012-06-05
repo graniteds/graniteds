@@ -88,7 +88,7 @@ public abstract class AMF3MessageProcessor {
                 SecurityService securityService = config.getSecurityService();
                 try {
                     if (request.isLoginOperation())
-                        securityService.login(request.getBody());
+                        securityService.login(request.getBody(), (String)request.getHeader(Message.CREDENTIALS_CHARSET_HEADER));
                     else if (request.isLogoutOperation())
                         securityService.logout();
                     else

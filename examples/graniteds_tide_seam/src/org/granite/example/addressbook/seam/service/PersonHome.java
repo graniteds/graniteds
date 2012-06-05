@@ -25,9 +25,9 @@ import org.granite.example.addressbook.entity.Person;
 import org.granite.tide.annotations.TideEnabled;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataEnabled.PublishMode;
-import org.jboss.seam.annotations.Begin;
-import org.jboss.seam.annotations.End;
+import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Name;
+import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.annotations.Transactional;
 import org.jboss.seam.annotations.security.Restrict;
 import org.jboss.seam.framework.EntityHome;
@@ -35,6 +35,7 @@ import org.jboss.seam.framework.EntityHome;
 
 
 @Name("personHome")
+@Scope(ScopeType.EVENT)
 @Restrict("#{identity.loggedIn}")
 @TideEnabled
 @DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_SUCCESS, useInterceptor=true)
@@ -44,14 +45,7 @@ public class PersonHome extends EntityHome<Person> {
     
     
     @Override
-    @Begin(join=true)
-    public void create() {
-        super.create();
-    }
-    
-    @Override
     @Transactional
-    @End
     public String persist() {
         return super.persist();
     }
@@ -59,7 +53,6 @@ public class PersonHome extends EntityHome<Person> {
     @Override
     @Restrict("#{s:hasRole('admin') or s:hasPermission(personHome.instance, 'update')}")
     @Transactional
-    @End
     public String update() {
         return super.update();
     }
@@ -67,7 +60,6 @@ public class PersonHome extends EntityHome<Person> {
     @Override
     @Restrict("#{s:hasRole('admin')}")
     @Transactional
-    @End
     public String remove() {
         return super.remove();
     }

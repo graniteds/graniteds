@@ -793,7 +793,7 @@ public class GraniteConfig implements ScannedItemHandler {
             }
         }
     }
-
+    
     public String getTypeForAlias(String alias) {
     	return aliases.containsKey(alias) ? aliases.get(alias) : alias;
     }

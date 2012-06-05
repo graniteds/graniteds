@@ -27,8 +27,10 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,13 +47,12 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.jdo.annotations.EmbeddedOnly;
+import javax.jdo.annotations.Extension;
 import javax.jdo.spi.Detachable;
 import javax.jdo.spi.PersistenceCapable;
 import javax.jdo.spi.StateManager;
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.IdClass;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.Version;
 
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
@@ -67,6 +68,7 @@ import org.granite.messaging.persistence.ExternalizablePersistentList;
 import org.granite.messaging.persistence.ExternalizablePersistentMap;
 import org.granite.messaging.persistence.ExternalizablePersistentSet;
 import org.granite.util.ClassUtil;
+import org.granite.util.Reflections;
 import org.granite.util.StringUtil;
 
 
@@ -74,11 +76,36 @@ import org.granite.util.StringUtil;
  * @author Stephen MORE
  * @author William DRAI
  */
+@SuppressWarnings("unchecked")
 public class DataNucleusExternalizer extends DefaultExternalizer {
 
 	private static final Logger log = Logger.getLogger(DataNucleusExternalizer.class);
 	
 	private static final Integer NULL_ID = Integer.valueOf(0);
+	
+	private static boolean jpaEnabled;
+	private static Class<? extends Annotation> entityAnnotation;
+	private static Class<? extends Annotation> mappedSuperClassAnnotation;
+	private static Class<? extends Annotation> embeddableAnnotation;
+	private static Class<? extends Annotation> idClassAnnotation;
+	static {
+		try {
+			ClassLoader cl = DataNucleusExternalizer.class.getClassLoader();
+			entityAnnotation = (Class<? extends Annotation>)cl.loadClass("javax.persistence.Entity");
+			mappedSuperClassAnnotation = (Class<? extends Annotation>)cl.loadClass("javax.persistence.MappedSuperclass");
+			embeddableAnnotation = (Class<? extends Annotation>)cl.loadClass("javax.persistence.Embeddable");
+			idClassAnnotation = (Class<? extends Annotation>)cl.loadClass("javax.persistence.IdClass");
+			jpaEnabled = true;
+		}
+		catch (Exception e) {
+			// JPA not present
+			entityAnnotation = null;
+			mappedSuperClassAnnotation = null;
+			embeddableAnnotation = null;
+			idClassAnnotation = null;
+			jpaEnabled = false;
+		}
+	}
 	
 
     @Override
@@ -104,8 +131,23 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
         // Pseudo-proxy (uninitialized entity).
         if (!initialized) {
         	Object id = in.readObject();
-        	if (id != null && (!clazz.isAnnotationPresent(IdClass.class) || !clazz.getAnnotation(IdClass.class).value().equals(id.getClass())))
-        		throw new RuntimeException("Id for DataNucleus pseudo-proxy should be null (" + type + ")");
+        	if (id != null && jpaEnabled) {
+        		// Is there something similar for JDO ??
+        		boolean error = !clazz.isAnnotationPresent(idClassAnnotation);
+        		if (!error) {
+        			Object idClass = clazz.getAnnotation(idClassAnnotation);
+        			try {
+	        			Method m = idClass.getClass().getMethod("value");
+	        			error = !id.getClass().equals(m.invoke(idClass));
+        			}
+        			catch (Exception e) {
+        				log.error(e, "Could not get idClass annotation value");
+        				error = true;
+        			}
+        		}
+        		if (error)
+        			throw new RuntimeException("Id for DataNucleus pseudo-proxy should be null (" + type + ")");
+        	}
         	return null;
         }
         
@@ -142,7 +184,7 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
                 
                 Object value = in.readObject();
                 
-                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class))) {
+                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class, true))) {
                 	
                 	// (Un)Initialized collections/maps.
                 	if (value instanceof AbstractExternalizablePersistentCollection)
@@ -231,8 +273,7 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
 	        	if (detachedState != null) {
 	            	// Write detached state as a String, in the form of an hex representation
 	            	// of the serialized detached state.
-	    	        org.granite.util.Entity entity = new org.granite.util.Entity(pco);
-	    	        Object version = entity.getVersion();
+	    	        Object version = getVersion(pco);
 	    	        if (version != null)
 	    	        	detachedState[1] = version;
 		        	byte[] binDetachedState = serializeDetachedState(detachedState);
@@ -302,29 +343,35 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
     @Override
     public int accept(Class<?> clazz) {
         return (
-            clazz.isAnnotationPresent(Entity.class) ||
-            clazz.isAnnotationPresent(MappedSuperclass.class) ||
-            clazz.isAnnotationPresent(Embeddable.class) ||
+            clazz.isAnnotationPresent(entityAnnotation) ||
+            clazz.isAnnotationPresent(mappedSuperClassAnnotation) ||
+            clazz.isAnnotationPresent(embeddableAnnotation) ||
             clazz.isAnnotationPresent(javax.jdo.annotations.PersistenceCapable.class)
         ) ? 1 : -1;
     }
 
     protected boolean isRegularEntity(Class<?> clazz) {
-        return ((PersistenceCapable.class.isAssignableFrom(clazz) && Detachable.class.isAssignableFrom(clazz)) 
-        	|| clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(MappedSuperclass.class))
-        	&& !(clazz.isAnnotationPresent(Embeddable.class));
+    	if (jpaEnabled) {
+	        return ((PersistenceCapable.class.isAssignableFrom(clazz) && Detachable.class.isAssignableFrom(clazz) && !clazz.isAnnotationPresent(EmbeddedOnly.class)) 
+	        	|| clazz.isAnnotationPresent(entityAnnotation) || clazz.isAnnotationPresent(mappedSuperClassAnnotation))
+	        	&& !(clazz.isAnnotationPresent(embeddableAnnotation));
+    	}
+        return PersistenceCapable.class.isAssignableFrom(clazz) && Detachable.class.isAssignableFrom(clazz) && !clazz.isAnnotationPresent(EmbeddedOnly.class);
     }
     
     protected boolean isEmbeddable(Class<?> clazz) {
-        return ((PersistenceCapable.class.isAssignableFrom(clazz) && Detachable.class.isAssignableFrom(clazz)) 
-            || clazz.isAnnotationPresent(Embeddable.class))
-            && !(clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(MappedSuperclass.class));
+    	if (jpaEnabled) {
+	        return ((PersistenceCapable.class.isAssignableFrom(clazz) && Detachable.class.isAssignableFrom(clazz) && clazz.isAnnotationPresent(EmbeddedOnly.class)) 
+	            || clazz.isAnnotationPresent(embeddableAnnotation))
+	            && !(clazz.isAnnotationPresent(entityAnnotation) || clazz.isAnnotationPresent(mappedSuperClassAnnotation));
+    	}
+        return PersistenceCapable.class.isAssignableFrom(clazz) && Detachable.class.isAssignableFrom(clazz) && clazz.isAnnotationPresent(EmbeddedOnly.class);
     }
 
     @Override
     public List<Property> findOrderedFields(final Class<?> clazz, boolean returnSettersWhenAvailable) {
     	List<Property> orderedFields = super.findOrderedFields(clazz, returnSettersWhenAvailable);
-    	if (clazz.isAnnotationPresent(Embeddable.class)) {
+    	if (clazz.isAnnotationPresent(EmbeddedOnly.class) || (jpaEnabled && clazz.isAnnotationPresent(embeddableAnnotation))) {
     		Iterator<Property> ifield = orderedFields.iterator();
     		while (ifield.hasNext()) {
     			Property field = ifield.next();
@@ -432,5 +479,60 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
     	} catch (Exception e) {
     		throw new RuntimeException("Could not deserialize detached state for: " + data);
     	}
+    }
+    
+    protected static Object getVersion(Object entity) {
+		Class<?> entityClass = entity.getClass();
+		
+    	if (jpaEnabled && entityClass.isAnnotationPresent(entityAnnotation)) {
+    	    for (Class<?> clazz = entityClass; clazz != Object.class; clazz = clazz.getSuperclass())  {
+                for (Method method : clazz.getDeclaredMethods()) {
+    			    if (method.isAnnotationPresent(Version.class)) {
+    	    	    	return Reflections.invokeAndWrap(method, entity);
+    			    }
+    			}                
+    	    }
+    	    
+            for (Class<?> clazz = entityClass; clazz != Object.class; clazz = clazz.getSuperclass())	{
+            	for (Field field : clazz.getDeclaredFields()) {
+            		if (field.isAnnotationPresent(Version.class)) {
+            			if (!field.isAccessible())
+            				field.setAccessible(true);
+            	    	return Reflections.getAndWrap(field, entity);
+            		}
+               }
+            }
+    	    
+    	    return null;
+    	}
+    	else if (!jpaEnabled && entity instanceof PersistenceCapable) {
+    		if (entityClass.isAnnotationPresent(javax.jdo.annotations.Version.class)) {
+    			javax.jdo.annotations.Version version = entityClass.getAnnotation(javax.jdo.annotations.Version.class);
+    			for (Extension extension : version.extensions()) {
+    				if (extension.vendorName().equals("datanucleus") && extension.key().equals("field-name")) {
+    					String versionFieldName = extension.value();
+    					
+    					try {
+    						Method versionGetter = entityClass.getMethod("get" + versionFieldName.substring(0, 1).toUpperCase() + versionFieldName.substring(1));
+    						return Reflections.invokeAndWrap(versionGetter, entity);
+    					}
+    					catch (NoSuchMethodException e) {
+    			            for (Class<?> clazz = entityClass; clazz != Object.class; clazz = clazz.getSuperclass())	{
+    			            	for (Field field : clazz.getDeclaredFields()) {
+    			            		if (field.getName().equals(versionFieldName)) {
+    			            			if (!field.isAccessible())
+    			            				field.setAccessible(true);
+    	    			            	return Reflections.getAndWrap(field, entity);
+    			            		}
+    			               }
+    			            }
+    					}    					
+    				} 
+    				
+    			}
+    		}
+    	}
+    	
+    	return null;
     }
 }

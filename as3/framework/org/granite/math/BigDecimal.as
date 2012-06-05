@@ -602,7 +602,7 @@ package org.granite.math {
 	     * 		trailing zeros removed.
 	     */
 		public function stripTrailingZeros():BigDecimal {
-			var result:BigDecimal = newBigDecimal(_integer, _scale);
+			var result:BigDecimal = newBigDecimal(_integer.clone(), _scale);
 			// Number(Long.MIN_VALUE) -> -9223372036854776000.
 	        result.stripZerosToMatchScale(Number("-9223372036854775808"));
 	        return result;
@@ -690,8 +690,7 @@ package org.granite.math {
 				ds:Number = scale - b._scale,
 				left:BigInteger = _integer,
 				right:BigInteger = b._integer,
-				raise:int,
-				sum:BigDecimal;
+				raise:int;
 			
 			if (ds != 0) {
 				if (ds < 0) {

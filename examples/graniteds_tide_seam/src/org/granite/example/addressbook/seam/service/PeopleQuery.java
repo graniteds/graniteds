@@ -24,12 +24,15 @@ import org.granite.example.addressbook.entity.Person;
 import org.granite.tide.annotations.TideEnabled;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataEnabled.PublishMode;
+import org.jboss.seam.ScopeType;
+import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.annotations.security.Restrict;
 import org.jboss.seam.framework.EntityQuery;
 
 
 
 @Restrict("#{identity.loggedIn}")
+@Scope(ScopeType.EVENT)
 @TideEnabled
 @DataEnabled(topic="addressBookTopic", params=AddressBookParams.class, publish=PublishMode.ON_SUCCESS, useInterceptor=true)
 public class PeopleQuery extends EntityQuery<Person> {

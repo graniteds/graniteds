@@ -23,11 +23,7 @@ package org.granite.tide.seam.framework {
     import flash.events.Event;
     
     import mx.binding.utils.BindingUtils;
-    import mx.collections.ArrayCollection;
-    import mx.collections.IList;
-    import mx.collections.ListCollectionView;
-    import mx.collections.Sort;
-    import mx.collections.SortField;
+    import mx.collections.*;
     import mx.collections.errors.ItemPendingError;
     import mx.core.IPropertyChangeNotifier;
     import mx.core.IUID;

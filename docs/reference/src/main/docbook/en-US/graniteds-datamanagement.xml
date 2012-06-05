@@ -673,6 +673,19 @@ private function validationHandler(event:TideValidatorEvent):void {
         Just like the paged collections of LCDS, everything works only if there is a correct <literal>uid</literal> property on the entities. 
         It is thus recommended to use the Tide templates for the Gas3 generator, which provide a default implementation of <literal>uid</literal> if there is none.
         </para>
+        <para>
+        The default <literal>AsyncListView</literal> does not support automatic propagation of the UI control sorting to its data provider.
+        Tide provides an alternative <literal>SortableAsyncListView</literal> that works in all cases.
+        </para>
+        <programlisting role="XML">
+<![CDATA[
+<s:VGroup ...
+    xmlns:c="org.granite.tide.collections.*">
+
+<s:DataGrid ...>
+    <c:SortableAsyncListView list="{people}"/>
+</s:DataGrid>]]>
+        </programlisting>
         
         <formalpara>
             <title>Server-side Implementation</title>
@@ -1099,27 +1112,28 @@ public void observes(DataObserveParams params) {
                 </listitem>
             </itemizedlist>
             </para>
-            <para>
-            By default only GraniteDS remoting calls are able to dispatch update messages with <literal>ON_SUCCESS</literal> or <literal>MANUAL</literal> modes.
-            If you need the <literal>ON_COMMIT</literal> mode, or need that services that are not called from Flex also trigger the dispatch, then you will have
-            to enable the Tide data dispatcher interceptor that will handle to updates in threads that are not managed by GraniteDS.
-            </para>
-            <para>
-            To enable the interceptor, it is necessary to indicate on the <literal>@DataEnabled</literal> annotation that there is one with the 
-            <literal>useInterceptor</literal> attribute :
-            </para>
-            <programlisting role="JAVA">
+        </formalpara>
+        <para>
+        By default only GraniteDS remoting calls are able to dispatch update messages with <literal>ON_SUCCESS</literal> or <literal>MANUAL</literal> modes.
+        If you need the <literal>ON_COMMIT</literal> mode, or need that services that are not called from Flex also trigger the dispatch, then you will have
+        to enable the Tide data dispatcher interceptor that will handle to updates in threads that are not managed by GraniteDS.
+        </para>
+        <para>
+        To enable the interceptor, it is necessary to indicate on the <literal>@DataEnabled</literal> annotation that there is one with the 
+        <literal>useInterceptor</literal> attribute :
+        </para>
+        <programlisting role="JAVA">
 @DataEnabled(topic="dataTopic", publishMode=PublishMode.ON_COMMIT, useInterceptor=true)
 public class MyService {
 }
-            </programlisting>
-            <para> 
-            There are four versions of the interceptor available for each supported framework : EJB3, Spring, Seam 2, CDI.
-            </para>
-            <para>
-            For Spring, add the advice to your context (take care that you need to reference the latest GraniteDS XSD version 2.3 to allow this) :
-            </para>
-            <programlisting role="XML">
+        </programlisting>
+        <para> 
+        There are four versions of the interceptor available for each supported framework : EJB3, Spring, Seam 2, CDI.
+        </para>
+        <para>
+        For Spring, add the advice to your context (take care that you need to reference the latest GraniteDS XSD version 2.3 to allow this) :
+        </para>
+        <programlisting role="XML">
 <![CDATA[<beans
     xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -1129,15 +1143,15 @@ public class MyService {
         http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.3.0/granite-config-2.3.xsd">
     ...
 <graniteds:tide-data-publishing-advice/>]]>            
-            </programlisting>
-            <para>
-            For Seam 2, there is nothing special to configure. The interceptor will be automatically enabled for all components having the <literal>@DataEnabled</literal>
-            annotation with <literal>useInterceptor=true</literal>.
-            </para>
-            <para>
-            For CDI, enable the interceptor in <literal>beans.xml</literal> :
-            </para>
-            <programlisting role="XML">
+        </programlisting>
+        <para>
+        For Seam 2, there is nothing special to configure. The interceptor will be automatically enabled for all components having the <literal>@DataEnabled</literal>
+        annotation with <literal>useInterceptor=true</literal>.
+        </para>
+        <para>
+        For CDI, enable the interceptor in <literal>beans.xml</literal> :
+        </para>
+        <programlisting role="XML">
 <![CDATA[<beans
     xmlns="http://java.sun.com/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -1146,11 +1160,11 @@ public class MyService {
         <class>org.granite.tide.cdi.TideDataPublishingInterceptor</class>
     </interceptors>
 </beans>]]>            
-            </programlisting>
-            <para>
-            For EJB 3, you can define a global interceptor in <literal>ejb-jar.xml</literal> :
-            </para>
-            <programlisting role="XML">
+        </programlisting>
+        <para>
+        For EJB 3, you can define a global interceptor in <literal>ejb-jar.xml</literal> :
+        </para>
+        <programlisting role="XML">
 <![CDATA[<assembly-descriptor>
       <interceptor-binding>
          <ejb-name>*</ejb-name>
@@ -1158,11 +1172,11 @@ public class MyService {
       </interceptor-binding>
       ...
 </assembly-descriptor>]]>
-            </programlisting>
-            <para>
-            Or alternatively configure the interceptor on each EJB 3 :
-            </para>
-            <programlisting role="JAVA">
+        </programlisting>
+        <para>
+        Or alternatively configure the interceptor on each EJB 3 :
+        </para>
+        <programlisting role="JAVA">
 @Stateless
 @Local(MyService.class)
 @Interceptors(TideDataPublishingInterceptor.class)
@@ -1170,14 +1184,14 @@ public class MyService {
 public class MyServiceBean {
     ...
 }
-            </programlisting>
-        </formalpara>
+        </programlisting>
         <formalpara>
             <title>Manual Publishing</title>
             <para>
             If you need full control on the publishing process, you can create your own interceptor or use the following API in your services :
             </para>
-            <programlisting role="JAVA">
+        </formalpara>
+        <programlisting role="JAVA">
 @DataEnabled(topic="dataTopic", params=DefaultDataTopicParams.class, publishMode=PublishMode.MANUAL, useInterceptor=true)
 public class MyService {
 
@@ -1196,8 +1210,8 @@ public class MyService {
         }
     }
 }
-            </programlisting>            
-	        <programlisting role="JAVA">
+        </programlisting>            
+        <programlisting role="JAVA">
 @Interceptor
 public class CustomPublishInterceptor {
 
@@ -1217,8 +1231,7 @@ public class CustomPublishInterceptor {
         }
     }
 }
-	        </programlisting>
-        </formalpara>
+        </programlisting>
         
         <formalpara>
             <title>Transactional Publishing</title>
@@ -1226,7 +1239,8 @@ public class CustomPublishInterceptor {
             You can setup a fully transactional dispatch by using the <literal>ON_COMMIT</literal> mode with a JMS transport. When using JMS transacted sessions
             with the <literal>ON_COMMIT</literal> mode, you will ensure that only successful database updates will be dispatched. 
             </para>
-            <programlisting role="XML">
+        </formalpara>
+        <programlisting role="XML">
 <![CDATA[<destination id="dataTopic">
     <properties>
         <jms>
@@ -1246,7 +1260,6 @@ public class CustomPublishInterceptor {
     </channels>
     <adapter ref="jms"/>
 </destination>]]>
-            </programlisting>
-        </formalpara>
+        </programlisting>
     </section>
 </chapter>

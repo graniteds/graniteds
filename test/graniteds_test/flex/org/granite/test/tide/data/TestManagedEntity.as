@@ -9,6 +9,7 @@ package org.granite.test.tide.data
     import org.granite.persistence.PersistentSet;
     import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
+    import org.granite.test.tide.TestEntity;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
     
@@ -99,6 +100,29 @@ package org.granite.test.tide.data
 		
 		private function propertyChangeHandler(event:PropertyChangeEvent):void {
 			changed = event.property as String;
+		}
+		
+		
+		private var _idChanged:Boolean = false;
+		private var _versionChanged:Boolean = false;
+		
+		[Test]
+		public function testEntitySaved():void {
+			var test:TestEntity = new TestEntity(NaN, NaN, "TE1");
+			BindingUtils.bindSetter(function(val:*):void { 
+				if (!isNaN(val)) { _idChanged = true } 
+			}, test, "id");
+			BindingUtils.bindSetter(function(val:*):void { 
+				if (!isNaN(val)) { _versionChanged = true } 
+			}, test, "version");
+			
+			_ctx.test = test;
+			
+			var test2:TestEntity = new TestEntity(1, 0, "TE1");
+			_ctx.meta_mergeExternalData(test2);
+			
+			Assert.assertTrue("Id changed", _idChanged);
+			Assert.assertTrue("Version changed", _versionChanged);
 		}
     }
 }

@@ -134,8 +134,8 @@ package org.granite.tide.ejb {
         	super.isLoggedInFaultHandler(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
         }
 		
-		public override function login(ctx:BaseContext, component:IComponent, username:String, password:String, responder:ITideResponder = null):AsyncToken {
-			super.login(ctx, component, username, password, responder);
+		public override function login(ctx:BaseContext, component:IComponent, username:String, password:String, responder:ITideResponder = null, charset:String = null):AsyncToken {
+			super.login(ctx, component, username, password, responder, charset);
 		    
 		    var operation:AbstractOperation = ro.getOperation("login");
 		    var call:IInvocationCall = ctx.meta_prepareCall(operation);

@@ -271,24 +271,30 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
     		}
     		catch (ClassNotFoundException e1) {
     			try {
-    				ClassUtil.forName("weblogic.servlet.security.ServletAuthentication");
-    				securityServiceClassName = "org.granite.messaging.service.security.WebLogicSecurityService";
+    				ClassUtil.forName("org.eclipse.jetty.server.Request");
+        			securityServiceClassName = "org.granite.messaging.service.security.Jetty7SecurityService";
     			}
-    			catch (ClassNotFoundException e2) {
-        			try {
-        				ClassUtil.forName("com.sun.appserv.server.LifecycleEvent");
-            			securityServiceClassName = "org.granite.messaging.service.security.GlassFishV3SecurityService";
-        			}
-        			catch (ClassNotFoundException e3) {
-        				securityServiceClassName = "org.granite.messaging.service.security.Tomcat7SecurityService";
-        			}
+    			catch (ClassNotFoundException e1b) {
+	    			try {
+	    				ClassUtil.forName("weblogic.servlet.security.ServletAuthentication");
+	    				securityServiceClassName = "org.granite.messaging.service.security.WebLogicSecurityService";
+	    			}
+	    			catch (ClassNotFoundException e2) {
+	        			try {
+	        				ClassUtil.forName("com.sun.appserv.server.LifecycleEvent");
+	            			securityServiceClassName = "org.granite.messaging.service.security.GlassFishV3SecurityService";
+	        			}
+	        			catch (ClassNotFoundException e3) {
+	        				securityServiceClassName = "org.granite.messaging.service.security.Tomcat7SecurityService";
+	        			}
+	    			}
+	        		try {
+	        			graniteConfig.setSecurityService((SecurityService)ClassUtil.newInstance(securityServiceClassName));
+	            	}
+	            	catch (Exception e) {
+	            		throw new ServletException("Could not setup security service " + securityServiceClassName, e);
+	            	}
     			}
-        		try {
-        			graniteConfig.setSecurityService((SecurityService)ClassUtil.newInstance(securityServiceClassName));
-            	}
-            	catch (Exception e) {
-            		throw new ServletException("Could not setup security service", e);
-            	}
     		}
     	}
         
@@ -314,11 +320,21 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
         }
 
     	XMap factoryProperties = new XMap();
-    	String lookup = "java:global/{context.root}/{capitalized.component.name}Bean";
-    	if (isJBoss6())
-    		lookup = "{capitalized.component.name}Bean/local";
-    	if (!("".equals(flexFilter.ejbLookup())))
-    		lookup = flexFilter.ejbLookup();
+    	String lookup = null;
+        if (useTide) {
+	    	lookup = "java:global/{context.root}/{capitalized.component.name}Bean";
+	    	if (isJBoss6())
+	    		lookup = "{capitalized.component.name}Bean/local";
+	    	if (!("".equals(flexFilter.ejbLookup())))
+	    		lookup = flexFilter.ejbLookup();
+        }
+        else {
+	    	lookup = "java:global/{context.root}/{capitalized.destination.id}Bean";
+	    	if (isJBoss6())
+	    		lookup = "{capitalized.destination.id}Bean/local";
+	    	if (!("".equals(flexFilter.ejbLookup())))
+	    		lookup = flexFilter.ejbLookup();
+        }
     	if (lookup.indexOf("{context.root}") >= 0) {
     		try {
     			// Call by reflection because of JDK 1.4

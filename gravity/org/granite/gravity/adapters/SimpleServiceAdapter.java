@@ -48,6 +48,8 @@ public class SimpleServiceAdapter extends ServiceAdapter {
 
     @Override
     public void configure(XMap adapterProperties, XMap destinationProperties) throws ServiceException {
+    	super.configure(adapterProperties, destinationProperties);
+    	
         _topicIdCache = new ConcurrentHashMap<String, TopicId>();
         
         if (Boolean.TRUE.toString().equals(destinationProperties.get("no-local")))
@@ -116,7 +118,7 @@ public class SimpleServiceAdapter extends ServiceAdapter {
         else {
         	log.warn("Channel %s tried to publish a message to topic %s", fromChannel, topicId);
             reply = new ErrorMessage(message, null);
-            ((ErrorMessage)reply).setFaultString("Server.Access.Denied");
+            ((ErrorMessage)reply).setFaultString("Server.Publish.Denied");
         }
 
         return reply;
@@ -146,12 +148,12 @@ public class SimpleServiceAdapter extends ServiceAdapter {
                 }
                 else {
                     reply = new ErrorMessage(message, null);
-                    ((ErrorMessage)reply).setFaultString("cannot create");
+                    ((ErrorMessage)reply).setFaultString("Server.CreateTopic.Denied");
                 }
             }
             else {
                 reply = new ErrorMessage(message, null);
-                ((ErrorMessage)reply).setFaultString("cannot subscribe");
+                ((ErrorMessage)reply).setFaultString("Server.Subscribe.Denied");
             }
         }
         else if (message.getOperation() == CommandMessage.UNSUBSCRIBE_OPERATION) {

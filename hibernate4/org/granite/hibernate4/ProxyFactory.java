@@ -39,18 +39,28 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.CompositeType;
 
-
 /**
  * @author Franck WOLFF
  */
 public class ProxyFactory {
 
-    private static final Class<?>[] INTERFACES = new Class[]{HibernateProxy.class};
+    private static final Class<?>[] INTERFACES = new Class<?>[]{HibernateProxy.class};
+    private static final Class<?>[] SINGLE_OBJECT_PARAMS = new Class<?>[]{Object.class};
+    private static final Method OBJECT_EQUALS;
+    static {
+    	try {
+    		OBJECT_EQUALS = Object.class.getMethod("equals", SINGLE_OBJECT_PARAMS);
+    	}
+    	catch (Exception e) {
+    		throw new ExceptionInInitializerError(e);
+    	}
+    }
 
     protected final ConcurrentHashMap<Class<?>, Type> identifierTypes = new ConcurrentHashMap<Class<?>, Type>();
 
     private final Method getProxyFactory;
     private final Method getProxy;
+    private final boolean classOverridesEqualsParameter;
 
     public ProxyFactory(String initializerClassName) {
         try {
@@ -59,10 +69,25 @@ public class ProxyFactory {
         	// class with the same signature.
             Class<?> initializerClass = ClassUtil.forName(initializerClassName);
             getProxyFactory = initializerClass.getMethod("getProxyFactory", new Class[]{Class.class, Class[].class});
-            getProxy = initializerClass.getMethod("getProxy", new Class[]{
-                Class.class, String.class, Class.class, Class[].class, Method.class, Method.class,
-                CompositeType.class, Serializable.class, SessionImplementor.class
-            });
+            
+            // Hibernate 4.0.1 has an extra boolean parameter in last position: classOverridesEquals.
+            Method getProxy = null;
+            boolean classOverridesEqualsParameter = false;
+            try {
+	            getProxy = initializerClass.getMethod("getProxy", new Class[]{
+	                Class.class, String.class, Class.class, Class[].class, Method.class, Method.class,
+	                CompositeType.class, Serializable.class, SessionImplementor.class
+	            });
+            }
+            catch (NoSuchMethodException e) {
+                getProxy = initializerClass.getMethod("getProxy", new Class[]{
+                	Class.class, String.class, Class.class, Class[].class, Method.class, Method.class,
+                    CompositeType.class, Serializable.class, SessionImplementor.class, Boolean.TYPE
+                });
+                classOverridesEqualsParameter = true;
+            }
+            this.getProxy = getProxy;
+            this.classOverridesEqualsParameter = classOverridesEqualsParameter;
         } catch (Exception e) {
             throw new ServiceException("Could not introspect initializer class: " + initializerClassName, e);
         }
@@ -81,11 +106,24 @@ public class ProxyFactory {
                 id = (Serializable)config.getConverters().convert(id, identifierType);
             }
 
-            // Get Proxy
+            // Get Proxy (with or without the extra parameter classOverridesEquals)
+            if (classOverridesEqualsParameter) {
+                return (HibernateProxy)getProxy.invoke(null, new Object[]{
+                	factory, entityName, persistentClass, INTERFACES, null, null, null, id, null, overridesEquals(persistentClass)});
+            }
             return (HibernateProxy)getProxy.invoke(null, new Object[]{factory, entityName, persistentClass, INTERFACES, null, null, null, id, null});
         } catch (Exception e) {
             throw new ServiceException("Error with proxy description: " + persistentClassName + '/' + entityName + " and id: " + id, e);
         }
+    }
+    
+    protected boolean overridesEquals(Class<?> persistentClass) {
+    	try {
+    		return !OBJECT_EQUALS.equals(persistentClass.getMethod("equals", SINGLE_OBJECT_PARAMS));
+    	}
+    	catch (Exception e) {
+    		return false; // should never happen unless persistentClass is an interface...
+    	}
     }
 
     protected Type getIdentifierType(Class<?> persistentClass) {

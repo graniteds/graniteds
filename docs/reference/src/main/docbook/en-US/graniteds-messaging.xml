@@ -282,6 +282,11 @@ consumerFrance.subscribe();
                             <entry>Only with APR/NIO enabled (APR highly recommended)</entry>
                         </row>
                         <row>
+                            <entry>WebLogic 9.1+</entry>
+                            <entry><literal>org.granite.gravity.weblogic.GravityWebLogicServlet</literal></entry>
+                            <entry>See WebLogic documentation for configuration tuning</entry>
+                        </row>
+                        <row>
                             <entry>GlassFish 3.x</entry>
                             <entry><literal>org.granite.gravity.async.GravityAsyncServlet</literal></entry>
                             <entry>Using Servlet 3.0</entry>
@@ -313,7 +318,7 @@ consumerFrance.subscribe();
 <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE granite-config PUBLIC "-//Granite Data Services//DTD granite-config internal//EN"
-    "http://www.graniteds.org/public/dtd/2.1.0/granite-config.dtd">
+    "http://www.graniteds.org/public/dtd/2.3.0/granite-config.dtd">
 
 <granite-config>
 

@@ -55,7 +55,6 @@ package org.granite.test.tide.cdi {
 	[RemoteClass(alias="org.granite.tide.test.cdi.HelloBean")]
     public class HelloBean extends Component {
 
-        [Bindable]
         public function get name():String {
             return super.getProperty("name") as String;
         }

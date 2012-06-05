@@ -117,6 +117,7 @@ public class ServletGraniteConfig implements ServletGraniteConfigMBean {
                 servletGraniteConfig = loadConfig(context, graniteConfig);
             } 
             catch (Exception e) {
+                log.error(e, "Could not load granite-config.xml");
                 throw new ServletException("Could not load custom granite-config.xml", e);
             }
             finally {

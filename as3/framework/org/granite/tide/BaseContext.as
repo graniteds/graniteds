@@ -444,7 +444,7 @@ package org.granite.tide {
             if (obj is IComponent) {
                 if (restrict)
                     IComponent(obj).meta_clear();
-                remove = _contextId != null || force;
+                remove = _contextId != null || force || restrict;
             }
             else if (obj is IUIComponent || obj is IEntity || obj is IList || (obj != null && ObjectUtil.isSimple(obj))) {
                 remove = _contextId != null || force || restrict;
@@ -1588,10 +1588,10 @@ package org.granite.tide {
          *  
          *  @return operation token
          */
-        public function meta_login(identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
+        public function meta_login(identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):AsyncToken {
             var responder:TideResponder = new TideResponder(resultHandler, faultHandler);
 
-            return _tide.login(this, identity, username, password, responder);
+            return _tide.login(this, identity, username, password, responder, charset);
         }
         
         /**
@@ -1825,16 +1825,19 @@ package org.granite.tide {
          */
         public function meta_mergeFromContext(sourceContext:BaseContext, obj:Object, externalData:Boolean = false, uninitializing:Boolean = false):Object {
         	var saveSourceContext:BaseContext = _entityManager.sourceContext;
-    		_entityManager.sourceContext = sourceContext;
-			_entityManager.uninitializing = uninitializing;
-        	
-        	var next:Object = externalData
-				? meta_mergeExternalData(obj, null, _tide.sessionId + '$')	// Force handling of external data
-				: meta_mergeExternal(obj);
-        	
-    		_entityManager.sourceContext = saveSourceContext;
-			_entityManager.uninitializing = false;
-    		return next;
+			try {
+	    		_entityManager.sourceContext = sourceContext;
+				_entityManager.uninitializing = uninitializing;
+	        	
+	        	var next:Object = externalData
+					? meta_mergeExternalData(obj, null, _tide.sessionId + '$')	// Force handling of external data
+					: meta_mergeExternal(obj);
+			}
+			finally {
+	    		_entityManager.sourceContext = saveSourceContext;
+				_entityManager.uninitializing = false;
+			}
+	    	return next;
         }
         
         

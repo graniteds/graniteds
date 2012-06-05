@@ -39,6 +39,7 @@ public class SessionDistributedData implements DistributedData {
 
 	private static final String KEY_PREFIX = "__GDD__";
 	private static final String CREDENTIALS_KEY = KEY_PREFIX + "CREDENTIALS";
+	private static final String CREDENTIALS_CHARSET_KEY = KEY_PREFIX + "CREDENTIALS_CHARSET";
 	private static final String CHANNELID_KEY_PREFIX = KEY_PREFIX + "CHANNELID.";
 	private static final String SUBSCRIPTION_KEY_PREFIX = KEY_PREFIX + "SUBSCRIPTION.";
 	private static final String DESTINATION_CLIENTID_KEY_PREFIX = "org.granite.gravity.channel.clientId.";
@@ -71,6 +72,25 @@ public class SessionDistributedData implements DistributedData {
 
 	public void removeCredentials() {
 		session.removeAttribute(CREDENTIALS_KEY);
+	}
+
+	public String getCredentialsCharset() {
+		return (String)session.getAttribute(CREDENTIALS_CHARSET_KEY);
+	}
+
+	public boolean hasCredentialsCharset() {
+		return (getCredentialsCharset() != null);
+	}
+
+	public void setCredentialsCharset(String credentialsCharset) {
+		if (credentialsCharset != null)
+			session.setAttribute(CREDENTIALS_CHARSET_KEY, credentialsCharset);
+		else
+			removeCredentialsCharset();
+	}
+
+	public void removeCredentialsCharset() {
+		session.removeAttribute(CREDENTIALS_CHARSET_KEY);
 	}
 
 	public void addChannelId(String channelId, String channelFactoryClassName) {

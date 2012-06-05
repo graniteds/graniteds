@@ -48,6 +48,7 @@ package org.granite.test.tide.data
 		public var test32:org.granite.test.tide.data.TestMergeMap2;
 		public var test33:org.granite.test.tide.data.TestMergeMap3;
 		public var test34:org.granite.test.tide.data.TestResetEntityBigNumber;
+		public var test34b:org.granite.test.tide.data.TestResetEntityByteArray;
 		public var test35:org.granite.test.tide.data.TestResetEntityEnum;
 		public var test36:org.granite.test.tide.data.TestResetEntityEnum2;
 		public var test37:org.granite.test.tide.data.TestResetEntityGDS453;
@@ -56,6 +57,7 @@ package org.granite.test.tide.data
         public var test39b:org.granite.test.tide.data.TestResetEntityAllGDS920;
 		public var test39c:org.granite.test.tide.data.TestResetEntityNoVersion;
 		public var test39d:org.granite.test.tide.data.TestResetEntityMap;
+		public var test39e:org.granite.test.tide.data.TestResetEntityColl;
         public var test40:org.granite.test.tide.data.TestEntityCollectionRefs;
         public var test41:org.granite.test.tide.data.TestUninitAssociations;
         public var test42:org.granite.test.tide.data.TestUninitArguments;

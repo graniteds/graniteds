@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:v="org.granite.validation.*"
+		 width="400" height="300">
+	<fx:Declarations>
+		<!-- Placer ici les éléments non visuels (services et objets de valeur, par exemple). -->
+		<v:FormValidator id="fv" entity="{model.field}" entityPath="model.field" form="{form}" validateOnChange="false"/>		
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			[Bindable] 
+			public var model:Model;
+			
+			public const MAX_CHARS:int = 2000; 
+		]]>
+	</fx:Script>
+	
+	<s:Panel id="form">
+		<s:TextArea id="textArea1"
+					maxChars="{MAX_CHARS}"
+					text="@{model.field.subField1}"/>
+		
+		<s:TextArea id="textArea2"
+					maxChars="{MAX_CHARS}"
+					text="@{model.field.subField2}"/>
+	</s:Panel>
+</s:Group>

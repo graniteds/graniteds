@@ -31,6 +31,8 @@ public interface SecurityService {
 
     public void login(Object credentials) throws SecurityServiceException;
 
+    public void login(Object credentials, String charset) throws SecurityServiceException;
+
     public Object authorize(AbstractSecurityContext context) throws Exception;
 
     public void logout() throws SecurityServiceException;

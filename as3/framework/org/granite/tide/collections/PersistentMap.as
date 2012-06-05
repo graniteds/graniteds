@@ -52,6 +52,9 @@ package org.granite.tide.collections {
     use namespace object_proxy;
     
 
+	[Event(name="initialize", type="mx.events.CollectionEvent")]
+	[Event(name="uninitialize", type="mx.events.CollectionEvent")]
+	
     /**
      * 	Internal implementation of persistent map handling automatic lazy loading.<br/>
      *  Used for wrapping persistent map received from the server.<br/>
@@ -62,6 +65,9 @@ package org.granite.tide.collections {
 	public class PersistentMap extends BasicMap implements IPersistentCollection, IPropertyHolder, IWrapper {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.collections.PersistentMap");
+		
+		public static const INITIALIZE:String = "initialize";
+		public static const UNINITIALIZE:String = "uninitialize";
 		
 	    private var _entity:IEntity = null;
 	    private var _propertyName:String = null;
@@ -144,10 +150,9 @@ package org.granite.tide.collections {
             	_initializationCallback = null;
             }
             
-            var ce:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, 
-                CollectionEventKind.REFRESH);
-            dispatchEvent(ce);
-            
+            dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.REFRESH));            
+			dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, INITIALIZE));
+			
             log.debug("initialized");
         }
         
@@ -157,9 +162,8 @@ package org.granite.tide.collections {
         	_initializationCallback = null;
             _localInitializing = false;
             
-            var ce:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, 
-                CollectionEventKind.RESET);
-            dispatchEvent(ce);
+            dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));			
+			dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, UNINITIALIZE));
         }
         
         
@@ -175,9 +179,18 @@ package org.granite.tide.collections {
 				requestInitialization();
 			}
 		}
+		
+		public function reload():void {
+			var em:IEntityManager = Managed.getEntityManager(_entity);
+			if (_localInitializing)
+				return;
+			
+			log.debug("forced reload requested " + toString());
+			em.meta_initializeObject(this);
+		}
         
         
-        override public function get keySet():ArrayCollection {
+        public override function get keySet():ArrayCollection {
             if (_localInitializing || isInitialized())
                 return _map.keySet;
             
@@ -185,7 +198,7 @@ package org.granite.tide.collections {
             return null;
         }
         
-        override public function get values():ArrayCollection {
+        public override function get values():ArrayCollection {
             if (_localInitializing || isInitialized())
                 return _map.values;
             
@@ -194,7 +207,7 @@ package org.granite.tide.collections {
         }
         
 		[Bindable("collectionChange")]
-        override public function get length():int {
+        public override function get length():int {
             if (_localInitializing || isInitialized())
                 return _map.length;
             
@@ -203,7 +216,7 @@ package org.granite.tide.collections {
 //	        return 1;     // Must be initialized to >0 to enable ItemPendingError at first getItemAt
         }
         
-        override public function get(key:*):* {
+        public override function get(key:*):* {
             if (_localInitializing || isInitialized())
                 return _map.get(key);
             
@@ -211,7 +224,7 @@ package org.granite.tide.collections {
             return null;
         }
         
-        override public function containsKey(o:*):Boolean {
+        public override function containsKey(o:*):Boolean {
             if (_localInitializing || isInitialized())
                 return _map.containsKey(o);
             
@@ -219,7 +232,7 @@ package org.granite.tide.collections {
             return false;
         }
         
-        override public function containsValue(o:*):Boolean {
+        public override function containsValue(o:*):Boolean {
             if (_localInitializing || isInitialized())
                 return _map.containsValue(o);
             
@@ -227,21 +240,21 @@ package org.granite.tide.collections {
             return false;
         }
         
-        override public function remove(key:*):Object {
+        public override function remove(key:*):Object {
             if (_localInitializing || isInitialized())
                 return _map.remove(key);
             
             throw new Error("Cannot modify uninitialized map: " + _entity + " property " + propertyName); 
         }
         
-        override public function put(key:*, value:*):* {
+        public override function put(key:*, value:*):* {
             if (_localInitializing || isInitialized())
                 return _map.put(key, value);
 
             throw new Error("Cannot modify uninitialized map: " + _entity + " property " + propertyName); 
         }
         
-        override public function clear():void {
+        public override function clear():void {
             if (_localInitializing || isInitialized()) {
                 _map.clear();
                 return;
@@ -255,7 +268,7 @@ package org.granite.tide.collections {
         }
         
         
-        override public function toString():String {
+        public override function toString():String {
             if (isInitialized())
                 return "Initialized map for object: " + BaseContext.toString(_entity) + " " + _propertyName + ": " + super.toString();
             

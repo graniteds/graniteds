@@ -41,9 +41,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -71,10 +73,11 @@ public class SpringSecurity3Service extends AbstractSecurityService {
     private static final String SECURITY_SERVICE_APPLIED = "__spring_security_granite_service_applied";
 	
 	private AuthenticationManager authenticationManager = null;
-	private AuthenticationTrustResolverImpl authenticationTrustResolver = new AuthenticationTrustResolverImpl();
+	private AuthenticationTrustResolver authenticationTrustResolver = new AuthenticationTrustResolverImpl();
 	private SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 	private AbstractSpringSecurity3Interceptor securityInterceptor = null;
 	private SessionAuthenticationStrategy sessionAuthenticationStrategy = new SessionFixationProtectionStrategy();
+	private PasswordEncoder passwordEncoder = null;
 	private String authenticationManagerBeanName = null;
 	private boolean allowAnonymousAccess = false;
 	private Method getRequest = null;
@@ -99,6 +102,10 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 		this.authenticationManager = authenticationManager;
 	}
 	
+	public void setAuthenticationTrustResolver(AuthenticationTrustResolver authenticationTrustResolver) {
+		this.authenticationTrustResolver = authenticationTrustResolver;
+	}
+	
 	public void setAllowAnonymousAccess(boolean allowAnonymousAccess) {
 		this.allowAnonymousAccess = allowAnonymousAccess;
 	}
@@ -116,6 +123,10 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 			throw new NullPointerException("SessionAuthenticationStrategy cannot be null");
 		this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
 	}
+	
+	public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+		this.passwordEncoder = passwordEncoder;
+	}
 
     public void configure(Map<String, String> params) {
         log.debug("Configuring with parameters %s: ", params);
@@ -125,14 +136,16 @@ public class SpringSecurity3Service extends AbstractSecurityService {
         	allowAnonymousAccess = true;
     }
     
-    public void login(Object credentials) {
-        List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials));
+    public void login(Object credentials, String charset) {
+        List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials, charset));
 
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
 
         String user = decodedCredentials.get(0);
         String password = decodedCredentials.get(1);
+        if (passwordEncoder != null)
+        	password = passwordEncoder.encodePassword(password, null);
         Authentication auth = new UsernamePasswordAuthenticationToken(user, password);
 
         ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(
@@ -166,6 +179,8 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 	            catch (Exception e) {
 	            	log.error(e, "Could not save context after authentication");
 	            }
+
+	            endLogin(credentials, charset);
             } 
             catch (AuthenticationException e) {
             	handleAuthenticationExceptions(e);

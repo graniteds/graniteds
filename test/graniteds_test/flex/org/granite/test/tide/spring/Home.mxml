@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+  for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<s:VGroup
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+    xmlns:v="org.granite.validation.*"
+    xmlns="*"
+    width="100%" height="100%">
+
+	<fx:Metadata>[Name]</fx:Metadata>
+   	
+    <fx:Script>
+        <![CDATA[
+			import mx.collections.ArrayCollection;
+			
+			import org.granite.tide.Tide;
+			import org.granite.tide.events.TideFaultEvent;
+			import org.granite.tide.events.TideResultEvent;
+			import org.granite.tide.spring.PagedQuery;
+			import org.granite.tide.spring.Spring; 
+            
+            Spring.getInstance().addComponentWithFactory("allWelcomes", 
+                PagedQuery, 
+                { 
+                    elementClass: Welcome,
+                    remoteComponentClass: WelcomeService, 
+                    methodName: "list", 
+                    maxResults: 5 
+                }, 
+                false, // default inConversation 
+                true, // default autoCreate 
+                Tide.RESTRICT_YES // the instance must be cleared on logout 
+            ); 
+            
+            [Inject]
+            public var welcomeService:WelcomeService;
+            
+            [In] [Bindable]
+            public var allWelcomes:PagedQuery;
+            
+            private function hello(name:String):void {
+                welcomeService.hello(iName.text, helloResult, helloFault)
+            }
+            
+            private function helloResult(event:TideResultEvent):void {
+                iName.text = "";
+            }
+            
+            private function helloFault(event:TideFaultEvent):void {
+                lMessage.text = event.fault.faultString;
+            }
+            
+            private function formatName(item:Object,col:DataGridColumn=null):String {
+            	return "test " + item.name;
+            }
+        ]]>
+    </fx:Script>
+    
+    <s:VGroup paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" width="800">
+        <s:HGroup id="fHello">
+            <s:TextInput id="iName"/>
+            <s:Button id="bHello" label="Welcome!" click="hello(iName.text)"/>
+        </s:HGroup>
+    
+        <s:Label id="lMessage"/>
+            
+        <mx:DataGrid id="dgWelcomes" dataProvider="{allWelcomes}" liveScrolling="false" width="100%" rowCount="3">
+        	<mx:columns>
+        		<mx:DataGridColumn dataField="id" />
+        		<mx:DataGridColumn dataField="uid" />
+        		<mx:DataGridColumn dataField="version" />
+        		<mx:DataGridColumn dataField="name"/>
+        		<mx:DataGridColumn dataField="message" />
+        	</mx:columns>
+        </mx:DataGrid>
+    </s:VGroup>
+
+</s:VGroup>

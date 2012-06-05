@@ -38,7 +38,7 @@ import org.mortbay.jetty.security.UserRealm;
  */
 public class Jetty7SecurityService extends AbstractSecurityService {
 
-    private static final String JETTY6_AUTH = "org.granite.messaging.service.security.Jetty6Auth";
+    private static final String JETTY7_AUTH = "org.granite.messaging.service.security.Jetty7Auth";
 
 
     public Jetty7SecurityService() {
@@ -50,8 +50,8 @@ public class Jetty7SecurityService extends AbstractSecurityService {
     }
 
 
-    public void login(Object credentials) throws SecurityServiceException {
-        String[] decoded = decodeBase64Credentials(credentials);
+    public void login(Object credentials, String charset) throws SecurityServiceException {
+        String[] decoded = decodeBase64Credentials(credentials, charset);
 
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
@@ -61,16 +61,16 @@ public class Jetty7SecurityService extends AbstractSecurityService {
         Principal principal = realm.authenticate(decoded[0], decoded[1], request);
         if (principal == null) {
             if (request.getSession(false) != null)
-            	request.getSession(false).removeAttribute(JETTY6_AUTH);
+            	request.getSession(false).removeAttribute(JETTY7_AUTH);
             throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
         }
 
         request.setAuthType(AUTH_TYPE);
         request.setUserPrincipal(principal);
 
-        request.getSession().setAttribute(JETTY6_AUTH, principal);
+        request.getSession().setAttribute(JETTY7_AUTH, principal);
         
-        endLogin(credentials);
+        endLogin(credentials, charset);
     }
 
 
@@ -85,7 +85,7 @@ public class Jetty7SecurityService extends AbstractSecurityService {
         Principal principal = httpRequest.getUserPrincipal();
         if (principal == null) {
             HttpSession session = httpRequest.getSession(false);
-            principal = session != null ? (Principal)session.getAttribute(JETTY6_AUTH) : null;
+            principal = session != null ? (Principal)session.getAttribute(JETTY7_AUTH) : null;
             reauth = true;
         }
 

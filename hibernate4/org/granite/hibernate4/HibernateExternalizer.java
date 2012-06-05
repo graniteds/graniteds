@@ -186,7 +186,7 @@ public class HibernateExternalizer extends DefaultExternalizer {
             log.debug("Reading entity %s with fields %s", oClass.getName(), fields);
             for (Property field : fields) {
                 Object value = in.readObject();
-                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class))) {
+                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class, true))) {
                     
                 	if (value instanceof AbstractExternalizablePersistentCollection)
                 		value = newHibernateCollection((AbstractExternalizablePersistentCollection)value, field);

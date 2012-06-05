@@ -95,21 +95,27 @@ public class ServicesConfig implements ScannedItemHandler {
 
             // Owning service.
             Service service = null;
-            if (anno.service().length() > 0)
+            if (anno.service().length() > 0) {
+            	log.info("Configuring service from RemoteDestination annotation: service=%s (class=%s, anno=%s)", anno.service(), clazz, anno);
                 service = this.services.get(anno.service());
+            }
             else if (this.services.size() > 0) {
                 // Lookup remoting service
+            	log.info("Looking for service(s) with RemotingMessage type (class=%s, anno=%s)", clazz, anno);
                 int count = 0;
                 for (Service s : this.services.values()) {
                     if (RemotingMessage.class.getName().equals(s.getMessageTypes())) {
+                    	log.info("Found service with RemotingMessage type: service=%s (class=%s, anno=%s)", s, clazz, anno);
                         service = s;
                         count++;
                     }
                 }
                 if (count == 1 && service != null)
                     log.info("Service " + service.getId() + " selected for destination in class: " + clazz.getName());
-                else
+                else {
+                	log.error("Found %d matching services (should be exactly 1, class=%s, anno=%s)", count, clazz, anno);
                 	service = null;
+                }
             }
             if (service == null)
                 throw new RuntimeException("No service found for destination in class: " + clazz.getName());

@@ -296,7 +296,8 @@ package org.test {
        </para>
        
        <para>
-       Note that all these templates are bundled in the granite-generator.jar archive, in the org.granite.generator.template package and accessible as resources via the class loader.
+       Note that all these templates are bundled in the granite-generator.jar archive, in the org.granite.generator.template
+       package and accessible as resources via the class loader.
        </para>
 	</section>
     
@@ -308,7 +309,9 @@ package org.test {
        </para>
        
        <para>
-       Gas3 never deletes files, if you have removed or renamed a Java class, the old AS3 class versions must be manually removed.
+       Gas3 never deletes any file. However, when you remove or rename a Java class which is in the scope of the generator,
+       the corresponding AS3 classes are renamed to <literal>&lt;ClassName&gt;[Base].as.&lt;System Current Millis&gt;.hid</literal>.
+       This can lead to helpful Flex compilation errors if these classes where used anywhere else in your Flex source code.
        </para>
        
        <para>
@@ -338,7 +341,7 @@ package org.test {
         
         <para>
         This action should launch a configuration wizard, whose first step is to select Java source folders 
-        for which you code generation (i.e., ActionScript 3 beans that mirror your JavaBeans):
+        for which you want code generation (ie. ActionScript 3 beans that mirror your JavaBeans):
         <imagedata align="center" fileref="images/gb2.jpg"/>   
         </para>
 
@@ -357,7 +360,20 @@ package org.test {
             <listitem>If a class is matched by an exclusion pattern, it will be ignored even if it is matched by another inclusion pattern.</listitem>
         </itemizedlist>
                 
-        In the example, <literal>**/*Service*.java</literal> will match any Java class that contains the Service string in its name in any subdirectory.
+        In the example, <literal>**/*Service*.java</literal> will match any Java class which contains the Service string in its name and which
+        is in any subdirectory of the selected source folder.
+        </para>
+
+        <para>
+        Inclusion patterns let you specify arbitrary parameters which will be passed as a Map&lt;String, String&gt; to the concerned template (ie. the one
+        which is handling the kind of Java file which matches the include pattern). For example, you can specify an include pattern as follow:
+        <literal>**/*Service*.java[param1=value1,param2=value2]</literal>. In the template, for each file matching the <literal>**/*Service*.java</literal>
+        pattern, you will then have access to a specific variable named <literal>fAttributes</literal>, a map containing two keys "param1" and
+        "param2", bound to their respective values "value1" and "values2".
+        </para>
+
+        <para>
+        Note that this parameters feature is only available for the Eclipse builder (you can't use it with the Ant/Maven task).
         </para>
 
         <para>
@@ -374,17 +390,18 @@ package org.test {
             </listitem>
         </itemizedlist>
                 
-        The next step in the wizard allows your Java project dependencies. This is required when your Java classes make references to other classes 
-        declared in other Java projects. Clicking on the <emphasis>Add project</emphasis> button will open a dialog that lists all other 
-        <emphasis>open Java projects</emphasis>:
+        The next step in the wizard allows you to configure Java project dependencies. This is required when your Java classes make references to
+        other classes declared in other Java projects. Clicking on the <emphasis>Add project</emphasis> button will open a dialog that lists all other 
+        <emphasis>open Java projects which have the GraniteDS nature</emphasis>:
         <imagedata align="center" fileref="images/gb4.jpg"/>   
         </para>
         
         <para>
         The next step is classpath configuration. If you do not use any custom classes in the <emphasis>Options</emphasis> panel 
         you do not need to change anything here since the classpath is automatically configured with your current selected source folders. 
-        In the following picture, the <literal>helloworld2/bin</literal> directory, where Eclipse compiles your Java source, is preselected, 
-        as well as all libraries in the build path, such as <literal>ejb3-persistence.jar</literal> and <literal>jboss-ejb3x.jar</literal>:
+        In the following picture, the <literal>helloworld/bin</literal> directory, where Eclipse compiles your Java source, is preselected, 
+        as well as all libraries in the build path (eg. Java runtime jars, <literal>ejb3-persistence.jar</literal> and
+        <literal>jboss-ejb3x.jar</literal>):
         <imagedata align="center" fileref="images/gb5.jpg"/>   
         </para>
 
@@ -397,12 +414,30 @@ package org.test {
 
         <para>
         In the above example, a <literal>class:</literal> protocol is used because all standard templates are available in the classpath. 
-        Alternatively, you may use the <literal>file:</literal> protocol to load your template from the filesystem.
+        Alternatively, you may use the <literal>file:</literal> protocol to load your template from the filesystem. These templates can be
+        specified either by using absolute paths (eg. <literal>file:/absolute/path/to/mytemplate.gsp</literal>) or paths relative to your
+        current Eclipse project root directory (eg. <literal>path/to/mytemplate.gsp</literal>).
         </para>
         
         <para>
-        Clicking the <emphasis>Tide</emphasis> button will configure Tide specific templates for entity beans. 
-        Use it if you are configuring the builder for a Tide project.
+        Clicking the <emphasis>Use Tide</emphasis> button will configure Tide specific templates for entity beans. Use it if you are configuring
+        the builder for a Tide project.
+        </para>
+        
+        <para>
+        Clicking the <emphasis>Use LCDS</emphasis> button will configure LCDS specific templates for basic beans and entity beans, and
+        remove all templates for enum and remote destination services. It will also configure a LCDS specific AS3TypeFactory in the "Options"
+        panel (see picture below). The LCDS templates generate AS3 beans that can be either [Bindable] (default) or [Managed]. If you need [Managed]
+        beans, use the following parameter with your include pattern: <literal>[managed=true]</literal>. For example, your include patterns could be:
+    
+        <itemizedlist>
+            <listitem>path/to/managed/beans/*.java[managed=true]</listitem>
+            <listitem>path/to/bindable/beans/*.java</listitem>
+        </itemizedlist>
+        
+        If you want to use a single file generation policy (ie. no "Base" and inherited files), you can reconfigure the templates by using
+        <literal>class:org/granite/generator/template/lcdsStandaloneBean.gsp</literal> as the only template, removing the base template.
+        WARNING: when switching from dual templates to a single one, be sure to remove and backup any previously generated files. 
         </para>
         
         <para>
@@ -435,8 +470,9 @@ package org.test {
             <literal>"Show debug informations in console"</literal>: If enabled, Gas3 will display more information during the generation process.
             </listitem>
             <listitem>
-            <literal>"Generate a Flex Builder configuration file"</literal>: If enabled, Gas3 will generate a <literal>flex-config.xml</literal> 
-            that may be used in your compiler options. Useful to make sure that all generated AS3 beans will be included in your SWF.
+            <literal>"Generate a Flex Builder configuration file"</literal>: If enabled, Gas3 will generate a <literal>granite-flex-config.xml</literal> 
+            that may be used in your compiler options. Useful to make sure that all generated AS3 beans will be included in your SWF. Note that
+            all AS3 files present in a Gas3 output directory (even those which are not generated) will be added to the config file.
             </listitem>
             <listitem>
             <literal>"Use org.granite.math.Long"</literal>: If enabled, Gas3 will generate AS3 <literal>Long</literal> properties for 
@@ -461,7 +497,7 @@ package org.test {
         <formalpara>
             <title>The GraniteDS Project Properties Panel</title>
             <para>
-            When you need to change your configuration later, you may right-click on your project, select the <emphasis>Properties</emphasis> item, 
+            If you need to change your configuration later, you can right-click on your project, select the <emphasis>Properties</emphasis> item, 
             and you'll be able to modify all GraniteDS Eclipse Builder configuration options:
             
             <imagedata align="center" fileref="images/gb8.jpg"/>
@@ -473,10 +509,10 @@ package org.test {
         <formalpara>
             <title>Using the GraniteDS Builder Together with Flex/Flash Builder</title>
             <para>
-            You may use GraniteDS builder with Flex Builder provided that the three builders (Java, Granite, and Flex) are configured in the correct order. 
-            It will be ok if you create a Java project, add the Flex project nature, and then the GraniteDS nature; the builder will make sure 
-            that builders are set up in the correct order. Otherwise, you may have to change this order. 
-            Right-click on your project, select the <emphasis>Properties</emphasis> item, and select the <emphasis>Builders</emphasis> entry:
+            You can use the GraniteDS builder with Flex Builder provided that the three builders (Java, Granite, and Flex) are configured in the correct order. 
+            It will work without modification if you first create a Java project, add the Flex project nature, and then the GraniteDS nature; the builder will
+            make sure that builders are setup in the correct order. Otherwise, you may have to change this order. Right-click on your project, select the
+            <emphasis>Properties</emphasis> item, and select the <emphasis>Builders</emphasis> entry:
             
             <imagedata align="center" fileref="images/gb11.jpg"/>
 
@@ -493,6 +529,17 @@ package org.test {
             
             Note that the hidden configuration file <literal>.granite</literal> in your project is not removed by this action and you must delete it manually. 
             Otherwise, it will be reused whenever you add the nature again.
+            </para>
+        </formalpara>
+
+        <formalpara>
+            <title>Java file deletion / renaming</title>
+            <para>
+            The main purpose of the builder is to generate AS3 files based on Java sources which are added or modified. When a Java source file
+            is deleted or renamed, the builder will append to the name of all potentially AS3 generated files a suffix composed of a dot, the current system millisecond
+            since epoch (1/1/1970) and an additionnal extension ".hid". The idea behind these renaming operations is to make sure that the Flex
+            compilation will detect errors if these classes are used in the project (easing refactoring) and to ensure that any manual editing you have made
+            in these classes is recoverable.
             </para>
         </formalpara>
 	</section>
@@ -590,6 +637,24 @@ $ ant -lib /gas3libs -f build.xml {target}
         you may safely add your code to the inherited bean.
         </para>
 
+        <para>
+        You can also use Ant <literal>zipfileset</literal>s if you want to generate AS3 classes from an existing jar. Note that
+        the jar must be in the classpath:
+        </para>
+
+        <programlisting role="XML">
+<![CDATA[<target name="generate.as3">
+    <gas3 outputdir="as3">
+        <classpath>
+            <pathelement location="lib/myclasses.jar"/>
+        </classpath>
+        <zipfileset src="lib/myclasses.jar">
+            <include name="com/myapp/entity/**/*.class"/>
+        </zipfileset>
+    </gas3>
+</target>]]>
+        </programlisting>
+
         <formalpara>
             <title>Packages Translations</title>
             <para>
@@ -627,7 +692,8 @@ $ ant -lib /gas3libs -f build.xml {target}
             <title>Groovy Templates</title>
             <para>
             Gas3 generation relies on Groovy templates. You may plug your own templates in by using one of the advanced options attributes below. 
-            For example, you could add a <literal>entitytemplate="/absolute/path/to/my/groovy/entityTemplate.gsp"</literal> attribute to the <literal>gas3</literal> node. 
+            For example, you could add a <literal>entitytemplate="/absolute/path/to/my/groovy/entityTemplate.gsp"</literal> attribute to the <literal>gas3</literal> node.
+            You can also specify paths to your custom templates relative to the current Ant project <literal>basedir</literal> directory.
             If you want to see the Groovy code of the default templates, just unpack <literal>granite-generator.jar</literal> 
             in the <literal>lib</literal> directory of the plugin, and look for <literal>org/granite/generator/template/*[Base].gsp</literal> files.
             </para>
@@ -721,7 +787,7 @@ $ ant -lib /gas3libs -f build.xml {target}
         entitybasetemplate="/myEntityBaseTemplate.gsp"
         interfacetemplate="/myInterfaceTemplate.gsp"
         beantemplate="/myBeanTemplate.gsp"
-        beanbasetemplate="/myBeanBaseTemplate.gsp">
+        beanbasetemplate="/myBeanBaseTemplate.gsp"
         enumtemplate="/myEnumTemplate.gsp"
         remotetemplate="/myRemoteTemplate.gsp"
         remotebasetemplate="/myRemoteBaseTemplate.gsp"
@@ -745,7 +811,7 @@ $ ant -lib /gas3libs -f build.xml {target}
         
         <para>
         Note that when using a custom <literal>as3typefactory</literal>, <literal>entityfactory</literal>, <literal>remotedestinationfactory</literal> 
-        or <literal>transformer</literal> attribute, you must configure the classpath in order to make your custom class available to the Gas3 engine; 
+        or <literal>transformer</literal> attribute, you must configure the classpath in order to make your custom classes available to the Gas3 engine; 
         either use the classpath attribute in the <literal>taskdef</literal> declaration or in the <literal>gas3</literal> call.
         </para>
 	</section>
@@ -869,7 +935,7 @@ $ ant -lib /gas3libs -f build.xml {target}
         </para>
         
         <para>
-        While the language itself is already documented on Groovy site, there are two specific bindings (i.e., global variables used in Gas3 templates) 
+        While the language itself is already documented on Groovy site, there are two specific bindings (ie. global variables used in Gas3 templates) 
         that should be referenced.
         </para>
         
@@ -907,10 +973,15 @@ $ ant -lib /gas3libs -f build.xml {target}
                             <entry>Implementation of the <literal>JavaType</literal> interface</entry>
                             <entry>An object describing the Java class for which the generator is writting an ActionScript 3 class</entry>
                         </row>
+                        <row>
+                            <entry><literal>fAttributes</literal></entry>
+                            <entry><literal>Map&lt;String, String&gt;</literal></entry>
+                            <entry>A map which contains key-value pairs, as specified in include patterns (Eclipse builder only)</entry>
+                        </row>
 	                </tbody>
 	            </tgroup>
             </informaltable>
-            Possible implementations of the above JavaType interface are:
+            JavaType implementations (passed as the <literal>jClass</literal> parameter) can be of the following types:
             <informaltable>
                 <tgroup cols="2">
                     <colspec colnum="1" colwidth="1*" />
@@ -925,26 +996,32 @@ $ ant -lib /gas3libs -f build.xml {target}
                         <row>
                             <entry><literal>JavaEntityBean</literal></entry>
                             <entry>
-                            Class that describes an JPA entity bean (i.e., a class annotated with a <literal>@Entity</literal> or a 
+                            A class defining a JPA entity bean (ie. a class annotated with a <literal>@Entity</literal> or with a 
                             <literal>@MappedSuperclass</literal> persistence annotation)
                             </entry>
                         </row>
                         <row>
                             <entry><literal>JavaEnum</literal></entry>
                             <entry>
-                            Class that describes a Java <literal>enum</literal> class
+                            A class defining a Java <literal>enum</literal> class
                             </entry>
                         </row>
                         <row>
                             <entry><literal>JavaInterface</literal></entry>
                             <entry>
-                            Class that describes a Java interface
+                            A class defining a Java interface
+                            </entry>
+                        </row>
+                        <row>
+                            <entry><literal>JavaRemoteDestination</literal></entry>
+                            <entry>
+                            A class defining a remote service annotated with <literal>@RemoteDestination</literal>
                             </entry>
                         </row>
                         <row>
                             <entry><literal>JavaBean</literal></entry>
                             <entry>
-                            Class that describes all other Java classes
+                            A class defining all other Java classes
                             </entry>
                         </row>
                     </tbody>
@@ -952,7 +1029,8 @@ $ ant -lib /gas3libs -f build.xml {target}
             </informaltable>
             </para>
             <para>
-            Those two bindings may be used in your templates as any other variables. For example:
+            The two bindings <literal>gVersion</literal> and <literal>jClass</literal> can be used in your templates as any
+            other Groovy script variables. For example:
             </para>
         </formalpara>
         
@@ -967,10 +1045,10 @@ package ${jClass.as3Type.packageName} {
         </programlisting>
         
         <para>
-        If you execute this template with Gas3 2.2.0 and Java class named <literal>com.myapp.MyClass</literal>, the output will be:
+        If you execute this template with Gas3 version 2.3.2 and a Java class named <literal>com.myapp.MyClass</literal>, the output will be:
         </para>
         
-        <programlisting role="AS3">// Generated by Gas3 v.2.2.0.
+        <programlisting role="AS3">// Generated by Gas3 v.2.3.2.
 
 package com.myapp {
 
@@ -981,7 +1059,7 @@ package com.myapp {
         </programlisting>
         
         <para>
-        If you plan to write custom templates, you should have a look at the standard GraniteDS templates and API documentation of the four <literal>JavaType</literal>
+        If you plan to write custom templates, you should have a look at the standard GraniteDS templates and API documentation of the <literal>JavaType</literal>
         implementations listed above.        
         </para>  
 

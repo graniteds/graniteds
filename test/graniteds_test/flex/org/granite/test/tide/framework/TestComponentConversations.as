@@ -1,8 +1,6 @@
 package org.granite.test.tide.framework
 {
     import org.flexunit.Assert;
-    
-    import org.flexunit.Assert;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
     import org.granite.tide.events.TideUIConversationEvent;

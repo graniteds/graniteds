@@ -50,6 +50,9 @@ package org.granite.tide.collections {
     use namespace object_proxy;
     
 
+	[Event(name="initialize", type="mx.events.CollectionEvent")]
+	[Event(name="uninitialize", type="mx.events.CollectionEvent")]
+	
     /**
      * 	Internal implementation of persistent collection handling automatic lazy loading.<br/>
      *  Used for wrapping persistent collections received from the server.<br/>
@@ -60,6 +63,9 @@ package org.granite.tide.collections {
 	public class PersistentCollection extends ListCollectionView implements IPersistentCollection, IPropertyHolder, IWrapper {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.collections.PersistentCollection");
+		
+		public static const INITIALIZE:String = "initialize";
+		public static const UNINITIALIZE:String = "uninitialize";
 		
 	    private var _entity:IEntity = null;
 	    private var _propertyName:String = null;
@@ -137,9 +143,8 @@ package org.granite.tide.collections {
             	_initializationCallback = null;
             }
             
-            var ce:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, 
-                CollectionEventKind.REFRESH);
-            dispatchEvent(ce);
+            dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.REFRESH));
+			dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, INITIALIZE));
             
             log.debug("initialized");
         }
@@ -150,9 +155,8 @@ package org.granite.tide.collections {
         	_initializationCallback = null;
             _localInitializing = false;
             
-            var ce:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, 
-                CollectionEventKind.REFRESH);
-            dispatchEvent(ce);
+            dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.REFRESH));
+			dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, UNINITIALIZE));
         }
         
         
@@ -169,9 +173,18 @@ package org.granite.tide.collections {
 			}
 		}
 		
+		public function reload():void {
+			var em:IEntityManager = Managed.getEntityManager(_entity);
+			if (_localInitializing)
+				return;
+			
+			log.debug("forced reload requested " + toString());
+			em.meta_initializeObject(this);
+		}
+		
         
 		[Bindable("collectionChange")]
-        override public function get length():int {
+        public override function get length():int {
             if (_localInitializing || isInitialized())
                 return super.length;
             
@@ -182,7 +195,7 @@ package org.granite.tide.collections {
 //			return (em && !BaseContext(em).meta_lazyInitializationDisabled) ? 1 : 0;
         }
         
-        override public function getItemAt(index:int, prefetch:int=0):Object {
+        public override function getItemAt(index:int, prefetch:int=0):Object {
             if (_localInitializing || isInitialized())
                 return super.getItemAt(index, prefetch);
             
@@ -190,7 +203,7 @@ package org.granite.tide.collections {
             return null;
         }
         
-        override public function addItem(item:Object):void {
+        public override function addItem(item:Object):void {
             if (_localInitializing || isInitialized()) {
                 super.addItem(item);
                 return;
@@ -199,7 +212,7 @@ package org.granite.tide.collections {
             throw new Error("Cannot modify uninitialized collection: " + _entity + " property " + propertyName); 
         }
         
-        override public function addItemAt(item:Object, index:int):void {
+        public override function addItemAt(item:Object, index:int):void {
             if (_localInitializing || isInitialized()) {
                 super.addItemAt(item, index);
                 return;
@@ -208,21 +221,21 @@ package org.granite.tide.collections {
             throw new Error("Cannot modify uninitialized collection: " + _entity + " property " + propertyName); 
         }
         
-        override public function setItemAt(item:Object, index:int):Object {
+        public override function setItemAt(item:Object, index:int):Object {
             if (_localInitializing || isInitialized())
                 return super.setItemAt(item, index);
             
             throw new Error("Cannot modify uninitialized collection: " + _entity + " property " + propertyName); 
         }
         
-        override public function removeItemAt(index:int):Object {
+        public override function removeItemAt(index:int):Object {
             if (_localInitializing || isInitialized())
                 return super.removeItemAt(index);
             
             throw new Error("Cannot modify uninitialized collection: " + _entity + " property " + propertyName); 
         }
         
-        override public function removeAll():void {
+        public override function removeAll():void {
             if (_localInitializing || isInitialized()) {
                 super.removeAll();
                 return;
@@ -231,16 +244,16 @@ package org.granite.tide.collections {
             initialize();
         }
                 
-        override public function refresh():Boolean {
+        public override function refresh():Boolean {
             if (_localInitializing || isInitialized())
 	        	return super.refresh();
 	        
 	        requestInitialization();
 	        return false;
         }
+		
         
-        
-        override public function toString():String {
+        public override function toString():String {
             if (isInitialized())
                 return "Initialized collection for object: " + BaseContext.toString(_entity) + " " + _propertyName + ": " + super.toString();
             

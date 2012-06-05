@@ -1338,14 +1338,14 @@ package org.granite.tide {
 		 * 
 		 *  @return token for the remote operation
 		 */
-		public function login(ctx:BaseContext, component:IComponent, username:String, password:String, responder:ITideResponder = null):AsyncToken {
+		public function login(ctx:BaseContext, component:IComponent, username:String, password:String, responder:ITideResponder = null, charset:String = null):AsyncToken {
 		    log.info("login {0} > {1}", component.meta_name, username);
 		    
 		    _firstCall = false;
 		    for (var i:int = 0; i < _registeredListeners.length; i++)
 		    	_newListeners.addItem(_registeredListeners.getItemAt(i));
 		    
-			ro.setCredentials(username, password);
+			ro.setCredentials(username, password, charset);
 			dispatchEvent(new TidePluginEvent(PLUGIN_SET_CREDENTIALS, { username: username, password: password }));
 			return null;
 		}

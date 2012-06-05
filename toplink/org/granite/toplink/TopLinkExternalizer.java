@@ -126,7 +126,7 @@ public class TopLinkExternalizer extends DefaultExternalizer {
                     if (value instanceof ValueHolderInterface) {
                         topLinkFields.get("_toplink_" + field.getName() + "_vh").setProperty(o, value, false);
                     }
-                    else if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class))) { 
+                    else if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class, true))) { 
                         if (value instanceof AbstractExternalizablePersistentCollection)
                             value = newIndirectCollection((AbstractExternalizablePersistentCollection)value, field.getType());
                         else

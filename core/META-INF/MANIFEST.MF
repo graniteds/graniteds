@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: GraniteDS Core OSGi Bundle
 Bundle-SymbolicName: org.graniteds.granite-core
-Bundle-Version: 2.3.0.GA
+Bundle-Version: 2.3.2.GA
 Bundle-Activator: org.granite.osgi.Activator
 DynamicImport-Package: *
 GraniteDS-Context: /WebContent

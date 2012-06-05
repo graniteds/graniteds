@@ -70,6 +70,10 @@ public class SecurityServiceBeanDefinitionParser extends AbstractSingleBeanDefin
         String sessionAuthenticationStrategy = element.getAttribute("session-authentication-strategy");
         if (sessionAuthenticationStrategy != null && sessionAuthenticationStrategy.trim().length() > 0)
             builder.addPropertyReference("sessionAuthenticationStrategy", sessionAuthenticationStrategy);
+        
+        String passwordEncoder = element.getAttribute("password-encoder");
+        if (passwordEncoder != null && passwordEncoder.trim().length() > 0)
+            builder.addPropertyReference("passwordEncoder", passwordEncoder);
     }
 
     @Override

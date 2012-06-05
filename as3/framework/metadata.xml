@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotations version="1.0">
+
+	<metadata name="Name" description="Marks a component as managed by Tide">
+		<context name="class" />
+		
+		<attribute name="" type="String" required="false" description="Component name"/>
+		<attribute name="module" type="String" required="false" description="Module to which the component belongs"/>
+		<attribute name="scope" type="String" values="event,conversation,session" defaultValue="session" required="false" description="Component scope"/>
+		<attribute name="create" type="Boolean" defaultValue="true" required="false" description="Should instantiate if does not already exist"/>
+		<attribute name="restrict" type="Boolean" defaultValue="false" required="false" description="Should clear component instance on logout"/>
+	</metadata>
+	
+	<metadata name="PostConstruct" description="Marks a method to be called after instance is fully initialized">
+		<context name="method" />
+	</metadata>
+	
+	<metadata name="Destroy" description="Marks a method to be called before instance is removed from context">
+		<context name="method" />
+	</metadata>
+	
+	<metadata name="Inject" description="Marks a dependency for injection by Tide">
+		<context name="variable" />
+		<context name="setter" />
+	</metadata>
+	
+	<metadata name="Produces" description="Marks a producer method/field for Tide">
+		<context name="variable" />
+		<context name="getter" />
+		<context name="method" />
+	</metadata>
+	
+	<metadata name="In" description="Marks a dependency for injection by Tide">
+		<context name="variable" />
+		<context name="setter" />
+		
+		<attribute name="" type="String" required="false" description="Source component name"/>
+		<attribute name="create" type="String" values="true,false" defaultValue="true" required="false" description="Should instantiate if does not already exist"/>
+		<attribute name="global" type="Boolean" defaultValue="false" required="false" description="Should instantiate if does not already exist"/>
+		<attribute name="remote" type="Boolean" defaultValue="false" required="false" description="Should instantiate if does not already exist"/>
+	</metadata>
+	
+	<metadata name="Out" description="Marks a dependency for outjection by Tide">
+		<context name="variable" />
+		<context name="getter" />
+		
+		<attribute name="" type="String" required="false" description="Target component name"/>
+		<attribute name="global" type="Boolean" defaultValue="false" required="false" description="Should instantiate if does not already exist"/>
+		<attribute name="remote" type="Boolean" defaultValue="false" required="false" description="Should instantiate if does not already exist"/>
+	</metadata>
+
+	<metadata name="ManagedEvent" description="Marks a event that should be intercepted and redispatched on the Tide event bus">
+		<context name="class"/>
+		
+		<attribute name="name" type="String" required="true" description="Event type"/>
+		<attribute name="type" type="String" required="false" description="Event class"/>
+	</metadata>
+
+	<metadata name="Observer" description="Marks a method that observes events on the Tide event bus">
+		<context name="method"/>
+		
+		<attribute name="" type="String" description="Observed event types (can be separated by commas)"/>
+		<attribute name="remote" type="Boolean" defaultValue="false" required="false" description="True if the event will be received from the server"/>
+	</metadata>
+
+
+	<metadata name="Id" description="Marks an entity property as id">
+		<context name="variable" />
+		<context name="getter" />
+		<context name="setter" />
+	</metadata>
+	
+	<metadata name="Version" description="Marks an entity property as version field">
+		<context name="variable" />
+		<context name="getter" />
+		<context name="setter" />
+	</metadata>
+	
+	<metadata name="Lazy" description="Marks an entity property as lazy field">
+		<context name="variable" />
+		<context name="getter" />
+		<context name="setter" />
+	</metadata>
+
+
+</annotations>

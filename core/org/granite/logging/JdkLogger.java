@@ -60,13 +60,13 @@ public class JdkLogger extends Logger {
     @Override
     public void trace(String message, Object... args) {
         if (isTraceEnabled())
-            getLoggerImpl().log(Level.FINE, getFormatter().format(message, args));
+            getLoggerImpl().log(Level.FINER, getFormatter().format(message, args));
     }
 
     @Override
     public void trace(Throwable t, String message, Object... args) {
         if (isTraceEnabled())
-            getLoggerImpl().log(Level.FINE, getFormatter().format(message, args), t);
+            getLoggerImpl().log(Level.FINER, getFormatter().format(message, args), t);
     }
 
     @Override
@@ -84,13 +84,13 @@ public class JdkLogger extends Logger {
     @Override
     public void debug(String message, Object... args) {
         if (isDebugEnabled())
-            getLoggerImpl().log(Level.FINER, getFormatter().format(message, args));
+            getLoggerImpl().log(Level.FINE, getFormatter().format(message, args));
     }
 
     @Override
     public void debug(Throwable t, String message, Object... args) {
         if (isDebugEnabled())
-            getLoggerImpl().log(Level.FINER, getFormatter().format(message, args), t);
+            getLoggerImpl().log(Level.FINE, getFormatter().format(message, args), t);
     }
 
     @Override
