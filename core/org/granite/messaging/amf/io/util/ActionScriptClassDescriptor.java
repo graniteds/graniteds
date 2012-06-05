@@ -43,7 +43,7 @@ public abstract class ActionScriptClassDescriptor {
 
     protected ActionScriptClassDescriptor(String type, byte encoding) {
         GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
-        this.type = (type == null ? "" : type);
+        this.type = (type == null ? "" : config.getTypeForAlias(type));
         this.instantiator = config.getInstantiator(type);
         this.encoding = encoding;
         this.externalizer = findExternalizer();
