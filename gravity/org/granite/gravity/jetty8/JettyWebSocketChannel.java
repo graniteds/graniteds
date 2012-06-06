@@ -241,6 +241,9 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 		}
 	}
 	
+	public void close() {
+	}
+	
 	@Override
 	protected boolean hasAsyncHttpContext() {
 		return true;

@@ -234,6 +234,9 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 		}
 	}
 	
+	public void close() {
+	}
+	
 	@Override
 	protected boolean hasAsyncHttpContext() {
 		return true;

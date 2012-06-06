@@ -66,7 +66,7 @@ public class GravityGenericServlet extends AbstractGravityServlet {
 					GenericChannel channel = gravity.getChannel(channelFactory, channelId);
 					// Reset channel continuation instance and deliver pending messages.
 					synchronized (channel) {
-						channel.reset();
+						channel.close();
 						channel.runReceived(new AsyncHttpContext(request, response, connect));
 					}
 				}
