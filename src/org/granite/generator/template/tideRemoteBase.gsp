@@ -64,7 +64,7 @@ package ${jClass.as3Type.packageName} {
             %> extends Component {<%
         }%>
 
-        public function ${jClass.as3Type.name}(){
+        public function ${jClass.as3Type.name}Base(){
             super();
         }
 <%
