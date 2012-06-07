@@ -140,9 +140,14 @@ package ${jClass.as3Type.packageName} {
         }
 
     %> {
-<%
+<%  if (jClass.hasSuperclass()){%>
 
-    ///////////////////////////////////////////////////////////////////////////
+        public function ${jClass.as3Type.name}Base(){
+            super();
+        }<% }
+
+
+///////////////////////////////////////////////////////////////////////////
     // Write Private Fields.
 
     if (jClass.hasIdentifiers()) {%>

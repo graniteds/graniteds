@@ -61,7 +61,12 @@ package ${jClass.as3Type.packageName} {
             %> extends RemoteObject<%
         }
 
-    %> {<%
+    %> {
+
+        public function ${jClass.as3Type.name}Base(){
+            super();
+        }
+<%
 
 ///////////////////////////////////////////////////////////////////////////
 // Write private "initialized?" flag declaration.%>
