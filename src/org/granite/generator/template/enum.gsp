@@ -32,10 +32,7 @@ package ${jClass.as3Type.packageName} {
     [Bindable]
     [RemoteClass(alias="${jClass.qualifiedName}")]
     public class ${jClass.as3Type.name} extends Enum {
-
-        public function ${jClass.as3Type.name}(){
-            super();
-        } <%
+    <%
 
         for (jEnumValue in jClass.enumValues) {%>
         public static const ${jEnumValue.name}:${jClass.name} = new ${jClass.name}("${jEnumValue.name}", _);<%
