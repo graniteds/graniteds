@@ -80,6 +80,9 @@ public class ServletGraniteContext extends GraniteContext {
     }
 
     public HttpSession getSession() {
+    	if (getSessionId() == null)
+    		return null;
+    	
     	@SuppressWarnings("unchecked")
 		Map<String, HttpSession> sessionMap = (Map<String, HttpSession>)servletContext.getAttribute(GraniteConfigListener.GRANITE_SESSION_MAP);
         return sessionMap != null ? sessionMap.get(getSessionId()) : null;
