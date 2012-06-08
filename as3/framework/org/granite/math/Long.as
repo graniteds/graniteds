@@ -614,7 +614,7 @@ package org.granite.math {
 		 * 		<code>Number.NaN</code>, <code>Number.POSITIVE_INFINITY</code> or
 		 * 		<code>Number.NEGATIVE_INFINITY</code>.
 	     */
-		public function remainder(b:*):Array {
+		public function remainder(b:*):Long {
 			return divideAndRemainder(b)[1];
 		}
 		

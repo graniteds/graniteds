@@ -1429,6 +1429,7 @@ package org.granite.tide {
                 responder = new TideResponder(resultHandler, faultHandler);
             }
             
+			_entityManager.initMerge();
 			for (var i:int = 0; i < args.length; i++) {
 				if (args[i] is IPropertyHolder)
 					args[i] = IPropertyHolder(args[i]).object;
