@@ -82,7 +82,10 @@ package ${jClass.as3Type.packageName} {
             }
         }
     %> {
-<%
+<%  if (jClass.superclass!=null || jClass.as3Superclass!=null){%>
+        public function ${jClass.as3Type.name}(){
+            super();
+        }<% }
 
     ///////////////////////////////////////////////////////////////////////////
     // Write Private Fields.

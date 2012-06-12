@@ -62,8 +62,12 @@ package ${jClass.as3Type.packageName} {
             %> extends ${jClass.superclass.as3Type.name} {<%
         } else {
             %> extends Component {<%
+        }%>
+
+        public function ${jClass.as3Type.name}Base(){
+            super();
         }
-                
+<%
 ///////////////////////////////////////////////////////////////////////////
 // Write Public Getter/Setter.
 

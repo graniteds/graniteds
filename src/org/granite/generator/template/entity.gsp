@@ -48,7 +48,12 @@ package ${jClass.as3Type.packageName} {<%
 
     [Bindable]
     [RemoteClass(alias="${jClass.qualifiedName}")]
-    public class ${jClass.as3Type.name} extends ${jClass.as3Type.name}Base {<%
+    public class ${jClass.as3Type.name} extends ${jClass.as3Type.name}Base {
+
+
+        public function ${jClass.as3Type.name}(){
+            super();
+        } <%
 
     ///////////////////////////////////////////////////////////////////////////
     // (Re)Write Public Getters/Setters for Implemented Interfaces.
