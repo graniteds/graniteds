@@ -82,14 +82,14 @@ public class JavaBean extends JavaAbstractType {
         // Collect bean properties.
         this.properties = Collections.unmodifiableSortedMap(initProperties());
 
-        // Collect properties from implemented interfaces (ignore all implemented properties).
+        // Collect properties from superclasses.
         Map<String, JavaProperty> allProperties = new HashMap<String, JavaProperty>(this.properties);
         for (JavaType supertype = this.superclass; supertype instanceof JavaBean; supertype = ((JavaBean)supertype).superclass)
         	allProperties.putAll(((JavaBean)supertype).properties);
 
+        // Collect properties from interfaces.
         Map<String, JavaProperty> iPropertyMap = new HashMap<String, JavaProperty>();
         addImplementedInterfacesProperties(interfaces, iPropertyMap, allProperties);
-
         this.interfacesProperties = getSortedUnmodifiableList(iPropertyMap.values());
 
         // Find uid (if any).
