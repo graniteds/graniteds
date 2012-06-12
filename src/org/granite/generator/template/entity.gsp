@@ -50,7 +50,6 @@ package ${jClass.as3Type.packageName} {<%
     [RemoteClass(alias="${jClass.qualifiedName}")]
     public class ${jClass.as3Type.name} extends ${jClass.as3Type.name}Base {
 
-
         public function ${jClass.as3Type.name}(){
             super();
         } <%
