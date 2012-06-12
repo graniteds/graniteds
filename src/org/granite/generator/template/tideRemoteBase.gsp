@@ -44,8 +44,8 @@
 
 package ${jClass.as3Type.packageName} {
 <%
-///////////////////////////////////////////////////////////////////////////////
-// Write Import Statements.
+	///////////////////////////////////////////////////////////////////////////////
+	// Write Import Statements.
 
     for (as3Import in as3Imports) {%>
     import ${as3Import};<%
@@ -53,23 +53,23 @@ package ${jClass.as3Type.packageName} {
     
     use namespace flash_proxy;<%
 
-///////////////////////////////////////////////////////////////////////////////
-// Write Class Declaration.%>
+	///////////////////////////////////////////////////////////////////////////////
+	// Write Class Declaration.%>
 
     public class ${jClass.as3Type.name}Base<%
 
         if (jClass.hasSuperclass()) {
-            %> extends ${jClass.superclass.as3Type.name} {<%
+            %> extends ${jClass.superclass.as3Type.name}<%
         } else {
-            %> extends Component {<%
-        }%>
+            %> extends Component<%
+        }%> {
 
-        public function ${jClass.as3Type.name}Base(){
+        public function ${jClass.as3Type.name}Base() {
             super();
         }
 <%
-///////////////////////////////////////////////////////////////////////////
-// Write Public Getter/Setter.
+	///////////////////////////////////////////////////////////////////////////
+	// Write Public Getter/Setter.
 
     for (jProperty in jClass.properties) {
         if (jProperty.readable || jProperty.writable) {%>
@@ -90,8 +90,8 @@ package ${jClass.as3Type.packageName} {
         }
     }        
         
-///////////////////////////////////////////////////////////////////////////
-// Write Methods.
+	///////////////////////////////////////////////////////////////////////////
+	// Write Methods.
         
     for (jMethod in jClass.methods) {%>    
         <%
