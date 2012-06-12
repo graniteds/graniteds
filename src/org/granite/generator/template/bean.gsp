@@ -52,7 +52,7 @@ package ${jClass.as3Type.packageName} {<%
 
         public function ${jClass.as3Type.name}(){
             super();
-        } <%
+        }<%
 
     ///////////////////////////////////////////////////////////////////////////
     // (Re)Write Public Getters/Setters for Implemented Interfaces.
