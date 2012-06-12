@@ -141,15 +141,14 @@ package ${jClass.as3Type.packageName} {
 
     %> {
 
-
-        public function ${jClass.as3Type.name}Base(){
-        <%  if (jClass.hasSuperclass()){%>
-            super();
-        <% } %>
+        public function ${jClass.as3Type.name}Base() {<%
+    if (jClass.hasSuperclass()) {%>
+            super();<%
+    }%>
         }
-
 <%
-///////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////
     // Write Private Fields.
 
     if (jClass.hasIdentifiers()) {%>
