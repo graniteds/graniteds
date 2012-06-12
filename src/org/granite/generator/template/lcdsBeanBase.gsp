@@ -82,10 +82,10 @@ package ${jClass.as3Type.packageName} {
         }
     %> {
     
-        public function ${jClass.as3Type.name}Base(){
-<%  if (jClass.superclass!=null || jClass.as3Superclass!=null){%>
-            super();
-<% } %>
+        public function ${jClass.as3Type.name}Base() {<%
+    if (jClass.superclass!=null || jClass.as3Superclass!=null){%>
+            super();<%
+    }%>
         }
 <%
 
