@@ -9,11 +9,13 @@ package org.granite.test.tide {
 
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
+    
     import mx.collections.ListCollectionView;
+    
     import org.granite.meta;
     import org.granite.ns.tide;
-    import org.granite.tide.IPropertyHolder;
     import org.granite.tide.IEntityManager;
+    import org.granite.tide.IPropertyHolder;
 
     use namespace meta;
     use namespace tide;
@@ -28,6 +30,14 @@ package org.granite.test.tide {
 		private var _age:Number;
         
         
+		public function Person(id:Number = NaN, version:Number = NaN, firstName:String = null, lastName:String = null):void {
+			this.id = id;
+			this.uid = "P" + id;
+			this.version = version;
+			this.firstName = firstName;
+			this.lastName = lastName;
+		}
+		
         public function set contacts(value:ListCollectionView):void {
             _contacts = value;
         }
