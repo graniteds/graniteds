@@ -129,6 +129,11 @@ package org.granite.gravity.channels {
 		private var _sent:Dictionary = new Dictionary();
 
         override protected function internalSend(messageResponder:MessageResponder):void {
+			if (_webSocket == null) {
+				// Disconnected
+				return;
+			}
+			
 			_sent[messageResponder.message.messageId] = messageResponder;
 			
 			var message:IMessage = messageResponder.message;
