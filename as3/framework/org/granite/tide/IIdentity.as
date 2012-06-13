@@ -26,5 +26,9 @@ package org.granite.tide {
 	 * 	@author William DRAI
 	 */
 	public interface IIdentity extends IComponent {
+		
+		function get loggedIn():Boolean;
+		
+		function set loggedIn(loggedIn:Boolean):void;
 	}
 }
