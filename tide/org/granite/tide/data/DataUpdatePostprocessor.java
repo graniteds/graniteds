@@ -20,6 +20,8 @@
 
 package org.granite.tide.data;
 
+import java.util.Set;
+
 
 /**
  *  Interface for data update postprocessors.
@@ -32,5 +34,5 @@ package org.granite.tide.data;
  */
 public interface DataUpdatePostprocessor {
 	
-	public Object process(Object entity);
+	public Set<Object[]> process(Set<Object[]> updates);
 }

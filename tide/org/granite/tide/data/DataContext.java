@@ -93,15 +93,7 @@ public class DataContext {
     	return dataContext.get() == NULL_DATA_CONTEXT;
     }
     
-    private final Set<Object[]> dataUpdates = new TreeSet<Object[]>(new Comparator<Object[]>() {
-		public int compare(Object[] o1, Object[] o2) {
-		    if (!((Integer)o1[2]).equals(o2[2]))
-		        return (Integer)o1[2] - (Integer)o2[2];
-		    if (!o1[1].equals(o2[1]))
-		        return o1[1].hashCode() - o2[1].hashCode();
-		    return ((EntityUpdateType)o1[0]).ordinal() - ((EntityUpdateType)o2[0]).ordinal();
-		}
-    });
+    private final Set<Object[]> dataUpdates = new TreeSet<Object[]>(ENTITY_UPDATE_COMPARATOR);
     private boolean published = false;
 
     
@@ -115,12 +107,17 @@ public class DataContext {
     	
     	if (dataUpdates == null || dataUpdates.isEmpty())
     		return null;
-    	updates = new Object[dataUpdates.size()][];
+    	
+    	Set<Object[]> processedDataUpdates = dataUpdates;
+    	if (dataUpdatePostprocessor != null)
+    		processedDataUpdates = dataUpdatePostprocessor.process(dataUpdates);
+    	
+    	updates = new Object[processedDataUpdates.size()][];
     	int i = 0;
-    	Iterator<Object[]> iu = dataUpdates.iterator();
+    	Iterator<Object[]> iu = processedDataUpdates.iterator();
     	while (iu.hasNext()) {
     		Object[] u = iu.next();
-    		updates[i++] = new Object[] { ((EntityUpdateType)u[0]).name(), dataUpdatePostprocessor != null ? dataUpdatePostprocessor.process(u[1]) : u[1] }; 
+    		updates[i++] = new Object[] { ((EntityUpdateType)u[0]).name(), u[1] }; 
     	}
 		return updates;
     }
@@ -176,6 +173,16 @@ public class DataContext {
     	UPDATE,
     	REMOVE
     }
+    
+    public static Comparator<Object[]> ENTITY_UPDATE_COMPARATOR = new Comparator<Object[]>() {
+		public int compare(Object[] o1, Object[] o2) {
+		    if (!((Integer)o1[2]).equals(o2[2]))
+		        return (Integer)o1[2] - (Integer)o2[2];
+		    if (!o1[1].equals(o2[1]))
+		        return o1[1].hashCode() - o2[1].hashCode();
+		    return ((EntityUpdateType)o1[0]).ordinal() - ((EntityUpdateType)o2[0]).ordinal();
+		}
+    };
     
     private static class NullDataContext extends DataContext {
     	
