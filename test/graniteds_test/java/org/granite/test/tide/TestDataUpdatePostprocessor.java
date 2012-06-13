@@ -1,5 +1,7 @@
 package org.granite.test.tide;
 
+import java.util.Set;
+
 import javax.enterprise.inject.Alternative;
 
 import org.granite.tide.data.DataUpdatePostprocessor;
@@ -9,8 +11,10 @@ import org.granite.tide.data.DataUpdatePostprocessor;
 public class TestDataUpdatePostprocessor implements DataUpdatePostprocessor {
 
 	@Override
-	public Object process(Object entity) {
-		return new WrappedUpdate(entity);
+	public Set<Object[]> process(Set<Object[]> updates) {
+		for (Object[] update : updates)
+			update[1] = new WrappedUpdate(update[1]);
+		return updates;
 	}
 
 	public static class WrappedUpdate {
