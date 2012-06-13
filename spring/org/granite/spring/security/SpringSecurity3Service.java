@@ -36,6 +36,7 @@ import org.granite.messaging.service.security.AbstractSecurityContext;
 import org.granite.messaging.service.security.AbstractSecurityService;
 import org.granite.messaging.service.security.SecurityServiceException;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.access.AccessDeniedException;
@@ -225,7 +226,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 
         startAuthorization(context);
         
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
         
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         HttpRequestResponseHolder holder = null;
@@ -288,6 +289,11 @@ public class SpringSecurity3Service extends AbstractSecurityService {
             		graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, (Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED)-1);
             }
         }
+    }
+    
+    @Override
+    public boolean acceptsContext() {
+    	return GraniteContext.getCurrentInstance() instanceof ServletGraniteContext;
     }
 
     public void logout() {

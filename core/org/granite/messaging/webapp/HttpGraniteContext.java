@@ -71,10 +71,12 @@ public class HttpGraniteContext extends ServletGraniteContext {
         this.response = response;
     }
 
+    @Override
     public HttpServletRequest getRequest() {
         return request;
     }
 
+    @Override
     public HttpServletResponse getResponse() {
         return response;
     }

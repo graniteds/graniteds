@@ -210,11 +210,12 @@ public abstract class ServiceInvoker<T extends ServiceFactory> {
             boolean retry = false;
             try {
                 // Check security 2 (security service).
-	            if (config.hasSecurityService())
+	            if (config.hasSecurityService() && config.getSecurityService().acceptsContext())
 	                result = config.getSecurityService().authorize(invocationContext);
 	            else
 	                result = invocationContext.invoke();
-            } catch (Exception e) {
+            } 
+            catch (Exception e) {
             	if (retryInvocation(invocationContext, (e instanceof InvocationTargetException ? e.getCause() : e)))
             		retry = true;
             	else

@@ -134,7 +134,8 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
 
         try {
             return endAuthorization(context);
-        } catch (InvocationTargetException e) {
+        } 
+        catch (InvocationTargetException e) {
             for (Throwable t = e; t != null; t = t.getCause()) {
                 // Don't create a dependency to javax.ejb in SecurityService...
                 if (t instanceof SecurityException ||

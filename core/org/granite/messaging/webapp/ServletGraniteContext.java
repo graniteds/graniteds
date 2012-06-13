@@ -20,15 +20,35 @@
 
 package org.granite.messaging.webapp;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.security.Principal;
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import org.granite.clustering.TransientReference;
 import org.granite.clustering.TransientReferenceHolder;
@@ -47,6 +67,8 @@ public class ServletGraniteContext extends GraniteContext {
     protected InitialisationMap initialisationMap = null;
     protected ApplicationMap applicationMap = null;
     protected SessionMap sessionMap = null;
+    protected HttpServletRequest request = null;
+    protected HttpServletResponse response = null;
 
 
     public static ServletGraniteContext createThreadInstance(
@@ -74,7 +96,19 @@ public class ServletGraniteContext extends GraniteContext {
     public ServletContext getServletContext() {
         return servletContext;
     }
-
+    
+    public HttpServletRequest getRequest() {
+    	if (request == null)
+    		request = new BasicRequest();
+    	return request;
+    }
+    
+    public HttpServletResponse getResponse() {
+    	if (response == null)
+    		response = new BasicResponse();
+    	return response;
+    }
+    
     public HttpSession getSession(boolean create) {
     	return getSession();
     }
@@ -123,7 +157,403 @@ public class ServletGraniteContext extends GraniteContext {
     public Map<String, Object> getRequestMap() {
         return null;
     }
+    
+    
+    private class BasicRequest implements HttpServletRequest {
+    	
+    	private Map<String, Object> attributes = new HashMap<String, Object>();
+    	
+    	public ServletContext getServletContext() {
+    		return servletContext;
+    	}
+
+    	public Object getAttribute(String key) {
+    		return attributes.get(key);
+    	}
+
+    	public void removeAttribute(String key) {
+    		attributes.remove(key);
+    	}
+
+    	public void setAttribute(String key, Object value) {
+    		attributes.put(key, value);
+    	}
+
+    	public Enumeration<String> getAttributeNames() {
+    		return new Hashtable<String, Object>(attributes).keys();
+    	}
+
+    	public HttpSession getSession() {
+    		return ServletGraniteContext.this.getSession();
+    	}
+
+    	public HttpSession getSession(boolean create) {
+    		return ServletGraniteContext.this.getSession(create);
+    	}
+
+    	public String getRequestedSessionId() {
+    		return null;
+    	}
+
+    	public boolean isRequestedSessionIdFromCookie() {
+    		return false;
+    	}
+
+    	public boolean isRequestedSessionIdFromURL() {
+    		return false;
+    	}
+
+    	public boolean isRequestedSessionIdFromUrl() {
+    		return false;
+    	}
+
+    	public boolean isRequestedSessionIdValid() {
+    		return false;
+    	}
+
+    	public Principal getUserPrincipal() {
+    		return null;
+    	}
+
+    	public boolean isUserInRole(String arg0) {
+    		return false;
+    	}
+
+    	public void login(String arg0, String arg1) throws ServletException {
+    	}
+
+    	public void logout() throws ServletException {
+    	}
+    	
+    	public String getCharacterEncoding() {
+    		return null;
+    	}
+
+    	public int getContentLength() {
+    		return 0;
+    	}
+
+    	public String getContentType() {
+    		return null;
+    	}
+
+    	public DispatcherType getDispatcherType() {
+    		return null;
+    	}
+
+    	public ServletInputStream getInputStream() throws IOException {
+    		return null;
+    	}
+
+    	public String getLocalAddr() {
+    		return null;
+    	}
+
+    	public String getLocalName() {
+    		return null;
+    	}
+
+    	public int getLocalPort() {
+    		return 0;
+    	}
+
+    	public Locale getLocale() {
+    		return null;
+    	}
+
+    	public Enumeration<Locale> getLocales() {
+    		return null;
+    	}
+
+    	public String getParameter(String arg0) {
+    		return null;
+    	}
+
+    	public Map<String, String[]> getParameterMap() {
+    		return null;
+    	}
+
+    	public Enumeration<String> getParameterNames() {
+    		return null;
+    	}
+
+    	public String[] getParameterValues(String arg0) {
+    		return null;
+    	}
+
+    	public String getProtocol() {
+    		return null;
+    	}
+
+    	public BufferedReader getReader() throws IOException {
+    		return null;
+    	}
+
+    	public String getRealPath(String arg0) {
+    		return null;
+    	}
+
+    	public String getRemoteAddr() {
+    		return null;
+    	}
+
+    	public String getRemoteHost() {
+    		return null;
+    	}
+
+    	public int getRemotePort() {
+    		return 0;
+    	}
+
+    	public RequestDispatcher getRequestDispatcher(String arg0) {
+    		return null;
+    	}
+
+    	public String getScheme() {
+    		return null;
+    	}
+
+    	public String getServerName() {
+    		return null;
+    	}
+
+    	public int getServerPort() {
+    		return 0;
+    	}
+
+    	public AsyncContext getAsyncContext() {
+    		return null;
+    	}
+
+    	public boolean isAsyncStarted() {
+    		return false;
+    	}
+
+    	public boolean isAsyncSupported() {
+    		return false;
+    	}
+
+    	public boolean isSecure() {
+    		return false;
+    	}
+
+    	public void setCharacterEncoding(String arg0) throws UnsupportedEncodingException {
+    	}
+
+    	public AsyncContext startAsync() throws IllegalStateException {
+    		return null;
+    	}
+
+    	public AsyncContext startAsync(ServletRequest arg0, ServletResponse arg1) throws IllegalStateException {
+    		return null;
+    	}
+
+    	public boolean authenticate(HttpServletResponse arg0) throws IOException, ServletException {
+    		return false;
+    	}
+
+    	public String getAuthType() {
+    		return null;
+    	}
+
+    	public String getContextPath() {
+    		return null;
+    	}
+
+    	public Cookie[] getCookies() {
+    		return null;
+    	}
+
+    	public long getDateHeader(String arg0) {
+    		return 0;
+    	}
+
+    	public String getHeader(String arg0) {
+    		return null;
+    	}
+
+    	public Enumeration<String> getHeaderNames() {
+    		return null;
+    	}
+
+    	public Enumeration<String> getHeaders(String arg0) {
+    		return null;
+    	}
+
+    	public int getIntHeader(String arg0) {
+    		return 0;
+    	}
+
+    	public String getMethod() {
+    		return null;
+    	}
+
+    	public Part getPart(String arg0) throws IOException, ServletException {
+    		return null;
+    	}
+
+    	public Collection<Part> getParts() throws IOException, ServletException {
+    		return null;
+    	}
+
+    	public String getPathInfo() {
+    		return null;
+    	}
+
+    	public String getPathTranslated() {
+    		return null;
+    	}
+
+    	public String getQueryString() {
+    		return null;
+    	}
+
+    	public String getRemoteUser() {
+    		return null;
+    	}
+
+    	public String getRequestURI() {
+    		return null;
+    	}
+
+    	public StringBuffer getRequestURL() {
+    		return null;
+    	}
+
+    	public String getServletPath() {
+    		return null;
+    	}    
+    }
+    
+    private class BasicResponse implements HttpServletResponse {
+
+		public void flushBuffer() throws IOException {
+		}
+
+		public int getBufferSize() {
+			return 0;
+		}
+
+		public String getCharacterEncoding() {
+			return null;
+		}
+
+		public String getContentType() {
+			return null;
+		}
+
+		public Locale getLocale() {
+			return null;
+		}
+
+		public ServletOutputStream getOutputStream() throws IOException {
+			return null;
+		}
+
+		public PrintWriter getWriter() throws IOException {
+			return null;
+		}
+
+		public boolean isCommitted() {
+			return false;
+		}
+
+		public void reset() {
+		}
+
+		public void resetBuffer() {
+		}
+
+		public void setBufferSize(int arg0) {
+		}
+
+		public void setCharacterEncoding(String arg0) {
+		}
+
+		public void setContentLength(int arg0) {
+		}
+
+		public void setContentType(String arg0) {
+		}
+
+		public void setLocale(Locale arg0) {
+		}
+
+		public void addCookie(Cookie arg0) {
+		}
+
+		public void addDateHeader(String arg0, long arg1) {
+		}
+
+		public void addHeader(String arg0, String arg1) {
+		}
+
+		public void addIntHeader(String arg0, int arg1) {
+		}
+
+		public boolean containsHeader(String arg0) {
+			return false;
+		}
+
+		public String encodeRedirectURL(String arg0) {
+			return null;
+		}
+
+		public String encodeRedirectUrl(String arg0) {
+			return null;
+		}
+
+		public String encodeURL(String arg0) {
+			return null;
+		}
+
+		public String encodeUrl(String arg0) {
+			return null;
+		}
+
+		public String getHeader(String arg0) {
+			return null;
+		}
+
+		public Collection<String> getHeaderNames() {
+			return null;
+		}
+
+		public Collection<String> getHeaders(String arg0) {
+			return null;
+		}
+
+		public int getStatus() {
+			return 0;
+		}
+
+		public void sendError(int arg0) throws IOException {
+		}
+
+		public void sendError(int arg0, String arg1) throws IOException {
+		}
+
+		public void sendRedirect(String arg0) throws IOException {
+		}
+
+		public void setDateHeader(String arg0, long arg1) {
+		}
+
+		public void setHeader(String arg0, String arg1) {
+		}
+
+		public void setIntHeader(String arg0, int arg1) {
+		}
+
+		public void setStatus(int arg0) {
+		}
+
+		public void setStatus(int arg0, String arg1) {
+		}
+    	
+    }
 }
+
 
 abstract class BaseContextMap<T,U> extends AbstractMap<T,U> {
 
@@ -365,3 +795,4 @@ class SessionMap extends BaseContextMap<String, Object> {
     	return session;
     }
 }
+

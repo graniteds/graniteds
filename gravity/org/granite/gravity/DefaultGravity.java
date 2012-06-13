@@ -45,7 +45,6 @@ import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.security.SecurityServiceException;
-import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.util.ClassUtil;
 import org.granite.util.UUIDUtil;
 
@@ -721,20 +720,14 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
                 return new ErrorMessage(message, e);
             }
         }
-
+        
         // Check security 2 (security service).
         GraniteConfig config = context.getGraniteConfig();
-        if (config.hasSecurityService() && context instanceof HttpGraniteContext) {
-            try {
-                return (Message)config.getSecurityService().authorize(invocationContext);
-            } 
-            catch (Exception e) {
-                return new ErrorMessage(message, e);
-            }
-        }
-        
         try {
-        	return (Message)invocationContext.invoke();
+            if (config.hasSecurityService() && config.getSecurityService().acceptsContext())
+            	return (Message)config.getSecurityService().authorize(invocationContext);
+        	
+            return (Message)invocationContext.invoke();
         }
         catch (Exception e) {
             return new ErrorMessage(message, e, true);
@@ -825,25 +818,20 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         if (destination.getSecurizer() instanceof GravityDestinationSecurizer) {
             try {
                 ((GravityDestinationSecurizer)destination.getSecurizer()).canPublish(invocationContext);
-            } catch (Exception e) {
+            } 
+            catch (Exception e) {
                 return new ErrorMessage(message, e, true);
             }
         }
 	
         // Check security 2 (security service).
         GraniteConfig config = context.getGraniteConfig();
-        if (config.hasSecurityService() && context instanceof HttpGraniteContext) {
-            try {
-                return (Message)config.getSecurityService().authorize(invocationContext);
-            } 
-            catch (Exception e) {
-                return new ErrorMessage(message, e, true);
-            }
-        }
-        
         try {
+        	if (config.hasSecurityService() && config.getSecurityService().acceptsContext())
+                return (Message)config.getSecurityService().authorize(invocationContext);
+
         	return (Message)invocationContext.invoke();
-        }
+        } 
         catch (Exception e) {
             return new ErrorMessage(message, e, true);
         }
