@@ -20,7 +20,9 @@
 
 package org.granite.tide.data;
 
-import java.util.Set;
+import java.util.List;
+
+import org.granite.tide.data.DataContext.EntityUpdate;
 
 
 /**
@@ -34,5 +36,5 @@ import java.util.Set;
  */
 public interface DataUpdatePostprocessor {
 	
-	public Set<Object[]> process(Set<Object[]> updates);
+	public List<EntityUpdate> process(List<EntityUpdate> updates);
 }

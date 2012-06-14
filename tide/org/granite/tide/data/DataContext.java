@@ -20,11 +20,10 @@
 
 package org.granite.tide.data;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.List;
 
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
@@ -93,11 +92,11 @@ public class DataContext {
     	return dataContext.get() == NULL_DATA_CONTEXT;
     }
     
-    private final Set<Object[]> dataUpdates = new TreeSet<Object[]>(ENTITY_UPDATE_COMPARATOR);
+    private final List<EntityUpdate> dataUpdates = new ArrayList<EntityUpdate>();
     private boolean published = false;
 
     
-    public Set<Object[]> getDataUpdates() {
+    public List<EntityUpdate> getDataUpdates() {
         return dataUpdates;
     }
     
@@ -108,16 +107,19 @@ public class DataContext {
     	if (dataUpdates == null || dataUpdates.isEmpty())
     		return null;
     	
-    	Set<Object[]> processedDataUpdates = dataUpdates;
+    	List<EntityUpdate> processedDataUpdates = dataUpdates;
     	if (dataUpdatePostprocessor != null)
     		processedDataUpdates = dataUpdatePostprocessor.process(dataUpdates);
     	
+    	// Order updates : persist then updates then removals 
+    	Collections.sort(processedDataUpdates);
+    	
     	updates = new Object[processedDataUpdates.size()][];
     	int i = 0;
-    	Iterator<Object[]> iu = processedDataUpdates.iterator();
+    	Iterator<EntityUpdate> iu = processedDataUpdates.iterator();
     	while (iu.hasNext()) {
-    		Object[] u = iu.next();
-    		updates[i++] = new Object[] { ((EntityUpdateType)u[0]).name(), u[1] }; 
+    		EntityUpdate u = iu.next();
+    		updates[i++] = new Object[] { u.type.name(), u.entity }; 
     	}
 		return updates;
     }
@@ -132,14 +134,14 @@ public class DataContext {
     public static void addUpdate(EntityUpdateType type, Object entity, int priority) {
     	DataContext dc = get();
     	if (dc != null && dc.dataDispatcher != null) {
-    		for (Object[] update : dc.dataUpdates) {
-    			if (update[0].equals(type) && update[1].equals(entity)) {
-    				if ((Integer)update[2] < priority)
-    					update[2] = priority;
+    		for (EntityUpdate update : dc.dataUpdates) {
+    			if (update.type.equals(type) && update.entity.equals(entity)) {
+    				if (update.priority < priority)
+    					update.priority = priority;
     				return;
     			}
     		}
-    		dc.dataUpdates.add(new Object[] { type, entity, priority });
+    		dc.dataUpdates.add(new EntityUpdate(type, entity, priority));
     		dc.updates = null;
     	}
     }
@@ -174,15 +176,25 @@ public class DataContext {
     	REMOVE
     }
     
-    public static Comparator<Object[]> ENTITY_UPDATE_COMPARATOR = new Comparator<Object[]>() {
-		public int compare(Object[] o1, Object[] o2) {
-		    if (!((Integer)o1[2]).equals(o2[2]))
-		        return (Integer)o1[2] - (Integer)o2[2];
-		    if (!o1[1].equals(o2[1]))
-		        return o1[1].hashCode() - o2[1].hashCode();
-		    return ((EntityUpdateType)o1[0]).ordinal() - ((EntityUpdateType)o2[0]).ordinal();
+    public static class EntityUpdate implements Comparable<EntityUpdate> {
+    	public EntityUpdateType type;
+    	public Object entity;
+    	public int priority = 0;
+
+    	public EntityUpdate(EntityUpdateType type, Object entity, int priority) {
+    		this.type = type;
+    		this.entity = entity;
+    		this.priority = priority;
+    	}
+
+		public int compareTo(EntityUpdate u) {
+		    if (priority != u.priority)
+		        return priority - u.priority;
+		    if (!entity.equals(u.entity))
+		        return entity.hashCode() - u.entity.hashCode();
+		    return type.ordinal() - u.type.ordinal();
 		}
-    };
+    }
     
     private static class NullDataContext extends DataContext {
     	
@@ -191,8 +203,8 @@ public class DataContext {
     	}
     	
     	@Override
-        public Set<Object[]> getDataUpdates() {
-        	return Collections.emptySet();
+        public List<EntityUpdate> getDataUpdates() {
+        	return Collections.emptyList();
         }
     }
 }
