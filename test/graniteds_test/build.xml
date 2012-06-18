@@ -31,7 +31,37 @@
     <property name="gds.lib" value="${gds.dir}/lib"/>
     <property name="gds.build" value="${gds.dir}/build"/>
     <property name="gds.test" value="${gds.dir}/test/graniteds_test"/>
-    
+    <!-- Setup platform booleans -->
+	<condition property="isMac">
+		<os family="mac" />
+	</condition>
+ 
+	<condition property="isWindows">
+		<os family="windows" />
+	</condition>
+ 
+	<condition property="isLinux">
+		<os name="Linux" />
+	</condition>
+	
+	<target name="setupEnvironment" depends="setPropsMac,setPropsWindows,setPropsLinux" />
+ 
+	<target name="setPropsMac" if="isMac">		
+		<property name="MXMLC" value="${FLEX_HOME_TESTS}/bin/mxmlc" />
+		<property name="HEADLESS" value="false" />
+	</target>
+ 
+	<target name="setPropsWindows" if="isWindows">		
+		<property name="MXMLC" value="${FLEX_HOME_TESTS}/bin/mxmlc.exe" />
+		<property name="HEADLESS" value="false" />
+	</target>
+ 
+	<target name="setPropsLinux" if="isLinux">
+		<property name="MXMLC" value="${FLEX_HOME_TESTS}/bin/mxmlc" />
+		<!-- only linux should run in headless mode -->
+		<property name="HEADLESS" value="true" />
+	</target>
+	
     <!--
      ! Build Message.
      !-->
@@ -574,9 +604,9 @@
         </mxmlc>
     </target>
 
-    <target name="tests.flex" depends="build.mxmlc" description="Run Flex tests">
+    <target name="tests.flex" depends="setupEnvironment, build.mxmlc" description="Run Flex tests">
         <mkdir dir="${gds.test}/test-reports/flex"/>
-        <flexunit swf="${gds.test}/swf/tests.swf" todir="${gds.test}/test-reports/flex" headless="true" localTrusted="true" verbose="true"/>
+        <flexunit swf="${gds.test}/swf/tests.swf" todir="${gds.test}/test-reports/flex" headless="${HEADLESS}" localTrusted="true" verbose="true"/>
         
         <junitreport todir="${gds.test}/test-reports/flex">
             <fileset dir="${gds.test}/test-reports/flex">
