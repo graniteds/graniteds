@@ -748,11 +748,13 @@ package org.granite.math {
 			
 			// sign (!= 0) == bSign.
 			if (sign == bSign) {
-				// this == b --> 0.
-				if (_u1 == b._u1 && _u0 == b._u0)
-					return 0;
 				// works with positive and negative numbers.
-				return (_u1 > b._u1 || _u0 > b._u0 ? 1 : -1);
+				if (_u1 == b._u1) {
+					if (_u0 == b._u0)
+						return 0;
+					return (_u0 > b._u0 ? 1 : -1);
+				}
+				return (_u1 > b._u1 ? 1 : -1);
 			}
 			
 			// sign (!= 0) != bSign:
