@@ -25,9 +25,18 @@ package org.granite.test.tide {
         private var _contacts:ListCollectionView;
         private var _firstName:String;
         private var _lastName:String;
-		private var _age:Number;
+	private var _age:Number;
+       
         
-        
+	public function Person(id:Number = NaN, version:Number = NaN, firstName:String = null, lastName:String = null):void {
+		this.id = id;
+		if (!isNaN(id))
+			this.uid = "P" + id;
+		this.version = version;
+		this.firstName = firstName;
+		this.lastName = lastName;
+	}
+		
         public function set contacts(value:ListCollectionView):void {
             _contacts = value;
         }

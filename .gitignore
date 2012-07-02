@@ -1,6 +1,7 @@
 /doc
 /build
-/classes
+classes
+classes*
 /graniteds-*.zip
 /.idea
 /*.iml
@@ -8,5 +9,5 @@
 /*/*/*.iml
 /*/*/*/*.iml
 /test/graniteds_test/junit*.properties
-
+.FlexUnitSettings
 

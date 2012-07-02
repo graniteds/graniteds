@@ -22,6 +22,14 @@ package org.granite.test.tide {
         private var _email:String;
         private var _person:Person;
 
+	public function Contact(id:Number = NaN, version:Number = NaN, person:Person = null, email:String = null):void {
+		this.id = id;
+		if (!isNaN(id))
+			this.uid = "C" + id;
+		this.version = version;
+		this.email = email;
+	}
+		
         public function set email(value:String):void {
             _email = value;
         }
