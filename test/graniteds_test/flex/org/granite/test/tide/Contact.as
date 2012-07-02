@@ -24,7 +24,8 @@ package org.granite.test.tide {
 
 		public function Contact(id:Number = NaN, version:Number = NaN, person:Person = null, email:String = null):void {
 			this.id = id;
-			this.uid = "C" + id;
+			if (!isNaN(id))
+				this.uid = "C" + id;
 			this.version = version;
 			this.email = email;
 		}

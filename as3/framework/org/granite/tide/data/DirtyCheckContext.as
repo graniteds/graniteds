@@ -489,8 +489,9 @@ package org.granite.tide.data {
 						&& isSame(event.items[0], save[i].items[0]) && location == actualLocations[i]) {
 						
 	                    save.splice(i, 1);
-						// Adjust location of other saved events because an element added/removed locally has been removed/added
-						for each (ce in save) {
+						// Adjust location of other events saved after the one that we just discarded because an element added/removed locally has been removed/added
+						for (j = i; j < save.length; j++) {
+							ce = CollectionEvent(save[j]);
 							if (event.kind == CollectionEventKind.REMOVE && ce.kind == CollectionEventKind.ADD && ce.location > event.location)
 								ce.location--;
 							else if (event.kind == CollectionEventKind.ADD && ce.kind == CollectionEventKind.REMOVE && ce.location > event.location)

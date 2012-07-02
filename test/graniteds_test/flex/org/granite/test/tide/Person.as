@@ -32,7 +32,8 @@ package org.granite.test.tide {
         
 		public function Person(id:Number = NaN, version:Number = NaN, firstName:String = null, lastName:String = null):void {
 			this.id = id;
-			this.uid = "P" + id;
+			if (!isNaN(id))
+				this.uid = "P" + id;
 			this.version = version;
 			this.firstName = firstName;
 			this.lastName = lastName;
