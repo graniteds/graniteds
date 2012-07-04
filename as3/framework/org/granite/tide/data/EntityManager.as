@@ -456,6 +456,9 @@ package org.granite.tide.data {
          *  @param res the context expression
          */ 
         public function addReference(obj:Object, parent:Object, propName:String, res:IExpression = null):void {
+//			if (parent && propName == null)
+//				throw new Error("Illegal parent reference " + BaseContext.toString(parent) + " added for obj " + BaseContext.toString(obj));
+			
             if (obj is IEntity)
                 attachEntity(IEntity(obj));
 			
@@ -1248,8 +1251,8 @@ package org.granite.tide.data {
             	if (pmap.isInitialized()) {
 	                for each (var key:Object in pmap.keySet) {
 	                    var value:Object = pmap.remove(key);
-	                    key = mergeExternal(key, null, null, parent);
-	                    value = mergeExternal(value, null, null, parent);
+	                    key = mergeExternal(key, null, null, parent, propertyName);
+	                    value = mergeExternal(value, null, null, parent, propertyName);
 	                    pmap.put(key, value);
 	                }
             		addTrackingListeners(pmap, parent);
@@ -1264,7 +1267,7 @@ package org.granite.tide.data {
             _entityCache[coll] = pcoll;
             if (pcoll.isInitialized()) {
 	            for (var i:int = 0; i < pcoll.length; i++) {
-					var obj:Object = mergeExternal(pcoll.getItemAt(i), null, null, parent);
+					var obj:Object = mergeExternal(pcoll.getItemAt(i), null, null, parent, propertyName);
 					if (obj !== pcoll.getItemAt(i)) 
 						pcoll.setItemAt(obj, i);
 	            }
