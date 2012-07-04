@@ -1793,7 +1793,7 @@ package org.granite.tide {
 			var refreshes:Array = new Array();
 			
 			for each (var update:Array in updates) {
-				var entity:Object = meta_getCachedObject(update[1], true);
+				var entity:Object = meta_getCachedObject(update[1], String(update[0]).toLowerCase() != "remove");
 				
 				if (entity) {
 					var updateType:String = String(update[0]).toLowerCase();
