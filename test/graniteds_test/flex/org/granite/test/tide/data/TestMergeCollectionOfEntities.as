@@ -1,13 +1,14 @@
 package org.granite.test.tide.data
 {
-    import org.flexunit.Assert;
-    
     import mx.collections.ArrayCollection;
     
-    import org.granite.tide.BaseContext;
-    import org.granite.tide.Tide;
+    import org.flexunit.Assert;
+    import org.granite.persistence.PersistentSet;
     import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
+    import org.granite.tide.BaseContext;
+    import org.granite.tide.Tide;
+    import org.granite.tide.collections.PersistentCollection;
     
     
     public class TestMergeCollectionOfEntities 
@@ -69,5 +70,57 @@ package org.granite.test.tide.data
         	
         	Assert.assertEquals("Collection merged", 3, person.contacts.length);
         }
+		
+		
+		[Test]
+		public function testMergeCollectionOfEntitiesRemove():void {
+			var person0:Person = new Person();
+			person0.uid = "P01";
+			person0.contacts = new ArrayCollection();
+			_ctx.person = person0;
+			var c01:Contact = new Contact();
+			c01.uid = "C01";
+			c01.person = person0;
+			c01.email = "toto@toto.com";
+			person0.contacts.addItem(c01);
+			var c02:Contact = new Contact();
+			c02.uid = "C02";
+			c02.person = person0;
+			c02.email = "toto@toto.net";
+			person0.contacts.addItem(c02);
+
+			var person:Person = new Person();
+			person.uid = "P01";
+			person.version = 0;
+			person.contacts = new PersistentSet();
+			var c1:Contact = new Contact();
+			c1.uid = "C01";
+			c1.version = 0;
+			c1.person = person;
+			c1.email = "toto@toto.com";
+			person.contacts.addItem(c1);
+			var c2:Contact = new Contact();
+			c2.uid = "C02";
+			c2.version = 0;
+			c2.person = person;
+			c2.email = "toto@toto.net";
+			person.contacts.addItem(c2);
+			_ctx.meta_mergeExternalData(person);
+			_ctx.meta_clearCache();	// clear context cache to simulate remote call
+			
+			var person2:Person = new Person();
+			person2.uid = "P01";
+			person2.version = 0;
+			person2.contacts = new PersistentSet(false);
+			var c21:Contact = new Contact();
+			c21.uid = "C01";
+			c21.version = 0;
+			c21.person = person2;
+			c21.email = "toto@toto.com";
+			
+			_ctx.meta_mergeExternalData(person2, null, null, [ c21 ]);
+			
+			Assert.assertEquals("Removals merged", 1, person.contacts.length);
+		}
     }
 }
