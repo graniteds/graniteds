@@ -25,11 +25,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.granite.generator.as3.As3Type;
+import org.granite.generator.as3.ClientType;
 
 
 /**
@@ -40,17 +41,55 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
     private final JavaMethod readMethod;
     private final JavaMethod writeMethod;
     private final JavaTypeFactory provider;
+    private final ParameterizedType declaringType;
 
     public JavaFieldProperty(JavaTypeFactory provider, Field field, JavaMethod readMethod, JavaMethod writeMethod) {
+        this(provider, field, readMethod, writeMethod, null);
+    }
+    
+    public JavaFieldProperty(JavaTypeFactory provider, Field field, JavaMethod readMethod, JavaMethod writeMethod, ParameterizedType declaringType) {
         super(field);
 
         this.provider = provider;
         this.readMethod = readMethod;
         this.writeMethod = writeMethod;
+        this.declaringType = declaringType;
+    }
+    
+    public String getCapitalizedName() {
+    	return getName().substring(0, 1).toUpperCase() + getName().substring(1);
     }
 
     public Class<?> getType() {
+    	Type type = getMember().getGenericType();
+    	if (type instanceof TypeVariable && declaringType != null) {
+    		int index = -1;
+    		for (int i = 0; i < getMember().getDeclaringClass().getTypeParameters().length; i++) {
+    			if (getMember().getDeclaringClass().getTypeParameters()[i] == type) {
+    				index = i;
+    				break;
+    			}
+    		}
+    		if (index >= 0 && index < declaringType.getActualTypeArguments().length)
+    			return (Class<?>)declaringType.getActualTypeArguments()[index];
+    	}
         return getMember().getType();
+    }
+    
+    public Type getGenericType() {
+    	Type type = getMember().getGenericType();
+    	if (type instanceof TypeVariable && declaringType != null) {
+    		int index = -1;
+    		for (int i = 0; i < getMember().getDeclaringClass().getTypeParameters().length; i++) {
+    			if (getMember().getDeclaringClass().getTypeParameters()[i] == type) {
+    				index = i;
+    				break;
+    			}
+    		}
+    		if (index >= 0 && index < declaringType.getActualTypeArguments().length)
+    			return declaringType.getActualTypeArguments()[index];
+    	}
+    	return getMember().getGenericType();
     }
     
     public Type[] getGenericTypes() {
@@ -141,8 +180,15 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
         return writeMethod;
     }
 
-    public As3Type getAs3Type() {
-        return provider.getAs3Type(getType());
+    public ClientType getAs3Type() {
+    	ClientType clientType = provider.getClientType(getGenericType(), null, null, true);
+    	if (clientType == null)
+    		return provider.getAs3Type(getType());
+    	return clientType;
+    }
+
+    public ClientType getClientType() {
+        return provider.getClientType(getGenericType(), null, null, true);
     }
 
     public int compareTo(JavaProperty o) {

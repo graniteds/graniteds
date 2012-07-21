@@ -36,10 +36,10 @@ import org.granite.generator.as3.reflect.JavaType;
 /**
  * @author Franck WOLFF
  */
-public class JavaAs3Output implements Output<As3Type> {
+public class JavaAs3Output implements Output<ClientType> {
 
 	private final JavaType javaType;
-	private final As3Type targetType;
+	private final ClientType targetType;
 	private final Template template;
 	private final File dir;
 	private final File file;
@@ -48,7 +48,7 @@ public class JavaAs3Output implements Output<As3Type> {
 	
 	public JavaAs3Output(JavaType javaType, Template template, File dir, File file, boolean outdated, String message) {
 		this.javaType = javaType;
-		this.targetType = (javaType != null ? javaType.getAs3Type() : null);
+		this.targetType = (javaType != null ? javaType.getClientType() : null);
 		this.template = template;
 		this.dir = dir;
 		this.file = file;
@@ -60,7 +60,7 @@ public class JavaAs3Output implements Output<As3Type> {
 		return javaType;
 	}
 
-	public As3Type getTargetType() {
+	public ClientType getTargetType() {
 		return targetType;
 	}
 

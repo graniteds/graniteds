@@ -25,11 +25,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +41,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.granite.generator.as3.As3Type;
+import org.granite.generator.as3.ClientType;
 import org.granite.generator.as3.reflect.JavaMethod.MethodType;
 import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
 import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty;
@@ -55,12 +60,12 @@ public class JavaBean extends JavaAbstractType {
     protected final Set<JavaImport> imports = new HashSet<JavaImport>();
 
     protected final JavaType superclass;
-    protected final As3Type as3Superclass;
+    protected final ClientType clientSuperclass;
 
     protected final List<JavaInterface> interfaces;
     protected final List<JavaProperty> interfacesProperties;
 
-    protected final SortedMap<String, JavaProperty> properties;
+    protected final Map<String, JavaProperty> properties;
     protected final JavaProperty uid;
 
     ///////////////////////////////////////////////////////////////////////////
@@ -72,15 +77,35 @@ public class JavaBean extends JavaAbstractType {
         // Find superclass (controller filtered).
         this.superclass = provider.getJavaTypeSuperclass(type);
         if (this.superclass == null && type.isAnnotationPresent(TideEvent.class))
-        	as3Superclass = new As3Type("org.granite.tide.events", "AbstractTideEvent");
+        	clientSuperclass = new As3Type("org.granite.tide.events", "AbstractTideEvent");
         else
-        	as3Superclass = null;
+        	clientSuperclass = null;
 
         // Find implemented interfaces (filtered by the current transformer).
         this.interfaces = Collections.unmodifiableList(provider.getJavaTypeInterfaces(type));
 
         // Collect bean properties.
-        this.properties = Collections.unmodifiableSortedMap(initProperties());
+        Map<String, JavaProperty> properties = new LinkedHashMap<String, JavaProperty>();
+        
+        if (this.superclass == null) {
+        	// Collect bean properties of non generated superclasses if necessary
+        	// Example: com.myapp.AbstractEntity extends org.springframework.data.jpa.model.AbstractPersistable<T>
+        	// gsup collects the superclass parameterized type so the type parameter can be translated to an actual type later
+        	List<Class<?>> superclasses = new ArrayList<Class<?>>();
+        	Type gsup = type.getGenericSuperclass();
+        	Class<?> c = type.getSuperclass();
+        	while (c.getGenericSuperclass() != null && !c.getName().equals(Object.class.getName())) {
+        		superclasses.add(0, c);
+        		c = c.getSuperclass();
+        	}
+        	
+        	for (Class<?> sc : superclasses)
+        		properties.putAll(initProperties(sc, gsup instanceof ParameterizedType ? (ParameterizedType)gsup : null));
+        }
+        
+        properties.putAll(initProperties());
+
+        this.properties = Collections.unmodifiableMap(properties);
 
         // Collect properties from implemented interfaces (ignore all implemented properties).
         Map<String, JavaProperty> allProperties = new HashMap<String, JavaProperty>(this.properties);
@@ -112,7 +137,7 @@ public class JavaBean extends JavaAbstractType {
         for (JavaInterface interfaze : interfaces)
             addToImports(provider.getJavaImport(interfaze.getType()));
         for (JavaProperty property : properties.values())
-            addToImports(provider.getJavaImport(property.getType()));
+            addToImports(provider.getJavaImports(property.getClientType(), true));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -125,6 +150,10 @@ public class JavaBean extends JavaAbstractType {
         if (javaImport != null)
             imports.add(javaImport);
     }
+    protected void addToImports(Set<JavaImport> javaImports) {
+        if (javaImports != null)
+            imports.addAll(javaImports);
+    }
 
     public boolean hasSuperclass() {
         return superclass != null;
@@ -132,8 +161,11 @@ public class JavaBean extends JavaAbstractType {
     public JavaType getSuperclass() {
         return superclass;
     }
-    public As3Type getAs3Superclass() {
-    	return as3Superclass;
+    public ClientType getAs3Superclass() {
+    	return clientSuperclass;
+    }
+    public ClientType getClientSuperclass() {
+    	return clientSuperclass;
     }
 
     public boolean hasInterfaces() {
@@ -177,6 +209,10 @@ public class JavaBean extends JavaAbstractType {
     // Utilities.
 
     protected SortedMap<String, JavaProperty> initProperties() {
+    	return initProperties(type, null);
+    }
+    
+    protected SortedMap<String, JavaProperty> initProperties(Class<?> type, ParameterizedType parentGenericType) {
         PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors(type);
         SortedMap<String, JavaProperty> propertyMap = new TreeMap<String, JavaProperty>();
 
@@ -206,7 +242,7 @@ public class JavaBean extends JavaAbstractType {
                     }
                 }
 
-                JavaFieldProperty property = new JavaFieldProperty(provider, field, readMethod, writeMethod);
+                JavaFieldProperty property = new JavaFieldProperty(provider, field, readMethod, writeMethod, parentGenericType);
                 propertyMap.put(name, property);
             }
         }
@@ -224,7 +260,7 @@ public class JavaBean extends JavaAbstractType {
                 		continue;
 
                     JavaMethod readMethod = new JavaMethod(getter, MethodType.GETTER);
-                    JavaMethodProperty methodProperty = new JavaMethodProperty(provider, property.getName(), readMethod, null);
+                    JavaMethodProperty methodProperty = new JavaMethodProperty(provider, property.getName(), readMethod, null, parentGenericType);
                     propertyMap.put(property.getName(), methodProperty);
                 }
             }

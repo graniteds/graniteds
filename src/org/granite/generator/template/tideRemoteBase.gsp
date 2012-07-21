@@ -88,9 +88,23 @@ package ${jClass.as3Type.packageName} {
         
 ///////////////////////////////////////////////////////////////////////////
 // Write Methods.
-        
+    
+    List<String> writtenMethodNames = [ "delete" ];
+    
     for (jMethod in jClass.methods) {%>    
         <%
+        String as3MethodName = jMethod.name;
+        
+        String initialAs3MethodName = as3MethodName;
+        int num = 1;
+        
+        while (writtenMethodNames.contains(as3MethodName)) {
+        	as3MethodName = initialAs3MethodName + "_" + num;
+        	num++;
+        }
+        
+        writtenMethodNames.add(as3MethodName);
+        
         if (jMethod.options != null) {%>
         [${jMethod.options}]<%
         }
@@ -101,7 +115,7 @@ package ${jClass.as3Type.packageName} {
             }
             idx++; 
         }%>
-        public function ${jMethod.name}(<%
+        public function ${as3MethodName}(<%
             String[] names = jMethod.getAs3ParameterNames();
 
             int count = 0;

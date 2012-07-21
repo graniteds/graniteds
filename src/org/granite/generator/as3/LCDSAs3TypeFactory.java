@@ -1,6 +1,8 @@
 package org.granite.generator.as3;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -66,8 +68,12 @@ public class LCDSAs3TypeFactory implements As3TypeFactory {
 
 	public void configure(boolean externalizeLong, boolean externalizeBigInteger, boolean externalizeBigDecimal) {
 	}
+    
+    public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
+    	return null;
+    }
 
-	public As3Type getAs3Type(Class<?> jType) {
+	public ClientType getAs3Type(Class<?> jType) {
         As3Type as3Type = getFromCache(jType);
 
         if (as3Type == null) {

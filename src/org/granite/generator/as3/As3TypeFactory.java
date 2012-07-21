@@ -20,12 +20,18 @@
 
 package org.granite.generator.as3;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
+
 /**
  * @author Franck WOLFF
  */
 public interface As3TypeFactory {
 
 	public void configure(boolean externalizeLong, boolean externalizeBigInteger, boolean externalizeBigDecimal);
+	
+	public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property);
 
-	public As3Type getAs3Type(Class<?> jType);
+	public ClientType getAs3Type(Class<?> jType);
 }

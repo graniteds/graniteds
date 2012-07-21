@@ -20,9 +20,12 @@
 
 package org.granite.generator.as3.reflect;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Set;
 
-import org.granite.generator.as3.As3Type;
+import org.granite.generator.as3.ClientType;
 import org.granite.generator.as3.reflect.JavaAbstractType.GenerationType;
 import org.granite.generator.as3.reflect.JavaType.Kind;
 
@@ -35,11 +38,13 @@ public interface JavaTypeFactory {
 	public Kind getKind(Class<?> clazz);
 	public GenerationType getGenerationType(Kind kind, Class<?> clazz);
 	public JavaImport getJavaImport(Class<?> clazz);
+	public Set<JavaImport> getJavaImports(ClientType clientType, boolean property);
 	public JavaType getJavaTypeSuperclass(Class<?> clazz);
 	public List<JavaInterface> getJavaTypeInterfaces(Class<?> clazz);
 	public boolean isId(JavaFieldProperty fieldProperty);
 	public boolean isUid(JavaProperty property);
 	public boolean isVersion(JavaProperty property);
 	public boolean isLazy(JavaProperty property);
-	public As3Type getAs3Type(Class<?> clazz);
+	public ClientType getClientType(Type type, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property);
+	public ClientType getAs3Type(Class<?> clazz);
 }

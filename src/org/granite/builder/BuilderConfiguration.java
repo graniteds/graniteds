@@ -70,7 +70,7 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
     
 	private IJavaProject javaProject = null;
     private GraniteProperties properties = null;
-    private As3TypeFactory as3TypeFactory = null;
+    private As3TypeFactory clientTypeFactory = null;
     private EntityFactory entityFactory = null;
     private RemoteDestinationFactory remoteDestinationFactory = null;
     private GroovyTemplateFactory groovyTemplateFactory = null;
@@ -120,12 +120,12 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 	}
 	
 	public As3TypeFactory getAs3TypeFactory() {
-		if (as3TypeFactory == null) {
+		if (clientTypeFactory == null) {
 			String factoryClass = getProperties().getGas3().getAs3TypeFactory();
 			if (factoryClass != null) {
 				try {
-					as3TypeFactory = BuilderUtil.newInstance(As3TypeFactory.class, factoryClass, getClassLoader());
-					as3TypeFactory.configure(
+					clientTypeFactory = BuilderUtil.newInstance(As3TypeFactory.class, factoryClass, getClassLoader());
+					clientTypeFactory.configure(
 						getProperties().getGas3().isExternalizeLong(),
 						getProperties().getGas3().isExternalizeBigInteger(),
 						getProperties().getGas3().isExternalizeBigDecimal()
@@ -140,9 +140,9 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 				}
 			}
 			else
-				as3TypeFactory = new DefaultAs3TypeFactory();
+				clientTypeFactory = new DefaultAs3TypeFactory();
 		}
-		return as3TypeFactory;
+		return clientTypeFactory;
 	}
 	
 	public EntityFactory getEntityFactory() {
@@ -186,12 +186,12 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 	}
 
 	public File getBaseOutputDir(JavaAs3Input input) {
-		BuilderJavaAs3Input builderInput = (BuilderJavaAs3Input)input;
+		BuilderJavaClientInput builderInput = (BuilderJavaClientInput)input;
 		return new File(ProjectUtil.getProjectFile(project), builderInput.getGas3Source().getBaseOutputDir(true));
 	}
 
 	public File getOutputDir(JavaAs3Input input) {
-		BuilderJavaAs3Input builderInput = (BuilderJavaAs3Input)input;
+		BuilderJavaClientInput builderInput = (BuilderJavaClientInput)input;
 		return new File(ProjectUtil.getProjectFile(project), builderInput.getGas3Source().getOutputDir());
 	}
 

@@ -23,11 +23,12 @@ package org.granite.generator.as3.reflect;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.granite.generator.as3.As3Type;
+import org.granite.generator.as3.ClientType;
 import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
 import org.granite.util.ClassUtil;
 
@@ -40,21 +41,43 @@ public class JavaMethodProperty implements JavaProperty {
     private final JavaMethod readMethod;
     private final JavaMethod writeMethod;
     private final Class<?> type;
-    private final As3Type as3Type;
+    private final Type genericType;
+    private final ClientType clientType;
     private final boolean externalizedProperty;
 
     public JavaMethodProperty(JavaTypeFactory provider, String name, JavaMethod readMethod, JavaMethod writeMethod) {
+    	this(provider, name, readMethod, writeMethod, null);
+    }
+    
+    public JavaMethodProperty(JavaTypeFactory provider, String name, JavaMethod readMethod, JavaMethod writeMethod, ParameterizedType declaringType) {
         if (name == null || (readMethod == null && writeMethod == null))
             throw new NullPointerException("Invalid parameters");
         this.name = name;
         this.readMethod = readMethod;
         this.writeMethod = writeMethod;
-        this.type = (
+        Type genericType = (
             readMethod != null ?
-            readMethod.getMember().getReturnType() :
-            writeMethod.getMember().getParameterTypes()[0]
+            readMethod.getMember().getGenericReturnType() :
+            writeMethod.getMember().getGenericParameterTypes()[0]
         );
-        this.as3Type = provider.getAs3Type(type);
+        Class<?> declaringClass = readMethod != null ? readMethod.getMember().getDeclaringClass() : writeMethod.getMember().getDeclaringClass();
+    	if (genericType instanceof TypeVariable && declaringType != null) {
+    		int index = -1;
+    		for (int i = 0; i < declaringClass.getTypeParameters().length; i++) {
+    			if (declaringClass.getTypeParameters()[i] == genericType) {
+    				index = i;
+    				break;
+    			}
+    		}
+    		if (index >= 0 && index < declaringType.getActualTypeArguments().length)
+    			genericType = declaringType.getActualTypeArguments()[index];
+    	}
+        this.type = ClassUtil.classOfType(genericType);
+        this.genericType = genericType;
+        ClientType clientType = provider.getClientType(genericType, null, null, true);
+        if (clientType == null)
+        	clientType = provider.getAs3Type(type);
+        this.clientType = clientType;
         this.externalizedProperty = (
         	readMethod != null &&
         	ClassUtil.isAnnotationPresent(readMethod.getMember(), ExternalizedProperty.class)
@@ -64,9 +87,17 @@ public class JavaMethodProperty implements JavaProperty {
     public String getName() {
         return name;
     }
+    
+    public String getCapitalizedName() {
+    	return getName().substring(0, 1).toUpperCase() + getName().substring(1);
+    }
 
     public Class<?> getType() {
         return type;
+    }
+    
+    public Type getGenericType() {
+    	return genericType;
     }
     
     public Type[] getGenericTypes() {
@@ -139,8 +170,12 @@ public class JavaMethodProperty implements JavaProperty {
         return writeMethod;
     }
 
-    public As3Type getAs3Type() {
-        return as3Type;
+    public ClientType getAs3Type() {
+        return clientType;
+    }
+
+    public ClientType getClientType() {
+        return clientType;
     }
 
     public int compareTo(JavaProperty o) {

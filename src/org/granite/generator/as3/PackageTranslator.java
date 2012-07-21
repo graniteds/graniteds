@@ -20,6 +20,9 @@
 
 package org.granite.generator.as3;
 
+import java.util.List;
+
+
 /**
  * @author Franck WOLFF
  */
@@ -60,6 +63,9 @@ public class PackageTranslator {
         return java != null && java.length() > 0 && as3 != null && as3.length() > 0;
     }
 
+    /* (non-Javadoc)
+	 * @see org.granite.generator.as3.PackageTranslator#match(java.lang.String)
+	 */
     public int match(String pkg) {
         if (!pkg.startsWith(java))
             return 0;
@@ -68,8 +74,26 @@ public class PackageTranslator {
         return weight;
     }
 
+    /* (non-Javadoc)
+	 * @see org.granite.generator.as3.PackageTranslator#translate(java.lang.String)
+	 */
     public String translate(String pkg) {
         return as3 + pkg.substring(java.length());
+    }
+    
+    public static PackageTranslator forPackage(List<PackageTranslator> translators, String packageName) {
+        PackageTranslator translator = null;
+
+        int weight = 0;
+        for (PackageTranslator t : translators) {
+            int w = t.match(packageName);
+            if (w > weight) {
+                weight = w;
+                translator = t;
+            }
+        }
+		
+        return translator;
     }
 
     @Override

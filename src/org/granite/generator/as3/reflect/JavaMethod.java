@@ -22,11 +22,15 @@ package org.granite.generator.as3.reflect;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Map;
 
-import org.granite.generator.as3.As3Type;
+import org.granite.generator.as3.ClientType;
+import org.granite.generator.util.GenericTypeUtil;
 import org.granite.messaging.service.annotations.Param;
 import org.granite.tide.data.Lazy;
+import org.granite.util.ClassUtil;
 
 /**
  * @author Franck WOLFF
@@ -43,16 +47,22 @@ public class JavaMethod extends JavaMember<Method> {
     private final boolean override;
     private final MethodType type;
     private final String options;
+    private final Class<?> returnType;
     private final Class<?>[] parameterTypes;
-    private final As3Type[] as3ParameterTypes;
-    private final String[] as3ParameterNames;
-    private final String[] as3ParameterOptions;
+    private final ClientType clientReturnType;
+    private final ClientType[] clientParameterTypes;
+    private final String[] clientParameterNames;
+    private final String[] clientParameterOptions;
     
     public JavaMethod(Method method, MethodType type) {
-    	this(method, type, null);
+    	this(method, type, null, null);
     }
     
     public JavaMethod(Method method, MethodType type, JavaTypeFactory provider) {
+    	this(method, type, provider, null);
+    }
+    
+    public JavaMethod(Method method, MethodType type, JavaTypeFactory provider, ParameterizedType[] declaringTypes) {
         super(method);
 
         Class<?> objectClass = Object.class;
@@ -107,31 +117,55 @@ public class JavaMethod extends JavaMember<Method> {
         	this.options = null;
         
 		if (type == MethodType.OTHER && provider != null) {
-			this.parameterTypes = method.getParameterTypes();
-			this.as3ParameterTypes = new As3Type[this.parameterTypes.length];
-			this.as3ParameterNames = new String[this.parameterTypes.length];
-			this.as3ParameterOptions = new String[this.parameterTypes.length];
+			if (method.getReturnType() == void.class) {
+				this.returnType = Void.class;
+				this.clientReturnType = provider.getClientType(Void.class, null, null, false);
+			}
+			else {
+				Type genericType = GenericTypeUtil.resolveTypeVariable(method.getGenericReturnType(), method.getDeclaringClass(), declaringTypes);
+				genericType = GenericTypeUtil.primitiveToWrapperType(genericType);
+		    	this.returnType = ClassUtil.classOfType(genericType);
+		    	
+				ClientType returnType = provider.getClientType(genericType, method.getDeclaringClass(), declaringTypes, false);
+				if (returnType == null)
+					returnType = provider.getAs3Type(this.returnType);
+				clientReturnType = returnType;
+			}
+
+			this.parameterTypes = method.getParameterTypes();			
+			this.clientParameterTypes = new ClientType[this.parameterTypes.length];
+			this.clientParameterNames = new String[this.parameterTypes.length];
+			this.clientParameterOptions = new String[this.parameterTypes.length];
 			for (int i = 0; i < this.parameterTypes.length; i++) {
-				as3ParameterNames[i] = getParamName(method, i);
+				clientParameterNames[i] = getParamName(method, i);
 				if (Map.class.isAssignableFrom(parameterTypes[i]))
-					as3ParameterTypes[i] = As3Type.OBJECT;
-				else
-					as3ParameterTypes[i] = provider.getAs3Type(this.parameterTypes[i]);
+					clientParameterTypes[i] = provider.getClientType(Object.class, null, null, false);
+				else {
+					Type genericType = GenericTypeUtil.resolveTypeVariable(method.getGenericParameterTypes()[i], method.getDeclaringClass(), declaringTypes);
+			    	parameterTypes[i] = ClassUtil.classOfType(genericType);
+			    	
+					ClientType paramType = provider.getClientType(genericType, method.getDeclaringClass(), declaringTypes, false);
+					if (paramType == null)
+						paramType = provider.getAs3Type(parameterTypes[i]);
+					clientParameterTypes[i] = paramType;
+				}
 				
 				Annotation[] annotations = method.getParameterAnnotations()[i];
 				for (Annotation annotation : annotations) {
 					if (annotation.annotationType().equals(Lazy.class)) {
-						as3ParameterOptions[i] = "Lazy";
+						clientParameterOptions[i] = "Lazy";
 						break;
 					}
 				}				
 			}
 		} 
 		else {
+			this.returnType = null;
 			this.parameterTypes = null;
-			this.as3ParameterTypes = null;
-			this.as3ParameterNames = null;
-			this.as3ParameterOptions = null;
+			this.clientReturnType = null;
+			this.clientParameterTypes = null;
+			this.clientParameterNames = null;
+			this.clientParameterOptions = null;
 		}
     }
     
@@ -166,20 +200,40 @@ public class JavaMethod extends JavaMember<Method> {
 	public String getName() {
         return name;
     }
+    
+    public Class<?> getReturnType() {
+    	return returnType;
+    }
    
     public Class<?>[] getParameterTypes() {
     	return parameterTypes;
     }
 
-	public As3Type[] getAs3ParameterTypes() {
-		return as3ParameterTypes;
+	public ClientType[] getAs3ParameterTypes() {
+		return clientParameterTypes;
 	}
 
 	public String[] getAs3ParameterNames() {
-		return as3ParameterNames;
+		return clientParameterNames;
 	}
 
 	public String[] getAs3ParameterOptions() {
-		return as3ParameterOptions;
+		return clientParameterOptions;
+	}
+	
+	public ClientType getClientReturnType() {
+		return clientReturnType;
+	}
+
+	public ClientType[] getClientParameterTypes() {
+		return clientParameterTypes;
+	}
+
+	public String[] getClientParameterNames() {
+		return clientParameterNames;
+	}
+
+	public String[] getClientParameterOptions() {
+		return clientParameterOptions;
 	}
 }

@@ -24,7 +24,7 @@ import org.granite.builder.util.XStreamUtil;
 import org.granite.generator.as3.DefaultAs3TypeFactory;
 import org.granite.generator.as3.DefaultEntityFactory;
 import org.granite.generator.as3.DefaultRemoteDestinationFactory;
-import org.granite.generator.as3.JavaAs3GroovyTransformer;
+import org.granite.generator.as3.JavaClientGroovyTransformer;
 import org.granite.generator.as3.reflect.JavaType.Kind;
 import org.granite.generator.template.StandardTemplateUris;
 
@@ -137,7 +137,7 @@ public class GraniteProperties implements Validable {
 			StandardTemplateUris.REMOTE + ";" + StandardTemplateUris.REMOTE_BASE
 		));
 		
-		gas3.getTransformers().add(new Gas3Transformer(JavaAs3GroovyTransformer.class.getName()));
+		gas3.getTransformers().add(new Gas3Transformer(JavaClientGroovyTransformer.class.getName()));
 		
 		GraniteProperties properties = new GraniteProperties();
 		properties.setGas3(gas3);

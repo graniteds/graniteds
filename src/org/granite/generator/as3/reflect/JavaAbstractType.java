@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.granite.generator.as3.As3Type;
+import org.granite.generator.as3.ClientType;
 import org.granite.util.ClassUtil;
 import org.granite.util.URIUtil;
 
@@ -52,7 +52,7 @@ public abstract class JavaAbstractType implements JavaType {
     protected final JavaTypeFactory provider;
     protected final Class<?> type;
     protected final URL url;
-    protected final As3Type as3Type;
+    protected final ClientType clientType;
     protected final Kind kind;
     protected final GenerationType generationType;
 
@@ -62,13 +62,17 @@ public abstract class JavaAbstractType implements JavaType {
     // Constructor.
 
     protected JavaAbstractType(JavaTypeFactory provider, Class<?> type, URL url) {
+    	this(provider, type, url, false);
+    }
+    
+    protected JavaAbstractType(JavaTypeFactory provider, Class<?> type, URL url, boolean property) {
         if (provider == null || type == null)
             throw new IllegalArgumentException("Parameter provider and type cannot be null");
 
         this.provider = provider;
         this.type = type;
         this.url = url;
-        this.as3Type = provider.getAs3Type(type);
+        this.clientType = provider.getClientType(type, null, null, property);
         this.kind = provider.getKind(type);
         this.generationType = provider.getGenerationType(kind, type);
     }
@@ -155,8 +159,12 @@ public abstract class JavaAbstractType implements JavaType {
         return lastModified;
     }
 
-    public As3Type getAs3Type() {
-        return as3Type;
+    public ClientType getAs3Type() {
+        return clientType;
+    }
+
+    public ClientType getClientType() {
+        return clientType;
     }
 
     ///////////////////////////////////////////////////////////////////////////

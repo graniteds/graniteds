@@ -345,7 +345,7 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
 		            	Class<?> clazz = config.getClassLoader().loadClass(info.getClassName());
 		            	if (!clazz.isAnonymousClass() && config.isGenerated(clazz)) {
 			            	Map<String, String> attributes = source.getAttributes(info.getSourceFolderPath(), info.getSourceFilePath());
-			            	JavaAs3Input input = new BuilderJavaAs3Input(clazz, info.getClassFile(), source, attributes);
+			            	JavaAs3Input input = new BuilderJavaClientInput(clazz, info.getClassFile(), source, attributes);
 			            	return generator.generate(input);
 		            	}
 		            } finally {
@@ -400,7 +400,7 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
 	            	
 		            monitor.subTask("Removing AS3 code for: " + resource.getProjectRelativePath().toString());
 		            try {
-		            	JavaAs3Input input = new BuilderJavaAs3Input(null, null, source, null);
+		            	JavaAs3Input input = new BuilderJavaClientInput(null, null, source, null);
 		            	File outputDir = config.getBaseOutputDir(input);
 		            	
 		            	String outputPrefix = outputDir.getName() + File.separator + packageName.replace('.', File.separatorChar) + File.separator + className;

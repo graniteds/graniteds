@@ -30,4 +30,20 @@ public class JavaImport extends JavaAbstractType {
     public JavaImport(JavaTypeFactory provider, Class<?> type, URL url) {
         super(provider, type, url);
     }
+    
+    public JavaImport(JavaTypeFactory provider, Class<?> type, URL url, boolean property) {
+        super(provider, type, url, property);
+    }
+    
+    public boolean hasImportPackage() {
+    	return getClientType().hasPackage();
+    }
+    
+    public String getImportPackageName() {
+    	return getClientType().getPackageName();
+    }
+    
+    public String getImportQualifiedName() {
+    	return getClientType().getQualifiedName();
+    }
 }

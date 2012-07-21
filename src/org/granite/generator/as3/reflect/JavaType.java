@@ -27,7 +27,7 @@ import org.granite.generator.as3.reflect.JavaAbstractType.GenerationType;
 /**
  * @author Franck WOLFF
  */
-public interface JavaType extends As3Typed {
+public interface JavaType extends ClientTyped {
 
 	public static enum Kind {
 		ENTITY,

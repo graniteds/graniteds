@@ -21,6 +21,8 @@
 package org.granite.generator.as3;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -96,8 +98,12 @@ public class DefaultAs3TypeFactory implements As3TypeFactory {
         if (externalizeBigDecimal)
         	java2As3Type.put(BigDecimal.class, As3Type.BIG_DECIMAL);
 	}
+    
+    public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
+    	return null;
+    }
 
-	public As3Type getAs3Type(Class<?> jType) {
+	public ClientType getAs3Type(Class<?> jType) {
         As3Type as3Type = getFromCache(jType);
 
         if (as3Type == null) {
@@ -121,6 +127,9 @@ public class DefaultAs3TypeFactory implements As3TypeFactory {
             }
             else if (Collection.class.isAssignableFrom(jType)) {
                 as3Type = As3Type.LIST_COLLECTION_VIEW;
+            }
+            else if (Iterable.class.isAssignableFrom(jType)) {
+            	as3Type = As3Type.ILIST;
             }
             else if (Map.class.isAssignableFrom(jType)) {
                 as3Type = As3Type.IMAP;

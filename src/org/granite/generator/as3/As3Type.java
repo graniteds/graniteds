@@ -20,10 +20,14 @@
 
 package org.granite.generator.as3;
 
+import java.util.Collections;
+import java.util.Set;
+
+
 /**
  * @author Franck WOLFF
  */
-public class As3Type {
+public class As3Type implements ClientType {
 
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
@@ -94,6 +98,21 @@ public class As3Type {
 
     public boolean isNumber() {
         return NUMBER.equals(this);
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    // Methods
+    
+    public Set<String> getImports() {
+    	return Collections.singleton(qualifiedName);
+    }
+    
+    public As3Type toArrayType() {
+    	return ARRAY;
+    }
+    
+    public As3Type translatePackage(PackageTranslator translator) {
+    	return new As3Type(translator.translate(packageName), getName());
     }
 
     ///////////////////////////////////////////////////////////////////////////

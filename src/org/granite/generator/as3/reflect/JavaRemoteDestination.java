@@ -27,6 +27,7 @@ import java.beans.Introspector;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.granite.generator.as3.ClientType;
 import org.granite.generator.as3.reflect.JavaMethod.MethodType;
+import org.granite.generator.util.GenericTypeUtil;
 import org.granite.messaging.service.annotations.IgnoredMethod;
 import org.granite.messaging.service.annotations.RemoteDestination;
 
@@ -98,6 +101,11 @@ public class JavaRemoteDestination extends JavaAbstractType {
 			imports.add(javaImport);
 	}
 
+	protected void addToImports(Set<JavaImport> javaImports) {
+		if (javaImports != null)
+			imports.addAll(javaImports);
+	}
+
 	public boolean hasSuperclass() {
 		return superclass != null;
 	}
@@ -138,6 +146,8 @@ public class JavaRemoteDestination extends JavaAbstractType {
 		// classes for this case since it is always possible to remove the method
 		// re-declaration in the child interface).
 		Method[] methods = null;
+		ParameterizedType[] declaringTypes = GenericTypeUtil.getDeclaringTypes(type);
+		
 		if (type.isInterface())
 			methods = type.getMethods();
 		else
@@ -145,16 +155,28 @@ public class JavaRemoteDestination extends JavaAbstractType {
 		
 		for (Method method : methods) {
 			if (shouldGenerateMethod(method)) {
-				for (Class<?> clazz : method.getParameterTypes()) {
+				JavaMethod javaMethod = new JavaMethod(method, MethodType.OTHER, this.provider, declaringTypes);
+				
+				for (Class<?> clazz : javaMethod.getParameterTypes()) {
 					if (clazz.isMemberClass() && !clazz.isEnum()) {
 						throw new UnsupportedOperationException(
 							"Inner classes are not supported (except enums): " + clazz
 						);
 					}
-					addToImports(provider.getJavaImport(clazz));
 				}
-
-				methodMap.add(new JavaMethod(method, MethodType.OTHER, this.provider));
+				for (ClientType paramType : javaMethod.getClientParameterTypes())
+					addToImports(provider.getJavaImports(paramType, false));
+				
+				Class<?> clazz = javaMethod.getReturnType();
+				if (clazz.isMemberClass() && !clazz.isEnum()) {
+					throw new UnsupportedOperationException(
+						"Inner classes are not supported (except enums): " + clazz
+					);
+				}
+				if (!clazz.equals(Void.class) && !clazz.equals(void.class))
+					addToImports(provider.getJavaImports(javaMethod.getClientReturnType(), false));
+				
+				methodMap.add(javaMethod);
 			}
 		}
 
@@ -162,10 +184,12 @@ public class JavaRemoteDestination extends JavaAbstractType {
 	}
 	
 	protected boolean shouldGenerateMethod(Method method) {
-		return 
-			Modifier.isPublic(method.getModifiers())
-			&& !Modifier.isStatic(method.getModifiers())
-			&& !method.isAnnotationPresent(IgnoredMethod.class);
+		if (!Modifier.isPublic(method.getModifiers())
+			|| Modifier.isStatic(method.getModifiers())
+			|| method.isAnnotationPresent(IgnoredMethod.class))
+			return false;
+		
+		return true;
 	}	
 
 	protected Map<String, JavaMethodProperty> initProperties() {

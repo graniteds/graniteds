@@ -47,8 +47,8 @@ import org.granite.generator.as3.DefaultAs3TypeFactory;
 import org.granite.generator.as3.DefaultEntityFactory;
 import org.granite.generator.as3.DefaultRemoteDestinationFactory;
 import org.granite.generator.as3.EntityFactory;
-import org.granite.generator.as3.JavaAs3GroovyConfiguration;
 import org.granite.generator.as3.JavaAs3GroovyTransformer;
+import org.granite.generator.as3.JavaAs3GroovyConfiguration;
 import org.granite.generator.as3.JavaAs3Input;
 import org.granite.generator.as3.PackageTranslator;
 import org.granite.generator.as3.RemoteDestinationFactory;
@@ -84,7 +84,7 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
 
     private boolean tide = false;
 
-    private String as3typefactory = null;
+    private String clienttypefactory = null;
     private String entityfactory = null;
     private String remotedestinationfactory = null;
     private String transformer = null;
@@ -105,7 +105,7 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
     private File outputDirFile = null;
     private File baseOutputDirFile = null;
     
-    private As3TypeFactory as3TypeFactoryImpl = null;
+    private As3TypeFactory clientTypeFactoryImpl = null;
     private Transformer<?, ?, ?> transformerImpl = null;
     private EntityFactory entityFactoryImpl = null;
     private RemoteDestinationFactory remoteDestinationFactoryImpl = null;
@@ -132,7 +132,11 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
 	}
 
 	public void setAs3typefactory(String as3typefactory) {
-        this.as3typefactory = as3typefactory;
+        this.clienttypefactory = as3typefactory;
+    }
+
+	public void setClienttypefactory(String clienttypefactory) {
+        this.clienttypefactory = clienttypefactory;
     }
 
 	public void setEntityfactory(String entityfactory) {
@@ -328,14 +332,14 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
 
             log("Setting up the generator...", Project.MSG_INFO);
 
-            // As3TypeFactory.
-            if (as3typefactory == null) {
-            	as3TypeFactoryImpl = new DefaultAs3TypeFactory();
-            	as3TypeFactoryImpl.configure(externalizelong, externalizebiginteger, externalizebigdecimal);
+            // ClientTypeFactory.
+            if (clienttypefactory == null) {
+            	clientTypeFactoryImpl = new DefaultAs3TypeFactory();
+            	clientTypeFactoryImpl.configure(externalizelong, externalizebiginteger, externalizebigdecimal);
             }
             else {
-                log("Instantiating custom As3TypeFactory class: " + as3typefactory, Project.MSG_INFO);
-                as3TypeFactoryImpl = newInstance(loader, as3typefactory);
+                log("Instantiating custom ClientTypeFactory class: " + clienttypefactory, Project.MSG_INFO);
+                clientTypeFactoryImpl = newInstance(loader, clienttypefactory);
             }
             
             // EntityFactory
@@ -467,7 +471,11 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
     // Configuration implementation methods.
     
     public As3TypeFactory getAs3TypeFactory() {
-		return as3TypeFactoryImpl;
+		return clientTypeFactoryImpl;
+	}
+    
+    public As3TypeFactory getClientTypeFactory() {
+		return clientTypeFactoryImpl;
 	}
     
     public EntityFactory getEntityFactory() {
@@ -511,21 +519,6 @@ public class AntJavaAs3Task extends Task implements JavaAs3GroovyConfiguration {
 		return translators;
 	}
 	
-	public PackageTranslator getPackageTranslator(String packageName) {
-        PackageTranslator translator = null;
-
-        int weight = 0;
-        for (PackageTranslator t : getTranslators()) {
-            int w = t.match(packageName);
-            if (w > weight) {
-                weight = w;
-                translator = t;
-            }
-        }
-		
-        return translator;
-	}
-
 	public String getUid() {
 		return uid;
 	}

@@ -26,9 +26,11 @@ import java.lang.reflect.Type;
 /**
  * @author Franck WOLFF
  */
-public interface JavaProperty extends As3Typed, Comparable<JavaProperty> {
+public interface JavaProperty extends ClientTyped, Comparable<JavaProperty> {
 
     public String getName();
+    
+    public String getCapitalizedName();
 
     public boolean isReadable();
 
