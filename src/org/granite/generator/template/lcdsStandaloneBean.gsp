@@ -82,6 +82,10 @@ package ${jClass.as3Type.packageName} {
             }
         }
     %> {
+
+        public function ${jClass.as3Type.name}() {
+            super();
+        }
 <%
 
     ///////////////////////////////////////////////////////////////////////////

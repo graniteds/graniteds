@@ -83,7 +83,7 @@
         </page>
     </extension>
 
-	<!-- Gas3 Ant Task -->
+	<!-- Gas3/Gfx Ant Task -->
 
     <extension
         id="org.granite.generator.ant.AntJavaAs3TaskExtension"
@@ -91,6 +91,18 @@
         point="org.eclipse.ant.core.antTasks">
         <antTask
             class="org.granite.generator.ant.AntJavaAs3Task"
+            eclipseRuntime="false"
+            headless="true"
+            name="gas3"
+            library="lib/granite-generator.jar"/>
+    </extension>
+
+    <extension
+        id="org.granite.generator.ant.AntJavaFXTaskExtension"
+        name="Gfx Ant Task"
+        point="org.eclipse.ant.core.antTasks">
+        <antTask
+            class="org.granite.generator.ant.AntJavaFXTask"
             eclipseRuntime="false"
             headless="true"
             name="gas3"
