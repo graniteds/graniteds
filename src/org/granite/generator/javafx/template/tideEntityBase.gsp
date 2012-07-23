@@ -86,10 +86,13 @@
     }
     
     for (jProperty in jClass.properties) {
-    	if (jClass.isLazy(jProperty)) {
+    	if (jClass.isLazy(jProperty))
     		javaImports.add("org.granite.tide.data.Lazy");
-    		break;
-    	}
+    	
+        if (jClass.metaClass.hasProperty(jClass, 'constraints') && jClass.constraints[jProperty] != null) {
+        	for (cons in jClass.constraints[jProperty])
+        		javaImports.add(cons.packageName + "." + cons.name);
+        }
     }
 
     for (jImport in jClass.imports) {
@@ -233,7 +236,14 @@ public class ${jClass.as3Type.name}Base<%
                     } else if (jClass.isLazy(jProperty)) {%>
     @Lazy<%
                     }
-                	// TODO: Constraints
+                    if (jClass.metaClass.hasProperty(jClass, 'constraints') && jClass.constraints[jProperty] != null) {
+                    	for (cons in jClass.constraints[jProperty]) {%>
+    @${cons.name}<%
+        					if (!cons.properties.empty) {%>(<%}
+        					cons.properties.eachWithIndex{ p, i -> if (i > 0) {%>, <%}; if (p[2] == "java.lang.String") {%>${p[0]}="${p[1]}"<% } else { %>${p[0]}=${p[1]}<% } }
+        					if (!cons.properties.empty) {%>)<%}
+        				}
+                    }
 	            	if (jProperty.readOverride) {%>
     @Override<% 
 	            	}%>

@@ -55,6 +55,10 @@ public class As3Type implements ClientType {
     public static final As3Type IMAP = new As3Type("org.granite.collections", "IMap");
     public static final As3Type ENUM = new As3Type("org.granite.util", "Enum");
 
+    public static final As3Type PAGE = new As3Type("org.granite.tide.data.model", "Page");
+    public static final As3Type PAGE_INFO = new As3Type("org.granite.tide.data.model", "PageInfo");
+    public static final As3Type SORT_INFO = new As3Type("org.granite.tide.data.model", "SortInfo");
+
     private final String packageName;
     private final String name;
     private final String qualifiedName;

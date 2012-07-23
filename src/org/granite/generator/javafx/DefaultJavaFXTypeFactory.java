@@ -106,6 +106,15 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 	            else if (jClass.getName().equals("com.google.appengine.api.datastore.Key")) {
 	            	javafxType = JavaFXType.STRING;
 	            }
+	            else if (jClass.getName().equals("org.springframework.data.domain.Page")) {
+	            	javafxType = new JavaFXType("org.granite.tide.data.model", "Page" + genericType, null);
+	            }
+	            else if (jClass.getName().equals("org.springframework.data.domain.Pageable")) {
+	            	javafxType = JavaFXType.PAGE_INFO;
+	            }
+	            else if (jClass.getName().equals("org.springframework.data.domain.Sort")) {
+	            	javafxType = JavaFXType.SORT_INFO;
+	            }
 	            else {
 	            	javafxType = createJavaFXType(jType, declaringClass, declaringTypes, property);
 	            }

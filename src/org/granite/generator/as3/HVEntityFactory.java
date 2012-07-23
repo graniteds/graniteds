@@ -41,7 +41,8 @@ public class HVEntityFactory extends DefaultEntityFactory {
 	
 	private static final Map<String, String> NAME_CONVERSIONS = new HashMap<String, String>();
 	static {
-		NAME_CONVERSIONS.put("Length", "Size");
+		NAME_CONVERSIONS.put("org.hibernate.validator.Length", "javax.validation.constraints.Size");
+		NAME_CONVERSIONS.put("org.hibernate.validator", "javax.validation.constraints");
 	}
 
 	@Override

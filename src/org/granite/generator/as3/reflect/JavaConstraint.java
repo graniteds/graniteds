@@ -26,12 +26,18 @@ import java.util.List;
  */
 public class JavaConstraint {
 
+	private final String packageName;
     private final String name;
     private final List<String[]> properties;
 
-    public JavaConstraint(String name, List<String[]> properties) {
+    public JavaConstraint(String packageName, String name, List<String[]> properties) {
+    	this.packageName = packageName;
         this.name = name;
         this.properties = properties;
+    }
+    
+    public String getPackageName() {
+    	return packageName;
     }
 
     public String getName() {

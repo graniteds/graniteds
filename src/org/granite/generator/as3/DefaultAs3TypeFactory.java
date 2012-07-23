@@ -137,6 +137,15 @@ public class DefaultAs3TypeFactory implements As3TypeFactory {
             else if (jType.getName().equals("com.google.appengine.api.datastore.Key")) {
             	as3Type = As3Type.STRING;
             }
+            else if (jType.getName().equals("org.springframework.data.domain.Page")) {
+            	as3Type = As3Type.PAGE;
+            }
+            else if (jType.getName().equals("org.springframework.data.domain.Pageable")) {
+            	as3Type = As3Type.PAGE_INFO;
+            }
+            else if (jType.getName().equals("org.springframework.data.domain.Sort")) {
+            	as3Type = As3Type.SORT_INFO;
+            }
             else {
                 as3Type = createAs3Type(jType);
             }

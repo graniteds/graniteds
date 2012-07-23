@@ -85,14 +85,19 @@ public class ValidatableBean {
 						}
 						
 						if (value != null && (!value.getClass().isArray() || Array.getLength(value) > 0))
-							attributes.add(new String[]{attribute.getName(), escape(value)});
+							attributes.add(new String[]{attribute.getName(), escape(value), attribute.getReturnType().getName()});
 					}
 				}
 				
-				String constraintName = constraint.annotationType().getSimpleName();
+				String constraintName = constraint.annotationType().getName();
 				if (nameConversions.containsKey(constraintName))
 					constraintName = nameConversions.get(constraintName);
-				javaConstraints.add(new JavaConstraint(constraintName, attributes));
+				String packageName = constraintName.indexOf(".") > 0 ? constraintName.substring(0, constraintName.lastIndexOf(".")) : "";
+				constraintName = constraintName.indexOf(".") > 0 ? constraintName.substring(constraintName.lastIndexOf(".")+1) : constraintName;
+				if (nameConversions.containsKey(packageName))
+					packageName = nameConversions.get(packageName);
+				
+				javaConstraints.add(new JavaConstraint(packageName, constraintName, attributes));
 			}
 	    	
 	    	if (!javaConstraints.isEmpty())

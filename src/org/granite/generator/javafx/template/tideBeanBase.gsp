@@ -22,6 +22,23 @@
     Set javaImports = new TreeSet();
 
 	javaImports.add("org.granite.javafx.JavaFXObject");
+	
+    if (!jClass.hasSuperclass()) {
+    	javaImports.add("javafx.event.Event");
+    	javaImports.add("javafx.event.EventDispatchChain");
+    	javaImports.add("javafx.event.EventHandler");
+    	javaImports.add("javafx.event.EventType");
+    	javaImports.add("com.sun.javafx.event.EventHandlerManager");
+
+    	javaImports.add("org.granite.util.javafx.DataNotifier");
+    }
+	
+    for (jProperty in jClass.properties) {
+        if (jClass.metaClass.hasProperty(jClass, 'constraints') && jClass.constraints[jProperty] != null) {
+        	for (cons in jClass.constraints[jProperty])
+        		javaImports.add(cons.packageName + "." + cons.name);
+        }
+    }
 
     for (jImport in jClass.imports) {
         if (jImport.hasImportPackage() && jImport.importPackageName != "java.lang" && jImport.importPackageName != jClass.clientType.packageName)
@@ -60,6 +77,7 @@ public class ${jClass.clientType.name}Base<%
         	if (jClass.clientSuperclass != null) {
         	%> extends ${jClass.clientSuperclass.name}<%
         	}
+            %> implements DataNotifier<%
 
             implementsWritten = true;
         }
@@ -75,6 +93,21 @@ public class ${jClass.clientType.name}Base<%
         }
 
     %> {
+	
+	private EventHandlerManager __handlerManager = new EventHandlerManager(this); 
+
+	@Override
+	public EventDispatchChain buildEventDispatchChain(EventDispatchChain tail) {
+		return tail.prepend(__handlerManager);
+	}
+	
+	public <T extends Event> void addEventHandler(EventType<T> type, EventHandler<? super T> handler) {
+		__handlerManager.addEventHandler(type, handler);
+	}
+	public <T extends Event> void removeEventHandler(EventType<T> type, EventHandler<? super T> handler) {
+		__handlerManager.removeEventHandler(type, handler);
+	}
+	
 <%
 
     ///////////////////////////////////////////////////////////////////////////
@@ -116,7 +149,14 @@ public class ${jClass.clientType.name}Base<%
     }<%
             }
             if (jProperty.readable) {
-// TODO: Constraints
+                if (jClass.metaClass.hasProperty(jClass, 'constraints') && jClass.constraints[jProperty] != null) {
+                	for (cons in jClass.constraints[jProperty]) {%>
+    @${cons.name}<%
+    					if (!cons.properties.empty) {%>(<%}
+    					cons.properties.eachWithIndex{ p, i -> if (i > 0) {%>, <%}; if (p[2] == "java.lang.String") {%>${p[0]}="${p[1]}"<% } else { %>${p[0]}=${p[1]}<% } }
+    					if (!cons.properties.empty) {%>)<%}
+    				}
+                }
             	if (jProperty.readOverride) {%>
     @Override<% } %>
     public ${jProperty.clientType.name} get${jProperty.capitalizedName}() {<%
