@@ -21,8 +21,6 @@ import flex.messaging.messages.Message;
 public class GlassFishWebSocketApplication extends WebSocketApplication {
 	
 	private static final Logger log = Logger.getLogger(GlassFishWebSocketApplication.class);
-
-	private static final long serialVersionUID = 1L;
 	
 	private final Gravity gravity;
 	private final Pattern mapping;
