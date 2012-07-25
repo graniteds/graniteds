@@ -62,8 +62,7 @@ import ${javaImport};<%
     }
     if (jClass.clientSuperclass != null) {%>
 import ${jClass.clientSuperclass.qualifiedName};<%
-    }%>
-
+    }
 ///////////////////////////////////////////////////////////////////////////////
 // Write Class Declaration.%>
 

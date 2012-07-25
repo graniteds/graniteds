@@ -108,7 +108,10 @@ public class As3Type implements ClientType {
     // Methods
     
     public Set<String> getImports() {
-    	return Collections.singleton(qualifiedName);
+    	if (hasPackage())
+    		return Collections.singleton(qualifiedName);
+    	
+    	return Collections.emptySet();
     }
     
     public As3Type toArrayType() {
