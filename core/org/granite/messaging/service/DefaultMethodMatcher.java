@@ -23,7 +23,6 @@ package org.granite.messaging.service;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +36,7 @@ import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.service.annotations.IgnoredMethod;
 import org.granite.messaging.service.annotations.RemoteDestination;
 import org.granite.util.StringUtil;
+import org.granite.util.TypeUtil;
 
 import flex.messaging.messages.Message;
 
@@ -60,7 +60,7 @@ public class DefaultMethodMatcher implements MethodMatcher {
         Converters converters = config.getConverters();
 
         Class<?> serviceClass = service.getClass();
-        Type serviceClassGenericType = getGenericType(serviceClass);
+        ParameterizedType[] serviceDeclaringTypes = TypeUtil.getDeclaringTypes(serviceClass);
 
         MatchingMethod match = null;
         if (params == null || params.length == 0)
@@ -87,8 +87,7 @@ public class DefaultMethodMatcher implements MethodMatcher {
                 if (method.isAnnotationPresent(IgnoredMethod.class))
                 	continue;
                 
-                if (serviceClassGenericType != null)
-                    findAndChange(paramTypes, serviceClassGenericType);
+                findAndChange(paramTypes, method.getDeclaringClass(), serviceDeclaringTypes);
 
                 Converter[] convertersArray = getConvertersArray(converters, params, paramTypes);
                 if (convertersArray != null)
@@ -156,26 +155,9 @@ public class DefaultMethodMatcher implements MethodMatcher {
      * If there is only one TypeVariable in method's argument list, it will be replaced
      * by the type of the superclass of the service.
      */
-    protected boolean findAndChange(Type[] paramTypes, Type superType) {
-        int idx = -1;
-        boolean find = false;
-        for (int j = 0; j < paramTypes.length; j++) {
-            Type type = paramTypes[j];
-           
-            if (type instanceof TypeVariable<?>) {
-                if (!find) {
-                    idx = j;
-                    find = true;
-                } else {
-                    throw new RuntimeException("There's two variable types.");
-                }
-            }
-        }
-       
-        if (find)
-            paramTypes[idx] = superType;
-       
-        return find;
+    protected void findAndChange(Type[] paramTypes, Class<?> declaringClass, ParameterizedType[] declaringTypes) {
+        for (int j = 0; j < paramTypes.length; j++)
+            paramTypes[j] = TypeUtil.resolveTypeVariable(paramTypes[j], declaringClass, declaringTypes);
     }
    
     /**

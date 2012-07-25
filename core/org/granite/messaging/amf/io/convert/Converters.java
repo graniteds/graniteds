@@ -27,7 +27,7 @@ import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -38,10 +38,10 @@ import org.granite.util.ClassUtil;
 public class Converters {
 
     /** Array of all configured converters */
-    private final Converter[] converters;
+    private Converter[] converters;
 
     /** Array of all configured reverters */
-    private final Reverter[] reverters;
+    private Reverter[] reverters;
 
     /**
      * Constructs a new Converters instance with the supplied list of converters (possibly reverters).
@@ -75,6 +75,23 @@ public class Converters {
         this.converters = converters.toArray(new Converter[converters.size()]);
         this.reverters = reverters.toArray(new Reverter[reverters.size()]);
     }
+    
+    public void addConverter(Class<? extends Converter> converterClass) 
+    	throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    	
+    	Converter[] converters = new Converter[this.converters.length+1];
+    	System.arraycopy(this.converters, 0, converters, 1, this.converters.length);
+        Constructor<? extends Converter> constructor = converterClass.getConstructor(Converters.class);
+        converters[0] = constructor.newInstance(this);
+        this.converters = converters;
+    	
+        if (converters[0] instanceof Reverter) {
+        	Reverter[] reverters = new Reverter[this.reverters.length+1];
+        	System.arraycopy(this.reverters, 0, reverters, 1, this.reverters.length);
+        	reverters[0] = (Reverter)converters[0];
+        	this.reverters = reverters;
+        }
+    }
 
     /**
      * Returns a suitable converter for supplied parameters or null if no converter
@@ -106,7 +123,7 @@ public class Converters {
     	
     	// Small optimization: this avoids to make TypeVariable conversion in all converters...
     	if (targetType instanceof TypeVariable<?>)
-    		targetType = ClassUtil.getBoundType((TypeVariable<?>)targetType);
+    		targetType = TypeUtil.getBoundType((TypeVariable<?>)targetType);
     	
         for (Converter converter : converters) {
             if (converter.canConvert(value, targetType))

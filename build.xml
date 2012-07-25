@@ -763,6 +763,7 @@
                 <include name="org/granite/tide/IUID.class"/>
                 <include name="org/granite/tide/TideMessage.class"/>
                 <include name="org/granite/tide/invocation/**"/>
+                <include name="org/granite/tide/data/model/**"/>
             </fileset>
         </jar>
         <jar destfile="build/granite-hibernate.jar" manifest="build/META-INF/MANIFEST.MF">

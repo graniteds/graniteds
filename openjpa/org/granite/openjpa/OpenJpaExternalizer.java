@@ -29,6 +29,8 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -61,7 +63,7 @@ import org.granite.messaging.persistence.AbstractExternalizablePersistentCollect
 import org.granite.messaging.persistence.ExternalizablePersistentList;
 import org.granite.messaging.persistence.ExternalizablePersistentMap;
 import org.granite.messaging.persistence.ExternalizablePersistentSet;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.StringUtil;
 
 /**
@@ -77,7 +79,7 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
 
         // If type is not an entity (@Embeddable for example), we don't read initialized/detachedState
         // and we fall back to DefaultExternalizer behavior.
-        Class<?> clazz = ClassUtil.forName(type);
+        Class<?> clazz = TypeUtil.forName(type);
         if (!isRegularEntity(clazz))
             return super.newInstance(type, in);
         
@@ -122,6 +124,7 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
             Converters converters = config.getConverters();
             ClassGetter classGetter = config.getClassGetter();
             Class<?> oClass = classGetter.getClass(o);
+            ParameterizedType[] declaringTypes = TypeUtil.getDeclaringTypes(oClass);
 
             List<Property> fields = findOrderedFields(oClass);
             log.debug("Reading entity %s with fields %s", oClass.getName(), fields);
@@ -146,8 +149,10 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
                 		}
                 	}
                 	// Others...
-                	else
-                		value = converters.convert(value, field.getType());
+                    else {
+                    	Type targetType = TypeUtil.resolveTypeVariable(field.getType(), field.getDeclaringClass(), declaringTypes);
+                		value = converters.convert(value, targetType);
+                    }
                     
                 	field.setProperty(o, value, false);
                 }
@@ -199,7 +204,7 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
                 
                 // Uninitialized associations.
                 if (value == null && loadedState.containsKey(field.getName()) && !loadedState.get(field.getName())) {
-            		Class<?> fieldClass = ClassUtil.classOfType(field.getType());
+            		Class<?> fieldClass = TypeUtil.classOfType(field.getType());
         			
             		// Create a "pseudo-proxy" for uninitialized entities: detached state is set to
             		// Boolean.FALSE (uninitialized flag).

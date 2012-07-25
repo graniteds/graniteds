@@ -25,8 +25,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import org.granite.messaging.amf.io.convert.Converters;
-import org.granite.util.ClassUtil;
-import org.granite.util.ClassUtil.DeclaredAnnotation;
+import org.granite.util.TypeUtil;
+import org.granite.util.TypeUtil.DeclaredAnnotation;
 
 /**
  * @author Franck WOLFF
@@ -49,13 +49,13 @@ public class MethodProperty extends Property {
         if (getter != null) {
             if (getter.isAnnotationPresent(annotationClass))
                 return true;
-            if (recursive && ClassUtil.isAnnotationPresent(getter, annotationClass))
+            if (recursive && TypeUtil.isAnnotationPresent(getter, annotationClass))
             	return true;
         }
         if (setter != null) {
             if (setter.isAnnotationPresent(annotationClass))
             	return true;
-            if (recursive && ClassUtil.isAnnotationPresent(setter, annotationClass))
+            if (recursive && TypeUtil.isAnnotationPresent(setter, annotationClass))
             	return true;
         }
         return false;
@@ -67,7 +67,7 @@ public class MethodProperty extends Property {
     	if (getter != null) {
     		annotation = getter.getAnnotation(annotationClass);
     		if (annotation == null && recursive) {
-    			DeclaredAnnotation<T> declaredAnnotation = ClassUtil.getAnnotation(getter, annotationClass);
+    			DeclaredAnnotation<T> declaredAnnotation = TypeUtil.getAnnotation(getter, annotationClass);
     			if (declaredAnnotation != null)
     				annotation = declaredAnnotation.annotation;
     		}
@@ -75,7 +75,7 @@ public class MethodProperty extends Property {
     	if (annotation == null && setter != null) {
     		annotation = setter.getAnnotation(annotationClass);
     		if (annotation == null && recursive) {
-    			DeclaredAnnotation<T> declaredAnnotation = ClassUtil.getAnnotation(setter, annotationClass);
+    			DeclaredAnnotation<T> declaredAnnotation = TypeUtil.getAnnotation(setter, annotationClass);
     			if (declaredAnnotation != null)
     				annotation = declaredAnnotation.annotation;
     		}
@@ -87,6 +87,11 @@ public class MethodProperty extends Property {
     public Type getType() {
         return type;
     }
+	
+	@Override
+	public Class<?> getDeclaringClass() {
+		return getter != null ? getter.getDeclaringClass() : setter.getDeclaringClass();
+	}
 
     @Override
     public void setProperty(Object instance, Object value, boolean convert) {

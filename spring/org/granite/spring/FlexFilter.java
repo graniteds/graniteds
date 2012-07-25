@@ -37,6 +37,7 @@ import org.granite.config.flex.Factory;
 import org.granite.config.flex.Service;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.logging.Logger;
+import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.security.SecurityService;
@@ -45,6 +46,7 @@ import org.granite.messaging.service.tide.TideComponentInstanceOfMatcher;
 import org.granite.messaging.service.tide.TideComponentNameMatcher;
 import org.granite.messaging.service.tide.TideComponentTypeMatcher;
 import org.granite.messaging.webapp.AMFEndpoint;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -148,6 +150,15 @@ public class FlexFilter implements InitializingBean, ApplicationContextAware, Se
         }
         if (amf3MessageInterceptor != null)
         	this.graniteConfig.setAmf3MessageInterceptor(amf3MessageInterceptor);
+        
+        // If Spring Data available, enable Pageable converter
+        try {
+        	Class<Converter> converterClass = TypeUtil.forName("org.granite.spring.data.PageableConverter", Converter.class);
+        	this.graniteConfig.getConverters().addConverter(converterClass);
+        }
+        catch (Exception e) {
+        	// Spring Data not present, ignore
+        }
         
         servicesConfig = springGraniteConfig.getServicesConfig();
         

@@ -52,6 +52,11 @@ public class FieldProperty extends Property {
     public Type getType() {
         return field.getGenericType();
     }
+	
+	@Override
+	public Class<?> getDeclaringClass() {
+		return field.getDeclaringClass();
+	}
 
     @Override
     public void setProperty(Object instance, Object value, boolean convert) {

@@ -40,10 +40,14 @@ package org.granite.tide.collections {
     import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
     
+    import org.granite.reflect.Method;
+    import org.granite.reflect.Parameter;
+    import org.granite.reflect.Type;
     import org.granite.tide.BaseContext;
-    import org.granite.tide.IComponent;
     import org.granite.tide.Component;
+    import org.granite.tide.IComponent;
     import org.granite.tide.IPropertyHolder;
+    import org.granite.tide.data.model.PageInfo;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideResultEvent;
 	
@@ -76,6 +80,8 @@ package org.granite.tide.collections {
 		
         protected var _methodName:String = "find";
         protected var _methodNameSet:Boolean = false;
+		
+		protected var _usePage:Boolean = false;
         
         private var _internalFilter:Object = new Object();
         private var _filter:IPropertyChangeNotifier = new ObjectProxy(_internalFilter);
@@ -146,6 +152,10 @@ package org.granite.tide.collections {
 			_methodName = methodName;
 			_methodNameSet = true;
 		}
+		
+		public function set usePage(usePage:Boolean):void {
+			_usePage = usePage;
+		}
     	
     	
 		/**
@@ -175,9 +185,9 @@ package org.granite.tide.collections {
 				var order:* = null;
 				var desc:* = null;
 				if (this.multipleSort) {
-					if (sort != null) {
-						order = new Array();
-						desc = new Array();
+					if (sort != null && sort.fields.length > 0) {
+						order = [];
+						desc = [];
 						for each (var s:SortField in sort.fields) {
 							order.push(s.name);
 							desc.push(s.descending);
@@ -189,13 +199,17 @@ package org.granite.tide.collections {
 					desc = sort != null && sort.fields.length > 0 ? sort.fields[0].descending : false;
 				}
 				
-				_context.meta_callComponent(_component, _methodName, [filter, 
-					first, 
-					max, 
-					order, 
-					desc, 
-					findResponder]
-				);
+				var usePage:Boolean = _usePage;
+				var method:Method = Type.forInstance(_component).getMethod(function(m:Method):Boolean { return m.name == _methodName; });
+				if (method != null && method.parameters.length >= 2 && Parameter(method.parameters[1]).type.equals(Type.forClass(PageInfo)))
+					usePage = true;
+				
+				if (usePage)
+					_context.meta_callComponent(_component, _methodName, [filter, new PageInfo(first, max, 
+						order is Array || order == null ? order : [ order ], 
+						desc is Array || desc == null ? desc : [ desc ]), findResponder]);
+				else
+					_context.meta_callComponent(_component, _methodName, [filter, first, max, order, desc, findResponder]);
 			}
 		}
 		
@@ -205,9 +219,9 @@ package org.granite.tide.collections {
 				var order:* = null;
 				var desc:* = null;
 				if (this.multipleSort) {
-					if (sort != null) {
-						order = new Array();
-						desc = new Array();
+					if (sort != null && sort.fields.length > 0) {
+						order = [];
+						desc = [];
 						for each (var s:ISortField in sort.fields) {
 							order.push(s.name);
 							desc.push(s.descending);
@@ -219,13 +233,15 @@ package org.granite.tide.collections {
 					desc = sort != null && sort.fields.length > 0 ? sort.fields[0].descending : false;
 				}
 				
-				_context.meta_callComponent(_component, _methodName, [filter, 
-					first, 
-					max, 
-					order, 
-					desc, 
-					findResponder]
-				);
+				var usePage:Boolean = _usePage;
+				var method:Method = Type.forInstance(_component).getMethod(function(m:Method):Boolean { return m.name == _methodName; });
+				if (method != null && method.parameters.length >= 2 && Parameter(method.parameters[1]).type.equals(Type.forClass(PageInfo)))
+					usePage = true;
+
+				if (usePage)
+					_context.meta_callComponent(_component, _methodName, [filter, new PageInfo(first, max, order, desc), findResponder]);
+				else
+					_context.meta_callComponent(_component, _methodName, [filter, first, max, order, desc, findResponder]);
 			}
 		}
 		

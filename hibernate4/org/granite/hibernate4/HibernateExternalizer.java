@@ -29,6 +29,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Comparator;
 import java.util.List;
@@ -57,7 +58,7 @@ import org.granite.messaging.persistence.ExternalizablePersistentBag;
 import org.granite.messaging.persistence.ExternalizablePersistentList;
 import org.granite.messaging.persistence.ExternalizablePersistentMap;
 import org.granite.messaging.persistence.ExternalizablePersistentSet;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.StringUtil;
 import org.granite.util.XMap;
 import org.hibernate.Hibernate;
@@ -138,7 +139,7 @@ public class HibernateExternalizer extends DefaultExternalizer {
 
         // If type is not an entity (@Embeddable for example), we don't read initialized/detachedState
         // and we fall back to DefaultExternalizer behavior.
-        Class<?> clazz = ClassUtil.forName(type);
+        Class<?> clazz = TypeUtil.forName(type);
         if (!isRegularEntity(clazz))
             return super.newInstance(type, in);
         
@@ -181,6 +182,7 @@ public class HibernateExternalizer extends DefaultExternalizer {
             Converters converters = config.getConverters();
             ClassGetter classGetter = config.getClassGetter();
             Class<?> oClass = classGetter.getClass(o);
+            ParameterizedType[] declaringTypes = TypeUtil.getDeclaringTypes(oClass);
 
             List<Property> fields = findOrderedFields(oClass, false);
             log.debug("Reading entity %s with fields %s", oClass.getName(), fields);
@@ -190,8 +192,10 @@ public class HibernateExternalizer extends DefaultExternalizer {
                     
                 	if (value instanceof AbstractExternalizablePersistentCollection)
                 		value = newHibernateCollection((AbstractExternalizablePersistentCollection)value, field);
-                    else if (!(value instanceof HibernateProxy))
-                        value = converters.convert(value, field.getType());
+                    else if (!(value instanceof HibernateProxy)) {
+                    	Type targetType = TypeUtil.resolveTypeVariable(field.getType(), field.getDeclaringClass(), declaringTypes);
+	                	value = converters.convert(value, targetType);
+	                }
 
                 	field.setProperty(o, value, false);
                 }
@@ -205,8 +209,8 @@ public class HibernateExternalizer extends DefaultExternalizer {
     	final String metadata = value.getMetadata();
 		final boolean dirty = value.isDirty();
     	final boolean sorted = (
-    		SortedSet.class.isAssignableFrom(ClassUtil.classOfType(target)) ||
-    		SortedMap.class.isAssignableFrom(ClassUtil.classOfType(target))
+    		SortedSet.class.isAssignableFrom(TypeUtil.classOfType(target)) ||
+    		SortedMap.class.isAssignableFrom(TypeUtil.classOfType(target))
     	);
     	
     	Comparator<?> comparator = null;
@@ -214,7 +218,7 @@ public class HibernateExternalizer extends DefaultExternalizer {
     		Sort sort = field.getAnnotation(Sort.class);
     		if (sort.type() == SortType.COMPARATOR) {
     			try {
-    				comparator = ClassUtil.newInstance(sort.comparator(), Comparator.class);
+    				comparator = TypeUtil.newInstance(sort.comparator(), Comparator.class);
     			} catch (Exception e) {
     				throw new RuntimeException("Could not create instance of Comparator: " + sort.comparator());
     			}

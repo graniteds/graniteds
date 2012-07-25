@@ -53,6 +53,7 @@
         <converter type="org.granite.messaging.amf.io.convert.impl.Character2Character" />
         <converter type="org.granite.messaging.amf.io.convert.impl.Compatibility" />
         <converter type="org.granite.messaging.amf.io.convert.impl.String2Document" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2Enum" />
     </converters>
     
     <externalizers>
