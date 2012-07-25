@@ -27,7 +27,7 @@ import java.util.Collection;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.convert.IllegalConverterArgumentException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.CollectionUtil;
 
 /**
@@ -84,7 +84,7 @@ public class Array2Collection extends Converter {
 
             if (targetComponentType != null) {
                 final int length = Array.getLength(value);
-                Class<?> targetClass = ClassUtil.classOfType(targetType);
+                Class<?> targetClass = TypeUtil.classOfType(targetType);
 
                 Collection<Object> targetInstance = null;
                 try {

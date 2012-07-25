@@ -31,7 +31,7 @@ import java.util.TreeSet;
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.amf.io.convert.Converters;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -60,7 +60,7 @@ public class ExternalizablePersistentSet extends AbstractExternalizablePersisten
 	public Set<?> getContentAsSet(Type target, Comparator comparator) {
     	Set set = null;
     	if (content != null) {
-        	if (SortedSet.class.isAssignableFrom(ClassUtil.classOfType(target))) {
+        	if (SortedSet.class.isAssignableFrom(TypeUtil.classOfType(target))) {
         		if (comparator != null)
         			set = new TreeSet(comparator);
         		else

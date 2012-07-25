@@ -36,6 +36,7 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ import java.util.Set;
 /**
  * @author Franck WOLFF
  */
-public abstract class ClassUtil {
+public abstract class TypeUtil {
 
     public static Object newInstance(String type)
         throws ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -87,7 +88,7 @@ public abstract class ClassUtil {
 
     public static Class<?> forName(String type) throws ClassNotFoundException {
     	try {
-    		return ClassUtil.class.getClassLoader().loadClass(type);
+    		return TypeUtil.class.getClassLoader().loadClass(type);
     	}
     	catch (ClassNotFoundException e) {
     		return Thread.currentThread().getContextClassLoader().loadClass(type);
@@ -97,7 +98,7 @@ public abstract class ClassUtil {
     @SuppressWarnings("unchecked")
     public static <T> Class<T> forName(String type, Class<T> cast) throws ClassNotFoundException {
     	try {
-    		return (Class<T>)ClassUtil.class.getClassLoader().loadClass(type);
+    		return (Class<T>)TypeUtil.class.getClassLoader().loadClass(type);
     	}
     	catch (ClassNotFoundException e) {
     		return (Class<T>)Thread.currentThread().getContextClassLoader().loadClass(type);
@@ -165,7 +166,69 @@ public abstract class ClassUtil {
     		return (Type)typeVariable.getGenericDeclaration();
     	return typeVariable;
     }
-
+    
+    public static ParameterizedType[] getDeclaringTypes(Class<?> type) {
+		List<ParameterizedType> supertypes = new ArrayList<ParameterizedType>();
+		
+		Type stype = type.getGenericSuperclass();
+		Class<?> sclass = type.getSuperclass();
+		while (sclass != null && sclass != Object.class) {
+			if (stype instanceof ParameterizedType)
+				supertypes.add((ParameterizedType)stype);
+			stype = sclass.getGenericSuperclass();
+			sclass = sclass.getSuperclass();
+		}
+		
+		if (type.getGenericInterfaces() != null) {
+			for (Type t : type.getGenericInterfaces()) {
+				if (t instanceof ParameterizedType)
+					supertypes.add((ParameterizedType)t);
+				else {
+					// Case of service proxies: direct interfaces are never generic => try up one level
+					Class<?> i = classOfType(t);
+					for (Type t2 : i.getGenericInterfaces()) {
+						if (t2 instanceof ParameterizedType)
+							supertypes.add((ParameterizedType)t2);
+					}
+				}
+			}
+		}
+		
+		return supertypes.isEmpty() ? null : supertypes.toArray(new ParameterizedType[supertypes.size()]);
+    }
+    
+    public static Type resolveTypeVariable(Type genericType, Class<?> declaringClass, ParameterizedType[] declaringTypes) {
+    	if (genericType instanceof TypeVariable && declaringTypes != null) {
+    		int index = -1;
+    		TypeVariable<?> typeVariable = (TypeVariable<?>)genericType;
+    		ParameterizedType declaringType = null;
+    		for (int j = 0; j < declaringClass.getTypeParameters().length; j++) {
+    			Type typeParameter = declaringClass.getTypeParameters()[j];
+    			if (typeParameter == typeVariable)
+    				index = j;
+    			else if (typeVariable.getBounds() != null) {
+    				for (Type t : typeVariable.getBounds()) {
+    					if (typeParameter == t) {
+    						index = j;
+    						break;
+    					}
+    				}
+    			}
+    			if (index >= 0) {
+					for (ParameterizedType t : declaringTypes) {
+						if (classOfType(t) == declaringClass) {
+							declaringType = t;
+							break;
+						}
+					}
+					break;
+    			}
+    		}
+    		if (declaringType != null && index >= 0 && index < declaringType.getActualTypeArguments().length)
+    			return declaringType.getActualTypeArguments()[index];
+    	}
+    	return genericType;
+    }
     public static String getPackageName(Class<?> clazz) {
         return clazz.getPackage() != null ? clazz.getPackage().getName() : "";
     }

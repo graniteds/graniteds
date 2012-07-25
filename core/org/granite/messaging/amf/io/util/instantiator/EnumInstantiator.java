@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.granite.messaging.service.ServiceException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Igor SAZHNEV
@@ -59,7 +59,7 @@ public class EnumInstantiator extends AbstractInstantiator<Enum<?>> {
 
         String enumValue = null;
         try {
-            Class<? extends Enum> enumClass = (Class<? extends Enum>)ClassUtil.forName(type);
+            Class<? extends Enum> enumClass = (Class<? extends Enum>)TypeUtil.forName(type);
             enumValue = (String)get("value");
             if (enumValue == null) {
                 Object[] enumConstants = enumClass.getEnumConstants();

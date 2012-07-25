@@ -28,7 +28,7 @@ import org.granite.context.GraniteContext;
 import org.granite.gravity.selector.GravityMessageSelector;
 import org.granite.gravity.selector.MessageSelector;
 import org.granite.logging.Logger;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.CommandMessage;
@@ -67,7 +67,7 @@ public class Subscription implements Serializable {
     	in.defaultReadObject();
     	if (selectorClassName != null) {
     		try {
-    			messageSelectorConstructor = ClassUtil.getConstructor(selectorClassName, new Class<?>[] { String.class });
+    			messageSelectorConstructor = TypeUtil.getConstructor(selectorClassName, new Class<?>[] { String.class });
     		}
     		catch (NoSuchMethodException e) {
     			throw new IOException("Could not get message selector: " + selectorClassName);

@@ -23,7 +23,7 @@ package org.granite.messaging.service.tide;
 import java.util.Set;
 
 import org.granite.config.GraniteConfigException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 
 /**
@@ -36,7 +36,7 @@ public class TideComponentInstanceOfMatcher implements TideComponentMatcher {
     
     public TideComponentInstanceOfMatcher(String type, boolean disabled) {
         try {
-            parentClass = ClassUtil.forName(type);
+            parentClass = TypeUtil.forName(type);
             this.disabled = disabled;
         } catch (Exception e) {
             throw new GraniteConfigException("Could not instantiate instanceof matcher parent class: " + type, e);

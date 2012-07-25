@@ -38,7 +38,7 @@ import org.granite.gravity.config.AbstractMessagingDestination;
 import org.granite.gravity.config.servlet3.ActiveMQTopicDestination;
 import org.granite.gravity.config.servlet3.JmsTopicDestination;
 import org.granite.gravity.config.servlet3.MessagingDestination;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -79,7 +79,7 @@ public class GravityManager {
 		        
 		        String gravityFactory = gravityConfig.getGravityFactory();
 		        try {
-					GravityFactory factory = ClassUtil.newInstance(gravityFactory, GravityFactory.class);
+					GravityFactory factory = TypeUtil.newInstance(gravityFactory, GravityFactory.class);
 					gravity = factory.newGravity(gravityConfig, servicesConfig, graniteConfig);
 				} catch (Exception e) {
 					throw new ServletException("Could not create Gravity instance with factory: " + gravityFactory, e);

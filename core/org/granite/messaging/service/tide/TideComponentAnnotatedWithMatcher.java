@@ -24,7 +24,7 @@ import java.lang.annotation.Annotation;
 import java.util.Set;
 
 import org.granite.config.GraniteConfigException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 
 /**
@@ -37,7 +37,7 @@ public class TideComponentAnnotatedWithMatcher implements TideComponentMatcher {
     
     public TideComponentAnnotatedWithMatcher(String type, boolean disabled) {
         try {
-            annotationClass = ClassUtil.forName(type, Annotation.class);
+            annotationClass = TypeUtil.forName(type, Annotation.class);
             this.disabled = disabled;
         } catch (Exception e) {
             throw new GraniteConfigException("Could not instantiate instanceof matcher parent class: " + type, e);

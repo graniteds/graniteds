@@ -34,7 +34,7 @@ import java.util.TreeMap;
 public class MapUtil {
 
     public static Type[] getComponentTypes(Type mapType) {
-        final Class<?> mapClass = ClassUtil.classOfType(mapType);
+        final Class<?> mapClass = TypeUtil.classOfType(mapType);
 
         if (!Map.class.isAssignableFrom(mapClass))
             return null;

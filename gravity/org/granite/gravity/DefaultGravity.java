@@ -45,7 +45,7 @@ import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.security.SecurityServiceException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.UUIDUtil;
 
 import flex.messaging.messages.AcknowledgeMessage;
@@ -362,7 +362,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	        	if (gdd != null && gdd.hasChannelId(channelId)) {
 	        		log.debug("Found channel id in distributed data: %s", channelId);
 	        		String channelFactoryClassName = gdd.getChannelFactoryClassName(channelId);
-	        		channelFactory = ClassUtil.newInstance(channelFactoryClassName, ChannelFactory.class);
+	        		channelFactory = TypeUtil.newInstance(channelFactoryClassName, ChannelFactory.class);
 	        		C channel = channelFactory.newChannel(channelId);
 	    	    	timeChannel = new TimeChannel<C>(channel);
 	    	        if (channels.putIfAbsent(channelId, timeChannel) == null) {

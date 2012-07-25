@@ -62,7 +62,7 @@ import org.granite.scan.ScannedItem;
 import org.granite.scan.ScannedItemHandler;
 import org.granite.scan.Scanner;
 import org.granite.scan.ScannerFactory;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.StreamUtil;
 import org.granite.util.XMap;
 import org.xml.sax.EntityResolver;
@@ -167,8 +167,8 @@ public class GraniteConfig implements ScannedItemHandler {
 
     public GraniteConfig(String stdConfig, InputStream customConfigIs, Configuration configuration, String MBeanContextName) throws IOException, SAXException {
         try {
-            amf3SerializerConstructor = ClassUtil.getConstructor(AMF3Serializer.class, new Class<?>[]{OutputStream.class});
-            amf3DeserializerConstructor = ClassUtil.getConstructor(AMF3Deserializer.class, new Class<?>[]{InputStream.class});
+            amf3SerializerConstructor = TypeUtil.getConstructor(AMF3Serializer.class, new Class<?>[]{OutputStream.class});
+            amf3DeserializerConstructor = TypeUtil.getConstructor(AMF3Deserializer.class, new Class<?>[]{InputStream.class});
         } catch (Exception e) {
             throw new GraniteConfigException("Could not get constructor for AMF3 (de)serializers", e);
         }
@@ -263,7 +263,7 @@ public class GraniteConfig implements ScannedItemHandler {
     	if (properties.getProperty("dependsOn") != null) {
     		String dependsOn = properties.getProperty("dependsOn");
     		try {
-    			ClassUtil.forName(dependsOn);
+    			TypeUtil.forName(dependsOn);
     		}
     		catch (ClassNotFoundException e) {
     			// Class not found, skip scan for this package
@@ -274,7 +274,7 @@ public class GraniteConfig implements ScannedItemHandler {
         String classGetterName = properties.getProperty("classGetter");
         if (!classGetterSet && classGetterName != null) {
             try {
-                classGetter = ClassUtil.newInstance(classGetterName, ClassGetter.class);
+                classGetter = TypeUtil.newInstance(classGetterName, ClassGetter.class);
             } catch (Throwable t) {
                 log.error(t, "Could not create instance of: %s", classGetterName);
             }
@@ -283,7 +283,7 @@ public class GraniteConfig implements ScannedItemHandler {
         String amf3MessageInterceptorName = properties.getProperty("amf3MessageInterceptor");
         if (amf3MessageInterceptor == null && amf3MessageInterceptorName != null) {
             try {
-                amf3MessageInterceptor = ClassUtil.newInstance(amf3MessageInterceptorName, AMF3MessageInterceptor.class);
+                amf3MessageInterceptor = TypeUtil.newInstance(amf3MessageInterceptorName, AMF3MessageInterceptor.class);
             } catch (Throwable t) {
                 log.error(t, "Could not create instance of: %s", amf3MessageInterceptorName);
             }
@@ -293,7 +293,7 @@ public class GraniteConfig implements ScannedItemHandler {
             if (me.getKey().toString().startsWith("converter.")) {
                 String converterName = me.getValue().toString();
                 try {
-                    converterClasses.add(ClassUtil.forName(converterName, Converter.class));
+                    converterClasses.add(TypeUtil.forName(converterName, Converter.class));
                 } catch (Exception e) {
                     throw new GraniteConfigException("Could not get converter class for: " + converterName, e);
                 }
@@ -307,7 +307,7 @@ public class GraniteConfig implements ScannedItemHandler {
         if (!clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers())) {
             if (Externalizer.class.isAssignableFrom(clazz)) {
                 try {
-                    scannedExternalizers.add(ClassUtil.newInstance(clazz, Externalizer.class));
+                    scannedExternalizers.add(TypeUtil.newInstance(clazz, Externalizer.class));
                 } catch (Exception e) {
                     log.error(e, "Could not create new instance of: %s", clazz);
                 }
@@ -315,7 +315,7 @@ public class GraniteConfig implements ScannedItemHandler {
             
             if (ExceptionConverter.class.isAssignableFrom(clazz)) {
                 try {
-                    exceptionConverters.add(ClassUtil.newInstance(clazz, ExceptionConverter.class));
+                    exceptionConverters.add(TypeUtil.newInstance(clazz, ExceptionConverter.class));
                 } catch (Exception e) {
                 	if (!clazz.getName().equals("org.granite.tide.hibernate.HibernateValidatorExceptionConverter"))	// GDS-582
                 		log.error(e, "Could not create new instance of: %s", clazz);
@@ -487,7 +487,7 @@ public class GraniteConfig implements ScannedItemHandler {
     			return;
     	}
 		try {
-			ExceptionConverter exceptionConverter = ClassUtil.newInstance(exceptionConverterClass, ExceptionConverter.class);
+			ExceptionConverter exceptionConverter = TypeUtil.newInstance(exceptionConverterClass, ExceptionConverter.class);
 	        if (first)
 	            exceptionConverters.add(0, exceptionConverter);
 	        else
@@ -589,8 +589,8 @@ public class GraniteConfig implements ScannedItemHandler {
         if (amf3Serializer != null) {
             String type = amf3Serializer.get("@type");
             try {
-                Class<AMF3Serializer> amf3SerializerClass = ClassUtil.forName(type, AMF3Serializer.class);
-                amf3SerializerConstructor = ClassUtil.getConstructor(amf3SerializerClass, new Class<?>[]{OutputStream.class});
+                Class<AMF3Serializer> amf3SerializerClass = TypeUtil.forName(type, AMF3Serializer.class);
+                amf3SerializerConstructor = TypeUtil.getConstructor(amf3SerializerClass, new Class<?>[]{OutputStream.class});
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not get constructor for AMF3 serializer: " + type, e);
             }
@@ -600,8 +600,8 @@ public class GraniteConfig implements ScannedItemHandler {
         if (amf3Deserializer != null) {
             String type = amf3Deserializer.get("@type");
             try {
-                Class<AMF3Deserializer> amf3DeserializerClass = ClassUtil.forName(type, AMF3Deserializer.class);
-                amf3DeserializerConstructor = ClassUtil.getConstructor(amf3DeserializerClass, new Class<?>[]{InputStream.class});
+                Class<AMF3Deserializer> amf3DeserializerClass = TypeUtil.forName(type, AMF3Deserializer.class);
+                amf3DeserializerConstructor = TypeUtil.getConstructor(amf3DeserializerClass, new Class<?>[]{InputStream.class});
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not get constructor for AMF3 deserializer: " + type, e);
             }
@@ -613,7 +613,7 @@ public class GraniteConfig implements ScannedItemHandler {
         if (securizer != null) {
             String type = securizer.get("@type");
             try {
-                amf3DeserializerSecurizer = (AMF3DeserializerSecurizer)ClassUtil.newInstance(type);
+                amf3DeserializerSecurizer = (AMF3DeserializerSecurizer)TypeUtil.newInstance(type);
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not construct amf3 deserializer securizer: " + type, e);
             }
@@ -631,7 +631,7 @@ public class GraniteConfig implements ScannedItemHandler {
         if (interceptor != null) {
             String type = interceptor.get("@type");
             try {
-                amf3MessageInterceptor = (AMF3MessageInterceptor)ClassUtil.newInstance(type);
+                amf3MessageInterceptor = (AMF3MessageInterceptor)TypeUtil.newInstance(type);
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not construct amf3 message interceptor: " + type, e);
             }
@@ -643,7 +643,7 @@ public class GraniteConfig implements ScannedItemHandler {
         if (distributedDataFactory != null) {
             String type = distributedDataFactory.get("@type");
             try {
-            	this.distributedDataFactory = (DistributedDataFactory)ClassUtil.newInstance(type);
+            	this.distributedDataFactory = (DistributedDataFactory)TypeUtil.newInstance(type);
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not construct build distributed data factory: " + type, e);
             }
@@ -663,7 +663,7 @@ public class GraniteConfig implements ScannedItemHandler {
                 String type = converter.get("@type");
                 try {
                     // For custom config, shifts any standard converters to the end of the list...
-                    converterClasses.add(i++, ClassUtil.forName(type, Converter.class));
+                    converterClasses.add(i++, TypeUtil.forName(type, Converter.class));
                 } catch (Exception e) {
                     throw new GraniteConfigException("Could not get converter class for: " + type, e);
                 }
@@ -688,7 +688,7 @@ public class GraniteConfig implements ScannedItemHandler {
         if (methodMatcher != null) {
             String type = methodMatcher.get("@type");
             try {
-                this.methodMatcher = (MethodMatcher)ClassUtil.newInstance(type);
+                this.methodMatcher = (MethodMatcher)TypeUtil.newInstance(type);
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not construct method matcher: " + type, e);
             }
@@ -700,7 +700,7 @@ public class GraniteConfig implements ScannedItemHandler {
         if (invocationListener != null) {
             String type = invocationListener.get("@type");
             try {
-            	this.invocationListener = (ServiceInvocationListener)ClassUtil.newInstance(type);
+            	this.invocationListener = (ServiceInvocationListener)TypeUtil.newInstance(type);
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not instantiate ServiceInvocationListener: " + type, e);
             }
@@ -720,7 +720,7 @@ public class GraniteConfig implements ScannedItemHandler {
         if (classGetter != null) {
             String type = classGetter.get("@type");
             try {
-            	this.classGetter = (ClassGetter)ClassUtil.newInstance(type);
+            	this.classGetter = (ClassGetter)TypeUtil.newInstance(type);
                 classGetterSet = true;
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not instantiate ClassGetter: " + type, e);
@@ -813,7 +813,7 @@ public class GraniteConfig implements ScannedItemHandler {
             String type = exceptionConverter.get("@type");
             ExceptionConverter converter = null;
             try {
-                converter = (ExceptionConverter)ClassUtil.newInstance(type);
+                converter = (ExceptionConverter)TypeUtil.newInstance(type);
                 exceptionConverters.add(converter);
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not construct exception converter: " + type, e);
@@ -852,7 +852,7 @@ public class GraniteConfig implements ScannedItemHandler {
         if (security != null) {
             String type = security.get("@type");
             try {
-                securityService = (SecurityService)ClassUtil.newInstance(type);
+                securityService = (SecurityService)TypeUtil.newInstance(type);
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not instantiate SecurityService: " + type, e);
             }
@@ -880,7 +880,7 @@ public class GraniteConfig implements ScannedItemHandler {
         if (selector != null) {
             String type = selector.get("@type");
             try {
-                messageSelectorConstructor = ClassUtil.getConstructor(type, new Class<?>[]{ String.class });
+                messageSelectorConstructor = TypeUtil.getConstructor(type, new Class<?>[]{ String.class });
             } catch (Exception e) {
                 throw new GraniteConfigException("Could not construct message selector: " + type, e);
             }
@@ -913,7 +913,7 @@ public class GraniteConfig implements ScannedItemHandler {
 
         Class<?> typeClass = null;
         try {
-            typeClass = ClassUtil.forName(type);
+            typeClass = TypeUtil.forName(type);
         } catch (Exception e) {
             throw new GraniteConfigException("Could not load class: " + type, e);
         }
@@ -922,7 +922,7 @@ public class GraniteConfig implements ScannedItemHandler {
             for (Map.Entry<String, String> entry : elementsByAnnotatedWith.entrySet()) {
                 String annotation = entry.getKey();
                 try {
-                    Class<Annotation> annotationClass = ClassUtil.forName(annotation, Annotation.class);
+                    Class<Annotation> annotationClass = TypeUtil.forName(annotation, Annotation.class);
                     if (typeClass.isAnnotationPresent(annotationClass)) {
                         element = factory.getInstance(entry.getValue(), this);
                         break;
@@ -937,7 +937,7 @@ public class GraniteConfig implements ScannedItemHandler {
 	        for (Map.Entry<String, String> entry : elementsByInstanceOf.entrySet()) {
 	            String instanceOf = entry.getKey();
 	            try {
-	                Class<?> instanceOfClass = ClassUtil.forName(instanceOf);
+	                Class<?> instanceOfClass = TypeUtil.forName(instanceOf);
 	                if (instanceOfClass.isAssignableFrom(typeClass)) {
 	                    element = factory.getInstance(entry.getValue(), this);
 	                    break;

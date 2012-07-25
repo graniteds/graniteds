@@ -38,6 +38,6 @@ public class ArrayUtil {
     }
 
     public static Object newArray(Type componentType, int length) {
-        return Array.newInstance(ClassUtil.classOfType(componentType), length);
+        return Array.newInstance(TypeUtil.classOfType(componentType), length);
     }
 }

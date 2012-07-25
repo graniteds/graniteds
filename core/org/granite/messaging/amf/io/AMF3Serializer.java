@@ -45,7 +45,7 @@ import org.granite.messaging.amf.io.util.DefaultJavaClassDescriptor;
 import org.granite.messaging.amf.io.util.IndexedJavaClassDescriptor;
 import org.granite.messaging.amf.io.util.JavaClassDescriptor;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMLUtil;
 import org.granite.util.XMLUtilFactory;
 import org.w3c.dom.Document;
@@ -483,7 +483,7 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
             Class<?>[] argsDef = new Class[]{Class.class};
             Object[] argsVal = new Object[]{clazz};
             try {
-                desc = ClassUtil.newInstance(descriptorType, argsDef, argsVal);
+                desc = TypeUtil.newInstance(descriptorType, argsDef, argsVal);
             } catch (Exception e) {
                 throw new RuntimeException("Could not instantiate Java descriptor: " + descriptorType);
             }

@@ -23,7 +23,7 @@ package org.granite.config;
 import java.util.List;
 
 import org.granite.messaging.amf.io.util.ActionScriptClassDescriptor;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -52,7 +52,7 @@ public class ActionScriptClassDescriptorFactory implements ConfigurableFactory<C
 
     public Class<? extends ActionScriptClassDescriptor> getInstance(String type, GraniteConfig config) throws GraniteConfigException {
         try {
-            return ClassUtil.forName(type, ActionScriptClassDescriptor.class);
+            return TypeUtil.forName(type, ActionScriptClassDescriptor.class);
         } catch (Exception e) {
             throw new GraniteConfigException("Could not load ActionScriptClassDescriptor type: " + type, e);
         }

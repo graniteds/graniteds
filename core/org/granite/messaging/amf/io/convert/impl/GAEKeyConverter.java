@@ -25,7 +25,7 @@ import java.lang.reflect.Type;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.convert.Reverter;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -41,7 +41,7 @@ public class GAEKeyConverter extends Converter implements Reverter {
 
 	@Override
 	protected boolean internalCanConvert(Object value, Type targetType) {
-        Class<?> targetClass = ClassUtil.classOfType(targetType);
+        Class<?> targetClass = TypeUtil.classOfType(targetType);
         return (
             targetClass != Object.class && KEY_CLASS.equals(targetClass.getName()) &&
             (value instanceof String || value == null)

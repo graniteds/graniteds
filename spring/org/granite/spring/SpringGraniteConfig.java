@@ -30,7 +30,7 @@ import org.granite.config.AbstractFrameworkGraniteConfig;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.security.SecurityService;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -90,9 +90,9 @@ public class SpringGraniteConfig extends AbstractFrameworkGraniteConfig implemen
 	    		// Load dynamically to avoid runtime dependency on SS
 	    		try {
 			    	if (isSpringSecurity3Present())
-			    		getGraniteConfig().setSecurityService(ClassUtil.newInstance("org.granite.spring.security.SpringSecurity3Service", SecurityService.class));
+			    		getGraniteConfig().setSecurityService(TypeUtil.newInstance("org.granite.spring.security.SpringSecurity3Service", SecurityService.class));
 			    	else if (isSpringSecurity2Present())
-			    		getGraniteConfig().setSecurityService(ClassUtil.newInstance("org.granite.messaging.service.security.SpringSecurityService", SecurityService.class));
+			    		getGraniteConfig().setSecurityService(TypeUtil.newInstance("org.granite.messaging.service.security.SpringSecurityService", SecurityService.class));
 	    		}
 	    		catch (Exception e) {
 	    			throw new IOException("Could not configure Spring Security service");

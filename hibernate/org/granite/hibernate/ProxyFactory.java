@@ -32,7 +32,7 @@ import javax.persistence.Id;
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.service.ServiceException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.Introspector;
 import org.granite.util.PropertyDescriptor;
 import org.hibernate.engine.SessionImplementor;
@@ -57,12 +57,12 @@ public class ProxyFactory {
             // Get proxy methods: even if CGLIB/Javassist LazyInitializer implementations share a common
         	// superclass, getProxyFactory/getProxy methods are declared as static in each inherited
         	// class with the same signature.
-            Class<?> initializerClass = ClassUtil.forName(initializerClassName);
+            Class<?> initializerClass = TypeUtil.forName(initializerClassName);
             getProxyFactory = initializerClass.getMethod("getProxyFactory", new Class[]{Class.class, Class[].class});
 			Class<?> componentTypeClass = AbstractComponentType.class;
             try {
             	// Hibernate 3.6
-            	componentTypeClass = ClassUtil.forName("org.hibernate.type.CompositeType");
+            	componentTypeClass = TypeUtil.forName("org.hibernate.type.CompositeType");
             }
             catch (ClassNotFoundException e) {
             	// Hibernate until 3.5 
@@ -79,7 +79,7 @@ public class ProxyFactory {
     public HibernateProxy getProxyInstance(String persistentClassName, String entityName, Serializable id) {
         try {
             // Get ProxyFactory.
-            Class<?> persistentClass = ClassUtil.forName(persistentClassName);
+            Class<?> persistentClass = TypeUtil.forName(persistentClassName);
             Class<?> factory = (Class<?>)getProxyFactory.invoke(null, new Object[]{persistentClass, INTERFACES});
 
             // Convert id (if necessary).

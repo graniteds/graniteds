@@ -29,7 +29,7 @@ import javax.persistence.Entity;
 
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.util.DefaultClassGetter;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 import oracle.toplink.essentials.indirection.IndirectContainer;
 import oracle.toplink.essentials.indirection.ValueHolderInterface;
@@ -55,7 +55,7 @@ public class TopLinkClassGetter extends DefaultClassGetter {
             
             if (className != null && className.length() > 0) {
                 try {
-                    return ClassUtil.forName(className);
+                    return TypeUtil.forName(className);
                 } catch (Exception e) {
                     log.warn(e, "Could not get class with initializer: %s for: %s", className, className);
                 }

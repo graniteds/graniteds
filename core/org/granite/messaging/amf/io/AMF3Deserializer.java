@@ -40,7 +40,7 @@ import org.granite.messaging.amf.io.util.ActionScriptClassDescriptor;
 import org.granite.messaging.amf.io.util.DefaultActionScriptClassDescriptor;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.io.util.instantiator.AbstractInstantiator;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMLUtil;
 import org.granite.util.XMLUtilFactory;
 import org.w3c.dom.Document;
@@ -439,7 +439,7 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
                     Class<?>[] argsDef = new Class[]{String.class, byte.class};
                     Object[] argsVal = new Object[]{className, Byte.valueOf(encoding)};
                     try {
-                        desc = ClassUtil.newInstance(descriptorType, argsDef, argsVal);
+                        desc = TypeUtil.newInstance(descriptorType, argsDef, argsVal);
                     } catch (Exception e) {
                         throw new RuntimeException("Could not instantiate AS descriptor: " + descriptorType, e);
                     }

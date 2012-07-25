@@ -32,7 +32,7 @@ import javax.persistence.Id;
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.service.ServiceException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.Introspector;
 import org.granite.util.PropertyDescriptor;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -67,7 +67,7 @@ public class ProxyFactory {
             // Get proxy methods: even if CGLIB/Javassist LazyInitializer implementations share a common
         	// superclass, getProxyFactory/getProxy methods are declared as static in each inherited
         	// class with the same signature.
-            Class<?> initializerClass = ClassUtil.forName(initializerClassName);
+            Class<?> initializerClass = TypeUtil.forName(initializerClassName);
             getProxyFactory = initializerClass.getMethod("getProxyFactory", new Class[]{Class.class, Class[].class});
             
             // Hibernate 4.0.1 has an extra boolean parameter in last position: classOverridesEquals.
@@ -96,7 +96,7 @@ public class ProxyFactory {
     public HibernateProxy getProxyInstance(String persistentClassName, String entityName, Serializable id) {
         try {
             // Get ProxyFactory.
-            Class<?> persistentClass = ClassUtil.forName(persistentClassName);
+            Class<?> persistentClass = TypeUtil.forName(persistentClassName);
             Class<?> factory = (Class<?>)getProxyFactory.invoke(null, new Object[]{persistentClass, INTERFACES});
 
             // Convert id (if necessary).

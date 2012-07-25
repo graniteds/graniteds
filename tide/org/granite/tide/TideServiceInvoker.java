@@ -44,7 +44,7 @@ import org.granite.tide.data.DataMergeContext;
 import org.granite.tide.data.DataEnabled.PublishMode;
 import org.granite.tide.validators.EntityValidator;
 import org.granite.tide.validators.InvalidValue;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 import flex.messaging.messages.RemotingMessage;
 
@@ -154,7 +154,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
     		Class<?> constructorArgClass = null;
     		if (constructorArgClassName != null) {
 	    		try {
-	    			constructorArgClass = ClassUtil.forName(constructorArgClassName);
+	    			constructorArgClass = TypeUtil.forName(constructorArgClassName);
 	    			constructorArg = tideContext.findComponent(null, constructorArgClass);
 	    		}
 	    		catch (Exception e) {
@@ -230,7 +230,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
             Class<?> componentClass = null;
             try {
 	            if (componentClassName != null)
-	            	componentClass = ClassUtil.forName(componentClassName);
+	            	componentClass = TypeUtil.forName(componentClassName);
             }
             catch (ClassNotFoundException e) {
             	throw new ServiceException("Component class not found " + componentClassName, e);
@@ -285,7 +285,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         Class<?> componentClass = null;
         try {
 	        if (componentClassName != null)
-	        	componentClass = ClassUtil.forName(componentClassName);
+	        	componentClass = TypeUtil.forName(componentClassName);
         }
         catch (ClassNotFoundException e) {
         	throw new ServiceException("Component class not found " + componentClassName, e);
@@ -357,7 +357,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
 	        String componentClassName = "invokeComponent".equals(operation) ? (String)originArgs[1] : null;
 	        try {
 		        if (componentClassName != null)
-		        	componentClass = ClassUtil.forName(componentClassName);
+		        	componentClass = TypeUtil.forName(componentClassName);
 	        }
 	        catch (ClassNotFoundException e) {
 	        	throw new ServiceException("Component class not found " + componentClassName, e);
@@ -410,7 +410,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
 	        String componentClassName = "invokeComponent".equals(operation) ? (String)originArgs[1] : null;
 	        try {
 		        if (componentClassName != null)
-		        	componentClass = ClassUtil.forName(componentClassName);
+		        	componentClass = TypeUtil.forName(componentClassName);
 	        }
 	        catch (ClassNotFoundException e) {
 	        	throw new ServiceException("Component class not found " + componentClassName, e);

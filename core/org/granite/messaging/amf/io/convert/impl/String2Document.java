@@ -24,7 +24,7 @@ import java.lang.reflect.Type;
 
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMLUtil;
 import org.granite.util.XMLUtilFactory;
 import org.w3c.dom.Document;
@@ -42,7 +42,7 @@ public class String2Document extends Converter {
 
     @Override
 	protected boolean internalCanConvert(Object value, Type targetType) {
-    	Class<?> targetClass = ClassUtil.classOfType(targetType);
+    	Class<?> targetClass = TypeUtil.classOfType(targetType);
         return
             (targetClass.equals(Document.class)) &&
             (value == null || (value instanceof String));

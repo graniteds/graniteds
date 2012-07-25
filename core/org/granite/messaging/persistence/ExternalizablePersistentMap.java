@@ -31,7 +31,7 @@ import java.util.TreeMap;
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.amf.io.convert.Converters;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -58,7 +58,7 @@ public class ExternalizablePersistentMap extends AbstractExternalizablePersisten
 	public Map<?, ?> getContentAsMap(Type target, Comparator comparator) {
 		Map map = null;
 		if (content != null) {
-			if (SortedMap.class.isAssignableFrom(ClassUtil.classOfType(target))) {
+			if (SortedMap.class.isAssignableFrom(TypeUtil.classOfType(target))) {
 				if (comparator != null)
 					map = new TreeMap(comparator);
 				else

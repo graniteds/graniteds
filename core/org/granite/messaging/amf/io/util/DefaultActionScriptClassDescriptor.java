@@ -24,7 +24,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.Introspector;
 import org.granite.util.PropertyDescriptor;
 
@@ -44,7 +44,7 @@ public class DefaultActionScriptClassDescriptor extends ActionScriptClassDescrip
             properties.add(new MapProperty(converters, name));
         else {
             try {
-                Class<?> clazz = ClassUtil.forName(type);
+                Class<?> clazz = TypeUtil.forName(type);
 
                 // Try to find public getter/setter.
                 PropertyDescriptor[] props = Introspector.getPropertyDescriptors(clazz);
@@ -81,7 +81,7 @@ public class DefaultActionScriptClassDescriptor extends ActionScriptClassDescrip
 
         String className = (instantiator != null ? instantiator : type);
         try {
-            return ClassUtil.newInstance(className);
+            return TypeUtil.newInstance(className);
         } catch (Exception e) {
             throw new RuntimeException("Could not create instance of: " + className, e);
         }

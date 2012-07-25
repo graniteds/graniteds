@@ -20,8 +20,6 @@
 
 package org.granite.messaging.amf.process;
 
-import javax.servlet.http.HttpSession;
-
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
@@ -30,7 +28,6 @@ import org.granite.messaging.service.ServiceFactory;
 import org.granite.messaging.service.ServiceInvoker;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.security.SecurityServiceException;
-import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.util.UUIDUtil;
 
 import flex.messaging.messages.AcknowledgeMessage;

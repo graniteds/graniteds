@@ -22,7 +22,7 @@ package org.granite.logging;
 
 import java.lang.reflect.Constructor;
 
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -38,7 +38,7 @@ public abstract class Logger {
 	static {
 		boolean available = false;
 		try {
-			ClassUtil.forName("org.apache.log4j.Logger");
+			TypeUtil.forName("org.apache.log4j.Logger");
 			available = true;
 		} catch (Exception e) {
 		}
@@ -98,7 +98,7 @@ public abstract class Logger {
     	String loggerImplClass = System.getProperty(LOGGER_IMPL_SYSTEM_PROPERTY);
     	if (loggerImplClass != null) {
     		try {
-        		Class<? extends Logger> clazz = ClassUtil.forName(loggerImplClass, Logger.class);
+        		Class<? extends Logger> clazz = TypeUtil.forName(loggerImplClass, Logger.class);
         		Constructor<? extends Logger> constructor = clazz.getConstructor(String.class, LoggingFormatter.class);
         		return constructor.newInstance(name, formatter);
 			} catch (Exception e) {

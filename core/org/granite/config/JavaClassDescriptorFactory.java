@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.granite.messaging.amf.io.util.JavaClassDescriptor;
 import org.granite.messaging.amf.io.util.Property;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -50,7 +50,7 @@ public class JavaClassDescriptorFactory implements ConfigurableFactory<Class<? e
 
     public Class<? extends JavaClassDescriptor> getInstance(String type, GraniteConfig config) throws GraniteConfigException {
         try {
-            return ClassUtil.forName(type, JavaClassDescriptor.class);
+            return TypeUtil.forName(type, JavaClassDescriptor.class);
         } catch (Exception e) {
             throw new GraniteConfigException("Could not load JavaClassDescriptor type: " + type, e);
         }

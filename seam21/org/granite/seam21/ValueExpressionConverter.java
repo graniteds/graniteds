@@ -25,7 +25,7 @@ import java.lang.reflect.Type;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.convert.Reverter;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.jboss.seam.core.Expressions;
 import org.jboss.seam.core.Expressions.ValueExpression;
 
@@ -42,7 +42,7 @@ public class ValueExpressionConverter extends Converter implements Reverter {
 
     @Override
     protected boolean internalCanConvert(Object value, Type targetType) {
-        Class<?> targetClass = ClassUtil.classOfType(targetType);
+        Class<?> targetClass = TypeUtil.classOfType(targetType);
         return (
             targetClass != Object.class && targetClass.isAssignableFrom(ValueExpression.class) &&
             (value instanceof String || value == null)

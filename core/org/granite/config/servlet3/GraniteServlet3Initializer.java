@@ -34,7 +34,7 @@ import javax.servlet.annotation.HandlesTypes;
 import org.granite.config.GraniteConfigListener;
 import org.granite.messaging.webapp.AMFMessageFilter;
 import org.granite.messaging.webapp.AMFMessageServlet;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author William DRAI
@@ -72,7 +72,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 			
 			try {
 				if (servletContext.getServletRegistration("GravityServlet") == null) {
-					Class<? extends Servlet> gravityAsyncServletClass = ClassUtil.forName("org.granite.gravity.servlet3.GravityAsyncServlet", Servlet.class);
+					Class<? extends Servlet> gravityAsyncServletClass = TypeUtil.forName("org.granite.gravity.servlet3.GravityAsyncServlet", Servlet.class);
 					ServletRegistration.Dynamic gravityServlet = servletContext.addServlet("GravityServlet", gravityAsyncServletClass);
 					gravityServlet.setLoadOnStartup(1);
 					gravityServlet.setAsyncSupported(true);

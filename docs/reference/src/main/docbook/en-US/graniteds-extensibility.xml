@@ -28,7 +28,7 @@ import java.util.Date;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.convert.Reverter;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 import org.joda.time.DateTime;
 

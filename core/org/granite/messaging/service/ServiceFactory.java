@@ -27,7 +27,7 @@ import org.granite.config.flex.Destination;
 import org.granite.config.flex.Factory;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 
 import flex.messaging.messages.RemotingMessage;
@@ -76,7 +76,7 @@ public abstract class ServiceFactory {
                 if (config == null)
                     config = getDefaultFactoryConfig();
                 try {
-                    Class<? extends ServiceFactory> clazz = ClassUtil.forName(config.getClassName(), ServiceFactory.class);
+                    Class<? extends ServiceFactory> clazz = TypeUtil.forName(config.getClassName(), ServiceFactory.class);
                     factory = clazz.newInstance();
                     factory.configure(config.getProperties());
                 } catch (Exception e) {
@@ -109,10 +109,10 @@ public abstract class ServiceFactory {
         if (sServiceExceptionHandler != null) {
             try {
             	if (Boolean.TRUE.toString().equals(enableLogging) || Boolean.FALSE.toString().equals(enableLogging))
-                    this.serviceExceptionHandler = (ServiceExceptionHandler)ClassUtil.newInstance(sServiceExceptionHandler.trim(), 
+                    this.serviceExceptionHandler = (ServiceExceptionHandler)TypeUtil.newInstance(sServiceExceptionHandler.trim(), 
                     		new Class<?>[] { boolean.class }, new Object[] { Boolean.valueOf(enableLogging) });
             	else
-            		this.serviceExceptionHandler = (ServiceExceptionHandler)ClassUtil.newInstance(sServiceExceptionHandler.trim());
+            		this.serviceExceptionHandler = (ServiceExceptionHandler)TypeUtil.newInstance(sServiceExceptionHandler.trim());
             } catch (Exception e) {
                 throw new ServiceException("Could not instantiate service exception handler: " + sServiceExceptionHandler, e);
             }

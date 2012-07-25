@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.granite.messaging.amf.io.util.Property;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedBean;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 
 /**
@@ -112,7 +112,7 @@ public class ExternalizerFactory implements ConfigurableFactory<Externalizer> {
     	Externalizer externalizer = externalizersCache.get(externalizerType);
     	if (externalizer == null) {
     		try {
-    			externalizer = ClassUtil.newInstance(externalizerType, Externalizer.class);
+    			externalizer = TypeUtil.newInstance(externalizerType, Externalizer.class);
     		} catch (Exception e) {
     			throw new GraniteConfigException("Could not instantiate externalizer: " + externalizerType, e);
     		}

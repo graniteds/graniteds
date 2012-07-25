@@ -47,7 +47,7 @@ import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataUpdatePostprocessor;
 import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationResult;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
@@ -344,12 +344,12 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
 	        		try {
 	        			// Check if a JPA factory is setup
 	        			// If we find one, define a persistence manager with the JPA factory and Spring transaction manager
-						Class<?> emfiClass = ClassUtil.forName("org.springframework.orm.jpa.EntityManagerFactoryInfo");
+						Class<?> emfiClass = TypeUtil.forName("org.springframework.orm.jpa.EntityManagerFactoryInfo");
 		        		Map<String, ?> emfs = springContext.getBeansOfType(emfiClass);
 						if (emfs.size() == 1) {
 							try {
-								Class<?> emfClass = ClassUtil.forName("javax.persistence.EntityManagerFactory");
-					            Class<?> pcmClass = ClassUtil.forName("org.granite.tide.data.JPAPersistenceManager");
+								Class<?> emfClass = TypeUtil.forName("javax.persistence.EntityManagerFactory");
+					            Class<?> pcmClass = TypeUtil.forName("org.granite.tide.data.JPAPersistenceManager");
 					            Constructor<?>[] cs = pcmClass.getConstructors();
 				            	for (Constructor<?> c : cs) {
 					            	if (c.getParameterTypes().length == 2 && emfClass.isAssignableFrom(c.getParameterTypes()[0])
@@ -394,8 +394,8 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
         			tm = new SpringTransactionManager((PlatformTransactionManager)ptms.values().iterator().next());
         		}
                 
-				Class<?> emfClass = ClassUtil.forName("javax.persistence.EntityManagerFactory");
-	            Class<?> pcmClass = ClassUtil.forName("org.granite.tide.data.JPAPersistenceManager");
+				Class<?> emfClass = TypeUtil.forName("javax.persistence.EntityManagerFactory");
+	            Class<?> pcmClass = TypeUtil.forName("org.granite.tide.data.JPAPersistenceManager");
 	            Constructor<?>[] cs = pcmClass.getConstructors();
 	            if (tm != null) {
 	            	for (Constructor<?> c : cs) {

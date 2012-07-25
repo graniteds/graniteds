@@ -27,7 +27,7 @@ import java.util.Map;
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
 
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 
 /**
@@ -75,7 +75,7 @@ public class EjbServiceMetadata {
 				Boolean retainIfException = Boolean.valueOf(removeMethod.get("retain-if-exception"));
 
 				try {
-					removeMethods.put(ClassUtil.getMethod(invokeeClass, signature), retainIfException);
+					removeMethods.put(TypeUtil.getMethod(invokeeClass, signature), retainIfException);
 				}
 				catch (NoSuchMethodException e) {
 					throw new ServiceException("Could not find method: " + invokeeClass.getName() + "." + signature);

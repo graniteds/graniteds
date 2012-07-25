@@ -27,7 +27,7 @@ import java.util.Map;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.convert.Reverter;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.jboss.seam.core.ConversationEntry;
 
 /**
@@ -41,7 +41,7 @@ public class ConversationEntryConverter extends Converter implements Reverter {
 
     @Override
     protected boolean internalCanConvert(Object value, Type targetType) {
-        Class<?> targetClass = ClassUtil.classOfType(targetType);
+        Class<?> targetClass = TypeUtil.classOfType(targetType);
         return (
             targetClass != Object.class && targetClass.isAssignableFrom(ConversationEntry.class) &&
             (value instanceof Map<?, ?> || value == null)

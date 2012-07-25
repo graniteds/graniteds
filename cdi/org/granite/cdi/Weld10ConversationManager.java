@@ -29,7 +29,7 @@ import javax.servlet.http.HttpSession;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.manager.api.WeldManager;
 
@@ -44,8 +44,8 @@ public class Weld10ConversationManager implements CDIConversationManager {
 	@SuppressWarnings("unchecked")
 	public Weld10ConversationManager() {
 		try {
-			conversationManagerClass = ClassUtil.forName("org.jboss.weld.conversation.ConversationManager");
-			contextLifecycleClass = (Class<Service>)ClassUtil.forName("org.jboss.weld.context.ContextLifecycle");
+			conversationManagerClass = TypeUtil.forName("org.jboss.weld.conversation.ConversationManager");
+			contextLifecycleClass = (Class<Service>)TypeUtil.forName("org.jboss.weld.context.ContextLifecycle");
 		}
 		catch (Exception e) {
 			log.error(e, "Could not load ConversationManager class");
@@ -65,7 +65,7 @@ public class Weld10ConversationManager implements CDIConversationManager {
 		    HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
 		    String cid = (String)conversation.getClass().getMethod("getUnderlyingId").invoke(conversation);
 		    Object conversationContext = lookupConversationContext((WeldManager)beanManager);
-		    Object beanStore = ClassUtil.newInstance("org.jboss.weld.servlet.ConversationBeanStore", new Class<?>[] { HttpSession.class, boolean.class, String.class },
+		    Object beanStore = TypeUtil.newInstance("org.jboss.weld.servlet.ConversationBeanStore", new Class<?>[] { HttpSession.class, boolean.class, String.class },
 		    		new Object[] { context.getSession(true), false, cid });
 		    for (Method m : conversationContext.getClass().getMethods()) {
 		    	if ("setBeanStore".equals(m.getName())) {

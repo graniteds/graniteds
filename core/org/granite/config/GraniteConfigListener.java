@@ -64,7 +64,7 @@ import org.granite.messaging.service.tide.TideComponentAnnotatedWithMatcher;
 import org.granite.messaging.service.tide.TideComponentInstanceOfMatcher;
 import org.granite.messaging.service.tide.TideComponentNameMatcher;
 import org.granite.messaging.service.tide.TideComponentTypeMatcher;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.ServletParams;
 import org.granite.util.XMap;
 
@@ -164,7 +164,7 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
         
         if (!flexFilter.configProviderClass().equals(ConfigProvider.class)) {
         	try {
-        		configProvider = ClassUtil.newInstance(flexFilter.configProviderClass(), new Class[] { ServletContext.class }, new Object[] { context });
+        		configProvider = TypeUtil.newInstance(flexFilter.configProviderClass(), new Class[] { ServletContext.class }, new Object[] { context });
         		
         		if (configProvider.useTide() != null)
         			useTide = configProvider.useTide();
@@ -252,7 +252,7 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
     	
     	if (!flexFilter.securityServiceClass().equals(SecurityService.class)) {
     		try {
-    			graniteConfig.setSecurityService(ClassUtil.newInstance(flexFilter.securityServiceClass(), SecurityService.class));
+    			graniteConfig.setSecurityService(TypeUtil.newInstance(flexFilter.securityServiceClass(), SecurityService.class));
         	}
         	catch (Exception e) {
         		throw new ServletException("Could not setup security service", e);
@@ -266,22 +266,22 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
     		String securityServiceClassName = null;
     		// Try auto-detect
     		try {
-    			ClassUtil.forName("org.mortbay.jetty.Request");
+    			TypeUtil.forName("org.mortbay.jetty.Request");
     			securityServiceClassName = "org.granite.messaging.service.security.Jetty6SecurityService";
     		}
     		catch (ClassNotFoundException e1) {
     			try {
-    				ClassUtil.forName("org.eclipse.jetty.server.Request");
+    				TypeUtil.forName("org.eclipse.jetty.server.Request");
         			securityServiceClassName = "org.granite.messaging.service.security.Jetty7SecurityService";
     			}
     			catch (ClassNotFoundException e1b) {
 	    			try {
-	    				ClassUtil.forName("weblogic.servlet.security.ServletAuthentication");
+	    				TypeUtil.forName("weblogic.servlet.security.ServletAuthentication");
 	    				securityServiceClassName = "org.granite.messaging.service.security.WebLogicSecurityService";
 	    			}
 	    			catch (ClassNotFoundException e2) {
 	        			try {
-	        				ClassUtil.forName("com.sun.appserv.server.LifecycleEvent");
+	        				TypeUtil.forName("com.sun.appserv.server.LifecycleEvent");
 	            			securityServiceClassName = "org.granite.messaging.service.security.GlassFishV3SecurityService";
 	        			}
 	        			catch (ClassNotFoundException e3) {
@@ -289,7 +289,7 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
 	        			}
 	    			}
 	        		try {
-	        			graniteConfig.setSecurityService((SecurityService)ClassUtil.newInstance(securityServiceClassName));
+	        			graniteConfig.setSecurityService((SecurityService)TypeUtil.newInstance(securityServiceClassName));
 	            	}
 	            	catch (Exception e) {
 	            		throw new ServletException("Could not setup security service " + securityServiceClassName, e);
@@ -300,7 +300,7 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
         
         if (!flexFilter.amf3MessageInterceptor().equals(AMF3MessageInterceptor.class)) {
         	try {
-        		graniteConfig.setAmf3MessageInterceptor(ClassUtil.newInstance(flexFilter.amf3MessageInterceptor(), AMF3MessageInterceptor.class));
+        		graniteConfig.setAmf3MessageInterceptor(TypeUtil.newInstance(flexFilter.amf3MessageInterceptor(), AMF3MessageInterceptor.class));
         	}
         	catch (Exception e) {
         		throw new ServletException("Could not setup amf3 message interceptor", e);

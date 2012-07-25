@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,11 +50,11 @@ import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedBea
 import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
 import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty;
 import org.granite.messaging.amf.io.util.instantiator.AbstractInstantiator;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.Introspector;
 import org.granite.util.PropertyDescriptor;
 import org.granite.util.XMap;
-import org.granite.util.ClassUtil.DeclaredAnnotation;
+import org.granite.util.TypeUtil.DeclaredAnnotation;
 
 /**
  * @author Franck WOLFF
@@ -89,7 +90,7 @@ public class DefaultExternalizer implements Externalizer {
         Constructor<?> constructor = !dynamicClass ? constructors.get(type) : null;
 
         if (constructor == null) {
-            Class<?> clazz = ClassUtil.forName(type);
+            Class<?> clazz = TypeUtil.forName(type);
             constructor = findDefaultConstructor(clazz);
             if (!dynamicClass) {
 	            Constructor<?> previousConstructor = constructors.putIfAbsent(type, constructor);
@@ -130,7 +131,7 @@ public class DefaultExternalizer implements Externalizer {
         if (instantiatorType != null) {
             try {
                 AbstractInstantiator<?> instantiator =
-                    (AbstractInstantiator<?>)ClassUtil.newInstance(instantiatorType);
+                    (AbstractInstantiator<?>)TypeUtil.newInstance(instantiatorType);
                 List<String> fields = instantiator.getOrderedFieldNames();
                 log.debug("Writing bean with instantiator %s with fields %s", instantiator.getClass().getName(), fields);
                 for (String fieldName : fields) {
@@ -172,7 +173,7 @@ public class DefaultExternalizer implements Externalizer {
         	if (dynamicClass)
         		Introspector.flushFromCaches(clazz);
             
-        	PropertyDescriptor[] propertyDescriptors = ClassUtil.getProperties(clazz);
+        	PropertyDescriptor[] propertyDescriptors = TypeUtil.getProperties(clazz);
             Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
 
             fields = new ArrayList<Property>();
@@ -212,7 +213,7 @@ public class DefaultExternalizer implements Externalizer {
                         Method getter = property.getReadMethod();
                         if (getter != null && !allFieldNames.contains(property.getName())) {
                             
-                        	DeclaredAnnotation<ExternalizedProperty> annotation = ClassUtil.getAnnotation(getter, ExternalizedProperty.class);
+                        	DeclaredAnnotation<ExternalizedProperty> annotation = TypeUtil.getAnnotation(getter, ExternalizedProperty.class);
                         	if (annotation == null || (annotation.declaringClass != c && !annotation.declaringClass.isInterface()))
                         		continue;
 
@@ -261,7 +262,7 @@ public class DefaultExternalizer implements Externalizer {
         String instantiator = context.getGraniteConfig().getInstantiator(clazz.getName());
         if (instantiator != null) {
             try {
-                Class<T> instantiatorClass = ClassUtil.forName(instantiator, clazz);
+                Class<T> instantiatorClass = TypeUtil.forName(instantiator, clazz);
                 constructor = instantiatorClass.getConstructor();
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(
@@ -337,7 +338,7 @@ class SunDefaultConstructorFactory implements DefaultConstructorFactory {
 
     public SunDefaultConstructorFactory() {
         try {
-            Class<?> factoryClass = ClassUtil.forName("sun.reflect.ReflectionFactory");
+            Class<?> factoryClass = TypeUtil.forName("sun.reflect.ReflectionFactory");
             Method getReflectionFactory = factoryClass.getDeclaredMethod("getReflectionFactory");
             reflectionFactory = getReflectionFactory.invoke(null);
             newConstructorForSerialization = factoryClass.getDeclaredMethod(
