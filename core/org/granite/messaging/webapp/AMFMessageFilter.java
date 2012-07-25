@@ -96,7 +96,7 @@ public class AMFMessageFilter implements Filter {
         	if (inputBufferSize != null)
         		is = new BufferedInputStream(request.getInputStream(), inputBufferSize);
         	else
-        		is = new BufferedInputStream(request.getInputStream());
+        		is = request.getInputStream();
         	
             GraniteContext context = HttpGraniteContext.createThreadIntance(
                 graniteConfig, servicesConfig, config.getServletContext(),

@@ -37,8 +37,10 @@ public class ErrorMessage extends AcknowledgeMessage {
     private static final long serialVersionUID = 1L;
     
     private static final Logger log = Logger.getLogger("org.granite.logging.ExceptionStackTrace");
+    
+    public static final String CODE_SERVER_CALL_FAILED = "Server.Call.Failed";
 
-    private String faultCode = "Server.Call.Failed";
+    private String faultCode = CODE_SERVER_CALL_FAILED;
     private String faultDetail;
     private String faultString;
     private Object rootCause;

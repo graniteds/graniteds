@@ -80,8 +80,6 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
 
     protected final XMLUtil xmlUtil = XMLUtilFactory.getXMLUtil();
     
-    protected final boolean warnOnChannelIdMissing;
-
     protected final boolean debug = log.isDebugEnabled();
     protected final boolean debugMore = logMore.isDebugEnabled();
 
@@ -91,13 +89,7 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     // Constructor.
 
     public AMF3Serializer(OutputStream out) {
-    	this(out, true);
-    }
-
-    public AMF3Serializer(OutputStream out, boolean warnOnChannelMissing) {
         super(out);
-
-        this.warnOnChannelIdMissing = warnOnChannelMissing;
 
         if (debugMore) logMore.debug("new AMF3Serializer(out=%s)", out);
     }
@@ -518,13 +510,10 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     protected Channel getChannel() {
         if (channel == null) {
             String channelId = context.getAMFContext().getChannelId();
-            if (channelId != null) {
+            if (channelId != null)
                 channel = context.getServicesConfig().findChannelById(channelId);
-                if (channel == null)
-                    log.warn("Could not get channel for channel id: %s", channelId);
-            }
-            else if (warnOnChannelIdMissing)
-                log.warn("Could not get channel id for message: %s", context.getAMFContext().getRequest());
+            if (channel == null)
+                log.debug("Could not get channel for channel id: %s", channelId);
         }
         return channel;
     }

@@ -762,7 +762,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                         getGravity().initThread();
                         try {
 	                        ByteArrayOutputStream baos = new ByteArrayOutputStream(100);
-	                        AMF3Serializer ser = new AMF3Serializer(baos, false);
+	                        AMF3Serializer ser = new AMF3Serializer(baos);
 	                        ser.writeObject(msg);
 	                        ser.close();
 	                        baos.close();
