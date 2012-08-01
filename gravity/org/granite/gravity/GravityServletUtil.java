@@ -23,7 +23,7 @@ import flex.messaging.messages.Message;
 
 public class GravityServletUtil {
 
-    private static final String CONNECT_MESSAGE_KEY = AbstractGravityServlet.class.getName() + ".CONNECT_MESSAGE";
+    public static final String CONNECT_MESSAGE_KEY = AbstractGravityServlet.class.getName() + ".CONNECT_MESSAGE";
 
     public static void init(ServletConfig config) throws ServletException {
     	GravityManager.start(config);

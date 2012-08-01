@@ -588,6 +588,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
         if (!config.hasSecurityService())
             log.warn("Ignored security operation (no security settings in granite-config.xml): %s", message);
+        else if (!config.getSecurityService().acceptsContext())
+            log.info("Ignored security operation (security service does not handle this kind of granite context)", message);
         else {
             SecurityService securityService = config.getSecurityService();
             try {

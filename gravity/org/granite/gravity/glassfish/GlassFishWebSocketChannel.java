@@ -20,7 +20,6 @@ import com.sun.grizzly.websockets.DataFrame;
 import com.sun.grizzly.websockets.WebSocket;
 import com.sun.grizzly.websockets.WebSocketListener;
 
-import flex.messaging.messages.AcknowledgeMessage;
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
 
@@ -29,28 +28,45 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 	
 	private static final Logger log = Logger.getLogger(GlassFishWebSocketChannel.class);
 	
+	private String connectMessageId;
 	private WebSocket websocket;
+	private Message connectAckMessage;
 
 	
 	public GlassFishWebSocketChannel(Gravity gravity, String id, GlassFishWebSocketChannelFactory factory) {
     	super(gravity, id, factory);
     }
 	
+	public void setConnectMessageId(String connectMessageId) {
+		this.connectMessageId = connectMessageId;
+	}
+	
+	public void setConnectAckMessage(Message ackMessage) {
+		this.connectAckMessage = ackMessage;
+	}
+	
 	public void setWebSocket(WebSocket websocket) {
 		this.websocket = websocket;
 		this.websocket.add(this);
 		
+		if (connectAckMessage == null)
+			return;
+		
 		try {
+			initializeRequest(gravity);
+			
 			// Return an acknowledge message with the server-generated clientId
-			AcknowledgeMessage message = new AcknowledgeMessage();
-			message.setCorrelationId("OPEN_CONNECTION");
-			message.setClientId(id);
-	        byte[] resultData = serialize(getGravity(), new Message[] { message });
+	        byte[] resultData = serialize(getGravity(), new Message[] { connectAckMessage });
 	        
-	        websocket.send(resultData);
+			websocket.send(resultData);
+			
+			connectAckMessage = null;
 		}
 		catch (IOException e) {
 			log.error(e, "Could not send connect acknowledge");
+		}
+		finally {
+			cleanupRequest();
 		}
 	}
 	

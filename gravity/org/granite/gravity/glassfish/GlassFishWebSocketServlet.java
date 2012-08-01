@@ -35,7 +35,7 @@ public class GlassFishWebSocketServlet extends HttpServlet {
 				continue;
 			mapping = sr.getMappings().iterator().next(); 
 		}
-		app = new GlassFishWebSocketApplication(gravity, mapping);
+		app = new GlassFishWebSocketApplication(getServletContext(), gravity, mapping);
         WebSocketEngine.getEngine().register(app);
 	}
 
