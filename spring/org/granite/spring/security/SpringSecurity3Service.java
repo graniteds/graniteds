@@ -39,6 +39,7 @@ import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.messaging.webapp.ServletGraniteContext;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -66,13 +67,14 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * @author Bouiaw
  * @author wdrai
  */
-public class SpringSecurity3Service extends AbstractSecurityService {
+public class SpringSecurity3Service extends AbstractSecurityService implements ApplicationContextAware {
         
 	private static final Logger log = Logger.getLogger(SpringSecurity3Service.class);
 	
     private static final String FILTER_APPLIED = "__spring_security_scpf_applied";
     private static final String SECURITY_SERVICE_APPLIED = "__spring_security_granite_service_applied";
 	
+    private ApplicationContext applicationContext = null;
 	private AuthenticationManager authenticationManager = null;
 	private AuthenticationTrustResolver authenticationTrustResolver = new AuthenticationTrustResolverImpl();
 	private SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -98,6 +100,9 @@ public class SpringSecurity3Service extends AbstractSecurityService {
 		}
     }
 	
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext;
+	}
 	
 	public void setAuthenticationManager(AuthenticationManager authenticationManager) {
 		this.authenticationManager = authenticationManager;
@@ -139,7 +144,12 @@ public class SpringSecurity3Service extends AbstractSecurityService {
     
     public void login(Object credentials, String charset) {
         List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials, charset));
-
+        
+        if (!(GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)) {
+        	log.info("Login from non HTTP granite context ignored");
+        	return;
+        }
+        
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
 
@@ -148,12 +158,12 @@ public class SpringSecurity3Service extends AbstractSecurityService {
         if (passwordEncoder != null)
         	password = passwordEncoder.encodePassword(password, null);
         Authentication auth = new UsernamePasswordAuthenticationToken(user, password);
-
-        ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(
-            httpRequest.getSession().getServletContext()
-        );
-        if (ctx != null) {
-        	lookupAuthenticationManager(ctx, authenticationManagerBeanName);
+        
+        ApplicationContext appContext = applicationContext != null ? applicationContext 
+        		: WebApplicationContextUtils.getWebApplicationContext(graniteContext.getServletContext());
+        
+        if (appContext != null) {
+        	lookupAuthenticationManager(appContext, authenticationManagerBeanName);
             
             try {
                 Authentication authentication = authenticationManager.authenticate(auth);
@@ -297,7 +307,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
     }
 
     public void logout() {
-    	HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+    	ServletGraniteContext context = (ServletGraniteContext)GraniteContext.getCurrentInstance();
     	HttpSession session = context.getSession(false);
     	if (session != null && securityContextRepository.containsContext(context.getRequest()))    		
     		session.invalidate();
