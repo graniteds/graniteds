@@ -57,13 +57,14 @@ public class ContinuationChannel extends AbstractChannel {
     }
     
     public void close() {
-    	try {
-            if (this.continuation != null)
-                this.continuation.undispatch();
-        }
-    	finally {
-            this.continuation = null;
-    	}
+        this.continuation = null;
+//    	try {
+//            if (this.continuation != null)
+//                this.continuation.
+//        }
+//    	finally {
+//            this.continuation = null;
+//    	}
     }
     
 

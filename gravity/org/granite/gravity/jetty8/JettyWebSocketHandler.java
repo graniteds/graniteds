@@ -30,6 +30,7 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 		JettyWebSocketChannelFactory channelFactory = new JettyWebSocketChannelFactory(gravity, servletContext);
 		
 		try {
+			String connectMessageId = request.getHeader("connectId") != null ? request.getHeader("connectId") : request.getParameter("connectId");
 			String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameter("GDSClientId");
 			String sessionId = null;
 			HttpSession session = request.getSession(false);
@@ -46,7 +47,7 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 			log.info("WebSocket connection started %s clientId %s sessionId %s", protocol, clientId, sessionId);
 			
 			CommandMessage pingMessage = new CommandMessage();
-			pingMessage.setMessageId("OPEN_CONNECTION");
+			pingMessage.setMessageId(connectMessageId != null ? connectMessageId : "OPEN_CONNECTION");
 			pingMessage.setOperation(CommandMessage.CLIENT_PING_OPERATION);
 			if (clientId != null)
 				pingMessage.setClientId(clientId);
@@ -54,7 +55,9 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 			Message ackMessage = gravity.handleMessage(channelFactory, pingMessage);
 			
 			JettyWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
-			channel.setConnectAckMessage(ackMessage);
+			
+			if (!ackMessage.getClientId().equals(clientId))
+				channel.setConnectAckMessage(ackMessage);
 			
 			return channel;
 		}

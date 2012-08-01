@@ -33,6 +33,7 @@ import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
+import org.granite.gravity.GravityServletUtil;
 import org.granite.logging.Logger;
 
 import flex.messaging.messages.AsyncMessage;
@@ -108,13 +109,13 @@ public class GravityJettyServlet extends AbstractGravityServlet {
                 	if (!channel.runReceived(new AsyncHttpContext(request, response, amf3Request))) {
                         
                 		// No pending messages, wait for new ones or timeout.
-	                    setConnectMessage(request, amf3Request);
 	                	synchronized (channel) {
 	                		Continuation continuation = ContinuationSupport.getContinuation(request);
 	                		continuation.setTimeout(getLongPollingTimeout());
+	                		continuation.setAttribute(GravityServletUtil.CONNECT_MESSAGE_KEY, amf3Request);
 		                	channel.setContinuation(continuation);
 		                	
-		                	// This call throws a RetryRequest exception, so we'll never reach return below...
+		                	// Suspend the current resquest/response processing and free the thread
 		                	continuation.suspend(response);
 	                	}
                 	}

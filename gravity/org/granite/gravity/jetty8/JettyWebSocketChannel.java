@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import javax.servlet.ServletContext;
@@ -47,6 +48,9 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 		
 		log.debug("WebSocket connection onOpen");
 		
+		if (connectAckMessage == null)
+			return;
+		
 		try {
 			initializeRequest();
 			
@@ -54,6 +58,8 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	        byte[] resultData = serialize(getGravity(), new Message[] { connectAckMessage });
 	        
 			connection.sendMessage(resultData, 0, resultData.length);
+			
+			connectAckMessage = null;
 		}
 		catch (IOException e) {
 			log.error(e, "Could not send connect acknowledge");
@@ -80,6 +86,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
             Message[] responses = null;
             
             boolean accessed = false;
+            int responseIndex = 0;
             for (int i = 0; i < messages.length; i++) {
                 Message message = messages[i];
                 
@@ -89,18 +96,24 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
                 
                 // Mark current channel (if any) as accessed.
                 if (!accessed)
-                	accessed = getGravity().access(channelId);                
-
-                if (responses == null)
-                	responses = new Message[messages.length];
-                responses[i] = response;
+                	accessed = getGravity().access(channelId);
+                
+                if (response != null) {
+	                if (responses == null)
+	                	responses = new Message[1];
+	                else
+	                	responses = Arrays.copyOf(responses, responses.length+1);
+	                responses[responseIndex++] = response;
+                }
             }
-
-            log.debug("<< [AMF3 RESPONSES] %s", (Object)responses);
-
-            byte[] resultData = serialize(getGravity(), responses);
             
-            connection.sendMessage(resultData, 0, resultData.length);
+            if (responses != null && responses.length > 0) {
+	            log.debug("<< [AMF3 RESPONSES] %s", (Object)responses);
+	
+	            byte[] resultData = serialize(getGravity(), responses);
+	            
+	            connection.sendMessage(resultData, 0, resultData.length);
+            }
 		}
 		catch (ClassNotFoundException e) {
 			log.error(e, "Could not handle incoming message data");
@@ -173,7 +186,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 				receivedQueueLock.unlock();
 			}
 			
-			if (!connection.isOpen())
+			if (connection == null || !connection.isOpen())
 				return false;
 			
 			AsyncMessage[] messagesArray = new AsyncMessage[messages.size()];
@@ -194,7 +207,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	        
 	        connection.sendMessage(os.toByteArray(), 0, os.size());
 	        
-	        return true; // Messages were delivered, http context isn't valid anymore.
+	        return true; // Messages were delivered
 		}
 		catch (IOException e) {
 			log.warn(e, "Could not send messages to channel: %s (retrying later)", this);
