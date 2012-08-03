@@ -242,25 +242,29 @@ package org.granite.gravity.channels {
         }
 
         override protected function internalDisconnect(rejected:Boolean = false):void {
-
-            if (_tunnel) {
-            	try {
-                	_tunnel.disconnect();
-                } catch (e:Error) {
-                }
-                _tunnel = null;
-            }
-
-            if (_command) {
-            	try {
-                	_command.disconnect();
-                } catch (e:Error) {
-                }
-            }
-            _command = new GravityStreamCommand(this);
-
-            _clientId = null;
-            _consumers = new Dictionary();
+			if (!rejected && !shouldBeConnected) {
+	            if (_tunnel) {
+	            	try {
+	                	_tunnel.disconnect();
+	                } catch (e:Error) {
+	                }
+	                _tunnel = null;
+	            }
+	
+	            if (_command) {
+	            	try {
+	                	_command.disconnect();
+	                } catch (e:Error) {
+	                }
+	            }
+	            _command = new GravityStreamCommand(this);
+	
+	            _clientId = null;
+	            _consumers = new Dictionary();
+			}
+			
+			setConnected(false);
+			super.internalDisconnect(rejected);
         }
 
         override protected function internalSend(messageResponder:MessageResponder):void {

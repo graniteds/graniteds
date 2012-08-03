@@ -20,19 +20,20 @@
 
 package org.granite.gravity {
 
+    import mx.controls.Alert;
+    import mx.core.mx_internal;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.messaging.messages.IMessage;
+    import mx.messaging.events.ChannelEvent;
+    import mx.messaging.events.ChannelFaultEvent;
+    import mx.messaging.events.MessageEvent;
     import mx.messaging.messages.AbstractMessage;
     import mx.messaging.messages.AcknowledgeMessage;
     import mx.messaging.messages.AsyncMessage;
     import mx.messaging.messages.CommandMessage;
     import mx.messaging.messages.ErrorMessage;
-    import mx.messaging.events.MessageEvent;
-    import mx.messaging.events.ChannelEvent;
-    import mx.messaging.events.ChannelFaultEvent;
+    import mx.messaging.messages.IMessage;
     import mx.utils.ObjectUtil;
-    import mx.controls.Alert;
 
 	
 	[Event(name="message", type="mx.messaging.events.MessageEvent")]
@@ -129,18 +130,23 @@ package org.granite.gravity {
 
 
         override public function acknowledge(ackMsg:AcknowledgeMessage, msg:IMessage):void {
-            super.acknowledge(ackMsg, msg);
-            
             if (msg is CommandMessage) {
                 switch ((msg as CommandMessage).operation) {
+					
                 case CommandMessage.SUBSCRIBE_OPERATION:
-                    _subscriptionId = ackMsg.headers[AbstractMessage.DESTINATION_CLIENT_ID_HEADER] as String;
+					mx_internal::setClientId(ackMsg.clientId);
+					_subscriptionId = ackMsg.headers[AbstractMessage.DESTINATION_CLIENT_ID_HEADER] as String;
                     break;
+				
                 case CommandMessage.UNSUBSCRIBE_OPERATION:
-                    _subscriptionId = null;
+					mx_internal::setClientId(null);
+					_subscriptionId = null;
+					ackMsg.clientId = null; // Force the ack's clientId to null as well before ack'ing it.
                     break;
                 }
             }
+
+			super.acknowledge(ackMsg, msg);
         }
 
         override public function fault(errMsg:ErrorMessage, msg:IMessage):void {
