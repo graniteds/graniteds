@@ -793,7 +793,12 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
         if (destination == null)
             return getInvalidDestinationError(message);
-
+                
+        if (message.getMessageId() == null)
+        	message.setMessageId(UUIDUtil.randomUUID());
+        message.setTimestamp(System.currentTimeMillis());
+        if (channel != null)
+        	message.setClientId(channel.getId());
 
         GravityInvocationContext invocationContext = new GravityInvocationContext(message, destination) {
 			@Override
