@@ -28,7 +28,6 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 	
 	private static final Logger log = Logger.getLogger(GlassFishWebSocketChannel.class);
 	
-	private String connectMessageId;
 	private WebSocket websocket;
 	private Message connectAckMessage;
 
@@ -36,10 +35,6 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 	public GlassFishWebSocketChannel(Gravity gravity, String id, GlassFishWebSocketChannelFactory factory) {
     	super(gravity, id, factory);
     }
-	
-	public void setConnectMessageId(String connectMessageId) {
-		this.connectMessageId = connectMessageId;
-	}
 	
 	public void setConnectAckMessage(Message ackMessage) {
 		this.connectAckMessage = ackMessage;
@@ -53,21 +48,15 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 			return;
 		
 		try {
-			initializeRequest(gravity);
-			
 			// Return an acknowledge message with the server-generated clientId
 	        byte[] resultData = serialize(getGravity(), new Message[] { connectAckMessage });
-	        
 			websocket.send(resultData);
-			
-			connectAckMessage = null;
 		}
 		catch (IOException e) {
-			log.error(e, "Could not send connect acknowledge");
+			throw new RuntimeException("Could not send connect acknowledge", e);
 		}
-		finally {
-			cleanupRequest();
-		}
+		
+		connectAckMessage = null;
 	}
 	
 	public void onConnect(WebSocket websocket) {
@@ -180,7 +169,7 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 				receivedQueueLock.unlock();
 			}
 			
-	        if (!websocket.isConnected())
+	        if (websocket == null || !websocket.isConnected())
 	        	return false;
 	        
 			AsyncMessage[] messagesArray = new AsyncMessage[messages.size()];
@@ -249,8 +238,22 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 			}
 		}
 	}
+
+	@Override
+	public void destroy() {
+		try {
+			super.destroy();
+		}
+		finally {
+			close();
+		}
+	}
 	
 	public void close() {
+		if (websocket != null) {
+			websocket.close(1000, "Channel closed");
+			websocket = null;
+		}
 	}
 	
 	@Override

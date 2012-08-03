@@ -26,10 +26,6 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 	private final ServletContext servletContext;
 	private final Gravity gravity;
 	private final Pattern mapping;
-	
-	private String connectMessageId;
-	private String clientId;
-	private String sessionId;
 
 
 	public GlassFishWebSocketApplication(ServletContext servletContext, Gravity gravity, String mapping) {
@@ -40,9 +36,37 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 
 	@Override
 	public List<String> getSupportedProtocols(List<String> subProtocol) {
-		if (subProtocol.contains("gravity"))
-			return Collections.singletonList("gravity");
+		if (subProtocol.contains("org.granite.gravity"))
+			return Collections.singletonList("org.granite.gravity");
 		return Collections.emptyList();
+	}
+
+	@Override
+	public boolean isApplicationRequest(Request request) {
+        final String uri = request.requestURI().toString();
+        if (!mapping.matcher(uri).matches())
+        	return false;
+        
+    	request.getParameters().handleQueryParameters();	// Force parse of query parameters
+		String connectMessageId = request.getHeader("connectId");
+		if (connectMessageId == null && request.getParameters().getParameter("connectId") != null)
+			connectMessageId = request.getParameters().getParameter("connectId");
+		String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameters().getParameter("GDSClientId");
+		String sessionId = null;
+		if (request.getHeader("GDSSessionId") != null)
+			sessionId = request.getHeader("GDSSessionId");
+		if (sessionId == null && request.getParameters().getParameter("GDSSessionId") != null)
+			sessionId = request.getParameters().getParameter("GDSSessionId");
+		
+		// Utterly hackish and ugly: we create the thread local here because there is no other way to access the request
+		// It will be cleared in onConnect which executes later in the same thread
+		ServletGraniteContext graniteContext = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId);
+		if (connectMessageId != null)
+			graniteContext.getRequest().setAttribute("connectId", connectMessageId);
+		if (clientId != null)
+			graniteContext.getRequest().setAttribute("clientId", clientId);
+		
+		return true;
 	}
 
 	@Override
@@ -50,9 +74,11 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 		GlassFishWebSocketChannelFactory channelFactory = new GlassFishWebSocketChannelFactory(gravity);
 		
 		try {
-			ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId);
-			
 			log.info("WebSocket connection");
+			ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
+			
+			String connectMessageId = (String)graniteContext.getRequest().getAttribute("connectId");
+			String clientId = (String)graniteContext.getRequest().getAttribute("clientId");
 			
 			CommandMessage pingMessage = new CommandMessage();
 			pingMessage.setMessageId(connectMessageId != null ? connectMessageId : "OPEN_CONNECTION");
@@ -63,7 +89,6 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 			Message ackMessage = gravity.handleMessage(channelFactory, pingMessage);
 			
 			GlassFishWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
-			channel.setConnectMessageId(connectMessageId);
 			if (!ackMessage.getClientId().equals(clientId))
 				channel.setConnectAckMessage(ackMessage);
 			channel.setWebSocket(websocket);
@@ -72,20 +97,4 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 			GraniteContext.release();
 		}
     }
-
-	@Override
-	public boolean isApplicationRequest(Request request) {
-        final String uri = request.requestURI().toString();
-        if (mapping.matcher(uri).matches()) {
-			connectMessageId = request.getHeader("connectId") != null ? request.getHeader("connectId") : request.getParameters().getParameter("connectId");
-			clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameters().getParameter("GDSClientId");
-			sessionId = null;
-			if (request.getHeader("GDSSessionId") != null)
-				sessionId = request.getHeader("GDSSessionId");
-			if (sessionId == null && request.getParameters().getParameter("GDSSessionId") != null)
-				sessionId = request.getParameters().getParameter("GDSSessionId");
-        	return true;
-        }
-        return false;
-	}
 }
