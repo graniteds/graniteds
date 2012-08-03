@@ -120,10 +120,9 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
                 throw SecurityServiceException.newNotLoggedInException("User not logged in");
             }
 
-            Realm realm = getRealm(request);
             boolean accessDenied = true;
             for (String role : context.getDestination().getRoles()) {
-                if (realm.hasRole(principal, role)) {
+                if (request.isUserInRole(role)) {
                     accessDenied = false;
                     break;
                 }
