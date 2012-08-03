@@ -48,8 +48,8 @@ package org.granite.tide.service {
 		protected var _contextRoot:String = "";
 		protected var _serverName:String = "{server.name}";
 		protected var _serverPort:String = "{server.port}";
-		protected var _graniteUrlMapping:String = "/graniteamf/amf.txt";		// .txt for stupid bug in IE8
-		protected var _gravityUrlMapping:String = "/gravityamf/amf.txt";
+		protected var _graniteUrlMapping:String = null;		// .txt for stupid bug in IE8
+		protected var _gravityUrlMapping:String = null;
         
 
 		/**
@@ -58,7 +58,7 @@ package org.granite.tide.service {
 		 * 	@param name component name
 		 *  @param context current context
 		 */
-        public function DefaultServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = null, gravityUrlMapping:String = null, secure:Boolean = false) {
+        public function DefaultServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = "/graniteamf/amf.txt", gravityUrlMapping:String = "/gravityamf/amf.txt", secure:Boolean = false) {
             super();
 			var application:Object = Tide.currentApplication();
 			

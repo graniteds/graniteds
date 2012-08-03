@@ -31,7 +31,7 @@ package org.granite.tide.service {
 		
 		protected var _embedded:Boolean = false;
 		
-		public function WebSocketServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = null, gravityUrlMapping:String = null, secure:Boolean = false, embedded:Boolean = false) {
+		public function WebSocketServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = "/graniteamf/amf.txt", gravityUrlMapping:String = "/websocketamf/amf", secure:Boolean = false, embedded:Boolean = false) {
 			super(contextRoot, graniteUrlMapping, gravityUrlMapping, secure);
 			_embedded = embedded;
 			
