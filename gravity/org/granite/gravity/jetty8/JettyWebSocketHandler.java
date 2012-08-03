@@ -26,6 +26,9 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 	}
 	
     public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) {
+    	if (!"org.granite.gravity".equals(protocol))
+    		return null;
+    	
 		Gravity gravity = GravityManager.getGravity(servletContext);
 		JettyWebSocketChannelFactory channelFactory = new JettyWebSocketChannelFactory(gravity, servletContext);
 		

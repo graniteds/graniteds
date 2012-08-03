@@ -253,8 +253,22 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 			}
 		}
 	}
+
+	@Override
+	public void destroy() {
+		try {
+			super.destroy();
+		}
+		finally {
+			close();
+		}
+	}
 	
 	public void close() {
+		if (connection != null) {
+			connection.close(1000, "Channel closed");
+			connection = null;
+		}
 	}
 	
 	@Override
