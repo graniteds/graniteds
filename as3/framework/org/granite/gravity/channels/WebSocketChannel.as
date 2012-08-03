@@ -106,7 +106,7 @@ package org.granite.gravity.channels {
 			if (_sessionId != null)
 				headers += "GDSSessionId: " + _sessionId + "\r\n";
 			
-            _webSocket = new WebSocket(1, resolveUri(), [ "gravity" ], "", "", headers);
+            _webSocket = new WebSocket(1, resolveUri(), [ "org.granite.gravity" ], "", "", headers);
             _webSocket.addEventListener(WebSocketEvent.OPEN, onOpen);
 			_webSocket.addEventListener(WebSocketEvent.ERROR, onError);
 			_webSocket.addEventListener(WebSocketEvent.CLOSE, onClose);
@@ -114,16 +114,22 @@ package org.granite.gravity.channels {
         }
 
         override protected function internalDisconnect(rejected:Boolean = false):void {
-			if (_webSocket) {
-            	try {
-                	_webSocket.close(1000);
-                } catch (e:Error) {
-                }
-                _webSocket = null;
-            }
-
-            _clientId = null;
-            _consumers = new Dictionary();
+			if (!rejected && !shouldBeConnected) {
+				if (_webSocket) {
+	            	try {
+	                	_webSocket.close(1000);
+	                } 
+					catch (e:Error) {
+	                }
+	                _webSocket = null;
+	            }
+	
+	            _clientId = null;
+	            _consumers = new Dictionary();
+			}
+			
+			setConnected(false);
+			super.internalDisconnect(rejected);
         }
 		
 		private var _sent:Dictionary = new Dictionary();
