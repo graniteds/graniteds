@@ -54,6 +54,13 @@ public class PackageTranslator {
     public void setAs3(String as3) {
         this.as3 = as3;
     }
+    
+    public String getClient() {
+    	return as3;
+    }
+    public void setClient(String client) {
+    	this.as3 = client;
+    }
 
     public int getWeight() {
         return weight;

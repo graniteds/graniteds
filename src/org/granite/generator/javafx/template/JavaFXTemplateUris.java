@@ -27,9 +27,11 @@ public interface JavaFXTemplateUris {
 
 	public static final String BEAN = "class:org/granite/generator/javafx/template/bean.gsp";
 	public static final String BEAN_BASE = "class:org/granite/generator/javafx/template/beanBase.gsp";
+	public static final String TIDE_BEAN_BASE = "class:org/granite/generator/javafx/template/tideBeanBase.gsp";
 
 	public static final String ENTITY = "class:org/granite/generator/javafx/template/entity.gsp";
 	public static final String ENTITY_BASE = "class:org/granite/generator/javafx/template/entityBase.gsp";
+	public static final String TIDE_ENTITY_BASE = "class:org/granite/generator/javafx/template/tideEntityBase.gsp";
 
 	public static final String INTERFACE = "class:org/granite/generator/javafx/template/interface.gsp";
 

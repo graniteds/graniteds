@@ -40,5 +40,6 @@ public interface StandardTemplateUris {
 	
 	public static final String REMOTE = "class:org/granite/generator/template/remote.gsp";
 	public static final String REMOTE_BASE = "class:org/granite/generator/template/remoteBase.gsp";
+	public static final String TIDE_REMOTE = "class:org/granite/generator/template/remote.gsp";
 	public static final String TIDE_REMOTE_BASE = "class:org/granite/generator/template/tideRemoteBase.gsp";
 }

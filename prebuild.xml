@@ -32,6 +32,7 @@
         <jar destfile="lib/granite-generator.jar">
             <fileset dir="${bin.dir}">
                 <include name="org/granite/generator/**"/>
+                <include name="org/granite/util/ClassUtil.class"/>
             </fileset>
         </jar>
     </target>

@@ -52,7 +52,6 @@ import org.granite.generator.as3.PackageTranslator;
 import org.granite.generator.as3.RemoteDestinationFactory;
 import org.granite.generator.as3.reflect.JavaType.Kind;
 import org.granite.generator.gsp.GroovyTemplateFactory;
-import org.granite.generator.template.StandardTemplateUris;
 
 /**
  * @author Franck WOLFF
@@ -385,7 +384,7 @@ public abstract class AbstractAntJavaGenTask extends Task implements JavaAs3Groo
             }
             else if (tide) {
             	log("Using tide entity base template.", Project.MSG_INFO);
-            	baseTemplateUri = StandardTemplateUris.TIDE_ENTITY_BASE;
+            	baseTemplateUri = defaultTemplateUri("TIDE_ENTITY_BASE");
             }
             entityTemplateUris = createTemplateUris(baseTemplateUri, templateUri);
             
@@ -413,12 +412,16 @@ public abstract class AbstractAntJavaGenTask extends Task implements JavaAs3Groo
             	log("Using custom remote template: " + remotetemplate, Project.MSG_INFO);
             	templateUri = remotetemplate;
             }
+            else if (tide) {
+            	log("Using Tide remote destination template.", Project.MSG_INFO);
+            	baseTemplateUri = defaultTemplateUri("TIDE_REMOTE");
+            }
             if (remotebasetemplate != null) {
             	log("Using custom remote base template: " + remotebasetemplate, Project.MSG_INFO);
             	baseTemplateUri = remotebasetemplate;
             }
             else if (tide) {
-            	log("Using tide remote destination base template.", Project.MSG_INFO);
+            	log("Using Tide remote destination base template.", Project.MSG_INFO);
             	baseTemplateUri = defaultTemplateUri("TIDE_REMOTE_BASE");
             }
         	remoteTemplateUris = createTemplateUris(baseTemplateUri, templateUri);
