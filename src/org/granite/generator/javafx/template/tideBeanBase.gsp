@@ -21,7 +21,7 @@
 --%><%
     Set javaImports = new TreeSet();
 
-	javaImports.add("org.granite.javafx.JavaFXObject");
+	javaImports.add("org.granite.client.javafx.JavaFXObject");
 	
     if (!jClass.hasSuperclass()) {
     	javaImports.add("javafx.event.Event");
@@ -30,7 +30,7 @@
     	javaImports.add("javafx.event.EventType");
     	javaImports.add("com.sun.javafx.event.EventHandlerManager");
 
-    	javaImports.add("org.granite.util.javafx.DataNotifier");
+    	javaImports.add("org.granite.client.util.javafx.DataNotifier");
     }
 	
     for (jProperty in jClass.properties) {

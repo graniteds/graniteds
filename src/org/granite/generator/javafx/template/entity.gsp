@@ -32,7 +32,7 @@ package ${jClass.as3Type.packageName};<%
 
 	Set javaImports = new TreeSet();
 	
-	javaImports.add("org.granite.javafx.JavaFXObject");
+	javaImports.add("org.granite.client.javafx.JavaFXObject");
 	javaImports.add("org.granite.messaging.amf.RemoteClass");
 	
     if (jClass.hasInterfaces()) {

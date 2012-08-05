@@ -62,7 +62,7 @@
     if (generateDefaultUidMethods)
         javaImports.add("java.util.UUID");
 
-	javaImports.add("org.granite.javafx.JavaFXObject");
+	javaImports.add("org.granite.client.javafx.JavaFXObject");
 	
     if (jClass.hasIdentifiers()) {
     	javaImports.add("org.granite.messaging.service.annotations.IgnoredMethod")
@@ -77,17 +77,17 @@
     	javaImports.add("javafx.event.EventType");
     	javaImports.add("com.sun.javafx.event.EventHandlerManager");
 
-    	javaImports.add("org.granite.util.javafx.DataNotifier");
-    	javaImports.add("org.granite.tide.data.Identifiable");
-    	javaImports.add("org.granite.tide.data.Lazyable");
+    	javaImports.add("org.granite.client.util.javafx.DataNotifier");
+    	javaImports.add("org.granite.client.tide.data.Identifiable");
+    	javaImports.add("org.granite.client.tide.data.Lazyable");
     	
-    	javaImports.add("org.granite.tide.data.Id");
-    	javaImports.add("org.granite.tide.data.Version");
+    	javaImports.add("org.granite.client.tide.data.Id");
+    	javaImports.add("org.granite.client.tide.data.Version");
     }
     
     for (jProperty in jClass.properties) {
     	if (jClass.isLazy(jProperty))
-    		javaImports.add("org.granite.tide.data.Lazy");
+    		javaImports.add("org.granite.client.tide.data.Lazy");
     	
         if (jClass.metaClass.hasProperty(jClass, 'constraints') && jClass.constraints[jProperty] != null) {
         	for (cons in jClass.constraints[jProperty])

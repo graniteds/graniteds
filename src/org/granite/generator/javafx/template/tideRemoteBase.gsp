@@ -22,11 +22,11 @@
     Set javaImports = new TreeSet();
 
 	javaImports.add("java.util.concurrent.Future");
-	javaImports.add("org.granite.tide.server.ServerSession");
-	javaImports.add("org.granite.tide.server.TideResponder");
+	javaImports.add("org.granite.client.tide.server.ServerSession");
+	javaImports.add("org.granite.client.tide.server.TideResponder");
 	
     if (!jClass.hasSuperclass()) {
-    	javaImports.add("org.granite.tide.impl.ComponentImpl");
+    	javaImports.add("org.granite.client.tide.impl.ComponentImpl");
     }
 
     for (jImport in jClass.imports) {

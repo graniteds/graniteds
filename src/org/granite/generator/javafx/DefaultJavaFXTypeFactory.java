@@ -95,13 +95,13 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 	        		genericType = "<" + genericType + ">";
 	        	}
 	            if (property && List.class.isAssignableFrom(jClass)) {
-	                javafxType = new JavaFXType("javafx.collections", "ObservableList" + genericType, null, "org.granite.persistence.javafx.PersistentList" + genericType, null);
+	                javafxType = new JavaFXType("javafx.collections", "ObservableList" + genericType, null, "org.granite.client.persistence.javafx.PersistentList" + genericType, null);
 	            }
 	            else if (property && Set.class.isAssignableFrom(jClass)) {
-	                javafxType = new JavaFXType("javafx.collections", "ObservableList" + genericType, null, "org.granite.persistence.javafx.PersistentSet" + genericType, null);
+	                javafxType = new JavaFXType("javafx.collections", "ObservableList" + genericType, null, "org.granite.client.persistence.javafx.PersistentSet" + genericType, null);
 	            }
 	            else if (property && Map.class.isAssignableFrom(jClass)) {
-	                javafxType = new JavaFXType("javafx.collections", "ObservableMap" + genericType, null, "org.granite.persistence.javafx.PersistentMap" + genericType, null);
+	                javafxType = new JavaFXType("javafx.collections", "ObservableMap" + genericType, null, "org.granite.client.persistence.javafx.PersistentMap" + genericType, null);
 	            }
 	            else if (jClass.getName().equals("com.google.appengine.api.datastore.Key")) {
 	            	javafxType = JavaFXType.STRING;
