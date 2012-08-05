@@ -143,7 +143,7 @@ public class TemplatesPanel extends Composite {
 				for (TreeItem item : templatesTree.getItems())
 					item.dispose();
 
-						initialized = false;
+				initialized = false;
 				initializeContent();
 			}
 		});
