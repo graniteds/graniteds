@@ -1,11 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE preface PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
    "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+   
 <preface>
 	<title>Project Overview</title>
-	<para>
+	<para condition="flex">
 	<emphasis>Granite Data Services</emphasis> (GraniteDS) is a comprehensive development and integration platform for building Flex / Java EE RIA 
 	applications. The framework is completely open source and released under the LGPL v2 license.
+	</para>
+	<para condition="java">
+	<emphasis>Granite Data Services</emphasis> (GraniteDS) is a comprehensive development and integration platform for building RIA applications
+	with a Java EE backend and a Java/JavaFX frontend. The framework is completely open source and released under the LGPL v2 license.
 	</para>
 
 	<para>
@@ -22,8 +27,16 @@
 	The main features of GraniteDS are :
 	<itemizedlist>
 	   <listitem>
-	   An implementation of the <link linkend="graniteds.remoting">Flex remoting</link> protocol and of the AMF3 data format, with out-of-the-box adapters for all usual Java frameworks.
-	   
+	   An implementation of the <link linkend="graniteds.remoting">Adobe AMF remoting</link> protocol and of the AMF3 data format, with out-of-the-box adapters 
+	   for all usual Java frameworks.	   
+	   </listitem>
+	   <listitem>
+	   An implementation of a <link linkend="graniteds.messaging">messaging</link> framework based supporting Comet and Websocket transports 
+	   which can connect to JMS servers.
+	   </listitem>
+	   <listitem>
+	   A <link linkend="graniteds.datamanagement">data management framework</link> which simplifies the handling and synchronization of persistent data through
+	   client and server applications. 
 	   </listitem>
 	</itemizedlist>
 	</para>
@@ -49,7 +62,7 @@
 					Francisco PEREDO: Acegi security support and Spring/Acegi/EJB 3 sample application.
 					</listitem>
 					<listitem>
-					Sébastien DELEUZE (aka Bouiaw): Spring 2 security service.
+					Sebastien DELEUZE (aka Bouiaw): Spring 2 security service.
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -109,7 +122,7 @@
 			<para>
 				<itemizedlist>
 					<listitem>
-					Sébastien DELEUZE (aka Bouiaw) and Marvin FROEDER (aka VELO): A servlet-based compiler that compiles your MXML and ActionScript3 sources on the fly.
+					Sebastien DELEUZE (aka Bouiaw) and Marvin FROEDER (aka VELO): A servlet-based compiler that compiles your MXML and ActionScript3 sources on the fly.
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -161,7 +174,7 @@
 					Marcelo SCHROEDER: Service exception handler.
 					</listitem>
 					<listitem>
-					Sébastien GUIMONT: Initial Java Enum support in Gas3.
+					Sebastien GUIMONT: Initial Java Enum support in Gas3.
 					</listitem>
 					<listitem>
 					Pedro GONCALVES: Improved service method finder for generics.

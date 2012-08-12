@@ -1,6 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
    "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+   
 <chapter id="graniteds.gettingstarted">
 	<title>Getting Started</title>
 	<para>
@@ -9,15 +10,18 @@
         <listitem>
         GraniteDS software requirements.
         </listitem>
-        <listitem>
+        <listitem condition="flex">
         Various example projects using the different kind of services (POJO, EJB 3, Seam, Spring, and Guice) that may help you in choosing the right technology 
         and starting a Flex/GDS project.
         </listitem>
-        <listitem>
+        <listitem condition="flex">
         The complete setup of a basic "Hello, world" GDS project using Flex 3 SDK, Eclipse, and Tomcat.
         </listitem>
-        <listitem>
-        A modification of the sample "Hello, world" project in order to show you basic GDS support of Hibernate with the help of Eclipse plugins.
+        <listitem condition="java">
+        The complete setup of a basic "Hello, world" GDS project using Java, Eclipse, and Tomcat.
+        </listitem>
+        <listitem condition="flex">
+        A modification of the sample "Hello, world" project in order to demonstrate basic GDS support of Hibernate with the help of Eclipse plugins.
         </listitem>
     </itemizedlist>
 	</para>
@@ -34,18 +38,20 @@
             <emphasis>Eclipse 3.2+</emphasis>: <ulink url="http://www.eclipse.org/downloads/">Download Eclipse 3.2+</ulink> and unzip it somewhere (NOTE: It is always a good idea 
             to avoid paths with whitespace). You may, of course, use another IDE, but you will not be able to use Eclipse specific plugins and example projects.
             </listitem>
-            <listitem>
+            <listitem condition="flex">
             <emphasis>Flex 4.1 SDK</emphasis> (3+ supported): Download <ulink url="http://opensource.adobe.com/wiki/display/flexsdk/Download+Flex+4">Flex 4.1 SDK</ulink> 
             and unzip it somewhere (NOTE: idem), say <literal>/flex_sdk_4</literal>.
             </listitem>
         </itemizedlist>
+        </para>
+        <para condition="flex">
         You may also read and follow the recommendations in this 
         <ulink url="http://blog.brokenfunction.com/2007/01/29/how-to-develop-for-flash-on-any-os-for-free/">excellent article</ulink> in order to customize 
         your development environment.
         </para>
     </section>
     
-    <section id="gettingstarted.examples">
+    <section id="gettingstarted.examples" condition="flex">
         <title>Example Projects</title>
         <para>
         Installing and testing GraniteDS sample application is a quick process, provided that you have downloaded 
@@ -54,7 +60,7 @@
         </para>
         <para>
         Let's say you have installed a vanilla JBoss 4.2.3.GA and fresh Flex SDK at the root of your main drive (<literal>C:\jboss-4.2.3.GA</literal> and 
-        <literal>C:\flex_sdk_3</literal> on Windows).
+        <literal>C:\flex_sdk_4_1</literal> on Windows).
         </para>
         <para>
         Follow these few steps:
@@ -86,7 +92,7 @@
         </para>
     </section>
     
-    <section id="gettingstarted.helloworld">
+    <section id="gettingstarted.helloworld.flex" condition="flex">
         <title>Hello World, POJO</title>
         <para>
         This section will guide you through the setting up of a very basic GraniteDS project deployed in Tomcat. Expected result is a typical 
@@ -115,15 +121,15 @@
             <emphasis>Java 5+</emphasis> (6+ working): Download <ulink url="http://java.sun.com/javase/downloads/index.jsp">Sun JDK</ulink> and install it.
             </listitem>
             <listitem>
-            <emphasis>Eclipse 3.3+</emphasis>: Download <ulink url="http://www.eclipse.org/downloads/">Eclipse</ulink> and unzip it somewhere.            
+            <emphasis>Eclipse 3.5+</emphasis>: Download <ulink url="http://www.eclipse.org/downloads/">Eclipse</ulink> and unzip it somewhere.            
             </listitem>
             <listitem>
-            <emphasis>Flex 3 SDK</emphasis>: Download <ulink url="http://www.adobe.com/products/flex/flexdownloads/">Flex 3 SDK</ulink> and unzip it somewhere. 
-            For example, <literal>/flex_3_sdk</literal> (for Windows users: <literal>C:\flex_3_sdk</literal>).            
+            <emphasis>Flex 4.6 SDK</emphasis>: Download <ulink url="http://www.adobe.com/devnet/flex/flex-sdk-download.html">Flex 4.6 SDK</ulink> and unzip it somewhere. 
+            For example, <literal>/flex_4_6_sdk</literal> (for Windows users: <literal>C:\flex_4_6_sdk</literal>).            
             </listitem>
             <listitem>
-            <emphasis>Tomcat 6+</emphasis>: Download <ulink url="http://tomcat.apache.org/download-60.cgi">Tomcat</ulink> and unzip it somewhere. For example, 
-            <literal>/apache-tomcat-6.0.18</literal> (for Windows users: <literal>C:\apache-tomcat-6.0.18</literal>).
+            <emphasis>Tomcat 7+</emphasis>: Download <ulink url="http://tomcat.apache.org/download-70.cgi">Tomcat</ulink> and unzip it somewhere. For example, 
+            <literal>/apache-tomcat-7.0.29</literal> (for Windows users: <literal>C:\apache-tomcat-7.0.29</literal>).
             </listitem>
             <listitem>
             <emphasis>granite.jar</emphasis>: You may take it from any of the GraniteDS sample applications or from GraniteDS source distribution in the 
@@ -136,7 +142,10 @@
         </para>
         <para>
         Start Eclipse and create a new Java project named <literal>helloworld</literal>. You may just type in <literal>helloworld</literal> for 
-        <literal>Project name</literal> and accept all other default settings. Because we are going to have two types of sources, Java and Flex MXML, it is 
+        <literal>Project name</literal> and accept all other default settings. 
+        </para>
+        <para>
+        Because we are going to have two types of sources, Java and Flex MXML, it is 
         better to rename the default Java source folder <literal>src</literal> to <literal>java</literal>. You can do this by right-clicking on the 
         <literal>src</literal> source folder and selecting <emphasis>Refactor / Rename</emphasis>.
         </para>
@@ -419,7 +428,317 @@ public String HelloWorldService.sayHello(String name)
         </para>
     </section>
     
-    <section id="gettingstarted.helloworldrev">
+    <section id="gettingstarted.helloworld.java" condition="java">
+        <title>Hello World, POJO</title>
+        <para>
+        This section will guide you through the setting up of a very basic GraniteDS project deployed in Tomcat and a Java command line client. 
+        Expected result is a typical "Hello, world" application.
+        </para>
+        <para>
+        The client program will pass its argument to the remote service and display the result which should be a string:
+        </para>
+        <programlisting role="JAVA">
+<![CDATA["Hello " + <argument> + "!"]]>
+        </programlisting>
+        <!--para>
+        You may download this example project 
+        <ulink url="http://www.graniteds.org/confluence/download/attachments/16875661/helloworld.zip?version=1&amp;modificationDate=1245921645000">here</ulink> 
+        if you don't want to copy-paste the code in the following sections below.
+        </para-->
+        <para>
+        In order to create, build, and deploy this sample application you need these free tools:
+        <itemizedlist>
+            <listitem>
+            <emphasis>Java 6+</emphasis> (6+ working): Download <ulink url="http://java.sun.com/javase/downloads/index.jsp">Sun JDK</ulink> and install it.
+            </listitem>
+            <listitem>
+            <emphasis>Eclipse 3.5+</emphasis>: Download <ulink url="http://www.eclipse.org/downloads/">Eclipse</ulink> and unzip it somewhere.            
+            </listitem>
+            <listitem>
+            <emphasis>Tomcat 7+</emphasis>: Download <ulink url="http://tomcat.apache.org/download-70.cgi/">Tomcat</ulink> and unzip it somewhere. For example, 
+            <literal>/apache-tomcat-7.0.29</literal> (for Windows users: <literal>C:\apache-tomcat-7.0.29</literal>).
+            </listitem>
+            <listitem>
+            <emphasis>granite.jar</emphasis>: You may take it from any of the GraniteDS sample applications or from GraniteDS source distribution in the 
+            <literal>build</literal> folder. Download it <ulink url="http://www.graniteds.org/confluence/display/DOWNLOAD">here</ulink>.            
+            </listitem>
+            <listitem>
+            <emphasis>granite-client.jar</emphasis> and <emphasis>granite-java-client.jar</emphasis>: You may take it from any of the GraniteDS sample applications 
+            or from GraniteDS source distribution in the <literal>build</literal> folder. Download it <ulink url="http://www.graniteds.org/confluence/display/DOWNLOAD">here</ulink>.            
+            </listitem>
+        </itemizedlist>
+        </para>
+        <para>
+        Creation of the project in Eclipse:
+        </para>
+        <para>
+        Start Eclipse and create a new Java project named <literal>helloworld</literal>. You may just type in <literal>helloworld</literal> for 
+        <literal>Project name</literal> and accept all other default settings. 
+        </para>
+        <para>
+        We are now going to create a new POJO service named <literal>HelloWorldService</literal>. Right-click on the <literal>java</literal> source folder 
+        and select <emphasis>New / Class</emphasis>, enter <literal>org.test</literal> for <literal>Package</literal> and <literal>HelloWorldService</literal> 
+        for <literal>Name</literal> in the following dialog, and then click on the <emphasis>Finish</emphasis> button. In the Java source file editor, modify 
+        the code so it is just as follows:
+        </para>
+        <programlisting role="JAVA">
+package org.test;
+
+public class HelloWorldService {
+
+    public String sayHello(String name) {
+        return "Hello " + name + "!";
+    }
+}
+        </programlisting>
+        <para>
+        Next we have to create the GraniteDS configuration file <literal>services-config.xml</literal> and the web application <literal>web.xml</literal> at the root of the project. 
+        </para>
+        <para>
+        Copy and paste the following code into these files:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<services-config>
+
+    <services>
+        <service
+            id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <destination id="helloWorldService">
+                <properties>
+                    <scope>application</scope>
+                    <source>org.test.HelloWorldService</source>
+                </properties>
+            </destination>
+        </service>
+    </services>
+</services-config>]]>
+        </programlisting>
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+                        http://java.sun.com/xml/ns/j2ee/web-app_2_5.xsd">
+
+    <!-- general information about this web application -->
+    <display-name>Hello World</display-name>
+    <description>Hello World Sample Application</description>
+
+    <!-- read services-config.xml file at web application startup -->
+    <listener>
+        <listener-class>org.granite.config.GraniteConfigListener</listener-class>
+    </listener>
+
+    <!-- handle AMF requests ([de]serialization) -->
+    <filter>
+        <filter-name>AMFMessageFilter</filter-name>
+        <filter-class>org.granite.messaging.webapp.AMFMessageFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AMFMessageFilter</filter-name>
+        <url-pattern>/graniteamf/*</url-pattern>
+    </filter-mapping>
+
+    <!-- handle AMF requests (execution) -->
+    <servlet>
+        <servlet-name>AMFMessageServlet</servlet-name>
+        <servlet-class>org.granite.messaging.webapp.AMFMessageServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AMFMessageServlet</servlet-name>
+        <url-pattern>/graniteamf/*</url-pattern>
+    </servlet-mapping>
+
+</web-app>]]>
+        </programlisting>
+        <para>
+        Next we have to build and deploy the server application:
+        </para>
+        <para>
+        Create a folder named <literal>lib</literal> at the root of the project and put <literal>granite.jar</literal> in this folder.
+        Create a new file named <literal>build.xml</literal> at the root of the project and copy/paste the following content into it; you may have to modify <literal>TOMCAT_HOME</literal> 
+        to reflect your environment:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<project name="hello-world" default="deploy">
+
+    <!-- Modify TOMCAT_HOME properties to reflect your environment -->
+    <property name="TOMCAT_HOME" value="/apache-tomcat-7.0.29"/>
+    
+    <!-- Build a war suitable for Tomcat (and other) -->
+    <target name="war">
+        <mkdir dir="build"/>
+        <war destfile="build/helloworld.war" webxml="web.xml">
+            <zipfileset file="services-config.xml" prefix="WEB-INF/flex" />
+            <lib dir="lib"/>
+            <classes dir="bin"/>
+        </war>
+    </target>
+
+    <!-- Deploy the war in Tomcat -->
+    <target name="deploy" depends="war">
+        <copy todir="${TOMCAT_HOME}/webapps" file="build/helloworld.war"/>
+    </target>
+
+</project>]]>
+        </programlisting>
+        <para>
+        You may now right-click on the <literal>build.xml</literal> file and select <emphasis>Run As / Ant Build</emphasis>. This will launch the build process, 
+        create a WAR (Web Archive), and copy it into your Tomcat <literal>webapps</literal> directory.
+        </para>
+        
+        <para>
+        Then start Tomcat. Go to the directory <literal>bin</literal> just under your Tomcat installation directory, <literal>/apache-tomcat-7.0.29/bin</literal> 
+        for example, and double-click on <literal>startup.bat</literal>, or <literal>startup.sh</literal> for Unix/Mac users. After a short while, you should 
+        see in the console that Tomcat has started.
+        </para>
+        <para>
+        You should now see something like the following picture under Eclipse:
+        <imagedata align="center" fileref="images/hwservicej.jpg"/>
+        </para>
+        
+        <para>
+        Now let create the Java client code, for this example we are simply going to create a command line application but we could use any Java view technology,
+        such as Swing, JavaFX or SWT. 
+        </para>
+        <para>
+        Create a new Java project named <literal>helloworld-client</literal>. Create a new class directly in this new folder and name it <literal>HelloWorldClient</literal> 
+        in the package <literal>org.test.client</literal> by right-clicking on the <literal>src</literal> folder and selecting <emphasis>New / Class</emphasis>. In the editor, type in the following code:
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[package org.test.client;
+
+import java.net.URI;
+import java.util.concurrent.TimeUnit;
+
+import org.granite.client.messaging.RemoteService;
+import org.granite.client.messaging.ResultFaultIssuesResponseListener;
+import org.granite.client.messaging.channel.amf.AMFRemotingChannel;
+import org.granite.client.messaging.events.FaultEvent;
+import org.granite.client.messaging.events.IssueEvent;
+import org.granite.client.messaging.events.ResultEvent;
+import org.granite.client.messaging.transport.apache.ApacheAsyncTransport;
+
+public class HelloWorldClient {
+
+	public static void main(String[] args) throws Exception {
+		ApacheAsyncTransport transport = new ApacheAsyncTransport();
+		transport.start();
+		AMFRemotingChannel channel = new AMFRemotingChannel(transport, "graniteamf", new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"));		
+		RemoteService service = new RemoteService(channel, "helloWorldService");
+		service.newInvocation("sayHello", args[0]).setTimeToLive(5, TimeUnit.SECONDS).addListener(new ResultFaultIssuesResponseListener() {			
+			@Override
+			public void onResult(ResultEvent event) {
+				System.out.println("Result: " + event.getResult());
+			}
+			
+			@Override
+			public void onFault(FaultEvent event) {
+				System.err.println("Fault: " + event.toString());
+			}
+			
+			@Override
+			public void onIssue(IssueEvent event) {
+				System.err.println("Issue: " + event.toString());
+			}
+		}).invoke();
+	}
+}]]>
+        </programlisting>
+        
+        <para>
+        You will also need to add a few libraries in a <literal>lib</literal> folder and add them to the build path of the project with <emphasis>Right Click/Build Path/Add to Builder Path</emphasis>:
+        <itemizedlist>
+        	<listitem><literal>httpclient-4.2.1.jar</literal></listitem>
+        	<listitem><literal>httpcore-4.2.1.jar</literal></listitem>
+        	<listitem><literal>httpcore-nio-4.2.1.jar</literal></listitem>
+        	<listitem><literal>httpasyncclient-4.0-beta2-SNAPSHOT.jar</literal></listitem>
+        	<listitem><literal>httpclient-4.2.1.jar</literal></listitem>
+        	<listitem><literal>granite-client.jar</literal></listitem>
+        	<listitem><literal>granite-java-client.jar</literal></listitem>
+        </itemizedlist>
+        </para>
+        
+        <para>
+		You may now run the Java application in Eclipse by right-clicking the class <literal>HelloWorldClient</literal>
+        and <emphasis>Run As.../Java Application</emphasis>.        
+        The result should appear in the Eclipse console. You can test different results by changing the run arguments in the Eclipse Run configuration for the application.
+        </para>
+        
+        <para>
+        Here are some highlights on some parts of the code and configuration:
+        </para>
+        <programlisting role="JAVA">
+public String HelloWorldService.sayHello(String name)
+        </programlisting>
+        <para>
+        The <literal>HelloWorldService</literal> is a simple Java service which declares a method <literal>sayHello()</literal> that takes a <literal>String</literal> argument 
+        and returns another <literal>String</literal>.
+        </para>
+        <programlisting role="XML">
+<![CDATA[<destination id="helloWorldService">
+    <channel ref="my-graniteamf"/>
+    <scope>application</scope>
+    <source>org.test.HelloWorldService</source>
+</destination>]]>
+		</programlisting>
+		<para>
+		This part of the <literal>services-config.xml</literal> defines a mapping between a destination name and the service class and its scope. This is a basic declaration for an application scoped
+		bean that will be created by GraniteDS itself but there are other kinds of configurations that give access to beans managed by an existing container such as Spring, or that use annotations
+		to declare the remoting-enabled classes. 
+		</para>
+        <programlisting role="XML">
+<![CDATA[<url-pattern>/graniteamf/*</url-pattern>]]>
+		</programlisting>
+		<para>
+		This part of <literal>web.xml</literal> defines the mapping between the target url and the GraniteDS servlet. Other kinds of configuration are also possible which use a Spring MVC dispatcher
+		servlet or use Servlet 3 features to automatically initialize the GraniteDS servlet. <literal>/graniteamf/*</literal> is the default and recommended url mapping for GraniteDS, but any other
+		can work.
+		</para>
+        <programlisting role="JAVA">
+ApacheAsyncTransport transport = new ApacheAsyncTransport();
+transport.start();
+AMFRemotingChannel channel = new AMFRemotingChannel(transport, "my-graniteamf", new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"));
+RemoteService srv = new RemoteService(channel, "helloWorldService");
+        </programlisting>
+        <para>
+        This is the initialization part of the GraniteDS Java client. It requires creating a transport (here the default transport based on the Apache asynchronous HTTP client), a remoting channel
+        and a <literal>RemoteService</literal> whose target destination matches the destination we declared earlier in the server configuration.
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[srv.newInvocation("sayHello", args[0]).setTimeToLive(5, TimeUnit.SECONDS).addListener(new ResultFaultIssuesResponseListener() {			
+	@Override
+	public void onResult(ResultEvent event) {
+		System.out.println("Result: " + event.getResult());
+	}
+	
+	@Override
+	public void onFault(FaultEvent event) {
+		System.err.println("Fault: " + event.toString());
+	}
+	
+	@Override
+	public void onIssue(IssueEvent event) {
+		System.err.println("Issue: " + event.toString());
+	}
+}).invoke();]]>
+        </programlisting>
+        <para>
+        This is the main client part where the <literal>RemoteService</literal> triggers a server request that will call the 
+        <literal>sayHello()</literal> method with the first argument of the <literal>main</literal> method: 
+        <literal>srv.sayHello(args[0])</literal>.
+        </para>
+        <para>
+        The result of this call will be displayed, when available, in the console output in the asynchronous result handler of the remote call.
+        </para>
+    </section>
+    
+    <section id="gettingstarted.helloworldrev" condition="flex">
         <title>Hello World, revisited with EJB3</title>
         <para>
         This tutorial shows an evolution of the basic "Hello, world" example application with some Hibernate persistence operations (JPA). When finished and 
