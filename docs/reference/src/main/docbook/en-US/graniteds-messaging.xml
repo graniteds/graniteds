@@ -288,12 +288,12 @@ consumerFrance.subscribe();
                         </row>
                         <row>
                             <entry>GlassFish 3.x</entry>
-                            <entry><literal>org.granite.gravity.async.GravityAsyncServlet</literal></entry>
+                            <entry><literal>org.granite.gravity.servlet3.GravityAsyncServlet</literal></entry>
                             <entry>Using Servlet 3.0</entry>
                         </row>
                         <row>
                             <entry>Tomcat 7.x / Jetty 8.x</entry>
-                            <entry><literal>org.granite.gravity.async.GravityAsyncServlet</literal></entry>
+                            <entry><literal>org.granite.gravity.servlet3.GravityAsyncServlet</literal></entry>
                             <entry>Using Servlet 3.0</entry>
                         </row>
                         <row>
