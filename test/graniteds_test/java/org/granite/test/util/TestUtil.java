@@ -1,6 +1,6 @@
 package org.granite.test.util;
 
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,7 +11,7 @@ public class TestUtil {
 		Object[][] array = new Object[10][10];
 		boolean npe = false;
 		try {
-			ClassUtil.findResource(array.getClass());
+			TypeUtil.findResource(array.getClass());
 		}
 		catch (NullPointerException e) {
 			npe = true;

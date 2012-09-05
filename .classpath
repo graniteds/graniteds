@@ -20,8 +20,8 @@
 	<classpathentry kind="lib" path="lib/jpa-2.0-api.jar"/>
 	<classpathentry kind="lib" path="lib/ejb-api.jar"/>
 	<classpathentry kind="lib" path="lib/catalina7.jar"/>
-	<classpathentry kind="lib" path="lib/catalina.jar"/>
 	<classpathentry kind="lib" path="lib/tomcat7-coyote.jar"/>
+	<classpathentry kind="lib" path="lib/catalina.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-util-6.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/commons-el.jar"/>
 	<classpathentry kind="lib" path="lib/jbossmq.jar"/>

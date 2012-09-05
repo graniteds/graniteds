@@ -11,6 +11,8 @@ package org.granite.test.tide {
     import flash.utils.IDataOutput;
     import flash.utils.IExternalizable;
     
+    import mx.data.utils.Managed;
+    
     import org.granite.collections.IPersistentCollection;
     import org.granite.meta;
     import org.granite.ns.tide;
@@ -139,10 +141,10 @@ package org.granite.test.tide {
                 output.writeObject(_id);
             }
         }
-        
-        [Bindable(event="dirtyChange")]
-        public function get meta_dirty():Boolean {
-        	return entityManager ? entityManager.meta_isEntityChanged(this) : true;
-        }
+		
+		[Bindable(event="dirtyChange")]
+		public function get meta_dirty():Boolean {
+			return Managed.getProperty(this, "meta_dirty", false);
+		}        
     }
 }
