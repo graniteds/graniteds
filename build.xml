@@ -67,6 +67,7 @@
                 <include name="appserv-rt.jar"/>
                 <include name="catalina7.jar"/>
                 <include name="catalina.jar"/>
+                <include name="tomcat7-coyote.jar"/>
                 <include name="interceptor-api.jar"/>
                 <include name="jboss-j2ee.jar"/>
                 <include name="cdi-api.jar"/>
