@@ -65,6 +65,7 @@
             <fileset dir="lib">
                 <include name="appengine*.jar"/>
                 <include name="appserv-rt.jar"/>
+                <include name="catalina7.jar"/>
                 <include name="catalina.jar"/>
                 <include name="interceptor-api.jar"/>
                 <include name="jboss-j2ee.jar"/>
@@ -77,6 +78,7 @@
                 <include name="jboss-vfs*.jar"/>
                 <include name="weblogic*.jar"/>
                 <include name="jetty*.jar"/>
+            	<include name="grizzly*.jar"/>
                 <include name="log4j.jar"/>
         	</fileset>
         </path>
