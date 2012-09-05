@@ -65,9 +65,6 @@
             <fileset dir="lib">
                 <include name="appengine*.jar"/>
                 <include name="appserv-rt.jar"/>
-                <include name="catalina7.jar"/>
-                <include name="catalina.jar"/>
-                <include name="tomcat7-coyote.jar"/>
                 <include name="interceptor-api.jar"/>
                 <include name="jboss-j2ee.jar"/>
                 <include name="cdi-api.jar"/>
@@ -87,7 +84,11 @@
         <!-- core -->
         <mkdir dir="classes/core"/>
         <javac destdir="classes/core" srcdir="core" classpathref="gds.classpath"
-            target="1.5" source="1.5" debug="true" />
+            target="1.5" source="1.5" debug="true">
+        	<classpath>
+                <pathelement location="lib/catalina7.jar"/>
+        	</classpath>
+        </javac>
         <copy todir="classes/core">
             <fileset dir="core">
                 <include name="org/granite/config/*.dtd"/>
@@ -103,12 +104,15 @@
         <mkdir dir="classes/gravity"/>
         <javac destdir="classes/gravity" srcdir="gravity" target="1.5" source="1.5" debug="true">
             <classpath>
-                <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
+                <pathelement location="lib/tomcat7-coyote.jar"/>
+                <pathelement location="lib/catalina7.jar"/>
+                <path refid="gds.classpath"/>
             	<pathelement location="lib/jboss-j2ee.jar"/>
+                <pathelement location="lib/catalina.jar"/>
+                <pathelement location="lib/jbossweb.jar"/>
                 <pathelement location="lib/apache-activemq.jar"/>
                 <pathelement location="lib/jbossmq.jar"/>
-                <pathelement location="lib/jbossweb.jar"/>
                 <pathelement location="lib/jboss-seam.jar"/>
             </classpath>
         </javac>
@@ -264,6 +268,7 @@
                 <pathelement location="lib/org.springframework.orm.jar"/>
                 <pathelement location="lib/org.springframework.web.jar"/>
                 <pathelement location="lib/org.springframework.web.servlet.jar"/>
+                <pathelement location="lib/spring-data-commons-core.jar"/>
                 <pathelement location="lib/spring-security-core-3.0.jar"/>
                 <pathelement location="lib/spring-security-web-3.0.jar"/>
                 <pathelement location="lib/spring-security-core-2.0.4.jar"/>
