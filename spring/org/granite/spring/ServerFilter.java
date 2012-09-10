@@ -57,9 +57,9 @@ import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.ModelAndView;
 
 
-public class FlexFilter implements InitializingBean, ApplicationContextAware, ServletContextAware, HandlerAdapter {
+public class ServerFilter implements InitializingBean, ApplicationContextAware, ServletContextAware, HandlerAdapter {
 	
-    private static final Logger log = Logger.getLogger(FlexFilter.class);
+    private static final Logger log = Logger.getLogger(ServerFilter.class);
 	
     private ApplicationContext context = null;
     private ServletContext servletContext = null;
@@ -258,6 +258,6 @@ public class FlexFilter implements InitializingBean, ApplicationContextAware, Se
     }
 
 	public boolean supports(Object handler) {
-		return handler instanceof FlexFilter;
+		return handler instanceof ServerFilter;
 	}
 }

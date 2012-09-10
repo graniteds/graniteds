@@ -30,7 +30,7 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 public class GranitedsNamespaceHandler extends NamespaceHandlerSupport {
 
     public void init() {
-        registerBeanDefinitionParser("flex-filter", new FlexFilterBeanDefinitionParser());
+        registerBeanDefinitionParser("server-filter", new ServerFilterBeanDefinitionParser());
         registerBeanDefinitionParser("security-service", new SecurityServiceBeanDefinitionParser());
         registerBeanDefinitionParser("remote-destination", new RemoteDestinationBeanDefinitionParser());
         registerBeanDefinitionParser("messaging-destination", new MessagingDestinationBeanDefinitionParser());

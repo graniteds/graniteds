@@ -61,14 +61,14 @@ import org.jboss.seam.web.AbstractFilter;
 
 
 @Scope(ScopeType.APPLICATION)
-@Name("org.granite.seam.flexFilter")
+@Name("org.granite.seam.serverFilter")
 @Startup
 @Install(precedence=Install.BUILT_IN, value=false, classDependencies={"org.granite.seam21.Seam21GraniteConfig"})
 @BypassInterceptors
 @org.jboss.seam.annotations.web.Filter
-public class FlexFilter extends AbstractFilter {
+public class ServerFilter extends AbstractFilter {
 	
-    private static final Logger log = Logger.getLogger(FlexFilter.class);
+    private static final Logger log = Logger.getLogger(ServerFilter.class);
 	
     private FilterConfig config = null;
     private GraniteConfig graniteConfig = null;
@@ -84,7 +84,7 @@ public class FlexFilter extends AbstractFilter {
     private boolean tide = false;
     
     
-    public FlexFilter() {
+    public ServerFilter() {
     	super();
     	setUrlPattern("/graniteamf/*");
     }

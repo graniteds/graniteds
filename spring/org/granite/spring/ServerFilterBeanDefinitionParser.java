@@ -39,9 +39,9 @@ import org.w3c.dom.Element;
 /**
  * @author William Drai
  */
-public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
+public class ServerFilterBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
-    private static final String FLEX_FILTER_BEAN_NAME = "org.granite.spring.FlexFilter";
+    private static final String SERVER_FILTER_BEAN_NAME = "org.granite.spring.ServerFilter";
 
     private static final String GRANITE_CONFIG_BEAN_NAME = "org.granite.spring.SpringGraniteConfig";
     
@@ -56,7 +56,7 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
             parserContext.extractSource(element));
         parserContext.pushContainingComponent(componentDefinition);
 
-        element.setAttribute(ID_ATTRIBUTE, FLEX_FILTER_BEAN_NAME);
+        element.setAttribute(ID_ATTRIBUTE, SERVER_FILTER_BEAN_NAME);
         
         mapOptionalAttributes(element, parserContext, builder, "tide");
         
@@ -136,7 +136,7 @@ public class FlexFilterBeanDefinitionParser extends AbstractSingleBeanDefinition
 
     @Override
     protected String getBeanClassName(Element element) {
-        return FlexFilter.class.getName();
+        return ServerFilter.class.getName();
     }
 
     private void configureGraniteDS(Element parent, ParserContext parserContext, Element graniteConfigElement) {

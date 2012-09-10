@@ -39,7 +39,7 @@ import org.granite.messaging.service.security.SecurityService;
 @Inherited
 @Retention(RUNTIME)
 @Target({TYPE})
-public @interface FlexFilter {
+public @interface ServerFilter {
 	
 	String graniteUrlMapping() default "/graniteamf/*";
 	

@@ -49,7 +49,7 @@ import org.granite.config.flex.Factory;
 import org.granite.config.flex.Service;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
-import org.granite.config.servlet3.FlexFilter;
+import org.granite.config.servlet3.ServerFilter;
 import org.granite.jmx.GraniteMBeanInitializer;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer;
@@ -152,7 +152,7 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
         GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(context);
         ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(context);
     	
-        FlexFilter flexFilter = flexFilterClass.getAnnotation(FlexFilter.class);
+        ServerFilter flexFilter = flexFilterClass.getAnnotation(ServerFilter.class);
         
         ConfigProvider configProvider = null;
         
