@@ -13,11 +13,19 @@
 	<para> 
 	The Comet implementation is freely based on the <ulink url="http://cometd.com/bayeux/Bayeux">Bayeux</ulink> 
 	protocol specification (1.0draft1 at this time) and adapted from the Jetty 6.1.x implementation of a comet server. 
+	</para>
+	<para>
 	The WebSocket server implementation uses the native WebSocket capabilities of the deployment application server when available (Tomcat 7.0.29+, GlassFish 3.1.2+, Jetty 8.1.1+)
-	or can also use an embedded Jetty server. The WebSocket client is a modified version of the Flash WebSocket client developed by Hiroshi Ichikawa (gimite) that can be found
+	or can alternatively use an embedded Jetty server.
+	</para>
+	<para condition="flex">
+	The WebSocket client is a modified version of the Flash WebSocket client developed by Hiroshi Ichikawa (gimite) that can be found
 	<ulink url="https://github.com/gimite/web-socket-js">here</ulink>.
 	</para>
-
+	<para condition="java">
+	The WebSocket client uses by default the Jetty WebSocket client library.
+	</para>
+	
     <para condition="flex">
     For a basic sample of GDS/Gravity, download <literal>graniteds-***.zip</literal> and import the <literal>examples/graniteds_chat</literal> as a new project in Eclipse.
 	</para>
@@ -84,6 +92,32 @@ private function send(message:String):void {
 	   <literal>String</literal> messages as well. These <literal>Strings</literal> are sent in <literal>AsyncMessage</literal> envelopes, 
 	   which is the only envelope type allowed in GDS.
 	   </para>
+	   
+	   <para>
+	   This example can work with either a Comet or a WebSocket channel implementation.
+	   The channel definition for Comet would be, assuming the Comet servlet is mapped to <literal>/gravityamf/*</literal>:
+	   </para>
+	   <programlisting role="XML">
+<![CDATA[<channels>
+	<channel-definition id="gravityamf" class="org.granite.gravity.channels.GravityChannel">
+	    <endpoint
+	        uri="http://{server.name}:{server.port}/{context.root}/gravityamf/amf"
+	        class="flex.messaging.endpoints.AMFEndpoint"/>
+	</channel-definition>
+</channels>]]>
+	   </programlisting>
+	   <para>
+	   For a WebSocket channel, assuming the WebSocket servlet is mapped to <literal>/websocketamf/*</literal>:
+	   </para>
+	   <programlisting role="XML">
+<![CDATA[<channels>
+	<channel-definition id="gravityamf" class="org.granite.gravity.channels.WebSocketChannel">
+	    <endpoint
+	        uri="http://{server.name}:{server.port}/{context.root}/websocketamf/amf"
+	        class="flex.messaging.endpoints.AMFEndpoint"/>
+	</channel-definition>
+</channels>]]>
+	   </programlisting>
 	</section>
 	
 	<section id="messaging.example.java" condition="java">
@@ -94,9 +128,8 @@ private function send(message:String):void {
 	   </para>
 	   
 	   <para>
-       Here is a quick example of GDS <literal>Consumer</literal>/<literal>Producer</literal> usage:
-	   </para>
-	   
+       Here is a quick example of GDS <literal>Consumer</literal>/<literal>Producer</literal> usage with a Comet/long-polling channel:
+	   </para>	   
 	   <programlisting role="JAVA">
 <![CDATA[...
 import org.granite.client.messaging.Consumer;
@@ -146,6 +179,54 @@ public void test() {
 	   In this code, the producer sends <literal>String</literal> messages, which could of course be of any type, and the producer receives 
 	   <literal>String</literal> messages as well.
 	   </para>
+	   
+	   <para>
+       The same with a WebSocket channel:
+	   </para>	   
+	   <programlisting role="JAVA">
+<![CDATA[...
+import org.granite.client.messaging.Consumer;
+import org.granite.client.messaging.Producer;
+...
+
+public void test() {
+	WebSocketTransport transport = new JettyWebSocketTransport();		
+	AMFMessagingChannel channel = new AMFMessagingChannel(transport, "websocketamf", new URI("http://localhost:8080/myapp/websocketamf/amf"));	
+	transport.start();
+	
+    Consumer consumer = new Consumer(channel, "chat", "discussion");
+	consumer.addMessageListener(new TopicMessageListener() {
+		@Override
+		public void onMessage(TopicMessageEvent event) {
+			System.out.println(event.getData());
+		}
+	});
+	
+	ResponseMessageFuture future = consumer.subscribe(new ResultFaultIssuesResponseListener() {
+		@Override
+		public void onResult(ResultEvent event) {
+			System.out.println("onSubscribeSuccess");
+		}
+
+		@Override
+		public void onFault(FaultEvent event) {
+			System.out.println("onSubscribeFault");
+		}
+
+		@Override
+		public void onIssue(IssueEvent event) {
+			System.out.println("onSubscribeIssue");
+		}
+	});
+	future.get();
+	
+    producer = new Producer(channel, "chat", "discussion");
+	producer.publish("Hello world").get();
+	
+	Thread.sleep(1000);
+}
+...]]>
+	   </programlisting>
 	</section>
 	
     <section id="messaging.selectors">
@@ -437,6 +518,38 @@ consumerFrance.subscribe(new ResponseListener() { ... }).get();
                 </tgroup>
             </informaltable>
             </para>
+	   </section>
+	   
+	   <section id="messaging.flashpolicy.websocket" condition="flex">
+	       <title>Flash Policy server for WebSocket</title>
+	       <para>
+	       The Flash WebSocket implementation requires the use of a Flash socket policy server for security reasons 
+	       (see <ulink url="http://www.adobe.com/devnet/flashplayer/articles/socket_policy_files.html">here</ulink>).
+	       </para>
+	       <para>
+	       GraniteDS includes a basic Flash policy server than can be started by simply adding the following to your <literal>web.xml</literal>: 
+	       </para>
+	       <programlisting role="XML">
+<![CDATA[<context-param>
+    	<param-name>flashPolicyFileServer-allowDomains</param-name>
+    	<param-value>*:*</param-value>
+    </context-param>
+    <listener>
+    	<listener-class>org.granite.gravity.websocket.PolicyFileServerListener</listener-class>
+    </listener>]]>
+	       </programlisting>
+	       <para>
+	       The server accepts two properties:
+	       <itemizedlist>
+	       		<listitem><para>
+				<literal>flashPolicyFileServer-port</literal>: the port on which the server listens (by default 843).
+	       		</para></listitem>
+	       		<listitem><para>
+	       		<literal>flashPolicyFileServer-allowDomains</literal>: a list of allowed domains separated by commas. It is used to build the requested
+	       		<literal>cross-domain-policy</literal> response file.
+	       		</para></listitem>
+	       </itemizedlist> 
+	       </para>
 	   </section>
 	   
 	   <section id="messaging.configadvanced">
