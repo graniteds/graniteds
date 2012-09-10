@@ -18,11 +18,11 @@
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-spring.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-seam2.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-ee6cdi.xml" />
-    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-validation.xml" />
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-validation-flex.xml" />
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-reflection.xml" />
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-bignumbers.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-tideframework.xml" />
-   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-datamanagement.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-datamanagement-flex.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-extensibility.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-configuration.xml" />
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-appendix.xml" />

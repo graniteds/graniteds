@@ -3,7 +3,7 @@
    "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
    
 <preface>
-	<title>Project Overview</title>
+	<title>Project overview</title>
 	<para condition="flex">
 	<emphasis>Granite Data Services</emphasis> (GraniteDS) is a comprehensive development and integration platform for building Flex / Java EE RIA 
 	applications. The framework is completely open source and released under the LGPL v2 license.
@@ -13,7 +13,7 @@
 	with a Java EE backend and a Java/JavaFX frontend. The framework is completely open source and released under the LGPL v2 license.
 	</para>
 
-	<para>
+	<para condition="flex">
 	Integration and features stack :
 	
 	<imagedata align="center" fileref="images/stack.jpg"/>
@@ -42,7 +42,7 @@
 	</para>
 	
 	<formalpara>
-		<title>Who We Are</title>
+		<title>Who we are</title>
 		<para>
 		The core development team is Franck Wolff and William Draï, two engineers from Granite Data Services.
 		</para>
@@ -52,7 +52,7 @@
 		</para>
 		
 		<formalpara id="overview.spring">
-			<title>Spring Integration</title>
+			<title>Spring integration</title>
 			<para>
 				<itemizedlist>
 					<listitem>
@@ -78,7 +78,7 @@
 			</para>
 		</formalpara>
 		<formalpara id="overview.guice">
-			<title>Guice/Warp Integration</title>
+			<title>Guice/Warp integration</title>
 			<para>
 				<itemizedlist>
 					<listitem>
@@ -88,7 +88,7 @@
 			</para>
 		</formalpara>
 		<formalpara id="overview.grails">
-			<title>Grails Plugin</title>
+			<title>Grails plugin</title>
 			<para>
 				<itemizedlist>
 					<listitem>
@@ -98,7 +98,7 @@
 			</para>
 		</formalpara>
 		<formalpara id="overview.osgi">
-			<title>OSGi Integration</title>
+			<title>OSGi integration</title>
 			<para>
 				<itemizedlist>
 					<listitem>
@@ -118,7 +118,7 @@
 			</para>
 		</formalpara>
 		<formalpara id="overview.webcompiler">
-			<title>Web MXML/ActionScript3 Compiler</title>
+			<title>Web MXML/ActionScript3 compiler</title>
 			<para>
 				<itemizedlist>
 					<listitem>
@@ -128,7 +128,7 @@
 			</para>
 		</formalpara>
 		<formalpara id="overview.maven">
-			<title>Maven Integration</title>
+			<title>Maven integration</title>
 			<para>
 				<itemizedlist>
 					<listitem>
@@ -141,7 +141,7 @@
 			</para>
 		</formalpara>
 		<formalpara id="overview.gas3">
-			<title>ActionScript3 Code Generation</title>
+			<title>ActionScript3 code generation</title>
 			<para>
 				<itemizedlist>
 					<listitem>
@@ -164,7 +164,7 @@
 			</para>
 		</formalpara>
 		<formalpara id="overview.other">
-			<title>Other Contributions</title>
+			<title>Other contributions</title>
 			<para>
 				<itemizedlist>
 					<listitem>

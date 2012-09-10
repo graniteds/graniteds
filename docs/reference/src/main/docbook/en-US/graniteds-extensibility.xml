@@ -7,8 +7,8 @@
 	<para>
 	</para>
 	
-	<section id="extensibility.customtypes">
-	   <title>Handling Custom Data Types</title>
+	<section id="extensibility.customtypes" condition="flex">
+	   <title>Handling custom data types</title>
 	   <para>
 	   If you need special type conversion support, like Joda time to regular AS3 Date, you may write a custom converter/reverter.
 	   </para>
@@ -165,7 +165,7 @@ public class CustomAs3TypeFactory extends DefaultAs3TypeFactory {
 	</section>
             
     <section id="extensibility.security">
-        <title>Writing a Security Service</title>
+        <title>Writing a security service</title>
         <para>
         GraniteDS implements security based on the following <literal>SecurityService</literal> interface. 
         Note that the term <literal>Service</literal> in <literal>SecurityService</literal> has nothing to do with a true Flex destination, since security services 
@@ -200,10 +200,10 @@ public interface SecurityService {
    
            <para>
            <itemizedlist>
-               <listitem>
+               <listitem><para>
                <literal>configure</literal>: This method is called at startup time and gives a chance to pass parameters to the security service.
-               </listitem>
-               <listitem>
+               </para></listitem>
+               <listitem><para>
                <literal>login</literal>: This method is called when you call one of the <literal>setCredentials</literal> or <literal>setRemoteCredentials</literal> 
                <literal>RemoteObject</literal>'s method. Note that these method calls do not fire any request by themselves but only pass credentials on 
                the next destination service method call. The <literal>login</literal> method is responsible for creating and exposing a <literal>java.security.Principal</literal> 
@@ -211,8 +211,8 @@ public interface SecurityService {
                Note that credentials are a Base64 string with the common <literal>"username:password"</literal> format. An additional login
                method with an extra <literal>charset</literal> parameter is available, so you can use the <literal>RemoteObject.setCredentials(user, pass, charset)</literal>
                method and specify the charset used in the username/password string (default is ISO-8859-1).
-               </listitem>
-               <listitem>
+               </para></listitem>
+               <listitem><para>
                <literal>authorize</literal>: This method is called upon each and every service method call invocations (<literal>RemoteObject</literal>) 
                or subscribe/publish actions (<literal>Consumer</literal>/<literal>Producer</literal>). When used with <literal>RemoteObject</literal>s, 
                the <literal>authorize</literal> method is responsible for checking security, calling the service method, and returning the corresponding result. 
@@ -220,22 +220,22 @@ public interface SecurityService {
                no service method invocation, no result. 
                If authorization fails, either because the user is not logged in or because it doesn't have required rights, it must throw an appropriate 
                <literal>org.granite.messaging.service.security.SecurityServiceException</literal>.
-               </listitem>
-               <listitem>
+               </para></listitem>
+               <listitem><para>
                <literal>logout</literal>: This method is called when you call the <literal>RemoteObject</literal>'s <literal>logout</literal> method. 
                Note that the <literal>RemoteObject.logout</literal> method fires a remote request by itself.
-               </listitem>
-               <listitem>
+               </para></listitem>
+               <listitem><para>
                <literal>handleSecurityException</literal>: This method is called whenever a <literal>SecurityServiceException</literal> is thrown by 
                a login or logout operation. The default implementation of this method in <literal>AbstractSecurityService</literal> is to do nothing, 
                but you may add extra care for these security exceptions if you need so.
-               </listitem>
+               </para></listitem>
            </itemizedlist>
          </para>
      </section>
 	
 	<section id="extensibility.exceptionhandlers">
-	   <title>Custom Exception Handlers</title>
+	   <title>Custom exception handlers</title>
 	   <para>
 	   The default exception handling mechanism of GraniteDS already provides a lot of flexibility with exception converters that can transform the exceptions
 	   caught on the server to meaningful errors on the Flex side. However if you need even more flexibility, you can completely replace the handling mechanism
@@ -297,7 +297,7 @@ public ServiceException handleInvocationException(
 	</section>
 	
 	<section id="extensibility.messageinterceptor">
-	   <title>Server Message Interceptors</title>
+	   <title>Server message interceptors</title>
 	   <para>
 	   If you need to do some actions before and after each remote call, such as setting or accessing message headers, or doing some setup before request handling, 
 	   you can configure a custom <literal>AMF3MessageInterceptor</literal> in <literal>granite-config.xml</literal> :
@@ -331,7 +331,7 @@ public ServiceException handleInvocationException(
         </para>
     </section>
     
-    <section id="extensibility.classdescriptors">
+    <section id="extensibility.classdescriptors" condition="flex">
         <title>Custom Java or ActionScript3 Class Descriptors</title>
         <para>
         When a Java object is not <literal>Externalizable</literal> nor externalized by a GDS externalizer, it is serialized by means of the 
@@ -409,7 +409,7 @@ public ServiceException handleInvocationException(
     </section>
     
     <section id="extensibility.customser">
-        <title>Custom AMF3 (De)Serializers</title>
+        <title>Custom AMF3 (De)Serializers (Advanced use only)</title>
         <para>
         You may plug your own AMF3 serializer/deserializer.
         A custom AMF3 serializer must implement <literal>java.io.ObjectOutput</literal> and have a special constructor signature:

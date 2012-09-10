@@ -10,23 +10,23 @@
 	This chapter will describe various options, and common combinations of technologies.
 	</para>
 	
-	<section id="client">
-		<title>Client Options</title>
+	<section id="client.flex" condition="flex">
+		<title>Client options</title>
 		<para>
 		On the client there are two main choices :
 		
 		<itemizedlist>
-			<listitem>
+			<listitem><para>
 			Use the standard Flex <literal>RemoteObject</literal> API. This is the easiest if you migrate an existing application from BlazeDS/LCDS/whatever AMF provider. 
 			Note however that GraniteDS does not support the standard <literal>Consumer</literal> and <literal>Producer</literal> Flex messaging API. 
 			It brings its own client implementations of these classes <literal>org.granite.gravity.Consumer</literal> and <literal>org.granite.gravity.Producer</literal> that provide very similar functionality.
-			</listitem>
+			</para></listitem>
 			
-			<listitem>
+			<listitem><para>
 			Use the <emphasis>Tide</emphasis> remoting API with the GraniteDS/Tide server framework integration (supporting Spring, Seam, EJB3 and CDI). 
 			It provides the most advanced features and greatly simplifies asynchronous handling and client data management. 
 			It should be preferred for new projects or if you want to benefit from all GraniteDS functionalities.
-			</listitem>
+			</para></listitem>
 		</itemizedlist>
 		</para>
 		
@@ -44,35 +44,68 @@
 		</para>
 	</section>
 	
+	<section id="client.java" condition="java">
+		<title>Client options</title>
+		<para>
+		There are two main use cases for the GraniteDS Java client. The first is to help testing of GraniteDS-enabled services outside of a Flex environment, the other is for building rich client
+		applications with any Java view technology (Swing, SWT, JavaFX).
+		</para>
+		<para>
+		Note that the GraniteDS client library provides extensive support for most advanced features of JavaFX 2.1+.
+		</para>
+		<para>
+		There are also two main choices for the client/server API:
+		
+		<itemizedlist>
+			<listitem><para>
+			Use the low-level <literal>RemoteService</literal> API. This is the recommended API if you want to test existing GraniteDS services from a Java client, or do not need 
+			advanced features. 
+			</para></listitem>
+			
+			<listitem><para>
+			Use the <emphasis>Tide</emphasis> remoting API with the GraniteDS/Tide server framework integration (supporting Spring, EJB3 and CDI). 
+			It provides the most advanced features and greatly simplifies asynchronous handling and client data management. 
+			It should be preferred for new projects, JavaFX clients or more generally when you want to benefit from all of GraniteDS functionalities.
+			</para></listitem>
+		</itemizedlist>
+		</para>
+		
+		<para>
+		The Tide remoting API and data management framework include a very minimalistic client application framework (event bus, component container...) and may be 
+		integrated with more robust frameworks such a Spring. There is a built-in Spring client integration, and a SPI can be implemented to integrate with other frameworks
+		(Java client support for CDI may be added later).
+		</para>
+	</section>
+	
 	<section id="server">
-		<title>Server Options</title>
+		<title>Server options</title>
 		<para>
 		On the server there are mostly two options :
 		
 		<itemizedlist>
-			<listitem>
-			If you use the <literal>RemoteObject</literal> API, just choose the GraniteDS service factory depending on your server framework. 
+			<listitem><para>
+			If you use the <literal>RemoteService</literal> API, just choose the GraniteDS service factory depending on your server framework. 
 			This will additionally bring you the GraniteDS support for externalization of lazily loaded JPA entities/collections, and support for scalable messaging though Gravity.
-			</listitem>
-			<listitem>
+			</para></listitem>
+			<listitem><para>
 			If you use the Tide API, choose the GraniteDS/Tide service factory for your server framework. 
 			This will bring the full feature set of Tide data management and further integration with data push through Gravity. 
-			The Tide server integration also provides more specific features depending on the server framework, for example complete support for Spring and Seam security or integration with CDI events.
-			</listitem>
+			The Tide server integration also provides more specific features depending on the server framework, for example complete support for Spring security or integration with CDI events.
+			</para></listitem>
 		</itemizedlist>
 		</para>
 	</section>
 	
 	<section id="common">
-		<title>Common Technology Stacks</title>
+		<title>Common server stacks</title>
 		<para>
-		This section describes some classic technology stacks used with Flex applications and GraniteDS. 
+		This section describes some classic technology stacks used with Java applications and GraniteDS. 
 		
 		</para>
 		<formalpara>
 			<title>Spring/Hibernate on Tomcat 6+ or Jetty 6+</title>
 			<para>
-			This is one of the most common use cases and is similar to what can be done with the Spring-BlazeDS integration project. 
+			This is one of the most common use cases and allows for easy development and deployment. 
 			You can furthermore benefit from the extensive support for serialization of Java objects and JPA detached objects, and of NIO/APR asynchronous support of Tomcat 6.0.18+ or Jetty 6 continuations.
 			</para>
 		</formalpara>
@@ -87,10 +120,10 @@
 		<formalpara>
 			<title>Tide/Spring/Hibernate on Tomcat 6+ or Jetty 6+</title>
 			<para>
-			This is an extension of the first case, with the additional use of the Tide remoting API on the client. 
+			This is an extension of the first case, with the additional use of the Tide remoting and data management API on the client. 
 			This will enable the most advanced features such as data paging, transparent lazy-loading of collections, real-time data synchronization... 
 			Tide also provides advanced client-side support for Spring Security authorization that for example allow to easily hide/disable buttons for unauthorized actions.
-			This is currently the most popular technology stack.			
+			This is currently the most popular technology stack.
 			</para>
 		</formalpara>
 
@@ -102,18 +135,9 @@
 		</formalpara>
 
 		<formalpara>
-			<title>Tide/Seam 2.2/Hibernate on JBoss 4/5</title>
-			<para>
-			This is the most natural option if you want to connect your Flex application to a Seam 2 backend. 
-			Compared to Tide/Spring, it provides an even deeper integration with Seam including support for Seam events, Query, Seam application framework...
-			If you are not sure of what stack you should use, we advise that you consider this stack as this is currently the most powerful and easy to use.
-			</para>
-		</formalpara>
-		
-		<formalpara>
 		    <title>Tide/CDI/JPA2/Java EE 6 on JBoss 6/7 or GlassFish 3</title>
 		    <para>
-		    Well this is not really a "common" stack but at least it is the latest Java EE 6 standard. If you are on a Java EE 6 compliant application server,
+		    Well this is not really a "common" stack but at least it is a fully Java EE  standard6. If you are on a Java EE 6 compliant application server and can live without Spring,
 		    it is definitely the best option.
 		    </para>
 		</formalpara>

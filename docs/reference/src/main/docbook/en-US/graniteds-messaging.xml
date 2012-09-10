@@ -5,18 +5,25 @@
 <chapter id="graniteds.messaging">
 	<title>Messaging (Gravity)</title>
 	<para>
-	Granite Data Services provides a messaging feature, code name <emphasis>Gravity</emphasis>, implemented as a 
-	<ulink url="http://en.wikipedia.org/wiki/Comet_(programming)">Comet</ulink>-like service with AMF3 data polling over HTTP 
-	(producer/consumer based architecture). This implementation is freely based on the <ulink url="http://cometd.com/bayeux/Bayeux">Bayeux</ulink> 
-	protocol specification (1.0draft1 at this time) and adapted from the Jetty 6.1.x implementation of a comet server.
+	Granite Data Services provides a real-time messaging service, code name <emphasis>Gravity</emphasis>. It currently provides a 
+	<ulink url="http://en.wikipedia.org/wiki/Comet_(programming)">Comet</ulink>-like implementation with AMF3 data polling over HTTP
+	and a <ulink url="http://datatracker.ietf.org/doc/rfc6455/?include_text=1">WebSocket</ulink> based implementation.
+	Both can be used with the same producer/consumer based API.
+	</para>
+	<para> 
+	The Comet implementation is freely based on the <ulink url="http://cometd.com/bayeux/Bayeux">Bayeux</ulink> 
+	protocol specification (1.0draft1 at this time) and adapted from the Jetty 6.1.x implementation of a comet server. 
+	The WebSocket server implementation uses the native WebSocket capabilities of the deployment application server when available (Tomcat 7.0.29+, GlassFish 3.1.2+, Jetty 8.1.1+)
+	or can also use an embedded Jetty server. The WebSocket client is a modified version of the Flash WebSocket client developed by Hiroshi Ichikawa (gimite) that can be found
+	<ulink url="https://github.com/gimite/web-socket-js">here</ulink>.
 	</para>
 
-    <para>
+    <para condition="flex">
     For a basic sample of GDS/Gravity, download <literal>graniteds-***.zip</literal> and import the <literal>examples/graniteds_chat</literal> as a new project in Eclipse.
 	</para>
 	
-	<section id="messaging.example">
-	   <title>Example Usage with Consumer/Producer</title>
+	<section id="messaging.example.flex" condition="flex">
+	   <title>Example usage with Consumer/Producer</title>
 	   <para>
 	   GraniteDS messaging relies on two main AS3 components on the Flex side: <literal>org.granite.gravity.Consumer</literal> 
 	   and <literal>org.granite.gravity.Producer</literal>. These classes reproduce almost exactly the original Adobe Flex 
@@ -79,6 +86,68 @@ private function send(message:String):void {
 	   </para>
 	</section>
 	
+	<section id="messaging.example.java" condition="java">
+	   <title>Example usage with Consumer/Producer</title>
+	   <para>
+	   GraniteDS messaging relies on two main components on the client side: <literal>org.granite.client.messaging.Consumer</literal> 
+	   and <literal>org.granite.client.messaging.Producer</literal>.
+	   </para>
+	   
+	   <para>
+       Here is a quick example of GDS <literal>Consumer</literal>/<literal>Producer</literal> usage:
+	   </para>
+	   
+	   <programlisting role="JAVA">
+<![CDATA[...
+import org.granite.client.messaging.Consumer;
+import org.granite.client.messaging.Producer;
+...
+
+public void test() {
+	HTTPTransport transport = new ApacheAsyncTransport();		
+	AMFMessagingChannel channel = new AMFMessagingChannel(transport, "gravityamf", new URI("http://localhost:8080/myapp/gravityamf/amf"));	
+	transport.start();
+	
+    Consumer consumer = new Consumer(channel, "chat", "discussion");
+	consumer.addMessageListener(new TopicMessageListener() {
+		@Override
+		public void onMessage(TopicMessageEvent event) {
+			System.out.println(event.getData());
+		}
+	});
+	
+	ResponseMessageFuture future = consumer.subscribe(new ResultFaultIssuesResponseListener() {
+		@Override
+		public void onResult(ResultEvent event) {
+			System.out.println("onSubscribeSuccess");
+		}
+
+		@Override
+		public void onFault(FaultEvent event) {
+			System.out.println("onSubscribeFault");
+		}
+
+		@Override
+		public void onIssue(IssueEvent event) {
+			System.out.println("onSubscribeIssue");
+		}
+	});
+	future.get();
+	
+    producer = new Producer(channel, "chat", "discussion");
+	producer.publish("Hello world").get();
+	
+	Thread.sleep(1000);
+}
+...]]>
+	   </programlisting>
+	   
+	   <para>
+	   In this code, the producer sends <literal>String</literal> messages, which could of course be of any type, and the producer receives 
+	   <literal>String</literal> messages as well.
+	   </para>
+	</section>
+	
     <section id="messaging.selectors">
         <title>Topics and Selectors</title>
         <para>
@@ -89,7 +158,7 @@ private function send(message:String):void {
         Topics are a way to divide the destination in many parts. When a producer sends a message on a particular topic, only the consumers attached to this
         topic will receive the message. For example, if you have a destination for quotes, you could have a topic for each country:
         </para>
-        <programlisting role="AS3">
+        <programlisting role="AS3" condition="flex">
 var producer:Producer = new Producer();
 producer.destination = "quotes";
 producer.topic = "/germany";
@@ -105,6 +174,16 @@ consumerFrance.destination = "quotes";
 consumerFrance.topic = "/france";
 consumerFrance.subscribe();
         </programlisting>
+        <programlisting role="JAVA" condition="java">
+Producer producer = new Producer(channel, "quotes", "/germany");
+producer.publish(message);
+
+Consumer consumerGermany = new Consumer(channel, "quotes", "/germany");
+consumerGermany.subscribe(new ResponseListener() { ... }).get();
+
+Consumer consumerFrance = new Consumer(channel, "quotes", "/france");
+consumerFrance.subscribe(new ResponseListener() { ... }).get();
+        </programlisting>
         <para>
         Here only <literal>consumerGermany</literal> will receive the messages published by the producer. Note the slash (/) to start the name of the topic.
         You can define more sections for the topic name and use wildcards (*) and (**) to match a part of the topic. For example you could define a hierarchy
@@ -113,8 +192,8 @@ consumerFrance.subscribe();
         everything, whatever topic is used by the producer.
         </para>
         <note><para>
-        The JMS adapter currently does not support this filtering by topic because many JMS providers do not have this concept. The ActiveMQ adapter however
-        does support it. 
+        The JMS adapter currently does not support this filtering by topic as this is not a standard feature of JMS and many JMS providers do not have this concept. 
+        The ActiveMQ adapter however does support it. 
         </para></note>
         <para>
         Topics are a simple way of filtering the message, but in some cases you may want to use more sophisticated rules to route the messages from producers
@@ -124,11 +203,16 @@ consumerFrance.subscribe();
         <para>
         A consumer can specify its message selector before it subscribes to the destination:
         </para>
-        <programlisting role="AS3">
+        <programlisting role="AS3" condition="flex">
 var consumerFrance:Consumer = new Consumer();
 consumerFrance.destination = "quotes";
 consumerFrance.selector = "COUNTRY = 'France'";
 consumerFrance.subscribe();
+        </programlisting>
+        <programlisting role="JAVA" condition="java">
+Consumer consumerFrance = new Consumer(channel, "quotes", null);
+consumerFrance.setSelector("COUNTRY = 'France'");
+consumerFrance.subscribe(new ResponseListener() { ... }).get();
         </programlisting>
         <para>
         This consumer will receive all messages that have a header named <literal>COUNTRY</literal> with the value <literal>France</literal>.
@@ -138,22 +222,22 @@ consumerFrance.subscribe();
     </section>
     
 	<section id="messaging.configuration">
-	   <title>Common Configuration</title>
+	   <title>Common configuration</title>
 	   <para>
 	   There are three main steps to configure Gravity in an application:
 	   <itemizedlist>
-	       <listitem>
+	       <listitem><para>
 	       Declare the Gravity servlet implementation for your target server in <literal>web.xml</literal>
-	       </listitem>
-	       <listitem>
+	       </para></listitem>
+	       <listitem><para>
 	       Declare a messaging service and destination in <literal>services-config.xml</literal>, mapped to a specific channel 
 	       definition of type  <literal>GravityChannel</literal>
-	       </listitem>
+	       </para></listitem>
 	   </itemizedlist>
 	   </para>
 	   
 	   <programlisting role="XML">
-<![CDATA[<web-app version="2.4" ...>
+<![CDATA[<web-app version="2.5" ...>
     ...
     <listener>
         <listener-class>org.granite.config.GraniteConfigListener</listener-class>
@@ -179,7 +263,7 @@ consumerFrance.subscribe();
 	   The servlet listener definition is important to ensure proper startup and shutdown of the Gravity services, in particular cleanup of used resources.
 	   </para></note>
 	   
-	   <programlisting role="AS3">
+	   <programlisting role="XML">
 <![CDATA[<services-config>
     <services>
         <service id="messaging-service"
@@ -224,20 +308,20 @@ consumerFrance.subscribe();
 	   <para>
 	   The simple adapter exposes two configuration properties:
 	   <itemizedlist>
-	       <listitem>
+	       <listitem><para>
 	       <literal>no-local</literal>: default is <literal>true</literal>, if set to <literal>false</literal> the client producing messages will receive their
 	       own messages 
-	       </listitem>
-	       <listitem>
+	       </para></listitem>
+	       <listitem><para>
 	       <literal>session-selector</literal>: this is an advanced option and instructs Gravity to store the message selector string in the user session. This allows
-	       the server part of the application to override the selector string defined by the Flex <literal>Consumer</literal>.
+	       the server part of the application to override the selector string defined by the client <literal>Consumer</literal>.
 	       The selector is stored and read from the session attribute named <literal>org.granite.gravity.selector.{destinationId}</literal>.
-	       </listitem>
+	       </para></listitem>
 	   </itemizedlist>
 	   </para>
 	   
-	   <section id="messaging.configappserver">
-	       <title>Supported Application Servers</title>
+	   <section id="messaging.configappserver.comet">
+	       <title>Supported application servers for Comet/long polling</title>
 	       <para>
 	       GraniteDS provides a generic servlet implementation that can work in any compliant servlet container. However it will use blocking IO and 
 	       thus will provide relatively limited scalability.
@@ -289,13 +373,13 @@ consumerFrance.subscribe();
                         </row>
                         <row>
                             <entry>GlassFish 3.x</entry>
-                            <entry><literal>org.granite.gravity.async.GravityAsyncServlet</literal></entry>
-                            <entry>Using Servlet 3.0</entry>
+                            <entry><literal>org.granite.gravity.servlet3.GravityAsyncServlet</literal></entry>
+                            <entry>Using Servlet 3.0, requires <literal>async-supported</literal> in <literal>web.xml</literal></entry>
                         </row>
                         <row>
                             <entry>Tomcat 7.x / Jetty 8.x</entry>
-                            <entry><literal>org.granite.gravity.async.GravityAsyncServlet</literal></entry>
-                            <entry>Using Servlet 3.0</entry>
+                            <entry><literal>org.granite.gravity.servlet3.GravityAsyncServlet</literal></entry>
+                            <entry>Using Servlet 3.0, requires <literal>async-supported</literal> in <literal>web.xml</literal></entry>
                         </row>
                         <row>
                             <entry>Any other</entry>
@@ -308,8 +392,55 @@ consumerFrance.subscribe();
             </para>
 	   </section>
 	   
+	   <section id="messaging.configappserver.websocket">
+	       <title>Supported application servers for WebSocket</title>
+	       <para>
+	       There is no standard way (yet) to use WebSockets in Java EE application servers thus GraniteDS provides support for native WebSocket implementations on some application
+	       servers.
+	       </para>
+	       <para>
+	       Here is the table of the supported implementations:
+            <informaltable>
+                <tgroup cols="3">
+                    <colspec colnum="1" colwidth="1*" />
+                    <colspec colnum="2" colwidth="2*" />
+                    <colspec colnum="3" colwidth="2*" />
+                    <thead>
+                        <row>
+                            <entry>Application server</entry>
+                            <entry>Servlet class</entry>
+                            <entry>Specific notes</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Tomcat 7.0.29+</entry>
+                            <entry><literal>org.granite.gravity.tomcat.TomcatWebSocketServlet</literal></entry>
+                            <entry>Only with APR/NIO enabled (APR highly recommended)</entry>
+                        </row>
+                        <row>
+                            <entry>Jetty 8.1.1+</entry>
+                            <entry><literal>org.granite.gravity.jetty8.JettyWebSocketServlet</literal></entry>
+                            <entry>Jetty 7 not supported</entry>
+                        </row>
+                        <row>
+                            <entry>GlassFish 3.1.2+</entry>
+                            <entry><literal>org.granite.gravity.glassfish.GlassFishWebSocketServlet</literal></entry>
+                            <entry></entry>
+                        </row>
+                        <row>
+                            <entry>Any other</entry>
+                            <entry>Embedded Jetty 8.1.1+</entry>
+                            <entry>Requires another TCP port, not webapp dependent</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </informaltable>
+            </para>
+	   </section>
+	   
 	   <section id="messaging.configadvanced">
-	       <title>Advanced Configuration</title>
+	       <title>Advanced configuration</title>
 	       <para>
 	       Whichever Gravity servlet implementation is used in your application, the advanced configuration is done in <literal>granite-config.xml</literal>. 
 	       Here is a sample Gravity configuration with all default options:
@@ -347,17 +478,17 @@ consumerFrance.subscribe();
 	        <para>
 	        Some explanations about these options:
 	        <itemizedlist>
-	            <listitem>
+	            <listitem><para>
 	            <literal>channel-idle-timeout-millis</literal>: the elapsed time after which an idle channel (pure producer or dead client) 
 	            may be silently unsubcribed and removed by Gravity. Default is 30 minutes.
-	            </listitem>
-	            <listitem>
+	            </para></listitem>
+	            <listitem><para>
 	            <literal>long-polling-timeout-millis</literal>: the elapsed time after which an idle connect request is closed, asking the client to reconnect. 
 	            Default is 20 seconds. Note that setting this value isn't supported in Tomcat/APR configurations.
-	            </listitem>
-	            <listitem>
+	            </para></listitem>
+	            <listitem><para>
 	            <literal>thread-pool</literal> attributes: all options are standard parameters for the Gravity <literal>ThreadPoolExecutor</literal> instance.
-	            </listitem>
+	            </para></listitem>
 	        </itemizedlist>
 	
 	        All other configuration options are for advanced use only and you should keep default values.	   
@@ -365,7 +496,7 @@ consumerFrance.subscribe();
        </section>
         
         <section id="messaging.configtomcat">
-            <title>Tomcat and JBoss/Tomcat Specific Configuration Tips</title>
+            <title>Tomcat and JBoss/Tomcat specific configuration tips</title>
             <para>
             GraniteDS messaging for Tomcat relies on the <literal>org.apache.catalina.CometProcessor</literal> interface. 
             In order to enable Comet support in Tomcat, you must configure an <ulink url="http://tomcat.apache.org/tomcat-6.0-doc/aio.html">APR or NIO connector</ulink>.
@@ -376,7 +507,7 @@ consumerFrance.subscribe();
             On Windows®, it's simply a matter of downloading a native <ulink url="http://tomcat.heanet.ie/native/">dll</ulink> and putting it 
             in your <literal>WINDOWS/system32</literal> directory – while other and better configurations are possible.
             For more recent versions of Tomcat such as the one embedded in JBoss 5 or 6, you will need the latest APR library, 
-            see <ulink src="http://tomcat.apache.org/download-native.cgi">here</ulink>.
+            see <ulink url="http://tomcat.apache.org/download-native.cgi">here</ulink>.
             </para>
             
             <para>
@@ -432,6 +563,12 @@ consumerFrance.subscribe();
 	<section id="messaging.jms">
 		<title>Integration with JMS</title>
 		<para>
+		The default messaging engine of GraniteDS is embedded in <literal>SimpleServiceAdapter</literal> and has many limitations. In particular it does not support clustering.
+		For more robust messaging, it is possible and recommended to integrate with a robust messaging engine such as Apache ActiveMQ. When deploying your application in a full 
+		Java EE application server, you may also want to configure Gravity to integrate with the built-in messaging engine of your application server (such as HornetQ in 
+		JBoss AS 7).
+		</para>
+		<para condition="flex">
 		The GraniteDS JMS adapter configuration follows as closely as possible the standard Adobe Flex configuration for the JMS adapter. 
 		See <ulink url="http://livedocs.adobe.com/blazeds/1/blazeds_devguide/jms_messaging_1.html">here</ulink>.
 		</para>
@@ -493,34 +630,34 @@ consumerFrance.subscribe();
         Comments on configuration options:
         
         <itemizedlist>
-            <listitem>
+            <listitem><para>
             <literal>destination-type</literal> must be <literal>Topic</literal> for the moment. Queues may be supported later.
-            </listitem>
-            <listitem>
+            </para></listitem>
+            <listitem><para>
             <literal>message-type</literal> may be forced to simple text messages by specifying <literal>javax.jms.TextMessage</literal>.            
-            </listitem>
-            <listitem>
+            </para></listitem>
+            <listitem><para>
             <literal>connection-factory</literal> and <literal>destination-jndi-name</literal> are the JNDI names respectively of the JMS <literal>ConnectionFactory</literal> and of the JMS topic.
-            </listitem>
-            <listitem>
+            </para></listitem>
+            <listitem><para>
             <literal>destination-name</literal> is just a label but still required.
-            </listitem>
-            <listitem>
+            </para></listitem>
+            <listitem><para>
             <literal>acknowledge-mode</literal> can have the standard values accepted by any JMS provider: <literal>AUTO_ACKNOWLEDGE</literal>, 
             <literal>CLIENT_ACKNOWLEDGE</literal>, and <literal>DUPS_OK_ACKNOWLEDGE</literal>.
-            </listitem>
-            <listitem>
+            </para></listitem>
+            <listitem><para>
             <literal>transacted-sessions</literal> allows the use of transactions in sessions when set to <literal>true</literal>.
-            </listitem>
-            <listitem>
+            </para></listitem>
+            <listitem><para>
             <literal>initial-context-environment</literal>: The <literal>initial-context</literal> parameters allow to access a remote JMS server 
             by setting the JNDI context options.
-            </listitem>
+            </para></listitem>
         </itemizedlist>
 		</para>
 		
 		<note><para>
-		The JMS headers are always copied between Flex and JMS messages
+		The JMS headers are always copied between client and JMS messages
 		</para></note>
 		
 		<note><para>
@@ -531,7 +668,7 @@ consumerFrance.subscribe();
 	<section id="messaging.activemq">
 		<title>Using an Embedded ActiveMQ</title>
 		<para>
-        In the case of a simple Tomcat/Jetty installation without JMS provider, or to allow Flex-to-Flex interactions with advanced capabilities 
+        In the case of a simple Tomcat/Jetty installation without JMS provider, or to allow client-to-client messaging with advanced capabilities 
         such as durable messages, Gravity can be integrated with an embedded <literal>Apache ActiveMQ</literal> instance.
         </para>
         
@@ -581,26 +718,26 @@ consumerFrance.subscribe();
         <para>
         Comments on configuration options:
         <itemizedlist>
-            <listitem>
+            <listitem><para>
             The main parameters (<literal>&lt;jms&gt;...&lt;/jms&gt;</literal>) are identical to those used in the default JMS configuration. 
             See <link linkend="messaging.jms">above</link>.
-            </listitem>
-            <listitem>
+            </para></listitem>
+            <listitem><para>
             <literal>durable</literal>, if set to <literal>true</literal>, allows for durable messages, stored in the filesystem. 
             The data store directory of ActiveMQ can be specified by the <literal>file-store-root</literal> parameter.
-            </listitem>
-            <listitem>
+            </para></listitem>
+            <listitem><para>
             <literal>create-broker</literal> is optional, as well as the dependant <literal>wait-for-start</literal> attribute. 
             When <literal>create-broker</literal> is <literal>false</literal>, creation of the broker is not automatic and has to be done by the application itself. 
             In this case, <literal>wait-for-start</literal> set to <literal>true</literal> tells the <literal>ActiveMQConnectionFactory</literal> 
             to wait for the effective creation of the broker. Please refer to the ActiveMQ documentation for more details on these options.
-            </listitem>
+            </para></listitem>
         </itemizedlist>
         </para>
 	</section>
     
     <section id="messaging.servertoclient">
-       <title>Server to Client Publishing</title>
+       <title>Server to client publishing</title>
        <para>
        There are mostly two kinds of requirements for messaging: client-to-client interactions, that can be easily handled by 
        the <literal>Consumer</literal>/<literal>Producer</literal> pattern, and server-to-client push that can be done with either the low-level 
@@ -608,7 +745,7 @@ consumerFrance.subscribe();
        </para>
        
        <formalpara>
-            <title>Server to Client Messaging with the Low-level Gravity API</title>
+            <title>Server to client messaging with the low-level Gravity API</title>
             <para>
             If you use the <literal>SimpleAdapter</literal>, the message sending will have to be done at a lower level and you will need 
             a compilation dependency on the <literal>Gravity</literal> API. 
@@ -641,9 +778,9 @@ gravity.publishMessage(message);
         <formalpara>
             <title>Server to Client Messaging with JMS</title>
             <para>
-            Sending messages from the server to Flex clients simply consists of sending JMS messages to the corresponding JMS topic. 
-            Text messages are received as simple text on the Flex side, object messages are serialized in AMF3 and deserialized and received as ActionScript 3 objects. 
-            The <literal>Gravity</literal> messaging channel supports lazily loaded collections and objects, exactly as the Granite remoting channel.
+            Sending messages from the server to clients simply consists of sending JMS messages to the corresponding JMS topic. 
+            Text messages are received as simple text on the client side, object messages are serialized in AMF3 and deserialized and received as typed objects. 
+            The <literal>Gravity</literal> messaging channel supports lazily loaded collections and objects, exactly as the remoting channel.
             </para>
         </formalpara>
         
@@ -716,20 +853,20 @@ public class TestBean implements Test {
         </programlisting>
         
         <formalpara>
-            <title>Server to Client Messaging with Embedded ActiveMQ</title>
+            <title>Server to client messaging with Embedded ActiveMQ</title>
             <para>
             The only difference with standard JMS is that you can get a <literal>ConnectionFactory</literal> more easily. 
             Also ActiveMQ supports subtopics. The name of the topic is built with the following rule:
             <itemizedlist>
-                <listitem>
+                <listitem><para>
                 Without subtopic, the name of the ActiveMQ destination should be the same as defined in the <literal>jms/destination-name</literal> configuration parameter.
-                </listitem>
-                <listitem>
+                </para></listitem>
+                <listitem><para>
                 With subtopic, the name is the concatenation of the <literal>destination-name</literal> parameter with the <literal>subtopic</literal>. 
                 Wildcards are supported in the <literal>subtopic</literal> following Flex convention and are converted to the ActiveMQ format 
                 (see <ulink url="http://activemq.apache.org/wildcards.html">here</ulink>), meaning that <literal>toto.**</literal> is converted to 
                 <literal>toto.&gt;</literal>.
-                </listitem>
+                </para></listitem>
             </itemizedlist>
             </para>
         </formalpara>
@@ -800,7 +937,7 @@ public class Test throws JMSException {
         </para>
         
         <formalpara>
-            <title>Fine-grained Per-destination Security</title>
+            <title>Fine-grained per-destination security</title>
             <para>
             You may write and configure a specific <literal>GravityDestinationSecurizer</literal> in order to add fine grained security checks for specific actions.
             In particular you can control who can subscribe or publish messages to a particular topic.  

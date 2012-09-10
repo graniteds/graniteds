@@ -22,7 +22,7 @@
     </para>
     
     <section id="validation.gettingstarted">
-        <title>Getting Started with the GraniteDS Validation Framework</title>
+        <title>Getting started with the GraniteDS validation framework</title>
         <para>        
         As its Java equivalent, the GraniteDS validation framework provides a set of standard constraints. Here is an overview of these constraints 
         (see <ulink url="http://www.graniteds.org/public/doc/2.2.0/doc/as3/api/org/granite/validation/constraints/package-detail.html">API documentation</ulink> 
@@ -159,7 +159,7 @@ trace(violations.length); // none...
     </section>
     
     <section id="validation.localization">
-        <title>Working with Error Messages and Localization</title>
+        <title>Working with error messages and localization</title>
         <para>
         Default error messages for built-in constraints are provided in four languages: english, french, german (as in the javax API distribution) and chinese.
         Depending on the current locales specified in the <literal>ResourceManager.getInstance().localeChain</literal> array, error messages will be localized 
@@ -243,7 +243,7 @@ javax.validation.constraints.NotNull.message=This value is mandatory
     </section>
     
     <section id="validation.groups">
-        <title>Working with Groups</title>
+        <title>Working with groups</title>
         <para>
         As stated by the specification (section 3.4):
         <quote>
@@ -319,7 +319,7 @@ public var name;]]>
     </section>
     
     <section id="validation.gas3">
-        <title>Integration with Code Generation Tools (Gas3)</title>
+        <title>Integration with code generation tools (Gas3)</title>
         <para>
         The Bean Validation specification is primarily intended to be used with Java entity beans. GraniteDS code generation tools replicate your Java model 
         into an ActionScript 3 model and may be configured in order to copy validation annotations. All you have to do is to change the default 
@@ -479,7 +479,7 @@ public class Person {
     </section>
     
     <section id="validation.form">
-        <title>Using the FormValidator Class</title>
+        <title>Using the FormValidator class</title>
         <para>
         By default, in addition to returning an array of <literal>ConstraintViolations</literal>, the validation framework will dispatch events for 
         each failed constraint, provided that the bean that holds the property is an <literal>IEventDispatcher</literal>. These events are instances of 
@@ -714,7 +714,7 @@ public class Person {
     </section>
     
     <section id="validation.compatibility">
-        <title>Notes on Compatibility</title>
+        <title>Notes on compatibility</title>
         <para>
         All standard constraints should behave exactly in the same way as they behave in Java, except for some advanced Pattern usages: because the regular 
         expression support in ActionScript 3 may differ from the Java one (especially with supported 

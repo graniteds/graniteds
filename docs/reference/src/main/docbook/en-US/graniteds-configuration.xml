@@ -122,7 +122,7 @@
 		channels, factories and services.
 		</para>
 		
-		<section id="config.configchannels">
+		<section id="config.configchannels" condition="flex">
 			<title>Channels</title>
 			<para>
 			A channel definition mostly contains the endpoint url and the client channel implementation:
@@ -139,18 +139,18 @@
 			<para>
 			GraniteDS provides 4 implementations of the Flex <literal>Channel</literal>:
 			<itemizedlist>
-			     <listitem>
+			     <listitem><para>
 			     <literal>mx.messaging.channels.AMFChannel</literal>: standard HTTP remoting channel.
-			     </listitem>
-                 <listitem>
+			     </para></listitem>
+                 <listitem><para>
                  <literal>mx.messaging.channels.SecureAMFChannel</literal>: standard HTTPS remoting channel.
-                 </listitem>
-                 <listitem>
+                 </para></listitem>
+                 <listitem><para>
                  <literal>org.granite.gravity.channels.GravityChannel</literal>: standard HTTP messaging channel.
-                 </listitem>
-                 <listitem>
+                 </para></listitem>
+                 <listitem><para>
                  <literal>org.granite.gravity.channels.SecureGravityChannel</literal>: standard HTTPS messaging channel.
-                 </listitem>
+                 </para></listitem>
 			</itemizedlist>
 			</para>
 		</section>
@@ -186,7 +186,7 @@
         </section>
 		
 		<section id="config.remotingservices">
-			<title>Remoting Destinations</title>
+			<title>Remoting destinations</title>
 			<para>
 			Remoting destinations can be defined in a <literal>service</literal> definition with the <literal>class</literal> property value
 			<literal>flex.messaging.services.RemotingService</literal> and the <literal>messageTypes</literal> value 
@@ -211,22 +211,22 @@
   </service>
 </services>]]>
     		</programlisting>
-    		<para>
+    		<para condition="flex">
     		You can define multiple channels for the same destination to handle failover. Wwhen the first channel cannot be accessed, the remote object will 
     		try the next one in the list.
     		</para>
-    		<para>
+    		<para condition="flex">
     		The property <literal>source</literal> is often used to determine the target component and its value depend on the server framework. In this 
     		example with Guice this is the class name of the target bean.
     		</para>
     		<para>
     		A destination can also define a list of security roles that are allowed to access the remote component. See <link linkend="remoting.security">
-    		Remoting Security</link>.
+    		Remoting security</link>.
     		</para>
 		</section>
 		
 		<section id="config.messagingservices">
-			<title>Messaging Destinations</title>
+			<title>Messaging destinations</title>
             <para>
             Messaging destinations can be defined in a <literal>service</literal> definition with the <literal>class</literal> property value
             <literal>flex.messaging.services.MessagingService</literal> and the <literal>messageTypes</literal> value 
