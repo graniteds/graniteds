@@ -282,7 +282,12 @@
 		the specific integration for JavaFX.
 		</para>
 		<para>
-		You simply have to add the necessary libs to your application classpath.
+		The GraniteDS client also depends on the small class scanning library extcos.  
+		For remoting and Comet, the GraniteDS client requires the Apache Asynchronous HTTP client, and for WebSocket, the Jetty WebSocket client.
+		All these jars can be found in the <literal>libs</literal> folder of the Java client distribution.
+		</para>
+		<para>
+		You simply have to add the necessary GraniteDS jars and dependencies to your application classpath.
 		</para>
 	</section>
 	
@@ -446,7 +451,38 @@
     <artifactId>granite-javafx-client</artifactId>
     <version>${graniteds.version}</version>
     <type>jar</type>
-</dependency>]]>
+</dependency>
+
+<!-- Default dependencies -->
+<dependency>
+	<groupId>net.sf.extcos</groupId>
+	<artifactId>extcos</artifactId>
+	<version>0.3b</version>
+	<type>jar</type>
+</dependency>
+
+<!-- Apache HTTP client dependencies (remoting, Comet) -->
+<dependency>
+ 	<groupId>org.apache.httpcomponents</groupId>
+ 	<artifactId>httpasyncclient</artifactId>
+ 	<version>4.0-beta1</version>
+ 	<type>jar</type>
+</dependency>
+
+<!-- Jetty WebSocket client dependencies (WebSocket) -->
+<dependency>
+ 	<groupId>org.eclipse.jetty</groupId>
+ 	<artifactId>jetty-client</artifactId>
+ 	<version>8.1.5.v20120716</version>
+ 	<type>jar</type>
+</dependency>
+<dependency>
+ 	<groupId>org.eclipse.jetty</groupId>
+ 	<artifactId>jetty-websocket</artifactId>
+ 	<version>8.1.5.v20120716</version>
+ 	<type>jar</type>
+</dependency>
+]]>
 		</programlisting>
     </section>
 	
