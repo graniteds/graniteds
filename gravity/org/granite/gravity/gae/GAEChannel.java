@@ -27,13 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletConfig;
-
 import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.AsyncPublishedMessage;
 import org.granite.gravity.Channel;
-import org.granite.gravity.Gravity;
-import org.granite.gravity.GravityConfig;
 import org.granite.gravity.MessagePublishingException;
 import org.granite.gravity.MessageReceivingException;
 import org.granite.gravity.Subscription;
@@ -61,31 +57,42 @@ public class GAEChannel implements Channel, Serializable {
     private static MemcacheService gaeCache = MemcacheServiceFactory.getMemcacheService();
 
     protected final String id;
+    protected final GAEGravity gravity;
+    protected final GAEChannelFactory factory;
 
     private final Map<String, Subscription> subscriptions = new HashMap<String, Subscription>();
     private final long expiration;
 
 
-    GAEChannel(ServletConfig servletConfig, GravityConfig gravityConfig, String id) {
+    GAEChannel(GAEGravity gravity, String id, GAEChannelFactory factory) {
         if (id == null)
         	throw new NullPointerException("id cannot be null");
         
         this.id = id;
-    	this.expiration = gravityConfig.getChannelIdleTimeoutMillis();
+        this.factory = factory;
+        this.gravity = gravity;
+    	this.expiration = gravity.getGravityConfig().getChannelIdleTimeoutMillis();
     }
 
 	public String getId() {
 		return id;
 	}
 	
-	public Gravity getGravity() {
-		return null;
+	public GAEChannelFactory getFactory() {
+		return factory;
+	}
+	
+	public GAEGravity getGravity() {
+		return gravity;
 	}
     
     private Long msgCount() {
     	return (Long)gaeCache.get(MSG_COUNT_PREFIX + id);
     }
     
+    
+    public void close() {
+    }
     
 	public void destroy() {
     	Long msgCount = msgCount();

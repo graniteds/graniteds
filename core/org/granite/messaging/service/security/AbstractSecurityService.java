@@ -22,10 +22,11 @@ package org.granite.messaging.service.security;
 
 import java.io.UnsupportedEncodingException;
 
-import org.granite.clustering.GraniteDistributedData;
-import org.granite.clustering.GraniteDistributedDataFactory;
+import org.granite.clustering.DistributedData;
+import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageProcessor;
+import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.util.Base64;
 
 import flex.messaging.messages.Message;
@@ -75,6 +76,16 @@ public abstract class AbstractSecurityService implements SecurityService {
      */
     protected Object endAuthorization(AbstractSecurityContext context) throws Exception {
         return context.invoke();
+    }
+    
+    /**
+     * A security service can optionally indicate that it's able to authorize requests that are not HTTP requests
+     * (websockets). In this case the method {@link SecurityService#authorize(AbstractSecurityContext)} will be 
+     * invoked in a {@link ServletGraniteContext} and not in a {@link HttpGraniteContext}
+     * @return true is a {@link HttpGraniteContext} is mandated
+     */
+    public boolean acceptsContext() {
+    	return GraniteContext.getCurrentInstance() instanceof HttpGraniteContext;
     }
 
     /**
@@ -130,7 +141,7 @@ public abstract class AbstractSecurityService implements SecurityService {
      */
 	protected void endLogin(Object credentials, String charset) {
 		try {
-			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+			DistributedData gdd = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory().getInstance();
 			if (gdd != null) {
 				gdd.setCredentials(credentials);
 				gdd.setCredentialsCharset(charset);
@@ -152,7 +163,7 @@ public abstract class AbstractSecurityService implements SecurityService {
 	 */
     protected boolean tryRelogin() {
     	try {
-			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+			DistributedData gdd = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory().getInstance();
 			if (gdd != null) {
 				Object credentials = gdd.getCredentials();
 	        	if (credentials != null) {
@@ -180,7 +191,7 @@ public abstract class AbstractSecurityService implements SecurityService {
      */
 	protected void endLogout() {
 		try {
-			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+			DistributedData gdd = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory().getInstance();
 			if (gdd != null) {
 				gdd.removeCredentials();
 				gdd.removeCredentialsCharset();

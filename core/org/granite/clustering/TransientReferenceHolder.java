@@ -29,7 +29,7 @@ import java.io.Serializable;
  * 
  * @author Franck WOLFF
  * 
- * @see org.granite.messaging.webapp.HttpGraniteContext
+ * @see org.granite.messaging.webapp.ServletGraniteContext
  * @see TransientReference
  */
 public final class TransientReferenceHolder implements Serializable {

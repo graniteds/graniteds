@@ -22,7 +22,6 @@ package org.granite.gravity.tomcat;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,7 +29,7 @@ import org.apache.catalina.CometEvent;
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.GravityConfig;
+import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 
 import flex.messaging.messages.Message;
@@ -44,8 +43,9 @@ public class TomcatChannel extends AbstractChannel {
 
     private final AtomicReference<CometEvent> event = new AtomicReference<CometEvent>();
 
-    public TomcatChannel(ServletConfig servletConfig, GravityConfig gravityConfig, String id) {
-        super(servletConfig, gravityConfig, id);
+    
+    public TomcatChannel(Gravity gravity, String id, TomcatChannelFactory factory) {
+        super(gravity, id, factory);
     }
     
     public void setCometEvent(CometEvent event) {
@@ -153,14 +153,18 @@ public class TomcatChannel extends AbstractChannel {
 			super.destroy();
 		}
 		finally {
-			CometEvent event = this.event.getAndSet(null);
-			if (event != null) {
-				try {
-					event.close();
-				}
-				catch (Exception e) {
-					log.debug(e, "Could not close event: %s for channel: %s", EventUtil.toString(event), this);
-				}
+			close();
+		}
+	}
+	
+	public void close() {
+		CometEvent event = this.event.getAndSet(null);
+		if (event != null) {
+			try {
+				event.close();
+			}
+			catch (Exception e) {
+				log.debug(e, "Could not close event: %s for channel: %s", EventUtil.toString(event), this);
 			}
 		}
 	}

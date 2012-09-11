@@ -30,11 +30,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 import javax.servlet.ServletException;
 
 import org.granite.config.flex.Channel;
@@ -44,7 +49,7 @@ import org.granite.config.flex.Factory;
 import org.granite.config.flex.Service;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
-import org.granite.config.servlet3.FlexFilter;
+import org.granite.config.servlet3.ServerFilter;
 import org.granite.jmx.GraniteMBeanInitializer;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer;
@@ -59,7 +64,7 @@ import org.granite.messaging.service.tide.TideComponentAnnotatedWithMatcher;
 import org.granite.messaging.service.tide.TideComponentInstanceOfMatcher;
 import org.granite.messaging.service.tide.TideComponentNameMatcher;
 import org.granite.messaging.service.tide.TideComponentTypeMatcher;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.ServletParams;
 import org.granite.util.XMap;
 
@@ -67,11 +72,13 @@ import org.granite.util.XMap;
 /**
  * @author William DRAI
  */
-public class GraniteConfigListener implements ServletContextListener {
+public class GraniteConfigListener implements ServletContextListener, HttpSessionListener {
 
     private static final String GRANITE_CONFIG_SHUTDOWN_KEY = GraniteConfig.class.getName() + "_SHUTDOWN";
     public static final String GRANITE_CONFIG_ATTRIBUTE = "org.granite.config.flexFilter";
     public static final String GRANITE_MBEANS_ATTRIBUTE = "registerGraniteMBeans";
+    
+    public static final String GRANITE_SESSION_MAP = "org.granite.config.sessionMap";
 
     private static final Logger log = Logger.getLogger(GraniteConfigListener.class);
 
@@ -90,6 +97,9 @@ public class GraniteConfigListener implements ServletContextListener {
             
             if (flexFilterClass != null)
             	configureServices(context, flexFilterClass);
+            
+            Map<String, HttpSession> sessionMap = new ConcurrentHashMap<String, HttpSession>(200);
+            sce.getServletContext().setAttribute(GRANITE_SESSION_MAP, sessionMap);
             
             if (gConfig.isRegisterMBeans()) {
             	GraniteMBeanInitializer.registerMBeans(context, 
@@ -142,7 +152,7 @@ public class GraniteConfigListener implements ServletContextListener {
         GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(context);
         ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(context);
     	
-        FlexFilter flexFilter = flexFilterClass.getAnnotation(FlexFilter.class);
+        ServerFilter flexFilter = flexFilterClass.getAnnotation(ServerFilter.class);
         
         ConfigProvider configProvider = null;
         
@@ -154,7 +164,7 @@ public class GraniteConfigListener implements ServletContextListener {
         
         if (!flexFilter.configProviderClass().equals(ConfigProvider.class)) {
         	try {
-        		configProvider = ClassUtil.newInstance(flexFilter.configProviderClass(), new Class[] { ServletContext.class }, new Object[] { context });
+        		configProvider = TypeUtil.newInstance(flexFilter.configProviderClass(), new Class[] { ServletContext.class }, new Object[] { context });
         		
         		if (configProvider.useTide() != null)
         			useTide = configProvider.useTide();
@@ -242,7 +252,7 @@ public class GraniteConfigListener implements ServletContextListener {
     	
     	if (!flexFilter.securityServiceClass().equals(SecurityService.class)) {
     		try {
-    			graniteConfig.setSecurityService(ClassUtil.newInstance(flexFilter.securityServiceClass(), SecurityService.class));
+    			graniteConfig.setSecurityService(TypeUtil.newInstance(flexFilter.securityServiceClass(), SecurityService.class));
         	}
         	catch (Exception e) {
         		throw new ServletException("Could not setup security service", e);
@@ -256,22 +266,22 @@ public class GraniteConfigListener implements ServletContextListener {
     		String securityServiceClassName = null;
     		// Try auto-detect
     		try {
-    			ClassUtil.forName("org.mortbay.jetty.Request");
+    			TypeUtil.forName("org.mortbay.jetty.Request");
     			securityServiceClassName = "org.granite.messaging.service.security.Jetty6SecurityService";
     		}
     		catch (ClassNotFoundException e1) {
     			try {
-    				ClassUtil.forName("org.eclipse.jetty.server.Request");
+    				TypeUtil.forName("org.eclipse.jetty.server.Request");
         			securityServiceClassName = "org.granite.messaging.service.security.Jetty7SecurityService";
     			}
     			catch (ClassNotFoundException e1b) {
 	    			try {
-	    				ClassUtil.forName("weblogic.servlet.security.ServletAuthentication");
+	    				TypeUtil.forName("weblogic.servlet.security.ServletAuthentication");
 	    				securityServiceClassName = "org.granite.messaging.service.security.WebLogicSecurityService";
 	    			}
 	    			catch (ClassNotFoundException e2) {
 	        			try {
-	        				ClassUtil.forName("com.sun.appserv.server.LifecycleEvent");
+	        				TypeUtil.forName("com.sun.appserv.server.LifecycleEvent");
 	            			securityServiceClassName = "org.granite.messaging.service.security.GlassFishV3SecurityService";
 	        			}
 	        			catch (ClassNotFoundException e3) {
@@ -279,7 +289,7 @@ public class GraniteConfigListener implements ServletContextListener {
 	        			}
 	    			}
 	        		try {
-	        			graniteConfig.setSecurityService((SecurityService)ClassUtil.newInstance(securityServiceClassName));
+	        			graniteConfig.setSecurityService((SecurityService)TypeUtil.newInstance(securityServiceClassName));
 	            	}
 	            	catch (Exception e) {
 	            		throw new ServletException("Could not setup security service " + securityServiceClassName, e);
@@ -290,7 +300,7 @@ public class GraniteConfigListener implements ServletContextListener {
         
         if (!flexFilter.amf3MessageInterceptor().equals(AMF3MessageInterceptor.class)) {
         	try {
-        		graniteConfig.setAmf3MessageInterceptor(ClassUtil.newInstance(flexFilter.amf3MessageInterceptor(), AMF3MessageInterceptor.class));
+        		graniteConfig.setAmf3MessageInterceptor(TypeUtil.newInstance(flexFilter.amf3MessageInterceptor(), AMF3MessageInterceptor.class));
         	}
         	catch (Exception e) {
         		throw new ServletException("Could not setup amf3 message interceptor", e);
@@ -392,5 +402,20 @@ public class GraniteConfigListener implements ServletContextListener {
 		catch (Throwable t) {
 		}
 		return false;
+	}
+
+	
+	public void sessionCreated(HttpSessionEvent se) {
+		@SuppressWarnings("unchecked")
+		Map<String, HttpSession> sessionMap = (Map<String, HttpSession>)se.getSession().getServletContext().getAttribute(GRANITE_SESSION_MAP);
+		if (sessionMap != null)
+			sessionMap.put(se.getSession().getId(), se.getSession());
+	}
+
+	public void sessionDestroyed(HttpSessionEvent se) {
+		@SuppressWarnings("unchecked")
+		Map<String, HttpSession> sessionMap = (Map<String, HttpSession>)se.getSession().getServletContext().getAttribute(GRANITE_SESSION_MAP);
+		if (sessionMap != null)
+			sessionMap.remove(se.getSession().getId());
 	}
 }

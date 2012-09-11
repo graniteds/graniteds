@@ -34,19 +34,19 @@ import javax.servlet.annotation.HandlesTypes;
 import org.granite.config.GraniteConfigListener;
 import org.granite.messaging.webapp.AMFMessageFilter;
 import org.granite.messaging.webapp.AMFMessageServlet;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author William DRAI
  */
-@HandlesTypes({FlexFilter.class})
+@HandlesTypes({ServerFilter.class})
 public class GraniteServlet3Initializer implements ServletContainerInitializer {
 
 	public void onStartup(Set<Class<?>> scannedClasses, ServletContext servletContext) throws ServletException {
 		Set<Class<?>> classes = new HashSet<Class<?>>();
 		if (scannedClasses != null) {
 			classes.addAll(scannedClasses);
-			classes.remove(FlexFilter.class);	// JBossWeb adds the annotation ???
+			classes.remove(ServerFilter.class);	// JBossWeb adds the annotation ???
 		}
 		if (classes.size() > 1)
 			throw new ServletException("Application must have only one FlexFilter configuration class");
@@ -54,7 +54,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 		if (!classes.isEmpty()) {
 			// Configure GraniteDS only if we find a config class annotated with @FlexFilter
 			Class<?> clazz = classes.iterator().next();
-			FlexFilter flexFilter = clazz.getAnnotation(FlexFilter.class);
+			ServerFilter flexFilter = clazz.getAnnotation(ServerFilter.class);
 			
 			servletContext.setAttribute(GraniteConfigListener.GRANITE_CONFIG_ATTRIBUTE, clazz);
 			
@@ -72,7 +72,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 			
 			try {
 				if (servletContext.getServletRegistration("GravityServlet") == null) {
-					Class<? extends Servlet> gravityAsyncServletClass = ClassUtil.forName("org.granite.gravity.servlet3.GravityAsyncServlet", Servlet.class);
+					Class<? extends Servlet> gravityAsyncServletClass = TypeUtil.forName("org.granite.gravity.servlet3.GravityAsyncServlet", Servlet.class);
 					ServletRegistration.Dynamic gravityServlet = servletContext.addServlet("GravityServlet", gravityAsyncServletClass);
 					gravityServlet.setLoadOnStartup(1);
 					gravityServlet.setAsyncSupported(true);

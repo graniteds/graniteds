@@ -53,6 +53,7 @@ public abstract class Property {
     public abstract void setProperty(Object instance, Object value, boolean convert);
     public abstract Object getProperty(Object instance);
     public abstract Type getType();
+    public abstract Class<?> getDeclaringClass();
     
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
     	return isAnnotationPresent(annotationClass, false);

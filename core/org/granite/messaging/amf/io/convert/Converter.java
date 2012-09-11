@@ -23,7 +23,7 @@ package org.granite.messaging.amf.io.convert;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -54,7 +54,7 @@ public abstract class Converter {
      */
     public final boolean canConvert(Object value, Type targetType) {
     	if (targetType instanceof TypeVariable<?>)
-    		targetType = ClassUtil.getBoundType((TypeVariable<?>)targetType);
+    		targetType = TypeUtil.getBoundType((TypeVariable<?>)targetType);
     	return internalCanConvert(value, targetType);
     }
     
@@ -69,7 +69,7 @@ public abstract class Converter {
      */
     public final Object convert(Object value, Type targetType) {
     	if (targetType instanceof TypeVariable<?>)
-    		targetType = ClassUtil.getBoundType((TypeVariable<?>)targetType);
+    		targetType = TypeUtil.getBoundType((TypeVariable<?>)targetType);
     	return internalConvert(value, targetType);
     }
 

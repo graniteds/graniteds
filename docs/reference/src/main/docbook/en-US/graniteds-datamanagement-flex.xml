@@ -1,0 +1,1267 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+   
+<chapter id="graniteds.datamanagement">
+	<title>Data Management</title>
+	
+	<para>
+	GraniteDS provides various features that simplify the handling of data between Flex and Java EE, in particular when using JPA or Hibernate as
+	a persistence mechanism.
+	</para>
+	
+	<section id="data.jpamanaged">
+	   <title>JPA and managed entities</title>
+	   <para>
+	   Tide provides an integration between the Flex/LCDS concept of managed entities and the server persistence context (JPA or Hibernate).
+	   </para>
+	   <para>
+	   In particular, Tide maintains a client-side cache of entity instances and ensures that every instance is unique in the Flex client context. 
+	   To achieve this, it requires a unique identifier on each entity class. This is why GraniteDS supports the concept of managed entities.
+	   </para>
+	   <para>
+	   All entities marked as <literal>[Managed]</literal> are considered as corresponding to Hibernate/JPA managed entities on the server. 
+	   It is possible to do the same by implementing <literal>IEntity</literal> and extending <literal>EventDispatcher</literal>. 
+	   The managed entities delegate all operations on their getters/setters to the Tide context to which they belong so all changes can be tracked.
+	   </para>
+	   <para>
+	   From the Flex documentation of <literal>IManaged</literal>:
+	   </para>
+	   <programlisting role="AS3">
+private var _property:String;
+
+public function get property():String {
+    return Manager.getProperty(this, "property", _property);
+}
+
+public function set property(value:String):void {
+    Manager.setProperty(this, "property", _property, _property = value);
+}
+	   </programlisting>
+	   
+	   <para>
+	   The Tide <literal>Managed</literal> implementation itself forwards the getters/setters to the <literal>EntityManager</literal>/<literal>Context</literal> 
+	   containing the entity. As it implements the Flex <literal>mx.data.Managed</literal> class, it cannot be used in conjunction with LCDS.
+	   </para>
+	   <para>
+	   It is important to note that the <literal>IManaged</literal> interface is not sufficient to have correct Tide managed entities because Tide needs 
+	   that the entities implement a few functionalities that are not provided by the standard Flex <literal>IManaged</literal> objects.
+	   </para>
+	   
+	   <para>
+	   It is highly recommended to use JPA optimistic locking in a multi-tier environment (<literal>@Version</literal> annotation). 
+	   Note that Tide currently only supports <literal>Integer</literal> or <literal>Long</literal> version fields, not timestamps and that the field must be nullable
+	   (entity instances with a <literal>null</literal>/<literal>NaN</literal> version field will be considered as unsaved).
+        It is also <emphasis>highly</emphasis> recommended to add a persistent <literal>uid</literal> field (generally typed as a 36 bytes <literal>String</literal>) 
+        to have a consistent identifier through all application layers, see the explication below.
+        </para>
+        <para>
+        Below is a <literal>AbstractEntity</literal> class that can be used as a JPA mapped superclass for your application entities. 
+        The entity listener ensures that the entity always has an initialized <literal>uid</literal> field, but in general this identifier will be initialized from Flex.
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[@MappedSuperclass
+@EntityListeners({AbstractEntity.AbstractEntityListener.class})
+public abstract class AbstractEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    
+
+    @Id @GeneratedValue
+    private Long id;
+
+    /* "UUID" and "UID" are Oracle reserved keywords -> "ENTITY_UID" */
+    @Column(name="ENTITY_UID", unique=true, nullable=false, updatable=false, length=36)
+    private String uid;
+
+    @Version
+    private Integer version;
+
+    public Long getId() {
+        return id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return (o == this || (o instanceof AbstractEntity && uid().equals(((AbstractEntity)o).uid())));
+    }
+
+    @Override
+    public int hashCode() {
+        return uid().hashCode();
+    }
+
+    public static class AbstractEntityListener {
+        @PrePersist
+        public void onPrePersist(AbstractEntity abstractEntity) {
+            abstractEntity.uid();
+        }
+    }
+
+    private String uid() {
+        if (uid == null)
+            uid = UUID.randomUUID().toString();
+        return uid;
+    }
+}]]>
+        </programlisting>
+        
+        <tip><para>
+        The easiest and recommended way for getting Tide enabled managed entities is to generate them from Java classes with Gas3 or the GDS Eclipse builder using 
+        the <literal>tide="true"</literal> option.
+        </para></tip>
+        
+        <para>
+        Example build file for ant:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<gas3 outputdir="as3" tide="true">
+    <classpath>
+        <pathelement location="classes"/>
+    </classpath>
+    <fileset dir="classes">
+        <include name="com/myapp/entity/**/*.class"/>
+    </fileset>
+</gas3>]]>
+        </programlisting>
+        
+        <formalpara>
+            <title>Important things on ID/UID</title>
+            <para>
+            In a typical Flex/app server/database application, an entity lives in three layers:
+            <itemizedlist>
+                <listitem><para>
+                the Flex client
+                </para></listitem>
+                <listitem><para>
+                the Hibernate/JPA persistence context
+                </para></listitem>
+                <listitem><para>
+                the database
+                </para></listitem>
+            </itemizedlist>            
+            </para>
+            <para>
+            During the entity lifecycle, the only invariant is the id. The id reliably links the different existing versions of the entity in the three layers. 
+            When updating existing entities coming from the database, there are, in general, no problems because the id is defined and is maintained 
+            in the three layers during the different serialization/persistence operations.
+            </para>
+            <para>
+            A problem arises when a new entity is being created in any of the two upper layers (Flex/JPA). 
+            The new entity has no id until it has been persisted to the database. This means that between the initial creation and the final stored entity, 
+            the id has changed from null to a real value.
+            </para>
+            <para>
+            It is thus impossible to have a reliable link between the original entity that has been created and the entity that has been stored. 
+            This is even more complex if you try to add two or more new entities to a collection because, in this case, there will be absolutely 
+            no way to determine which one has been persisted with which id because they all had null ids at the beginning.
+            </para>
+            <para>
+            The problem already exists outside of Flex when you use a database generated id with Hibernate/JPA. 
+            The most common solution is to have a second persisted id, the uid, which is created by the client and persisted along with the entity.
+            </para>
+            <para>
+            With Flex, we have the same problem because the entities are often serialized/deserialized between Flex and the server, so we cannot check object 
+            instances equality. Moreover, Flex components themselves (<literal>DataGrid</literal>s, <literal>List</literal>s, ...) use the <literal>uid</literal> 
+            property as an entity identifier to correctly manage different object instances.
+            </para>
+            <para>
+            When there is a <literal>uid</literal> field in the Java entity, the Gas3 Tide template will generate a <literal>uid</literal> property on the AS3 object. 
+            In other cases, the Tide template tries to build a convenient <literal>uid</literal> property from the entity <literal>id</literal>. 
+            This second mode is, of course, vulnerable to the initial null id problem.
+            </para>
+            <para>
+            In conclusion, the recommended approach to avoid any kind of subtle problems is to have a real <literal>uid</literal> property which will be persisted 
+            in the database but is not a primary key for efficiency concerns. If it is not possible to add a <literal>uid</literal> property due to a legacy 
+            database schema or Java classes, it will work most of the time but you will then have to be very careful when creating new entities from Flex.
+            </para>
+            <para>
+            You will then have to either implement <literal>hashCode()</literal> and <literal>equals()</literal> based on this property, 
+            or if you require to have another specific behaviour for <literal>hashCode()</literal> and <literal>equals()</literal> you can simply implement 
+            the <literal>org.granite.tide.IUID</literal> Java interface that will instruct Tide to use internally the <literal>uid</literal> field for object comparisons.
+            </para>
+        </formalpara>
+	</section>
+	
+	<section id="data.lazyloading">
+	   <title>Transparent lazy loading</title>
+	   <para>
+	   All uninitialized lazy collections coming from the server are transparently wrapped on the Flex side by the Tide context in a 
+	   <literal>PersistentCollection</literal> or <literal>PersistentMap</literal>. This collection can be used as a data provider for any Flex component 
+	   that is able to handle <literal>CollectionEvent</literal> (all Flex components, such as <literal>DataGrid</literal> and <literal>List</literal> do). 
+	   When data is requested by the UI component, the collection asks the server for the real collection content. 
+	   This lazy loading functionality is completely automatic but will happen only if the collection is bound to a UI component.
+	   </para>
+	   
+	   <para>
+       When in the context of a server Seam conversation with a JPA extended persistence context, Tide will try to load the collection inside this
+       persistence context so all collection elements come from the same persistence context as the owning entity.
+       </para>
+        
+       <para>
+       Outside of a conversation, Tide will try different means to determine the correct EntityManager/Hibernate session to use. 
+       The whole collection and owning entity are then retrieved from a newly created persistence context. If you have a deep object graph, 
+       it will then be possible to get entities from different persistence contexts in the same client context, and it can lead to inconsistencies 
+       in the client data and issues with optimistic locking/versioning.
+	   </para>
+	   <para>
+	   Depending on the server framework of the application (Spring, EJB 3, Seam, CDI...), Tide will lookup an EntityManager or an Hibernate session
+	   in JNDI, in the Spring context or any other relevant way, and will try to determine the correct transaction management (JTA, JPA...).
+	   With Spring or Seam, it is possible to override the default persistence manager if you have particular requirements: with Spring you just have to
+	   configure a bean implementing <literal>TidePersistenceManager</literal> in the application context, with Seam you can override the component named
+	   <literal>org.granite.tide.seam.seamInitializer</literal> with a component extending the class <literal>org.granite.tide.seam.seamInitializer</literal>.
+	   Using a custom persistence manager can be useful for example if you have multiple <literal>EntityManagerFactories</literal> and want to be able 
+	   to select one of them depending on the entity whose collection has to be fetched.
+	   </para>
+	   
+	   <formalpara>
+	       <title>Manual fetching of lazy collections</title>
+	       <para>
+	       In some cases you may need to trigger manually the loading of a lazy loaded collection. As told earlier, all collections are wrapped in a 
+	       <literal>PersistentCollection</literal> or <literal>PersisteneMap</literal>. These two classes expose a method <literal>withInitialized</literal>
+	       that can take a function callback that can do something once the collection is populated:
+	       </para>
+	   </formalpara>
+	   <programlisting role="AS3">
+Object(myEntity.myCollection).withInitialized(function(collection:IList):void {
+   // Do something with the content of the list
+   var obj:Object = collection.getItemAt(0);
+});
+	   </programlisting>
+	</section>
+    
+    <section id="data.reverselazyloading">
+       <title>Reverse lazy loading</title>
+       <para>
+       Lazy loading greatly helps limiting the amount of data that is transferred between the server and the client. When receiving data from the server,
+       the lazy-loading state is managed by the JPA engine depending on what is done by the service, so only the necessary data is sent.
+       When sending objects to the server, the lazy-loading state depends on what has been or not loaded on the client context. As the lifespan of the entities
+       in the client context is much longer than in stateless services, there is a good chance that after a few time of running application, the whole object graph 
+       will be loaded on the client. That means that passing an entity as an argument to a remote method call will send the fully loaded object graph, whenever
+       maybe a single property has been modified on the main entity. For example :
+       </para>
+       <programlisting role="JAVA">
+public function savePerson():void {
+    person.lastName = "Test";
+    personService.save(person);   // This will send all loaded collections associated to the Person object
+}
+       </programlisting>
+       <para>
+       Obviously this is not very efficient. You can now ask Tide to limit the object graph before sending it.
+       It can be done manually in Flex with the following API :
+       </para>
+       <programlisting role="AS3">
+var uperson:Person = new EntityGraphUnintializer(tideContext).uninitializeEntityGraph(person) as Person;
+personService.save(uperson);    // This will send only the Person object without any loaded collection
+       </programlisting>
+       <para>
+       Here all loaded collections of the <literal>Person</literal> object will be uninitialized so <literal>uperson</literal> contains only the minimum of data 
+       to correctly merge your changes in the server persistence context. If there is a change deeper in the object graph, the uninitializer is able to detect it and will 
+       not uninitialize the corresponding graph so the server receives all changes.
+       </para>
+       <programlisting role="AS3">
+person.contacts.getItemAt(0).email = 'test@test.com';
+var uperson:Person = new EntityGraphUnintializer(tideContext).uninitializeEntityGraph(person) as Person;
+personService.save(uperson);    // This will send the Person object with only the contacts collection loaded
+       </programlisting>
+       <para>
+       Tide uses the client data tracking (the same used for dirty checking, see <link linkend="data.dirtycheck">below</link>) to determine which parts of the graph
+       need to be sent.
+       </para>
+       <para>
+       If you need to uninitialize more than one argument for a remote call, you have to use the same <literal>EntityGraphUninitializer</literal>. It is important 
+       because the uninitializer copies the entities in a temporary context before uninitializing their associations so the normal context keeps unchanged, and 
+       all processed entities have to share this same temporary context. 
+       </para>
+       <programlisting role="AS3">
+var egu:EntityGraphUnintializer = new EntityGraphUninitialize(tideContext);
+uperson1 = egu.uninitializeEntityGraph(person1);
+uperson2 = egu.uninitializeEntityGraph(person2);
+personService.save(uperson1, uperson2);
+        </programlisting>
+        <para>
+        Calling the <literal>EntityGraphUninitializer</literal> manually is a bit tedious and ugly, so there is a cleaner possibility when you are using 
+        generated typesafe service proxies. You can annotate your service method arguments with <literal>@org.granite.tide.data.Lazy</literal> :
+        </para>
+        <programlisting role="JAVA">
+public void save(@Lazy Person person) {
+}
+        </programlisting>
+        <para>
+        Gas3 will then generate a <literal>[Lazy]</literal> annotation on your service methods (so take care that you have added the [Lazy] annotation to your Flex 
+        metadata compilation configuration). Next in the Flex application, register the <literal>UninitializeArgumentPreprocessor</literal> component in Tide as follows :
+        </para>
+        <programlisting role="AS3">
+Tide.getInstance().addComponents([UninitializeArgumentPreprocessor]);
+        </programlisting>
+        <para>
+        Once you have done this, all calls to <literal>PersonService.save()</literal> will automatically use a properly uninitialized version of the <literal>person</literal> 
+        argument.
+        </para>
+        <para>
+        This new feature cannot be yet applied to local context variables (mostly used with Seam or CDI stateful components). Only method arguments can be processed, 
+        but this should cover be the vast majority of use cases. Support for context variables will come with GDS 3.0.
+        </para>
+    </section>
+	
+	<section id="data.dirtycheck">
+	   <title>Dirty checking and conflict handling</title>
+	   <para>
+	   The Tide framework includes a client-side entity cache where each managed entity exists only once for each Tide context. Besides maintaining this cache,
+	   Tide tracks all changes made on managed entities and on their associations and saves these changes for each modification.
+	   This flag is always reset to <literal>false</literal> when the same instance is received from the server, so this flag is indeed an indication that the 
+	   user has changed something since the last remote call.
+	   </para>
+	   <para>
+       A particular entity instance can be in two states :
+       <itemizedlist>
+            <listitem><para>
+            Stable: the instance has not been modified until it was received from the server
+            </para></listitem>
+            <listitem><para>
+            Dirty : the instance has been modified
+            </para></listitem>
+       </itemizedlist>
+	   </para>
+	   <para>
+	   The current state of an entity can be accessed with :
+	   </para>
+	   <programlisting role="AS3">
+entity.meta_dirty
+	   </programlisting>
+	   <para>
+	   The property <literal>meta_dirty</literal> is bindable, so it could be used for example to enable/disable a <emphasis>Save</emphasis> button.
+	   </para>
+	   <para>
+	   Note that this dirty flag only indicates if a direct property or collection of the entity has been changed, it does not indicate if something has changed
+	   deeper in the object graph (that would not make sense anyway for circular graphs). The correct way of knowing if any object has been changed in the context,
+	   is to use the property <literal>meta_dirty</literal> of the Tide context.
+	   </para>
+	   <programlisting role="XML">
+<![CDATA[<mx:Button label="Save" click="entityService.save()"
+    enabled="{tideContext.meta_dirty}"/>]]>
+   	   </programlisting>
+   	   <warning><para>
+   	   This <literal>dirty</literal> flag is reliable when using optimistic locking. The only way for Tide to know that an entity instance has actually been changed
+   	   on the server is to check that its <literal>@Version</literal> field has been incremented.
+   	   </para></warning>
+   	   <para>
+   	   In a typical client/server interaction, here is what happens :
+   	   <orderedlist>
+   	        <listitem><para>
+   	        The Flex application retrieves an entity instance from the server, for example with a version number 0. This instance is considered stable.
+   	        </para></listitem>
+            <listitem><para>
+            The user modifies data on the client, possibly with bidirectional data binding. The version number stays 0, the client state becomes dirty.
+            </para></listitem>
+            <listitem><para>
+            The user clicks on a save button. The Flex application calls a service and retrieves the result. The server has incremented the version number to 1, 
+            so Tide overwrites the cached instance on the client and it is considered as stable again.
+            </para></listitem>
+   	   </orderedlist>
+   	   Note that if you retrieve the same instance without version increment, the local changes won't be overwritten. In the previous example, if the server
+   	   returns the same instance with an unchanged version number of 0, the local instance will still be dirty. That means that you can still issue queries that return
+   	   a locally changed entity without losing the user changes.
+   	   </para>
+       
+       <para>
+       One nice possibility with this programming model is that you can easily implement a cancel button after step 2. If you use bidirectional data binding, the 
+       client view of the entity instance has already become dirty. As Tide always saves the local changes, it also provides a simple way of restoring the last stable 
+       state :
+   	   </para>
+   	   <programlisting role="AS3">
+private function restore():void {
+    Managed.resetEntity(entity);
+}
+   	   </programlisting>
+   	   <para>
+   	   You can also reset all entities in the context to their last stable state with :
+   	   </para>
+   	   <programlisting role="AS3">
+private function restoreAll():void {
+    tideContext.meta_resetAllEntities();
+}
+   	   </programlisting>
+   	   
+   	   <para>
+   	   If you look at the previous process in 3 steps, we assume that nobody else has changed the data the user has been working on between 1 and 3. 
+   	   In concurrent environments with read-write data, there are possibilities that someone else has modified the entity on the server between step 1 and step 3.
+   	   </para>
+   	   <para>
+   	   There are two ways of managing this: either you just rely on optimistic locking and intercept the corresponding server exceptions to display a message to 
+   	   the user, or you use data push (see section <link linkend="data.push">Data Push</link>) so all Flex clients are updated in near real-time. Note however that
+   	   even with data push, there can still be conflicts between changes made by a user and updates received from the server.
+   	   </para>
+   	   <para>
+       With normal optimistic locking, the remote service call at step 3 will trigger a <literal>OptimisticLockException</literal>. Tide provides a built-in 
+       exception handler to handle this case: it will extract the <literal>entity</literal> argument of the exception, compare its state with the client state 
+       and dispatch a conflict event <literal>TideDataConflictEvent</literal> on the Tide context when it's not identical. The exception handler can be enabled with :
+   	   </para>
+   	   <programlisting role="AS3">
+Tide.getInstance().addExceptionHandler(OptimisticLockExceptionHandler);
+   	   </programlisting>
+   	   <para>
+   	   When data push is used, an entity instance can be updated with data received from the server at any time. If the current user was working on this instance, 
+   	   it is obviously not desirable that his work is overwritten without notice. Similarly to the previous case, Tide will determine that an incoming data from 
+   	   another user session is in conflict with the local data and dispatch a <literal>TideDataConflictEvent</literal> on the Tide context.
+   	   </para>
+   	   <para>
+   	   What can you do with this event ? Basically there are two possibilities : accept the server-side state or keep the client state. 
+   	   Here is an example of a conflict handler defined in a Flex application, generally in the main mxml :
+   	   </para>
+   	   <programlisting role="XML">
+<![CDATA[<mx:Application ...
+    preinitialize="Tide.getInstance().initApplication()"
+    creationComplete="init();">
+    
+    <mx:Script>
+        private function init():void {
+            Tide.getInstance().getEjbContext().addEventListener(
+                TideDataConflictsEvent.DATA_CONFLICTS, conflictsHandler);
+        }
+
+        private var _conflicts:Conflicts;
+
+        private function conflictsHandler(event:TideDataConflictsEvent):void {
+            _conflicts = event.conflicts;
+            Alert.show("Keep local state ?", "Data conflict", 
+                Alert.YES|Alert.NO, null, conflictsCloseHandler);
+        }
+        
+        private function conflictsCloseHandler(event:CloseEvent):void {
+            if (event.detail == Alert.YES)
+                _conflicts.acceptAllClient();
+            else
+                _conflicts.acceptAllServer();
+        }
+    </mx:Script>
+    ...
+</mx:Application>]]>
+   	   </programlisting>
+   	   
+   	   <para>
+   	   If you look at the ASDoc for <literal>Conflicts</literal>, there are a few properties that give more details about the conflicts and make possible 
+   	   to present a better alert message to the user.
+   	   </para>
+   	   
+   	   <para>When using the Hibernate native API (<literal>Session</literal>), the optimistick lock exception <literal>StaleObjectStateException</literal>
+   	   is unfortunately missing a critical information to allow for correct conflict handling (that is present in the JPA <literal>OptimistickLockException</literal>). 
+   	   In this case, you should use the provided Hibernate event wrappers that add the missing data to the Hibernate exception. Here is what is will look like when
+   	   configuring the <literal>SessionFactory</literal> with Spring :
+   	   </para>
+   	   <programlisting role="XML">
+<![CDATA[<bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="hibernateProperties">
+        <props>
+            <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+            <prop key="hibernate.show_sql">false</prop>
+            <prop key="hibernate.hbm2ddl.auto">update</prop>
+        </props>
+    </property>
+    <property name="eventListeners">
+        <map>
+            <entry key="merge"><bean class="org.granite.tide.hibernate.HibernateMergeListener"/></entry>
+            <entry key="create"><bean class="org.granite.tide.hibernate.HibernatePersistListener"/></entry>
+            <entry key="create-onflush"><bean class="org.granite.tide.hibernate.HibernatePersistOnFlushListener"/></entry>
+            <entry key="delete"><bean class="org.granite.tide.hibernate.HibernateDeleteListener"/></entry>
+            <entry key="update"><bean class="org.granite.tide.hibernate.HibernateSaveOrUpdateListener"/></entry>
+            <entry key="save-update"><bean class="org.granite.tide.hibernate.HibernateSaveOrUpdateListener"/></entry>
+            <entry key="save"><bean class="org.granite.tide.hibernate.HibernateSaveOrUpdateListener"/></entry>
+            <entry key="lock"><bean class="org.granite.tide.hibernate.HibernateLockListener"/></entry>
+            <entry key="flush"><bean class="org.granite.tide.hibernate.HibernateFlushListener"/></entry>
+            <entry key="auto-flush"><bean class="org.granite.tide.hibernate.HibernateAutoFlushListener"/></entry>
+        </map>
+    </property>
+    ...
+</bean>]]>
+   	   </programlisting>
+   	   
+   	   <formalpara>
+   	        <title>Integration with client conversations</title>
+   	        <para>
+   	        When using client conversations, the situation becomes a bit more complex as each conversation has its own entity cache. That means that when a user 
+   	        modifies some data in a conversation context, the change is not immediately visible in others even if they contain the same entity instance.
+   	        </para>
+   	    </formalpara>
+   	    
+   	    <para>
+   	    The Tide context object provides a few methods to deal with such situations :
+   	    </para>
+   	   <programlisting role="AS3">
+tideContext.meta_mergeInParentContext()
+   	   </programlisting>   	   
+   	   <para>
+   	   This will merge all stable state of the current conversation context in its parent context and all its children. In the common case where you don't 
+   	   use nested conversations, that just means that the changes are merged in the global context as well as all other conversations.
+   	   </para>
+   	   <para>
+       If you use nested conversations, the merge will be done only in the direct parent context and all its children, but not in the global context.
+       </para>
+       <programlisting role="AS3">
+tideContext.meta_mergeInGlobalContext()
+       </programlisting>       
+        <para>
+        This will merge all stable state of the current conversation context in its parent context, in the global context and in all child contexts recursively.
+        </para>
+	</section>
+    
+	<section id="data.validation">
+	   <title>Data validation</title>
+	   <para>
+	   Tide integrates with Hibernate Validator 3.x and the Bean Validation API (JSR 303) implementations, and propagate the server validation errors to the client 
+	   UI components.
+	   </para>
+	   <para>
+	   Starting with GraniteDS 2.2, however, the preferred way to execute validation is a Flex-side, JSR-303 like, validation framework 
+	   (see <link linkend="graniteds.validation">Bean Validation (JSR-303)</link> for details).
+	   </para>
+	   <para>
+	   The server support for Hibernate Validator 3 is available in <literal>granite-hibernate.jar</literal>, and the support for Bean Validation is available
+	   in <literal>granite-beanvalidation.jar</literal>. You will have to add one of these jars in your application <literal>lib</literal> folder.
+	   </para>
+	   <para>
+	   The validator integration is based on the GraniteDS exception handling framework. A server exception converter is registered to handle the 
+	   <literal>InvalidStateException</literal>, and a client exception handler can be registered with:
+	   </para>
+	   <programlisting role="AS3">
+Seam.getInstance().addExceptionHandler(ValidatorExceptionHandler);
+	   </programlisting>
+	   <para>
+	   This exception handler intercepts all server validation faults and dispatches a validation event on the context. To complete the integration, 
+	   a <literal>TideEntityValidator</literal> Flex component can be attached to any UI component:
+	   </para>
+	   <programlisting role="XML">
+<![CDATA[<mx:Application
+    ...
+    xmlns:tv="org.granite.tide.validators.*">
+
+    <tv:TideEntityValidator id="teval" entity="{tideContext.booking}"
+        property="creditCardName" listener="{creditCardNameInput}"/>
+
+    <mx:TextInput id="creditCardNameInput" text="{tideContext.booking.creditCardName}"/>
+    ...
+</mx:Application>]]>
+	   </programlisting>
+	   <para>
+	   You can have more control on the validation behaviour by directly listening to validation events on the context:
+	   </para>
+	   <programlisting role="AS3">
+public function setup():void {
+    tideContext.addEventListener(TideValidatorEvent.INVALID, validationHandler);
+}
+
+private function validationHandler(event:TideValidatorEvent):void {
+    var invalidValues:Array = event.invalidValues;
+    for each (var iv:Object in invalidValues) {
+        var invalidValue:InvalidValue = iv as InvalidValue;
+        Alert.show(
+            "Invalid property: " + invalidValue.path +
+            " on object " + invalidValue.bean
+        );
+    }
+}
+	   </programlisting>
+	   
+	   <formalpara>
+	       <title>Remote validation of input fields</title>
+	       <para>
+           Another possibility is to use an input validator that calls the server when the validation is triggered.
+           </para>
+       </formalpara>
+       
+       <para>
+       With Seam on the server, it then uses the <literal>Validators</literal> component to get a proper <literal>ClassValidator</literal>, and thus just works 
+       with Hibernate Validator 3.x for now. With other server technologies, it uses a built-in validator handler which supports both HV3 and Bean Validation
+       implementations.
+       </para>
+       <para>
+       The use of this component is quite simple and very similar to any other Flex validator, with additional parameters to define the entity to validate.
+       </para>
+       <programlisting role="XML">
+<![CDATA[<tv:TideInputValidator id="tival" 
+    source="{creditCardNameInput}" property="text" 
+    entity="{tideContext.booking}" entityProperty="creditCardName" 
+    entityManager="{tideContext}"/>
+
+<mx:TextInput id="creditCardNameInput" text="{tideContext.booking.creditCardName}"/>]]>
+       </programlisting>
+
+       <para>
+       The property <literal>entityManager</literal> of the validator may be optional if the entity is maintained in the context (i.e., <literal>ctx.myEntity</literal>) 
+       and has a proper <literal>entityManager</literal> defined (with <literal>meta_getEntityManager</literal>). This is the case for all entities retrieved from 
+       the server.
+       </para>
+	</section>
+    
+    <section id="data.paging">
+       <title>Data paging</title>
+       <para>
+       GraniteDS provides the <literal>PagedQuery</literal> component which is an implementation of <literal>ListCollectionView</literal> and can be used as a data
+       provider for most UI components such a grids or lists.
+       </para>
+       <para>
+       This component supports paging and can be mapped to a server component which execute queries. The collection is completely paged and keeps in memory only 
+       the data needed for the current display. In fact, it keeps in memory two complete pages to avoid too many server calls. Contraty to other implementations,
+       the elements that get out of display during scrolling are discarded, so you never fill up the memory of the Flash VM.
+       </para>
+       <para>
+       <literal>PagedQuery</literal> also supports automatic remote sorting and filtering. The server-side part of the paging depends on the server technology 
+       and is described in the next paragraphs.
+       </para>
+       <para>
+       On the client-side, you first need to register the client component with:
+       </para>
+       <programlisting role="XML">
+<![CDATA[<mx:Script>
+    import org.granite.tide.collections.PagedQuery;
+
+    Tide.getInstance().addComponent("people", PagedQuery);
+</mx:Script>]]>      
+        </programlisting>
+        <para>
+        This registers a client component with a page size defined by the server. It's also possible to define the page size on the client with :
+        </para>
+       <programlisting role="XML">
+<![CDATA[<mx:Script>
+    import org.granite.tide.collections.PagedQuery;
+
+    Tide.getInstance().addComponentWithFactory("people", PagedQuery, { maxResults: 36 });
+</mx:Script>]]>      
+        </programlisting>
+        <para>
+        When using the Tide client framework, that can be done in a Tide module initializer as any other component declaration.
+        </para>
+        <note><para>
+        It is important that this registration is done in a static block initializer of the main MXML class, because it has to be defined before the 
+        first reference in a component, and in particular before any data binding on <literal>context.people</literal> is initialized by Flex
+        </para></note>
+        <para>
+        That's all. Just bind the component as a data provider for any component and it should work as expected:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<mx:DataGrid id="people" dataProvider="{ctx.people}" width="100%" height="100%"
+    liveScrolling="false">
+    <mx:columns>
+        <mx:DataGridColumn dataField="firstName" headerText="First name"/>
+        <mx:DataGridColumn dataField="lastName" headerText="Last name"/>
+    </mx:columns>
+</mx:DataGrid>]]>
+        </programlisting>
+        <para>
+        The <literal>DataGrid</literal> sorting triggers a remote refresh of the collection, and the changes on the data filter are maintained during the remote refresh, 
+        so the filtering is also done remotely.
+        </para>
+        <warning><para>
+        It is important to disable <literal>liveScrolling</literal> to avoid excessive remote traffic.
+        </para></warning>
+        <warning><para>
+        Flex 4 Spark controls do not handle <literal>ItemPendingError</literal> by themselves and need a special wrapper <literal>AsyncListView</literal>.
+        </para></warning>
+        <programlisting role="XML">
+<![CDATA[<s:List>
+    <mx:AsyncListView list="{people}"/>
+</s:List>]]>
+        </programlisting>
+        <para>
+        See <ulink url="http://opensource.adobe.com/wiki/display/flexsdk/AsyncListView+Specification">here</ulink> for more details in the Flex 4 documentation.
+        </para>
+        <para>
+        Just like the paged collections of LCDS, everything works only if there is a correct <literal>uid</literal> property on the entities. 
+        It is thus recommended to use the Tide templates for the Gas3 generator, which provide a default implementation of <literal>uid</literal> if there is none.
+        </para>
+        <para>
+        The default <literal>AsyncListView</literal> does not support automatic propagation of the UI control sorting to its data provider.
+        Tide provides an alternative <literal>SortableAsyncListView</literal> that works in all cases.
+        </para>
+        <programlisting role="XML">
+<![CDATA[
+<s:VGroup ...
+    xmlns:c="org.granite.tide.collections.*">
+
+<s:DataGrid ...>
+    <c:SortableAsyncListView list="{people}"/>
+</s:DataGrid>]]>
+        </programlisting>
+        
+        <formalpara>
+            <title>Server-side împlementation</title>
+            <para>
+            The <literal>PagedQuery</literal> components expects that the corresponding server component implements a specific method to fetch elements.
+            There are two ways of handling filtering, either with an untyped map or with a typesafe filter object:
+            </para>
+        </formalpara>
+        <para>
+        For untyped filters, the server component shoud implement the following method:
+        </para>
+        <programlisting role="JAVA">
+public Map find(Map filter, int first, int max, String order, boolean desc);
+        </programlisting>
+        <para>
+        <literal>first</literal>, <literal>max</literal>, <literal>order</literal> and <literal>desc</literal> are straightforward. 
+        <literal>filter</literal> is a map containing the parameter values of the query. These values can be set on the client by:
+        </para>
+        <programlisting role="AS3">
+<![CDATA[tideContext.pagedQuery.filter.<parameter1> = <value1>;
+tideContext.pagedQuery.filter.<parameter2> = <value2>;
+...]]>
+        </programlisting>
+        <para>
+        The return object must be a map containing four properties:
+        <itemizedlist>
+            <listitem><para>
+            <literal>firstResult</literal>: Should be exactly the same as the argument passed in (int first).
+            </para></listitem>
+            <listitem><para>
+            <literal>maxResults</literal>: Should be exactly the same as the argument passed in (int max), except when its value is 0, meaning that the client 
+            component is initializing and needs a max value. In this case, you have to set the page value, which must absolutely be greater than the maximum 
+            expected number of elements displayed simultaneously in a table.
+            </para></listitem>
+            <listitem><para>
+            <literal>resultCount</literal>: Count of results.
+            </para></listitem>
+            <listitem><para>
+            <literal>resultList</literal>: List of results.
+            </para></listitem>
+        </itemizedlist>
+        </para>
+        <para>
+        The following code snippet is a quick and dirty implementation and can be used as a base for other implementations (here this is a Spring service but 
+        the equivalent implementations for EJB3 or CDI would be extremely similar):
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[@Service("people")
+@Transactional(readOnly=true)
+public class PeopleServiceImpl implements PeopleService {
+
+    @PersistenceContext
+    protected EntityManager manager;
+
+    public Map find(Map filter, int first, int max, String order, boolean desc) {
+        Map result = new HashMap(4);
+
+        String from = "from Person e ";
+        String where = "where lower(e.lastName) like '%' || lower(:lastName) || '%' ";
+        String orderBy = (
+            order != null ? "order by e." + order + (desc ? " desc" : "") : ""
+        );
+        String lastName = (
+            filter.containsKey("lastName") ? (String)filter.get("lastName") : ""
+        );
+
+        Query qc = manager.createQuery("select count(e) " + from + where);
+        qc.setParameter("lastName", lastName);
+        long resultCount = (Long)qc.getSingleResult();
+
+        if (max == 0)
+            max = 36;
+
+        Query ql = manager.createQuery("select e " + from + where + orderBy);
+        ql.setFirstResult(first);
+        ql.setMaxResults(max);
+        ql.setParameter("lastName", lastName);
+        List resultList = ql.getResultList();
+
+        result.put("firstResult", first);
+        result.put("maxResults", max);
+        result.put("resultCount", resultCount);
+        result.put("resultList", resultList);
+
+        return result;
+    }
+}]]>
+        </programlisting>
+        
+        <para>
+        It is also possible to define on the Flex size an alternative remote component name and method name that will implement the querying :
+        </para>
+        <programlisting role="XML">
+<![CDATA[<mx:Script>
+    Spring.getInstance().addComponentWithFactory("people", PagedQuery, 
+        { maxResults: 36, remoteComponentName: "peopleService", methodName: "list" });
+</mx:Script>]]>
+        </programlisting>
+        <para>
+        In this case, the previous component would be :
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[@Service("peopleService")
+@Transactional(readOnly=true)
+public class PeopleServiceImpl implements PeopleService {
+
+    @PersistenceContext
+    protected EntityManager manager;
+
+    public Map list(Map filter, int first, int max, String order, boolean desc) {
+        Map result = new HashMap();
+
+        String from = "from Person e ";
+        String where = "where lower(e.lastName) like '%' || lower(:lastName) || '%' ";
+        String orderBy = (
+            order != null ? "order by e." + order + (desc ? " desc" : "") : ""
+        );
+        String lastName = (
+            filter.containsKey("lastName") ? (String)filter.get("lastName") : ""
+        );
+
+        Query qc = manager.createQuery("select count(e) " + from + where);
+        qc.setParameter("lastName", lastName);
+        long resultCount = (Long)qc.getSingleResult();
+
+        if (max == 0)
+            max = 36;
+
+        Query ql = manager.createQuery("select e " + from + where + orderBy);
+        ql.setFirstResult(first);
+        ql.setMaxResults(max);
+        ql.setParameter("lastName", lastName);
+        List resultList = ql.getResultList();
+
+        result.put("resultCount", resultCount);
+        result.put("resultList", resultList);
+
+        return result;
+    }
+}]]>
+        </programlisting>
+        <para>
+        Note that this time we did not have to return <literal>firstResult</literal> and <literal>maxResults</literal> because the page size is defined on the client.
+        </para>
+        
+        <para>
+        It is finally possible to use a typesafe filter object instead of the <literal>Map</literal>. The server implementation will then be something like :
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[@Service("peopleService")
+@Transactional(readOnly=true)
+public class PeopleServiceImpl implements PeopleService {
+
+    @PersistenceContext
+    protected EntityManager manager;
+
+    public Map list(Person examplePerson, int first, int max, String order, boolean desc) {
+        Map result = new HashMap();
+
+        String from = "from Person e ";
+        String where = "where lower(e.lastName) like '%' || lower(:lastName) || '%' ";
+        String orderBy = (
+            order != null ? "order by e." + order + (desc ? " desc" : "") : ""
+        );
+        String lastName = (
+            examplePerson.getLastName() != null ? examplePerson.getLastName() : ""
+        );
+
+        Query qc = manager.createQuery("select count(e) " + from + where);
+        qc.setParameter("lastName", lastName);
+        long resultCount = (Long)qc.getSingleResult();
+
+        if (max == 0)
+            max = 36;
+
+        Query ql = manager.createQuery("select e " + from + where + orderBy);
+        ql.setFirstResult(first);
+        ql.setMaxResults(max);
+        ql.setParameter("lastName", lastName);
+        List resultList = ql.getResultList();
+
+        result.put("resultCount", resultCount);
+        result.put("resultList", resultList);
+
+        return result;
+    }
+}]]>
+        </programlisting>
+        <para>
+        To use this, you also have to define the filter class on the client component :
+        </para>
+       <programlisting role="XML">
+<![CDATA[<mx:Script>
+    import org.granite.tide.collections.PagedQuery;
+
+    Tide.getInstance().addComponentWithFactory("people", PagedQuery, { maxResults: 36, filterClass: Person });
+</mx:Script>]]>      
+        </programlisting>
+        
+        <para>
+        If the filter class is bindable, then <literal>people.filter</literal> will be an instance of the provided filter class. 
+        If not, the <literal>PagedQuery</literal> will create an <literal>ObjectProxy</literal> that wraps the filter instance to track changes on it.
+        </para>
+        <para>
+        You can also directly provide your own instance of the filter instead of letting the component instantiate the class itself:
+        </para>
+       <programlisting role="XML">
+<![CDATA[<mx:Script>
+    import org.granite.tide.collections.PagedQuery;
+
+    Tide.getInstance().addComponentWithFactory("people", PagedQuery, { maxResults: 36, filter: new Person() });
+</mx:Script>]]>      
+        </programlisting>
+    </section>
+    
+    <section id="data.push">
+       <title>Data push</title>
+       <para>
+       In classic Flex applications using remoting, data is updated only when the user does an action that triggers a call to the server. As it is possible 
+       to do many things purely on the client without involving the server at all, that can lead to stale client state if someone else has modified something 
+       between updates.
+       </para>
+       <para>
+       Optimistic locking ensures that the data will keep consistent on the server and in the database, but it would be better if data updates were pushed 
+       in real-time to all connected clients.
+       </para>
+       <para>
+       Tide makes this possible by integrating with the JPA provider and the Gravity messaging broker to dispatch data updates to subscribed clients.
+       </para>
+       <para>
+       This requires a bit of configuration :
+       <orderedlist>
+            <listitem><para>
+            Define a Gravity topic
+            </para></listitem>
+            <listitem><para>
+            Add the Tide JPA listener DataPublishListener on entities that should be tracked
+            </para></listitem>
+            <listitem><para>
+            Add the Tide annotation DataEnabled on all server components involved in modifications of these data
+            </para></listitem>
+            <listitem><para>
+            Subscribe to the topic on the client with the DataObserver component
+            </para></listitem>
+       </orderedlist>
+       </para>
+       <para>
+       Let's see all this in details :
+       </para>
+       <para>
+       Define a Gravity topic: in the standard case, it can be done in <literal>services-config.xml</literal>:
+       </para>
+       <programlisting role="XML">
+<![CDATA[<service id="gravity-service"
+    class="flex.messaging.services.MessagingService"
+    messageTypes="flex.messaging.messages.AsyncMessage">
+    <adapters>
+        <adapter-definition id="simple" 
+            class="org.granite.gravity.adapters.SimpleServiceAdapter"/>
+    </adapters>
+
+    <destination id="dataTopic">
+        <properties>
+            <no-local>true</no-local>
+            <session-selector>true</session-selector>
+        </properties>
+        <channels>
+            <channel ref="gravityamf"/>
+        </channels>
+        <adapter ref="simple"/>
+    </destination>
+</service>
+...
+<channel-definition id="gravityamf" class="org.granite.gravity.channels.GravityChannel">
+    <endpoint
+        uri="http://{server.name}:{server.port}/{context.root}/gravityamf/amf"
+        class="flex.messaging.endpoints.AMFEndpoint"/>
+</channel-definition>]]>
+        </programlisting>
+        <para>
+        With Spring or Seam, this can be done more easily in the respective configuration files <literal>application-context.xml</literal> 
+        or <literal>components.xml</literal>:
+        </para>
+        <para>
+        Spring context:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<graniteds:messaging-destination id="dataTopic" no-local="true" session-selector="true"/>]]>
+        </programlisting>
+        <para>
+        Seam <literal>components.xml</literal>:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<graniteds:messaging-destination name="dataTopic" no-local="true" session-selector="true"/>]]>
+        </programlisting>
+        <para>
+        This example configuration defines a simple Gravity destination but it's also possible to use the JMS, ActiveMQ or any custom adapter if you need 
+        transactional behaviour or better scalabilty.
+        </para>
+        <para>
+        The two important parameters for the topic definition are :
+        <itemizedlist>
+            <listitem><para>
+            <literal>no-local</literal> should be set to <literal>true</literal>. That means that the client that triggers the modification will not receive 
+            the result of the update twice : first by the remoting call, then by the messaging update.
+            </para></listitem>
+            <listitem><para>
+            <literal>session-selector</literal> must be set to <literal>true</literal>. Tide uses JMS-style selectors to determine which data will be sent 
+            to which clients and thus needs to store the current messaging selector state in the user session.
+            </para></listitem>
+        </itemizedlist>
+        </para>
+        <para>
+        Add the Tide JPA publishing listener on the entities that should be tracked:
+        </para>
+        <programlisting role="JAVA">
+@Entity
+@EntityListeners({DataPublishListener.class})
+public abstract class MyEntity {
+    ... 
+}
+        </programlisting>
+        <para>
+        Add the Tide data annotation on all services, example here with a Spring service:
+        </para>
+        <programlisting role="JAVA">
+@DataEnabled(topic="dataTopic", publish=PublishMode.ON_SUCCESS)
+public interface MyService {
+    ...
+}
+        </programlisting>
+        <para>
+        It's generally recommended to put the annotation on the service interface but it can also work when defined on the service implementation. 
+        Note that even services that only read data should be annotated this <literal>@DataEnabled</literal> because they also participate in the construction 
+        of the message selector.
+        </para>
+        <para>
+        The attributes of this annotations are :
+        <itemizedlist>
+            <listitem><para>
+            <literal>topic</literal>: the name of the messaging topic that will be used to dispatch updates. Obviously this is the one we declared just before in 
+            <literal>services-config.xml</literal>.
+            </para></listitem>
+            <listitem><para>
+            <literal>publish</literal>: the publishing mode. <literal>PublishMode.MANUAL</literal> means that you will have to trigger the dispatch manually, 
+            for example in an interceptor. <literal>PublishMode.ON_SUCCESS</literal> means that Tide will automatically dispatch the updates on any successful call. 
+            <literal>PublishMode.ON_COMMIT</literal> is not yet implemented.
+            </para></listitem>
+            <listitem><para>
+            <literal>params</literal>: a filter class that will define to which updates are sent to which clients. By default there is no filtering, 
+            otherwise see below for a more detailed explanation.
+            </para></listitem>
+        </itemizedlist>
+        </para>
+        <formalpara>
+            <title>Publishing Filters</title>
+            <para>
+            It is possible to tell the Tide engine how it should dispatch each update (i.e. to which clients).
+            </para>
+        </formalpara>
+        <para>
+        It works in two phases : at each remote call from a client, Tide calls the observes method of the params class and builds the current message selector. 
+        Next at each update it calls publishes to set the message headers that will be filtered by the selector. Let's see it on an example to be more clear :
+        </para>
+        <programlisting role="JAVA">
+public class AddressBookParams implements DataTopicParams {
+    
+    public void observes(DataObserveParams params) {
+        params.addValue("user", Identity.instance().getCredentials().getUsername());
+        params.addValue("user", "__public__");
+    }
+    
+    public void publishes(DataPublishParams params, Object entity) {
+        if (((AbstractEntity)entity).isRestricted())
+            params.setValue("user", ((AbstractEntity)entity).getCreatedBy());
+        else
+            params.setValue("user", "__public__");
+    }
+}
+        </programlisting>
+        <para>
+        The method <literal>observes</literal> here adds two values to the current selector: the current user name (here retrieved by Seam Identity but could be 
+        any other means) and the value <literal>__public__</literal>. From these values Tide will define a message selector 
+        <literal>(user = 'username' OR user = '__public__')</literal> meaning that we only want to be notified of updates concerning public data or data that we own.
+        </para>
+        <para>
+        During the publishing phase, Tide will call the method <literal>publishes</literal> for each updated entity and build the message headers with the 
+        provided values. In the example, an update message will have a user header with either <literal>__public__</literal> or the entity owner for restricted data. 
+        These headers are then matched with the current message selector for each subscribed client.
+        </para>
+        <para>
+        Here we have used only one header parameter but it's possible to define as many as you want. Just take care that the match between observed and published 
+        values can become very complex and difficult to predict with too many criteria. When having many header values, the resulting selector is an
+        <literal>AND</literal> of all criteria :
+        </para>
+        <programlisting role="JAVA">
+public void observes(DataObserveParams params) {
+    params.addValue("user", Identity.instance().getCredentials().getUsername());
+    params.addValue("user", "__public__");
+    params.addValue("group", "admin");
+    params.addValue("group", "superadmin");
+}
+        </programlisting>
+        <para>
+        Will generate the following selector :
+        </para>
+        <programlisting>
+(user = 'username' OR user = '__public__') AND (group = 'admin' OR group = 'superadmin')
+        </programlisting>
+        <formalpara>
+            <title>Publishing Modes</title>
+            <para>
+            There are three publishing modes :
+            <itemizedlist>
+                <listitem><para>
+                <literal>PublishMode.ON_SUCCESS</literal> is the easiest to use, and dispatch updates after each successful remote call, regardless of the actual
+                result of the transaction (if there is one). 
+                </para></listitem>
+                <listitem><para>
+                <literal>PublishMode.ON_COMMIT</literal> allows for a transactional behaviour, and does the dispatch only on transaction commit.
+                </para></listitem>
+                <listitem><para>
+                <literal>PublishMode.MANUAL</literal> lets you do the dispatch manually in your services when you want, giving the most control.
+                </para></listitem>
+            </itemizedlist>
+            </para>
+        </formalpara>
+        <para>
+        By default only GraniteDS remoting calls are able to dispatch update messages with <literal>ON_SUCCESS</literal> or <literal>MANUAL</literal> modes.
+        If you need the <literal>ON_COMMIT</literal> mode, or need that services that are not called from Flex also trigger the dispatch, then you will have
+        to enable the Tide data dispatcher interceptor that will handle to updates in threads that are not managed by GraniteDS.
+        </para>
+        <para>
+        To enable the interceptor, it is necessary to indicate on the <literal>@DataEnabled</literal> annotation that there is one with the 
+        <literal>useInterceptor</literal> attribute :
+        </para>
+        <programlisting role="JAVA">
+@DataEnabled(topic="dataTopic", publishMode=PublishMode.ON_COMMIT, useInterceptor=true)
+public class MyService {
+}
+        </programlisting>
+        <para> 
+        There are four versions of the interceptor available for each supported framework : EJB3, Spring, Seam 2, CDI.
+        </para>
+        <para>
+        For Spring, add the advice to your context (take care that you need to reference the latest GraniteDS XSD version 2.3 to allow this) :
+        </para>
+        <programlisting role="XML">
+<![CDATA[<beans
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:graniteds="http://www.graniteds.org/config"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.3.0/granite-config-2.3.xsd">
+    ...
+<graniteds:tide-data-publishing-advice/>]]>            
+        </programlisting>
+        <para>
+        For Seam 2, there is nothing special to configure. The interceptor will be automatically enabled for all components having the <literal>@DataEnabled</literal>
+        annotation with <literal>useInterceptor=true</literal>.
+        </para>
+        <para>
+        For CDI, enable the interceptor in <literal>beans.xml</literal> :
+        </para>
+        <programlisting role="XML">
+<![CDATA[<beans
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">  
+    <interceptors>
+        <class>org.granite.tide.cdi.TideDataPublishingInterceptor</class>
+    </interceptors>
+</beans>]]>            
+        </programlisting>
+        <para>
+        For EJB 3, you can define a global interceptor in <literal>ejb-jar.xml</literal> :
+        </para>
+        <programlisting role="XML">
+<![CDATA[<assembly-descriptor>
+      <interceptor-binding>
+         <ejb-name>*</ejb-name>
+         <interceptor-class>org.granite.tide.ejb.TideDataPublishingInterceptor</interceptor-class>
+      </interceptor-binding>
+      ...
+</assembly-descriptor>]]>
+        </programlisting>
+        <para>
+        Or alternatively configure the interceptor on each EJB 3 :
+        </para>
+        <programlisting role="JAVA">
+@Stateless
+@Local(MyService.class)
+@Interceptors(TideDataPublishingInterceptor.class)
+@DataEnabled(topic="myTopic", publish=PublishMode.ON_COMMIT, useInterceptor=true)
+public class MyServiceBean {
+    ...
+}
+        </programlisting>
+        <formalpara>
+            <title>Manual Publishing</title>
+            <para>
+            If you need full control on the publishing process, you can create your own interceptor or use the following API in your services :
+            </para>
+        </formalpara>
+        <programlisting role="JAVA">
+@DataEnabled(topic="dataTopic", params=DefaultDataTopicParams.class, publishMode=PublishMode.MANUAL, useInterceptor=true)
+public class MyService {
+
+    @Inject
+    private Gravity gravity;
+
+    public void doSomething() {
+        DataContext.init(gravity, "dataTopic", DefaultDataTopicParams.class, PublishMode.MANUAL);
+        try {
+            Object result = invocation.proceed();
+            DataContext.publish(PublishMode.MANUAL);
+            return result;
+        }
+        finally {
+            DataContext.remove();
+        }
+    }
+}
+        </programlisting>            
+        <programlisting role="JAVA">
+@Interceptor
+public class CustomPublishInterceptor {
+
+    @Inject
+    private Gravity gravity;
+
+    @AroundInvoke
+    public Object aroundInvoke(InvocationContext invocation) throws Exception {
+        DataContext.init(gravity, "dataTopic", DefaultDataTopicParams.class, PublishMode.MANUAL);
+        try {
+            Object result = invocation.proceed();
+            DataContext.publish(PublishMode.MANUAL);
+            return result;
+        }
+        finally {
+            DataContext.remove();
+        }
+    }
+}
+        </programlisting>
+        
+        <formalpara>
+            <title>Transactional Publishing</title>
+            <para>
+            You can setup a fully transactional dispatch by using the <literal>ON_COMMIT</literal> mode with a JMS transport. When using JMS transacted sessions
+            with the <literal>ON_COMMIT</literal> mode, you will ensure that only successful database updates will be dispatched. 
+            </para>
+        </formalpara>
+        <programlisting role="XML">
+<![CDATA[<destination id="dataTopic">
+    <properties>
+        <jms>
+            <destination-type>Topic</destination-type>
+            <connection-factory>ConnectionFactory</connection-factory>
+            <destination-jndi-name>topic/dataTopic</destination-jndi-name>
+            <destination-name>dataTopic</destination-name>
+            <acknowledge-mode>AUTO_ACKNOWLEDGE</acknowledge-mode>
+            <transacted-sessions>true</transacted-sessions>
+            <no-local>true</no-local>
+        </jms>
+        <no-local>true</no-local>
+        <session-selector>true</session-selector>
+    </properties>
+    <channels>
+        <channel ref="gravityamf"/>
+    </channels>
+    <adapter ref="jms"/>
+</destination>]]>
+        </programlisting>
+    </section>
+</chapter>

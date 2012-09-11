@@ -62,18 +62,23 @@ public class SpringServiceFactory extends SimpleServiceFactory {
         Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);
-
+        
         // all we need is to get bean name
         // Scopes are configured in Spring config file, not in destination
         String beanName = destination.getProperties().get("source");
+        if (beanName == null)
+        	beanName = destination.getId();
+        
         try {
             Object bean = springContext.getBean(beanName);
             return createSpringServiceInvoker(destination, this, bean);
-        } catch (NoSuchBeanDefinitionException nexc) {
+        } 
+        catch (NoSuchBeanDefinitionException nexc) {
             String msg = "Spring service named '" + beanName + "' does not exist.";
             ServiceException e = new ServiceException(msg, nexc);
             throw e;
-        } catch (BeansException bexc) {
+        } 
+        catch (BeansException bexc) {
             String msg = "Unable to create Spring service named '" + beanName + "'";
             ServiceException e = new ServiceException(msg, bexc);
             throw e;
@@ -85,9 +90,7 @@ public class SpringServiceFactory extends SimpleServiceFactory {
         return toString("\n  springContext: " + springContext);
     }
     
-    protected ServiceInvoker<?> createSpringServiceInvoker(Destination destination,
-                                                           SpringServiceFactory factory,
-                                                           Object bean) {
+    protected ServiceInvoker<?> createSpringServiceInvoker(Destination destination, SpringServiceFactory factory, Object bean) {
         return new SpringServiceInvoker(destination, this, bean);
     }
 }

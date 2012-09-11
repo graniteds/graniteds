@@ -33,7 +33,7 @@ import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.CommandMessage;
@@ -107,7 +107,7 @@ public class AdapterFactory implements Serializable {
                 Adapter config = destination.getAdapter();
                 try {
                     Class<? extends ServiceAdapter> clazz = (adapterId != null)
-                        ? ClassUtil.forName(config.getClassName(), ServiceAdapter.class)
+                        ? TypeUtil.forName(config.getClassName(), ServiceAdapter.class)
                         : defaultAdapterClass;
                     serviceAdapter = clazz.newInstance();
                     serviceAdapter.setId(adapterId);

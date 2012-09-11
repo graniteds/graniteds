@@ -25,7 +25,7 @@ import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 
 import flex.messaging.messages.AsyncMessage;
@@ -85,7 +85,7 @@ public abstract class ServiceAdapter {
     	String securityPolicy = adapterProperties.get("security-policy");
     	if (securityPolicy != null) {
     		try {
-    			this.securityPolicy = ClassUtil.newInstance(securityPolicy, SecurityPolicy.class);
+    			this.securityPolicy = TypeUtil.newInstance(securityPolicy, SecurityPolicy.class);
     		}
     		catch (Exception e) {
     			log.error(e, "Could not create instance of %s (using default security policy)", securityPolicy);

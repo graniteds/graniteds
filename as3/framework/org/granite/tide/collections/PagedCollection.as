@@ -363,7 +363,7 @@ package org.granite.tide.collections {
 			
 			var dispatchReset:Boolean = _initializing && this.dispatchResetOnInit;
 			if (_initializing && event) {
-				if (_max == 0 && result.hasOwnProperty("maxResults"))
+				if (_max == 0 && result.hasOwnProperty("maxResults") && result.maxResults > 0)
 			    	_max = result.maxResults;
 			    initialize(event);
 			}

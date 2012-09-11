@@ -69,7 +69,7 @@ import org.granite.tide.invocation.ContextResult;
 import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationCall;
 import org.granite.tide.invocation.InvocationResult;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.Reflections;
 import org.jboss.interceptor.util.proxy.TargetInstanceProxy;
 
@@ -348,7 +348,7 @@ public class CDIServiceContext extends TideServiceContext {
             // Registers new event listeners
             for (String listener : listeners) {
             	try {
-            		Class<?> listenerClass = ClassUtil.forName(listener);
+            		Class<?> listenerClass = TypeUtil.forName(listener);
         			tideUserEvents.registerEventType(sessionId, listenerClass);
             	}
             	catch (ClassNotFoundException e) {

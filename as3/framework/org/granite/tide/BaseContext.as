@@ -1618,8 +1618,8 @@ package org.granite.tide {
          * 
          *  @param identity identity component
          */ 
-        public function meta_logout(identity:IIdentity):void {
-            _tide.logout(this, identity);
+        public function meta_logout(identity:IIdentity, expired:Boolean = false):void {
+            _tide.logout(this, identity, expired);
         }
 
 

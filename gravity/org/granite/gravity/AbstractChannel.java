@@ -30,8 +30,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -54,7 +52,10 @@ public abstract class AbstractChannel implements Channel {
     private static final Logger log = Logger.getLogger(AbstractChannel.class);
 
     protected final String id;
-    protected final ServletConfig servletConfig;
+    protected final String sessionId;
+    protected final Gravity gravity;
+    protected final ChannelFactory<? extends Channel> factory;
+    // protected final ServletConfig servletConfig;
     
     protected final ConcurrentMap<String, Subscription> subscriptions = new ConcurrentHashMap<String, Subscription>();
     
@@ -70,12 +71,15 @@ public abstract class AbstractChannel implements Channel {
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
 
-    protected AbstractChannel(ServletConfig servletConfig, GravityConfig gravityConfig, String id) {        
+    protected AbstractChannel(Gravity gravity, String id, ChannelFactory<? extends Channel> factory) {        
         if (id == null)
         	throw new NullPointerException("id cannot be null");
         
         this.id = id;
-        this.servletConfig = servletConfig;
+    	GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+    	this.sessionId = graniteContext != null ? graniteContext.getSessionId() : null;
+        this.gravity = gravity;
+        this.factory = factory;
         
         this.publisher = new AsyncPublisher(this);
         this.receiver = new AsyncReceiver(this);
@@ -95,8 +99,12 @@ public abstract class AbstractChannel implements Channel {
         return id;
     }
 	
+	public ChannelFactory<? extends Channel> getFactory() {
+		return factory;
+	}
+	
 	public Gravity getGravity() {
-		return GravityManager.getGravity(getServletContext());
+		return gravity;
 	}
 
     public Subscription addSubscription(String destination, String subTopicId, String subscriptionId, boolean noLocal) {
@@ -291,8 +299,7 @@ public abstract class AbstractChannel implements Channel {
 			
 			return true; // Messages weren't delivered, but http context isn't valid anymore.
 		}
-		finally {
-			
+		finally {		
 			// Cleanup serialization context (thread local)
 			try {
 				GraniteContext.release();
@@ -338,15 +345,7 @@ public abstract class AbstractChannel implements Channel {
 			return true;
 		}
 		return false;
-	}
-	
-	protected ServletConfig getServletConfig() {
-		return servletConfig;
-	}
-	
-	protected ServletContext getServletContext() {
-		return servletConfig.getServletContext();
-	}
+	}	
     
     ///////////////////////////////////////////////////////////////////////////
     // Object overwritten methods.

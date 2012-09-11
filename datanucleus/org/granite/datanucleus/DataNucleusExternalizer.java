@@ -31,6 +31,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +68,7 @@ import org.granite.messaging.persistence.AbstractExternalizablePersistentCollect
 import org.granite.messaging.persistence.ExternalizablePersistentList;
 import org.granite.messaging.persistence.ExternalizablePersistentMap;
 import org.granite.messaging.persistence.ExternalizablePersistentSet;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.Reflections;
 import org.granite.util.StringUtil;
 
@@ -114,7 +115,7 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
 
         // If type is not an entity (@Embeddable for example), we don't read initialized/detachedState
         // and we fall back to DefaultExternalizer behavior.
-        Class<?> clazz = ClassUtil.forName(type);
+        Class<?> clazz = TypeUtil.forName(type);
         if (!isRegularEntity(clazz))
             return super.newInstance(type, in);
 
@@ -174,6 +175,7 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
             Converters converters = config.getConverters();
             ClassGetter classGetter = config.getClassGetter();
             Class<?> oClass = classGetter.getClass(o);
+            ParameterizedType[] declaringTypes = TypeUtil.getDeclaringTypes(oClass);
             Object[] detachedState = getDetachedState((Detachable)o);
 
             List<Property> fields = findOrderedFields(oClass, detachedState != null);
@@ -189,8 +191,10 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
                 	// (Un)Initialized collections/maps.
                 	if (value instanceof AbstractExternalizablePersistentCollection)
                 		value = newCollection((AbstractExternalizablePersistentCollection)value, field);
-                	else
-                		value = converters.convert(value, field.getType());
+                    else {
+                    	Type targetType = TypeUtil.resolveTypeVariable(field.getType(), field.getDeclaringClass(), declaringTypes);
+                		value = converters.convert(value, targetType);
+                    }
                     
                 	field.setProperty(o, value, false);
                 }
@@ -204,8 +208,8 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
 		// final boolean dirty = value.isDirty();
 		final Object[] content = value.getContent();
     	final boolean sorted = (
-    		SortedSet.class.isAssignableFrom(ClassUtil.classOfType(target)) ||
-    		SortedMap.class.isAssignableFrom(ClassUtil.classOfType(target))
+    		SortedSet.class.isAssignableFrom(TypeUtil.classOfType(target)) ||
+    		SortedMap.class.isAssignableFrom(TypeUtil.classOfType(target))
     	);
     	
 		Object coll = null;
@@ -300,7 +304,7 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
                 
                 // Uninitialized associations.
                 if (loadedState.containsKey(field.getName()) && !loadedState.get(field.getName())) {
-            		Class<?> fieldClass = ClassUtil.classOfType(field.getType());
+            		Class<?> fieldClass = TypeUtil.classOfType(field.getType());
         			
             		// Create a "pseudo-proxy" for uninitialized entities: detached state is set to "0" (uninitialized flag).
             		if (Detachable.class.isAssignableFrom(fieldClass)) {

@@ -23,7 +23,6 @@ package org.granite.gravity.tomcat;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,14 +44,6 @@ public abstract class AbstractCometProcessor extends AbstractGravityServlet impl
     private static final Logger log = Logger.getLogger(AbstractCometProcessor.class);
     
     private boolean longPollingTimeoutSupported = true;
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Initialization.
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-    	super.init(config, new TomcatChannelFactory());
-    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Abstract methods.

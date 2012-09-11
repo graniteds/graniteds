@@ -48,6 +48,11 @@ public class UIDProperty extends Property {
     public Type getType() {
         return Object.class;
     }
+	
+	@Override
+	public Class<?> getDeclaringClass() {
+		return Object.class;
+	}
 
     @Override
     public void setProperty(Object instance, Object value, boolean convert) {

@@ -65,7 +65,6 @@
             <fileset dir="lib">
                 <include name="appengine*.jar"/>
                 <include name="appserv-rt.jar"/>
-                <include name="catalina.jar"/>
                 <include name="interceptor-api.jar"/>
                 <include name="jboss-j2ee.jar"/>
                 <include name="cdi-api.jar"/>
@@ -77,6 +76,7 @@
                 <include name="jboss-vfs*.jar"/>
                 <include name="weblogic*.jar"/>
                 <include name="jetty*.jar"/>
+            	<include name="grizzly*.jar"/>
                 <include name="log4j.jar"/>
         	</fileset>
         </path>
@@ -84,7 +84,11 @@
         <!-- core -->
         <mkdir dir="classes/core"/>
         <javac destdir="classes/core" srcdir="core" classpathref="gds.classpath"
-            target="1.5" source="1.5" debug="true" />
+            target="1.5" source="1.5" debug="true">
+        	<classpath>
+                <pathelement location="lib/catalina7.jar"/>
+        	</classpath>
+        </javac>
         <copy todir="classes/core">
             <fileset dir="core">
                 <include name="org/granite/config/*.dtd"/>
@@ -100,12 +104,15 @@
         <mkdir dir="classes/gravity"/>
         <javac destdir="classes/gravity" srcdir="gravity" target="1.5" source="1.5" debug="true">
             <classpath>
-                <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
+                <pathelement location="lib/tomcat7-coyote.jar"/>
+                <pathelement location="lib/catalina7.jar"/>
+                <path refid="gds.classpath"/>
             	<pathelement location="lib/jboss-j2ee.jar"/>
+                <pathelement location="lib/catalina.jar"/>
+                <pathelement location="lib/jbossweb.jar"/>
                 <pathelement location="lib/apache-activemq.jar"/>
                 <pathelement location="lib/jbossmq.jar"/>
-                <pathelement location="lib/jbossweb.jar"/>
                 <pathelement location="lib/jboss-seam.jar"/>
             </classpath>
         </javac>
@@ -261,6 +268,7 @@
                 <pathelement location="lib/org.springframework.orm.jar"/>
                 <pathelement location="lib/org.springframework.web.jar"/>
                 <pathelement location="lib/org.springframework.web.servlet.jar"/>
+                <pathelement location="lib/spring-data-commons-core.jar"/>
                 <pathelement location="lib/spring-security-core-3.0.jar"/>
                 <pathelement location="lib/spring-security-web-3.0.jar"/>
                 <pathelement location="lib/spring-security-core-2.0.4.jar"/>
@@ -741,6 +749,29 @@
             </fileset>
             <fileset dir="classes/tide">
                 <include name="**"/>
+            </fileset>
+        </jar>
+        <jar destfile="build/granite-client.jar" manifest="core/META-INF/MANIFEST.MF">
+            <fileset dir="classes/core">
+                <include name="**"/>
+            	<exclude name="org/granite/clustering/*Session*.class"/>
+            	<exclude name="org/granite/clustering/Transient*.class"/>
+            	<exclude name="org/granite/config/granite-config.xml"/>
+            	<exclude name="org/granite/config/flex/Servlet*"/>
+            	<exclude name="org/granite/config/servlet3/**"/>
+            	<exclude name="org/granite/messaging/amf/process/*Processor.class"/>
+            	<exclude name="org/granite/messaging/persistence/**"/>
+            	<exclude name="org/granite/messaging/webapp/**"/>
+            	<exclude name="org/granite/osgi/**"/>
+            	<exclude name="META-INF/**"/>
+            </fileset>
+            <fileset dir="classes/tide">
+                <include name="org/granite/tide/Expression.class"/>
+                <include name="org/granite/tide/IInvocation*.class"/>
+                <include name="org/granite/tide/IUID.class"/>
+                <include name="org/granite/tide/TideMessage.class"/>
+                <include name="org/granite/tide/invocation/**"/>
+                <include name="org/granite/tide/data/model/**"/>
             </fileset>
         </jar>
         <jar destfile="build/granite-hibernate.jar" manifest="build/META-INF/MANIFEST.MF">

@@ -20,6 +20,10 @@
 
 package org.granite.tide.data;
 
+import java.util.List;
+
+import org.granite.tide.data.DataContext.EntityUpdate;
+
 
 /**
  *  Interface for data update postprocessors.
@@ -32,5 +36,5 @@ package org.granite.tide.data;
  */
 public interface DataUpdatePostprocessor {
 	
-	public Object process(Object entity);
+	public List<EntityUpdate> process(List<EntityUpdate> updates);
 }

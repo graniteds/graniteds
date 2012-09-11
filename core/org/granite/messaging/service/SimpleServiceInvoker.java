@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.granite.config.flex.Destination;
 import org.granite.logging.Logger;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 import flex.messaging.messages.RemotingMessage;
 
@@ -56,7 +56,7 @@ public class SimpleServiceInvoker extends ServiceInvoker<SimpleServiceFactory> {
             	if (destination.getScannedClass() != null)
             		this.invokee = destination.getScannedClass().newInstance();
             	else
-            		this.invokee = ClassUtil.newInstance(className);
+            		this.invokee = TypeUtil.newInstance(className);
             } catch (Exception e) {
                 throw new ServiceException("Invalid source property for destination: " + destination, e);
             }
@@ -81,7 +81,7 @@ public class SimpleServiceInvoker extends ServiceInvoker<SimpleServiceFactory> {
             invokee = sources.get(className);
             if (invokee == null) {
                 try {
-                    invokee = ClassUtil.newInstance(className);
+                    invokee = TypeUtil.newInstance(className);
                 } catch (Exception e) {
                     throw new ServiceException("Invalid source property in request for '*' destination: " + destination, e);
                 }

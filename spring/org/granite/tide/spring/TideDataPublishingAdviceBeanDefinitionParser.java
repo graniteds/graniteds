@@ -20,7 +20,7 @@
 
 package org.granite.tide.spring;
 
-import org.granite.spring.FlexFilterBeanDefinitionParser;
+import org.granite.spring.ServerFilterBeanDefinitionParser;
 import org.springframework.aop.config.AopNamespaceUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -61,7 +61,7 @@ public class TideDataPublishingAdviceBeanDefinitionParser implements BeanDefinit
 				RootBeanDefinition interceptorDef = new RootBeanDefinition(TideDataPublishingInterceptor.class);
 				interceptorDef.setSource(parserContext.extractSource(element));
 				interceptorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-				interceptorDef.getPropertyValues().addPropertyValue("gravity", new RuntimeBeanReference(FlexFilterBeanDefinitionParser.GRAVITY_FACTORY_BEAN_NAME));
+				interceptorDef.getPropertyValues().addPropertyValue("gravity", new RuntimeBeanReference(ServerFilterBeanDefinitionParser.GRAVITY_FACTORY_BEAN_NAME));
 				String postprocessorRef = element.getAttribute("data-update-postprocessor");
 				if (postprocessorRef != null && postprocessorRef.trim().length() > 0)
 				    interceptorDef.getPropertyValues().addPropertyValue("dataUpdatePostprocessor", new RuntimeBeanReference(postprocessorRef));
@@ -93,7 +93,7 @@ public class TideDataPublishingAdviceBeanDefinitionParser implements BeanDefinit
                 RootBeanDefinition aspectDef = new RootBeanDefinition(TideDataPublishingAspect.class);
                 aspectDef.setSource(parserContext.extractSource(element));
                 aspectDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-                aspectDef.getPropertyValues().addPropertyValue("gravity", new RuntimeBeanReference(FlexFilterBeanDefinitionParser.GRAVITY_FACTORY_BEAN_NAME));
+                aspectDef.getPropertyValues().addPropertyValue("gravity", new RuntimeBeanReference(ServerFilterBeanDefinitionParser.GRAVITY_FACTORY_BEAN_NAME));
                 String postprocessorRef = element.getAttribute("data-update-postprocessor");
                 if (postprocessorRef != null && postprocessorRef.trim().length() > 0)
                     aspectDef.getPropertyValues().addPropertyValue("dataUpdatePostprocessor", new RuntimeBeanReference(postprocessorRef));

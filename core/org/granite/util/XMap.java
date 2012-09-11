@@ -30,8 +30,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.transform.TransformerException;
-
 import org.granite.logging.Logger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -73,8 +71,8 @@ public class XMap implements Serializable {
 		}
 	};
 	
-	private transient DOM dom = null;
 	private transient Element root = null;
+	private transient XMLUtil xmlUtil = null;
 	
 	/**
 	 * Constructs a new XMap instance.
@@ -90,8 +88,7 @@ public class XMap implements Serializable {
 	 */
 	public XMap(String root) {
 		if (root != null) {
-			this.dom = new DOM();
-			this.root = dom.newDocument(root).getDocumentElement();
+			this.root = getXMLUtil().newDocument(root).getDocumentElement();
 		}
 	}
 	
@@ -101,8 +98,7 @@ public class XMap implements Serializable {
 	 * @param input an XML input stream.
 	 */
 	public XMap(InputStream input) throws IOException, SAXException {
-		this.dom = new DOM();
-		this.root = dom.loadDocument(input).getDocumentElement();
+		this.root = getXMLUtil().loadDocument(input).getDocumentElement();
 	}
 	
 	/**
@@ -111,8 +107,7 @@ public class XMap implements Serializable {
 	 * @param input an XML input stream.
 	 */
 	public XMap(InputStream input, EntityResolver resolver) throws IOException, SAXException {
-		this.dom = new DOM();
-		this.root = dom.loadDocument(input, resolver).getDocumentElement();
+		this.root = getXMLUtil().loadDocument(input, resolver, null).getDocumentElement();
 	}
 	
 	
@@ -132,7 +127,7 @@ public class XMap implements Serializable {
 	 * 		new instance won't modify the original XMap). 
 	 */
 	public XMap(XMap map) {
-		this((map == null ? null : map.dom), (map == null ? null : map.root), true);
+		this((map == null ? null : map.xmlUtil), (map == null ? null : map.root), true);
 	}
 	
 	/**
@@ -141,10 +136,16 @@ public class XMap implements Serializable {
 	 * @param root the root element (may be null).
 	 * @param clone should we clone the root element (prevent original node modification).
 	 */
-	protected XMap(DOM dom, Element root, boolean clone) {
-		this.dom = dom;
+	protected XMap(XMLUtil xmlUtil, Element root, boolean clone) {
+		this.xmlUtil = xmlUtil;
 		this.root = (clone && root != null ? (Element)root.cloneNode(true) : root);
 		
+	}
+	
+	private XMLUtil getXMLUtil() {
+		if (xmlUtil == null)
+			xmlUtil = XMLUtilFactory.getXMLUtil();
+		return xmlUtil;
 	}
 	
 	/**
@@ -156,17 +157,6 @@ public class XMap implements Serializable {
 		return root;
 	}
 
-	/**
-	 * Returns the DOM instance of this XMap (one is created if it is null).
-	 * 
-	 * @return the DOM instance of this XMap.
-	 */
-	protected DOM getDom() {
-		if (dom == null)
-			dom = new DOM();
-		return dom;
-	}
-	
 	/**
 	 * Returns true if the supplied key XPath expression matches at least one element, attribute
 	 * or text in the root element of this XMap. 
@@ -180,7 +170,7 @@ public class XMap implements Serializable {
 		if (root == null)
 			return false;
 		try {
-			Node result = getDom().selectSingleNode(root, key);
+			Node result = getXMLUtil().selectSingleNode(root, key);
 			return (
 				result != null && (
 					result.getNodeType() == Node.ELEMENT_NODE ||
@@ -206,7 +196,7 @@ public class XMap implements Serializable {
 		if (root == null)
 			return null;
 		try {
-			return getDom().getNormalizedValue(getDom().selectSingleNode(root, key));
+			return getXMLUtil().getNormalizedValue(getXMLUtil().selectSingleNode(root, key));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -280,11 +270,11 @@ public class XMap implements Serializable {
 		if (root == null)
 			return new ArrayList<XMap>(0);
 		try {
-			List<Node> result = dom.selectNodes(root, key);
+			List<Node> result = getXMLUtil().selectNodeSet(root, key);
 			List<XMap> xMaps = new ArrayList<XMap>(result.size());
 			for (Node node : result) {
 				if (node.getNodeType() == Node.ELEMENT_NODE)
-					xMaps.add(new XMap(this.dom, (Element)node, false));
+					xMaps.add(new XMap(this.xmlUtil, (Element)node, false));
 			}
 			return xMaps;
 		} catch (Exception e) {
@@ -307,10 +297,10 @@ public class XMap implements Serializable {
 		if (root == null)
 			return null;
 		try {
-			Node node = getDom().selectSingleNode(root, key);
+			Node node = getXMLUtil().selectSingleNode(root, key);
 			if (node == null || node.getNodeType() != Node.ELEMENT_NODE)
 				return null;
-			return new XMap(getDom(), (Element)node, false);
+			return new XMap(xmlUtil, (Element)node, false);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -347,13 +337,13 @@ public class XMap implements Serializable {
 	 */
 	public String put(String key, String value, boolean append) {
 		if (root == null)
-			root = getDom().newDocument(DEFAULT_ROOT_NAME).getDocumentElement();
+			root = getXMLUtil().newDocument(DEFAULT_ROOT_NAME).getDocumentElement();
 
 		if (!append) {
 			try {
-				Node selectResult = getDom().selectSingleNode(root, key);
+				Node selectResult = getXMLUtil().selectSingleNode(root, key);
 				if (selectResult != null)
-					return getDom().setValue(selectResult, value);
+					return getXMLUtil().setValue(selectResult, value);
 			} catch(RuntimeException e) {
 				throw e;
 			} catch(Exception e) {
@@ -369,7 +359,7 @@ public class XMap implements Serializable {
 			name = key.substring(iLastSlash + 1);
 			Node selectResult = null;
 			try {
-				selectResult = getDom().selectSingleNode(root, key.substring(0, iLastSlash));
+				selectResult = getXMLUtil().selectSingleNode(root, key.substring(0, iLastSlash));
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -383,7 +373,7 @@ public class XMap implements Serializable {
 		if (name.length() > 0 && name.charAt(0) == '@')
 			parent.setAttribute(name.substring(1), value);
 		else
-			getDom().newElement(parent, name, value);
+			getXMLUtil().newElement(parent, name, value);
 		
 		return null;
 	}
@@ -399,9 +389,9 @@ public class XMap implements Serializable {
 		if (root == null)
 			return null;
 		try {
-			Node node = getDom().selectSingleNode(root, key);
+			Node node = getXMLUtil().selectSingleNode(root, key);
 			if (node != null) {
-				String value = getDom().getNormalizedValue(node);
+				String value = getXMLUtil().getNormalizedValue(node);
 				if (node.getNodeType() == Node.ATTRIBUTE_NODE)
 					((Attr)node).getOwnerElement().removeAttribute(node.getNodeName());
 				else
@@ -421,7 +411,7 @@ public class XMap implements Serializable {
 	 */
 	@Override
 	public String toString() {
-		return getDom().toString(root);
+		return getXMLUtil().toNodeString(root);
 	}
 	
 	/**
@@ -436,8 +426,9 @@ public class XMap implements Serializable {
 		else {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			try {
-				getDom().saveDocument(root.getOwnerDocument(), output);
-			} catch (TransformerException e) {
+				getXMLUtil().saveDocument(root.getOwnerDocument(), output);
+			} 
+			catch (Exception e) {
 				IOException ioe = new IOException("Could not serialize this XMap");
 				ioe.initCause(e);
 				throw ioe;
@@ -461,7 +452,7 @@ public class XMap implements Serializable {
 			in.readFully(content);
 			Document doc = null;
 			try {
-				doc = getDom().loadDocument(new ByteArrayInputStream(content));
+				doc = getXMLUtil().loadDocument(new ByteArrayInputStream(content));
 			} catch (Exception e) {
 				IOException ioe = new IOException("Could not deserialize this XMap");
 				ioe.initCause(e);

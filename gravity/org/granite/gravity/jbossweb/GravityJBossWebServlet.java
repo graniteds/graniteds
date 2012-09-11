@@ -46,6 +46,7 @@ public class GravityJBossWebServlet extends AbstractHttpEventServlet {
 
     private static final Logger log = Logger.getLogger(GravityJBossWebServlet.class);
 
+    
     @Override
 	public CometIO createCometIO() {
 		return new ByteArrayCometIO();
@@ -55,6 +56,7 @@ public class GravityJBossWebServlet extends AbstractHttpEventServlet {
     public boolean handleRequest(HttpEvent event, InputStream content) throws IOException, ServletException {
 
 		Gravity gravity = GravityManager.getGravity(getServletContext());
+		JBossWebChannelFactory channelFactory = new JBossWebChannelFactory(gravity);
 
     	HttpServletRequest request = event.getHttpServletRequest();
         HttpServletResponse response = event.getHttpServletResponse();
@@ -73,7 +75,7 @@ public class GravityJBossWebServlet extends AbstractHttpEventServlet {
                 Message amf3Request = amf3Requests[i];
 
                 // Ask gravity to create a specific response (will be null for connect request from tunnel).
-                Message amf3Response = gravity.handleMessage(amf3Request);
+                Message amf3Response = gravity.handleMessage(channelFactory, amf3Request);
                 String channelId = (String)amf3Request.getClientId();
                 
                 // Mark current channel (if any) as accessed.
@@ -85,7 +87,7 @@ public class GravityJBossWebServlet extends AbstractHttpEventServlet {
                     if (amf3Requests.length > 1)
                         throw new IllegalArgumentException("Only one request is allowed on tunnel.");
 
-                    JBossWebChannel channel = (JBossWebChannel)gravity.getChannel(channelId);
+                    JBossWebChannel channel = gravity.getChannel(channelFactory, channelId);
                 	if (channel == null)
                 		throw new NullPointerException("No channel on tunnel connect");
                     
@@ -145,7 +147,8 @@ public class GravityJBossWebServlet extends AbstractHttpEventServlet {
         	if (connect != null) { // This should be a timeout.
         		Gravity gravity = GravityManager.getGravity(getServletContext());
 		        String channelId = (String)connect.getClientId();
-	            JBossWebChannel channel = (JBossWebChannel)gravity.getChannel(channelId);
+				JBossWebChannelFactory channelFactory = new JBossWebChannelFactory(gravity);
+	            JBossWebChannel channel = gravity.getChannel(channelFactory, channelId);
 	            
 	            // Cancel channel's execution (timeout or other errors).
 	            if (channel != null)

@@ -7,10 +7,6 @@
 
 package org.granite.messaging.amf.io;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -33,6 +29,8 @@ import org.granite.messaging.amf.AMF0Body;
 import org.granite.messaging.amf.AMF0Header;
 import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.amf.AMF3Object;
+import org.granite.util.Introspector;
+import org.granite.util.PropertyDescriptor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -233,12 +231,7 @@ public class AMF0Serializer {
 
         dataOutputStream.writeByte(AMF0Body.DATA_TYPE_OBJECT);
         try {
-            PropertyDescriptor[] properties = null;
-            try {
-            	BeanInfo beanInfo = Introspector.getBeanInfo(object.getClass());
-            	properties = beanInfo.getPropertyDescriptors();
-            } catch (IntrospectionException e) {
-            }
+            PropertyDescriptor[] properties = Introspector.getPropertyDescriptors(object.getClass());
             if (properties == null)
             	properties = new PropertyDescriptor[0];
 

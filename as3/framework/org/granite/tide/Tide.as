@@ -53,7 +53,7 @@ package org.granite.tide {
 	import mx.utils.DescribeTypeCache;
 	import mx.utils.DescribeTypeCacheRecord;
 	import mx.utils.ObjectUtil;
-
+	
 	import org.granite.reflect.Annotation;
 	import org.granite.reflect.Method;
 	import org.granite.reflect.Type;
@@ -116,6 +116,7 @@ package org.granite.tide {
         public static const LOGIN:String = "org.granite.tide.login";
         public static const LOGOUT:String = "org.granite.tide.logout";
         public static const LOGGED_OUT:String = "org.granite.tide.loggedOut";
+		public static const SESSION_EXPIRED:String = "org.granite.tide.sessionExpired";
 	    
         public static const CONVERSATION_TAG:String = "conversationId";
         public static const CONVERSATION_PROPAGATION_TAG:String = "conversationPropagation";
@@ -299,7 +300,7 @@ package org.granite.tide {
 		public function get sessionId():String {
 			return _sessionId;
 		} 
-				
+		
 		/**
 		 * 	@private
 		 * 	Is it the first remote call ?
@@ -349,7 +350,7 @@ package org.granite.tide {
 		 * 
 		 *  @return top level application
 		 */
-		private function currentApplication():Object {
+		public static function currentApplication():Object {
 			var app:Object = null;
 			// Application.application seems to break Flex 4.5 mobile applications
 			CONFIG::flex40 {
@@ -1372,13 +1373,15 @@ package org.granite.tide {
 		 * 	@param ctx current context
 		 *  @param componentName component name of identity
 		 */
-		public function logout(context:BaseContext, component:IComponent):void {
+		public function logout(context:BaseContext, component:IComponent, expired:Boolean = false):void {
             _logoutInProgress = true;
 		    _waitForLogout = 1;
 		    
 		    context.raiseEvent(LOGOUT);
             
-            tryLogout();
+			// If expired, tryLogout() will be called later by the global fault handler
+			if (!expired)
+            	tryLogout();
         }
         
         
@@ -1834,8 +1837,10 @@ package org.granite.tide {
          */ 
         private function extractContext(sourceContext:BaseContext, event:MessageEvent, fromFault:Boolean = false):BaseContext {
             var sessionId:String = event.message.headers['org.granite.sessionId'];
-            if (sessionId != null)
+            if (sessionId != _sessionId) {
                 _sessionId = sessionId;
+				dispatchEvent(new Event("GDSSessionIdChanged"));
+			}
             
             processInterceptors(event.message, false);    
             
@@ -2035,14 +2040,17 @@ package org.granite.tide {
             var res:Array = data.result.result as Array;
             
 			var saveUninitializeAllowed:Boolean = sourceContext.meta_uninitializeAllowed;
-            sourceContext.meta_uninitializeAllowed = false;
-            
-            // Assumes objects is a PersistentCollection or PersistentMap
-		    sourceContext.meta_mergeExternal(data.result.result, entity);
-		    
-            result(sourceContext, "", data);
-            
-            sourceContext.meta_uninitializeAllowed = saveUninitializeAllowed;
+			try {
+	            sourceContext.meta_uninitializeAllowed = false;
+	            
+	            // Assumes objects is a PersistentCollection or PersistentMap
+			    sourceContext.meta_mergeExternal(data.result.result, entity);
+			    
+	            result(sourceContext, "", data);
+			}
+			finally {
+            	sourceContext.meta_uninitializeAllowed = saveUninitializeAllowed;
+			}
         }
         
 		/**

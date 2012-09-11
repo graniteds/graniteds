@@ -37,7 +37,7 @@ import org.granite.messaging.webapp.HttpServletRequestParamWrapper;
 import org.granite.tide.cdi.ConversationState;
 import org.granite.tide.cdi.EventState;
 import org.granite.tide.cdi.SessionState;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.jboss.weld.servlet.WeldListener;
 
 import flex.messaging.messages.Message;
@@ -58,12 +58,12 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
     public CDIInterceptor() {
     	try {
     		Thread.currentThread().getContextClassLoader().loadClass("org.jboss.weld.context.http.HttpConversationContext");
-    		conversationManager = ClassUtil.newInstance("org.granite.cdi.Weld11ConversationManager", CDIConversationManager.class);
+    		conversationManager = TypeUtil.newInstance("org.granite.cdi.Weld11ConversationManager", CDIConversationManager.class);
     		log.info("Detected Weld 1.1");
     	}
     	catch (Exception e) {
     		try {
-    			conversationManager = ClassUtil.newInstance("org.granite.cdi.Weld10ConversationManager", CDIConversationManager.class);
+    			conversationManager = TypeUtil.newInstance("org.granite.cdi.Weld10ConversationManager", CDIConversationManager.class);
         		log.info("Detected Weld 1.0");
     		}
     		catch (Exception f) {

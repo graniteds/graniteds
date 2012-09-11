@@ -38,7 +38,7 @@ import org.granite.scan.ScannedItem;
 import org.granite.scan.ScannedItemHandler;
 import org.granite.scan.Scanner;
 import org.granite.scan.ScannerFactory;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 import org.xml.sax.SAXException;
 
@@ -185,7 +185,7 @@ public class ServicesConfig implements ScannedItemHandler {
     	List<ScannedItemHandler> handlers = new ArrayList<ScannedItemHandler>();
     	for (Factory factory : factories.values()) {
     		try {
-    			Class<?> clazz = ClassUtil.forName(factory.getClassName());
+    			Class<?> clazz = TypeUtil.forName(factory.getClassName());
     			Method method = clazz.getMethod("getScannedItemHandler");
     			if ((Modifier.STATIC & method.getModifiers()) != 0 && method.getParameterTypes().length == 0) {
     				ScannedItemHandler handler = (ScannedItemHandler)method.invoke(null);

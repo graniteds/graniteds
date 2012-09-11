@@ -120,7 +120,8 @@ public class Seam21SecurityService extends AbstractSecurityService {
 
         try {
             return endAuthorization(context);
-        } catch (InvocationTargetException e) {
+        } 
+        catch (InvocationTargetException e) {
             for (Throwable t = e; t != null; t = t.getCause()) {
                 // If destination is not secured...
                 if (t instanceof NotLoggedInException)

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+
+<book lang="en">
+
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-flex-book_info.xml" />
+	
+   	<toc />
+   	
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-overview.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-gettingstarted.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-usagescenarios.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-projectsetup.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-remoting.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-gas3.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-messaging.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-ejb3.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-spring.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-seam2.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-ee6cdi.xml" />
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-validation-flex.xml" />
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-reflection.xml" />
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-bignumbers.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-tideframework.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-datamanagement-flex.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-extensibility.xml" />
+   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-configuration.xml" />
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-appendix.xml" />
+</book>

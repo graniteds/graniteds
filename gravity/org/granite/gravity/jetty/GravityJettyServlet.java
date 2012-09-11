@@ -22,7 +22,6 @@ package org.granite.gravity.jetty;
 
 import java.io.IOException;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,10 +47,6 @@ public class GravityJettyServlet extends AbstractGravityServlet {
 
     private static final Logger log = Logger.getLogger(GravityJettyServlet.class);
 
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-    	super.init(config, new ContinuationChannelFactory());
-    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -59,6 +54,7 @@ public class GravityJettyServlet extends AbstractGravityServlet {
     	log.debug("doPost: from %s:%d", request.getRemoteAddr(), request.getRemotePort());
 
 		Gravity gravity = GravityManager.getGravity(getServletContext());
+		ContinuationChannelFactory channelFactory = new ContinuationChannelFactory(gravity);
 		
 		try {
 			// Setup context (thread local GraniteContext, etc.)
@@ -69,11 +65,11 @@ public class GravityJettyServlet extends AbstractGravityServlet {
 			// Resumed request (pending messages or timeout).
 			if (connect != null) {
 				String channelId = (String)connect.getClientId();
-				ContinuationChannel channel = (ContinuationChannel)gravity.getChannel(channelId);
+				ContinuationChannel channel = gravity.getChannel(channelFactory, channelId);
 
 				// Reset channel continuation instance and deliver pending messages.
 				synchronized (channel) {
-					channel.reset();
+					channel.close();
 					channel.runReceived(new AsyncHttpContext(request, response, connect));
 				}
 				
@@ -92,7 +88,7 @@ public class GravityJettyServlet extends AbstractGravityServlet {
                 Message amf3Request = amf3Requests[i];
                 
                 // Ask gravity to create a specific response (will be null with a connect request from tunnel).
-                Message amf3Response = gravity.handleMessage(amf3Request);
+                Message amf3Response = gravity.handleMessage(channelFactory, amf3Request);
                 String channelId = (String)amf3Request.getClientId();
                 
                 // Mark current channel (if any) as accessed.
@@ -104,7 +100,7 @@ public class GravityJettyServlet extends AbstractGravityServlet {
                     if (amf3Requests.length > 1)
                         throw new IllegalArgumentException("Only one request is allowed on tunnel.");
 
-                	ContinuationChannel channel = (ContinuationChannel)gravity.getChannel(channelId);
+                	ContinuationChannel channel = gravity.getChannel(channelFactory, channelId);
                 	if (channel == null)
                 		throw new NullPointerException("No channel on tunnel connect");
                 	

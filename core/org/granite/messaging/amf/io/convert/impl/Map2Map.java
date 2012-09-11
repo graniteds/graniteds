@@ -27,7 +27,7 @@ import java.util.Map;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.convert.IllegalConverterArgumentException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.MapUtil;
 
 /**
@@ -95,7 +95,7 @@ public class Map2Map extends Converter {
                 Type keyType = targetComponentTypes[0];
                 Type valueType = targetComponentTypes[1];
 
-                Class<?> targetClass = ClassUtil.classOfType(targetType);
+                Class<?> targetClass = TypeUtil.classOfType(targetType);
                 if (targetClass.isInstance(value) &&
                     (keyType.equals(Object.class) || keyType instanceof WildcardType) &&
                     (valueType.equals(Object.class) || valueType instanceof WildcardType))

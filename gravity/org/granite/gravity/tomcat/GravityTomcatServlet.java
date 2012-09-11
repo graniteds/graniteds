@@ -44,6 +44,7 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
 
     private static final Logger log = Logger.getLogger(GravityTomcatServlet.class);
 
+    
     @Override
 	public CometIO createCometIO() {
 		return new ByteArrayCometIO();
@@ -53,6 +54,7 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
     public boolean handleRequest(CometEvent event, InputStream content) throws IOException, ServletException {
 
 		Gravity gravity = GravityManager.getGravity(getServletContext());
+		TomcatChannelFactory channelFactory = new TomcatChannelFactory(gravity);
 		
     	HttpServletRequest request = event.getHttpServletRequest();
         HttpServletResponse response = event.getHttpServletResponse();
@@ -71,7 +73,7 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
                 Message amf3Request = amf3Requests[i];
 
                 // Ask gravity to create a specific response (will be null for connect request from tunnel).
-                Message amf3Response = gravity.handleMessage(amf3Request);
+                Message amf3Response = gravity.handleMessage(channelFactory, amf3Request);
                 String channelId = (String)amf3Request.getClientId();
                 
                 // Mark current channel (if any) as accessed.
@@ -83,7 +85,7 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
                     if (amf3Requests.length > 1)
                         throw new IllegalArgumentException("Only one connect request is allowed on tunnel.");
 
-                    TomcatChannel channel = (TomcatChannel)gravity.getChannel(channelId);
+                    TomcatChannel channel = gravity.getChannel(channelFactory, channelId);
                     if (channel == null)
                 		throw new NullPointerException("No channel on tunnel connect");
                     
@@ -142,8 +144,10 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
         	Message connect = getConnectMessage(request);
         	if (connect != null) { // This should be a timeout.
         		Gravity gravity = GravityManager.getGravity(getServletContext());
+        		TomcatChannelFactory channelFactory = new TomcatChannelFactory(gravity);
+        		
 		        String channelId = (String)connect.getClientId();
-	            TomcatChannel channel = (TomcatChannel)gravity.getChannel(channelId);
+	            TomcatChannel channel = gravity.getChannel(channelFactory, channelId);
 	            
 	            // Cancel channel's execution (timeout or other errors).
 	            if (channel != null)

@@ -1,37 +1,48 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
    "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+   
 <chapter id="graniteds.projectsetup">
 	<title>Project Setup</title>
-	<para>
+	<para condition="flex">
 	GraniteDS consists in a set of Flex libraries (swcs) and a set of Java libraries (jars). It is designed to be deployed in a Java application server and packaged in a standard Java Web application,
 	either as a WAR file or as an EAR file. The configuration of a GraniteDS project will generally involve the following steps :
+	</para>
+	<para condition="java">
+	GraniteDS consists in a set of client libraries and a set of server libraries. It is designed to be deployed in a Java application server and packaged in a standard Java Web application,
+	either as a WAR file or as an EAR file. The configuration of a GraniteDS project will generally involve the following steps :
+	</para>
+	<para>
 	<orderedlist>
-		<listitem>
+		<listitem><para>
 		Add the GraniteDS jars to the <literal>WEB-INF/lib</literal> folder of the WAR file or the <literal>lib</literal> folder of the EAR file
-		</listitem>
-		<listitem>
+		</para></listitem>
+		<listitem><para>
 		Add the GraniteDS listener, servlets and filters in the standard <literal>WEB-INF/web.xml</literal> configuration file
-		</listitem>
-		<listitem>
+		</para></listitem>
+		<listitem><para>
 		Define the internal configuration of GraniteDS in the <literal>WEB-INF/granite/granite-config.xml</literal> file
-		</listitem>
-		<listitem>
+		</para></listitem>
+		<listitem><para>
 		Define the application configuration of GraniteDS (remoting destinations, messaging topics...) in the <literal>WEB-INF/flex/services-config.xml</literal>
-		</listitem>
-		<listitem>
+		</para></listitem>
+		<listitem condition="flex"><para>
 		Link you Flex project with the GraniteDS swcs libraries and define the necessary Flex compiler options
-		</listitem>
+		</para></listitem>
+		<listitem condition="java"><para>
+		Build you Java client project with the GraniteDS libraries
+		</para></listitem>
 	</orderedlist>
-	
+	</para>	
+	<para>
 	Depending on which framework and application server you use on the server (Spring, Seam...) and on the client, some of these steps may be completely omitted, 
-	or done differently. For example, when using the Spring framework on the server, almost all the configuration can be defined in the standard Spring context
+	or implemented differently. For example, when using the Spring framework on the server, almost all the configuration can be defined in the standard Spring context
 	instead of the <literal>granite-config.xml</literal> and <literal>services-config.xml</literal> files. GraniteDS tries to be as transparent and integrated 
 	as possible with the application environment, however it can be useful to know how things work at the lower level if you have specific requirements.
 	</para>
 	
 	<section id="setup.jars">
-		<title>Server Libraries</title>
+		<title>Server libraries</title>
 		<para>
 		The GraniteDS jars are available from the <literal>build</literal> folder of the distribution. You will always need <literal>granite.jar</literal>. 
 		Additionally you will have to include the jar corresponding to your server framework (<literal>granite-spring.jar</literal> for Spring for example),
@@ -75,7 +86,7 @@
 	</section>
 	
 	<section id="setup.graniteconfig">
-		<title>Framework Configuration</title>
+		<title>Framework configuration</title>
 		<para>
 		The configuration of the various GraniteDS parts is done in the file <literal>WEB-INF/granite/granite-config.xml</literal>.
 		There are many options that can be defined here, you can refer to the <link linkend="graniteds-configuration">configuration reference</link>.
@@ -103,10 +114,10 @@
 	</section>
 	
 	<section id="setup.servicesconfig">
-		<title>Application Configuration</title>
+		<title>Application configuration</title>
 		<para>
 		The last thing to define on the server is the application configuration in <literal>WEB-INF/flex/services-config.xml</literal>. 
-		This is for example the place where you will define which elements of your application you will expose to Flex remoting, or the topic for messaging.
+		This is for example the place where you will define which elements of your application you will expose to GraniteDS remoting, or the topic for messaging.
 		You can refer to the <link linkend="graniteds.configuration">configuration reference</link> for more details.
 		</para>
 		<para>
@@ -149,23 +160,25 @@
         </programlisting>
 		<para>
 		This configuration file declares 3 differents things, let's list them in the reverse order :
-	
+		
 		<itemizedlist>
-			<listitem>
-			Channel endpoint : this defines the uri on which the remote service can be accessed though Flex remoting. 
-			This should match the servlet url mapping defined previously in <literal>web.xml</literal>. 
+			<listitem><para>
+			Channel endpoint : this defines the uri on which the remote service can be accessed though GraniteDS remoting. 
+			This should match the servlet url mapping defined previously in <literal>web.xml</literal>.
+			</para>
+			<para condition="flex"> 
 			Note that the <literal>server-name</literal>, <literal>server-port</literal> and <literal>context-root</literal> are placeholders that are automatically replaced when running the application in the Flash Player. 
 			To run the application on the AIR runtime you will have to specify the real name and port of the server as it cannot be determined from the source url of the swf.
-			</listitem>
+			</para></listitem>
 			
-			<listitem>
+			<listitem><para>
 			Service factories : here the configuration defines an EJB 3 factory, meaning that destinations using this factory will route incoming remote calls to EJB 3. 
 			GraniteDS provides factories for all popular server frameworks. Most factories require specific properties, here for example the JNDI format for EJB lookup.
-			</listitem>
+			</para></listitem>
 			
-			<listitem>
+			<listitem><para>
 			Service/destinations : this section defines a remoting service (described by its class and message type) and one destination interpreted as an EJB 3 as indicated by the factory property.
-			</listitem>
+			</para></listitem>
 		</itemizedlist>
 		</para>
 		
@@ -175,8 +188,8 @@
 		</para>
 	</section>
 	
-	<section id="setup.swcs">
-		<title>Client Libraries and Setup</title>
+	<section id="setup.swcs" condition="flex">
+		<title>Client libraries and setup</title>
 		<para>
 		GraniteDS comes with two client <literal>swc</literal> libraries that must be linked with your Flex application.
 		The main library <literal>granite.swc</literal> should be linked with the standard mode (<emphasis>linked into code</emphasis>), but the core internal library <literal>granite-essentials.swc</literal> must be linked with the compiler option <literal>-include-libraries</literal>.
@@ -203,7 +216,7 @@
         </programlisting>
 	</section>
 	
-	<section id="setup.ant">
+	<section id="setup.ant" condition="flex">
 		<title>Developing with Ant</title>
 		<para>
 		<emphasis>Ant</emphasis> is a very popular and powerful build tool. The Flex SDK comes with a set of ant tasks that can perform various development tasks, notably the compilation of the Flex application to a <literal>swf</literal> file.
@@ -260,15 +273,33 @@
         </programlisting>
 	</section>
 	
+	<section id="setup.client.jars" condition="java">
+		<title>Client libraries</title>
+		<para>
+		GraniteDS comes with 3 client <literal>jar</literal> libraries.
+		First <literal>granite-client.jar</literal>, a stripped down version of the core <literal>granite.jar</literal> that includes the minimal core of GraniteDS. 
+		Then <literal>granite-java-client.jar</literal> that includes the Java client library, and finally <literal>granite-javafx-client.jar</literal> that contains 
+		the specific integration for JavaFX.
+		</para>
+		<para>
+		The GraniteDS client also depends on the small class scanning library extcos.  
+		For remoting and Comet, the GraniteDS client requires the Apache Asynchronous HTTP client, and for WebSocket, the Jetty WebSocket client.
+		All these jars can be found in the <literal>libs</literal> folder of the Java client distribution.
+		</para>
+		<para>
+		You simply have to add the necessary GraniteDS jars and dependencies to your application classpath.
+		</para>
+	</section>
+	
 	<section id="setup.maven">
 		<title>Developing with Maven</title>
 		<para>
-		<emphasis>Maven</emphasis> is another popular build tool. Though GraniteDS is not itself built with Maven, its artifacts are available in the Maven central repository
+		<emphasis>Maven</emphasis> is a popular build tool. Though GraniteDS is not itself built with Maven, its artifacts are available in the Maven central repository
 		and can thus be easily added as dependencies to any Maven project.
 		</para>
 		
 		<para>
-		The Java dependencies are in the group <literal>org.graniteds</literal>.
+		The Java dependencies for the server application are in the group <literal>org.graniteds</literal>.
 		</para>
         <programlisting role="XML">
 <![CDATA[<dependency>
@@ -288,10 +319,10 @@
 ...]]>
 		</programlisting>
 		
-		<para>
+		<para condition="flex">
 		The Flex application can be built using the <ulink url="http://flexmojos.sonatype.org/">Flexmojos</ulink> plugin. Here is a simple project descriptor for a Flex module :
 		</para>
-		<programlisting role="XML">
+		<programlisting role="XML" condition="flex">
 <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
@@ -395,19 +426,77 @@
     </build>
 </project>]]>
         </programlisting>
+        
+        <para condition="java">
+        The dependencies for the Java client application are as follows:
+        </para>
+        <programlisting role="XML" condition="java">
+<![CDATA[<dependency>
+    <groupId>org.graniteds</groupId>
+    <artifactId>granite-client</artifactId>
+    <version>${graniteds.version}</version>
+    <type>jar</type>
+</dependency>
+
+<dependency>
+    <groupId>org.graniteds</groupId>
+    <artifactId>granite-java-client</artifactId>
+    <version>${graniteds.version}</version>
+    <type>jar</type>
+</dependency>
+
+<!-- Only for JavaFX integration -->
+<dependency>
+    <groupId>org.graniteds</groupId>
+    <artifactId>granite-javafx-client</artifactId>
+    <version>${graniteds.version}</version>
+    <type>jar</type>
+</dependency>
+
+<!-- Default dependencies -->
+<dependency>
+	<groupId>net.sf.extcos</groupId>
+	<artifactId>extcos</artifactId>
+	<version>0.3b</version>
+	<type>jar</type>
+</dependency>
+
+<!-- Apache HTTP client dependencies (remoting, Comet) -->
+<dependency>
+ 	<groupId>org.apache.httpcomponents</groupId>
+ 	<artifactId>httpasyncclient</artifactId>
+ 	<version>4.0-beta1</version>
+ 	<type>jar</type>
+</dependency>
+
+<!-- Jetty WebSocket client dependencies (WebSocket) -->
+<dependency>
+ 	<groupId>org.eclipse.jetty</groupId>
+ 	<artifactId>jetty-client</artifactId>
+ 	<version>8.1.5.v20120716</version>
+ 	<type>jar</type>
+</dependency>
+<dependency>
+ 	<groupId>org.eclipse.jetty</groupId>
+ 	<artifactId>jetty-websocket</artifactId>
+ 	<version>8.1.5.v20120716</version>
+ 	<type>jar</type>
+</dependency>
+]]>
+		</programlisting>
     </section>
-		
-    <section id="maven.archetypes">
+	
+    <section id="maven.archetypes" condition="flex">
         <title>Using Maven archetypes</title>
         <para>
 		Building a full Flex / Java EE Web application with Maven is rather complex and requires to create a multi-module parent project with 3 modules : 
-		a Java module, a Flex module and a Web application module, each having its own <literal>pom.xml</literal>, dependencies and plugin configurations. 
+		a Java server module, a Flex module and a Web application module, each having its own <literal>pom.xml</literal>, dependencies and plugin configurations. 
 		It is thus recommended that you start from one of the existing GraniteDS/Maven archetypes :
 		<itemizedlist>
-			<listitem>GraniteDS/Spring/JPA/Hibernate: graniteds-spring-jpa-hibernate</listitem>
-			<listitem>GraniteDS/Tide/Spring/JPA/Hibernate: graniteds-tide-spring-jpa-hibernate</listitem>
-			<listitem>GraniteDS/Tide/Seam 2/JPA/Hibernate: graniteds-tide-seam-jpa-hibernate</listitem>
-			<listitem>GraniteDS/Tide/CDI/JPA: graniteds-tide-cdi-jpa</listitem>
+			<listitem><para>GraniteDS/Spring/JPA/Hibernate: graniteds-spring-jpa-hibernate</para></listitem>
+			<listitem><para>GraniteDS/Tide/Spring/JPA/Hibernate: graniteds-tide-spring-jpa-hibernate</para></listitem>
+			<listitem><para>GraniteDS/Tide/Seam 2/JPA/Hibernate: graniteds-tide-seam-jpa-hibernate</para></listitem>
+			<listitem><para>GraniteDS/Tide/CDI/JPA: graniteds-tide-cdi-jpa</para></listitem>
 		</itemizedlist>
 		</para>
 		<para>
@@ -456,7 +545,7 @@ mvn war:war]]>
 		</para>
 	</section>
 	
-	<section id="setup.flashbuilder">
+	<section id="setup.flashbuilder" condition="flex">
 		<title>Developing with Flash Builder</title>
 		<para>
 		There are different options for working with Flash Builder. The easiest is to use a single combined Flex/Java project that will contain the source files

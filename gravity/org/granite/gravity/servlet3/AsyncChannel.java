@@ -23,14 +23,13 @@ package org.granite.gravity.servlet3;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.AsyncContext;
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.GravityConfig;
+import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 
 import flex.messaging.messages.Message;
@@ -44,8 +43,8 @@ public class AsyncChannel extends AbstractChannel {
     
     private final AtomicReference<AsyncContext> asyncContext = new AtomicReference<AsyncContext>();
 
-	public AsyncChannel(ServletConfig servletConfig, GravityConfig gravityConfig, String id) {
-        super(servletConfig, gravityConfig, id);
+	public AsyncChannel(Gravity gravity, String id, AsyncChannelFactory factory) {
+        super(gravity, id, factory);
 	}
 
 	public void setAsyncContext(AsyncContext asyncContext) {
@@ -153,14 +152,18 @@ public class AsyncChannel extends AbstractChannel {
 			super.destroy();
 		}
 		finally {
-			AsyncContext asyncContext = this.asyncContext.getAndSet(null);
-			if (asyncContext != null) {
-				try {
-					asyncContext.complete();
-				}
-				catch (Exception e) {
-					log.debug(e, "Could not close asyncContext: %s for channel: %s", asyncContext, this);
-				}
+			close();
+		}
+	}
+	
+	public void close() {
+		AsyncContext asyncContext = this.asyncContext.getAndSet(null);
+		if (asyncContext != null) {
+			try {
+				asyncContext.complete();
+			}
+			catch (Exception e) {
+				log.debug(e, "Could not close asyncContext: %s for channel: %s", asyncContext, this);
 			}
 		}
 	}

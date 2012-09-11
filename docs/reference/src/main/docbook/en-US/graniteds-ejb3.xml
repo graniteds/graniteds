@@ -1,6 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
    "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+   
 <chapter id="graniteds.ejb3">
 	<title>Integration with EJB3</title>
 	<para>
@@ -9,30 +10,43 @@
 	persistence and query language system (JPA).
 	</para>
 	
-	<para>
+	<para condition="flex">
     GraniteDS provides access to EJB 3 services via either the <literal>RemoteObject</literal> API or the Tide API for Session Beans methods calls, 
     and fully supports serialization of JPA entities from and to your Flex application, taking care of lazily loaded associations; both collections and proxies. 
     This support for JPA entity beans is covered in the section <link linkend="remoting.jpa">JPA and lazy initialization</link>, so this section will only 
     describe how to call remotely stateless and stateful session beans from a Flex application. GraniteDS also integrates with container security for 
     authentication and role-based authorization.
     </para>
+	<para condition="java">
+    GraniteDS provides access to EJB 3 services via either the <literal>RemoteService</literal> API or the Tide API for Session Beans methods calls, 
+    and fully supports serialization of JPA entities from and to your Java client application, taking care of lazily loaded associations; both collections and proxies. 
+    This support for JPA entity beans is covered in the section <link linkend="remoting.jpa">JPA and lazy initialization</link>, so this section will only 
+    describe how to call remotely stateless and stateful session beans from a Java client application. GraniteDS also integrates with container security for 
+    authentication and role-based authorization.
+    </para>
     
-    <para>
+    <para condition="flex">
     For a basic example with GraniteDS and EJB 3 (stateless and stateful session beans, and entity beans) working together, 
     have a look to the <literal>graniteds_ejb3</literal> example project in the <literal>examples</literal> folder of the GraniteDS distribution 
     <literal>graniteds-***.zip</literal> and import it as a new Eclipse project.
     </para>
     
-    <para>
+    <para condition="flex">
     You may also have a look at the <emphasis>"Hello, world" Revisited</emphasis> tutorial for another basic example application using EJB 3 technologies 
     together with Granite Eclipse Builder.
 	</para>
 	
 	<section id="ejb3.remoteobject">
-		<title>Using the RemoteObject API</title>		
-		<para>
+		<title condition="flex">Using the RemoteObject API</title>		
+		<title condition="java">Using the RemoteService API</title>		
+		<para condition="flex">
 		The Flex-side usage of the <literal>RemoteObject</literal> API is completely independent of the server technology, so everything described in 
 		the <link linkend="remoting.remoteobject">Remoting</link> chapter applies for EJBs. This section will only describe the particular configuration
+		required in various use cases of EJB services.
+		</para>
+		<para condition="java">
+		The client-side usage of the <literal>RemoteService</literal> API is completely independent of the server technology, so everything described in 
+		the <link linkend="remoting.remoteservice">Remoting</link> chapter applies for EJBs. This section will only describe the particular configuration
 		required in various use cases of EJB services.
 		</para>
 		<para>  
@@ -42,8 +56,11 @@
 		
 		<section id="ejb3.roexample">
 		    <title>Basic Remoting Example</title>
-		    <para>
+		    <para condition="flex">
 		    All remoting examples from the <link linkend="remoting.remoteobject">Remoting</link> chapter apply for EJBs, here is a basic example:
+		    </para>
+		    <para condition="java">
+		    All remoting examples from the <link linkend="remoting.remoteservice">Remoting</link> chapter apply for EJBs, here is a basic example:
 		    </para>
             <programlisting role="JAVA">
 <![CDATA[public interface HelloService {
@@ -62,46 +79,35 @@ public class HelloServiceBean implement HelloService {
 }]]>
             </programlisting>
             
-            <programlisting role="XML">
-<![CDATA[<?xml version="1.0"?>
-<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml">
+            <programlisting role="JAVA">
+<![CDATA[AMFRemotingChannel channel = new AMFRemotingChannel(transport, "graniteamf", 
+	new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"));
+RemoteService srv = new RemoteService(channel, "hello");
+		
+srv.newInvocation("hello", "Barack").setTimeToLive(5, TimeUnit.SECONDS)
+	.addListener(new ResultFaultIssuesResponseListener() {
+    
+	@Override
+	public void onResult(ResultEvent event) {
+		System.out.println("Result: " + event.getResult());
+	}
 
-    <mx:Script>
-        import mx.rpc.events.ResultEvent;
-        import mx.rpc.events.FaultEvent;
-        import mx.controls.Alert;
-        
-        public function resultHandler(event:ResultEvent):void {
-            // Display received message
-            outputMessage.text = event.result as String;
-        }                       
-        
-        public function faultHandler(event:FaultEvent):void {
-            // Show error alert
-            Alert.show(event.fault.faultString);               
-        }
-    </mx:Script>
-    
-    <!-- Connect to a service destination.--> 
-    <mx:RemoteObject id="helloService" 
-        destination="helloService"
-        result="handleResult(event);"
-        fault="handleFault(event);"/>
-    
-    <!-- Provide input data for calling the service. --> 
-    <mx:TextInput id="inputName"/>
-    
-    <!-- Call the EJB, use the text in a TextInput control as input data.--> 
-    <mx:Button click="helloService.hello(inputName.text)"/>
-    
-    <!-- Display results data in the user interface. --> 
-    <mx:Label id="outputMessage"/>
-</mx:Application>]]>
+	@Override
+	public void onFault(FaultEvent event) {
+		System.err.println("Fault: " + event.toString());
+	}
+
+	@Override
+	public void onIssue(IssueEvent event) {
+		System.err.println("Issue: " + event.toString());
+	}
+}).invoke();
+]]>
             </programlisting>
 		</section>
 		
 		<section id="ejb3.roconfig">
-		    <title>Common Configuration</title>
+		    <title>Common configuration</title>
 			<para>
 			The main part of the configuration is the <literal>factory</literal> declaration in the file <literal>services-config.xml</literal> :
 			</para>
@@ -148,21 +154,27 @@ public class HelloServiceBean implement HelloService {
 			<para>
 			Two elements are important in this configuration :
 			<itemizedlist>
-			      <listitem>
+			      <listitem><para>
 			      The EJB service factory declaration and the reference to in in our destination
-			      </listitem>
-			      <listitem>
+			      </para></listitem>
+			      <listitem><para>
 			      The JNDI lookup string defined in the <literal>lookup</literal> property of the factory
-			      </listitem>
+			      </para></listitem>
 			</itemizedlist>
+			</para>
+	        <note><para>
+	        In Java EE 6 compliant application servers such as JBoss 6 and GlassFish 3, you can use the standard global naming specification :
+	        <literal>java:global/{context.root}/{capitalized.destination.id}Bean</literal>.
+	        </para></note>
+	        <para>
 			The JNDI lookup string is common for all EJB 3 destinations, and thus contains placeholders that will be replaced at runtime depending
 			on the destination that is called. <literal>{capitalized.destination.id}</literal> will be replaced by the destination id with the first letter in capital,
 			for example <literal>personService</literal> will become <literal>myApp/PersonServiceBean/local</literal>. 
 			<literal>{destination.id}</literal> can alternatively be used.
-			Note that most Java EE servers do not expose EJB local interfaces in the global JNDI context, so you will have to use a local JNDI reference and add
+			Note that some Java EE servers do not expose EJB local interfaces in the global JNDI context, so you will have to use a local JNDI reference and add
 			an <literal>ejb-local-ref</literal> section in <literal>web.xml</literal> for each EJB exposed to JNDI. 
 			</para>
-			        
+			
 	        <programlisting role="XML">
 <![CDATA[<ejb-local-ref>
     <ejb-ref-name>myapp.ear/PeopleServiceBean</ejb-ref-name>
@@ -323,26 +335,26 @@ public class PersonServiceBean implements PersonService {
 			<para>
 			The <literal>@RemoteDestination</literal> annotation additionally supports the following attributes:
 	        <itemizedlist>
-	            <listitem>
+	            <listitem><para>
 	            <literal>id</literal> is mandatory and is the destination name
-	            </listitem>
-	            <listitem>
+	            </para></listitem>
+	            <listitem><para>
 	            <literal>service</literal> is optional if there is only one service for <literal>RemotingMessage</literal> defined in <literal>services-config.xml</literal>. 
 	            Otherwise this should be the name of the service.
-	            </listitem>
-	            <listitem>
+	            </para></listitem>
+	            <listitem><para>
 	            <literal>channel</literal> is optional if there is only one channel defined in <literal>services-config.xml</literal>. 
 	            Otherwise this should be the id of the target channel.
-	            </listitem>
-	            <listitem>
+	            </para></listitem>
+	            <listitem><para>
 	            <literal>channels</literal> may be used instead of channel to define a failover channel.
-	            </listitem>
-	            <listitem>
+	            </para></listitem>
+	            <listitem><para>
 	            <literal>factory</literal> is optional if there is only one factory in <literal>services-config.xml</literal>. Otherwise this should be the factory id.
-	            </listitem>
-	            <listitem>
+	            </para></listitem>
+	            <listitem><para>
 	            <literal>securityRoles</literal> is an array of role names for securing the destination.
-	            </listitem>
+	            </para></listitem>
 	        </itemizedlist>
 	        
 	        As shown below, the <literal>service</literal>, <literal>factory</literal> and <literal>channel</literal> sections are still required 
@@ -458,7 +470,7 @@ public class PositionServiceBean implements PositionService {
 	        <para>
 	        The inner <literal>remove-method</literal> node contains information about the <literal>remove()</literal> methods of your stateful bean:
 	        <itemizedlist>
-	            <listitem>
+	            <listitem><para>
 	            <literal>signature</literal>: This is the name of the method, optionally followed by a parameter list. 
 	            If your <literal>remove()</literal> method has arguments, the signature should follow the conventions used in <literal>java.lang.reflect.Method.toString()</literal>. 
 	            For example, with the following <literal>remove()</literal> method:
@@ -470,12 +482,12 @@ public class PositionServiceBean implements PositionService {
 	            <programlisting>
 	<![CDATA[<signature>remove(boolean,java.lang.Integer,java.lang.String[])</signature>]]>
 	            </programlisting>
-	            </listitem>
+	            </para></listitem>
 	            
-	            <listitem>
+	            <listitem><para>
 	            <literal>retain-if-exception</literal> (optional): This is the equivalent of the <literal>@Remove</literal> annotation attribute; 
 	            the default is <literal>false</literal>.
-	            </listitem>
+	            </para></listitem>
 	        </itemizedlist>
 	 
 	        You may of course add multiple <literal>remove-method</literal> nodes in the same <literal>ejb-stateful</literal> node if necessary.
@@ -492,7 +504,13 @@ public class PositionServiceBean implements PositionService {
 			<para>
             You can easily protect access to your EJB destinations with destination-based security. 
             Please refer to the <link linkend="remoting.security">security chapter</link>.
+            </para>
+            <para condition="flex">
             GraniteDS will then pass the user credentials from the Flex <literal>RemoteObject</literal> to the EJB security context, making possible
+            to use role-based authorization with the EJB destination. 
+            </para>
+            <para condition="java">
+            GraniteDS will then pass the user credentials from the client <literal>RemotingChannel</literal> to the EJB security context, making possible
             to use role-based authorization with the EJB destination. 
             </para>
             <para>
@@ -551,7 +569,7 @@ public class PersonServiceBean implements PersonService {
 	        
 	        <para>
 	        With this configuration, only authenticated users having either the <literal>user</literal> or <literal>admin</literal> roles will be able to 
-	        call the EJB remotely from Flex. Then the EJB container will enforce the particular access on each method due to the <literal>@RolesAllowed</literal>
+	        call the EJB remotely from the client. Then the EJB container will enforce the particular access on each method due to the <literal>@RolesAllowed</literal>
 	        annotation and may throw a <literal>EJBAccessException</literal>.
 	        </para>
 		</section>
@@ -569,24 +587,24 @@ public class PersonServiceBean implements PersonService {
 			<para>
 			There are a few noticeable differences in the configuration in this case. 
 			<itemizedlist>
-			  <listitem>
+			  <listitem><para>
 			  It is <emphasis>mandatory</emphasis> to use automatic classpath scanning as Tide needs to have access to the actual implementation of the EJB 
 			  and not only to its interface. Consequently this is currently not possible to use remote EJBs as Tide-enabled destinations.
-			  </listitem>
-	          <listitem>
+			  </para></listitem>
+	          <listitem><para>
 	          You can define in the <literal>tide-annotations</literal> section of <literal>granite-config.xml</literal> the conditions 
 	          used to enable remote access to EJB destinations (for example all EJBs annotated with a particular annotation). 
-	          </listitem>
-			  <listitem>
+	          </para></listitem>
+			  <listitem><para>
 			  You have to configure the specific Tide/EJB3 <literal>org.granite.tide.ejb.EjbServiceFactory</literal> service factory in <literal>services-config.xml</literal>.
-			  </listitem>
-			  <listitem>
+			  </para></listitem>
+			  <listitem><para>
 			  You have to configure a unique Tide/EJB3 destination named <literal>ejb</literal> in <literal>services-config.xml</literal>
-			  </listitem>
-			  <listitem>
+			  </para></listitem>
+			  <listitem><para>
 			  You have to retrieve the Tide context in Flex with <literal>Ejb.getInstance().getEjbContext()</literal> 
 			  instead of <literal>Tide.getInstance().getContext()</literal>.
-			  </listitem>
+			  </para></listitem>
 			</itemizedlist>
 			</para>
 			
@@ -660,7 +678,7 @@ public class PersonServiceBean implements PersonService {
 	        <para>
 	        The property <literal>lookup</literal> of the factory defines the lookup string used by Tide to lookup the EJBs in JNDI. The example above is suitable
 	        for JBoss, please refer to your application server documentation for other servers. Placeholders can be defined in this lookup string that will be 
-	        replaced at runtime for each EJB: <literal>{capitalized.component.name}</literal> is the name used on the client
+	        replaced at runtime for each EJB: <literal>{capitalized.component.name}</literal> is the name used on the client.
 	        </para>
 	        <note><para>
 	        In Java EE 6 compliant application servers such as JBoss 6 and GlassFish 3, you can use the standard global naming specification :
@@ -733,8 +751,8 @@ public class PersonServiceBean implements PersonService {
 	        </programlisting>
 	   </section>
 	   
-	   <section id="ejb3.tideremotingdi">
-            <title>Basic Remoting with Dependency Injection</title>
+	   <section id="ejb3.tideremotingdi.flex" condition="flex">
+            <title>Basic remoting with dependency injection</title>
             <para>
             When using EJB3, the only difference on the client is that you have to use the <literal>Ejb</literal> singleton. Here is a simple example of 
             remoting with an injected client proxy for an EJB service:
@@ -781,21 +799,100 @@ public class PersonServiceBean implements PersonService {
 	        methods apply for EJB. 
 	        </para>
 	   </section>
+	   
+	   <section id="ejb3.tideremotingdi.java" condition="java">
+            <title>Basic remoting with dependency injection</title>
+            <para>
+            When using EJB3, the only difference on the client is that you have to use the destination named <literal>ejb</literal> to build the <literal>ServerSession</literal>. 
+            Here is a simple example of remoting with an Spring-injected client proxy for an EJB service:
+            </para>
+	        	        
+	        <programlisting role="JAVA">
+<![CDATA[public class HelloController {
+
+	@Inject @Qualifier("helloService")
+	private Component helloService;
+	
+    public void hello(String to) {
+    	// Asynchronous call using handlers
+    	helloService.call("hello", to, new TideResponder<String>() {
+    		@Override
+    		public void result(TideResultEvent<String> result) {
+    			System.out.println("Async result: " + result.getResult());
+    		}
+    		
+    		@Override
+    		public void fault(TideFaultEvent fault) {
+    			System.err.println("Fault: " + fault.getFault());
+    		}
+    	};
+    }
+    
+    public String helloSync(String to) {	
+    	// Synchronous wait of Future result
+    	Future<String> futureResult = helloService.call("hello", to);
+    	String result = futureResult.get();
+    	System.out.println("Sync result: " + result);
+    	return result;
+    }
+}]]>
+	        </programlisting>
 	        
-	   <section id="ejb3.tideremotingtypesafe">
-            <title>Typesafe Remoting with Dependency Injection</title>
+	        <para>
+	        If you have generated typed client proxies, it can be further simplified to something like this:
+	        </para>
+	        	        
+	        <programlisting role="JAVA">
+<![CDATA[public class HelloController {
+
+	@Inject
+	private HelloService helloService;
+	
+    public void hello(String to) {
+    	// Asynchronous call using handlers
+    	helloService.hello(to, new TideResponder<String>() {
+    		@Override
+    		public void result(TideResultEvent<String> result) {
+    			System.out.println("Async result: " + result.getResult());
+    		}
+    		
+    		@Override
+    		public void fault(TideFaultEvent fault) {
+    			System.err.println("Fault: " + fault.getFault());
+    		}
+    	};
+    }
+    
+    public String helloSync(String to) {	
+    	// Synchronous wait of Future result
+    	Future<String> futureResult = helloService.hello(to);
+    	String result = futureResult.get();
+    	System.out.println("Sync result: " + result);
+    	return result;
+    }
+}]]>
+	        </programlisting>
+	        
+	        <para>
+	        This is almost identical to the standard Tide API described in the <link linkend="remoting.tideremoting">Tide remoting</link> section, and all other
+	        methods apply for EJB. 
+	        </para>
+	   </section>
+            
+       <section id="ejb3.tideremotingtypesafe.flex" condition="flex">
+            <title>Typesafe remoting with dependency injection</title>
             <para>
             You can benefit from the capability of the Gas3 code generator (see <link linkend="graniteds.gas3">here</link>) to generate a strongly typed 
-            ActionScript 3 client proxy from the EJB interface when it is annotated with <literal>@RemoteDestination</literal>.
+            ActionScript 3 client proxy from the Spring interface when it is annotated with <literal>@RemoteDestination</literal>.
             In this case, you can inject a typesafe reference to your service and get better compile time error checking and auto completion in your IDE:
             </para>
-	        
-	        <programlisting role="XML">
+            
+            <programlisting role="XML">
 <![CDATA[<?xml version="1.0"?>
 <mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
-    creationComplete="Ejb.getInstance().initApplication()">
+    creationComplete="Spring.getInstance().initApplication()">
     <mx:Script>
-        import org.granite.tide.ejb.Ejb;
+        import org.granite.tide.spring.Spring;
         import org.granite.tide.events.TideResultEvent;
         import org.granite.tide.events.TideFaultEvent;
         import com.myapp.service.HelloService;
@@ -812,9 +909,77 @@ public class PersonServiceBean implements PersonService {
     ...
 </mx:Application>]]>
             </programlisting>
+            
+            <para>
+            It is possible to benefit from even more type safety by using the annotation <literal>[Inject]</literal> instead of <literal>In</literal>.
+            When using this annotation, the full class name is used to find the target bean in the Spring context instead of the bean name.
+            </para>
+            
+            <programlisting role="XML">
+<![CDATA[<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Spring.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.spring.Spring;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        import com.myapp.service.HelloService;
+        
+        [Inject]
+        public var myService:HelloService;
+        
+        private function hello(name:String):void {
+            myService.hello(name, resultHandler, faultHandler);
+        }
+        ...
+    </mx:Script>
+    
+    ...
+</mx:Application>]]>
+            </programlisting>
+        </section>
+	        
+	   <section id="ejb3.tideremotingtypesafe.java" condition="java">
+            <title>Typesafe remoting with dependency injection</title>
+            <para>
+            You can benefit from the capability of the Gfx code generator (see <link linkend="graniteds.gfx">here</link>) to generate a strongly typed 
+            Java client proxy from the EJB3 interface when it is annotated with <literal>@RemoteDestination</literal>.
+            In this case, you can inject a typesafe reference to your service and get better compile time error checking and auto completion in your IDE:
+            </para>
+	        
+	        <programlisting role="JAVA">
+<![CDATA[public class HelloController {
+
+	@Inject @Qualifier("helloService")
+	private HelloService helloService;
+	
+   	// Asynchronous call using handlers
+   	helloService.hello("Barack", new TideResponder<String>() {
+   		@Override
+   		public void result(TideResultEvent<String> result) {
+   			System.out.println("Async result: " + result.getResult());
+   		}
+   		
+   		@Override
+   		public void fault(TideFaultEvent fault) {
+   			System.err.println("Fault: " + fault.getFault());
+   		}
+   	};
+   	
+   	// Synchronous wait of Future result
+   	Future<String> futureResult = helloService.hello("Barack");
+   	String result = futureResult.get();
+   	System.out.println("Sync result: " + result);
+}]]>
+	        </programlisting>
+	        
+	        <para>
+	        Note that as there is only one instance of <literal>HelloService</literal>, you may also omit the <literal>Qualifier</literal> annotation and use 
+	        typesafe injection with <literal>@Inject</literal> only.
+	        </para>
         </section>
 		
-		<section id="ejb3.tidesecurity">
+		<section id="ejb3.tidesecurity" condition="flex">
 			<title>Security</title>
 			<para>
 			GraniteDS provides a client-side component named <literal>identity</literal> that ensures the integration between the client <literal>RemoteObject</literal>

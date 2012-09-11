@@ -21,14 +21,18 @@
 package org.granite.gravity.tomcat;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Channel;
+import org.granite.gravity.Gravity;
 
 /**
  * @author Franck WOLFF
  */
-public class TomcatChannelFactory extends AbstractChannelFactory {
+public class TomcatChannelFactory extends AbstractChannelFactory<TomcatChannel> {
+	
+	public TomcatChannelFactory(Gravity gravity) {
+		super(gravity);
+	}
 
-	public Channel newChannel(String id) {
-        return new TomcatChannel(getServletConfig(), getGravityConfig(), id);
+	public TomcatChannel newChannel(String id) {
+        return new TomcatChannel(getGravity(), id, this);
     }
 }

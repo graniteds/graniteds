@@ -20,31 +20,27 @@
 
 package org.granite.gravity;
 
-import javax.servlet.ServletConfig;
 
 /**
  * @author Franck WOLFF
  */
-public abstract class AbstractChannelFactory implements ChannelFactory {
+public abstract class AbstractChannelFactory<C extends Channel> implements ChannelFactory<C> {
 
-	private GravityConfig gravityConfig = null;
-	private ServletConfig servletConfig = null;
+	private Gravity gravity = null;
 	
-	public void init(GravityConfig gravityConfig, ServletConfig servletConfig) {
-		this.gravityConfig = gravityConfig;
-		this.servletConfig = servletConfig;
+	public AbstractChannelFactory(Gravity gravity) {
+		this.gravity = gravity;
+	}
+	
+	public Gravity getGravity() {
+		return gravity;
 	}
 
 	public GravityConfig getGravityConfig() {
-		return gravityConfig;
-	}
-
-	public ServletConfig getServletConfig() {
-		return servletConfig;
+		return gravity.getGravityConfig();
 	}
 
 	public void destroy() {
-		this.gravityConfig = null;
-		this.servletConfig = null;
+		this.gravity = null;
 	}
 }

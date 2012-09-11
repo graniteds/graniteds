@@ -22,14 +22,13 @@ package org.granite.gravity.jbossweb;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.GravityConfig;
+import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 
@@ -44,8 +43,8 @@ public class JBossWebChannel extends AbstractChannel {
 
     private final AtomicReference<HttpEvent> event = new AtomicReference<HttpEvent>();
 
-    public JBossWebChannel(ServletConfig servletConfig, GravityConfig gravityConfig, String id) {
-        super(servletConfig, gravityConfig, id);
+    public JBossWebChannel(Gravity gravity, String id, JBossWebChannelFactory factory) {
+        super(gravity, id, factory);
     }
     
     public void setHttpEvent(HttpEvent event) {
@@ -153,14 +152,18 @@ public class JBossWebChannel extends AbstractChannel {
 			super.destroy();
 		}
 		finally {
-			HttpEvent event = this.event.getAndSet(null);
-			if (event != null) {
-				try {
-					event.close();
-				}
-				catch (Exception e) {
-					log.debug(e, "Could not close event: %s for channel: %s", EventUtil.toString(event), this);
-				}
+			close();
+		}
+	}
+	
+	public void close() {
+		HttpEvent event = this.event.getAndSet(null);
+		if (event != null) {
+			try {
+				event.close();
+			}
+			catch (Exception e) {
+				log.debug(e, "Could not close event: %s for channel: %s", EventUtil.toString(event), this);
 			}
 		}
 	}

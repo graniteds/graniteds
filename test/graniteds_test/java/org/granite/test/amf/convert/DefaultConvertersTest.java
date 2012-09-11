@@ -71,7 +71,7 @@ import org.granite.messaging.amf.io.convert.impl.String2Locale;
 import org.granite.messaging.amf.io.convert.impl.String2URI;
 import org.granite.seam21.ValueExpressionConverter;
 import org.granite.util.XMLUtil;
-import org.jboss.seam.core.Expressions;
+import org.granite.util.XMLUtilFactory;
 import org.jboss.seam.core.Expressions.ValueExpression;
 import org.junit.After;
 import org.junit.Before;
@@ -515,7 +515,7 @@ public class DefaultConvertersTest {
     		"    <elt>blabla</elt>\n" +
     		"</doc>";
     	
-    	final XMLUtil xmlUtil = new XMLUtil();
+    	final XMLUtil xmlUtil = XMLUtilFactory.getXMLUtil();
     	final Document doc = xmlUtil.buildDocument(xmlString);
     	
         Converter converter = converters.getConverter(xmlString, Document.class);

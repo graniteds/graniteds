@@ -25,23 +25,23 @@ import java.util.TimerTask;
 /**
  * @author Franck WOLFF
  */
-public class TimeChannel {
+public class TimeChannel<C extends Channel> {
 
-	private final Channel channel;
+	private final C channel;
 	private TimerTask timerTask;
 	
-	public TimeChannel(Channel channel) {
+	public TimeChannel(C channel) {
 		this(channel, null);
 	}
 	
-	public TimeChannel(Channel channel, TimerTask timerTask) {
+	public TimeChannel(C channel, TimerTask timerTask) {
 		if (channel == null)
 			throw new NullPointerException("Channel cannot be null");
 		this.channel = channel;
 		this.timerTask = timerTask;
 	}
 
-	public Channel getChannel() {
+	public C getChannel() {
 		return channel;
 	}
 
@@ -55,7 +55,7 @@ public class TimeChannel {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof TimeChannel && channel.equals(((TimeChannel)obj).channel);
+		return obj instanceof TimeChannel && channel.equals(((TimeChannel<?>)obj).channel);
 	}
 
 	@Override

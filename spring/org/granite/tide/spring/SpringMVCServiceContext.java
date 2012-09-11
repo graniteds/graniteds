@@ -49,7 +49,7 @@ import org.granite.tide.data.DataContext;
 import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationCall;
 import org.granite.tide.invocation.InvocationResult;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.MethodParameter;
@@ -116,7 +116,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
             Class<?> componentClass = null;
             try {
     	        if (componentClassName != null)
-    	        	componentClass = ClassUtil.forName(componentClassName);
+    	        	componentClass = TypeUtil.forName(componentClassName);
             }
             catch (ClassNotFoundException e) {
             	throw new ServiceException("Component class not found " + componentClassName, e);

@@ -33,6 +33,8 @@ public interface Channel {
     public String getId();
     
     public Gravity getGravity();
+    
+    public ChannelFactory<?> getFactory();
 
     public Subscription addSubscription(String destination, String subTopicId, String subscriptionId, boolean noLocal);
     public Collection<Subscription> getSubscriptions();
@@ -47,5 +49,6 @@ public interface Channel {
 	public boolean runReceive();
 	public boolean runReceived(AsyncHttpContext asyncHttpContext);
     
+	public void close();
     public void destroy();
 }

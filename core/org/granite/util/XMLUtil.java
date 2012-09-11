@@ -20,56 +20,51 @@
 
 package org.granite.util;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
 
 /**
  * @author Franck WOLFF
  */
-public class XMLUtil {
+public interface XMLUtil {
 
-    private DocumentBuilderFactory documentBuilderFactory = null;
-    private TransformerFactory transformerFactory = null;
+	public Document newDocument();
+	
+	public Document newDocument(String root);
+	
+	public Document getDocument(Node node);
 
-    public Document buildDocument(String xml) {
-        try {
-            DocumentBuilder builder = getDocumentBuilderFactory().newDocumentBuilder();
-            return builder.parse(new InputSource(new StringReader(xml)));
-        } catch (Exception e) {
-            throw new RuntimeException("Could not parse XML string", e);
-        }
-    }
+	public Element newElement(Node parent, String name);
 
-    public String toString(Document doc) {
-        try {
-            Transformer transformer = getTransformerFactory().newTransformer();
-            StringWriter writer = new StringWriter();
-            transformer.transform(new DOMSource(doc), new StreamResult(writer));
-            return writer.toString();
-        } catch (Exception e) {
-            throw new RuntimeException("Could not serialize document", e);
-        }
-    }
+	public Element newElement(Node parent, String name, String value);
+	
+	public String getNormalizedValue(Node node);
+	
+	public String setValue(Node node, String value);
+	
+    public Document buildDocument(String xml);
+    
+	public Document loadDocument(InputStream input) throws IOException, SAXException;
+	
+	public Document loadDocument(InputStream input, EntityResolver resolver, ErrorHandler errorHandler) throws IOException, SAXException;
+    
+	public void saveDocument(Document document, OutputStream output);
+	
+    public String toString(Document doc);
+    
+	public String toNodeString(Node node);
+	
+	public Node selectSingleNode(Object context, String expression);
+	
+	public List<Node> selectNodeSet(Object context, String expression);
 
-    private TransformerFactory getTransformerFactory() {
-        if (transformerFactory == null)
-            transformerFactory = TransformerFactory.newInstance();
-        return transformerFactory;
-    }
-
-    private DocumentBuilderFactory getDocumentBuilderFactory() {
-        if (documentBuilderFactory == null)
-            documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        return documentBuilderFactory;
-    }
 }

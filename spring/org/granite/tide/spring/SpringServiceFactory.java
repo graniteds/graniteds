@@ -34,7 +34,7 @@ import org.granite.messaging.service.ServiceInvoker;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.tide.TideServiceInvoker;
 import org.granite.tide.data.PersistenceExceptionConverter;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -115,7 +115,7 @@ public class SpringServiceFactory extends ServiceFactory {
                 	// Try to create Spring MVC context when Spring MVC available
                 	String className = "org.granite.tide.spring.SpringMVCServiceContext";
                 	try {
-                		Class<SpringServiceContext> clazz = ClassUtil.forName(className, SpringServiceContext.class);
+                		Class<SpringServiceContext> clazz = TypeUtil.forName(className, SpringServiceContext.class);
                 		tideContext = clazz.getConstructor(ApplicationContext.class).newInstance(springContext);
                 	}
                 	catch (Exception e) {

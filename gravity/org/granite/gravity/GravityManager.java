@@ -38,7 +38,7 @@ import org.granite.gravity.config.AbstractMessagingDestination;
 import org.granite.gravity.config.servlet3.ActiveMQTopicDestination;
 import org.granite.gravity.config.servlet3.JmsTopicDestination;
 import org.granite.gravity.config.servlet3.MessagingDestination;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -59,7 +59,7 @@ public class GravityManager {
 	 * @return a newly created and started Gravity instance or previously started one.
 	 * @throws ServletException if something goes wrong (GravityFactory not found, Gravity.start() error, etc.)
 	 */
-    public static Gravity start(ServletConfig servletConfig, ChannelFactory channelFactory) throws ServletException {
+    public static Gravity start(ServletConfig servletConfig) throws ServletException {
     	Gravity gravity = null;
     	
     	ServletContext context = servletConfig.getServletContext();
@@ -75,12 +75,11 @@ public class GravityManager {
 	            if (flexFilterClass != null)
 	            	configureServices(context, flexFilterClass);
 		
-		        GravityConfig gravityConfig = new GravityConfig(graniteConfig, channelFactory);
-		        channelFactory.init(gravityConfig, servletConfig);
+		        GravityConfig gravityConfig = new GravityConfig(graniteConfig);
 		        
 		        String gravityFactory = gravityConfig.getGravityFactory();
 		        try {
-					GravityFactory factory = ClassUtil.newInstance(gravityFactory, GravityFactory.class);
+					GravityFactory factory = TypeUtil.newInstance(gravityFactory, GravityFactory.class);
 					gravity = factory.newGravity(gravityConfig, servicesConfig, graniteConfig);
 				} catch (Exception e) {
 					throw new ServletException("Could not create Gravity instance with factory: " + gravityFactory, e);

@@ -40,8 +40,9 @@ import org.granite.messaging.amf.io.util.ActionScriptClassDescriptor;
 import org.granite.messaging.amf.io.util.DefaultActionScriptClassDescriptor;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.io.util.instantiator.AbstractInstantiator;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMLUtil;
+import org.granite.util.XMLUtilFactory;
 import org.w3c.dom.Document;
 
 /**
@@ -63,7 +64,7 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
 
     protected final AMF3DeserializerSecurizer securizer = context.getGraniteConfig().getAmf3DeserializerSecurizer();
 
-    protected final XMLUtil xmlUtil = new XMLUtil();
+    protected final XMLUtil xmlUtil = XMLUtilFactory.getXMLUtil();
 
     protected final boolean debug;
     protected final boolean debugMore;
@@ -419,8 +420,9 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
                 byte encoding = (byte)((type >> 2) & 0x03);
                 if (debug) log.debug("readAMF3Object() - encoding=%d", encoding);
 
-                String className = readAMF3String();
-                if (debug) log.debug("readAMF3Object() - className=%s", className);
+                String alias = readAMF3String();
+                String className = context.getGraniteConfig().getTypeForAlias(alias);
+                if (debug) log.debug("readAMF3Object() - alias=%, className=%s", alias, className);
                 
                 // Check if the class is allowed to be instantiated.
                 if (securizer != null && !securizer.allowInstantiation(className))
@@ -437,7 +439,7 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
                     Class<?>[] argsDef = new Class[]{String.class, byte.class};
                     Object[] argsVal = new Object[]{className, Byte.valueOf(encoding)};
                     try {
-                        desc = ClassUtil.newInstance(descriptorType, argsDef, argsVal);
+                        desc = TypeUtil.newInstance(descriptorType, argsDef, argsVal);
                     } catch (Exception e) {
                         throw new RuntimeException("Could not instantiate AS descriptor: " + descriptorType, e);
                     }

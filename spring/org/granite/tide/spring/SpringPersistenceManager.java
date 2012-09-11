@@ -26,7 +26,7 @@ import org.granite.tide.TideTransactionManager;
 import org.granite.tide.data.AbstractTidePersistenceManager;
 import org.granite.tide.data.JPAPersistenceManager;
 import org.granite.tide.data.NoPersistenceManager;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -50,8 +50,8 @@ public class SpringPersistenceManager implements TidePersistenceManager {
 		if (transactionManager instanceof HibernateTransactionManager) {
 			try {
 				Object sf = transactionManager.getClass().getMethod("getSessionFactory").invoke(transactionManager);
-				Class<?> sfClass = ClassUtil.forName("org.hibernate.SessionFactory");
-				pm = (TidePersistenceManager)ClassUtil.newInstance("org.granite.tide.hibernate.HibernatePersistenceManager", 
+				Class<?> sfClass = TypeUtil.forName("org.hibernate.SessionFactory");
+				pm = (TidePersistenceManager)TypeUtil.newInstance("org.granite.tide.hibernate.HibernatePersistenceManager", 
 						new Class<?>[] { sfClass, TideTransactionManager.class }, new Object[] { sf, tm });
 			}
 			catch (Exception e) {

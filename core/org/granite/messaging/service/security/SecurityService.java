@@ -35,6 +35,8 @@ public interface SecurityService {
 
     public Object authorize(AbstractSecurityContext context) throws Exception;
 
+    public boolean acceptsContext();
+    
     public void logout() throws SecurityServiceException;
     
     public void handleSecurityException(SecurityServiceException e);

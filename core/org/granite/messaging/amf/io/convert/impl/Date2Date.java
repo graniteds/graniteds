@@ -27,7 +27,7 @@ import java.util.Date;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.convert.IllegalConverterArgumentException;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -40,7 +40,7 @@ public class Date2Date extends Converter {
 
     @Override
 	protected boolean internalCanConvert(Object value, Type targetType) {
-        Class<?> targetClass = ClassUtil.classOfType(targetType);
+        Class<?> targetClass = TypeUtil.classOfType(targetType);
         return (
             targetClass.isAssignableFrom(Date.class) ||
             targetClass.isAssignableFrom(Calendar.class) ||
@@ -59,7 +59,7 @@ public class Date2Date extends Converter {
             return null;
 
         Date date = (Date)value;
-        Class<?> targetClass = ClassUtil.classOfType(targetType);
+        Class<?> targetClass = TypeUtil.classOfType(targetType);
         if (targetClass.isAssignableFrom(Date.class))
             return value;
 

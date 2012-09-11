@@ -28,7 +28,10 @@ package org.granite.tide.service {
     import mx.messaging.Channel;
     import mx.messaging.ChannelSet;
 	import mx.messaging.channels.AMFChannel;
+	import mx.messaging.channels.SecureAMFChannel;
+	import org.granite.tide.Tide;
     import org.granite.gravity.channels.GravityChannel;
+	import org.granite.gravity.channels.SecureGravityChannel;
     
 
     /**
@@ -41,11 +44,12 @@ package org.granite.tide.service {
 		private var _graniteChannelSet:ChannelSet;
 		private var _gravityChannelSet:ChannelSet;
 		
-		private var _contextRoot:String = "";
-		private var _serverName:String = "{server.name}";
-		private var _serverPort:String = "{server.port}";
-		private var _graniteUrlMapping:String = "/graniteamf/amf.txt";		// .txt for stupid bug in IE8
-		private var _gravityUrlMapping:String = "/gravityamf/amf.txt";
+		protected var _secure:Boolean = false;
+		protected var _contextRoot:String = "";
+		protected var _serverName:String = "{server.name}";
+		protected var _serverPort:String = "{server.port}";
+		protected var _graniteUrlMapping:String = null;		// .txt for stupid bug in IE8
+		protected var _gravityUrlMapping:String = null;
         
 
 		/**
@@ -54,9 +58,29 @@ package org.granite.tide.service {
 		 * 	@param name component name
 		 *  @param context current context
 		 */
-        public function DefaultServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = null, gravityUrlMapping:String = null) {
+        public function DefaultServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = "/graniteamf/amf.txt", gravityUrlMapping:String = "/gravityamf/amf.txt", secure:Boolean = false) {
             super();
-            _contextRoot = contextRoot;
+			var application:Object = Tide.currentApplication();
+			
+			if (application.url && application.url.indexOf("https") == 0)
+				_secure = true;
+			else
+				_secure = secure;
+			
+			if (!contextRoot && application.url) {
+				var idx:int = application.url.indexOf("://");
+				if (idx > 0) {
+					idx = application.url.indexOf("/", idx+3);
+					if (idx > 0) {
+						var idx2:int = application.url.indexOf("/", idx+1);
+						if (idx2 > 0 && idx2 > idx)
+							_contextRoot = application.url.substring(idx, idx2);
+					}
+				}
+			}
+			else
+				_contextRoot = contextRoot;
+
             if (graniteUrlMapping != null)
             	_graniteUrlMapping = graniteUrlMapping;
             if (gravityUrlMapping != null)
@@ -66,6 +90,10 @@ package org.granite.tide.service {
         public function set contextRoot(contextRoot:String):void {
         	_contextRoot = contextRoot;
         }
+
+		public function set secure(secure:Boolean):void {
+			_secure = secure;
+		}
         
         public function set serverName(serverName:String):void {
         	_serverName = serverName;
@@ -84,18 +112,22 @@ package org.granite.tide.service {
         }
         
         protected function get protocol():String {
-        	return "http";
+        	return _secure ? "https" : "http";
         }
         
         protected function newAMFChannel(id:String, uri:String):Channel {
+			if (_secure)
+				return new SecureAMFChannel(id, uri);
         	return new AMFChannel(id, uri);
         }
         
         protected function newGravityChannel(id:String, uri:String):Channel {
+			if (_secure)
+				return new SecureGravityChannel(id, uri);
         	return new GravityChannel(id, uri);
         }
         
-        private function get graniteChannelSet():ChannelSet {
+		protected function get graniteChannelSet():ChannelSet {
         	if (_graniteChannelSet == null) {
 				_graniteChannelSet = new ChannelSet();
 				_graniteChannelSet.addChannel(newAMFChannel("graniteamf", protocol + "://" + _serverName + ":" + _serverPort + _contextRoot + _graniteUrlMapping));
@@ -103,7 +135,7 @@ package org.granite.tide.service {
         	return _graniteChannelSet;
         }
         
-        private function get gravityChannelSet():ChannelSet {
+        protected function get gravityChannelSet():ChannelSet {
         	if (_gravityChannelSet == null) {
 				_gravityChannelSet = new ChannelSet();
 				_gravityChannelSet.addChannel(newGravityChannel("gravityamf", protocol + "://" + _serverName + ":" + _serverPort + _contextRoot + _gravityUrlMapping));

@@ -19,6 +19,8 @@
 	<classpathentry kind="lib" path="lib/hibernate3.jar"/>
 	<classpathentry kind="lib" path="lib/jpa-2.0-api.jar"/>
 	<classpathentry kind="lib" path="lib/ejb-api.jar"/>
+	<classpathentry kind="lib" path="lib/catalina7.jar"/>
+	<classpathentry kind="lib" path="lib/tomcat7-coyote.jar"/>
 	<classpathentry kind="lib" path="lib/catalina.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-util-6.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/commons-el.jar"/>
@@ -79,5 +81,14 @@
 	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-core-4.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-interceptor-core.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-websocket-8.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-continuation-8.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-http-8.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-io-8.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-server-8.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-8.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/grizzly-utils.jar"/>
+	<classpathentry kind="lib" path="lib/grizzly-websockets.jar"/>
+	<classpathentry kind="lib" path="lib/spring-data-commons-core.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

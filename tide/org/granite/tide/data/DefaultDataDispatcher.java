@@ -23,16 +23,14 @@ package org.granite.tide.data;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.http.HttpSession;
-
-import org.granite.clustering.GraniteDistributedData;
-import org.granite.clustering.GraniteDistributedDataFactory;
+import org.granite.clustering.DistributedData;
+import org.granite.clustering.DistributedDataFactory;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
-import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.CommandMessage;
@@ -54,38 +52,28 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 
     
     private Gravity gravity = null;
-    private String clientId = null;
-    private String subscriptionId = null;
     
     
 	public DefaultDataDispatcher(Gravity gravity, String topicName, Class<? extends DataTopicParams> dataTopicParamsClass) {
 		super(topicName, dataTopicParamsClass);
 		
 		GraniteContext graniteContext = GraniteContext.getCurrentInstance();
-		if (gravity == null && graniteContext == null)
+		if (gravity == null && (graniteContext == null || !(graniteContext instanceof ServletGraniteContext)))
 			return;
 		
-		if (graniteContext instanceof HttpGraniteContext) {
-			this.gravity = GravityManager.getGravity(((HttpGraniteContext)graniteContext).getServletContext());
+		DistributedDataFactory distributedDataFactory = graniteContext.getGraniteConfig().getDistributedDataFactory();		
+		DistributedData gdd = distributedDataFactory.getInstance();
+		if (gdd != null) {
+			this.gravity = GravityManager.getGravity(((ServletGraniteContext)graniteContext).getServletContext());
 			
-			HttpSession session = ((HttpGraniteContext)graniteContext).getSession(false);
-			if (this.gravity == null || session == null) {
+			if (this.gravity == null) {
 				log.debug("Gravity not found or HTTP session not found, data dispatch disabled");
 				return;
 			}
-			sessionId = session.getId();
-			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
 			
 			clientId = gdd.getDestinationClientId(topicName);
-			if (clientId == null) {
-				log.debug("Gravity channel clientId not defined, data dispatch disabled");
-				return;
-			}
 			subscriptionId = gdd.getDestinationSubscriptionId(topicName);
-			if (subscriptionId == null) {
-				log.debug("Gravity channel subscriptionId not defined, data dispatch disabled");
-				return;
-			}
+			sessionId = graniteContext.getSessionId();
 		}
 		else {
 			if (gravity == null) {
@@ -103,10 +91,9 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 	
 	@Override
 	protected void changeDataSelector(String dataSelector) {
-		HttpSession session = ((HttpGraniteContext)GraniteContext.getCurrentInstance()).getSession(false);
-		
-		if (session != null) {
-			GraniteDistributedData gdd = GraniteDistributedDataFactory.getInstance();
+		DistributedDataFactory distributedDataFactory = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory();		
+		DistributedData gdd = distributedDataFactory.getInstance();
+		if (gdd != null) {
 			String clientId = gdd.getDestinationClientId(topicName);
 			String subscriptionId = gdd.getDestinationSubscriptionId(topicName);
 			
@@ -120,7 +107,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 				
 				message.setHeader(CommandMessage.SELECTOR_HEADER, dataSelector);
 				
-				gravity.handleMessage(message, true);
+				gravity.handleMessage(null, message, true);
 				
 				log.debug("Topic %s data selector changed: %s", topicName, dataSelector);
 			}
@@ -129,15 +116,21 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 	
 	@Override
 	public void publishUpdate(Map<String, String> params, Object body) {
-		Channel channel = gravity.getChannel(clientId);
 		AsyncMessage message = new AsyncMessage();
-		message.setClientId(clientId);
 		message.setDestination(topicName);
 		for (Entry<String, String> hh : params.entrySet())
 			message.setHeader(hh.getKey(), hh.getValue());
 		message.setBody(body);
 		
-		Message resultMessage = gravity.publishMessage(channel, message);
+		Message resultMessage = null;
+		if (clientId != null) {
+			Channel channel = gravity.getChannel(null, clientId);
+			message.setClientId(clientId);
+			resultMessage = gravity.publishMessage(channel, message);
+		}
+		else
+			resultMessage = gravity.publishMessage(message);
+		
 		if (resultMessage instanceof ErrorMessage)
 			log.error("Could not dispatch data update on topic %s, message %s", topicName, resultMessage.toString());
 		else

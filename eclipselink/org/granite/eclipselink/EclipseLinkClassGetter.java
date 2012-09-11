@@ -31,7 +31,7 @@ import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.util.DefaultClassGetter;
 import org.granite.eclipselink.EclipseLinkClassGetter;
 import org.granite.eclipselink.EclipseLinkProxy;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 import org.eclipse.persistence.indirection.IndirectContainer;
 import org.eclipse.persistence.indirection.ValueHolderInterface;
@@ -57,7 +57,7 @@ public class EclipseLinkClassGetter extends DefaultClassGetter {
             
             if (className != null && className.length() > 0) {
                 try {
-                    return ClassUtil.forName(className);
+                    return TypeUtil.forName(className);
                 } catch (Exception e) {
                     log.warn(e, "Could not get class with initializer: %s for: %s", className, className);
                 }

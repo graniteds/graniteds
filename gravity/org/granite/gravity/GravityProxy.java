@@ -92,8 +92,8 @@ public class GravityProxy implements Gravity {
     	getGravity().stop(now);
     }
 
-    public Channel getChannel(String channelId) {
-    	return getGravity().getChannel(channelId);
+    public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
+    	return getGravity().getChannel(channelFactory, channelId);
     }
     public Channel removeChannel(String channelId) {
     	return getGravity().removeChannel(channelId);
@@ -108,11 +108,11 @@ public class GravityProxy implements Gravity {
     	return getGravity().cancel(runnable);
     }
 
-    public Message handleMessage(Message message) {
-    	return getGravity().handleMessage(message);
+    public Message handleMessage(ChannelFactory<?> channelFactory, Message message) {
+    	return getGravity().handleMessage(channelFactory, message);
     }
-    public Message handleMessage(Message message, boolean skipInterceptor) {
-    	return getGravity().handleMessage(message, skipInterceptor);
+    public Message handleMessage(ChannelFactory<?> channelFactory, Message message, boolean skipInterceptor) {
+    	return getGravity().handleMessage(channelFactory, message, skipInterceptor);
     }
     public Message publishMessage(AsyncMessage message) {
     	return getGravity().publishMessage(message);

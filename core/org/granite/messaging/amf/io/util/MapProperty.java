@@ -49,6 +49,11 @@ public class MapProperty extends Property {
     public Type getType() {
         return Object.class;
     }
+	
+	@Override
+    public Class<?> getDeclaringClass() {
+        return Object.class;
+    }
 
     @SuppressWarnings("unchecked")
     @Override

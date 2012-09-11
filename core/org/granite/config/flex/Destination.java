@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.granite.messaging.service.security.DestinationSecurizer;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 
 /**
@@ -60,7 +60,7 @@ public class Destination implements Serializable {
         final String securizerClassName = properties.get(SECURIZER_PROPERTY_KEY);
         if (securizerClassName != null)  {
             try {
-                this.securizer = ClassUtil.newInstance(securizerClassName.trim(), DestinationSecurizer.class);
+                this.securizer = TypeUtil.newInstance(securizerClassName.trim(), DestinationSecurizer.class);
             } catch (Exception e) {
                 throw new RuntimeException("Could not instantiate securizer: " + securizerClassName, e);
             }

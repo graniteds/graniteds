@@ -24,11 +24,9 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.servlet.ServletConfig;
-
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.GravityConfig;
+import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 
 import weblogic.servlet.http.AbstractAsyncServlet;
@@ -53,8 +51,9 @@ public class WebLogicChannel extends AbstractChannel {
     
     private final AtomicReference<RequestResponseKey> key = new AtomicReference<RequestResponseKey>();
 
-	public WebLogicChannel(ServletConfig servletConfig, GravityConfig gravityConfig, String id) {
-		super(servletConfig, gravityConfig, id);
+    
+	public WebLogicChannel(Gravity gravity, String id, WebLogicChannelFactory factory) {
+		super(gravity, id, factory);
 	}
 	
 	public void setRequestResponseKey(RequestResponseKey key) {
@@ -133,14 +132,18 @@ public class WebLogicChannel extends AbstractChannel {
 			super.destroy();
 		}
 		finally {
-			RequestResponseKey key = this.key.getAndSet(null);
-			if (key != null) {
-				try {
-					key.getResponse().getOutputStream().close();
-				}
-				catch (Exception e) {
-					log.debug(e, "Could not close key: %s for channel: %s", key, this);
-				}
+			close();
+		}
+	}
+	
+	public void close() {
+		RequestResponseKey key = this.key.getAndSet(null);
+		if (key != null) {
+			try {
+				key.getResponse().getOutputStream().close();
+			}
+			catch (Exception e) {
+				log.debug(e, "Could not close key: %s for channel: %s", key, this);
 			}
 		}
 	}

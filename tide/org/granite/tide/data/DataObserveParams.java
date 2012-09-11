@@ -41,6 +41,14 @@ public class DataObserveParams implements Serializable {
 	private String selector = null;
 	
 	
+	public DataObserveParams() {
+	}
+	
+	private DataObserveParams(Map<String, Set<String>> params, String selector) {
+		this.params = params;
+		this.selector = selector;
+	}
+	
 	public boolean isEmpty() {
 		return selector == null && params.isEmpty();
 	}
@@ -122,6 +130,18 @@ public class DataObserveParams implements Serializable {
     	
     	return params.params.keySet().containsAll(this.params.keySet());
     }
+    
+    public static boolean containsSame(List<DataObserveParams> selectors1, List<DataObserveParams> selectors2) {
+    	for (DataObserveParams selector : selectors2) {
+    		if (!containsParams(selectors1, selector))
+    			return false;
+    	}
+    	for (DataObserveParams selector : selectors1) {
+    		if (!containsParams(selectors2, selector))
+    			return false;
+    	}
+    	return true;
+    }
 
 	public String updateDataSelector(String dataSelector, List<DataObserveParams> selectors) {
 		if (!containsParams(selectors, this)) {
@@ -162,6 +182,28 @@ public class DataObserveParams implements Serializable {
 		}
 		
 		return sb.toString();
+	}
+	
+	public static Object[] toSerializableForm(List<DataObserveParams> selectors) {
+		Object[] array = new Object[selectors.size()];
+		for (int i = 0; i < selectors.size(); i++) {
+			DataObserveParams params = selectors.get(i);
+			array[i] = params.selector != null ? params.selector : params.params;
+		}
+		return array;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static List<DataObserveParams> fromSerializableForm(Object[] array) {
+		List<DataObserveParams> selectors = new ArrayList<DataObserveParams>(array != null ? array.length : 5);
+		if (array != null) {
+			for (int i = 0; i < array.length; i++) {
+				selectors.add(array[i] instanceof String 
+						? new DataObserveParams(null, (String)array[i])
+						: new DataObserveParams((Map<String, Set<String>>)array[i], null));
+			}
+		}
+		return selectors;
 	}
 	
 	@Override

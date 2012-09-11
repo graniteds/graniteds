@@ -20,9 +20,6 @@
 
 package org.granite.messaging.amf.io.util;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -31,6 +28,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.granite.util.Introspector;
+import org.granite.util.PropertyDescriptor;
 
 /**
  * @author Franck WOLFF
@@ -54,8 +54,8 @@ public class DefaultGroovyClassDescriptor extends JavaClassDescriptor {
 
                 // Add read/write properties (ie: public getter/setter).
                 Introspector.flushFromCaches(type);	// Ensure that we don't get a cached reference, the Groovy class could have been modified
-                BeanInfo info = Introspector.getBeanInfo(type);
-                for (PropertyDescriptor property : info.getPropertyDescriptors()) {
+                PropertyDescriptor[] descs = Introspector.getPropertyDescriptors(type);
+                for (PropertyDescriptor property : descs) {
                     String propertyName = property.getName();
                     if (property.getWriteMethod() != null && property.getReadMethod() != null) {
                         properties.add(new MethodProperty(converters, propertyName, property.getWriteMethod(), property.getReadMethod()));

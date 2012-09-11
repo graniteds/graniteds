@@ -21,14 +21,18 @@
 package org.granite.gravity.servlet3;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Channel;
+import org.granite.gravity.Gravity;
 
 /**
  * @author Franck WOLFF
  */
-public class AsyncChannelFactory extends AbstractChannelFactory {
+public class AsyncChannelFactory extends AbstractChannelFactory<AsyncChannel> {
+	
+	public AsyncChannelFactory(Gravity gravity) {
+		super(gravity);
+	}
 
-	public Channel newChannel(String id) {
-        return new AsyncChannel(getServletConfig(), getGravityConfig(), id);
+	public AsyncChannel newChannel(String id) {
+        return new AsyncChannel(getGravity(), id, this);
     }
 }

@@ -44,11 +44,12 @@ public class AbstractGravityServlet extends HttpServlet {
 
 	///////////////////////////////////////////////////////////////////////////
 	// Initialization.
-
-	public void init(ServletConfig config, ChannelFactory channelFactory) throws ServletException {
+	
+	@Override
+	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		
-		GravityServletUtil.init(config, channelFactory);
+		GravityServletUtil.init(config);
 	}
 
 	///////////////////////////////////////////////////////////////////////////

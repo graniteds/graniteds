@@ -36,7 +36,7 @@ public class CollectionUtil {
 
     public static Type getComponentType(Type collectionType) {
 
-        Class<?> collectionClass = ClassUtil.classOfType(collectionType);
+        Class<?> collectionClass = TypeUtil.classOfType(collectionType);
         if (collectionClass == null || !Collection.class.isAssignableFrom(collectionClass))
             return null;
 

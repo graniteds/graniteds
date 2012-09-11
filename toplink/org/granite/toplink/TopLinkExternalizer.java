@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,7 +57,7 @@ import org.granite.messaging.persistence.AbstractExternalizablePersistentCollect
 import org.granite.messaging.persistence.ExternalizablePersistentList;
 import org.granite.messaging.persistence.ExternalizablePersistentMap;
 import org.granite.messaging.persistence.ExternalizablePersistentSet;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author William DRAI
@@ -71,7 +72,7 @@ public class TopLinkExternalizer extends DefaultExternalizer {
 
         // If type is not an entity (@Embeddable for example), we don't read initialized/detachedState
         // and we fall back to DefaultExternalizer behavior.
-        Class<?> clazz = ClassUtil.forName(type);
+        Class<?> clazz = TypeUtil.forName(type);
         if (!isRegularEntity(clazz))
             return super.newInstance(type, in);
 
@@ -112,6 +113,7 @@ public class TopLinkExternalizer extends DefaultExternalizer {
             Converters converters = config.getConverters();
             ClassGetter classGetter = config.getClassGetter();
             Class<?> oClass = classGetter.getClass(o);
+            ParameterizedType[] declaringTypes = TypeUtil.getDeclaringTypes(oClass);
 
             List<Property> fields = findOrderedFields(oClass);
             log.debug("Reading entity %s with fields %s", oClass.getName(), fields);
@@ -129,8 +131,10 @@ public class TopLinkExternalizer extends DefaultExternalizer {
                     else if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class, true))) { 
                         if (value instanceof AbstractExternalizablePersistentCollection)
                             value = newIndirectCollection((AbstractExternalizablePersistentCollection)value, field.getType());
-                        else
-                            value = converters.convert(value, field.getType());
+                        else {
+                        	Type targetType = TypeUtil.resolveTypeVariable(field.getType(), field.getDeclaringClass(), declaringTypes);
+                            value = converters.convert(value, targetType);
+                        }
                         
                         field.setProperty(o, value, false);
                     }

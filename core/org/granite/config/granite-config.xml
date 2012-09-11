@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE granite-config PUBLIC "-//Granite Data Services//DTD granite-config internal//EN"
-    "http://www.graniteds.org/public/dtd/2.0.0/granite-config.dtd">
+    "http://www.graniteds.org/public/dtd/2.3.0/granite-config.dtd">
 
 <!--
   GRANITE DATA SERVICES
@@ -53,6 +53,7 @@
         <converter type="org.granite.messaging.amf.io.convert.impl.Character2Character" />
         <converter type="org.granite.messaging.amf.io.convert.impl.Compatibility" />
         <converter type="org.granite.messaging.amf.io.convert.impl.String2Document" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2Enum" />
     </converters>
     
     <externalizers>
@@ -74,5 +75,7 @@
     	</externalizer>
     	-->
     </externalizers>
+    
+    <distributed-data-factory type="org.granite.clustering.SessionDistributedDataFactory"/>
 
 </granite-config>

@@ -27,7 +27,7 @@ import java.lang.reflect.WildcardType;
 
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -41,7 +41,7 @@ public class Compatibility extends Converter {
     @Override
 	protected boolean internalCanConvert(Object value, Type targetType) {
         if (value == null)
-            return !ClassUtil.isPrimitive(targetType);
+            return !TypeUtil.isPrimitive(targetType);
 
         if (targetType instanceof Class<?>)
             return ((Class<?>)targetType).isInstance(value);

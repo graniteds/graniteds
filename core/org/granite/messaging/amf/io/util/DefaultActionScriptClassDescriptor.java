@@ -20,14 +20,13 @@
 
 package org.granite.messaging.amf.io.util;
 
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 
-import org.granite.util.ClassUtil;
+import org.granite.util.TypeUtil;
+import org.granite.util.Introspector;
+import org.granite.util.PropertyDescriptor;
 
 /**
  * @author Franck WOLFF
@@ -45,11 +44,10 @@ public class DefaultActionScriptClassDescriptor extends ActionScriptClassDescrip
             properties.add(new MapProperty(converters, name));
         else {
             try {
-                Class<?> clazz = ClassUtil.forName(type);
+                Class<?> clazz = TypeUtil.forName(type);
 
                 // Try to find public getter/setter.
-                BeanInfo info = Introspector.getBeanInfo(clazz);
-                PropertyDescriptor[] props = info.getPropertyDescriptors();
+                PropertyDescriptor[] props = Introspector.getPropertyDescriptors(clazz);
                 for (PropertyDescriptor prop : props) {
                     if (name.equals(prop.getName()) && prop.getWriteMethod() != null && prop.getReadMethod() != null) {
                         properties.add(new MethodProperty(converters, name, prop.getWriteMethod(), prop.getReadMethod()));
@@ -83,7 +81,7 @@ public class DefaultActionScriptClassDescriptor extends ActionScriptClassDescrip
 
         String className = (instantiator != null ? instantiator : type);
         try {
-            return ClassUtil.newInstance(className);
+            return TypeUtil.newInstance(className);
         } catch (Exception e) {
             throw new RuntimeException("Could not create instance of: " + className, e);
         }
