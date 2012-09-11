@@ -179,7 +179,7 @@ public class ${jClass.clientType.name}Base<%
             if (jProperty.readable || jProperty.writable) {%>
 <%
                 if (jProperty.writable) {%>
-    public function set${jProperty.capitalizedName}(${jProperty.clientType.name} value) {
+    public void set${jProperty.capitalizedName}(${jProperty.clientType.name} value) {
     }<%
                 }
                 if (jProperty.readable) {%>

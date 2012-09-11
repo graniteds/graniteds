@@ -25,7 +25,7 @@
  * your custom code here.
  */
 
-package ${jClass.as3Type.packageName};<%
+package ${jClass.clientType.packageName};<%
 
 	///////////////////////////////////////////////////////////////////////////
 	// Write Import Statements.
@@ -44,9 +44,9 @@ import ${javaImport};<%
 	%>
 
 @RemoteClass("${jClass.qualifiedName}")
-public class ${jClass.as3Type.name} extends ${jClass.as3Type.name}Base {
+public class ${jClass.clientType.name} extends ${jClass.clientType.name}Base {
 	
-	public ${jClass.as3Type.name}(ServerSession serverSession) {
+	public ${jClass.clientType.name}(ServerSession serverSession) {
     	super(serverSession);
     }
 }

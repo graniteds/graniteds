@@ -53,15 +53,15 @@ import ${javaImport};<%
 ///////////////////////////////////////////////////////////////////////////////
 // Write Class Declaration.%>
 
-public class ${jClass.as3Type.name}Base<%
+public class ${jClass.clientType.name}Base<%
 
     if (jClass.hasSuperclass()) {
-        %> extends ${jClass.superclass.as3Type.name} {<%
+        %> extends ${jClass.superclass.clientType.name} {<%
     } else {
         %> extends ComponentImpl {<%
     }%>
     
-    public ${jClass.as3Type.name}Base(ServerSession serverSession) {
+    public ${jClass.clientType.name}Base(ServerSession serverSession) {
     	super(serverSession);
     }<%
                 
@@ -72,17 +72,6 @@ public class ${jClass.as3Type.name}Base<%
 // Write Methods.
         
     for (jMethod in jClass.methods) {%>    
-        <%
-        if (jMethod.options != null) {%>
-[${jMethod.options}]<%
-        }
-        int idx = 0;
-        for (opt in jMethod.getClientParameterOptions()) {
-            if (opt != null) {%>
-[${opt}("${jMethod.getClientParameterNames()[idx]}")]<%
-            }
-            idx++; 
-        }%>
     public Future<${jMethod.clientReturnType.name}> ${jMethod.name}(<%
             String[] names = jMethod.getClientParameterNames();
 
@@ -103,5 +92,6 @@ public class ${jClass.as3Type.name}Base<%
                 count++;
             }%>, tideResponder);
     }<%
+    
     }%>
 }
