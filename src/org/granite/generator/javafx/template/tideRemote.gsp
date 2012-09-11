@@ -33,7 +33,7 @@ package ${jClass.clientType.packageName};<%
 	Set javaImports = new TreeSet();
 	
 	javaImports.add("org.granite.messaging.amf.RemoteClass");
-	javaImports.add("org.granite.tide.server.ServerSession");
+	javaImports.add("org.granite.client.tide.server.ServerSession");
 	
 	if (javaImports.size() > 0) {%>
 	<%
