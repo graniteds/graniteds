@@ -86,9 +86,25 @@ package ${jClass.as3Type.packageName} {
 ///////////////////////////////////////////////////////////////////////////
 // Write Methods.
     
+    List<String> writtenMethodNames = [ "delete" ];
+    List<String> methodNames = [];
+    
     for (jMethod in jClass.methods) {%>
-
-        public function ${jMethod.name}(<%
+	    <%
+	    String as3MethodName = jMethod.name;
+	    
+	    String initialAs3MethodName = as3MethodName;
+	    int num = 1;
+	    
+	    while (writtenMethodNames.contains(as3MethodName)) {
+	    	as3MethodName = initialAs3MethodName + "_" + num;
+	    	num++;
+	    }
+	    
+	    writtenMethodNames.add(as3MethodName);
+	    methodNames.add(as3MethodName);	    
+	    %>
+        public function ${as3MethodName}(<%
             String[] names = jMethod.getAs3ParameterNames();
             int count = 0;
             for (pType in jMethod.getAs3ParameterTypes()) {
@@ -119,16 +135,16 @@ package ${jClass.as3Type.packageName} {
 
         public function addOperationListener(op:Function, type:String, handler:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void {<%
         
-        for (jMethod in jClass.methods) {%>
-            if (op == this.${jMethod.name}) 
-                this.getOperation("${jMethod.name}").addEventListener(type, handler, useCapture, priority, useWeakReference);<%
+        for (jMethod in methodNames) {%>
+            if (op == this.${jMethod}) 
+                this.getOperation("${jMethod}").addEventListener(type, handler, useCapture, priority, useWeakReference);<%
         }%>
         }
 
         public function removeOperationListener(op:Function, event:String, handler:Function):void {<% 
-        for (jMethod in jClass.methods) {%>
-            if (op == this.${jMethod.name}) 
-                this.getOperation("${jMethod.name}").removeEventListener(event, handler);<%
+        for (jMethod in methodNames) {%>
+            if (op == this.${jMethod}) 
+                this.getOperation("${jMethod}").removeEventListener(event, handler);<%
         }%>
         }
     }
