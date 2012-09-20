@@ -35,6 +35,9 @@
         <class>org.granite.test.externalizers.Entity6</class>
         <class>org.granite.test.externalizers.Entity7</class>
         <class>org.granite.test.externalizers.Entity8</class>
+        <class>org.granite.test.externalizers.EntityA</class>
+        <class>org.granite.test.externalizers.EntityB</class>
+        <class>org.granite.test.externalizers.EmbeddedEntity</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="datanucleus.autoCreateTables" value="true"/>
@@ -53,6 +56,9 @@
         <class>org.granite.test.externalizers.Entity6</class>
         <class>org.granite.test.externalizers.Entity7</class>
         <class>org.granite.test.externalizers.Entity8</class>
+        <class>org.granite.test.externalizers.EntityA</class>
+        <class>org.granite.test.externalizers.EntityB</class>
+        <class>org.granite.test.externalizers.EmbeddedEntity</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
@@ -70,6 +76,9 @@
         <class>org.granite.test.externalizers.Entity6</class>
         <class>org.granite.test.externalizers.Entity7</class>
         <class>org.granite.test.externalizers.Entity8</class>
+        <class>org.granite.test.externalizers.EntityA</class>
+        <class>org.granite.test.externalizers.EntityB</class>
+        <class>org.granite.test.externalizers.EmbeddedEntity</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
@@ -87,6 +96,9 @@
         <class>org.granite.test.externalizers.Entity6</class>
         <class>org.granite.test.externalizers.Entity7</class>
         <class>org.granite.test.externalizers.Entity8</class>
+        <class>org.granite.test.externalizers.EntityA</class>
+        <class>org.granite.test.externalizers.EntityB</class>
+        <class>org.granite.test.externalizers.EmbeddedEntity</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.target-database" value="org.eclipse.persistence.platform.database.H2Platform"/>
@@ -104,6 +116,9 @@
         <class>org.granite.test.externalizers.Entity6</class>
         <class>org.granite.test.externalizers.Entity7</class>
         <class>org.granite.test.externalizers.Entity8</class>
+        <class>org.granite.test.externalizers.EntityA</class>
+        <class>org.granite.test.externalizers.EntityB</class>
+        <class>org.granite.test.externalizers.EmbeddedEntity</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="openjpa.jdbc.DBDictionary" value="org.apache.openjpa.jdbc.sql.HSQLDictionary"/> 

@@ -140,6 +140,54 @@ public abstract class AbstractJPAExternalizerTest {
 		if (gc.getGraniteConfig().getClassGetter().getClass().getName().indexOf("hibernate") >= 0)
 		    Assert.assertFalse("Entity 2 entities not loaded", gc.getGraniteConfig().getClassGetter().isInitialized(((Entity2)obj).getEntity(), "entities", ((Entity2)obj).getEntity().getEntities()));
 	}
+	
+	@Test
+	public void testSerializationEmbeddedDoubleAssociation() throws Exception {
+		EntityManager entityManager = entityManagerFactory.createEntityManager();
+		EntityTransaction et = entityManager.getTransaction();
+		et.begin();
+		
+		EntityA a = new EntityA();
+		a.setUid(1L);
+		a.setEntities(new HashSet<EntityB>());
+		EmbeddedEntity e = new EmbeddedEntity();
+		e.setEntities(new HashSet<EntityB>());
+		a.setEmbedded(e);
+		EntityB b = new EntityB();
+		b.setEntity(a);
+		b.setName("Bla");
+		a.getEntities().add(b);
+		e.getEntities().add(b);
+		entityManager.persist(a);
+		
+		entityManager.flush();
+		et.commit();
+		entityManager.close();
+		
+		entityManager = entityManagerFactory.createEntityManager();		
+		et = entityManager.getTransaction();
+		et.begin();
+		
+		a = entityManager.find(EntityA.class, a.getId());
+		
+		entityManager.flush();
+		et.commit();
+		entityManager.close();
+		
+		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
+		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+		out.writeObject(a);		
+		GraniteContext.release();
+		
+		InputStream is = new ByteArrayInputStream(baos.toByteArray());
+		gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+		Object obj = in.readObject();
+		GraniteContext.release();
+		
+		Assert.assertTrue("EntityA", obj instanceof EntityA);
+	}
     
     @Test
     public void testSerializationUnmanagedEntity() throws Exception {
