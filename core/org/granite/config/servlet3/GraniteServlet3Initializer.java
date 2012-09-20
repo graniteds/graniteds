@@ -49,12 +49,12 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 			classes.remove(ServerFilter.class);	// JBossWeb adds the annotation ???
 		}
 		if (classes.size() > 1)
-			throw new ServletException("Application must have only one FlexFilter configuration class");
+			throw new ServletException("Application must have only one ServerFilter configuration class");
 		
 		if (!classes.isEmpty()) {
-			// Configure GraniteDS only if we find a config class annotated with @FlexFilter
+			// Configure GraniteDS only if we find a config class annotated with @ServerFilter
 			Class<?> clazz = classes.iterator().next();
-			ServerFilter flexFilter = clazz.getAnnotation(ServerFilter.class);
+			ServerFilter serverFilter = clazz.getAnnotation(ServerFilter.class);
 			
 			servletContext.setAttribute(GraniteConfigListener.GRANITE_CONFIG_ATTRIBUTE, clazz);
 			
@@ -62,12 +62,12 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 			
 			if (servletContext.getFilterRegistration("AMFMessageFilter") == null) {
 				FilterRegistration.Dynamic graniteFilter = servletContext.addFilter("AMFMessageFilter", AMFMessageFilter.class);
-				graniteFilter.addMappingForUrlPatterns(null, true, flexFilter.graniteUrlMapping());
+				graniteFilter.addMappingForUrlPatterns(null, true, serverFilter.graniteUrlMapping());
 			}
 			if (servletContext.getServletRegistration("AMFMessageServlet") == null) {
 				ServletRegistration.Dynamic graniteServlet = servletContext.addServlet("AMFMessageServlet", AMFMessageServlet.class);
 				graniteServlet.setLoadOnStartup(1);
-				graniteServlet.addMapping(flexFilter.graniteUrlMapping());
+				graniteServlet.addMapping(serverFilter.graniteUrlMapping());
 			}
 			
 			try {
@@ -76,7 +76,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 					ServletRegistration.Dynamic gravityServlet = servletContext.addServlet("GravityServlet", gravityAsyncServletClass);
 					gravityServlet.setLoadOnStartup(1);
 					gravityServlet.setAsyncSupported(true);
-					gravityServlet.addMapping(flexFilter.gravityUrlMapping());
+					gravityServlet.addMapping(serverFilter.gravityUrlMapping());
 				}
 			}
 			catch (ClassNotFoundException e) {
