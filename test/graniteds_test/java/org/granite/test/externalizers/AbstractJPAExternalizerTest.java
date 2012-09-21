@@ -156,6 +156,7 @@ public abstract class AbstractJPAExternalizerTest {
 		EntityB b = new EntityB();
 		b.setEntity(a);
 		b.setName("Bla");
+		b.setUid(2L);
 		a.getEntities().add(b);
 		e.getEntities().add(b);
 		entityManager.persist(a);

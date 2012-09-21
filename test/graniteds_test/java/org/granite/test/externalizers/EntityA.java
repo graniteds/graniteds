@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -21,7 +22,7 @@ public class EntityA {
     @Embedded
     private EmbeddedEntity embedded = new EmbeddedEntity();
     
-    @OneToMany(mappedBy="entity")
+    @OneToMany(mappedBy="entity", cascade=CascadeType.ALL)
     private Set<EntityB> entities = new HashSet<EntityB>();
 
     public long getId() {
