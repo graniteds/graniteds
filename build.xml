@@ -751,7 +751,7 @@
                 <include name="**"/>
             </fileset>
         </jar>
-        <jar destfile="build/granite-client.jar" manifest="core/META-INF/MANIFEST.MF">
+        <jar destfile="build/granite-client.jar">
             <fileset dir="classes/core">
                 <include name="**"/>
             	<exclude name="org/granite/clustering/*Session*.class"/>
