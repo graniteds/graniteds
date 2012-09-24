@@ -1106,31 +1106,48 @@
      !-->
     <target name="platform">
         
-    	<mkdir dir="distjars"/>
-    	<mkdir dir="distswcs"/>
+    	<mkdir dir="distserverjars"/>
+    	<mkdir dir="distclientswcs"/>
+    	<mkdir dir="distclientjars"/>
     	
         <!-- GDS -->
         <mkdir dir="graniteds"/>
         <mkdir dir="graniteds/libraries"/>
+        <mkdir dir="graniteds/libraries/server"/>
+        <mkdir dir="graniteds/libraries/flexclient"/>
+        <mkdir dir="graniteds/libraries/javaclient"/>
         <mkdir dir="graniteds/tools"/>
         <mkdir dir="graniteds/sources"/>
         <mkdir dir="graniteds/docs"/>
 
-        <copy todir="distjars">
+        <copy todir="distserverjars">
             <fileset dir="build">
                 <include name="*.jar"/>
+            	<exclude name="*-client.jar"/>
             </fileset>              
         </copy>
-        <copy todir="distswcs">
+        <copy todir="distclientswcs">
             <fileset dir="build">
                 <include name="*.swc"/>
+            </fileset>              
+        </copy>
+        <copy todir="distclientjars">
+            <fileset dir="build">
+                <include name="*-client.jar"/>
             </fileset>              
         </copy>
         <copy todir="graniteds/libraries">
-            <fileset dir="distswcs">
+            <fileset dir="distserverjars">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="graniteds/flexclient">
+            <fileset dir="distclientswcs">
                 <include name="*.swc"/>
             </fileset>
-            <fileset dir="distjars">
+        </copy>
+        <copy todir="graniteds/javaclient">
+            <fileset dir="distclientjars">
                 <include name="*.jar"/>
             </fileset>
         </copy>
