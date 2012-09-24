@@ -1155,13 +1155,19 @@
                 <include name="as3/**"/>
             </fileset>
         </copy>
-        <mkdir dir="graniteds/docs/reference"/>
-        <copy todir="graniteds/docs/reference">
-            <fileset dir="docs/reference/target/docbook/publish">
+        <mkdir dir="graniteds/docs/reference/flex"/>
+        <copy todir="graniteds/docs/reference/flex">
+            <fileset dir="docs/reference/target/flex/docbook/publish">
                 <include name="**/*"/>
             </fileset>
         </copy>
-
+        <mkdir dir="graniteds/docs/reference/java"/>
+        <copy todir="graniteds/docs/reference/java">
+            <fileset dir="docs/reference/target/java/docbook/publish">
+                <include name="**/*"/>
+            </fileset>
+        </copy>
+		
         <zip destfile="${GDS_RELEASE}.zip">
             <fileset dir=".">
                 <include name="graniteds/**"/>
