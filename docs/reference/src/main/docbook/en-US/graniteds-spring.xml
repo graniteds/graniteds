@@ -557,7 +557,7 @@ public class PersonServiceBean implements PersonService {
            </para>
            
            <para>
-           Other configurations can be done with <literal>flex-filter</literal>:
+           Other configurations can be done with <literal>server-filter</literal>:
             <itemizedlist>
                 <listitem><para>
                 <literal>tide-annotations</literal> is equivalent to <literal>tide-component annotated-with=""</literal> in <literal>granite-config.xml</literal>. 

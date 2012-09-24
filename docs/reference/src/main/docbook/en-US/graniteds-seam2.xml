@@ -178,7 +178,7 @@ srv.operations = {myMethod: operation};
            <title>Configuration with the Seam XML</title>
             <para>
             Besides configuring the Seam filter (see <link linkend="seam2.nativesetup">here</link>), configuring GraniteDS in the Seam configuration 
-            just requires adding the <literal>graniteds</literal> namespace and adding a <literal>flex-filter</literal> element:
+            just requires adding the <literal>graniteds</literal> namespace and adding a <literal>server-filter</literal> element:
             </para>
             <programlisting role="XML">
 <![CDATA[<components xmlns="http://jboss.com/products/seam/components"
@@ -202,11 +202,11 @@ srv.operations = {myMethod: operation};
 	     http://jboss.com/products/seam/bpm http://jboss.com/products/seam/bpm-2.0.xsd
 	     http://jboss.com/products/seam/components http://jboss.com/products/seam/components-2.0.xsd
 	     http://jboss.com/products/seam/framework http://jboss.com/products/seam/framework-2.0.xsd
-	     http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.3.0/granite-config-2.3.xsd">
+	     http://www.graniteds.org/config http://www.graniteds.org/public/dtd/3.0.0/granite-config-3.0.xsd">
 	
 	...
     
-    <graniteds:flex-filter url-pattern="/graniteamf/*"/>
+    <graniteds:server-filter url-pattern="/graniteamf/*"/>
 
 </components>]]>        
             </programlisting>
@@ -432,45 +432,45 @@ public class PersonAction {
                  http://jboss.com/products/seam/components 
                      http://jboss.com/products/seam/components-2.1.xsd
                  http://www.graniteds.org/config 
-                     http://www.graniteds.org/public/dtd/2.3.0/granite-config-2.3.xsd">
+                     http://www.graniteds.org/public/dtd/3.0.0/granite-config-3.0.xsd">
 
     <core:init .../>
     
     ...
    
-    <graniteds:flex-filter url-pattern="/graniteamf/*" tide="true"/>
+    <graniteds:server-filter url-pattern="/graniteamf/*" tide="true"/>
 </components>]]>
            </programlisting>
            
            <para>
-           The <literal>flex-filter</literal> declaration will setup an AMF processor for the specified url pattern, and the <literal>tide</literal> attribute 
+           The <literal>server-filter</literal> declaration will setup an AMF processor for the specified url pattern, and the <literal>tide</literal> attribute 
            specifies that you want a Tide-enabled service factory. Note that you have to ensure that the url pattern defined here is mapped to the 
            Seam filter define in <literal>web.xml</literal>.
            </para>
            
            <para>
-           Other configurations can be done with <literal>flex-filter</literal>:
+           Other configurations can be done with <literal>server-filter</literal>:
             <itemizedlist>
-                <listitem>
+                <listitem><para>
                 <literal>tide-annotations</literal> is equivalent to <literal>tide-component annotated-with=""</literal> in <literal>granite-config.xml</literal>. 
                 It allows to define the list of annotation names that enable remote access to Seam components. <literal>@RemoteDestination</literal> and
                 <literal>@TideEnabled</literal> are always declared by default, but you can use any other one if you don't want a compilation dependency 
                 on the GraniteDS libraries.
-                </listitem>
-                <listitem>
+                </para></listitem>
+                <listitem><para>
                 <literal>tide-roles</literal> allows to define a list of security roles that are required to access the Tide remote destination. 
                 In general it is not necessary to define this destination-wide security and you can only rely on Seam security for fine-grained access to individual
                 components.
-                </listitem>
-                <listitem>
+                </para></listitem>
+                <listitem><para>
                 <literal>exception-converters</literal> allows to define a list of server-side exception converters. 
                 It's the equivalent to <literal>exception-converters</literal> in <literal>granite-config.xml</literal>.
-                </listitem>
-                <listitem>
+                </para></listitem>
+                <listitem><para>
                 <literal>amf3-message-interceptor</literal> allows to define a message interceptor. You have to define an EL expression referencing an 
                 existing component implementing <literal>AMFMessageInterceptor</literal>. It's highly recommended to subclass <literal>Seam21Interceptor</literal> 
                 and call <literal>super.before</literal> and <literal>super.after</literal> in your implementation.
-                </listitem>
+                </para></listitem>
             </itemizedlist>
             </para>
        </section>

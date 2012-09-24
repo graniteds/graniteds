@@ -41,7 +41,7 @@
                  http://jboss.com/products/seam/bpm http://jboss.com/products/seam/bpm-2.0.xsd
                  http://jboss.com/products/seam/components http://jboss.com/products/seam/components-2.0.xsd
                  http://jboss.com/products/seam/framework http://jboss.com/products/seam/framework-2.0.xsd
-                 http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.3.0/granite-config-2.3.xsd">
+                 http://www.graniteds.org/config http://www.graniteds.org/public/dtd/3.0.0/granite-config-3.0.xsd">
 
 
     <core:init jndi-pattern="graniteds-tide-seam/#{ejbName}/local" debug="true"/>
@@ -67,7 +67,7 @@
     </component>
     
     
-    <graniteds:flex-filter url-pattern="/graniteamf/*" tide="true"/>
+    <graniteds:server-filter url-pattern="/graniteamf/*" tide="true"/>
     
     <graniteds:messaging-destination id="addressBookTopic" 
     	no-local="true" session-selector="true"/>

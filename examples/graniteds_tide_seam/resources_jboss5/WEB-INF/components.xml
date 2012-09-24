@@ -67,7 +67,7 @@
     </component>
     
     
-    <graniteds:flex-filter url-pattern="/graniteamf/*" tide="true"/>
+    <graniteds:server-filter url-pattern="/graniteamf/*" tide="true"/>
     
     <graniteds:messaging-destination id="addressBookTopic" 
     	no-local="true" session-selector="true"/>

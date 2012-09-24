@@ -1,6 +1,9 @@
 /doc
-/build
-/classes
+/.settings
+build
+bin-debug
+classes
+classes*
 /graniteds-*.zip
 /.idea
 /*.iml
@@ -8,5 +11,12 @@
 /*/*/*.iml
 /*/*/*/*.iml
 /test/graniteds_test/junit*.properties
-
+/docs/reference/hs_err_*.log
+html-template
+*.will
+.FlexUnitSettings
+.granite
+.settings
+/examples/**/.actionScriptProperties
+/examples/**/.flexProperties
 

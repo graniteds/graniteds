@@ -21,13 +21,13 @@
 package org.granite.example.addressbook.ejb3.service;
 
 
-import org.granite.config.servlet3.FlexFilter;
+import org.granite.config.servlet3.ServerFilter;
 import org.granite.gravity.config.AbstractMessagingDestination;
 import org.granite.gravity.config.servlet3.MessagingDestination;
 import org.granite.tide.ejb.EjbConfigProvider;
 
 
-@FlexFilter(configProviderClass=EjbConfigProvider.class,
+@ServerFilter(configProviderClass=EjbConfigProvider.class,
 		entityManagerJndiName="java:comp/env/ejb-pc"
 )
 public class GraniteConfig {

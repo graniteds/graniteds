@@ -10,7 +10,7 @@
                  http://jboss.com/products/seam/transaction http://jboss.com/products/seam/transaction-2.1.xsd
                  http://jboss.com/products/seam/security http://jboss.com/products/seam/security-2.1.xsd
                  http://jboss.com/products/seam/components http://jboss.com/products/seam/components-2.1.xsd
-                 http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.1.0/granite-config-2.1.xsd">
+                 http://www.graniteds.org/config http://www.graniteds.org/public/dtd/3.0.0/granite-config-3.0.xsd">
 
     <core:init jndi-pattern="seam-flexbooking/#{ejbName}/local" debug="true" distributable="false"/>
 
@@ -20,11 +20,11 @@
 
     <security:identity authenticate-method="#{authenticator.authenticate}"/>
     
-    <graniteds:flex-filter url-pattern="/graniteamf/*" tide="true">
+    <graniteds:server-filter url-pattern="/graniteamf/*" tide="true">
     	<graniteds:tide-annotations>
     		<value>javax.ejb.Stateless</value>
     		<value>javax.ejb.Stateful</value>
     	</graniteds:tide-annotations>
-    </graniteds:flex-filter>
+    </graniteds:server-filter>
 
 </components>
