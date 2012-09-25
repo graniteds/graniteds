@@ -332,4 +332,47 @@ public class Reflections
       return false;
    }
 
+	
+   public static Object get(Object object, String fieldName) {
+	   Field field = null;
+	   for (Class<?> superClass = object.getClass(); superClass != Object.class; superClass = superClass.getSuperclass()) {
+		   try {
+			   field = superClass.getDeclaredField(fieldName);
+				break;
+		   }
+		   catch (NoSuchFieldException nsfe) {
+		   }
+	   }
+	   if (field == null)
+		   throw new RuntimeException("Could not find field " + fieldName + " of " + object);
+	   field.setAccessible(true);
+	   try {
+		   return field.get(object);
+	   }
+	   catch (Exception e) {
+		   throw new RuntimeException("Could not get field " + fieldName + " of " + object, e);
+	   }
+   }
+   
+   @SuppressWarnings("unchecked")
+   public static <T> T get(Object object, String fieldName, Class<T> valueClass) {
+	   Field field = null;
+	   for (Class<?> superClass = object.getClass(); superClass != Object.class; superClass = superClass.getSuperclass()) {
+		   try {
+			   field = superClass.getDeclaredField(fieldName);
+			   break;
+		   }
+		   catch (NoSuchFieldException nsfe) {
+		   }
+	   }
+	   if (field == null)
+		   throw new RuntimeException("Could not find field " + fieldName + " of " + object);
+	   field.setAccessible(true);
+	   try {
+		   return (T)field.get(object);
+	   }
+	   catch (Exception e) {
+		   throw new RuntimeException("Could not get field " + fieldName + " of " + object, e);
+	   }
+   }
 }
