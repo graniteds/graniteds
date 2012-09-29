@@ -8,12 +8,12 @@
 	   	<subtitle>Reference Guide</subtitle>
 	   	<releaseinfo>&version;</releaseinfo>
 		
-		<xi:include href="graniteds-author_group.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-author_group.xml" />
 	</bookinfo>
 	
    	<toc />
    	
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-overview.xml" /:
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-overview.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-gettingstarted.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-usagescenarios.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-projectsetup.xml" />
