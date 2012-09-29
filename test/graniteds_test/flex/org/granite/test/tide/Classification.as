@@ -75,6 +75,7 @@ package org.granite.test.tide {
         override public function writeExternal(output:IDataOutput):void {
             super.writeExternal(output);
             if (meta::isInitialized()) {
+				output.writeObject((_name is IPropertyHolder) ? IPropertyHolder(_name).object : _name);
                 output.writeObject((_subclasses is IPropertyHolder) ? IPropertyHolder(_subclasses).object : _subclasses);
                 output.writeObject((_superclasses is IPropertyHolder) ? IPropertyHolder(_superclasses).object : _superclasses);
             }
