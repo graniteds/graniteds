@@ -3,11 +3,17 @@
    "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
 <book lang="en">
 
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-book_info.xml" />
+	<bookinfo>
+	   	<title>GraniteDS Documentation</title>
+	   	<subtitle>Reference Guide</subtitle>
+	   	<releaseinfo>&version;</releaseinfo>
+		
+		<xi:include href="graniteds-author_group.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+	</bookinfo>
 	
    	<toc />
    	
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-overview.xml" />
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-overview.xml" /:
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-gettingstarted.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-usagescenarios.xml" />
    	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-projectsetup.xml" />
