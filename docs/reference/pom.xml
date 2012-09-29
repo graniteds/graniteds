@@ -4,7 +4,7 @@
 
    <groupId>org.graniteds</groupId>
    <artifactId>graniteds-reference-guide</artifactId>
-   <version>3.0.0.M1</version>
+   <version>${graniteds.version}</version>
    <packaging>jdocbook</packaging>
    <name>GraniteDS Reference Guide</name>
 
