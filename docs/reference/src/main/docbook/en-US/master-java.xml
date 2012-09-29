@@ -4,7 +4,13 @@
    
 <book lang="en">
 
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-java-book_info.xml" />
+	<bookinfo>
+		<title>GraniteDS Documentation</title>
+	   	<subtitle>Java/JavaFX Reference Guide</subtitle>
+	   	<releaseinfo>&version;</releaseinfo>
+	
+	   	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="graniteds-author_group.xml" />
+	</bookinfo>
 	
    	<toc />
    	
