@@ -392,7 +392,7 @@
 	        <include name="**"/> 
 	      </fileset> 
 	    </jar>
-        <jar destfile="build/granite-client-sources.jar">
+        <jar destfile="build/sources/java/granite-client-sources.jar">
             <fileset dir="core">
                 <include name="**"/>
             	<exclude name="org/granite/clustering/*Session*.java"/>
