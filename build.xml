@@ -391,7 +391,30 @@
 	      <fileset dir="tide"> 
 	        <include name="**"/> 
 	      </fileset> 
-	    </jar> 
+	    </jar>
+        <jar destfile="build/granite-client-sources.jar">
+            <fileset dir="core">
+                <include name="**"/>
+            	<exclude name="org/granite/clustering/*Session*.java"/>
+            	<exclude name="org/granite/clustering/Transient*.java"/>
+            	<exclude name="org/granite/config/granite-config.xml"/>
+            	<exclude name="org/granite/config/flex/Servlet*"/>
+            	<exclude name="org/granite/config/servlet3/**"/>
+            	<exclude name="org/granite/messaging/amf/process/*Processor.java"/>
+            	<exclude name="org/granite/messaging/persistence/**"/>
+            	<exclude name="org/granite/messaging/webapp/**"/>
+            	<exclude name="org/granite/osgi/**"/>
+            	<exclude name="META-INF/**"/>
+            </fileset>
+            <fileset dir="classes/tide">
+                <include name="org/granite/tide/Expression.java"/>
+                <include name="org/granite/tide/IInvocation*.java"/>
+                <include name="org/granite/tide/IUID.java"/>
+                <include name="org/granite/tide/TideMessage.java"/>
+                <include name="org/granite/tide/invocation/**"/>
+                <include name="org/granite/tide/data/model/**"/>
+            </fileset>
+        </jar>
 	    <jar destfile="build/sources/java/granite-hibernate-sources.jar"> 
 	      <fileset dir="hibernate"> 
 	        <include name="**"/> 
@@ -552,6 +575,81 @@
 	      </fileset> 
 	    </jar>
 		
+        <mkdir dir="build/docs/javadoc/granite-client-javadoc"/>
+        <javadoc
+        	useexternalfile="true"
+            source="1.5"
+            destdir="build/docs/javadoc/granite-client-javadoc"
+            version="true"
+            author="true"
+            use="true"
+            linksource="true"
+            protected="true"
+            stylesheetfile="jdstyle.css"
+            windowtitle="Granite Data Services API Documentation - ${GDS_VERSION}">
+
+            <doctitle><![CDATA[<h1>Granite Data Services API Documentation (${GDS_VERSION})</h1>]]></doctitle>
+
+            <classpath>
+                <fileset dir="lib/">
+                    <include name="**/*.jar"/>
+                </fileset>
+	            <pathelement path="classes/core/"/>
+	            <pathelement path="classes/cdi/"/>
+                <pathelement path="classes/gravity/"/>
+                <pathelement path="classes/tide/"/>
+                <pathelement path="classes/hibernate/"/>
+                <pathelement path="classes/hibernate4/"/>
+	            <pathelement path="classes/beanvalidation/"/>
+	            <pathelement path="classes/toplink/"/>
+	            <pathelement path="classes/eclipselink/"/>
+	            <pathelement path="classes/openjpa/"/>
+	            <pathelement path="classes/datanucleus/"/>
+	            <pathelement path="classes/spring/"/>
+                <pathelement path="classes/seam/"/>
+                <pathelement path="classes/seam21/"/>
+	            <pathelement path="classes/guice/"/>
+            </classpath>
+
+            <fileset dir="core">
+                <include name="**"/>
+            	<exclude name="org/granite/clustering/*Session*.java"/>
+            	<exclude name="org/granite/clustering/Transient*.java"/>
+            	<exclude name="org/granite/config/granite-config.xml"/>
+            	<exclude name="org/granite/config/flex/Servlet*"/>
+            	<exclude name="org/granite/config/servlet3/**"/>
+            	<exclude name="org/granite/messaging/amf/process/*Processor.java"/>
+            	<exclude name="org/granite/messaging/persistence/**"/>
+            	<exclude name="org/granite/messaging/webapp/**"/>
+            	<exclude name="org/granite/osgi/**"/>
+            	<exclude name="META-INF/**"/>
+            </fileset>
+            <fileset dir="classes/tide">
+                <include name="org/granite/tide/Expression.java"/>
+                <include name="org/granite/tide/IInvocation*.java"/>
+                <include name="org/granite/tide/IUID.java"/>
+                <include name="org/granite/tide/TideMessage.java"/>
+                <include name="org/granite/tide/invocation/**"/>
+                <include name="org/granite/tide/data/model/**"/>
+            </fileset>
+
+            <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
+            <link href="http://download.oracle.com/javaee/6/api/"/>
+            <link href="http://java.sun.com/products/servlet/2.3/javadoc/"/>
+            <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
+            <link href="http://tomcat.apache.org/tomcat-6.0-doc/api/"/>
+            <link href="http://docs.jboss.org/hibernate/stable/core/api/"/>
+            <link href="http://docs.jboss.com/seam/2.2.0.GA/api/"/>
+            <link href="http://static.springsource.org/spring/docs/3.0.x/api/"/>
+            <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
+
+        </javadoc>
+	    <jar destfile="build/docs/javadoc/granite-client-javadoc.jar"> 
+	      <fileset dir="build/docs/javadoc/granite-client-javadoc"> 
+	        <include name="**"/> 
+	      </fileset> 
+	    </jar>
+
         <antcall target="build.maven.javadoc.module">
             <param name="moduleName" value="hibernate"/>
         </antcall>
