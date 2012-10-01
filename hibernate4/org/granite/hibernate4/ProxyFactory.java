@@ -57,7 +57,7 @@ public class ProxyFactory {
     	}
     }
 
-    protected final ConcurrentHashMap<Class<?>, Type> identifierTypes = new ConcurrentHashMap<Class<?>, Type>();
+    protected final ConcurrentHashMap<Class<?>, Object[]> identifierInfos = new ConcurrentHashMap<Class<?>, Object[]>();
 
     private final Method getProxyFactory;
     private final Method getProxy;
@@ -89,7 +89,8 @@ public class ProxyFactory {
             }
             this.getProxy = getProxy;
             this.classOverridesEqualsParameter = classOverridesEqualsParameter;
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             throw new ServiceException("Could not introspect initializer class: " + initializerClassName, e);
         }
     }
@@ -101,7 +102,9 @@ public class ProxyFactory {
             Class<?> factory = (Class<?>)getProxyFactory.invoke(null, new Object[]{persistentClass, INTERFACES});
 
             // Convert id (if necessary).
-            Type identifierType = getIdentifierType(persistentClass);
+            Object[] identifierInfo = getIdentifierInfo(persistentClass);
+            Type identifierType = (Type)identifierInfo[0];
+            Method identifierGetter = (Method)identifierInfo[1];
             if (id == null || !identifierType.equals(id.getClass())) {
                 GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
                 id = (Serializable)config.getConverters().convert(id, identifierType);
@@ -112,8 +115,9 @@ public class ProxyFactory {
                 return (HibernateProxy)getProxy.invoke(null, new Object[]{
                 	factory, entityName, persistentClass, INTERFACES, null, null, null, id, null, overridesEquals(persistentClass)});
             }
-            return (HibernateProxy)getProxy.invoke(null, new Object[]{factory, entityName, persistentClass, INTERFACES, null, null, null, id, null});
-        } catch (Exception e) {
+            return (HibernateProxy)getProxy.invoke(null, new Object[]{factory, entityName, persistentClass, INTERFACES, identifierGetter, null, null, id, null});
+        } 
+        catch (Exception e) {
             throw new ServiceException("Error with proxy description: " + persistentClassName + '/' + entityName + " and id: " + id, e);
         }
     }
@@ -127,12 +131,14 @@ public class ProxyFactory {
     	}
     }
 
-    protected Type getIdentifierType(Class<?> persistentClass) {
+    protected Object[] getIdentifierInfo(Class<?> persistentClass) {
 
-        Type type = identifierTypes.get(persistentClass);
-        if (type != null)
-            return type;
+        Object[] info = identifierInfos.get(persistentClass);
+        if (info != null)
+            return info;
 
+        Type type = null;
+        Method getter = null;
         for (Class<?> clazz = persistentClass; clazz != Object.class && clazz != null; clazz = clazz.getSuperclass()) {
             for (Field field : clazz.getDeclaredFields()) {
                 if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(EmbeddedId.class)) {
@@ -145,18 +151,20 @@ public class ProxyFactory {
         if (type == null) {
             PropertyDescriptor[] propertyDescriptors = null;
             try {
-                BeanInfo info = Introspector.getBeanInfo(persistentClass);
-                propertyDescriptors = info.getPropertyDescriptors();
-            } catch (Exception e) {
+                BeanInfo beanInfo = Introspector.getBeanInfo(persistentClass);
+                propertyDescriptors = beanInfo.getPropertyDescriptors();
+            } 
+            catch (Exception e) {
                 throw new IllegalArgumentException("Could not find id in: " + persistentClass, e);
             }
-
+            
             for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
                 Method method = propertyDescriptor.getReadMethod();
                 if (method != null && (
                         method.isAnnotationPresent(Id.class) ||
                         method.isAnnotationPresent(EmbeddedId.class))) {
                     type = method.getGenericReturnType();
+                    getter = method;
                     break;
                 }
                 method = propertyDescriptor.getWriteMethod();
@@ -170,10 +178,11 @@ public class ProxyFactory {
         }
 
         if (type != null) {
-            Type previousType = identifierTypes.putIfAbsent(persistentClass, type);
-            if (previousType != null)
-                type = previousType; // should be the same...
-            return type;
+        	info = new Object[] { type, getter };
+            Object[] previousInfo = identifierInfos.putIfAbsent(persistentClass, info);
+            if (previousInfo != null)
+                info = previousInfo; // should be the same...
+            return info;
         }
 
         throw new IllegalArgumentException("Could not find id in: " + persistentClass);
