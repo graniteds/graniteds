@@ -893,15 +893,18 @@ package org.granite.tide.data {
         private function mergeCollection(coll:IList, previous:Object, expr:IExpression, parent:Object = null, propertyName:String = null):IList {
             log.debug("mergeCollection: {0} previous {1}", BaseContext.toString(coll), BaseContext.toString(previous));
 			
-			if (_mergeContext.uninitializing && parent is IEntity && propertyName != null && _context.meta_tide.getEntityDescriptor(IEntity(parent)).lazy[propertyName]) {
-				if (previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+			if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(parent));
+				if (desc.versionPropertyName != null && !isNaN(parent[desc.versionPropertyName]) && desc.lazy[propertyName]
+					&& previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+					
 					log.debug("uninitialize lazy collection {0}", BaseContext.toString(previous));
 					_entityCache[coll] = previous;
 					IPersistentCollection(previous).uninitialize();
 					return IList(previous);
 				}
 			}
-
+			
             if (previous && previous is IPersistentCollection && !IPersistentCollection(previous).isInitialized()) {
                 log.debug("initialize lazy collection {0}", BaseContext.toString(previous));
                 _entityCache[coll] = previous;
@@ -1090,8 +1093,11 @@ package org.granite.tide.data {
         private function mergeMap(map:IMap, previous:Object, expr:IExpression, parent:Object = null, propertyName:String = null):IMap {
             log.debug("mergeMap: {0} previous {1}", BaseContext.toString(map), BaseContext.toString(previous));
 			
-            if (_mergeContext.uninitializing && parent is IEntity && propertyName != null && _context.meta_tide.getEntityDescriptor(IEntity(parent)).lazy[propertyName]) {
-                if (previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+            if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(parent));
+				if (desc.versionPropertyName != null && !isNaN(parent[desc.versionPropertyName]) && desc.lazy[propertyName] 
+					&& previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+					
                     log.debug("uninitialize lazy map {0}", BaseContext.toString(previous));
                     _entityCache[map] = previous;
                     IPersistentCollection(previous).uninitialize();
