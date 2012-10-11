@@ -93,7 +93,8 @@ public class ProxyFactory {
 
             // Get Proxy
             return (HibernateProxy)getProxy.invoke(null, new Object[]{factory, entityName, persistentClass, INTERFACES, identifierGetter, null, null, id, null});
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             throw new ServiceException("Error with proxy description: " + persistentClassName + '/' + entityName + " and id: " + id, e);
         }
     }
