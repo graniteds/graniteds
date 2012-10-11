@@ -86,7 +86,7 @@ public abstract class GenericTypeUtil {
     			}
     			if (index >= 0) {
 					for (ParameterizedType t : declaringTypes) {
-						if (ClassUtil.classOfType(t) == declaringClass) {
+						if (declaringClass.isAssignableFrom(ClassUtil.classOfType(t))) {
 							declaringType = t;
 							break;
 						}

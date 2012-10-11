@@ -30,8 +30,10 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -138,7 +140,7 @@ public class JavaRemoteDestination extends JavaAbstractType {
 	// Utilities.
 
 	protected List<JavaMethod> initMethods() {
-		List<JavaMethod> methodMap = new ArrayList<JavaMethod>();
+		List<JavaMethod> methodList = new ArrayList<JavaMethod>();
 
 		// Get all methods for interfaces: normally, even if it is possible in Java
 		// to override a method into a inherited interface, there is no meaning
@@ -149,7 +151,7 @@ public class JavaRemoteDestination extends JavaAbstractType {
 		ParameterizedType[] declaringTypes = GenericTypeUtil.getDeclaringTypes(type);
 		
 		if (type.isInterface())
-			methods = type.getMethods();
+			methods = filterOverrides(type.getMethods());
 		else
 			methods = type.getDeclaredMethods();
 		
@@ -176,11 +178,41 @@ public class JavaRemoteDestination extends JavaAbstractType {
 				if (!clazz.equals(Void.class) && !clazz.equals(void.class))
 					addToImports(provider.getJavaImports(javaMethod.getClientReturnType(), false));
 				
-				methodMap.add(javaMethod);
+				methodList.add(javaMethod);
 			}
 		}
+		
+		Collections.sort(methodList, new Comparator<JavaMethod>() {
+			public int compare(JavaMethod m1, JavaMethod m2) {
+				if (m1.getName().equals(m2.getName())) {
+					if (m1.getMember().getDeclaringClass() != m2.getMember().getDeclaringClass()) {
+						if (m1.getMember().getDeclaringClass().isAssignableFrom(m2.getMember().getDeclaringClass()))
+							return -1;
+						if (m2.getMember().getDeclaringClass().isAssignableFrom(m1.getMember().getDeclaringClass()))
+							return 1;
+					}
+					
+					if (m1.getParameterTypes().length < m2.getParameterTypes().length)
+						return -1;
+					else if (m1.getParameterTypes().length > m2.getParameterTypes().length)
+						return 1;
+					
+					for (int i = 0; i < m1.getParameterTypes().length; i++) {
+						if (m1.getParameterTypes()[i] == m2.getParameterTypes()[i])
+							continue;
+						if (m1.getParameterTypes()[i].isAssignableFrom(m2.getParameterTypes()[i]))
+							return -1;
+						else if (m2.getParameterTypes()[i].isAssignableFrom(m1.getParameterTypes()[i]))
+							return 1;
+						return m1.getParameterTypes()[i].toString().compareTo(m2.getParameterTypes()[i].toString());
+					}
+				}
+				
+				return m1.getName().compareTo(m2.getName());
+			}
+		});
 
-		return methodMap;
+		return methodList;
 	}
 	
 	protected boolean shouldGenerateMethod(Method method) {
@@ -250,5 +282,26 @@ public class JavaRemoteDestination extends JavaAbstractType {
 	
 	public JavaInterface convertToJavaInterface() {
 		return new JavaInterface(getProvider(), getType(), getUrl());
+	}
+	
+	
+	public static Method[] filterOverrides(Method[] methods) {
+		List<Method> filteredMethods = new ArrayList<Method>();
+		for (Method method : methods) {
+			// Lookup an override in subinterfaces
+			boolean foundOverride = false;
+			for (Method m : methods) {
+				if (method == m)
+					continue;
+				if (m.getName().equals(method.getName()) && Arrays.equals(m.getParameterTypes(), method.getParameterTypes()) &&
+					method.getDeclaringClass().isAssignableFrom(m.getDeclaringClass())) {
+					foundOverride = true;
+					break;
+				}
+			}
+			if (!foundOverride)
+				filteredMethods.add(method);
+		}
+		return filteredMethods.toArray(new Method[filteredMethods.size()]);
 	}
 }
