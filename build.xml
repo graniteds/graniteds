@@ -269,6 +269,7 @@
                 <pathelement location="lib/org.springframework.web.jar"/>
                 <pathelement location="lib/org.springframework.web.servlet.jar"/>
                 <pathelement location="lib/spring-data-commons-core.jar"/>
+                <pathelement location="lib/spring-data-jpa.jar"/>
                 <pathelement location="lib/spring-security-core-3.0.jar"/>
                 <pathelement location="lib/spring-security-web-3.0.jar"/>
                 <pathelement location="lib/spring-security-core-2.0.4.jar"/>
@@ -1212,8 +1213,8 @@
         <mkdir dir="graniteds"/>
         <mkdir dir="graniteds/libraries"/>
         <mkdir dir="graniteds/libraries/server"/>
-        <mkdir dir="graniteds/libraries/flexclient"/>
-        <mkdir dir="graniteds/libraries/javaclient"/>
+        <mkdir dir="graniteds/libraries/flex-client"/>
+        <mkdir dir="graniteds/libraries/java-client"/>
         <mkdir dir="graniteds/tools"/>
         <mkdir dir="graniteds/sources"/>
         <mkdir dir="graniteds/docs"/>
@@ -1234,17 +1235,17 @@
                 <include name="*-client.jar"/>
             </fileset>              
         </copy>
-        <copy todir="graniteds/libraries">
+        <copy todir="graniteds/libraries/server">
             <fileset dir="distserverjars">
                 <include name="*.jar"/>
             </fileset>
         </copy>
-        <copy todir="graniteds/flexclient">
+        <copy todir="graniteds/libraries/flex-client">
             <fileset dir="distclientswcs">
                 <include name="*.swc"/>
             </fileset>
         </copy>
-        <copy todir="graniteds/javaclient">
+        <copy todir="graniteds/libraries/java-client">
             <fileset dir="distclientjars">
                 <include name="*.jar"/>
             </fileset>
