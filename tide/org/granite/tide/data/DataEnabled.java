@@ -35,7 +35,7 @@ import javax.interceptor.InterceptorBinding;
 public @interface DataEnabled {
 	
 	@Nonbinding
-	public String topic();
+	public String topic() default "";
 	
 	@Nonbinding
 	public Class<? extends DataTopicParams> params() default DefaultDataTopicParams.class;
