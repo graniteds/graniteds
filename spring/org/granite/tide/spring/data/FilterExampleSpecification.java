@@ -83,8 +83,10 @@ public class FilterExampleSpecification<T> implements Specification<T> {
 				// Visit embedded elements recursively
 				try {
 					Object embedded = pd.getReadMethod().invoke(filter);
-					ManagedType<?> embeddedType = metamodel.embeddable(attribute.getJavaType());
-					applyAttributes(predicates, root.get(pd.getName()), builder, embeddedType, embedded);
+					if (embedded != null) {
+						ManagedType<?> embeddedType = metamodel.embeddable(attribute.getJavaType());
+						applyAttributes(predicates, root.get(pd.getName()), builder, embeddedType, embedded);
+					}
 				}
 				catch (Exception e) {
 					throw new RuntimeException("Could not get filter property " + pd.getName(), e);
