@@ -153,7 +153,7 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
         
         // If Spring Data available, automatically enable Page/Pageable converter
         try {
-        	TypeUtil.forName("org.springframework.data.model.Page");
+        	TypeUtil.forName("org.springframework.data.domain.Page");
         	Class<Converter> converterClass = TypeUtil.forName("org.granite.spring.data.PageableConverter", Converter.class);
         	this.graniteConfig.getConverters().addConverter(converterClass);
         }
