@@ -191,10 +191,15 @@ public abstract class ServiceInvoker<T extends ServiceFactory> {
             );
         }
 
-        beforeInvocation(invocationContext);
-        if (invocationListeners != null) {
-            for (ServiceInvocationListener invocationListener : invocationListeners)
-                invocationListener.beforeInvocation(invocationContext);
+        try {
+	        beforeInvocation(invocationContext);
+	        if (invocationListeners != null) {
+	            for (ServiceInvocationListener invocationListener : invocationListeners)
+	                invocationListener.beforeInvocation(invocationContext);
+	        }
+        }
+        catch (Exception error) {
+        	handleInvocationError(invocationContext, error);
         }
 
         log.debug(">> Invoking method: %s with ", invocationContext.getMethod(), args);
@@ -235,12 +240,7 @@ public abstract class ServiceInvoker<T extends ServiceFactory> {
         	error = e;
         } finally {
         	if (error != null) {
-        		afterInvocationError(invocationContext, error);
-                if (invocationListeners != null) {
-                    for (ServiceInvocationListener invocationListener : invocationListeners)
-                        invocationListener.afterInvocationError(invocationContext, error);
-                }
-        		throw serviceExceptionHandler.handleInvocationException(invocationContext, error);
+        		handleInvocationError(invocationContext, error);
         	}
         }
 
@@ -253,5 +253,17 @@ public abstract class ServiceInvoker<T extends ServiceFactory> {
         log.debug("<< Returning result: %s", result);
 
         return result;
+    }
+    
+    
+    private void handleInvocationError(ServiceInvocationContext invocationContext, Throwable error) throws ServiceException {
+		afterInvocationError(invocationContext, error);
+        if (invocationListeners != null) {
+            for (ServiceInvocationListener invocationListener : invocationListeners)
+                invocationListener.afterInvocationError(invocationContext, error);
+        }
+        if (error instanceof ServiceException)
+        	throw (ServiceException)error;
+		throw serviceExceptionHandler.handleInvocationException(invocationContext, error);
     }
 }
