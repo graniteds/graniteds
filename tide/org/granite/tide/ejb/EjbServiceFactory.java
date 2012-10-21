@@ -22,6 +22,8 @@ package org.granite.tide.ejb;
 
 import java.util.Map;
 
+import javax.naming.InitialContext;
+
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.service.ExtendedServiceExceptionHandler;
@@ -45,6 +47,7 @@ public class EjbServiceFactory extends ServiceFactory {
     public static final String ENTITY_MANAGER_JNDI_NAME = "entity-manager-jndi-name";
 
     private String lookup = null;
+    private InitialContext initialContext = null;
 
     public static ScannedItemHandler getScannedItemHandler() {
     	return EjbScannedItemHandler.instance(true);
@@ -52,6 +55,10 @@ public class EjbServiceFactory extends ServiceFactory {
     
     public String getLookup() {
         return lookup;
+    }
+    
+    public void setInitialContext(InitialContext ic) {
+    	this.initialContext = ic;
     }
 
 
@@ -97,7 +104,7 @@ public class EjbServiceFactory extends ServiceFactory {
                 if (destination.getProperties().containsKey("lookup"))
                     lookup = destination.getProperties().get("lookup");
                 
-                EjbServiceContext tideContext = new EjbServiceContext(lookup); 
+                EjbServiceContext tideContext = new EjbServiceContext(lookup, initialContext); 
                 
                 if (destination.getProperties().containsKey(ENTITY_MANAGER_FACTORY_JNDI_NAME)) {
                     tideContext.setEntityManagerFactoryJndiName(destination.getProperties().get(ENTITY_MANAGER_FACTORY_JNDI_NAME));

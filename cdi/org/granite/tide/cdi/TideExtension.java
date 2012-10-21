@@ -123,6 +123,8 @@ public class TideExtension implements Extension {
 	}
 	
 	public void processAfterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
+		if (tideInstrumentedBeans == null)
+			return;
 		TideInstrumentedBeans ib = (TideInstrumentedBeans)manager.getReference(tideInstrumentedBeans, TideInstrumentedBeans.class, 
 				manager.createCreationalContext(tideInstrumentedBeans));
 		ib.setBeans(instrumentedBeans);

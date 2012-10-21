@@ -16,10 +16,11 @@
 	<classpathentry kind="lib" path="/graniteds/lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/commons-collections.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/cglib.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jnpserver.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-embedded-api.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-seam.jar"/>
+	<classpathentry kind="lib" path="lib/shrinkwrap-extension-glassfish.jar"/>
+	<classpathentry kind="lib" path="lib/glassfish-embedded-all.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="lib" path="/graniteds/lib/javassist.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/graniteds"/>
@@ -28,7 +29,7 @@
 	<classpathentry kind="lib" path="/graniteds/lib/jpa-2.0-api.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/eclipselink.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/hibernate-core-4.0.0.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar" sourcepath="C:/Dev/hibernate-distribution-3.6.5.Final/project/hibernate-core/src/main/java"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/spring-test.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.aop.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.asm.jar"/>
@@ -58,5 +59,11 @@
 	<classpathentry kind="lib" path="/graniteds/lib/weld-core-test.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jdo2-api-2.3-eb.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/datanucleus-core.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/ejb-api.jar"/>
+	<classpathentry kind="lib" path="lib/openejb-lite.jar"/>
+	<classpathentry kind="lib" path="lib/shrinkwrap-api.jar"/>
+	<classpathentry kind="lib" path="lib/shrinkwrap-extension-openejb.jar"/>
+	<classpathentry kind="lib" path="lib/shrinkwrap-impl-base.jar"/>
+	<classpathentry kind="lib" path="lib/shrinkwrap-spi.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

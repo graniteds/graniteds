@@ -447,30 +447,17 @@ public class CDIServiceContext extends TideServiceContext {
             }
         }
         
-        InvocationResult res = new InvocationResult(result, results);
-        res.setScope(scope);
-        res.setRestrict(restrict);
-        if (bean != null) {
-        	if (bean.getBeanClass().isAnnotationPresent(BypassTideMerge.class))
-        		res.setMerge(false);
-        	else {
-	        	try {
-	        		if (context != null) {
-		        		Method m = bean.getBeanClass().getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
-		        		if (m.isAnnotationPresent(BypassTideMerge.class))
-		        			res.setMerge(false);
-	        		}
-	        	}
-	        	catch (Exception e) {
-	        		log.warn("Could not find bean method", e);
-	        	}
-        	}
-        }
+        InvocationResult ires = new InvocationResult(result, results);
+        ires.setScope(scope);
+        ires.setRestrict(restrict);
+		Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
+    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
+			ires.setMerge(false);
         
-        res.setUpdates(updates);
+        ires.setUpdates(updates);
         
         // Adds events in result object
-        res.setEvents(tideInvocation.getEvents());
+        ires.setEvents(tideInvocation.getEvents());
         
         try {
 	        // Save current set of entities loaded in a conversation scoped component to handle case of extended PM
@@ -483,7 +470,7 @@ public class CDIServiceContext extends TideServiceContext {
         // Clean thread
         TideInvocation.remove();
         
-        return res;
+        return ires;
     }
 
     /**

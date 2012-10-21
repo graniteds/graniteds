@@ -71,6 +71,7 @@ public class EjbServiceContext extends TideServiceContext  {
     private transient Map<String, EjbComponent> ejbLookupCache = new ConcurrentHashMap<String, EjbComponent>();
     private final Set<String> remoteObservers = new HashSet<String>();
     
+    private final InitialContext initialContext;
     private final String lookup;
     
     private final EjbIdentity identity;
@@ -82,12 +83,14 @@ public class EjbServiceContext extends TideServiceContext  {
     public EjbServiceContext() throws ServiceException {
         super();
     	lookup = "";
+    	initialContext = null;
     	identity = new EjbIdentity();
     }
     
-    public EjbServiceContext(String lookup) throws ServiceException {
+    public EjbServiceContext(String lookup, InitialContext ic) throws ServiceException {
         super();
         this.lookup = lookup;
+        this.initialContext = ic;
     	identity = new EjbIdentity();
     }
 
@@ -131,15 +134,17 @@ public class EjbServiceContext extends TideServiceContext  {
      */
     private EntityManager getEntityManager() {
         try {
-            InitialContext jndiContext = new InitialContext();
+            InitialContext jndiContext = initialContext != null ? initialContext : new InitialContext();
             
             if (entityManagerFactoryJndiName != null) {
                 EntityManagerFactory factory = (EntityManagerFactory) jndiContext.lookup(entityManagerFactoryJndiName);
                 return factory.createEntityManager();
-            } else if (entityManagerJndiName != null) {
+            } 
+            else if (entityManagerJndiName != null) {
                 return (EntityManager) jndiContext.lookup(entityManagerJndiName);
             }
-        } catch (NamingException e) {
+        } 
+        catch (NamingException e) {
             if (entityManagerFactoryJndiName != null) 
                 throw new RuntimeException("Unable to find a EntityManagerFactory  for jndiName " + entityManagerFactoryJndiName);
             else if (entityManagerJndiName != null) 
@@ -186,13 +191,16 @@ public class EjbServiceContext extends TideServiceContext  {
                 name = lookup.replace(DESTINATION_ID, componentName);
         }
         
-        InitialContext ic = null;
-        try {
-            ic = new InitialContext();
-        } catch (Exception e) {
-            throw new ServiceException("Could not get InitialContext", e);
+        InitialContext ic = this.initialContext;
+        if (ic == null) {
+	        try {
+	            ic = new InitialContext();
+	        } 
+	        catch (Exception e) {
+	            throw new ServiceException("Could not get InitialContext", e);
+	        }
         }
-
+        
         log.debug(">> New EjbServiceInvoker looking up: %s", name);
 
         try {
@@ -209,7 +217,7 @@ public class EjbServiceContext extends TideServiceContext  {
             }
             if (scannedClass == null)
             	scannedClass = itemHandler.getScannedClasses().get(component.ejbInstance.getClass());
-            // GDS-768: handle of proxied no-interface EJBs in GlassFish v3
+            // GDS-768: handling of proxied no-interface EJBs in GlassFish v3
             if (scannedClass == null && component.ejbInstance.getClass().getSuperclass() != null)
             	scannedClass = itemHandler.getScannedClasses().get(component.ejbInstance.getClass().getSuperclass());
             
@@ -251,6 +259,7 @@ public class EjbServiceContext extends TideServiceContext  {
         return ejbLookupCache.get(componentName).ejbClasses;
     }
 
+    
     private String capitalize(String s) {
         if (s == null || s.length() == 0)
             return s;
@@ -295,20 +304,9 @@ public class EjbServiceContext extends TideServiceContext  {
     			results.add(new ContextUpdate(entry.getKey(), null, entry.getValue(), 3, false));
     		
 	        InvocationResult ires = new InvocationResult(result, results);
-	        if (context.getBean() != null) {
-	        	if (context.getBean().getClass().isAnnotationPresent(BypassTideMerge.class))
-	        		ires.setMerge(false);
-	        	else {
-		        	try {
-		        		Method m = context.getBean().getClass().getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
-		        		if (m.isAnnotationPresent(BypassTideMerge.class))
-		        			ires.setMerge(false);
-		        	}
-		        	catch (Exception e) {
-		        		log.warn("Could not find bean method", e);
-		        	}
-	        	}
-	        }
+			Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
+	    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
+				ires.setMerge(false);
 	        
 	        ires.setUpdates(updates);
 	        ires.setEvents(new ArrayList<ContextEvent>(threadContext.getRemoteEvents()));

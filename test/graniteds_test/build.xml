@@ -10,7 +10,6 @@
   it under the terms of the GNU Library General Public License as published by
   the Free Software Foundation; either version 2 of the License, or (at your
   option) any later version.
-
   Granite Data Services is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
   FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
@@ -20,7 +19,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 -->
 
-<project name="graniteds-test" default="tests" basedir=".">
+<project name="graniteds-test" default="tests" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
     
     <!--
      ! Properties: EDIT THE 'test/env.properties' FILE TO REFLECT YOUR ENVIRONMENT.
@@ -165,7 +164,25 @@
         <fileset dir="${gds.build}">
             <include name="granite-cdi.jar"/>
         </fileset>
-    </path>    
+    </path>
+	
+	<path id="openejb.jar">
+		<fileset dir="${gds.test}/lib">
+			<include name="openejb-*.jar"/>
+			<include name="shrinkwrap-*.jar"/>
+			<exclude name="*glassfish*.jar"/>
+		</fileset>
+		<fileset dir="${gds.lib}">
+			<include name="weld-*.jar"/>
+		</fileset>
+	</path>
+	<path id="glassfish.jar">
+		<fileset dir="${gds.test}/lib">
+			<include name="glassfish-embedded-*.jar"/>
+			<include name="shrinkwrap-*.jar"/>
+			<exclude name="*openejb*.jar"/>
+		</fileset>
+	</path>
     
     <path id="gds.classpath">
         <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
@@ -175,6 +192,12 @@
         <path refid="hibernate-validator.jar"/>
         <path refid="granite.jar"/>
         <path refid="granite-hibernate.jar"/>
+    </path>
+    <path id="gds.test.classpath">
+        <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+        <path refid="main.jar"/>
+        <path refid="log4j.jar"/>
+        <path refid="granite.jar"/>
     </path>
     <path id="gds.seam.classpath">
         <path refid="seam.jar"/>
@@ -188,6 +211,12 @@
         <path refid="cdi.jar"/>
         <path refid="granite-cdi.jar"/>
     </path>
+    <path id="gds.openejb.classpath">
+        <path refid="openejb.jar"/>
+    </path>
+    <path id="gds.glassfish.classpath">
+        <path refid="glassfish.jar"/>
+    </path>
     <path id="test.classpath">
         <pathelement location="${gds.lib}/hsqldb.jar"/>
     </path>
@@ -196,8 +225,10 @@
     <!--
      ! Compile Java sources (unless this script is launched from Eclipse).
      !-->
-    <target name="build.javac" description="Compile Java sources">
+    <target name="build.javac" depends="resolve" description="Compile Java sources">
         <mkdir dir="classes"/>
+        <mkdir dir="test-reports/java"/>
+    	
         <javac destdir="classes" srcdir="java" debug="true"
             target="1.5" source="1.5">
             <classpath>
@@ -205,6 +236,7 @@
                 <path refid="gds.seam.classpath"/>
                 <path refid="gds.spring.classpath"/>
                 <path refid="gds.cdi.classpath"/>
+            	<path refid="gds.ejb.classpath"/>
                 <path refid="test.classpath"/>
             	<pathelement location="${gds.lib}/eclipselink.jar"/>
             	<pathelement location="${gds.lib}/datanucleus-core.jar"/>
@@ -225,8 +257,6 @@
     </target>
     
     <target name="tests.java" depends="build.javac" description="Run Java tests">
-        <mkdir dir="test-reports/java"/>
-    	
         <junit printsummary="yes" showoutput="false">
             <classpath>
                 <path refid="gds.classpath"/>
@@ -256,6 +286,8 @@
     	<antcall target="tests.seam"/>
         <antcall target="tests.spring"/>
         <antcall target="tests.cdi"/>
+    	<antcall target="tests.ejb.openejb"/>
+    	<antcall target="tests.ejb.glassfish"/>
         <antcall target="tests.hibernate"/>
         <antcall target="tests.hibernate4"/>
         <antcall target="tests.eclipselink"/>
@@ -314,7 +346,51 @@
             </batchtest>
         </junit>
     </target>
-        
+	
+	<target name="tests.ejb.openejb" depends="build.javac">		
+		<junit printsummary="yes" showoutput="false">
+			<sysproperty key="ejb.container.className" value="org.granite.test.tide.ejb.OpenEJBContainer"/>
+			
+            <classpath>
+                <path refid="gds.test.classpath"/>
+                <path refid="gds.openejb.classpath"/>
+                <path refid="test.classpath"/>
+                <pathelement path="classes"/>
+            </classpath>
+			
+			<formatter type="xml"/>
+		
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/ejb/*Test.java"/>
+                    <exclude name="**/Abstract*.java"/>
+                </fileset>
+            </batchtest>
+		</junit>			
+	</target>
+	
+	<target name="tests.ejb.glassfish" depends="build.javac">		
+		<junit printsummary="yes" showoutput="false">
+			<sysproperty key="ejb.container.className" value="org.granite.test.tide.ejb.GlassFishV3Container"/>
+			
+            <classpath>
+                <path refid="gds.test.classpath"/>
+                <path refid="gds.glassfish.classpath"/>
+                <path refid="test.classpath"/>
+                <pathelement path="classes"/>
+            </classpath>
+			
+			<formatter type="xml"/>
+		
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/ejb/*Test.java"/>
+                    <exclude name="**/Abstract*.java"/>
+                </fileset>
+            </batchtest>
+		</junit>			
+	</target>
+    
     <target name="tests.cdi" depends="build.javac">        
         <junit printsummary="yes" showoutput="false">
             <classpath>
@@ -587,7 +663,14 @@
     </target>
     
     <target name="tests" depends="tests.java,tests.flex" description="Run tests"/>
-    
+	
+	
+	<target name="resolve">
+		<ivy:resolve/>
+				
+		<ivy:retrieve pattern="${gds.test}/lib/[artifact].[ext]" type="jar"/>
+	</target>
+	
     <!--
      ! Clean.
      !-->

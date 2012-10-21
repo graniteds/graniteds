@@ -21,8 +21,10 @@
 package org.granite.tide;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -106,6 +108,25 @@ public abstract class TideServiceContext implements Serializable {
             IInvocationResult eventResult = postCall(null, null, componentName, componentClass);
             publisher.publishMessage(sessionId, eventResult);
         }
+    }
+    
+    
+    protected boolean isBeanAnnotationPresent(Collection<Class<?>> beanClasses, String methodName, Class<?>[] methodArgTypes, Class<? extends Annotation> annotationClass) {
+    	for (Class<?> beanClass : beanClasses) {
+	        if (beanClass.isAnnotationPresent(annotationClass))
+	        	return true;
+	        
+	    	try {
+	    		Method m = beanClass.getMethod(methodName, methodArgTypes);
+	    		if (m.isAnnotationPresent(annotationClass))
+	    			return true;
+			}
+	    	catch (NoSuchMethodException e) {
+	    		// Method not found on this interface
+	    	}
+        }
+        
+        return false;
     }
     
     
