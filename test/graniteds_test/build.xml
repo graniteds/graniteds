@@ -360,7 +360,7 @@
                 <pathelement path="classes"/>
             </classpath>
 			
-			<formatter type="xml"/>
+			<formatter type="xml" extension=".OpenEJB.xml"/>
 		
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
@@ -382,7 +382,7 @@
                 <pathelement path="classes"/>
             </classpath>
 			
-			<formatter type="xml"/>
+			<formatter type="xml" extension=".GlassFishV3.xml"/>
 		
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
