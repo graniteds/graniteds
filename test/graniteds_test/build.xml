@@ -360,11 +360,11 @@
                 <pathelement path="classes"/>
             </classpath>
 			
-			<formatter type="xml" extension=".OpenEJB.xml"/>
+			<formatter type="xml"/>
 		
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
-                    <include name="**/ejb/*Test.java"/>
+                    <include name="**/ejb/*OpenEJBTestSuite.java"/>
                     <exclude name="**/Abstract*.java"/>
                 </fileset>
             </batchtest>
@@ -382,11 +382,11 @@
                 <pathelement path="classes"/>
             </classpath>
 			
-			<formatter type="xml" extension=".GlassFishV3.xml"/>
+			<formatter type="xml"/>
 		
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
-                    <include name="**/ejb/*Test.java"/>
+                    <include name="**/ejb/*GlassFishV3TestSuite.java"/>
                     <exclude name="**/Abstract*.java"/>
                 </fileset>
             </batchtest>
