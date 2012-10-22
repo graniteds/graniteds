@@ -273,6 +273,7 @@
                 	<include name="**/*Test.java"/>
                     <exclude name="**/seam/*Test.java"/>
                     <exclude name="**/spring/*Test.java"/>
+                    <exclude name="**/ejb/*Test.java"/>
                     <exclude name="**/cdi/*Test.java"/>
                     <exclude name="**/Hibernate*.java"/>
                 	<exclude name="**/EclipseLink*.java"/>
