@@ -863,7 +863,7 @@ package org.granite.tide.data {
 
 			if (dest != null && !ignore && !_mergeContext.resolvingConflict) {
 				if (_mergeContext.mergeUpdate && ((dest is IEntity && versionChangeCache[dest] != null) 
-					|| (!(dest is IEntity && parent is IEntity && versionChangeCache[parent] != null))))
+					|| (!(dest is IEntity) && parent is IEntity && versionChangeCache[parent] != null)))
 					_dirtyCheckContext.markNotDirty(dest, dest is IEntity ? IEntity(dest) : IEntity(parent));
 				else if ((dest is IEntity && obj is IEntity) || (parent is IEntity && !(dest is IEntity)))
 					_dirtyCheckContext.checkAndMarkNotDirty(dest, obj, dest is IEntity ? IEntity(dest) : IEntity(parent));
