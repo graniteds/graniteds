@@ -153,12 +153,12 @@ package org.granite.tide.data {
             return _dirtyCheckContext.isEntityChanged(entity);
         }
 
-        public function markNotDirty(entity:Object):void {
-            _dirtyCheckContext.markNotDirty(entity);
+        public function markNotDirty(entity:Object, owner:IEntity):void {
+            _dirtyCheckContext.markNotDirty(entity, owner);
         }
 
-        public function checkAndMarkNotDirty(entity:IEntity, source:Object):Boolean {
-            return _dirtyCheckContext.checkAndMarkNotDirty(entity,  source);
+        public function checkAndMarkNotDirty(entity:Object, source:Object, owner:IEntity):Boolean {
+            return _dirtyCheckContext.checkAndMarkNotDirty(entity, source, owner);
         }
     }
 }
