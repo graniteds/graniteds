@@ -50,7 +50,7 @@ package org.granite.test.math {
 			a = BigDecimal.TEN;
 			Assert.assertEquals("10", a.unscaledValue.toString());
 			Assert.assertEquals(0, a.scale);
-			Assert.assertEquals(1, a.precision);
+			Assert.assertEquals(2, a.precision);
 		}
 		
 		[Test]
