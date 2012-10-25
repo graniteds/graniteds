@@ -183,7 +183,6 @@
 		<xs:attribute name="name" type="xs:string"/>
         <xs:attribute name="no-local" type="xs:boolean" default="false"/>
         <xs:attribute name="session-selector" type="xs:boolean" default="false"/>
-        <xs:attribute name="text-messages" type="xs:boolean" default="false"/>
     </xs:attributeGroup>
 	
 	
