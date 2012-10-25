@@ -43,6 +43,8 @@ public @interface JmsTopicDestination {
     
     String topicJndiName();
     
+    boolean textMessages() default false;
+    
     String acknowledgeMode() default "AUTO_ACKNOWLEDGE";
     
     boolean transactedSessions() default false;

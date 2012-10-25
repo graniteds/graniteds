@@ -156,6 +156,7 @@ public class GravityManager {
         		messagingDestination.setNoLocal(md.noLocal());
         		messagingDestination.setSessionSelector(md.sessionSelector());
         		messagingDestination.setName(md.name());
+        		messagingDestination.setTextMessages(md.textMessages());
         		messagingDestination.setAcknowledgeMode(md.acknowledgeMode());
         		messagingDestination.setConnectionFactory(md.connectionFactory());
         		messagingDestination.setTransactedSessions(md.transactedSessions());
@@ -169,6 +170,7 @@ public class GravityManager {
         		messagingDestination.setNoLocal(md.noLocal());
         		messagingDestination.setSessionSelector(md.sessionSelector());
         		messagingDestination.setName(md.name());
+        		messagingDestination.setTextMessages(md.textMessages());
         		messagingDestination.setAcknowledgeMode(md.acknowledgeMode());
         		messagingDestination.setConnectionFactory(md.connectionFactory());
         		messagingDestination.setTransactedSessions(md.transactedSessions());
