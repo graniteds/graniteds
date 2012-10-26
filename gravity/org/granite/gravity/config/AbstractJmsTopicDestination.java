@@ -112,7 +112,7 @@ public class AbstractJmsTopicDestination extends AbstractMessagingDestination {
     	destination.getProperties().put("jms/destination-jndi-name", destinationJndiName);
     	destination.getProperties().put("jms/connection-factory", connectionFactoryJndiName);
     	if (textMessages)
-    		destination.getProperties().put("jms/text-messages", "javax.jms.TextMessage");
+    		destination.getProperties().put("jms/message-type", "javax.jms.TextMessage");
     	destination.getProperties().put("jms/acknowledge-mode", acknowledgeMode);
     	destination.getProperties().put("jms/transacted-sessions", String.valueOf(transactedSessions));
     	destination.getProperties().put("jms/no-local", String.valueOf(isNoLocal()));
