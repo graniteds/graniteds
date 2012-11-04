@@ -6,6 +6,9 @@
 	<dependencies>
 		<dependency org="org.apache.openejb" name="openejb-lite" rev="4.5.0" transitive="false"/>
 		<dependency org="org.glassfish.main.extras" name="glassfish-embedded-all" rev="3.1.2" transitive="false"/>
+		<dependency org="org.apache.geronimo.specs" name="geronimo-jms_1.1_spec" rev="1.1.1" transitive="false"/>
+		<dependency org="org.apache.geronimo.specs" name="geronimo-j2ee-management_1.1_spec" rev="1.0.1" transitive="false"/>
+		<dependency org="org.apache.geronimo.specs" name="geronimo-jta_1.0.1B_spec" rev="1.0.1" transitive="false"/>
 		<dependency org="org.jboss.shrinkwrap" name="shrinkwrap-api" rev="1.1.0" transitive="false"/>
 		<dependency org="org.jboss.shrinkwrap" name="shrinkwrap-spi" rev="1.1.0" transitive="false"/>
 		<dependency org="org.jboss.shrinkwrap" name="shrinkwrap-impl-base" rev="1.1.0" transitive="false"/>

@@ -125,6 +125,9 @@
             <include name="asm-3.0.jar"/>
             <include name="commons-collections.jar"/>
             <include name="commons-logging.jar"/>
+        	<include name="javax.inject.jar"/>
+        	<include name="javax.servlet.jar"/>
+        	<include name="apache-activemq.jar"/>
         	<include name="org.springframework.*.jar"/>
         	<include name="spring-*-3.0.jar"/>
         	<include name="spring-test.jar"/>
@@ -219,6 +222,11 @@
     </path>
     <path id="test.classpath">
         <pathelement location="${gds.lib}/hsqldb.jar"/>
+    </path>
+    <path id="test.classpath.activemq">
+    	<fileset dir="${gds.test}/lib">
+    		<include name="geronimo*spec*.jar"/>
+    	</fileset>
     </path>
 
     
@@ -335,6 +343,7 @@
                 <path refid="gds.classpath"/>
                 <path refid="gds.spring.classpath"/>
                 <path refid="test.classpath"/>
+                <path refid="test.classpath.activemq"/>
                 <pathelement path="classes"/>
             </classpath>
             
