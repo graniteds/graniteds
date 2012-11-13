@@ -878,7 +878,7 @@ package org.granite.tide.data {
 						}
 					}
 				}
-				else if (save && (ObjectUtil.isSimple(val) || ObjectUtil.isSimple(save[p]))) {
+				else if (save && (ObjectUtil.isSimple(val) || ObjectUtil.isSimple(save[p]) || val is ByteArray || save[p] is ByteArray)) {
                     if (save[p] !== undefined)
                         entity[p] = save[p];
                 }
