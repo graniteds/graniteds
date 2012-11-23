@@ -179,6 +179,7 @@ public class OptionsPanel extends Composite implements PropertyChangeListener {
 		}
 	}
     
+	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		initialized = false;
 		initializeContent();

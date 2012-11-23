@@ -26,4 +26,4 @@ Bundle-ClassPath: bin/,
  lib/groovy-1.6.4.jar,
  lib/xpp3_min-1.1.4c.jar,
  lib/xstream-1.3.jar
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

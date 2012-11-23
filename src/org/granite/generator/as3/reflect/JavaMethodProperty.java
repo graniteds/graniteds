@@ -84,15 +84,18 @@ public class JavaMethodProperty implements JavaProperty {
         );
     }
 
-    public String getName() {
+    @Override
+	public String getName() {
         return name;
     }
     
-    public String getCapitalizedName() {
+    @Override
+	public String getCapitalizedName() {
     	return getName().substring(0, 1).toUpperCase() + getName().substring(1);
     }
 
-    public Class<?> getType() {
+    @Override
+	public Class<?> getType() {
         return type;
     }
     
@@ -100,29 +103,35 @@ public class JavaMethodProperty implements JavaProperty {
     	return genericType;
     }
     
-    public Type[] getGenericTypes() {
+    @Override
+	public Type[] getGenericTypes() {
 		Type type = readMethod != null ? readMethod.getMember().getGenericReturnType() : writeMethod.getMember().getGenericParameterTypes()[0];
 		if (!(type instanceof ParameterizedType))
 			return null;
 		return ((ParameterizedType)type).getActualTypeArguments();
     }
 
-    public boolean isReadable() {
+    @Override
+	public boolean isReadable() {
         return (readMethod != null);
     }
 
-    public boolean isWritable() {
+    @Override
+	public boolean isWritable() {
         return (writeMethod != null);
     }
 
-    public boolean isExternalizedProperty() {
+    @Override
+	public boolean isExternalizedProperty() {
         return externalizedProperty;
     }
 
-    public boolean isEnum() {
+    @Override
+	public boolean isEnum() {
 		return (type.isEnum() || Enum.class.getName().equals(type.getName()));
 	}
 
+	@Override
 	public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
         return (
             (readMethod != null && readMethod.getMember().isAnnotationPresent(annotationClass)) ||
@@ -130,7 +139,8 @@ public class JavaMethodProperty implements JavaProperty {
         );
     }
 
-    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+    @Override
+	public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
     	T annotation = null;
     	if (readMethod != null) {
     		annotation = readMethod.getMember().getAnnotation(annotationClass);
@@ -145,7 +155,8 @@ public class JavaMethodProperty implements JavaProperty {
     	return null;
     }
     
-    public Annotation[] getDeclaredAnnotations() {
+    @Override
+	public Annotation[] getDeclaredAnnotations() {
     	List<Annotation> annos = new ArrayList<Annotation>();
     	if (readMethod != null)
     		annos.addAll(Arrays.asList(readMethod.getMember().getDeclaredAnnotations()));
@@ -154,19 +165,23 @@ public class JavaMethodProperty implements JavaProperty {
     	return annos.toArray(new Annotation[0]);
     }
 
-    public boolean isReadOverride() {
+    @Override
+	public boolean isReadOverride() {
         return (readMethod != null && readMethod.isOverride());
     }
 
-    public boolean isWriteOverride() {
+    @Override
+	public boolean isWriteOverride() {
         return (writeMethod != null && writeMethod.isOverride());
     }
 
-    public JavaMethod getReadMethod() {
+    @Override
+	public JavaMethod getReadMethod() {
         return readMethod;
     }
 
-    public JavaMethod getWriteMethod() {
+    @Override
+	public JavaMethod getWriteMethod() {
         return writeMethod;
     }
 
@@ -174,11 +189,13 @@ public class JavaMethodProperty implements JavaProperty {
         return clientType;
     }
 
-    public ClientType getClientType() {
+    @Override
+	public ClientType getClientType() {
         return clientType;
     }
 
-    public int compareTo(JavaProperty o) {
+    @Override
+	public int compareTo(JavaProperty o) {
         return name.compareTo(o.getName());
     }
 

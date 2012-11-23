@@ -40,54 +40,68 @@ public class AntListener implements Listener {
         this.task = task;
     }
 
+	@Override
 	public void generating(Input<?> input, Output<?> output) {
 		log("  Generating: " + output.getDescription() + " (" + output.getMessage() + ")", Project.MSG_INFO, null);
 	}
 
+	@Override
 	public void generating(String file, String message) {
 		log("  Generating: " + file + " (" + message + ")", Project.MSG_INFO, null);
 	}
 
+	@Override
 	public void removing(Input<?> input, Output<?> output) {
 	}
 
+	@Override
 	public void removing(String file, String message) {
 	}
 
+	@Override
 	public void skipping(Input<?> input, Output<?> output) {
 		log("  Skipping: " + output.getDescription() + " (" + output.getMessage() + ")", Project.MSG_DEBUG, null);
 	}
 
+	@Override
 	public void skipping(String file, String message) {
 		log("  Skipping: " + file + " (" + message + ")", Project.MSG_DEBUG, null);
 	}
 
+	@Override
 	public void debug(String message) {
         log(message, Project.MSG_DEBUG, null);
 	}
 
+	@Override
 	public void debug(String message, Throwable t) {
         log(message, Project.MSG_DEBUG, t);
 	}
 
-    public void info(String message) {
+    @Override
+	public void info(String message) {
         log(message, Project.MSG_INFO, null);
     }
-    public void info(String message, Throwable t) {
+    @Override
+	public void info(String message, Throwable t) {
         log(message, Project.MSG_INFO, t);
     }
 
-    public void warn(String message) {
+    @Override
+	public void warn(String message) {
         log(message, Project.MSG_WARN, null);
     }
-    public void warn(String message, Throwable t) {
+    @Override
+	public void warn(String message, Throwable t) {
         log(message, Project.MSG_WARN, t);
     }
 
-    public void error(String message) {
+    @Override
+	public void error(String message) {
         log(message, Project.MSG_ERR, null);
     }
-    public void error(String message, Throwable t) {
+    @Override
+	public void error(String message, Throwable t) {
         log(message, Project.MSG_ERR, t);
     }
 

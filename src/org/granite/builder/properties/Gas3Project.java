@@ -43,6 +43,7 @@ public class Gas3Project implements Validable, Comparable<Gas3Project> {
 		this.path = path;
 	}
 
+	@Override
 	public void validate(ValidationResults results) {
 		if (path == null)
 			results.getErrors().add("project: path cannot be null");
@@ -63,6 +64,7 @@ public class Gas3Project implements Validable, Comparable<Gas3Project> {
 		return (path == null ? 0 : path.hashCode());
 	}
 
+	@Override
 	public int compareTo(Gas3Project o) {
 		if (path == null)
 			return -1;

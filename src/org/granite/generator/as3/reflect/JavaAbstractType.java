@@ -84,21 +84,25 @@ public abstract class JavaAbstractType implements JavaType {
         return provider;
     }
 
-    public Class<?> getType() {
+    @Override
+	public Class<?> getType() {
         return type;
     }
 
+	@Override
 	public String getName() {
     	if (type.isMemberClass())
     		return type.getEnclosingClass().getSimpleName() + '$' + type.getSimpleName();
         return type.getSimpleName();
     }
 
-    public Package getPackage() {
+    @Override
+	public Package getPackage() {
         return type.getPackage();
     }
 
-    public String getPackageName() {
+    @Override
+	public String getPackageName() {
         return (type.getPackage() != null ? type.getPackage().getName() : "");
     }
 
@@ -108,46 +112,57 @@ public abstract class JavaAbstractType implements JavaType {
         return new StringBuilder().append(getPackageName()).append('.').append(getName()).toString();
     }
 
-    public URL getUrl() {
+    @Override
+	public URL getUrl() {
         return url;
     }
 
-    public boolean isBean() {
+    @Override
+	public boolean isBean() {
 		return kind == Kind.BEAN;
 	}
 
+	@Override
 	public boolean isEntity() {
 		return kind == Kind.ENTITY;
 	}
 
+	@Override
 	public boolean isEnum() {
 		return kind == Kind.ENUM;
 	}
 
+	@Override
 	public boolean isInterface() {
 		return kind == Kind.INTERFACE;
 	}
 	
+	@Override
 	public boolean isRemoteDestination() {
 		return kind == Kind.REMOTE_DESTINATION;
 	}
 
+	@Override
 	public boolean isGenerated() {
 		return generationType != GenerationType.NOT_GENERATED;
 	}
 
+	@Override
 	public boolean isWithBase() {
 		return generationType == GenerationType.GENERATED_WITH_BASE;
 	}
 
+	@Override
 	public GenerationType getGenerationType() {
 		return generationType;
 	}
 
+	@Override
 	public Kind getKind() {
 		return kind;
 	}
 
+	@Override
 	public long getLastModified() {
         if (lastModified == Long.MIN_VALUE) {
             try {
@@ -163,7 +178,8 @@ public abstract class JavaAbstractType implements JavaType {
         return clientType;
     }
 
-    public ClientType getClientType() {
+    @Override
+	public ClientType getClientType() {
         return clientType;
     }
 

@@ -66,13 +66,16 @@ public class LCDSAs3TypeFactory implements As3TypeFactory {
         java2As3Type.put(Enum.class, As3Type.STRING);
     }
 
+	@Override
 	public void configure(boolean externalizeLong, boolean externalizeBigInteger, boolean externalizeBigDecimal) {
 	}
     
-    public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
+    @Override
+	public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
     	return null;
     }
 
+	@Override
 	public ClientType getAs3Type(Class<?> jType) {
         As3Type as3Type = getFromCache(jType);
 

@@ -66,34 +66,42 @@ public class ClientImport extends JavaImport {
 
     private final class ClientImportType implements ClientType {
 
+		@Override
 		public boolean hasPackage() {
 			return hasImportPackage();
 		}
 
+		@Override
 		public String getPackageName() {
 			return getImportPackageName();
 		}
 
+		@Override
 		public String getName() {
 			return getImportQualifiedName();
 		}
 
+		@Override
 		public String getQualifiedName() {
 			return getImportQualifiedName();
 		}
 
+		@Override
 		public Object getNullValue() {
 			return null;
 		}
 
+		@Override
 		public Set<String> getImports() {
 			return null;
 		}
 
+		@Override
 		public ClientType toArrayType() {
 			return null;
 		}
 
+		@Override
 		public ClientType translatePackage(PackageTranslator translator) {
 			return null;
 		}

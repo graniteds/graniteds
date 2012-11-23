@@ -67,6 +67,7 @@ public class PackageTranslatorDialog extends SelectionStatusDialog {
 		if (initialJavaPath != null)
 			javaPath.setText(initialJavaPath);
 		javaPath.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent event) {
 				if (javaPath.getText().trim().length() == 0)
 					updateStatus(ProjectUtil.createErrorStatus("Tempate URI is mandatory"));

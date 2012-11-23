@@ -83,6 +83,7 @@ public class Gas3Template implements Validable {
 		return templateUris;
 	}
 	
+	@Override
 	public void validate(ValidationResults results) {
 		if (kind == null || uris == null)
 			results.getErrors().add("templates: kind and uris cannot be null");

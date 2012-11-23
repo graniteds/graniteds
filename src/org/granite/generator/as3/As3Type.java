@@ -80,23 +80,28 @@ public class As3Type implements ClientType {
     ///////////////////////////////////////////////////////////////////////////
     // Properties.
 
-    public boolean hasPackage() {
+    @Override
+	public boolean hasPackage() {
         return packageName.length() > 0;
     }
 
-    public String getPackageName() {
+    @Override
+	public String getPackageName() {
         return packageName;
     }
 
-    public String getName() {
+    @Override
+	public String getName() {
         return name;
     }
 
-    public String getQualifiedName() {
+    @Override
+	public String getQualifiedName() {
         return qualifiedName;
     }
 
-    public Object getNullValue() {
+    @Override
+	public Object getNullValue() {
         return nullValue;
     }
 
@@ -107,18 +112,21 @@ public class As3Type implements ClientType {
     ///////////////////////////////////////////////////////////////////////////
     // Methods
     
-    public Set<String> getImports() {
+    @Override
+	public Set<String> getImports() {
     	if (hasPackage())
     		return Collections.singleton(qualifiedName);
     	
     	return Collections.emptySet();
     }
     
-    public As3Type toArrayType() {
+    @Override
+	public As3Type toArrayType() {
     	return ARRAY;
     }
     
-    public As3Type translatePackage(PackageTranslator translator) {
+    @Override
+	public As3Type translatePackage(PackageTranslator translator) {
     	return new As3Type(translator.translate(packageName), getName());
     }
 

@@ -96,6 +96,7 @@ public class BuilderConsole {
 	
 	public static void activate() {
 		Display.getDefault().syncExec(new Runnable() {
+			@Override
 			public void run() {
 				getConsole().activate(); // show console view...
 			}
@@ -107,6 +108,7 @@ public class BuilderConsole {
 			return;
 		
 		Display.getDefault().syncExec(new Runnable() {
+			@Override
 			public void run() {
 				if (type == MessageType.ERROR)
 					getConsole().activate(); // show console view...

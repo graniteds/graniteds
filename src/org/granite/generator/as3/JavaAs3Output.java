@@ -60,10 +60,12 @@ public class JavaAs3Output implements Output<ClientType> {
 		return javaType;
 	}
 
+	@Override
 	public ClientType getTargetType() {
 		return targetType;
 	}
 
+	@Override
 	public String getDescription() {
 		return file.toString();
 	}
@@ -80,10 +82,12 @@ public class JavaAs3Output implements Output<ClientType> {
 		return file;
 	}
 
+	@Override
 	public boolean isOutdated() {
 		return outdated;
 	}
 
+	@Override
 	public String getMessage() {
 		return message;
 	}

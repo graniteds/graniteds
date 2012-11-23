@@ -42,6 +42,7 @@ public class Gas3Transformer implements Validable {
 		this.type = type;
 	}
 
+	@Override
 	public void validate(ValidationResults results) {
 		if (type == null)
 			results.getErrors().add("transformer: type cannot be null");

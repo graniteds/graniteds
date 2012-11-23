@@ -49,20 +49,24 @@ import org.granite.generator.as3.reflect.JavaTypeFactory;
 
 public class DefaultEntityFactory implements EntityFactory {
 
+	@Override
 	public boolean isEntity(Class<?> clazz) {
 		return clazz.isAnnotationPresent(Entity.class) ||
     		clazz.isAnnotationPresent(MappedSuperclass.class) ||
     		clazz.isAnnotationPresent(PersistenceCapable.class);
 	}
 	
+	@Override
 	public JavaType newBean(JavaTypeFactory provider, Class<?> type, URL url) {
 		return new JavaBean(provider, type, url);
 	}
 	
+	@Override
 	public JavaType newEntity(JavaTypeFactory provider, Class<?> type, URL url) {
 		return new JavaEntityBean(provider, type, url);
 	}
 	
+	@Override
 	public boolean isId(JavaFieldProperty fieldProperty) {
         Field field = fieldProperty.getMember();
         Method getter = (fieldProperty.getReadMethod() != null ? fieldProperty.getReadMethod().getMember() : null);
@@ -86,6 +90,7 @@ public class DefaultEntityFactory implements EntityFactory {
             (setter != null && (setter.isAnnotationPresent(Id.class) || setter.isAnnotationPresent(EmbeddedId.class)));
 	}
 	
+	@Override
 	public boolean isVersion(JavaProperty property) {
 		if (property.isAnnotationPresent(Version.class))
 			return true;
@@ -102,6 +107,7 @@ public class DefaultEntityFactory implements EntityFactory {
 	    return false;
 	}
 	
+	@Override
 	public boolean isLazy(JavaProperty property) {
 		if (property.isAnnotationPresent(ManyToOne.class)) {
 			ManyToOne manyToOne = property.getAnnotation(ManyToOne.class);

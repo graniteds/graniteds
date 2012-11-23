@@ -150,6 +150,7 @@ public class Gas3Source implements Validable, Comparable<Gas3Source> {
 		return (fallback && dirs.length > 0 ? dirs[0] : "");
 	}
 	
+	@Override
 	public void validate(ValidationResults results) {
 		if (path == null || output == null)
 			results.getErrors().add("source: path and output cannot be null");
@@ -170,6 +171,7 @@ public class Gas3Source implements Validable, Comparable<Gas3Source> {
 		return path != null ? path.hashCode() : 0;
 	}
 
+	@Override
 	public int compareTo(Gas3Source o) {
 		if (path == null)
 			return -1;

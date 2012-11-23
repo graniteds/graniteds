@@ -35,11 +35,13 @@ public class GroovyRenderer implements Renderer {
 
     private String source = null;
 
-    public String renderSource(List<Token> tokens) {
+    @Override
+	public String renderSource(List<Token> tokens) {
         return renderSource(tokens, null);
     }
 
-    public String renderSource(List<Token> tokens, String out) {
+    @Override
+	public String renderSource(List<Token> tokens, String out) {
         StringBuilder sb = new StringBuilder(1024);
 
         for (Token token : tokens) {
@@ -91,7 +93,8 @@ public class GroovyRenderer implements Renderer {
         return source;
     }
 
-    public String getSource() {
+    @Override
+	public String getSource() {
         return source;
     }
 }
