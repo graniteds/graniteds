@@ -66,7 +66,7 @@
         <mkdir dir="build/docs/javadoc/granite-generator-javadoc"/>
         <javadoc
         	useexternalfile="true"
-            source="1.5"
+            source="1.6"
             destdir="build/docs/javadoc/granite-generator-javadoc"
             version="true"
             author="true"
