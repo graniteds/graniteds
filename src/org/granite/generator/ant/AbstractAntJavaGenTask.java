@@ -414,7 +414,7 @@ public abstract class AbstractAntJavaGenTask extends Task implements JavaAs3Groo
             }
             else if (tide) {
             	log("Using Tide remote destination template.", Project.MSG_INFO);
-            	baseTemplateUri = defaultTemplateUri("TIDE_REMOTE");
+            	templateUri = defaultTemplateUri("TIDE_REMOTE");
             }
             if (remotebasetemplate != null) {
             	log("Using custom remote base template: " + remotebasetemplate, Project.MSG_INFO);
