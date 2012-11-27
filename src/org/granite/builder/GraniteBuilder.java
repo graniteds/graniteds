@@ -221,7 +221,8 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
             this.monitor = monitor;
         }
 
-        public boolean visit(IResource resource) throws CoreException {
+        @Override
+		public boolean visit(IResource resource) throws CoreException {
             if (!resource.isAccessible() || resource.isPhantom())
                 return false;
 
@@ -273,7 +274,8 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
             this.monitor = monitor;
         }
 
-        public boolean visit(IResourceDelta delta) throws CoreException {
+        @Override
+		public boolean visit(IResourceDelta delta) throws CoreException {
             IResource resource = delta.getResource();
             String extension = resource.getFileExtension();
 
@@ -406,6 +408,7 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
 		            	String outputPrefix = outputDir.getName() + File.separator + packageName.replace('.', File.separatorChar) + File.separator + className;
 		            	final Pattern pattern = Pattern.compile("^.*" + Pattern.quote(outputPrefix) + "(\\$.*)?(Base)?\\.as$");
 		            	List<File> matches = listFiles(outputDir, new FileFilter() {
+							@Override
 							public boolean accept(File file) {
 								return pattern.matcher(file.getPath()).matches();
 							}
@@ -443,6 +446,7 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
 
     private void listFiles(final List<File> files, final File parent, final FileFilter filter) {
     	parent.listFiles(new FileFilter() {
+			@Override
 			public boolean accept(File file) {
 				if (file.isDirectory())
 					listFiles(files, file, filter);

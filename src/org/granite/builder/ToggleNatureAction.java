@@ -39,7 +39,8 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 
     private ISelection selection;
 
-    public void run(IAction action) {
+    @Override
+	public void run(IAction action) {
         if (selection instanceof IStructuredSelection) {
             for (Iterator<?> it = ((IStructuredSelection)selection).iterator(); it.hasNext(); ) {
                 Object element = it.next();
@@ -56,11 +57,13 @@ public class ToggleNatureAction implements IObjectActionDelegate {
         }
     }
 
-    public void selectionChanged(IAction action, ISelection selection) {
+    @Override
+	public void selectionChanged(IAction action, ISelection selection) {
         this.selection = selection;
     }
 
-    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+    @Override
+	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
     }
 
     public static void toggleNature(IProject project) {

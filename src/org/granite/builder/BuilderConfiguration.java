@@ -119,6 +119,7 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
         return properties;
 	}
 	
+	@Override
 	public As3TypeFactory getAs3TypeFactory() {
 		if (clientTypeFactory == null) {
 			String factoryClass = getProperties().getGas3().getAs3TypeFactory();
@@ -145,6 +146,7 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 		return clientTypeFactory;
 	}
 	
+	@Override
 	public EntityFactory getEntityFactory() {
 		if (entityFactory == null) {
 			String factoryClass = getProperties().getGas3().getEntityFactory();
@@ -166,6 +168,7 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 		return entityFactory;
 	}
 	
+	@Override
 	public RemoteDestinationFactory getRemoteDestinationFactory() {
 		if (remoteDestinationFactory == null) {
 			String factoryClass = getProperties().getGas3().getRemoteDestinationFactory();
@@ -185,20 +188,24 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 		return remoteDestinationFactory;
 	}
 
+	@Override
 	public File getBaseOutputDir(JavaAs3Input input) {
 		BuilderJavaClientInput builderInput = (BuilderJavaClientInput)input;
 		return new File(ProjectUtil.getProjectFile(project), builderInput.getGas3Source().getBaseOutputDir(true));
 	}
 
+	@Override
 	public File getOutputDir(JavaAs3Input input) {
 		BuilderJavaClientInput builderInput = (BuilderJavaClientInput)input;
 		return new File(ProjectUtil.getProjectFile(project), builderInput.getGas3Source().getOutputDir());
 	}
 
+	@Override
 	public TemplateUri[] getTemplateUris(Kind kind, Class<?> clazz) {
 		return getProperties().getGas3().getMatchingTemplateUris(kind);
 	}
 
+	@Override
 	public List<PackageTranslator> getTranslators() {
 		if (translators == null) {
 			if (getProperties().getGas3().getTranslators().isEmpty())
@@ -227,10 +234,12 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
         return translator;
 	}
 
+	@Override
 	public String getUid() {
 		return getProperties().getGas3().getUid();
 	}
 
+	@Override
 	public boolean isGenerated(Class<?> clazz) {
 		if (!getClassLoader().equals(clazz.getClassLoader()) || (clazz.isMemberClass() && !clazz.isEnum()))
 			return false;
@@ -277,6 +286,7 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 		return generated.booleanValue();
 	}
 
+	@Override
 	public GroovyTemplateFactory getGroovyTemplateFactory() {
 		if (groovyTemplateFactory == null)
 			groovyTemplateFactory = new GroovyTemplateFactory();
@@ -289,6 +299,7 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 		loader = null;
 	}
 	
+	@Override
 	public ClassLoader getClassLoader() {
 		if (loader == null) {
 			try {
@@ -350,6 +361,7 @@ public class BuilderConfiguration implements JavaAs3GroovyConfiguration {
 			classpath.add(url);
 	}
 
+	@Override
 	public File getWorkingDirectory() {
 		return ProjectUtil.getProjectFile(project);
 	}

@@ -67,6 +67,7 @@ public class TemplateUrisDialog extends SelectionStatusDialog {
 		if (initialTemplateUri != null)
 			templateUri.setText(initialTemplateUri);
 		templateUri.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent event) {
 				if (templateUri.getText().trim().length() == 0)
 					updateStatus(ProjectUtil.createErrorStatus("Tempate URI is mandatory"));

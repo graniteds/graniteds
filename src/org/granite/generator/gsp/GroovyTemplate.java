@@ -77,7 +77,8 @@ public class GroovyTemplate implements Template {
     	reset(true);
     }
 
-    public URI getUri() {
+    @Override
+	public URI getUri() {
         return uri;
     }
 
@@ -102,10 +103,12 @@ public class GroovyTemplate implements Template {
     	return script != null && (newLastModified == -1 || lastModified < newLastModified);
     }
 
+	@Override
 	public boolean isBase() {
 		return base;
 	}
 
+	@Override
 	public String getMarkup() {
         try {
             return URIUtil.getContentAsString(uri);
@@ -114,11 +117,13 @@ public class GroovyTemplate implements Template {
         }
     }
 
-    public String getSource() {
+    @Override
+	public String getSource() {
         return source;
     }
 
-    public void compile() throws IOException, TemplateParsingException, TemplateCompilationException {
+    @Override
+	public void compile() throws IOException, TemplateParsingException, TemplateCompilationException {
     	reset();
     	
         InputStream is = null;
@@ -152,7 +157,8 @@ public class GroovyTemplate implements Template {
         }
     }
 
-    public void execute(Map<String, Object> bindings, Writer out)
+    @Override
+	public void execute(Map<String, Object> bindings, Writer out)
     	throws IOException, TemplateParsingException, TemplateCompilationException, TemplateExecutionException {
     	
     	if (script == null)

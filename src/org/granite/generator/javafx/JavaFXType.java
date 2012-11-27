@@ -79,19 +79,23 @@ public class JavaFXType implements ClientType {
     ///////////////////////////////////////////////////////////////////////////
     // Properties.
 
-    public boolean hasPackage() {
+    @Override
+	public boolean hasPackage() {
         return packageName.length() > 0;
     }
 
-    public String getPackageName() {
+    @Override
+	public String getPackageName() {
         return packageName;
     }
 
-    public String getName() {
+    @Override
+	public String getName() {
         return name;
     }
 
-    public String getQualifiedName() {
+    @Override
+	public String getQualifiedName() {
         return qualifiedName;
     }
     
@@ -113,7 +117,8 @@ public class JavaFXType implements ClientType {
     		? propertyImplTypeName.substring(propertyImplTypeName.lastIndexOf(".")+1) : propertyImplTypeName;
     }
 
-    public Object getNullValue() {
+    @Override
+	public Object getNullValue() {
         return nullValue;
     }
 
@@ -124,7 +129,8 @@ public class JavaFXType implements ClientType {
     ///////////////////////////////////////////////////////////////////////////
     // Methods
     
-    public Set<String> getImports() {
+    @Override
+	public Set<String> getImports() {
     	Set<String> imports = new HashSet<String>();
     	if (hasPackage())
     		imports.add(ungenerify(qualifiedName));
@@ -141,11 +147,13 @@ public class JavaFXType implements ClientType {
 		return className;
     }
     
-    public JavaFXType toArrayType() {
+    @Override
+	public JavaFXType toArrayType() {
     	return new JavaFXType(packageName, name + "[]", null);
     }
     
-    public JavaFXType translatePackage(PackageTranslator translator) {
+    @Override
+	public JavaFXType translatePackage(PackageTranslator translator) {
     	return new JavaFXType(translator.translate(packageName), getName(), getPropertyTypeName(), getPropertyImplTypeName(), getNullValue());
     }
 

@@ -57,6 +57,7 @@ import org.granite.util.ClassUtil;
 public class ProjectUtil {
 
 	public static final Comparator<IPath> IPATH_COMPARATOR = new Comparator<IPath>() {
+		@Override
 		public int compare(IPath path1, IPath path2) {
 			return path1.toString().compareTo(path2.toString());
 		}

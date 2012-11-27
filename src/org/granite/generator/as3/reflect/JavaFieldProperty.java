@@ -56,11 +56,13 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
         this.declaringType = declaringType;
     }
     
-    public String getCapitalizedName() {
+    @Override
+	public String getCapitalizedName() {
     	return getName().substring(0, 1).toUpperCase() + getName().substring(1);
     }
 
-    public Class<?> getType() {
+    @Override
+	public Class<?> getType() {
     	Type type = getMember().getGenericType();
     	if (type instanceof TypeVariable && declaringType != null) {
     		int index = -1;
@@ -92,7 +94,8 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
     	return getMember().getGenericType();
     }
     
-    public Type[] getGenericTypes() {
+    @Override
+	public Type[] getGenericTypes() {
 		Type type = getMember().getGenericType();
 		if (!(type instanceof ParameterizedType))
 			return null;
@@ -111,24 +114,29 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
         return getType().getSimpleName();
     }
 
-    public boolean isReadable() {
+    @Override
+	public boolean isReadable() {
         return (Modifier.isPublic(getMember().getModifiers()) || readMethod != null);
     }
 
-    public boolean isWritable() {
+    @Override
+	public boolean isWritable() {
         return (Modifier.isPublic(getMember().getModifiers()) || writeMethod != null);
     }
 
-    public boolean isExternalizedProperty() {
+    @Override
+	public boolean isExternalizedProperty() {
         return false;
     }
 
-    public boolean isEnum() {
+    @Override
+	public boolean isEnum() {
     	Class<?> type = getType();
 		return (type.isEnum() || Enum.class.getName().equals(type.getName()));
 	}
 
-    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+    @Override
+	public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
         return (
             (getMember().isAnnotationPresent(annotationClass)) ||
             (readMethod != null && readMethod.getMember().isAnnotationPresent(annotationClass)) ||
@@ -136,7 +144,8 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
         );
     }
 
-    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+    @Override
+	public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
     	T annotation = getMember().getAnnotation(annotationClass);
     	if (annotation != null)
     		return annotation;
@@ -154,7 +163,8 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
     	return null;
     }
     
-    public Annotation[] getDeclaredAnnotations() {
+    @Override
+	public Annotation[] getDeclaredAnnotations() {
     	List<Annotation> annos = new ArrayList<Annotation>(Arrays.asList(getMember().getDeclaredAnnotations()));
     	if (readMethod != null)
     		annos.addAll(Arrays.asList(readMethod.getMember().getDeclaredAnnotations()));
@@ -164,19 +174,23 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
     	return annos.toArray(new Annotation[0]);
     }
 
-    public boolean isReadOverride() {
+    @Override
+	public boolean isReadOverride() {
         return (readMethod != null && readMethod.isOverride());
     }
 
-    public boolean isWriteOverride() {
+    @Override
+	public boolean isWriteOverride() {
         return (writeMethod != null && writeMethod.isOverride());
     }
 
-    public JavaMethod getReadMethod() {
+    @Override
+	public JavaMethod getReadMethod() {
         return readMethod;
     }
 
-    public JavaMethod getWriteMethod() {
+    @Override
+	public JavaMethod getWriteMethod() {
         return writeMethod;
     }
 
@@ -187,11 +201,13 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
     	return clientType;
     }
 
-    public ClientType getClientType() {
+    @Override
+	public ClientType getClientType() {
         return provider.getClientType(getGenericType(), null, null, true);
     }
 
-    public int compareTo(JavaProperty o) {
+    @Override
+	public int compareTo(JavaProperty o) {
         return getName().compareTo(o.getName());
     }
 

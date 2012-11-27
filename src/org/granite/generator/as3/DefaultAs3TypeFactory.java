@@ -88,7 +88,8 @@ public class DefaultAs3TypeFactory implements As3TypeFactory {
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
 
-    public void configure(boolean externalizeLong, boolean externalizeBigInteger, boolean externalizeBigDecimal) {
+    @Override
+	public void configure(boolean externalizeLong, boolean externalizeBigInteger, boolean externalizeBigDecimal) {
         if (externalizeLong) {
         	java2As3Type.put(Long.class, As3Type.LONG);
         	java2As3Type.put(Long.TYPE, As3Type.LONG);
@@ -99,10 +100,12 @@ public class DefaultAs3TypeFactory implements As3TypeFactory {
         	java2As3Type.put(BigDecimal.class, As3Type.BIG_DECIMAL);
 	}
     
-    public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
+    @Override
+	public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
     	return null;
     }
 
+	@Override
 	public ClientType getAs3Type(Class<?> jType) {
         As3Type as3Type = getFromCache(jType);
 

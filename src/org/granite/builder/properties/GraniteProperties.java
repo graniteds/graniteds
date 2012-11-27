@@ -72,6 +72,7 @@ public class GraniteProperties implements Validable {
 		this.gas3 = gas3;
 	}
 	
+	@Override
 	public void validate(ValidationResults results) {
 		if (gas3 != null)
 			gas3.validate(results);

@@ -58,6 +58,7 @@ public class PromptDialog extends SelectionStatusDialog {
 		if (initialValue != null)
 			input.setText(initialValue);
 		input.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent event) {
 				String value = input.getText();
 				if (valuePattern != null) {

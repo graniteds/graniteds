@@ -30,10 +30,12 @@ import org.granite.messaging.service.annotations.RemoteDestination;
 
 public class StatefulRemoteDestinationFactory implements RemoteDestinationFactory {
 
+	@Override
 	public boolean isRemoteDestination(Class<?> clazz) {
 		return clazz.isAnnotationPresent(RemoteDestination.class);
 	}
 	
+	@Override
 	public JavaType newRemoteDestination(JavaTypeFactory provider, Class<?> type, URL url) {
 		return new JavaStatefulDestination(provider, type, url);
 	}

@@ -67,6 +67,7 @@ public class AddNatureWizard extends Wizard {
 		);
 		
 		addPage(new WizardPage(SOURCES_PANEL) {
+			@Override
 			public void createControl(Composite parent) {
 				try {
 					setControl(new SourcesPanel(parent, context));
@@ -79,6 +80,7 @@ public class AddNatureWizard extends Wizard {
 		});
 		
 		addPage(new WizardPage(PROJECTS_PANEL) {
+			@Override
 			public void createControl(Composite parent) {
 				try {
 					setControl(new ProjectsPanel(parent, context));
@@ -91,6 +93,7 @@ public class AddNatureWizard extends Wizard {
 		});
 		
 		addPage(new WizardPage(CLASSPATHS_PANEL) {
+			@Override
 			public void createControl(Composite parent) {
 				try {
 					setControl(new ClasspathsPanel(parent, context));
@@ -103,6 +106,7 @@ public class AddNatureWizard extends Wizard {
 		});
 		
 		addPage(new WizardPage(TEMPLATES_PANEL) {
+			@Override
 			public void createControl(Composite parent) {
 				try {
 					setControl(new TemplatesPanel(parent, context));
@@ -115,6 +119,7 @@ public class AddNatureWizard extends Wizard {
 		});
 		
 		addPage(new WizardPage(OPTIONS_PANEL) {
+			@Override
 			public void createControl(Composite parent) {
 				try {
 					setControl(new OptionsPanel(parent, context));
@@ -184,6 +189,7 @@ public class AddNatureWizard extends Wizard {
 		final Display display = (Display.getCurrent() != null ? Display.getCurrent() : Display.getDefault());
 		try {
 			display.syncExec(new Runnable() {
+				@Override
 				public void run() {
 					try {
 						Shell shell = new Shell(display);

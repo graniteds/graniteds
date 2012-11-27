@@ -267,6 +267,7 @@ public class IncludeExcludeOutputDialog extends SelectionStatusDialog {
         if (outputs.length > 0)
         	output.setText(outputs[0]);
         output.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent event) {
 				if (OUTPUT_PATTERN.matcher(output.getText()).matches()) {
 					output.setBackground(SWTUtil.getColor(getShell().getDisplay(), SWTUtil.WHITE));
@@ -288,6 +289,7 @@ public class IncludeExcludeOutputDialog extends SelectionStatusDialog {
         if (outputs.length > 1)
         	baseOutput.setText(outputs[1]);
         baseOutput.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent event) {
 				if (OUTPUT_PATTERN.matcher(baseOutput.getText()).matches()) {
 					baseOutput.setBackground(SWTUtil.getColor(getShell().getDisplay(), SWTUtil.WHITE));

@@ -11,7 +11,7 @@ Granite Data Services Builder (http://www.graniteds.org)
 
 * Requirements:
 
-  Eclipse 3.2+, JDK 5+.
+  Eclipse 3.2+, JDK 6+.
 
 * Installation:
 

@@ -183,6 +183,7 @@ public class JavaRemoteDestination extends JavaAbstractType {
 		}
 		
 		Collections.sort(methodList, new Comparator<JavaMethod>() {
+			@Override
 			public int compare(JavaMethod m1, JavaMethod m2) {
 				if (m1.getName().equals(m2.getName())) {
 					if (m1.getMember().getDeclaringClass() != m2.getMember().getDeclaringClass()) {

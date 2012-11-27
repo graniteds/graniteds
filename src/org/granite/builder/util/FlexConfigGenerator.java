@@ -65,6 +65,7 @@ public class FlexConfigGenerator {
 		"</flex-config>";
 	
 	private static final FileFilter AS_FILE_FILTER = new FileFilter() {
+		@Override
 		public boolean accept(File file) {
 			return file.isDirectory() || file.getName().endsWith(".as");
 		}

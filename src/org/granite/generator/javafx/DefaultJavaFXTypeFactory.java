@@ -69,9 +69,11 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
 
-    public void configure(boolean externalizeLong, boolean externalizeBigInteger, boolean externalizeBigDecimal) {
+    @Override
+	public void configure(boolean externalizeLong, boolean externalizeBigInteger, boolean externalizeBigDecimal) {
 	}
 
+	@Override
 	public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
         ClientType javafxType = getFromCache(jType, property);
 
@@ -126,6 +128,7 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
         return javafxType;
     }
 
+	@Override
 	public ClientType getAs3Type(Class<?> jType) {
 		return getClientType(jType, null, null, false);
 	}

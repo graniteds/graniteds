@@ -458,7 +458,8 @@ public abstract class AbstractAntJavaGenTask extends Task implements JavaAs3Groo
     ///////////////////////////////////////////////////////////////////////////
     // Configuration implementation methods.
     
-    public As3TypeFactory getAs3TypeFactory() {
+    @Override
+	public As3TypeFactory getAs3TypeFactory() {
 		return clientTypeFactoryImpl;
 	}
     
@@ -466,26 +467,31 @@ public abstract class AbstractAntJavaGenTask extends Task implements JavaAs3Groo
 		return clientTypeFactoryImpl;
 	}
     
-    public EntityFactory getEntityFactory() {
+    @Override
+	public EntityFactory getEntityFactory() {
     	return entityFactoryImpl;
     }
     
-    public RemoteDestinationFactory getRemoteDestinationFactory() {
+    @Override
+	public RemoteDestinationFactory getRemoteDestinationFactory() {
     	return remoteDestinationFactoryImpl;
     }
 
+	@Override
 	public File getBaseOutputDir(JavaAs3Input input) {
 		if (baseOutputDirFile == null)
 			baseOutputDirFile = new File(baseoutputdir != null ? baseoutputdir : outputdir);
 		return baseOutputDirFile;
 	}
 
+	@Override
 	public File getOutputDir(JavaAs3Input input) {
 		if (outputDirFile == null)
 			outputDirFile = new File(outputdir);
 		return outputDirFile;
 	}
 
+	@Override
 	public TemplateUri[] getTemplateUris(Kind kind, Class<?> clazz) {
 		switch (kind) {
 		case ENTITY:
@@ -505,28 +511,34 @@ public abstract class AbstractAntJavaGenTask extends Task implements JavaAs3Groo
 	
 	protected abstract String defaultTemplateUri(String type);
 
+	@Override
 	public List<PackageTranslator> getTranslators() {
 		return translators;
 	}
 	
+	@Override
 	public String getUid() {
 		return uid;
 	}
 
+	@Override
 	public boolean isGenerated(Class<?> clazz) {
 		return filesetClasses.containsKey(clazz);
 	}
 
+	@Override
 	public ClassLoader getClassLoader() {
 		return Thread.currentThread().getContextClassLoader();
 	}
 
+	@Override
 	public GroovyTemplateFactory getGroovyTemplateFactory() {
 		if (groovyTemplateFactory == null)
 			groovyTemplateFactory = new GroovyTemplateFactory();
 		return groovyTemplateFactory;
 	}
 
+	@Override
 	public File getWorkingDirectory() {
 		return getProject().getBaseDir();
 	}

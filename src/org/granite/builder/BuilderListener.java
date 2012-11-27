@@ -37,58 +37,72 @@ public class BuilderListener implements Listener {
 		BuilderConsole.println(msg, MessageType.TITLE);
 	}
 	
+	@Override
 	public void generating(Input<?> input, Output<?> output) {
 		BuilderConsole.println("Generating: " + output.getDescription() + " (" + output.getMessage() + ")");
 	}
 
+	@Override
 	public void generating(String file, String message) {
 		BuilderConsole.println("Generating: " + file + " (" + message + ")");
 	}
 
+	@Override
 	public void removing(Input<?> input, Output<?> output) {
 		BuilderConsole.println("Hidding: " + output.getDescription() + " (" + output.getMessage() + ")");
 	}
 
+	@Override
 	public void removing(String file, String message) {
 		BuilderConsole.println("Hidding: " + file + " (" + message + ")");
 	}
 
+	@Override
 	public void skipping(Input<?> input, Output<?> output) {
 		BuilderConsole.println("Skipping: " + output.getDescription() + " (" + output.getMessage() + ")", MessageType.DEBUG);
 	}
 
+	@Override
 	public void skipping(String file, String message) {
 		BuilderConsole.println("Skipping: " + file + " (" + message + ")", MessageType.DEBUG);
 	}
 
+	@Override
 	public void debug(String message, Throwable t) {
 		BuilderConsole.println(message + "\n" + getStackTrace(t), MessageType.DEBUG);
 	}
 
+	@Override
 	public void debug(String message) {
 		BuilderConsole.println(message, MessageType.DEBUG);
 	}
 
+	@Override
 	public void error(String message, Throwable t) {
 		BuilderConsole.println(message + "\n" + getStackTrace(t), MessageType.ERROR);
 	}
 
+	@Override
 	public void error(String message) {
 		BuilderConsole.println(message, MessageType.ERROR);
 	}
 
+	@Override
 	public void info(String message, Throwable t) {
 		BuilderConsole.println(message + "\n" + getStackTrace(t), MessageType.INFO);
 	}
 
+	@Override
 	public void info(String message) {
 		BuilderConsole.println(message, MessageType.INFO);
 	}
 
+	@Override
 	public void warn(String message, Throwable t) {
 		BuilderConsole.println(message + "\n" + getStackTrace(t), MessageType.WARNING);
 	}
 
+	@Override
 	public void warn(String message) {
 		BuilderConsole.println(message, MessageType.WARNING);
 	}

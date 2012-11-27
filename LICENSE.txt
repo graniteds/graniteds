@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
   
   GRANITE DATA SERVICES
-  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+  Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
 
   Granite Data Services is free software; you can redistribute it and/or modify
   it under the terms of the GNU Library General Public License as published by

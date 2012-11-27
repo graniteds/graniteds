@@ -47,10 +47,12 @@ public class JavaAs3Input implements Input<Class<?>> {
 		this.attributes = (attributes != null ? attributes : new HashMap<String, String>());
 	}
 
+	@Override
 	public Class<?> getType() {
 		return type;
 	}
 
+	@Override
 	public String getDescription() {
 		return type.getName();
 	}

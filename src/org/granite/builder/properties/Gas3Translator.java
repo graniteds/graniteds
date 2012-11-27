@@ -60,6 +60,7 @@ public class Gas3Translator implements Validable {
 		this.as3 = as3;
 	}
 
+	@Override
 	public void validate(ValidationResults results) {
 		if (java == null || as3 == null)
 			results.getErrors().add("translator: java and as3 cannot be null");

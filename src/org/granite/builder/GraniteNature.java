@@ -43,6 +43,7 @@ public class GraniteNature implements IProjectNature {
     private static final Comparator<ICommand> BUILDER_COMPARATOR = new Comparator<ICommand>() {
 
     	// java -> granite [-> flex]
+		@Override
 		public int compare(ICommand c1, ICommand c2) {
 			if (GRANITE_BUILDER_ID.equals(c1.getBuilderName())) {
 				if (JAVA_BUILDER_ID.equals(c2.getBuilderName()))
@@ -64,7 +65,8 @@ public class GraniteNature implements IProjectNature {
     
     private IProject project;
 
-    public void configure() throws CoreException {
+    @Override
+	public void configure() throws CoreException {
         IProjectDescription desc = project.getDescription();
         ICommand[] commands = desc.getBuildSpec();
 
@@ -83,7 +85,8 @@ public class GraniteNature implements IProjectNature {
         project.setDescription(desc, null);
     }
 
-    public void deconfigure() throws CoreException {
+    @Override
+	public void deconfigure() throws CoreException {
         IProjectDescription description = project.getDescription();
         ICommand[] commands = description.getBuildSpec();
 
@@ -98,11 +101,13 @@ public class GraniteNature implements IProjectNature {
         }
     }
 
-    public IProject getProject() {
+    @Override
+	public IProject getProject() {
         return project;
     }
 
-    public void setProject(IProject project) {
+    @Override
+	public void setProject(IProject project) {
         this.project = project;
     }
 }

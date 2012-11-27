@@ -179,6 +179,7 @@ public abstract class JavaClientGroovyTransformer
     	return Listener.MSG_FILE_UPTODATE;
     }
 
+	@Override
 	public ClientType getClientType(Type type, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
         Class<?> clazz = ClassUtil.classOfType(type);
         
@@ -198,6 +199,7 @@ public abstract class JavaClientGroovyTransformer
         return clientType;
 	}
 
+	@Override
 	public ClientType getAs3Type(Class<?> clazz) {
         ClientType clientType = getConfig().getAs3TypeFactory().getAs3Type(clazz);
         if (getConfig().getTranslators().isEmpty() || clazz.getPackage() == null)
@@ -212,6 +214,7 @@ public abstract class JavaClientGroovyTransformer
         return clientType;
 	}
 
+	@Override
 	public JavaImport getJavaImport(Class<?> clazz) {
         JavaImport javaImport = javaImports.get(clazz.getName());
         if (javaImport == null) {
@@ -222,6 +225,7 @@ public abstract class JavaClientGroovyTransformer
         return javaImport;
 	}
 
+	@Override
 	public Set<JavaImport> getJavaImports(ClientType clientType, boolean property) {
 		Set<JavaImport> imports = new HashSet<JavaImport>();
 		
@@ -244,6 +248,7 @@ public abstract class JavaClientGroovyTransformer
         return imports;
 	}
 
+	@Override
 	public JavaType getJavaType(Class<?> clazz) {
 		JavaType javaType = javaTypes.get(clazz);
 		if (javaType == null && getConfig().isGenerated(clazz)) {
@@ -276,6 +281,7 @@ public abstract class JavaClientGroovyTransformer
 		return javaType;
 	}
 	
+	@Override
 	public Kind getKind(Class<?> clazz) {
         if (clazz.isEnum() || Enum.class.getName().equals(clazz.getName()))
             return Kind.ENUM;
@@ -293,6 +299,7 @@ public abstract class JavaClientGroovyTransformer
 	protected GenerationType getGenerationType(Class<?> clazz) {
 		return getGenerationType(getKind(clazz), clazz);
 	}
+	@Override
 	public GenerationType getGenerationType(Kind kind, Class<?> clazz) {
 		if (!getConfig().isGenerated(clazz))
 			return GenerationType.NOT_GENERATED;
@@ -302,6 +309,7 @@ public abstract class JavaClientGroovyTransformer
 		return uris.length == 1 ? GenerationType.GENERATED_SINGLE : GenerationType.GENERATED_WITH_BASE;
 	}
 
+	@Override
 	public List<JavaInterface> getJavaTypeInterfaces(Class<?> clazz) {
         List<JavaInterface> interfazes = new ArrayList<JavaInterface>();
         for (Class<?> interfaze : clazz.getInterfaces()) {
@@ -315,6 +323,7 @@ public abstract class JavaClientGroovyTransformer
         return interfazes;
 	}
 
+	@Override
 	public JavaType getJavaTypeSuperclass(Class<?> clazz) {
         Class<?> superclass = clazz.getSuperclass();
         if (superclass != null && getConfig().isGenerated(superclass))
@@ -322,20 +331,24 @@ public abstract class JavaClientGroovyTransformer
         return null;
 	}
 
+	@Override
 	public boolean isId(JavaFieldProperty fieldProperty) {
 		return getConfig().getEntityFactory().isId(fieldProperty);
 	}
 
+	@Override
 	public boolean isUid(JavaProperty property) {
     	return getConfig().getUid() == null
 			? "uid".equals(property.getName())
 			: getConfig().getUid().equals(property.getName());
 	}
 	
+	@Override
 	public boolean isVersion(JavaProperty property) {
 		return getConfig().getEntityFactory().isVersion(property);
 	}
 	
+	@Override
 	public boolean isLazy(JavaProperty property) {
 		return getConfig().getEntityFactory().isLazy(property);
 	}
