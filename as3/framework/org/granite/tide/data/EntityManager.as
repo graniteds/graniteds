@@ -48,8 +48,8 @@ package org.granite.tide.data {
     import org.granite.tide.BaseContext;
     import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IEntity;
-	import org.granite.tide.IEntityRef;
     import org.granite.tide.IEntityManager;
+    import org.granite.tide.IEntityRef;
     import org.granite.tide.IExpression;
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.Tide;
@@ -818,7 +818,7 @@ package org.granite.tide.data {
                     			log.error("conflict with external data detected on {0} (current: {1}, received: {2})",
                     				BaseContext.toString(dest), oldVersion, newVersion);
                     			
-								if (_dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), IEntity(obj))) {
+								if (_dirtyCheckContext.checkAndMarkNotDirty(dest, obj, IEntity(dest))) {
 									// Incoming data is different from local data
 	                				_mergeContext.addConflict(dest as IEntity, obj as IEntity);
 	                    			
@@ -865,10 +865,11 @@ package org.granite.tide.data {
             */
 
 			if (dest != null && !ignore && !_mergeContext.skipDirtyCheck && !_mergeContext.resolvingConflict) {
-				if (_mergeContext.mergeUpdate && versionChangeCache[dest] != null)
-					_dirtyCheckContext.markNotDirty(dest);
-				else if (dest is IEntity && obj is IEntity)
-					_dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), IEntity(obj));
+				if (_mergeContext.mergeUpdate && ((dest is IEntity && versionChangeCache[dest] != null) 
+					|| (!(dest is IEntity) && parent is IEntity && versionChangeCache[parent] != null)))
+					_dirtyCheckContext.markNotDirty(dest, dest is IEntity ? IEntity(dest) : IEntity(parent));
+				else if ((dest is IEntity && obj is IEntity) || (parent is IEntity && !(dest is IEntity)))
+					_dirtyCheckContext.checkAndMarkNotDirty(dest, obj, dest is IEntity ? IEntity(dest) : IEntity(parent));
 			}
 			
 			if (dest != null)

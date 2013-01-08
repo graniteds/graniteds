@@ -216,7 +216,7 @@ public abstract class TypeUtil {
     			}
     			if (index >= 0) {
 					for (ParameterizedType t : declaringTypes) {
-						if (classOfType(t) == declaringClass) {
+						if (declaringClass.isAssignableFrom(classOfType(t))) {
 							declaringType = t;
 							break;
 						}

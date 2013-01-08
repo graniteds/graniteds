@@ -90,5 +90,6 @@
 	<classpathentry kind="lib" path="lib/grizzly-utils.jar"/>
 	<classpathentry kind="lib" path="lib/grizzly-websockets.jar"/>
 	<classpathentry kind="lib" path="lib/spring-data-commons-core.jar"/>
+	<classpathentry kind="lib" path="lib/spring-data-jpa.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

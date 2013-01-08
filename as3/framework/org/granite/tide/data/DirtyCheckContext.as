@@ -147,7 +147,7 @@ package org.granite.tide.data {
          *   
          *  @return entity is dirty
          */ 
-        public function isEntityChanged(entity:Object, propName:String = null, value:* = null):Boolean {
+        public function isEntityChanged(entity:Object, embedded:Object = null, propName:String = null, value:* = null):Boolean {
             var dirty:Boolean = false;
             var saveTracking:Boolean = _context.meta_tracking;
             _context.meta_tracking = false;
@@ -159,12 +159,15 @@ package org.granite.tide.data {
             var entityDesc:EntityDescriptor = entity is IEntity ? _context.meta_tide.getEntityDescriptor(IEntity(entity)) : null;
             var save:Object = _savedProperties[entity];
 			var versionPropertyName:String = entityDesc != null ? entityDesc.versionPropertyName : null;
+			
+			if (embedded == null)
+				embedded = entity;
             
             for each (p in cinfo.properties) {
                 if (p == versionPropertyName || p == 'meta_dirty')
                     continue;
                 
-                val = (p == propName ? value : entity[p]);
+                val = (entity == embedded && p == propName ? value : entity[p]);
                 saveval = save ? save[p] : null;
                 var o:Object;
                 if (save && ((val && (ObjectUtil.isSimple(val) || val is ByteArray))
@@ -195,7 +198,7 @@ package org.granite.tide.data {
                 }
 				else if (val != null && val is IEventDispatcher 
 					&& !(val is IUID || val is Enum || val is IValue || val is ByteArray || val is XML) 
-					&& isEntityChanged(val)) {
+					&& isEntityChanged(val, embedded, propName, value)) {
 					dirty = true;
 					break;
 				}
@@ -351,7 +354,7 @@ package org.granite.tide.data {
 			var diff:Boolean = !isSame(oldValue, newValue);
 			
 			if (diff) {
-				var oldDirtyEntity:Boolean = isEntityChanged(owner, propName, oldValue);
+				var oldDirtyEntity:Boolean = isEntityChanged(owner, entity, propName, oldValue);
 				
 				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(owner);
 				var save:Object = _savedProperties[entity];
@@ -672,29 +675,26 @@ package org.granite.tide.data {
         /**
          *  @private 
          *  Mark an object merged from the server as not dirty
-         *
+		 * 
          *  @param object merged object
+		 *  @param owner owner entity for embedded objects
          */ 
-        public function markNotDirty(object:Object, entity:IEntity = null):void {
+        public function markNotDirty(object:Object, owner:IEntity):void {
         	if (_savedProperties[object] == null)
         		return;
         	
             var oldDirty:Boolean = _dirtyCount > 0;
         	
-        	var oldDirtyEntity:Boolean = false;
-        	if (!entity && object is IEntity)
-        		entity = object as IEntity;
-        	if (entity)
-                oldDirtyEntity = isEntityChanged(entity);
+        	var oldDirtyEntity:Boolean = isEntityChanged(owner);
         	
             delete _savedProperties[object];
             
-            if (entity) {
-                var newDirtyEntity:Boolean = isEntityChanged(entity);
+            if (owner) {
+                var newDirtyEntity:Boolean = isEntityChanged(owner);
                 if (newDirtyEntity !== oldDirtyEntity) {
                 	var pce:PropertyChangeEvent = new PropertyChangeEvent("dirtyChange", false, false, 
                 		PropertyChangeEventKind.UPDATE, "meta_dirty", oldDirtyEntity, newDirtyEntity);
-                	entity.dispatchEvent(pce);
+                	owner.dispatchEvent(pce);
                 }
             }
             
@@ -712,9 +712,10 @@ package org.granite.tide.data {
 		 *
 		 *  @param entity merged entity
 		 *  @param source source entity
+		 *  @param owner owner entity for embedded objects
 		 *  @return true if the entity is still dirty after comparing with incoming object
 		 */ 
-		public function checkAndMarkNotDirty(entity:IEntity, source:Object):Boolean {
+		public function checkAndMarkNotDirty(entity:Object, source:Object, owner:IEntity):Boolean {
 			var save:Object = _savedProperties[entity];
 			if (save == null)
 				return false;
@@ -722,7 +723,7 @@ package org.granite.tide.data {
 			var oldDirty:Boolean = _dirtyCount > 0;			
 			var oldDirtyEntity:Boolean = isEntityChanged(entity);
 			
-			var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(entity));
+			var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(owner);
 			var merged:Array = [];
 			
 			for (var propName:String in save) {
@@ -748,12 +749,12 @@ package org.granite.tide.data {
 				delete _savedProperties[entity];
 				_dirtyCount--;
 			}
-				
-			var newDirtyEntity:Boolean = isEntityChanged(entity);
+			
+			var newDirtyEntity:Boolean = isEntityChanged(owner);
 			if (newDirtyEntity !== oldDirtyEntity) {
 				var pce:PropertyChangeEvent = new PropertyChangeEvent("dirtyChange", false, false, 
 					PropertyChangeEventKind.UPDATE, "meta_dirty", oldDirtyEntity, newDirtyEntity);
-				entity.dispatchEvent(pce);
+				owner.dispatchEvent(pce);
 			}
 			
 			if ((_dirtyCount > 0) !== oldDirty)
@@ -893,7 +894,7 @@ package org.granite.tide.data {
             }
             
             // Must be here because entity reset may have triggered useless new saved properties
-            markNotDirty(entity);
+            markNotDirty(entity, entity);
         }
 		
 		

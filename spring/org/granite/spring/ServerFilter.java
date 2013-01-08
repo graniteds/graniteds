@@ -151,8 +151,9 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
         if (amf3MessageInterceptor != null)
         	this.graniteConfig.setAmf3MessageInterceptor(amf3MessageInterceptor);
         
-        // If Spring Data available, enable Pageable converter
+        // If Spring Data available, automatically enable Page/Pageable converter
         try {
+        	TypeUtil.forName("org.springframework.data.domain.Page");
         	Class<Converter> converterClass = TypeUtil.forName("org.granite.spring.data.PageableConverter", Converter.class);
         	this.graniteConfig.getConverters().addConverter(converterClass);
         }

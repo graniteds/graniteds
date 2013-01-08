@@ -18,37 +18,11 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.data;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.enterprise.util.Nonbinding;
-import javax.interceptor.InterceptorBinding;
+package org.granite.tide.spring.data;
 
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@InterceptorBinding
-public @interface DataEnabled {
-	
-	@Nonbinding
-	public String topic() default "";
-	
-	@Nonbinding
-	public Class<? extends DataTopicParams> params() default DefaultDataTopicParams.class;
-	
-	@Nonbinding
-	public PublishMode publish() default PublishMode.MANUAL;
-	
-	public boolean useInterceptor() default false;
-    
-    
-    public enum PublishMode {
-    	MANUAL,
-    	ON_SUCCESS,
-    	ON_COMMIT
-    }
+
+public @interface FilterMapping {
+
+	String value();
 }

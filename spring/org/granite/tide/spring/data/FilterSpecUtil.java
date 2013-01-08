@@ -18,37 +18,28 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.data;
+package org.granite.tide.spring.data;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.enterprise.util.Nonbinding;
-import javax.interceptor.InterceptorBinding;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
 
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@InterceptorBinding
-public @interface DataEnabled {
-	
-	@Nonbinding
-	public String topic() default "";
-	
-	@Nonbinding
-	public Class<? extends DataTopicParams> params() default DefaultDataTopicParams.class;
-	
-	@Nonbinding
-	public PublishMode publish() default PublishMode.MANUAL;
-	
-	public boolean useInterceptor() default false;
-    
-    
-    public enum PublishMode {
-    	MANUAL,
-    	ON_SUCCESS,
-    	ON_COMMIT
-    }
+public class FilterSpecUtil {
+
+	public static Predicate buildPredicate(Path<?> root, CriteriaBuilder builder, Class<?> type, String key, Object value) {
+		if (value == null)
+			return null;
+		
+		if (type == null)
+			type = value.getClass();
+		
+		if (type == String.class && value.toString().trim().length() == 0)
+			return null;
+		
+		if (value instanceof String)
+			return builder.like(root.get(key).as(String.class), "%" + value + "%");
+		
+		return builder.equal(root.get(key).as(type), value);
+	}
 }

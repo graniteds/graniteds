@@ -84,7 +84,7 @@ package org.granite.math {
 	    /**
 	     * The value 10, with a scale of 0.
 	     */
-		public static const TEN:BigDecimal = newBigDecimal(BigInteger.TEN, 0, 1);
+		public static const TEN:BigDecimal = newBigDecimal(BigInteger.TEN, 0, 2);
 		
 		///////////////////////////////////////////////////////////////////////
 		// Fields.
@@ -302,7 +302,7 @@ package org.granite.math {
 				case 10:
 					a._integer = BigInteger.TEN;
 					a._scale = 0;
-					a._precision = 1;
+					a._precision = 2;
 					break;
 				default:
 					forString(a, value.toString(10));

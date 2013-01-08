@@ -18,37 +18,16 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.data;
+package org.granite.tide.spring.data;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.io.Serializable;
 
-import javax.enterprise.util.Nonbinding;
-import javax.interceptor.InterceptorBinding;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@InterceptorBinding
-public @interface DataEnabled {
-	
-	@Nonbinding
-	public String topic() default "";
-	
-	@Nonbinding
-	public Class<? extends DataTopicParams> params() default DefaultDataTopicParams.class;
-	
-	@Nonbinding
-	public PublishMode publish() default PublishMode.MANUAL;
-	
-	public boolean useInterceptor() default false;
-    
-    
-    public enum PublishMode {
-    	MANUAL,
-    	ON_SUCCESS,
-    	ON_COMMIT
-    }
+public interface FilterableJpaRepository<T, ID extends Serializable> extends JpaRepository<T, ID> {
+
+	public Page<T> findByFilter(Object filter, Pageable page);
 }
