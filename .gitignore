@@ -2,6 +2,7 @@
 /.settings
 build
 bin-debug
+/build
 classes
 classes*
 /graniteds-*.zip
@@ -19,4 +20,5 @@ html-template
 .settings
 /examples/**/.actionScriptProperties
 /examples/**/.flexProperties
+.FlexUnitSettings
 

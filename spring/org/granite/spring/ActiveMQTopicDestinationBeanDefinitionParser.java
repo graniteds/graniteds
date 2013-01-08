@@ -41,7 +41,7 @@ public class ActiveMQTopicDestinationBeanDefinitionParser extends AbstractSingle
     	builder.setLazyInit(false);
         
         mapOptionalAttributes(element, parserContext, builder, "id", "name", "connection-factory", "jndi-name", "destination-jndi-name",
-        		"acknowledge-mode", "transacted-sessions", "no-local", "session-selector", "broker-url", "create-broker", 
+        		"acknowledge-mode", "transacted-sessions", "text-messages", "no-local", "session-selector", "broker-url", "create-broker", 
         		"wait-for-start", "durable", "file-store-root");
         
         Object sourceElement = parserContext.extractSource(element);

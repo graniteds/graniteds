@@ -41,7 +41,7 @@ public class JmsTopicDestinationBeanDefinitionParser extends AbstractSingleBeanD
     	builder.setLazyInit(false);
         
         mapOptionalAttributes(element, parserContext, builder, "id", "name", "connection-factory", "jndi-name", "destination-jndi-name",
-        		"acknowledge-mode", "transacted-sessions", "no-local", "session-selector");
+        		"acknowledge-mode", "transacted-sessions", "text-messages", "no-local", "session-selector");
         
         Object sourceElement = parserContext.extractSource(element);
         ManagedList<String> roles = new ManagedList<String>();

@@ -22,10 +22,6 @@ package org.granite.tide.data {
 
     import org.granite.tide.*;
     
-    import flash.events.IEventDispatcher;
-    
-    import mx.messaging.messages.ErrorMessage;
-    
 	
 	/**
 	 * 	Interface for custom data mergers

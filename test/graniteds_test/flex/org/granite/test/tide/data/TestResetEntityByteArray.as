@@ -52,18 +52,18 @@ package org.granite.test.tide.data
 			person.byteArray = null;
         	_ctx.meta_resetEntity(person);
         	
-        	Assert.assertTrue("Person reset", "bla", readByteArray(person.byteArray));
+        	Assert.assertEquals("Person reset", "bla", readByteArray(person.byteArray));
         	
         	person.byteArray = newByteArray("300");
         	_ctx.meta_resetEntity(person);
         	
-        	Assert.assertTrue("Person reset 2", "bla", readByteArray(person.byteArray));
+        	Assert.assertEquals("Person reset 2", "bla", readByteArray(person.byteArray));
 			
 			person.byteArrays.setItemAt(newByteArray("zzz"), 0);
 			_ctx.meta_resetEntity(person);
 			
 			Assert.assertEquals("Person reset coll", 1, person.byteArrays.length);
-			Assert.assertTrue("Person reset coll", "blo", readByteArray(person.byteArrays.getItemAt(0) as ByteArray));
+			Assert.assertEquals("Person reset coll", "blo", readByteArray(person.byteArrays.getItemAt(0) as ByteArray));
         }
     }
 }

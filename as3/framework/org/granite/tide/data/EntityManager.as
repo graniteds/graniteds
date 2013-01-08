@@ -327,11 +327,14 @@ package org.granite.tide.data {
         public function getCachedObject(object:Object, nullIfAbsent:Boolean = false):Object {
             var entity:Object = null;
         	if (object is IEntity) {
-        		entity = _entitiesByUID.get(getQualifiedClassName(object) + ":" + IUID(object).uid);
+        		entity = _entitiesByUID.get(getQualifiedClassName(object) + ":" + object.uid);
             }
             else if (object is IEntityRef) {
                 entity = _entitiesByUID.get(object.className + ":" + object.uid);
             }
+			else if (object is String) {
+				entity = _entitiesByUID.get(String(object));
+			}
 
             if (entity)
                 return entity;
@@ -861,7 +864,7 @@ package org.granite.tide.data {
             }
             */
 
-			if (dest != null && !ignore && !_mergeContext.resolvingConflict) {
+			if (dest != null && !ignore && !_mergeContext.skipDirtyCheck && !_mergeContext.resolvingConflict) {
 				if (_mergeContext.mergeUpdate && versionChangeCache[dest] != null)
 					_dirtyCheckContext.markNotDirty(dest);
 				else if (dest is IEntity && obj is IEntity)
@@ -893,15 +896,18 @@ package org.granite.tide.data {
         private function mergeCollection(coll:IList, previous:Object, expr:IExpression, parent:Object = null, propertyName:String = null):IList {
             log.debug("mergeCollection: {0} previous {1}", BaseContext.toString(coll), BaseContext.toString(previous));
 			
-			if (_mergeContext.uninitializing && parent is IEntity && propertyName != null && _context.meta_tide.getEntityDescriptor(IEntity(parent)).lazy[propertyName]) {
-				if (previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+			if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(parent));
+				if (desc.versionPropertyName != null && !isNaN(parent[desc.versionPropertyName]) && desc.lazy[propertyName]
+					&& previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+					
 					log.debug("uninitialize lazy collection {0}", BaseContext.toString(previous));
 					_entityCache[coll] = previous;
 					IPersistentCollection(previous).uninitialize();
 					return IList(previous);
 				}
 			}
-
+			
             if (previous && previous is IPersistentCollection && !IPersistentCollection(previous).isInitialized()) {
                 log.debug("initialize lazy collection {0}", BaseContext.toString(previous));
                 _entityCache[coll] = previous;
@@ -1090,8 +1096,11 @@ package org.granite.tide.data {
         private function mergeMap(map:IMap, previous:Object, expr:IExpression, parent:Object = null, propertyName:String = null):IMap {
             log.debug("mergeMap: {0} previous {1}", BaseContext.toString(map), BaseContext.toString(previous));
 			
-            if (_mergeContext.uninitializing && parent is IEntity && propertyName != null && _context.meta_tide.getEntityDescriptor(IEntity(parent)).lazy[propertyName]) {
-                if (previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+            if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(parent));
+				if (desc.versionPropertyName != null && !isNaN(parent[desc.versionPropertyName]) && desc.lazy[propertyName] 
+					&& previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+					
                     log.debug("uninitialize lazy map {0}", BaseContext.toString(previous));
                     _entityCache[map] = previous;
                     IPersistentCollection(previous).uninitialize();

@@ -71,7 +71,8 @@ public class ProxyFactory {
                 Class.class, String.class, Class.class, Class[].class, Method.class, Method.class,
                 componentTypeClass, Serializable.class, SessionImplementor.class
             });
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             throw new ServiceException("Could not introspect initializer class: " + initializerClassName, e);
         }
     }
@@ -93,7 +94,12 @@ public class ProxyFactory {
 
             // Get Proxy
             return (HibernateProxy)getProxy.invoke(null, new Object[]{factory, entityName, persistentClass, INTERFACES, identifierGetter, null, null, id, null});
+<<<<<<< HEAD
         } catch (Exception e) {
+=======
+        } 
+        catch (Exception e) {
+>>>>>>> enterprise
             throw new ServiceException("Error with proxy description: " + persistentClassName + '/' + entityName + " and id: " + id, e);
         }
     }

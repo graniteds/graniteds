@@ -131,6 +131,7 @@
                 <dirset dir="classes/gravity"/>
                 <pathelement location="lib/jta.jar"/>
                 <pathelement location="lib/jdo2-api-2.3-eb.jar"/>
+            	<pathelement location="lib/javassist.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/tide">

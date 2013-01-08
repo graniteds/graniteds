@@ -23,7 +23,6 @@ public class Hibernate3ExternalizerTest extends AbstractJPAExternalizerTest {
 	protected String setProperties(Properties props) {
 		return "hibernate";
 	}
-	
     
     @Test
     public void testSerializationProxy3() throws Exception {

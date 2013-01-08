@@ -452,23 +452,34 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
 		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
 		
 		// Build the invocation result
-        InvocationResult res = new InvocationResult(result, results);
-        res.setScope(scope);
-        res.setRestrict(restrict);
+        InvocationResult ires = new InvocationResult(result, results);
+        ires.setScope(scope);
+        ires.setRestrict(restrict);
         if (component != null) {
-        	if (component.beanClassHasAnnotation(BypassTideMerge.class))
-        		res.setMerge(false);
-        	else {
+        	if (component.beanClassHasAnnotation(BypassTideMerge.class) || component.businessInterfaceHasAnnotation(BypassTideMerge.class))
+        		ires.setMerge(false);
+        	else if (context != null) {
 	        	try {
-	        		if (context != null) {
-		        		Method m = component.getBeanClass().getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
-		        		if (m.isAnnotationPresent(BypassTideMerge.class))
-		        			res.setMerge(false);
-	        		}
+	        		Method m = component.getBeanClass().getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
+	        		if (m.isAnnotationPresent(BypassTideMerge.class))
+	        			ires.setMerge(false);
 	        	}
-	        	catch (Exception e) {
+	        	catch (NoSuchMethodException e) {
 	        		log.warn("Could not find bean method", e);
 	        	}
+        		
+        		for (Class<?> beanInterface : component.getBusinessInterfaces()) {
+    	        	try {
+    	        		Method m = beanInterface.getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());
+    	        		if (m.isAnnotationPresent(BypassTideMerge.class)) {
+    	        			ires.setMerge(false);
+    	        			break;
+    	        		}
+    	        	}
+    	        	catch (NoSuchMethodException e) {
+    	        		log.warn("Could not find bean method", e);
+    	        	}
+        		}
         	}
         }
         
@@ -479,25 +490,25 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
 	        	DataMergeContext.addResultEntity(cu.getValue());
         }
         
-        res.setUpdates(updates);
+        ires.setUpdates(updates);
         
         // Adds events in result object
-        res.setEvents(tideInvocation.getEvents());
+        ires.setEvents(tideInvocation.getEvents());
         
         // Save current set of entities loaded in a conversation scoped component to handle case of extended PM
         SeamInitializer.instance().saveLoadedEntities();
         
         // Adds context messages in result object
         TideStatusMessages statusMessages = getTideMessages();
-        res.setMessages(statusMessages.getMessages());
-        res.setKeyedMessages(statusMessages.getKeyedMessages());
+        ires.setMessages(statusMessages.getMessages());
+        ires.setKeyedMessages(statusMessages.getKeyedMessages());
         
         clearTideMessages();
 
         // Clean thread
         TideInvocation.remove();
         
-        return res;
+        return ires;
     }
 
     /**

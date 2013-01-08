@@ -37,6 +37,7 @@ public class AbstractJmsTopicDestination extends AbstractMessagingDestination {
     private String connectionFactoryJndiName = null;
     private String destinationJndiName = null;
     private String acknowledgeMode = null;
+    private boolean textMessages = false;
     private boolean transactedSessions = false;
     
 	
@@ -79,6 +80,14 @@ public class AbstractJmsTopicDestination extends AbstractMessagingDestination {
 	public void setAcknowledgeMode(String acknowledgeMode) {
 		this.acknowledgeMode = acknowledgeMode;
 	}
+	
+	public boolean isTextMessages() {
+		return textMessages;
+	}
+	
+	public void setTextMessages(boolean textMessages) {
+		this.textMessages = textMessages;
+	}
 
 	public boolean isTransactedSessions() {
 		return transactedSessions;
@@ -102,6 +111,8 @@ public class AbstractJmsTopicDestination extends AbstractMessagingDestination {
     	destination.getProperties().put("jms/destination-name", name);
     	destination.getProperties().put("jms/destination-jndi-name", destinationJndiName);
     	destination.getProperties().put("jms/connection-factory", connectionFactoryJndiName);
+    	if (textMessages)
+    		destination.getProperties().put("jms/message-type", "javax.jms.TextMessage");
     	destination.getProperties().put("jms/acknowledge-mode", acknowledgeMode);
     	destination.getProperties().put("jms/transacted-sessions", String.valueOf(transactedSessions));
     	destination.getProperties().put("jms/no-local", String.valueOf(isNoLocal()));

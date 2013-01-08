@@ -22,8 +22,10 @@ package org.granite.tide.data;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
@@ -44,7 +46,8 @@ public class DataContext {
     private DataDispatcher dataDispatcher = null;
     private PublishMode publishMode = null;
     private Object[][] updates = null;
-    private DataUpdatePostprocessor dataUpdatePostprocessor = null; 
+    private DataUpdatePostprocessor dataUpdatePostprocessor = null;
+    private Map<Object, Object> entityExtraDataMap = new IdentityHashMap<Object, Object>();
     
     
     public static void init() {
@@ -146,7 +149,17 @@ public class DataContext {
     	}
     }
     
+    public static void addEntityExtraData(Object entity, Object extraData) {
+    	DataContext dc = get();
+    	if (dc != null && dc.entityExtraDataMap != null)
+    		dc.entityExtraDataMap.put(entity, extraData);
+    }
     
+    public static Object getEntityExtraData(Object entity) {
+    	DataContext dc = get();
+    	return dc != null && dc.entityExtraDataMap != null ? dc.entityExtraDataMap.get(entity) : null;
+    }
+        
     public static void observe() {
     	DataContext dc = get();
     	if (dc != null && dc.dataDispatcher != null) {

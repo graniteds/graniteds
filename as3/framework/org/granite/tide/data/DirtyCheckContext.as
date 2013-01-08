@@ -24,11 +24,10 @@ package org.granite.tide.data {
     import flash.utils.Dictionary;
     
     import mx.collections.IList;
+    import mx.core.IPropertyChangeNotifier;
     import mx.core.IUID;
     import mx.events.CollectionEvent;
-	import mx.events.CollectionEventKind;
-	import mx.events.CollectionEventKind;
-	import mx.events.CollectionEventKind;
+    import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
     import mx.events.PropertyChangeEventKind;
     import mx.logging.ILogger;
@@ -45,6 +44,7 @@ package org.granite.tide.data {
     import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IEntity;
     import org.granite.tide.IWrapper;
+	import org.granite.tide.IPropertyHolder;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
     import org.granite.util.Enum;
@@ -229,7 +229,7 @@ package org.granite.tide.data {
 		}
 		
 		private function isSameExt(val1:*, val2:*):Boolean {
-			var found:Boolean, idx:uint, e:Object, f:Object;
+			var found:Boolean, idx:uint, e:Object, f:Object, key:*;
 			if (val1 == null && isEmpty(val2))
 				return true;
 			else if (val2 == null && isEmpty(val1))
@@ -293,29 +293,29 @@ package org.granite.tide.data {
 				if (val1.length != val2.length)
 					return false;
 				for each (e in val1.keySet) {
-					found = false;
+					key = null;
 					for each (f in val2.keySet) {
 						if (isSameExt(e, f)) {
-							found = true;
+							key = f;
 							break;
 						}
 					}
-					if (!found)
+					if (key == null)
 						return false;
-					if (!isSameExt(val1.get(e), val2.get(e)))
+					if (!isSameExt(val1.get(e), val2.get(key)))
 						return false;
 				}
-				for each (e in val2.keySet) {
-					found = false;
-					for each (f in val1) {
+				for each (f in val2.keySet) {
+					key = null;
+					for each (e in val1.keySet) {
 						if (isSameExt(e, f)) {
-							found = true;
+							key = e;
 							break;
 						}
 					}
-					if (!found)
+					if (key == null)
 						return false;
-					if (!isSameExt(val1.get(e), val2.get(e)))
+					if (!isSameExt(val1.get(key), val2.get(f)))
 						return false;
 				}
 				return true;
@@ -730,10 +730,8 @@ package org.granite.tide.data {
 					continue;
 				var localValue:Object = entity[propName];
 				var sourceValue:Object = source.hasOwnProperty(propName) ? source[propName] : null;
-				if (localValue is PersistentCollection)
-					localValue = localValue.list;
-				else if (localValue is PersistentMap)
-					localValue = localValue.map;
+				if (localValue is IPropertyHolder)
+					localValue = localValue.object;
 				if (isSameExt(localValue, sourceValue))
 					merged.push(propName);
 			}
@@ -878,7 +876,7 @@ package org.granite.tide.data {
 						}
 					}
 				}
-				else if (save && (ObjectUtil.isSimple(val) || ObjectUtil.isSimple(save[p]))) {
+				else if (save && (ObjectUtil.isSimple(val) || ObjectUtil.isSimple(save[p]) || val is ByteArray || save[p] is ByteArray)) {
                     if (save[p] !== undefined)
                         entity[p] = save[p];
                 }
