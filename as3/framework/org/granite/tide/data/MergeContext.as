@@ -81,6 +81,7 @@ package org.granite.tide.data {
         private var _versionChangeCache:Dictionary = null;
 		public var merging:Boolean = false;
         public var resolvingConflict:Boolean = false;
+		public var skipDirtyCheck:Boolean = false;
         public var uninitializeAllowed:Boolean = true;
 		public var uninitializing:Boolean = false;
         public var proxyGetter:Function = null;
@@ -140,6 +141,10 @@ package org.granite.tide.data {
         public function getCachedObject(object:Object, nullIfAbsent:Boolean = false):Object {
             return _entityManager.getCachedObject(object, nullIfAbsent);
         }
+		
+		public function getSavedProperties(object:Object):Object {
+			return _entityManager.savedProperties[object];
+		}
 
         public function mergeExternal(object:Object, dest:Object, parent:Object = null, propertyName:String = null):Object {
             return _entityManager.mergeExternal(object, dest, null, parent, propertyName);

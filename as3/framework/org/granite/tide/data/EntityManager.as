@@ -327,11 +327,14 @@ package org.granite.tide.data {
         public function getCachedObject(object:Object, nullIfAbsent:Boolean = false):Object {
             var entity:Object = null;
         	if (object is IEntity) {
-        		entity = _entitiesByUID.get(getQualifiedClassName(object) + ":" + IUID(object).uid);
+        		entity = _entitiesByUID.get(getQualifiedClassName(object) + ":" + object.uid);
             }
             else if (object is IEntityRef) {
                 entity = _entitiesByUID.get(object.className + ":" + object.uid);
             }
+			else if (object is String) {
+				entity = _entitiesByUID.get(String(object));
+			}
 
             if (entity)
                 return entity;
@@ -861,7 +864,7 @@ package org.granite.tide.data {
             }
             */
 
-			if (dest != null && !ignore && !_mergeContext.resolvingConflict) {
+			if (dest != null && !ignore && !_mergeContext.skipDirtyCheck && !_mergeContext.resolvingConflict) {
 				if (_mergeContext.mergeUpdate && versionChangeCache[dest] != null)
 					_dirtyCheckContext.markNotDirty(dest);
 				else if (dest is IEntity && obj is IEntity)
