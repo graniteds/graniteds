@@ -25,7 +25,7 @@ package org.granite.tide {
     import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
     import flash.utils.getQualifiedClassName;
-
+    
     import mx.binding.utils.BindingUtils;
     import mx.binding.utils.ChangeWatcher;
     import mx.collections.IList;
@@ -41,7 +41,7 @@ package org.granite.tide {
     import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
     import mx.utils.object_proxy;
-
+    
     import org.granite.collections.IPersistentCollection;
     import org.granite.meta;
     import org.granite.reflect.Annotation;
@@ -49,6 +49,7 @@ package org.granite.tide {
     import org.granite.reflect.Method;
     import org.granite.reflect.Type;
     import org.granite.tide.collections.PersistentCollection;
+    import org.granite.tide.collections.PersistentMap;
     import org.granite.tide.data.EntityManager;
     import org.granite.tide.events.IConversationEvent;
     import org.granite.tide.events.TideUIEvent;
@@ -1504,7 +1505,7 @@ package org.granite.tide {
             log.debug("initialize {0}", toString(obj));
             
             var path:IExpression = null;
-	        if (obj is PersistentCollection && obj.entity is IEntity) {
+	        if ((obj is PersistentCollection || obj is PersistentMap) && obj.entity is IEntity) {
                 if (_contextId != null && meta_isContextIdFromServer)
                     path = _entityManager.getReference(obj.entity, false);
                 
