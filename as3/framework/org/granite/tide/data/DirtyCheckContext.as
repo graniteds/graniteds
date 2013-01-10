@@ -43,8 +43,8 @@ package org.granite.tide.data {
     import org.granite.tide.BaseContext;
     import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IEntity;
+    import org.granite.tide.IPropertyHolder;
     import org.granite.tide.IWrapper;
-	import org.granite.tide.IPropertyHolder;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
     import org.granite.util.Enum;
@@ -101,8 +101,14 @@ package org.granite.tide.data {
          */ 
         public function clear(dispatch:Boolean = true):void {
 			var wasDirty:Boolean = dirty;
-        	_dirtyCount = 0;
+			
+			if (dispatch) {
+				for (var object:Object in _savedProperties)
+					object.dispatchEvent(new PropertyChangeEvent("dirtyChange", false, false, PropertyChangeEventKind.UPDATE, "meta_dirty", true, false));
+			}
+			
         	_savedProperties = new Dictionary(true);
+			_dirtyCount = 0;
 			if (wasDirty && dispatch)
 				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", true, false));
         }

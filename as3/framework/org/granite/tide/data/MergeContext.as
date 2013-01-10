@@ -74,6 +74,7 @@ package org.granite.tide.data {
         private var _context:BaseContext = null;
         private var _entityManager:EntityManager = null;
         private var _dirtyCheckContext:DirtyCheckContext = null;
+		private var _entityCache:Dictionary = null;
         public var externalData:Boolean = false;
         public var sourceContext:BaseContext = null;
         public var mergeUpdate:Boolean = false;
@@ -100,6 +101,7 @@ package org.granite.tide.data {
          *  Clears merge context
          */ 
         public function clear():void {
+			_entityCache = null;
             _mergeConflicts = null;
             _versionChangeCache = null;
             resolvingConflict = false;
@@ -107,6 +109,8 @@ package org.granite.tide.data {
             merging = false;
             mergeUpdate = false;
         }
+		
+		
 
         public function addConflict(localEntity:IEntity, receivedEntity:Object):void {
             if (_mergeConflicts == null)
@@ -115,6 +119,7 @@ package org.granite.tide.data {
         }
 
         public function initMergeConflicts():void {
+			_entityCache = null;
             _versionChangeCache = null;
             resolvingConflict = false;
         }
@@ -127,7 +132,25 @@ package org.granite.tide.data {
         public function get mergeConflicts():Conflicts {
             return _mergeConflicts;
         }
-
+		
+		public function get entityCache():Dictionary {
+			return _entityCache;
+		}
+		public function initMerge():void {
+			if (_entityCache == null) {
+				_entityCache = new Dictionary();
+				mergeUpdate = true;
+			}			
+		}
+		public function saveEntityCache():Dictionary {
+			var entityCache:Dictionary = _entityCache;
+			_entityCache = new Dictionary();
+			return entityCache;
+		}
+		public function restoreEntityCache(entityCache:Dictionary):void {
+			_entityCache = entityCache;
+		}
+		
         public function get versionChangeCache():Dictionary {
             if (_versionChangeCache == null)
                 _versionChangeCache = new Dictionary(true);

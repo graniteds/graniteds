@@ -236,6 +236,14 @@ package org.granite.tide {
             _tracking = true;
             _tide.currentModulePrefix = saveModulePrefix;
         }
+			
+		/**
+		 *  Clear the current dirty state context
+		 *  @param dispatch dispatch a PropertyChangeEvent on meta_dirty if the context was dirty before clearing
+		 */
+		public function meta_clearDirtyState(dispatch:Boolean = true):void {
+			_entityManager.clearDirtyState(dispatch);
+		}
         
         /**
          *  Ends the current context
@@ -1436,7 +1444,8 @@ package org.granite.tide {
 					args[i] = IPropertyHolder(args[i]).object;
 				args[i] = meta_mergeExternal(args[i]);
 			}
-
+			// _entityManager.clearCache();
+			
             var method:Method = Type.forInstance(component).getInstanceMethodNoCache(op);
             for each (var app:IArgumentPreprocessor in allByType(IArgumentPreprocessor, true))
                 args = app.preprocess(method, args);
