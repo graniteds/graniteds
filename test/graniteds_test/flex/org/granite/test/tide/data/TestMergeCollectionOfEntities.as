@@ -3,6 +3,8 @@ package org.granite.test.tide.data
     import mx.collections.ArrayCollection;
     
     import org.flexunit.Assert;
+    import org.granite.meta;
+    import org.granite.persistence.PersistentList;
     import org.granite.persistence.PersistentSet;
     import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
@@ -121,6 +123,77 @@ package org.granite.test.tide.data
 			_ctx.meta_mergeExternalData(person2, null, null, [ c21 ]);
 			
 			Assert.assertEquals("Removals merged", 1, person.contacts.length);
+		}
+		
+		
+		[Test]
+		public function testMergeCollectionOfEntities2():void {
+			_ctx.meta_uninitializeAllowed = false;
+			
+			var p:Person = new Person();
+			p.uid = "P1";
+			p.id = 1;
+			p.version = 0;
+			p.contacts = new PersistentList();
+			var c1:Contact = new Contact();
+			c1.uid = "C1";
+			c1.id = 1;
+			c1.version = 0;
+			c1.person = p;
+			c1.email = "toto@toto.com";
+			p.contacts.addItem(c1);
+			var c2:Contact = new Contact();
+			c2.uid = "C2";
+			c2.id = 2;
+			c2.version = 0;
+			c2.person = p;
+			c2.email = "toto@toto.net";
+			p.contacts.addItem(c2);
+			_ctx.person = _ctx.meta_mergeExternalData(p);
+			p = _ctx.person;
+			
+			var pb:Person = new Person();
+			pb.uid = "P1";
+			pb.id = 1;
+			pb.version = 0;
+			pb.contacts = new PersistentList();
+			var pc:Person = new Person();
+			pc.uid = "P1";
+			pc.id = 1;
+			pc.version = 0;
+			pc.contacts = new PersistentList(false);
+			var c1b:Contact = new Contact();
+			c1b.uid = "C1";
+			c1b.id = 1;
+			c1b.version = 0;
+			c1b.person = pb;
+			c1b.email = "toto@toto.com";
+			pb.contacts.addItem(c1b);
+			var c2b:Contact = new Contact();
+			c2b.uid = "C2";
+			c2b.id = 2;
+			c2b.version = 0;
+			c2b.person = pb;
+			c2b.email = "toto@toto.net";
+			pb.contacts.addItem(c2b);
+			var c3b:Contact = new Contact();
+			c3b.uid = "C3";
+			c3b.version = 0;
+			c3b.person = pb;
+			c3b.email = "toto@toto.org";
+			pb.contacts.addItem(c3b);
+			var c3c:Contact = new Contact();
+			c3c.uid = "C3";
+			c3c.version = 0;
+			c3c.person = pc;
+			c3c.email = "toto@toto.org";
+			pb.contacts.addItem(c3c);
+			
+			_ctx.meta_mergeExternal(pb, p);
+			
+			Assert.assertStrictlyEquals("Person em", _ctx, p.meta::entityManager);
+			for each (var c:Contact in p.contacts)
+				Assert.assertStrictlyEquals("Contact attached", p, c.person);
 		}
     }
 }
