@@ -1444,12 +1444,13 @@ package org.granite.tide {
 					args[i] = IPropertyHolder(args[i]).object;
 				args[i] = meta_mergeExternal(args[i]);
 			}
-			// _entityManager.clearCache();
 			
             var method:Method = Type.forInstance(component).getInstanceMethodNoCache(op);
             for each (var app:IArgumentPreprocessor in allByType(IArgumentPreprocessor, true))
                 args = app.preprocess(method, args);
-
+			
+			_entityManager.clearCache();
+			
             _tracking = false;
             var token:AsyncToken = _tide.invokeComponent(this, component, op, args, responder, withContext);
             _tracking = true;
