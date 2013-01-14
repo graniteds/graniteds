@@ -254,4 +254,54 @@
             </fileset>
         </jar>
     </target>
+	
+	
+    <target name="build.tests" depends="@dot" description="Compile Test sources">
+        <mkdir dir="test-classes"/>
+        <javac destdir="test-classes" srcdir="test" debug="true" target="1.5" source="1.5">
+            <classpath>
+                <pathelement path="${build.result.folder}/@dot"/>
+                <fileset dir="lib">
+                    <include name="*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+    
+    <target name="tests" depends="build.tests" description="Run Tests">
+        <mkdir dir="test-reports"/>
+    	
+        <junit printsummary="yes" showoutput="false">
+            <classpath>
+                <pathelement path="${build.result.folder}/@dot"/>
+                <pathelement path="test-classes"/>
+                <fileset dir="lib">
+                    <include name="*.jar"/>
+                </fileset>
+            	<fileset dir="${eclipse.plugins}">
+            		<include name="**/org.junit_4*/junit.jar"/>
+            		<include name="**/org.hamcrest*.jar"/>
+            	</fileset>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports">
+                <fileset dir="test">
+                    <include name="**/Test*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+        
+        <antcall target="tests.reports"/>
+    </target>
+    
+    <target name="tests.reports">
+        <junitreport todir="test-reports">
+            <fileset dir="./test-reports">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report todir="test-reports"/>
+        </junitreport>  
+    </target>
 </project>
