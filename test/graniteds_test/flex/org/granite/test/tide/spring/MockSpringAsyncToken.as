@@ -90,7 +90,7 @@ package org.granite.test.tide.spring
             return new FaultEvent(FaultEvent.FAULT, false, true, fault, this, emsg);
         }
         
-        protected function buildResult(result:Object = null, results:Array = null):ResultEvent {
+        protected function buildResult(result:Object = null, results:Array = null, updates:Array = null):ResultEvent {
             var msg:AcknowledgeMessage = new AcknowledgeMessage();
             var res:InvocationResult = new InvocationResult();
             res.result = result;
@@ -113,6 +113,7 @@ package org.granite.test.tide.spring
             }
             res.events = new ArrayCollection();
             res.messages = new ArrayCollection();
+			res.updates = updates;
             return new ResultEvent(ResultEvent.RESULT, false, false, res, this, msg);
         }
     }

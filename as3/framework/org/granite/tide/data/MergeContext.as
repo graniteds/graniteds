@@ -75,6 +75,7 @@ package org.granite.tide.data {
         private var _entityManager:EntityManager = null;
         private var _dirtyCheckContext:DirtyCheckContext = null;
 		private var _entityCache:Dictionary = null;
+		private var _mergeStack:Array = [];
         public var externalData:Boolean = false;
         public var sourceContext:BaseContext = null;
         public var mergeUpdate:Boolean = false;
@@ -156,6 +157,27 @@ package org.granite.tide.data {
                 _versionChangeCache = new Dictionary(true);
             return _versionChangeCache;
         }
+		
+		public function pushMerge(obj:Object, dest:Object, push:Boolean = true):void {
+			_entityCache[obj] = dest;
+			if (push)
+				_mergeStack.push(dest);
+		}
+		public function getCachedMerge(obj:Object):* {
+			return _entityCache[obj];
+		}
+		public function popMerge():* {
+			return _mergeStack.pop();
+		}
+		public function get currentMerge():* {
+			return _mergeStack[_mergeStack.length-1];
+		}
+		public function set currentMerge(merge:*):void {
+			_mergeStack[_mergeStack.length-1] = merge;
+		}
+		public function get mergeStackSize():uint {
+			return _mergeStack.length;
+		}
 
         public function getEntityDescriptor(entity:IEntity):EntityDescriptor {
             return _context.meta_tide.getEntityDescriptor(entity);
@@ -172,7 +194,11 @@ package org.granite.tide.data {
         public function mergeExternal(object:Object, dest:Object, parent:Object = null, propertyName:String = null):Object {
             return _entityManager.mergeExternal(object, dest, null, parent, propertyName);
         }
-
+		
+		public function attach(object:Object):void {
+			_entityManager.attach(object, new Dictionary());
+		}
+		
         public function objectEquals(obj1:Object, obj2:Object):Boolean {
             return _context.meta_objectEquals(obj1, obj2);
         }

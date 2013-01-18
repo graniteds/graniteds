@@ -22,6 +22,7 @@ package org.granite.tide.data {
     import flash.events.IEventDispatcher;
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
+    import flash.utils.Proxy;
     import flash.utils.flash_proxy;
     import flash.utils.getQualifiedClassName;
     
@@ -614,10 +615,11 @@ package org.granite.tide.data {
 			
 			try {
 				_mergeContext.merging = true;
+				var stackSize:uint = _mergeContext.mergeStackSize;
 				
 				var addRef:Boolean = false;
 	            var fromCache:Boolean = false;
-	            var prev:Object = _mergeContext.entityCache[obj];
+	            var prev:Object = _mergeContext.getCachedMerge(obj);
 	            var next:Object = obj;
 	            if (prev) {
 	                next = prev;
@@ -625,9 +627,13 @@ package org.granite.tide.data {
 	            }
 	            else {
                     // Give a chance to intercept received value so we can apply changes on private values
-                    if (_mergeContext.proxyGetter != null && parent != null && propertyName != null)
-                        next = obj = _mergeContext.proxyGetter(obj, parent, propertyName);
-
+					var currentMerge:Object = _mergeContext.currentMerge;
+					if (currentMerge is IEntity && currentMerge is Proxy) {
+						if (!currentMerge.hasOwnProperty(propertyName))
+							return previous;
+						next = obj = currentMerge[propertyName];
+					}
+					
 	                // Clear change tracking
 	            	removeTrackingListeners(previous, parent); 
 	                
@@ -709,6 +715,9 @@ package org.granite.tide.data {
 				}
 			}
 			finally {
+				if (_mergeContext.mergeStackSize > stackSize)
+					_mergeContext.popMerge();
+				
 				_mergeContext.merging = saveMerging;
 			}
             
@@ -749,7 +758,10 @@ package org.granite.tide.data {
                 }
             }
             else if (obj is IUID) {
-                p = _entitiesByUID.get(getQualifiedClassName(obj) + ":" + IUID(obj).uid);
+				if (obj is Proxy)
+					p = _entitiesByUID.get(obj.flash_proxy::qualifiedClassName + ":" + IUID(obj).uid);
+				else
+                	p = _entitiesByUID.get(getQualifiedClassName(obj) + ":" + IUID(obj).uid);
                 if (p) {
 					// Trying to merge an entity that is already cached with itself: stop now, this is not necessary to go deeper in the object graph
 					// it should be already instrumented and tracked
@@ -797,7 +809,7 @@ package org.granite.tide.data {
             if (!fromCache && dest is IUID)
                 _entitiesByUID.put(IUID(dest));            
             
-			_mergeContext.entityCache[obj] = dest;
+			_mergeContext.pushMerge(obj, dest);
             var versionChangeCache:Dictionary = _mergeContext.versionChangeCache;
 
 			var ignore:Boolean = false;
@@ -829,7 +841,8 @@ package org.granite.tide.data {
 							// Handle changes when version number is increased
                     		versionChangeCache[dest] = true;
                     		
-                    		if (_mergeContext.externalData && _dirtyCheckContext.isEntityChanged(IEntity(dest))) {
+							var entityChanged:Boolean = _dirtyCheckContext.isEntityChanged(IEntity(dest));
+                    		if (_mergeContext.externalData && entityChanged) {
                     			// Conflict between externally received data and local modifications
                     			log.error("conflict with external data detected on {0} (current: {1}, received: {2})",
                     				BaseContext.toString(dest), oldVersion, newVersion);
@@ -861,8 +874,14 @@ package org.granite.tide.data {
                 	_mergeContext.versionChangeCache[dest] = true;
                 
                 if (!ignore) {
-                	if (desc.mergeGDS21)
-                		dest.meta::merge(_context, obj);
+                	if (desc.mergeGDS21) {
+						if (obj is Proxy) {
+							_mergeContext.currentMerge = obj;
+							dest.meta::merge(_context, obj.flash_proxy::object);
+						}
+						else
+                			dest.meta::merge(_context, obj);
+					}
                 	else if (desc.mergeGDS20)
                 		dest.meta_merge(_context, obj);
                 	else
@@ -880,12 +899,8 @@ package org.granite.tide.data {
             }
             */
 
-			if (dest != null && !ignore && !_mergeContext.skipDirtyCheck && !_mergeContext.resolvingConflict) {
-				if (_mergeContext.mergeUpdate && versionChangeCache[dest] != null)
-					_dirtyCheckContext.markNotDirty(dest);
-				else if (dest is IEntity && obj is IEntity)
-					_dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), IEntity(obj));
-			}
+			if (dest is IEntity && !ignore && !_mergeContext.skipDirtyCheck && !_mergeContext.resolvingConflict)
+				_dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), obj);
 			
 			if (dest != null)
 				log.debug("mergeEntity result: {0}", BaseContext.toString(dest));
@@ -918,7 +933,7 @@ package org.granite.tide.data {
 					&& previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
 					
 					log.debug("uninitialize lazy collection {0}", BaseContext.toString(previous));
-					_mergeContext.entityCache[coll] = previous;
+					_mergeContext.pushMerge(coll, previous);
 					IPersistentCollection(previous).uninitialize();
 					return IList(previous);
 				}
@@ -926,7 +941,7 @@ package org.granite.tide.data {
 			
             if (previous && previous is IPersistentCollection && !IPersistentCollection(previous).isInitialized()) {
                 log.debug("initialize lazy collection {0}", BaseContext.toString(previous));
-				_mergeContext.entityCache[coll] = previous;
+				_mergeContext.pushMerge(coll, previous);
                 
                 IPersistentCollection(previous).initializing();
                 
@@ -956,7 +971,7 @@ package org.granite.tide.data {
             else
                 list = coll;
                             
-			_mergeContext.entityCache[coll] = list;
+			_mergeContext.pushMerge(coll, list);
             
             // Restore collection sort/filter state
             var prevColl:IList = list !== coll ? list : null;
@@ -1053,7 +1068,7 @@ package org.granite.tide.data {
             else
             	log.debug("mergeCollection result: {0}", BaseContext.toString(nextList));
             
-			_mergeContext.entityCache[coll] = nextList;
+			_mergeContext.pushMerge(coll, nextList, false);
             
             if (!tracking)
             	addTrackingListeners(nextList, parent);
@@ -1079,7 +1094,7 @@ package org.granite.tide.data {
             var prevArray:Array = previous is Array && _mergeContext.sourceContext == null ? previous as Array : new Array();
             if (prevArray.length > 0 && prevArray !== array)
                 prevArray.splice(0, prevArray.length);
-			_mergeContext.entityCache[array] = prevArray;
+			_mergeContext.pushMerge(array, prevArray);
             
             for (var i:int = 0; i < array.length; i++) {
                 var obj:Object = array[i];
@@ -1118,7 +1133,7 @@ package org.granite.tide.data {
 					&& previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
 					
                     log.debug("uninitialize lazy map {0}", BaseContext.toString(previous));
-					_mergeContext.entityCache[map] = previous;
+					_mergeContext.pushMerge(map, previous);
                     IPersistentCollection(previous).uninitialize();
                     return IMap(previous);
                 }
@@ -1129,7 +1144,7 @@ package org.granite.tide.data {
             
             if (previous && previous is IPersistentCollection && !IPersistentCollection(previous).isInitialized()) {
                 log.debug("initialize lazy map {0}", BaseContext.toString(previous));
-				_mergeContext.entityCache[map] = previous;
+				_mergeContext.pushMerge(map, previous);
                 
                 IPersistentCollection(previous).initializing();
                 
@@ -1158,7 +1173,7 @@ package org.granite.tide.data {
 				m = Type.forInstance(map).constructor.newInstance() as IMap;
             else
                 m = map;
-			_mergeContext.entityCache[map] = m;
+			_mergeContext.pushMerge(map, m);
             
             var prevMap:IMap = m !== map ? m : null;
             
@@ -1217,7 +1232,9 @@ package org.granite.tide.data {
             }
             else
             	log.debug("mergeMap result: {0}", BaseContext.toString(nextMap));
-            
+			
+			_mergeContext.pushMerge(map, nextMap, false);
+			
             if (!tracking)
             	addTrackingListeners(nextMap, parent);
             
@@ -1243,7 +1260,7 @@ package org.granite.tide.data {
             var uninitialize:Boolean = true;
 
             if (previous is PersistentCollection) {
-				_mergeContext.entityCache[coll] = previous;
+				_mergeContext.pushMerge(coll, previous);
                 if (PersistentCollection(previous).isInitialized()) {
                 	if (_mergeContext.uninitializeAllowed && _mergeContext.versionChangeCache[PersistentCollection(previous).entity] != null) {
 	                    log.debug("uninitialize lazy collection {0}", BaseContext.toString(previous));
@@ -1256,7 +1273,7 @@ package org.granite.tide.data {
                 return previous;
             }
             else if (previous is PersistentMap) {
-				_mergeContext.entityCache[coll] = previous;
+				_mergeContext.pushMerge(coll, previous);
                 if (PersistentMap(previous).isInitialized()) {
                 	if (_mergeContext.uninitializeAllowed && _mergeContext.versionChangeCache[PersistentMap(previous).entity] != null) {
 	                    log.debug("uninitialize lazy map {0}", BaseContext.toString(previous));
@@ -1272,7 +1289,7 @@ package org.granite.tide.data {
             if (coll is IMap) {
             	var pmap:PersistentMap = new PersistentMap(parent, propertyName, 
             		(coll is PersistentMap ? duplicatePersistentCollection(PersistentMap(coll).object) : IPersistentCollection(coll)));
-				_mergeContext.entityCache[coll] = pmap;
+				_mergeContext.pushMerge(coll, pmap);
             	if (pmap.isInitialized()) {
 	                for each (var key:Object in pmap.keySet) {
 	                    var value:Object = pmap.remove(key);
@@ -1289,7 +1306,7 @@ package org.granite.tide.data {
             
             var pcoll:PersistentCollection = new PersistentCollection(parent, propertyName, 
             	(coll is PersistentCollection ? duplicatePersistentCollection(PersistentCollection(coll).object) : IPersistentCollection(coll)));
-			_mergeContext.entityCache[coll] = pcoll;
+			_mergeContext.pushMerge(coll, pcoll);
             if (pcoll.isInitialized()) {
 	            for (var i:int = 0; i < pcoll.length; i++) {
 					var obj:Object = mergeExternal(pcoll.getItemAt(i), null, null, parent, propertyName);
@@ -1409,7 +1426,8 @@ package org.granite.tide.data {
             if (modifiedEntity == null)
                 handleRemovals([localEntity]);
             else
-			    mergeExternal(modifiedEntity, localEntity);
+				mergeExternal(modifiedEntity, localEntity);
+			
 			if (resolving)
 				_mergeContext.resolvingConflict = saveResolvingConflict;
 
