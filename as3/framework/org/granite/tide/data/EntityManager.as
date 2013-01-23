@@ -927,6 +927,16 @@ package org.granite.tide.data {
         private function mergeCollection(coll:IList, previous:Object, expr:IExpression, parent:Object = null, propertyName:String = null):IList {
             log.debug("mergeCollection: {0} previous {1}", BaseContext.toString(coll), BaseContext.toString(previous));
 			
+			if (previous != null) {
+				var cachedColl:Object = _mergeContext.getCachedMerge(previous);
+				if (cachedColl === previous) {
+					// Keep notified of collection updates to notify the server at next remote call
+					addTrackingListeners(previous, parent);
+					
+					return IList(previous);
+				}
+			}
+			
 			if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
 				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(parent));
 				if (desc.versionPropertyName != null && !isNaN(parent[desc.versionPropertyName]) && desc.lazy[propertyName]
@@ -934,6 +944,7 @@ package org.granite.tide.data {
 					
 					log.debug("uninitialize lazy collection {0}", BaseContext.toString(previous));
 					_mergeContext.pushMerge(coll, previous);
+
 					IPersistentCollection(previous).uninitialize();
 					return IList(previous);
 				}
@@ -1056,14 +1067,17 @@ package org.granite.tide.data {
                 
                 nextList = prevColl;
             }
-            else
+            else if (destColl is PersistentCollection && !_mergeContext.mergeUpdate) {
+				nextList = destColl;
+			}
+			else
             	nextList = coll;
             
             // Wrap persistent collections
             if (parent is IEntity && propertyName != null && nextList is IPersistentCollection && !(nextList is PersistentCollection)) {
                 log.debug("create initialized persistent collection from {0}", BaseContext.toString(nextList));
-                
-                nextList = new PersistentCollection(IEntity(parent), propertyName, IPersistentCollection(nextList));
+				
+            	nextList = new PersistentCollection(IEntity(parent), propertyName, IPersistentCollection(nextList));
             }
             else
             	log.debug("mergeCollection result: {0}", BaseContext.toString(nextList));
@@ -1126,6 +1140,16 @@ package org.granite.tide.data {
          */ 
         private function mergeMap(map:IMap, previous:Object, expr:IExpression, parent:Object = null, propertyName:String = null):IMap {
             log.debug("mergeMap: {0} previous {1}", BaseContext.toString(map), BaseContext.toString(previous));
+			
+			if (previous != null) {
+				var cachedMap:Object = _mergeContext.getCachedMerge(previous);
+				if (cachedMap === previous) {
+					// Keep notified of collection updates to notify the server at next remote call
+					addTrackingListeners(previous, parent);
+					
+					return IMap(previous);
+				}
+			}
 			
             if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
 				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(parent));
@@ -1228,7 +1252,8 @@ package org.granite.tide.data {
                 
             if (parent is IEntity && propertyName != null && nextMap is IPersistentCollection && !(nextMap is PersistentMap)) {
                 log.debug("create initialized persistent map from {0}", BaseContext.toString(nextMap));
-                nextMap = new PersistentMap(IEntity(parent), propertyName, IPersistentCollection(nextMap));
+				
+            	nextMap = new PersistentMap(IEntity(parent), propertyName, IPersistentCollection(nextMap));
             }
             else
             	log.debug("mergeMap result: {0}", BaseContext.toString(nextMap));
