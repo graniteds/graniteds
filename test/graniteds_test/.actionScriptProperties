@@ -22,10 +22,18 @@
     <sourceAttachmentPath/>
   </compiler>
   <applications>
-    <application path="TestLoadModule.mxml"/>
-    <application path="TestLoadModule2.mxml"/>
-    <application path="TestRunner.mxml"/>
-    <application path="FlexUnitApplication.mxml"/>
+    <application path="TestLoadModule.mxml">
+      <airExcludes/>
+    </application>
+    <application path="TestLoadModule2.mxml">
+      <airExcludes/>
+    </application>
+    <application path="TestRunner.mxml">
+      <airExcludes/>
+    </application>
+    <application path="FlexUnitApplication.mxml">
+      <airExcludes/>
+    </application>
   </applications>
   <modules>
     <module application="flex/TestLoadModule.mxml" destPath="TestModule.swf" optimize="false" sourcePath="flex/TestModule.mxml"/>
@@ -35,4 +43,13 @@
     <buildCSSFileEntry destPath="bin-debug" sourcePath="flex/custom.css"/>
   </buildCSSFiles>
   <flashCatalyst validateFlashCatalystCompatibility="false"/>
+  <buildTargets>
+    <buildTarget buildTargetName="default">
+      <airSettings airCertificatePath="" airTimestamp="true" anePathSet="false" version="1">
+        <airExcludes/>
+        <anePaths/>
+      </airSettings>
+      <actionScriptSettings version="1"/>
+    </buildTarget>
+  </buildTargets>
 </actionScriptProperties>
