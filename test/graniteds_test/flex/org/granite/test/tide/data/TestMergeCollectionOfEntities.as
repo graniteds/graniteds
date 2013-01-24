@@ -279,6 +279,52 @@ package org.granite.test.tide.data
 		}
 		
 		[Test]
+		public function testMergeCollectionOfEntities4():void {
+			_ctx.meta_uninitializeAllowed = false;
+			
+			var p:Person = new Person();
+			p.uid = "P1";
+			p.id = 1;
+			p.version = 0;
+			p.contacts = new PersistentSet();
+			_ctx.person = _ctx.meta_mergeExternalData(p);
+			_ctx.meta_clearCache();
+			p = _ctx.person;
+			
+			var c1:Contact = new Contact();
+			c1.uid = "C1";
+			c1.person = p;
+			c1.email = "toto@toto.org";
+			p.contacts.addItem(c1);
+			
+			var coll:Object = p.contacts;
+			
+			Assert.assertTrue("Context dirty", _ctx.meta_dirty);
+			
+			var pb:Person = new Person();
+			pb.uid = "P1";
+			pb.id = 1;
+			pb.version = 0;
+			pb.contacts = new PersistentSet();
+			var c1b:Contact = new Contact();
+			c1b.uid = "C1";
+			c1b.id = 1;
+			c1b.version = 0;
+			c1b.person = pb;
+			c1b.email = "toto@toto.org";
+			pb.contacts.addItem(c1b);
+			
+			_ctx.meta_mergeExternalData(pb);
+			_ctx.meta_clearCache();
+			
+			Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
+			
+			p.contacts.removeItemAt(0);
+			
+			Assert.assertTrue("Context dirty", _ctx.meta_dirty);
+		}
+		
+		[Test]
 		public function testMergeMapOfEntities3():void {
 			_ctx.meta_uninitializeAllowed = false;
 			

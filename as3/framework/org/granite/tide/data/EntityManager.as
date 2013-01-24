@@ -1057,8 +1057,8 @@ package org.granite.tide.data {
                 
                 nextList = prevColl;
             }
-            else if (destColl is PersistentCollection && !_mergeContext.mergeUpdate) {
-				nextList = destColl;
+            else if (prevColl is PersistentCollection && !_mergeContext.mergeUpdate) {
+				nextList = prevColl;
 			}
 			else
             	nextList = coll;
