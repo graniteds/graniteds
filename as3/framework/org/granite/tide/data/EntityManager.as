@@ -758,7 +758,7 @@ package org.granite.tide.data {
                 }
             }
             else if (obj is IUID) {
-				if (obj is Proxy)
+				if (obj is Proxy && obj is IDataProxy)
 					p = _entitiesByUID.get(obj.flash_proxy::qualifiedClassName + ":" + IUID(obj).uid);
 				else
                 	p = _entitiesByUID.get(getQualifiedClassName(obj) + ":" + IUID(obj).uid);
@@ -1292,8 +1292,12 @@ package org.granite.tide.data {
             }
             
             if (coll is IMap) {
-            	var pmap:PersistentMap = new PersistentMap(parent, propertyName, 
-            		(coll is PersistentMap ? duplicatePersistentCollection(PersistentMap(coll).object) : IPersistentCollection(coll)));
+				var pm:IPersistentCollection = IPersistentCollection(coll);
+				if (coll is PersistentMap)
+					pm = duplicatePersistentCollection(PersistentMap(coll).object, parent, propertyName);
+				else if (_mergeContext.sourceContext != null)
+					pm = duplicatePersistentCollection(pm, parent, propertyName);
+            	var pmap:PersistentMap = new PersistentMap(parent, propertyName, pm);
 				_mergeContext.pushMerge(coll, pmap);
             	if (pmap.isInitialized()) {
 	                for each (var key:Object in pmap.keySet) {
@@ -1309,8 +1313,12 @@ package org.granite.tide.data {
             	return pmap;
             }
             
-            var pcoll:PersistentCollection = new PersistentCollection(parent, propertyName, 
-            	(coll is PersistentCollection ? duplicatePersistentCollection(PersistentCollection(coll).object) : IPersistentCollection(coll)));
+			var pc:IPersistentCollection = IPersistentCollection(coll);
+			if (coll is PersistentCollection)
+				pc = duplicatePersistentCollection(PersistentCollection(coll).object, parent, propertyName);
+			else if (_mergeContext.sourceContext != null)
+				pc = duplicatePersistentCollection(pc, parent, propertyName);
+            var pcoll:PersistentCollection = new PersistentCollection(parent, propertyName, pc);
 			_mergeContext.pushMerge(coll, pcoll);
             if (pcoll.isInitialized()) {
 	            for (var i:int = 0; i < pcoll.length; i++) {
@@ -1325,13 +1333,17 @@ package org.granite.tide.data {
             return pcoll;
         }
         
-        private function duplicatePersistentCollection(coll:Object):IPersistentCollection {
+        private function duplicatePersistentCollection(coll:Object, parent:Object, propertyName:String):IPersistentCollection {
         	if (!(coll is IPersistentCollection))
 				throw new Error("Not a persistent collection/map " + BaseContext.toString(coll));
 			
     		var ccoll:IPersistentCollection = coll.clone() as IPersistentCollection;
-			if (_mergeContext.uninitializing)
-				ccoll.uninitialize();
+			
+			if (_mergeContext.uninitializing && parent != null && propertyName != null) {
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(parent));
+				if (desc.versionPropertyName != null && !isNaN(parent[desc.versionPropertyName]) && desc.lazy[propertyName])
+					ccoll.uninitialize();
+			}
 			return ccoll;
         }
         
