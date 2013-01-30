@@ -188,7 +188,11 @@ package org.granite.tide.data {
         }
 		
 		public function getSavedProperties(object:Object):Object {
-			return _entityManager.savedProperties[object];
+			return _dirtyCheckContext.savedProperties[object];
+		}
+		
+		public function isUnsaved(object:Object):Boolean {
+			return _dirtyCheckContext.isUnsaved(object);
 		}
 
         public function mergeExternal(object:Object, dest:Object, parent:Object = null, propertyName:String = null):Object {

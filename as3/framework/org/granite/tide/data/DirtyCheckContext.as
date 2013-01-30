@@ -66,7 +66,7 @@ package org.granite.tide.data {
         
         private var _dirtyCount:int = 0;
         private var _savedProperties:Dictionary = new Dictionary(true);
-        
+		private var _unsavedEntities:Dictionary = new Dictionary(true);
 
 
         public function DirtyCheckContext(context:BaseContext) {
@@ -124,6 +124,21 @@ package org.granite.tide.data {
         public function isSaved(object:Object):Boolean {
         	return _savedProperties[object] != null;
         }
+		
+		/**
+		 *  Check if the object is marked as new in the context
+		 *
+		 *  @param object object to check
+		 * 
+		 *  @return true if the object has been newly attached
+		 */ 
+		public function isUnsaved(object:Object):Boolean {
+			return _unsavedEntities[object] != null;
+		}
+		
+		public function addUnsaved(entity:IEntity):void {
+			_unsavedEntities[entity] = true;
+		}
         
         
         /**
@@ -684,6 +699,8 @@ package org.granite.tide.data {
          *  @param object merged object
          */ 
         public function markNotDirty(object:Object, entity:IEntity = null):void {
+			delete _unsavedEntities[entity];
+			
         	if (_savedProperties[object] == null)
         		return;
         	
@@ -723,6 +740,8 @@ package org.granite.tide.data {
 		 *  @return true if the entity is still dirty after comparing with incoming object
 		 */ 
 		public function checkAndMarkNotDirty(entity:IEntity, source:Object):Boolean {
+			delete _unsavedEntities[entity];
+			
 			var save:Object = _savedProperties[entity];
 			if (save == null)
 				return false;
@@ -742,6 +761,10 @@ package org.granite.tide.data {
 					localValue = localValue.object;
 				if (isSameExt(localValue, sourceValue))
 					merged.push(propName);
+//				else if (sourceValue is IPersistentCollection && !IPersistentCollection(sourceValue).isInitialized())
+//					merged.push(propName);
+//				else if (sourceValue is IEntity && !sourceValue.meta::isInitialized())
+//					merged.push(propName);
 			}
 			
 			for each (propName in merged)
@@ -884,14 +907,10 @@ package org.granite.tide.data {
 						}
 					}
 				}
-				else if (save && (ObjectUtil.isSimple(val) || ObjectUtil.isSimple(save[p]) || val is ByteArray || save[p] is ByteArray)) {
+				else if (save && (EntityManager.isSimple(val) || EntityManager.isSimple(save[p]))) {
                     if (save[p] !== undefined)
                         entity[p] = save[p];
                 }
-				else if (save && (val is Enum || save[p] is Enum || val is IValue || save[p] is IValue)) {
-					if (save[p] !== undefined)
-						entity[p] = save[p];
-				} 
                 else if (val is IEntity || (save && save[p] is IEntity)) {
                 	if (save && save[p] !== undefined && !_context.meta_objectEquals(val, save[p]))
                 		entity[p] = save[p];
