@@ -3,11 +3,14 @@ package org.granite.test.tide.data
     import flash.events.TimerEvent;
     import flash.system.System;
     import flash.utils.Timer;
+    import flash.utils.getQualifiedClassName;
     
     import mx.collections.ArrayCollection;
+    import mx.collections.IList;
     
     import org.flexunit.Assert;
     import org.flexunit.async.Async;
+    import org.granite.persistence.PersistentSet;
     import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
     import org.granite.tide.BaseContext;
@@ -107,5 +110,41 @@ package org.granite.test.tide.data
 			Assert.assertEquals("Contacts bound", "person", _ctx.meta_getReference(contactsNew).path);
 			Assert.assertEquals("Contact unbound", "person", _ctx.meta_getReference(contact2).path);
         }
+		
+		
+		[Test]
+		public function testEntityRefs2():void {
+			var person:Person = new Person(1, 0, "test", "test");
+			person.contacts = new ArrayCollection();
+			var contact:Contact = new Contact(1, 0, person, "test@test.com");
+			person.contacts.addItem(contact);
+			
+			person = Person(_ctx.meta_mergeExternalData(person));
+			
+			var refs:Array = _ctx.meta_getRefs(person.contacts.list);
+			Assert.assertEquals("Ref person count", 1, refs.length);
+			Assert.assertEquals("Ref person uid", getQualifiedClassName(Person) + ":" + person.uid, refs[0][0]);
+			
+			var oldlist:IList = person.contacts.list;
+
+			var person1:Person = new Person(1, 0, "test", "test");
+			person1.contacts = new ArrayCollection();
+			var contact1:Contact = new Contact(1, 0, person, "test@test.com");
+			person1.contacts.addItem(contact1);
+			
+			_ctx.meta_mergeExternalData(person1);
+			
+			var person2:Person = new Person(1, 0, "test", "test");
+			person2.contacts = new PersistentSet();
+			var contact2:Contact = new Contact(1, 0, person, "test@test.com");
+			person2.contacts.addItem(contact2);
+			
+			_ctx.meta_mergeExternalData(person2);
+			
+			refs = _ctx.meta_getRefs(person.contacts.list);
+			Assert.assertEquals("Ref person count", 1, refs.length);
+			Assert.assertEquals("Ref person uid", getQualifiedClassName(Person) + ":" + person.uid, refs[0][0]);
+			Assert.assertNull("Ref to old list removed", _ctx.meta_getRefs(oldlist));
+		}
     }
 }

@@ -1727,6 +1727,10 @@ package org.granite.tide {
         public function meta_getOwnerEntity(object:Object):Object {
         	return _entityManager.getOwnerEntity(object);
         }
+		
+		public function meta_getOwnerEntities(object:Object):Array {
+			return _entityManager.getOwnerEntities(object);
+		}
         
         /**
          *  @private 
@@ -1740,6 +1744,10 @@ package org.granite.tide {
             var cache:Dictionary = new Dictionary();
             return _entityManager.getReference(obj, recurse, cache);
         }
+		
+		public function meta_getRefs(object:Object):Array {
+			return _entityManager.getRefs(object);
+		}
 
     
         /**

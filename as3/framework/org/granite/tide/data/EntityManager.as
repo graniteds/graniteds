@@ -280,13 +280,14 @@ package org.granite.tide.data {
 		 *  @param entity an entity
 		 *  @param removeFromCache remove entity from cache
 		 */
-		public function detachEntity(entity:IEntity, removeFromCache:Boolean = true):void {
-			var versionPropName:String = _context.meta_tide.getEntityDescriptor(entity).versionPropertyName;
-			if (versionPropName == null || !isNaN(entity[versionPropName]))
-				return;
+		public function detachEntity(entity:IEntity, removeFromCache:Boolean = true, forceRemove:Boolean = false):void {
+			if (!forceRemove) {
+				var versionPropName:String = _context.meta_tide.getEntityDescriptor(entity).versionPropertyName;
+				if (versionPropName == null || !isNaN(entity[versionPropName]))
+					return;
+			}
 			
 			_dirtyCheckContext.markNotDirty(entity, entity);
-			// TODO: Should detach and remove unsaved state recursively
 			
 			Managed.setEntityManager(entity, null);
 			if (removeFromCache)
@@ -305,7 +306,7 @@ package org.granite.tide.data {
          *  @param cache internal cache to avoid graph loops
          */ 
         public function attach(object:Object, cache:Dictionary):void {
-            if (isSimple(object))
+            if (object == null || isSimple(object))
             	return;
             
             if (cache[object] != null)
@@ -341,6 +342,64 @@ package org.granite.tide.data {
 				}
             }
         }
+		
+		/**
+		 *	@private
+		 *  Internal implementation of object detach
+		 * 
+		 *  @param object object
+		 *  @param cache internal cache to avoid graph loops
+		 */ 
+		public function detach(object:Object, cache:Dictionary, forceRemove:Boolean = false):void {
+			if (object == null || isSimple(object))
+				return;
+			
+			if (cache[object] != null)
+				return;
+			cache[object] = object;
+			
+			if (object is IEntity && _entityReferences[object] == null)
+				detachEntity(IEntity(object), true, forceRemove);
+			
+			var excludes:Array = [ 'uid' ];
+			if (object is IEntity) {
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(object));
+				if (desc.idPropertyName != null)
+					excludes.push(desc.idPropertyName);
+				if (desc.versionPropertyName != null)
+					excludes.push(desc.versionPropertyName);
+			}
+			
+			var cinfo:Object = ObjectUtil.getClassInfo(object, excludes, { includeTransient: false });
+			for each (var p:String in cinfo.properties) {
+				var val:Object = object[p];
+				
+				removeReference(val, object, p);
+				
+				if (val is IList && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
+					var coll:IList = IList(val);
+					for each (var o:Object in coll) {
+						detach(o, cache, forceRemove);
+					}
+				}
+				else if (val is IMap && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
+					var map:IMap = IMap(val);
+					for each (var key:Object in map.keySet) {
+						var value:Object = map.get(key);
+						detach(key, cache, forceRemove);
+						detach(value, cache, forceRemove);
+					}
+				}
+				else if (val is Array) {
+					for each (var e:Object in val) {
+						detach(e, cache, forceRemove);
+					}
+				}
+				else if (val != null && !isSimple(val)) {
+					detach(val, cache, forceRemove);
+				}
+			}
+		}
         
 
         /**
@@ -407,6 +466,10 @@ package org.granite.tide.data {
             return owners;
         }
 
+		
+		public function getRefs(object:Object):Array {
+			return _entityReferences[object] as Array;
+		}
         
         /**
          *  @private
@@ -485,9 +548,6 @@ package org.granite.tide.data {
          *  @param res the context expression
          */ 
         public function addReference(obj:Object, parent:Object, propName:String, res:IExpression = null):void {
-//			if (parent && propName == null)
-//				throw new Error("Illegal parent reference " + BaseContext.toString(parent) + " added for obj " + BaseContext.toString(obj));
-			
             if (obj is IEntity)
                 attachEntity(IEntity(obj));
 			
@@ -551,13 +611,13 @@ package org.granite.tide.data {
 		 *  @param propName name of the parent entity property that references the entity
          *  @param res expression to remove
          */ 
-        public function removeReference(obj:Object, parent:IUID = null, propName:String = null, res:IExpression = null):void {
+        public function removeReference(obj:Object, parent:Object = null, propName:String = null, res:IExpression = null):Boolean {
 			if (obj is ListCollectionView && parent != null)
 				obj = obj.list;
 			
             var refs:Array = _entityReferences[obj];
             if (!refs)
-                return;
+                return true;
             var idx:int = -1, i:int;
             if (parent) {
 				for (i = 0; i < refs.length; i++) {
@@ -578,13 +638,18 @@ package org.granite.tide.data {
             if (idx >= 0)
                 refs.splice(idx, 1);
             
+			var removed:Boolean = false;
             if (refs.length == 0) {
             	delete _entityReferences[obj];
+				removed = true;
 				
 				if (obj is IEntity)
 					detachEntity(IEntity(obj), true);
 			}
             
+			if (obj is IPersistentCollection && !IPersistentCollection(obj).isInitialized())
+				return removed;
+			
             var elt:Object = null;
             if (obj is IList || obj is Array) {
             	for each (elt in obj)
@@ -597,6 +662,7 @@ package org.granite.tide.data {
             		removeReference(elt, parent, propName);
             	}
             }
+			return removed;
         }
         
 
@@ -642,7 +708,7 @@ package org.granite.tide.data {
 					}
 					
 	                // Clear change tracking
-	            	removeTrackingListeners(previous, parent); 
+	            	removeTrackingListeners(previous, parent);
 	                
 					if (obj == null) {
 						next = null;
@@ -1392,46 +1458,45 @@ package org.granite.tide.data {
                     _mergeContext.addConflict(entity as IEntity, null);
                 }
                 else {
-                    var owners:Array = getOwnerEntities(entity);
-                    var cinfo:Object, p:String, val:Object;
-                    if (owners != null) {
-                        for each (var owner:Object in owners) {
-                            val = owner[0][owner[1]];
-                            if (val is IPersistentCollection && !IPersistentCollection(val).isInitialized())
-                                continue;
-                            var idx:int = 0;
-                            if (val is IList) {
-                                idx = val.getItemIndex(entity);
-                                if (idx >= 0)
-                                    val.removeItemAt(idx);
-                            }
-                            else if (val is Array) {
-                                idx = val.indexOf(entity);
-                                if (idx >= 0)
-                                    val.splice(idx, 1);
-                            }
-                            else if (val is IMap) {
-                                if (val.containsKey(entity))
-                                    val.remove(entity);
-
-                                for each (var key:Object in val.keySet) {
-                                    if (objectEquals(val[key], entity))
-                                        val.remove(key);
-                                }
-                            }
-                        }
-                    }
-
-                    /* May not be necessary, should be cleaned up by weak reference */
-                    cinfo = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: true });
-                    for each (p in cinfo.properties) {
-                        val = entity[p];
-                        if (val is IList || val is IMap || val is Array)
-                            delete _entityReferences[val];
-                    }
-                    delete _entityReferences[entity];
-
-                    detachEntity(IEntity(entity));
+					var saveMerging:Boolean = _mergeContext.merging;
+					try {
+						_mergeContext.merging = true;	// Don't track changes on collections to prevent from 'dirtying' the context
+						
+	                    var owners:Array = getOwnerEntities(entity);
+	                    var cinfo:Object, p:String, val:Object;
+	                    if (owners != null) {
+	                        for each (var owner:Object in owners) {
+	                            val = owner[0][owner[1]];
+	                            if (val is IPersistentCollection && !IPersistentCollection(val).isInitialized())
+	                                continue;
+	                            var idx:int = 0;
+	                            if (val is IList) {
+	                                idx = val.getItemIndex(entity);
+	                                if (idx >= 0)
+	                                    val.removeItemAt(idx);
+	                            }
+	                            else if (val is Array) {
+	                                idx = val.indexOf(entity);
+	                                if (idx >= 0)
+	                                    val.splice(idx, 1);
+	                            }
+	                            else if (val is IMap) {
+	                                if (val.containsKey(entity))
+	                                    val.remove(entity);
+									
+	                                for each (var key:Object in val.keySet) {
+	                                    if (objectEquals(val[key], entity))
+	                                        val.remove(key);
+	                                }
+	                            }
+	                        }
+	                    }
+						
+	                    detach(IEntity(entity), new Dictionary(), true);
+					}
+					finally {
+						_mergeContext.merging = saveMerging;
+					}
                 }
             }
         }
