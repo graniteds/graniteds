@@ -24,6 +24,7 @@ package org.granite.test.math {
 	
 	import org.granite.math.BigDecimal;
 	import org.granite.math.BigNumberError;
+	import org.granite.math.MathContext;
 	import org.granite.math.NumberFormatError;
 	import org.granite.math.RoundingMode;
 
@@ -53,7 +54,6 @@ package org.granite.test.math {
 			Assert.assertEquals(1, a.precision);
 		}
 		
-		[Test]
 		[Test]
         public function testForString():void {
 			var a:BigDecimal;
@@ -256,7 +256,6 @@ package org.granite.test.math {
 		}
 		
 		[Test]
-		[Test]
         public function testForInt():void {
 			var a:BigDecimal;
 			
@@ -286,7 +285,6 @@ package org.granite.test.math {
 			Assert.assertEquals(10, a.precision);
 		}
 		
-		[Test]
 		[Test]
         public function testForNumber():void {
 			var a:BigDecimal;
@@ -362,7 +360,6 @@ package org.granite.test.math {
 			Assert.assertEquals(6, a.precision);
 		}
 		
-		[Test]
 		[Test]
         public function testAdd():void {
 			var a:BigDecimal, b:BigDecimal, c:BigDecimal, i:int, s:String, results:Array;
@@ -491,7 +488,6 @@ package org.granite.test.math {
 		}
 		
 		[Test]
-		[Test]
         public function testSubtract():void {
 			var a:BigDecimal, b:BigDecimal, c:BigDecimal, i:int, s:String, results:Array;
 			
@@ -619,7 +615,6 @@ package org.granite.test.math {
 		}
 		
 		[Test]
-		[Test]
         public function testMultiply():void {
 			var a:BigDecimal, b:BigDecimal, c:BigDecimal, i:int, s:String, results:Array;
 
@@ -725,7 +720,6 @@ package org.granite.test.math {
 			}
 		}
 		
-		[Test]
 		[Test]
         public function testDivide():void {
 			var a:BigDecimal, b:BigDecimal, c:BigDecimal, i:int, s:String, results:Array;
@@ -895,7 +889,6 @@ package org.granite.test.math {
 		}
 
 		[Test]
-		[Test]
         public function testToString():void {
 			var a:BigDecimal, i:int, z:String, s:String;
 			
@@ -1043,5 +1036,257 @@ package org.granite.test.math {
 			a = new BigDecimal("1.0E2147483646");
 			Assert.assertEquals("1.0E+2147483646", a.toString());
 		}
+		
+		[Test] 
+		public function testRoundUp():void { 
+			var a:BigDecimal; 
+			var mc:MathContext = new MathContext(1, RoundingMode.UP); 
+			
+			a = new BigDecimal("5.5"); 
+			Assert.assertEquals("6", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("2.5"); 
+			Assert.assertEquals("3", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.6"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.1"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.0"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.0"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.1"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.6"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-2.5"); 
+			Assert.assertEquals("-3", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-5.5"); 
+			Assert.assertEquals("-6", a.round(mc).toPlainString()); 
+		} 
+		
+		[Test] 
+		public function testRoundDown():void { 
+			var a:BigDecimal; 
+			var mc:MathContext = new MathContext(1, RoundingMode.DOWN); 
+			
+			a = new BigDecimal("5.5"); 
+			Assert.assertEquals("5", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("2.5"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.6"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.1"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.0"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.0"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.1"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.6"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-2.5"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-5.5"); 
+			Assert.assertEquals("-5", a.round(mc).toPlainString()); 
+		} 
+		
+		[Test] 
+		public function testRoundCeiling():void { 
+			var a:BigDecimal; 
+			var mc:MathContext = new MathContext(1, RoundingMode.CEILING); 
+			
+			a = new BigDecimal("5.5"); 
+			Assert.assertEquals("6", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("2.5"); 
+			Assert.assertEquals("3", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.6"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.1"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.0"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.0"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.1"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.6"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-2.5"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-5.5"); 
+			Assert.assertEquals("-5", a.round(mc).toPlainString()); 
+		} 
+		
+		[Test] 
+		public function testRoundFloor():void { 
+			var a:BigDecimal; 
+			var mc:MathContext = new MathContext(1, RoundingMode.FLOOR); 
+			
+			a = new BigDecimal("5.5"); 
+			Assert.assertEquals("5", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("2.5"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.6"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.1"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.0"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.0"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.1"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.6"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-2.5"); 
+			Assert.assertEquals("-3", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-5.5"); 
+			Assert.assertEquals("-6", a.round(mc).toPlainString()); 
+		} 
+		
+		[Test] 
+		public function testRoundHalfUp():void { 
+			var a:BigDecimal; 
+			var mc:MathContext = new MathContext(1, RoundingMode.HALF_UP); 
+			
+			a = new BigDecimal("5.5"); 
+			Assert.assertEquals("6", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("2.5"); 
+			Assert.assertEquals("3", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.6"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.1"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.0"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.0"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.1"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.6"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-2.5"); 
+			Assert.assertEquals("-3", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-5.5"); 
+			Assert.assertEquals("-6", a.round(mc).toPlainString()); 
+		} 
+		
+		[Test] 
+		public function testRoundHalfDown():void { 
+			var a:BigDecimal; 
+			var mc:MathContext = new MathContext(1, RoundingMode.HALF_DOWN); 
+			
+			a = new BigDecimal("5.5"); 
+			Assert.assertEquals("5", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("2.5"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.6"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.1"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.0"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.0"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.1"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.6"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-2.5"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-5.5"); 
+			Assert.assertEquals("-5", a.round(mc).toPlainString()); 
+		} 
+		
+		[Test] 
+		public function testRoundHalfEven():void { 
+			var a:BigDecimal; 
+			var mc:MathContext = new MathContext(1, RoundingMode.HALF_EVEN); 
+			
+			a = new BigDecimal("5.5"); 
+			Assert.assertEquals("6", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("2.5"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.6"); 
+			Assert.assertEquals("2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.1"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("1.0"); 
+			Assert.assertEquals("1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.0"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.1"); 
+			Assert.assertEquals("-1", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-1.6"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-2.5"); 
+			Assert.assertEquals("-2", a.round(mc).toPlainString()); 
+			
+			a = new BigDecimal("-5.5"); 
+			Assert.assertEquals("-6", a.round(mc).toPlainString()); 
+		} 
 	}
 }
