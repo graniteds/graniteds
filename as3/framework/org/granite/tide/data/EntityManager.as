@@ -1448,8 +1448,10 @@ package org.granite.tide.data {
         public function handleRemovals(removals:Array):void {
             for each (var removal:Object in removals) {
                 var entity:Object = getCachedObject(removal, true);
-                if (entity == null)
+                if (entity == null) {
+					log.debug("Entity to remove not found {0}:{1}", removal.className, removal.uid);
                     continue;
+				}
 
                 if (_mergeContext.externalData && !_mergeContext.resolvingConflict && _dirtyCheckContext.isEntityChanged(IEntity(entity))) {
                     // Conflict between externally received data and local modifications
@@ -1492,6 +1494,7 @@ package org.granite.tide.data {
 	                        }
 	                    }
 						
+						delete _entityReferences[entity];
 	                    detach(IEntity(entity), new Dictionary(), true);
 					}
 					finally {
