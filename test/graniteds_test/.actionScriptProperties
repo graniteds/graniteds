@@ -16,8 +16,8 @@
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/Common"/>
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject"/>
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject_Extended"/>
-      <libraryPathEntry kind="3" linkType="1" path="/granite-swc/bin/granite-swc.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="3" linkType="1" path="/granite-essentials-swc/bin/granite-essentials-swc.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/granite-enterprise-flex45-swc/bin/granite-enterprise-flex45-swc.swc" useDefaultLinkType="false"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>
