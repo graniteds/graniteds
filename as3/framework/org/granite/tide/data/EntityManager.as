@@ -291,7 +291,7 @@ package org.granite.tide.data {
 			
 			Managed.setEntityManager(entity, null);
 			if (removeFromCache)
-				_entitiesByUID.remove(entity.uid);
+				_entitiesByUID.remove(getQualifiedClassName(entity) + ":" + entity.uid);
 		}
         
 		public static function isSimple(object:Object):Boolean {
@@ -425,7 +425,7 @@ package org.granite.tide.data {
                 return entity;
             if (nullIfAbsent)
                 return null;
-
+			
         	return object;
         }
 
