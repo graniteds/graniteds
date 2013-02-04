@@ -358,9 +358,6 @@ package org.granite.tide.data {
 				return;
 			cache[object] = object;
 			
-			if (object is IEntity && _entityReferences[object] == null)
-				detachEntity(IEntity(object), true, forceRemove);
-			
 			var excludes:Array = [ 'uid' ];
 			if (object is IEntity) {
 				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(object));
@@ -371,16 +368,25 @@ package org.granite.tide.data {
 			}
 			
 			var cinfo:Object = ObjectUtil.getClassInfo(object, excludes, { includeTransient: false });
-			for each (var p:String in cinfo.properties) {
-				var val:Object = object[p];
-				
-				removeReference(val, object, p);
+			var p:String, val:Object;
+			
+			if (object is IEntity && _entityReferences[object] == null) {
+				detachEntity(IEntity(object), true, forceRemove);
+
+				for each (p in cinfo.properties) {
+					val = object[p];
+					
+					removeReference(val, object, p);
+				}
+			}
+			
+			for each (p in cinfo.properties) {
+				val = object[p];
 				
 				if (val is IList && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
 					var coll:IList = IList(val);
-					for each (var o:Object in coll) {
+					for each (var o:Object in coll)
 						detach(o, cache, forceRemove);
-					}
 				}
 				else if (val is IMap && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
 					var map:IMap = IMap(val);
@@ -391,9 +397,8 @@ package org.granite.tide.data {
 					}
 				}
 				else if (val is Array) {
-					for each (var e:Object in val) {
+					for each (var e:Object in val)
 						detach(e, cache, forceRemove);
-					}
 				}
 				else if (val != null && !isSimple(val)) {
 					detach(val, cache, forceRemove);
@@ -1495,6 +1500,7 @@ package org.granite.tide.data {
 	                    }
 						
 						delete _entityReferences[entity];
+						
 	                    detach(IEntity(entity), new Dictionary(), true);
 					}
 					finally {
