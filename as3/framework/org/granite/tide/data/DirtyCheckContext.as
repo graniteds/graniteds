@@ -22,6 +22,7 @@ package org.granite.tide.data {
     import flash.events.IEventDispatcher;
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
+    import flash.utils.getQualifiedClassName;
     
     import mx.collections.IList;
     import mx.core.IPropertyChangeNotifier;
@@ -43,6 +44,7 @@ package org.granite.tide.data {
     import org.granite.tide.BaseContext;
     import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IEntity;
+    import org.granite.tide.IEntityRef;
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.IWrapper;
     import org.granite.tide.collections.PersistentCollection;
@@ -791,6 +793,74 @@ package org.granite.tide.data {
 				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", oldDirty, _dirtyCount > 0));
 			
 			return newDirtyEntity;
+		}
+		
+		
+		public function fixRemovalsAndPersists(removals:Array, persists:Array):void {
+			var oldDirty:Boolean = _dirtyCount > 0;
+			
+			for (var object:Object in _savedProperties) {
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(object));
+				
+				var oldDirtyEntity:Boolean = isEntityChanged(object);
+				
+				var save:Object = _savedProperties[object];
+				var p:String;
+				
+				for (p in save) {
+					if (save[p] is Array) {
+						var savedArray:Array = save[p] as Array;
+						for (var idx:int = 0; idx < savedArray.length; idx++) {
+							var ce:CollectionEvent = CollectionEvent(savedArray[idx]);
+							if (ce.kind == CollectionEventKind.ADD && persists != null) {
+								for each (var persist:Object in persists) {
+									if (ce.items && ce.items.length == 1 && ce.items[0] is IEntity
+										&& ((persist is IEntityRef && persist.className == getQualifiedClassName(ce.items[0]) && persist.uid == ce.items[0].uid)
+										|| _context.meta_objectEquals(persist, ce.items[0]))) {
+										// Found remaining add event for newly persisted item
+										savedArray.splice(idx, 1);
+										break;
+									}
+								}
+							}
+							else if (ce.kind == CollectionEventKind.REMOVE && removals != null) {
+								for each (var removal:Object in removals) {
+									if (ce.items && ce.items.length == 1 && ce.items[0] is IEntity 
+										&& ((removal is IEntityRef && removal.className == getQualifiedClassName(ce.items[0]) && removal.uid == ce.items[0].uid)
+										|| _context.meta_objectEquals(removal, ce.items[0]))) {
+										// Found remaining add event for newly persisted item
+										savedArray.splice(idx, 1);
+										break;
+									}
+								}
+							}
+						}
+						
+						if (savedArray.length == 0)
+							delete save[p];
+					}
+				}
+				
+				var count:uint = 0;
+				for (p in save) {
+					if (p != desc.versionPropertyName)
+						count++;
+				}
+				if (count == 0) {
+					delete _savedProperties[object];
+					_dirtyCount--;
+				}
+				
+				var newDirtyEntity:Boolean = isEntityChanged(object);
+				if (newDirtyEntity !== oldDirtyEntity) {
+					var pce:PropertyChangeEvent = new PropertyChangeEvent("dirtyChange", false, false, 
+						PropertyChangeEventKind.UPDATE, "meta_dirty", oldDirtyEntity, newDirtyEntity);
+					object.dispatchEvent(pce);
+				}
+			}
+			
+			if ((_dirtyCount > 0) !== oldDirty)
+				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", oldDirty, _dirtyCount > 0));
 		}
         
         

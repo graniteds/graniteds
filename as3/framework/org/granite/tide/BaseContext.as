@@ -1759,7 +1759,7 @@ package org.granite.tide {
          *
          *  @return merged object (should === prev when prev not null)
          */
-        public function meta_mergeExternalData(obj:Object, prev:Object = null, sourceSessionId:String = null, removals:Array = null):Object {
+        public function meta_mergeExternalData(obj:Object, prev:Object = null, sourceSessionId:String = null, removals:Array = null, persists:Array = null):Object {
             _entityManager.initMerge();
 
 			var isExternalData:Boolean = sourceSessionId && sourceSessionId != _tide.sessionId;
@@ -1768,7 +1768,7 @@ package org.granite.tide {
         	
         	var next:Object = meta_mergeExternal(obj, prev);
 
-            _entityManager.handleRemovals(removals);
+            _entityManager.handleRemovalsAndPersists(removals, persists);
         	
 			if (isExternalData) {
         		_entityManager.handleMergeConflicts();        	
@@ -1788,18 +1788,22 @@ package org.granite.tide {
 		 *  @param updates list of data updates
 		 */
 		public function meta_handleUpdates(sourceSessionId:String, updates:Array):void {
-			var merges:Array = [], removals:Array = [];
+			var merges:Array = [], removals:Array = [], persists:Array = [];
 			for each (var update:Array in updates) {
-                if (update[0] == 'PERSIST' || update[0] == 'UPDATE')
+                if (update[0] == 'PERSIST') {
+					merges.push(update[1]);
+					persists.push(update[1]);
+				}
+				else if (update[0] == 'UPDATE')
 				    merges.push(update[1]);
                 else if (update[0] == 'REMOVE')
                     removals.push(update[1]);
             }
 
             if (merges.length == 1)
-                meta_mergeExternalData(merges[0], null, sourceSessionId, removals);
+                meta_mergeExternalData(merges[0], null, sourceSessionId, removals, persists);
             else
-			    meta_mergeExternalData(merges, null, sourceSessionId, removals);
+			    meta_mergeExternalData(merges, null, sourceSessionId, removals, persists);
 		}
 		
 		/**

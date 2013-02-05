@@ -1450,7 +1450,7 @@ package org.granite.tide.data {
          *
          *  @param removals array of entity instances to remove from the cache
          */
-        public function handleRemovals(removals:Array):void {
+        public function handleRemovalsAndPersists(removals:Array, persists:Array = null):void {
             for each (var removal:Object in removals) {
                 var entity:Object = getCachedObject(removal, true);
                 if (entity == null) {
@@ -1508,6 +1508,8 @@ package org.granite.tide.data {
 					}
                 }
             }
+			
+			_dirtyCheckContext.fixRemovalsAndPersists(removals, persists);
         }
 
         /**
@@ -1526,7 +1528,7 @@ package org.granite.tide.data {
 			if (resolving)
 				_mergeContext.resolvingConflict = true;
             if (modifiedEntity == null)
-                handleRemovals([localEntity]);
+                handleRemovalsAndPersists([localEntity]);
             else
 				mergeExternal(modifiedEntity, localEntity);
 			
