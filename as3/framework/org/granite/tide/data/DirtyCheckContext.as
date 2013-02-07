@@ -819,6 +819,7 @@ package org.granite.tide.data {
 										|| _context.meta_objectEquals(persist, ce.items[0]))) {
 										// Found remaining add event for newly persisted item
 										savedArray.splice(idx, 1);
+										idx--;
 										break;
 									}
 								}
@@ -830,6 +831,7 @@ package org.granite.tide.data {
 										|| _context.meta_objectEquals(removal, ce.items[0]))) {
 										// Found remaining add event for newly persisted item
 										savedArray.splice(idx, 1);
+										idx--;
 										break;
 									}
 								}
