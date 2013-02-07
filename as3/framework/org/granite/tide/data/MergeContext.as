@@ -204,7 +204,7 @@ package org.granite.tide.data {
 		}
 		
         public function objectEquals(obj1:Object, obj2:Object):Boolean {
-            return _context.meta_objectEquals(obj1, obj2);
+            return _entityManager.objectEquals(obj1, obj2);
         }
 
         public function isEntityChanged(entity:IEntity):Boolean {
