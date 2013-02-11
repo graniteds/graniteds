@@ -43,27 +43,27 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
 
-    private final Map<Type, ClientType> simpleJava2JavaFXType = new HashMap<Type, ClientType>();
-    private final Map<Type, ClientType> propertyJava2JavaFXType = new HashMap<Type, ClientType>();
+    private final Map<String, ClientType> simpleJava2JavaFXType = new HashMap<String, ClientType>();
+    private final Map<String, ClientType> propertyJava2JavaFXType = new HashMap<String, ClientType>();
     
     
     ///////////////////////////////////////////////////////////////////////////
     // Constructors.
 
     public DefaultJavaFXTypeFactory() {
-    	simpleJava2JavaFXType.put(Boolean.TYPE, JavaFXType.BOOLEAN);
-    	simpleJava2JavaFXType.put(Integer.TYPE, JavaFXType.INT);
-    	simpleJava2JavaFXType.put(Long.TYPE, JavaFXType.LONG);
-    	simpleJava2JavaFXType.put(Float.TYPE, JavaFXType.FLOAT);
-    	simpleJava2JavaFXType.put(Double.TYPE, JavaFXType.DOUBLE);
-    	simpleJava2JavaFXType.put(String.class, JavaFXType.STRING);
+    	simpleJava2JavaFXType.put(buildCacheKey(Boolean.TYPE), JavaFXType.BOOLEAN);
+    	simpleJava2JavaFXType.put(buildCacheKey(Integer.TYPE), JavaFXType.INT);
+    	simpleJava2JavaFXType.put(buildCacheKey(Long.TYPE), JavaFXType.LONG);
+    	simpleJava2JavaFXType.put(buildCacheKey(Float.TYPE), JavaFXType.FLOAT);
+    	simpleJava2JavaFXType.put(buildCacheKey(Double.TYPE), JavaFXType.DOUBLE);
+    	simpleJava2JavaFXType.put(buildCacheKey(String.class), JavaFXType.STRING);
     	
-    	propertyJava2JavaFXType.put(Boolean.TYPE, JavaFXType.BOOLEAN_PROPERTY);
-    	propertyJava2JavaFXType.put(Double.TYPE, JavaFXType.DOUBLE_PROPERTY);
-    	propertyJava2JavaFXType.put(Float.TYPE, JavaFXType.FLOAT_PROPERTY);
-    	propertyJava2JavaFXType.put(Long.TYPE, JavaFXType.LONG_PROPERTY);
-    	propertyJava2JavaFXType.put(Integer.TYPE, JavaFXType.INT_PROPERTY);
-    	propertyJava2JavaFXType.put(String.class, JavaFXType.STRING_PROPERTY);
+    	propertyJava2JavaFXType.put(buildCacheKey(Boolean.TYPE), JavaFXType.BOOLEAN_PROPERTY);
+    	propertyJava2JavaFXType.put(buildCacheKey(Double.TYPE), JavaFXType.DOUBLE_PROPERTY);
+    	propertyJava2JavaFXType.put(buildCacheKey(Float.TYPE), JavaFXType.FLOAT_PROPERTY);
+    	propertyJava2JavaFXType.put(buildCacheKey(Long.TYPE), JavaFXType.LONG_PROPERTY);
+    	propertyJava2JavaFXType.put(buildCacheKey(Integer.TYPE), JavaFXType.INT_PROPERTY);
+    	propertyJava2JavaFXType.put(buildCacheKey(String.class), JavaFXType.STRING_PROPERTY);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -72,11 +72,25 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
     @Override
 	public void configure(boolean externalizeLong, boolean externalizeBigInteger, boolean externalizeBigDecimal) {
 	}
+    
+    private static final String buildCacheKey(Type jType) {
+    	return buildCacheKey(jType, null);
+    }
+    private static final String buildCacheKey(Type jType, ParameterizedType[] declaringTypes) {
+		String key = jType.toString();
+		if (declaringTypes != null) {
+			for (ParameterizedType dt : declaringTypes)
+				key += "::" + dt.toString();
+		}
+		return key;
+    }
 
 	@Override
 	public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
-        ClientType javafxType = getFromCache(jType, property);
-
+		String key = buildCacheKey(jType, declaringTypes);
+		
+		ClientType javafxType = getFromCache(key, property);
+		
         if (javafxType == null) {
         	if (jType instanceof GenericArrayType) {
         		Type componentType = ((GenericArrayType)jType).getGenericComponentType();
@@ -121,10 +135,10 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 	            	javafxType = createJavaFXType(jType, declaringClass, declaringTypes, property);
 	            }
         	}
-
-            putInCache(jType, property, javafxType);
+        	
+            putInCache(key, property, javafxType);
         }
-
+        
         return javafxType;
     }
 
@@ -198,20 +212,20 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
     	return new JavaFXType(ClassUtil.getPackageName(jClass), name, null);
     }
 
-    protected ClientType getFromCache(Type jType, boolean property) {
-        if (jType == null)
+    protected ClientType getFromCache(String key, boolean property) {
+        if (key == null)
             throw new NullPointerException("jType must be non null");
         if (property)
-        	return propertyJava2JavaFXType.get(jType);
-        return simpleJava2JavaFXType.get(jType);
+        	return propertyJava2JavaFXType.get(key);
+        return simpleJava2JavaFXType.get(key);
     }
 
-    protected void putInCache(Type jType, boolean property, ClientType javafxType) {
-        if (jType == null || javafxType == null)
+    protected void putInCache(String key, boolean property, ClientType javafxType) {
+        if (key == null || javafxType == null)
             throw new NullPointerException("jType and JavaFXType must be non null");
         if (property)
-        	propertyJava2JavaFXType.put(jType, javafxType);
+        	propertyJava2JavaFXType.put(key, javafxType);
         else
-        	simpleJava2JavaFXType.put(jType, javafxType);
+        	simpleJava2JavaFXType.put(key, javafxType);
     }
 }

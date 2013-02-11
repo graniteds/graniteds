@@ -1,7 +1,6 @@
 package org.granite.test.builder.services;
 
 import java.io.File;
-import java.util.Iterator;
 
 import junit.framework.Assert;
 
