@@ -9,7 +9,8 @@ package org.granite.test.tide.spring
     
     public class MockSpring extends Spring
     {
-        public var token:MockSpringAsyncToken;
+		public var token:MockSpringAsyncToken = null;
+        public var tokenClass:Class = null;
         
         public function MockSpring(destination:String = null) {
             super(destination);
@@ -37,13 +38,14 @@ package org.granite.test.tide.spring
 
 
 
-import mx.rpc.remoting.mxml.RemoteObject;
 import mx.rpc.AbstractOperation;
-import org.granite.test.tide.spring.MockSpringAsyncToken;
+import mx.rpc.AsyncToken;
+import mx.rpc.remoting.mxml.RemoteObject;
+
 import org.granite.test.tide.spring.MockSpring;
+import org.granite.test.tide.spring.MockSpringAsyncToken;
 import org.granite.tide.Tide;
 import org.granite.tide.rpc.TideOperation;
-import mx.rpc.AsyncToken;
 
 class MockSpringOperation extends TideOperation {
     
@@ -55,7 +57,11 @@ class MockSpringOperation extends TideOperation {
     }
     
     public override function send(... args:Array):AsyncToken {
-        var token:MockSpringAsyncToken = MockSpring.getInstance().token;
+		var token:MockSpringAsyncToken = MockSpring.getInstance().token;
+		if (token == null) {
+			var tokenClass:Class = MockSpring.getInstance().tokenClass;
+        	token = new tokenClass() as MockSpringAsyncToken;
+		}
         token.send(_name, args);
         return token;
     }
