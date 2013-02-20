@@ -1645,7 +1645,7 @@ package org.granite.math {
 						increment = (sign < 0);
 						break;
 					default:
-						var cmp:int = (qr[1] as BigInteger).multiply(2).compareTo(b);
+						var cmp:int = (qr[1] as BigInteger).multiply(2).compareTo(b, true);
 		                if (cmp < 0)
 		                    increment = false;
 		                else if (cmp > 0)
@@ -1659,7 +1659,7 @@ package org.granite.math {
 						break;
 				}
 				if (increment)
-					quotient = quotient.add(BigInteger.ONE);
+					quotient = (quotient.sign == -1 ? quotient.subtract(BigInteger.ONE) : quotient.add(BigInteger.ONE));
 			}
 			
 			if (quotient.sign * sign == -1)
