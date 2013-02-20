@@ -167,10 +167,13 @@ package org.granite.tide.impl {
 		    var ctx:BaseContext = contextId != null ? _ctx[contextId] : null;
 		    if (ctx != null) {
 	        	// Destroy child contexts
+				var contextIdsToDestroy:Array = [];
 				for each (var c:BaseContext in _ctx) {
 					if (c.meta_parentContext === ctx)
-						destroyContext(c.contextId, force);
+						contextIdsToDestroy.push(c.contextId);
 				}
+				for each (var cid:String in contextIdsToDestroy)
+					destroyContext(cid, force);
         		
 		    	removeFromContextsToDestroy(contextId);
 		        ctx.raiseEvent(Tide.CONTEXT_DESTROY);
