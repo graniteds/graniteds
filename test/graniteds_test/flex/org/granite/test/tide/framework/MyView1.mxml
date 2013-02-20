@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+		  xmlns:test="org.granite.test.tide.framework.*"
+		  width="400" height="300">
+	<mx:Metadata>
+		[Name]
+	</mx:Metadata>
+	
+	<test:MyView2/>
+</mx:VBox>

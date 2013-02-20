@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+		  xmlns:test="org.granite.test.tide.framework.*">
+	<mx:Metadata>
+		[Name]
+	</mx:Metadata>
+	
+	<mx:Script>
+		<![CDATA[
+			public static var count:int = 0;
+			
+			[Observer("testEvent")]
+			public function test():void {
+				count++;
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:Label text="Test"/>
+</mx:VBox>
