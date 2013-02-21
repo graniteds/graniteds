@@ -65,10 +65,10 @@ package org.granite.tide.impl {
 	import mx.utils.ObjectUtil;
 	import mx.utils.StringUtil;
 	
-	import org.granite.tide.IComponent;
 	import org.granite.tide.BaseContext;
-	import org.granite.tide.Tide;
+	import org.granite.tide.IComponent;
 	import org.granite.tide.IContextManager;
+	import org.granite.tide.Tide;
     
 
 	[Bindable]
@@ -224,10 +224,14 @@ package org.granite.tide.impl {
             _contextsToDestroy = new Array();
             
             var globalCtx:BaseContext = BaseContext(_ctx[Tide.DEFAULT_CONTEXT]);
+			var contextIdsToDestroy:Array = [];
 			for each (var ctx:BaseContext in _ctx) {
 			    if (ctx.contextId != Tide.DEFAULT_CONTEXT && ctx.meta_parentContext === globalCtx)
-			        destroyContext(ctx.contextId, force);
+					contextIdsToDestroy.push(ctx.contextId);
 			}
+			for each (var contextId:String in contextIdsToDestroy)
+				destroyContext(ctx.contextId, force);
+			
 			globalCtx.meta_clear(force);
 		}
 		
