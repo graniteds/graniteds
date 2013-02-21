@@ -1407,7 +1407,7 @@ package org.granite.tide {
 
 			if (ro.channelSet) {
 				var asyncToken:AsyncToken = ro.channelSet.logout();	// Workaround described in BLZ-310
-				asyncToken.addResponder(new Responder(logoutComplete, null));
+				asyncToken.addResponder(new Responder(logoutComplete, logoutFault));
 			}
 			else
 				logoutComplete(null);
@@ -1418,8 +1418,9 @@ package org.granite.tide {
 		 * 	
 		 * 	Handler method for logout complete
 		 */
-		private function logoutComplete(event:Event):void {
-			ro.logout();
+		private function logoutComplete(event:Event, logoutRemoteObject:Boolean = true):void {
+			if (logoutRemoteObject)
+				ro.logout();
 			
 			log.info("Tide application logout");
 			
@@ -1429,6 +1430,12 @@ package org.granite.tide {
 			_waitForLogout = 0;
 			
 			getContext().raiseEvent(LOGGED_OUT);
+		}
+		
+		private function logoutFault(event:Event):void {
+			log.warn("Channel logout failed, assume the client is logged out");
+			
+			logoutComplete(event, false);
 		}
         
         
@@ -1909,7 +1916,7 @@ package org.granite.tide {
             var handled:Boolean = false;
             if (tideResponder) {
                 var event:TideResultEvent = new TideResultEvent(TideResultEvent.RESULT, context, false, true, data.token, componentResponder, result);
-                tideResponder.result(event);
+				tideResponder.result(event);
                 if (event.isDefaultPrevented())
                 	handled = true;
             }
