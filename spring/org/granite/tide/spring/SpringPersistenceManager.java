@@ -24,10 +24,12 @@ import org.granite.logging.Logger;
 import org.granite.tide.TidePersistenceManager;
 import org.granite.tide.TideTransactionManager;
 import org.granite.tide.data.AbstractTidePersistenceManager;
+import org.granite.tide.data.JDOPersistenceManager;
 import org.granite.tide.data.JPAPersistenceManager;
 import org.granite.tide.data.NoPersistenceManager;
 import org.granite.util.ClassUtil;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
+import org.springframework.orm.jdo.JdoTransactionManager;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -47,6 +49,17 @@ public class SpringPersistenceManager implements TidePersistenceManager {
 	
 	public SpringPersistenceManager(PlatformTransactionManager transactionManager) {
 		TideTransactionManager tm = new SpringTransactionManager(transactionManager);
+		if (transactionManager instanceof JpaTransactionManager) {
+			pm = new JPAPersistenceManager(((JpaTransactionManager)transactionManager).getEntityManagerFactory(), tm);
+			return;
+		}
+		
+		if (transactionManager instanceof JdoTransactionManager) {
+			pm = new JDOPersistenceManager(((JdoTransactionManager)transactionManager).getPersistenceManagerFactory(), tm);
+			return;
+		}
+		
+		// Check for Hibernate 3
 		if (transactionManager instanceof HibernateTransactionManager) {
 			try {
 				Object sf = transactionManager.getClass().getMethod("getSessionFactory").invoke(transactionManager);
@@ -55,17 +68,34 @@ public class SpringPersistenceManager implements TidePersistenceManager {
 						new Class<?>[] { sfClass, TideTransactionManager.class }, new Object[] { sf, tm });
 			}
 			catch (Exception e) {
-				log.error("Could not setup Hibernate persistence manager, lazy-loading disabled. Check that granite-hibernate.jar is present in the classpath.");
+				log.error("Could not setup Hibernate 3 persistence manager, lazy-loading disabled. Check that granite-hibernate.jar is present in the classpath.");
 				pm = new NoPersistenceManager();
 			}
+			return;
 		}
-		else if (transactionManager instanceof JpaTransactionManager) {
-			pm = new JPAPersistenceManager(((JpaTransactionManager)transactionManager).getEntityManagerFactory(), tm);
+		
+		try {
+			Class<?> hibernate4TM = ClassUtil.forName("org.springframework.orm.hibernate4.HibernateTransactionManager");
+			if (hibernate4TM.isInstance(transactionManager)) {
+				try {
+					Object sf = transactionManager.getClass().getMethod("getSessionFactory").invoke(transactionManager);
+					Class<?> sfClass = ClassUtil.forName("org.hibernate.SessionFactory");
+					pm = (TidePersistenceManager)ClassUtil.newInstance("org.granite.tide.hibernate4.HibernatePersistenceManager", 
+							new Class<?>[] { sfClass, TideTransactionManager.class }, new Object[] { sf, tm });
+				}
+				catch (Exception e) {
+					log.error("Could not setup Hibernate 4 persistence manager, lazy-loading disabled. Check that granite-hibernate4.jar is present in the classpath.");
+					pm = new NoPersistenceManager();
+				}
+				return;
+			}
 		}
-		else {
-			log.error("Unsupported Spring TransactionManager, lazy-loading disabled");
-			pm = new NoPersistenceManager();
+		catch (ClassNotFoundException e) {
+			// Hibernate 4 not installed
 		}
+		
+		log.error("Unsupported Spring TransactionManager, lazy-loading disabled");
+		pm = new NoPersistenceManager();
 	}
 
 

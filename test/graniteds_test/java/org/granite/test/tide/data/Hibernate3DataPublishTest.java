@@ -35,11 +35,21 @@ public class Hibernate3DataPublishTest extends AbstractHibernate3DataPublishTest
             .setProperty("hibernate.connection.username", "sa")
             .setProperty("hibernate.connection.password", "");
 		
-		configuration.setListener("post-insert", HibernateDataPublishListener.class.getName());
-		configuration.setListener("post-update", HibernateDataPublishListener.class.getName());
-		configuration.setListener("post-delete", HibernateDataPublishListener.class.getName());
+		initListener(configuration, "post-insert", HibernateDataPublishListener.class.getName());
+		initListener(configuration, "post-update", HibernateDataPublishListener.class.getName());
+		initListener(configuration, "post-delete", HibernateDataPublishListener.class.getName());
 		
 		sessionFactory = configuration.buildSessionFactory();
+	}
+	
+	private static void initListener(AnnotationConfiguration configuration, String event, String listener) {
+		try {
+			Method m = configuration.getClass().getMethod("setListener", String.class, String.class);
+			m.invoke(configuration, event, listener);
+		} 
+		catch (Exception e) {
+			throw new RuntimeException("Could not set listener on session factory", e);
+		}
 	}
 	
 	protected void open() {

@@ -30,9 +30,6 @@
        	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
   	
-  	<!-- Annotation scan -->
-  	<context:component-scan base-package="org.granite.test.tide.spring" />
-  
   	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
 
   	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>

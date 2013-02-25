@@ -1,8 +1,8 @@
 package org.granite.test.tide.spring;
 
-import org.granite.test.tide.spring.entity.Person;
-import org.granite.test.tide.spring.service.PersonService;
 import org.granite.test.tide.TestDataUpdatePostprocessor.WrappedUpdate;
+import org.granite.test.tide.data.Person;
+import org.granite.test.tide.spring.service.PersonService;
 import org.granite.tide.data.DataContext.EntityUpdateType;
 import org.granite.tide.invocation.InvocationResult;
 import org.junit.Assert;
@@ -10,8 +10,8 @@ import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
 
 
-@ContextConfiguration
-public class TideRemotingJPADuppTest extends AbstractTideTestCase {
+@ContextConfiguration(locations={ "/org/granite/test/tide/spring/test-context-jpa.xml", "/org/granite/test/tide/spring/test-context-dupp.xml" })
+public class AbstractTideRemotingDuppJPATest extends AbstractTideTestCase {
     
 	@Test
     public void testPersistCall() {

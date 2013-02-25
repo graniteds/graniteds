@@ -3,8 +3,8 @@ package org.granite.test.tide.cdi;
 import javax.servlet.ServletContext;
 
 import org.granite.test.tide.TestDataUpdatePostprocessor.WrappedUpdate;
-import org.granite.test.tide.cdi.entity.Person;
 import org.granite.test.tide.cdi.service.PersonService;
+import org.granite.test.tide.data.Person;
 import org.granite.tide.data.DataContext.EntityUpdateType;
 import org.granite.tide.invocation.InvocationResult;
 import org.junit.Assert;

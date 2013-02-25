@@ -18,16 +18,18 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.test.tide.spring.entity;
+package org.granite.test.tide.data;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import org.hibernate.validator.Length;
 
 @Entity
+@Table(name="CONTACT")
 public class Contact extends AbstractEntity {
 
     private static final long serialVersionUID = 1L;

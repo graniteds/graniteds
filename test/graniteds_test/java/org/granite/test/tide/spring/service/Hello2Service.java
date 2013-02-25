@@ -1,6 +1,6 @@
 package org.granite.test.tide.spring.service;
 
-import org.granite.test.tide.spring.entity.Contact;
+import org.granite.test.tide.data.Contact;
 import org.springframework.stereotype.Service;
 
 
