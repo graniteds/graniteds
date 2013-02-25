@@ -679,6 +679,7 @@
      !-->
     <target name="clean">
         <delete dir="classes"/>
+        <delete dir="classesh4"/>
         <delete dir="swf"/>
         <delete dir="test-reports"/>
     </target>
