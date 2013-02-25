@@ -8,10 +8,9 @@ import org.hibernate.event.spi.EventType;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
+@SuppressWarnings( { "deprecation" })
 public class Hibernate4Integrator implements Integrator {
 
-    @Override
-    @SuppressWarnings( {"unchecked"})
     public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
 
         final EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
