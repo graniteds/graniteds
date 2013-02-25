@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.test.tide.cdi.entity;
+package org.granite.test.tide.data;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -34,7 +34,7 @@ import javax.persistence.Version;
 import org.granite.tide.data.DataPublishListener;
 
 @MappedSuperclass
-@EntityListeners({AbstractEntity.AbstractEntityListener.class, DataPublishListener.class})
+@EntityListeners({DataPublishListener.class})
 public abstract class AbstractEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -53,6 +53,9 @@ public abstract class AbstractEntity implements Serializable {
         return id;
     }
     
+    public void initUid() {
+    	uid();
+    }
     public void initIdUid(Integer id, String uid) {
         this.id = id;
         if (uid == null)
@@ -74,12 +77,10 @@ public abstract class AbstractEntity implements Serializable {
         return uid().hashCode();
     }
     
-    public static class AbstractEntityListener {
-        
-        @PrePersist
-        public void onPrePersist(AbstractEntity abstractEntity) {
-            abstractEntity.uid();
-        }
+    @SuppressWarnings("unused")
+	@PrePersist
+    private void onPrePersist() {
+        uid();
     }
     
     private String uid() {

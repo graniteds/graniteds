@@ -126,6 +126,8 @@
             <include name="asm-3.0.jar"/>
             <include name="commons-collections.jar"/>
             <include name="commons-logging.jar"/>
+        	<include name="javax.inject.jar"/>
+        	<include name="interceptor-api.jar"/>
         	<include name="org.springframework.*.jar"/>
         	<include name="spring-*-3.0.jar"/>
         	<include name="spring-test.jar"/>
@@ -255,6 +257,8 @@
     	
     	<antcall target="tests.seam"/>
         <antcall target="tests.spring"/>
+        <antcall target="tests.spring.hibernate"/>
+        <antcall target="tests.spring.hibernate4"/>
         <antcall target="tests.cdi"/>
         <antcall target="tests.hibernate"/>
         <antcall target="tests.hibernate4"/>
@@ -309,6 +313,7 @@
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
                     <include name="**/spring/*Test.java"/>
+                    <exclude name="**/spring/Hibernate*Test.java"/>
                     <exclude name="**/Abstract*.java"/>
                 </fileset>
             </batchtest>
@@ -353,6 +358,32 @@
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
                     <include name="**/Hibernate3*Test.java"/>
+                	<exclude name="**/spring/*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+    
+    <target name="tests.spring.hibernate" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false" fork="true">
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <path refid="log4j.jar"/>
+                <path refid="hibernate.jar"/>
+            	<path refid="spring.jar"/>
+                <path refid="granite.jar"/>
+                <path refid="granite-hibernate.jar"/>
+                <path refid="granite-spring.jar"/>
+                <pathelement location="${gds.lib}/h2.jar"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/spring/Hibernate3*Test.java"/>
                 </fileset>
             </batchtest>
         </junit>
@@ -376,6 +407,31 @@
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
                     <include name="**/Hibernate4*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+    
+    <target name="tests.spring.hibernate4" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false" fork="true">
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <path refid="log4j.jar"/>
+                <path refid="hibernate4.jar"/>
+                <path refid="spring.jar"/>
+                <path refid="granite.jar"/>
+                <path refid="granite-hibernate4.jar"/>
+                <path refid="granite-spring.jar"/>
+                <pathelement location="${gds.lib}/h2.jar"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/spring/Hibernate4*Test.java"/>
                 </fileset>
             </batchtest>
         </junit>

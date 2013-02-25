@@ -3,7 +3,7 @@ package org.granite.test.tide.spring.service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.granite.test.tide.spring.entity.Person;
+import org.granite.test.tide.data.Person;
 import org.granite.tide.data.DataEnabled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-@DataEnabled(topic="testTopic")
+@DataEnabled
 public class PersonService {
 	
 	@PersistenceContext

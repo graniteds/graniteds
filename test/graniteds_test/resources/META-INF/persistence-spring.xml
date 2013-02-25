@@ -28,11 +28,11 @@
     
     <persistence-unit name="spring-pu">
        <exclude-unlisted-classes>true</exclude-unlisted-classes>
-       <class>org.granite.test.tide.spring.entity.AbstractEntity</class>
-       <class>org.granite.test.tide.spring.entity.Person</class>
-       <class>org.granite.test.tide.spring.entity.Contact</class>
-       <class>org.granite.test.tide.spring.entity.Address</class>
-       <class>org.granite.test.tide.spring.entity.Country</class>
+       <class>org.granite.test.tide.data.AbstractEntity</class>
+       <class>org.granite.test.tide.data.Person</class>
+       <class>org.granite.test.tide.data.Contact</class>
+       <class>org.granite.test.tide.data.Address</class>
+       <class>org.granite.test.tide.data.Country</class>
     </persistence-unit>
     
 </persistence>

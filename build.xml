@@ -407,7 +407,7 @@
             	<exclude name="org/granite/osgi/**"/>
             	<exclude name="META-INF/**"/>
             </fileset>
-            <fileset dir="classes/tide">
+            <fileset dir="tide">
                 <include name="org/granite/tide/Expression.java"/>
                 <include name="org/granite/tide/IInvocation*.java"/>
                 <include name="org/granite/tide/IUID.java"/>

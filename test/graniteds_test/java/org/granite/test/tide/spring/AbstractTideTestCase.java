@@ -14,6 +14,7 @@ import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.test.gravity.MockGravity;
+import org.granite.tide.TideServiceInvoker;
 import org.granite.tide.invocation.ContextResult;
 import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationCall;
@@ -36,7 +37,7 @@ import flex.messaging.messages.RemotingMessage;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={ "/org/granite/test/tide/spring/test-context-core.xml", "/org/granite/test/tide/spring/test-context-persistence.xml", "/org/granite/test/tide/spring/test-context-graniteds.xml" })
+@ContextConfiguration(locations={ "/org/granite/test/tide/spring/test-context-core.xml", "/org/granite/test/tide/spring/test-context-graniteds.xml" })
 public class AbstractTideTestCase implements ApplicationContextAware {
     
     private MockGravity mockGravity = new MockGravity();
@@ -125,5 +126,17 @@ public class AbstractTideTestCase implements ApplicationContextAware {
         args[4] = call;
         callMessage.setBody(args);
         return (InvocationResult)springServiceFactory.getServiceInstance(callMessage).invoke(callMessage);
-    };
+    }
+    
+    @SuppressWarnings("unchecked")
+	public Object initializeObject(Object entity, String[] fetch) {
+        RemotingMessage callMessage = new RemotingMessage();
+        callMessage.setDestination("spring");
+        callMessage.setOperation("initializeObject");
+        Object[] args = new Object[2];
+        args[0] = entity;
+        args[1] = fetch;
+        callMessage.setBody(args);
+        return ((TideServiceInvoker<SpringServiceFactory>)springServiceFactory.getServiceInstance(callMessage)).initializeObject(entity, fetch);        
+    }
 }

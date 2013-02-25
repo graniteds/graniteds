@@ -28,7 +28,7 @@
 	<classpathentry kind="lib" path="/graniteds/lib/jpa-2.0-api.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/eclipselink.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/hibernate-core-4.0.0.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar" sourcepath="C:/Dev/hibernate-distribution-3.6.5.Final/project/hibernate-core/src/main/java"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/spring-test.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.aop.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.asm.jar"/>

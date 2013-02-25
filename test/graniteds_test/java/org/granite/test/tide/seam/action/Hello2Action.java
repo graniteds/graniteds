@@ -1,6 +1,6 @@
 package org.granite.test.tide.seam.action;
 
-import org.granite.test.tide.seam.entity.Contact;
+import org.granite.test.tide.data.Contact;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.In;
 import org.jboss.seam.annotations.Name;

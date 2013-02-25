@@ -5,7 +5,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 
-import org.granite.test.tide.cdi.entity.Person;
+import org.granite.test.tide.data.Person;
 import org.granite.tide.data.DataEnabled;
 
 

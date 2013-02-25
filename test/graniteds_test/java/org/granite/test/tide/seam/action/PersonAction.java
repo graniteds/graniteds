@@ -2,7 +2,7 @@ package org.granite.test.tide.seam.action;
 
 import javax.persistence.EntityManager;
 
-import org.granite.test.tide.seam.entity.Person;
+import org.granite.test.tide.data.Person;
 import org.granite.tide.data.DataEnabled;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.In;
