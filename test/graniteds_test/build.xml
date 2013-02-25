@@ -203,6 +203,7 @@
         <javac destdir="classes" srcdir="java" debug="true"
             target="1.5" source="1.5">
             <classpath>
+                <path refid="hibernate4.jar"/>
                 <path refid="gds.classpath"/>
                 <path refid="gds.seam.classpath"/>
                 <path refid="gds.spring.classpath"/>
