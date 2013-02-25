@@ -436,6 +436,7 @@
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
                     <include name="**/Hibernate4*Test.java"/>
+                    <exclude name="**/spring/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
