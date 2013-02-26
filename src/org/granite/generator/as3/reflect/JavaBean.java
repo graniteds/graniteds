@@ -20,7 +20,6 @@
 
 package org.granite.generator.as3.reflect;
 
-import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -48,6 +47,7 @@ import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty
 import org.granite.tide.annotations.TideEvent;
 import org.granite.util.ClassUtil;
 import org.granite.util.ClassUtil.DeclaredAnnotation;
+import org.granite.util.PropertyDescriptor;
 
 /**
  * @author Franck WOLFF

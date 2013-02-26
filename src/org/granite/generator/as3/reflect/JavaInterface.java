@@ -20,7 +20,6 @@
 
 package org.granite.generator.as3.reflect;
 
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.granite.generator.as3.reflect.JavaMethod.MethodType;
+import org.granite.util.PropertyDescriptor;
 
 /**
  * @author Franck WOLFF

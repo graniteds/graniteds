@@ -20,7 +20,6 @@
 
 package org.granite.generator.as3.reflect;
 
-import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,6 +29,7 @@ import java.util.List;
 
 import org.granite.generator.as3.ClientType;
 import org.granite.util.ClassUtil;
+import org.granite.util.PropertyDescriptor;
 import org.granite.util.URIUtil;
 
 /**
