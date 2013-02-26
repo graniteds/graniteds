@@ -33,6 +33,8 @@
             <fileset dir="${bin.dir}">
                 <include name="org/granite/generator/**"/>
                 <include name="org/granite/util/ClassUtil.class"/>
+                <include name="org/granite/util/ClassUtil*.class"/>
+                <include name="org/granite/util/PropertyDescriptor.class"/>
             </fileset>
         </jar>
     </target>
