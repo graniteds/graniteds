@@ -1194,6 +1194,12 @@
 	 ! Run tests
 	 !-->
 	<target name="tests">
+        <ant dir="test/graniteds_test" antfile="build.xml" target="clean" inheritall="false">
+            <property name="gds.dir" value="${basedir}"/>
+            <property name="FLEX_HOME" value="${FLEX_HOME_TESTS}"/>
+            <property name="GDS_VERSION" value="${GDS_VERSION}"/>
+        </ant>
+        
 		<ant dir="test/graniteds_test" antfile="build.xml" target="tests" inheritall="false">
 			<property name="gds.dir" value="${basedir}"/>
 			<property name="FLEX_HOME" value="${FLEX_HOME_TESTS}"/>
