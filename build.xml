@@ -1215,6 +1215,7 @@
     	<mkdir dir="distserverjars"/>
     	<mkdir dir="distclientswcs"/>
     	<mkdir dir="distclientjars"/>
+        <mkdir dir="distclienttestjars"/>
     	
         <!-- GDS -->
         <mkdir dir="graniteds"/>
@@ -1230,6 +1231,12 @@
             <fileset dir="build">
                 <include name="*.jar"/>
             	<exclude name="*-client.jar"/>
+            </fileset>              
+        </copy>
+        <copy todir="distclienttestjars">
+            <fileset dir="build">
+                <include name="granite.jar"/>
+                <include name="granite-hibernate.jar"/>
             </fileset>              
         </copy>
         <copy todir="distclientswcs">
