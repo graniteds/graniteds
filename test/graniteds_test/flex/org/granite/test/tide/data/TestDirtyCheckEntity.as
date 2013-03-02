@@ -5,9 +5,9 @@ package org.granite.test.tide.data
     import mx.data.utils.Managed;
     
     import org.flexunit.Assert;
-	import org.granite.persistence.PersistentMap;
-	import org.granite.persistence.PersistentSet;
-	import org.granite.test.tide.Contact;
+    import org.granite.persistence.PersistentMap;
+    import org.granite.persistence.PersistentSet;
+    import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
@@ -136,6 +136,16 @@ package org.granite.test.tide.data
 			Assert.assertFalse("Person not dirty 2", personDirty);
 			Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
 			Assert.assertFalse("Context not dirty 2", ctxDirty);
+			
+			person.testNum = 10;
+			
+			Assert.assertTrue("Person testNum dirty", _ctx.meta_isEntityPropertyChanged(person, "testNum", person.testNum));
+			
+			person.testNum = NaN;
+			person.lastName = "Test";
+			
+			var changed:Boolean = _ctx.meta_isEntityPropertyChanged(person, "testNum", person.testNum);
+			Assert.assertFalse("Person testNum dirty", changed);
 		}
 		
 		[Test]

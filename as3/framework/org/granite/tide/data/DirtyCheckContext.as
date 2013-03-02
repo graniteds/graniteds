@@ -156,8 +156,8 @@ package org.granite.tide.data {
             var source:Object = _savedProperties[entity];
             if (source == null)
                 source = entity;
-            
-            return source[propertyName] != value;
+           	
+			return source.hasOwnProperty(propertyName) && !isSame(source[propertyName], value);
         }
         
         
