@@ -6,7 +6,6 @@ import org.granite.context.GraniteContext;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.test.tide.data.Person;
 import org.hibernate.Criteria;
-import org.hibernate.Hibernate;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.junit.Assert;

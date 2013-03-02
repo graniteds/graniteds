@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <actionScriptProperties analytics="false" mainApplicationPath="TestRunner.mxml" projectUUID="c1846bd7-b169-4cc7-8857-7620cb9e1aec" version="10">
-  <compiler additionalCompilerArguments="-locale en_US -keep-as3-metadata+=Name,In,Inject,Out,Observer,ManagedEvent,PostConstruct,Destroy,Id,Version,Lazy" autoRSLOrdering="false" copyDependentFiles="true" flexSDK="Flex 4.5.1" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="flex" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="false" verifyDigests="true" warn="true">
+  <compiler additionalCompilerArguments="-locale en_US -keep-as3-metadata+=Name,In,Inject,Out,Observer,ManagedEvent,PostConstruct,Destroy,Id,Version,Lazy" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="true" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="flex" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
     <compilerSourcePath/>
-    <libraryPath defaultLinkType="1">
+    <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">
         <excludedEntries>
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flex.swc" useDefaultLinkType="false"/>
@@ -16,21 +16,40 @@
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/Common"/>
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject"/>
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject_Extended"/>
-      <libraryPathEntry kind="3" linkType="1" path="/granite-swc/bin/granite-swc.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="3" linkType="1" path="/granite-essentials-swc/bin/granite-essentials-swc.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/granite-enterprise-flex45-swc/bin/granite-enterprise-flex45-swc.swc" useDefaultLinkType="false"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>
   <applications>
-    <application path="TestLoadModule.mxml"/>
-    <application path="TestLoadModule2.mxml"/>
+    <application path="TestLoadModule.mxml">
+      <airExcludes/>
+    </application>
+    <application path="TestLoadModule2.mxml">
+      <airExcludes/>
+    </application>
+    <application path="TestRunner.mxml">
+      <airExcludes/>
+    </application>
+    <application path="FlexUnitApplication.mxml">
+      <airExcludes/>
+    </application>
   </applications>
   <modules>
-    <module application="flex/FlexUnitApplication.mxml" destPath="TestModule.swf" optimize="false" sourcePath="flex/TestModule.mxml"/>
-    <module application="flex/FlexUnitApplication.mxml" destPath="TestModule2.swf" optimize="false" sourcePath="flex/TestModule2.mxml"/>
+    <module application="flex/TestLoadModule.mxml" destPath="TestModule.swf" optimize="false" sourcePath="flex/TestModule.mxml"/>
+    <module application="flex/TestLoadModule.mxml" destPath="TestModule2.swf" optimize="false" sourcePath="flex/TestModule2.mxml"/>
   </modules>
   <buildCSSFiles>
     <buildCSSFileEntry destPath="bin-debug" sourcePath="flex/custom.css"/>
   </buildCSSFiles>
   <flashCatalyst validateFlashCatalystCompatibility="false"/>
+  <buildTargets>
+    <buildTarget buildTargetName="default">
+      <airSettings airCertificatePath="" airTimestamp="true" anePathSet="false" version="1">
+        <airExcludes/>
+        <anePaths/>
+      </airSettings>
+      <actionScriptSettings version="1"/>
+    </buildTarget>
+  </buildTargets>
 </actionScriptProperties>

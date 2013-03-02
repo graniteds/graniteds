@@ -25,7 +25,7 @@ package org.granite.tide {
     import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
     import flash.utils.getQualifiedClassName;
-
+    
     import mx.binding.utils.BindingUtils;
     import mx.binding.utils.ChangeWatcher;
     import mx.collections.IList;
@@ -41,7 +41,7 @@ package org.granite.tide {
     import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
     import mx.utils.object_proxy;
-
+    
     import org.granite.collections.IPersistentCollection;
     import org.granite.meta;
     import org.granite.reflect.Annotation;
@@ -49,6 +49,7 @@ package org.granite.tide {
     import org.granite.reflect.Method;
     import org.granite.reflect.Type;
     import org.granite.tide.collections.PersistentCollection;
+    import org.granite.tide.collections.PersistentMap;
     import org.granite.tide.data.EntityManager;
     import org.granite.tide.events.IConversationEvent;
     import org.granite.tide.events.TideUIEvent;
@@ -235,6 +236,14 @@ package org.granite.tide {
             _tracking = true;
             _tide.currentModulePrefix = saveModulePrefix;
         }
+			
+		/**
+		 *  Clear the current dirty state context
+		 *  @param dispatch dispatch a PropertyChangeEvent on meta_dirty if the context was dirty before clearing
+		 */
+		public function meta_clearDirtyState(dispatch:Boolean = true):void {
+			_entityManager.clearDirtyState(dispatch);
+		}
         
         /**
          *  Ends the current context
@@ -1435,11 +1444,13 @@ package org.granite.tide {
 					args[i] = IPropertyHolder(args[i]).object;
 				args[i] = meta_mergeExternal(args[i]);
 			}
-
+			
             var method:Method = Type.forInstance(component).getInstanceMethodNoCache(op);
             for each (var app:IArgumentPreprocessor in allByType(IArgumentPreprocessor, true))
                 args = app.preprocess(method, args);
-
+			
+			_entityManager.clearCache();
+			
             _tracking = false;
             var token:AsyncToken = _tide.invokeComponent(this, component, op, args, responder, withContext);
             _tracking = true;
@@ -1504,7 +1515,7 @@ package org.granite.tide {
             log.debug("initialize {0}", toString(obj));
             
             var path:IExpression = null;
-	        if (obj is PersistentCollection && obj.entity is IEntity) {
+	        if ((obj is PersistentCollection || obj is PersistentMap) && obj.entity is IEntity) {
                 if (_contextId != null && meta_isContextIdFromServer)
                     path = _entityManager.getReference(obj.entity, false);
                 
@@ -1716,6 +1727,10 @@ package org.granite.tide {
         public function meta_getOwnerEntity(object:Object):Object {
         	return _entityManager.getOwnerEntity(object);
         }
+		
+		public function meta_getOwnerEntities(object:Object):Array {
+			return _entityManager.getOwnerEntities(object);
+		}
         
         /**
          *  @private 
@@ -1729,6 +1744,10 @@ package org.granite.tide {
             var cache:Dictionary = new Dictionary();
             return _entityManager.getReference(obj, recurse, cache);
         }
+		
+		public function meta_getRefs(object:Object):Array {
+			return _entityManager.getRefs(object);
+		}
 
     
         /**
@@ -1740,7 +1759,7 @@ package org.granite.tide {
          *
          *  @return merged object (should === prev when prev not null)
          */
-        public function meta_mergeExternalData(obj:Object, prev:Object = null, sourceSessionId:String = null, removals:Array = null):Object {
+        public function meta_mergeExternalData(obj:Object, prev:Object = null, sourceSessionId:String = null, removals:Array = null, persists:Array = null):Object {
             _entityManager.initMerge();
 
 			var isExternalData:Boolean = sourceSessionId && sourceSessionId != _tide.sessionId;
@@ -1749,7 +1768,7 @@ package org.granite.tide {
         	
         	var next:Object = meta_mergeExternal(obj, prev);
 
-            _entityManager.handleRemovals(removals);
+            _entityManager.handleRemovalsAndPersists(removals, persists);
         	
 			if (isExternalData) {
         		_entityManager.handleMergeConflicts();        	
@@ -1769,18 +1788,22 @@ package org.granite.tide {
 		 *  @param updates list of data updates
 		 */
 		public function meta_handleUpdates(sourceSessionId:String, updates:Array):void {
-			var merges:Array = [], removals:Array = [];
+			var merges:Array = [], removals:Array = [], persists:Array = [];
 			for each (var update:Array in updates) {
-                if (update[0] == 'PERSIST' || update[0] == 'UPDATE')
+                if (update[0] == 'PERSIST') {
+					merges.push(update[1]);
+					persists.push(update[1]);
+				}
+				else if (update[0] == 'UPDATE')
 				    merges.push(update[1]);
                 else if (update[0] == 'REMOVE')
                     removals.push(update[1]);
             }
 
             if (merges.length == 1)
-                meta_mergeExternalData(merges[0], null, sourceSessionId, removals);
+                meta_mergeExternalData(merges[0], null, sourceSessionId, removals, persists);
             else
-			    meta_mergeExternalData(merges, null, sourceSessionId, removals);
+			    meta_mergeExternalData(merges, null, sourceSessionId, removals, persists);
 		}
 		
 		/**

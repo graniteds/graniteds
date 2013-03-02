@@ -22,6 +22,7 @@ package org.granite.tide.data {
     import flash.events.IEventDispatcher;
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
+    import flash.utils.getQualifiedClassName;
     
     import mx.collections.IList;
     import mx.core.IPropertyChangeNotifier;
@@ -43,8 +44,9 @@ package org.granite.tide.data {
     import org.granite.tide.BaseContext;
     import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IEntity;
+    import org.granite.tide.IEntityRef;
+    import org.granite.tide.IPropertyHolder;
     import org.granite.tide.IWrapper;
-	import org.granite.tide.IPropertyHolder;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
     import org.granite.util.Enum;
@@ -66,7 +68,7 @@ package org.granite.tide.data {
         
         private var _dirtyCount:int = 0;
         private var _savedProperties:Dictionary = new Dictionary(true);
-        
+		private var _unsavedEntities:Dictionary = new Dictionary(true);
 
 
         public function DirtyCheckContext(context:BaseContext) {
@@ -101,8 +103,14 @@ package org.granite.tide.data {
          */ 
         public function clear(dispatch:Boolean = true):void {
 			var wasDirty:Boolean = dirty;
-        	_dirtyCount = 0;
+			
+			if (dispatch) {
+				for (var object:Object in _savedProperties)
+					object.dispatchEvent(new PropertyChangeEvent("dirtyChange", false, false, PropertyChangeEventKind.UPDATE, "meta_dirty", true, false));
+			}
+			
         	_savedProperties = new Dictionary(true);
+			_dirtyCount = 0;
 			if (wasDirty && dispatch)
 				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", true, false));
         }
@@ -118,6 +126,21 @@ package org.granite.tide.data {
         public function isSaved(object:Object):Boolean {
         	return _savedProperties[object] != null;
         }
+		
+		/**
+		 *  Check if the object is marked as new in the context
+		 *
+		 *  @param object object to check
+		 * 
+		 *  @return true if the object has been newly attached
+		 */ 
+		public function isUnsaved(object:Object):Boolean {
+			return _unsavedEntities[object] != null;
+		}
+		
+		public function addUnsaved(entity:IEntity):void {
+			_unsavedEntities[entity] = true;
+		}
         
         
         /**
@@ -253,6 +276,8 @@ package org.granite.tide.data {
 				return true;
 			}
 			else if ((val1 is PersistentSet && val2 is PersistentSet) || (val1 is PersistentBag && val2 is PersistentBag)) {
+				if ((val1 is IPersistentCollection && !val1.isInitialized()) || (val2 is IPersistentCollection && !val2.isInitialized()))
+					return false;
 				if (val1.length != val2.length)
 					return false;
 				for each (e in val1) {
@@ -679,22 +704,25 @@ package org.granite.tide.data {
          *  @param object merged object
 		 *  @param owner owner entity for embedded objects
          */ 
-        public function markNotDirty(object:Object, owner:IEntity):void {
+        public function markNotDirty(object:Object, entity:IEntity = null):void {
+			delete _unsavedEntities[entity];
+			
         	if (_savedProperties[object] == null)
         		return;
         	
             var oldDirty:Boolean = _dirtyCount > 0;
-        	
-        	var oldDirtyEntity:Boolean = isEntityChanged(owner);
+			if (!entity && object is IEntity)
+				entity = object as IEntity;
+        	var oldDirtyEntity:Boolean = isEntityChanged(entity);
         	
             delete _savedProperties[object];
             
-            if (owner) {
-                var newDirtyEntity:Boolean = isEntityChanged(owner);
+            if (entity) {
+                var newDirtyEntity:Boolean = isEntityChanged(entity);
                 if (newDirtyEntity !== oldDirtyEntity) {
                 	var pce:PropertyChangeEvent = new PropertyChangeEvent("dirtyChange", false, false, 
                 		PropertyChangeEventKind.UPDATE, "meta_dirty", oldDirtyEntity, newDirtyEntity);
-                	owner.dispatchEvent(pce);
+                	entity.dispatchEvent(pce);
                 }
             }
             
@@ -715,7 +743,9 @@ package org.granite.tide.data {
 		 *  @param owner owner entity for embedded objects
 		 *  @return true if the entity is still dirty after comparing with incoming object
 		 */ 
-		public function checkAndMarkNotDirty(entity:Object, source:Object, owner:IEntity):Boolean {
+		public function checkAndMarkNotDirty(entity:IEntity, source:Object):Boolean {
+			delete _unsavedEntities[entity];
+			
 			var save:Object = _savedProperties[entity];
 			if (save == null)
 				return false;
@@ -723,7 +753,7 @@ package org.granite.tide.data {
 			var oldDirty:Boolean = _dirtyCount > 0;			
 			var oldDirtyEntity:Boolean = isEntityChanged(entity);
 			
-			var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(owner);
+			var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(entity));
 			var merged:Array = [];
 			
 			for (var propName:String in save) {
@@ -750,17 +780,87 @@ package org.granite.tide.data {
 				_dirtyCount--;
 			}
 			
-			var newDirtyEntity:Boolean = isEntityChanged(owner);
+			var newDirtyEntity:Boolean = isEntityChanged(entity);
 			if (newDirtyEntity !== oldDirtyEntity) {
 				var pce:PropertyChangeEvent = new PropertyChangeEvent("dirtyChange", false, false, 
 					PropertyChangeEventKind.UPDATE, "meta_dirty", oldDirtyEntity, newDirtyEntity);
-				owner.dispatchEvent(pce);
+				entity.dispatchEvent(pce);
 			}
 			
 			if ((_dirtyCount > 0) !== oldDirty)
 				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", oldDirty, _dirtyCount > 0));
 			
 			return newDirtyEntity;
+		}
+		
+		
+		public function fixRemovalsAndPersists(removals:Array, persists:Array):void {
+			var oldDirty:Boolean = _dirtyCount > 0;
+			
+			for (var object:Object in _savedProperties) {
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(object));
+				
+				var oldDirtyEntity:Boolean = isEntityChanged(object);
+				
+				var save:Object = _savedProperties[object];
+				var p:String;
+				
+				for (p in save) {
+					if (save[p] is Array) {
+						var savedArray:Array = save[p] as Array;
+						for (var idx:int = 0; idx < savedArray.length; idx++) {
+							var ce:CollectionEvent = CollectionEvent(savedArray[idx]);
+							if (ce.kind == CollectionEventKind.ADD && persists != null) {
+								for each (var persist:Object in persists) {
+									if (ce.items && ce.items.length == 1 && ce.items[0] is IEntity
+										&& ((persist is IEntityRef && persist.className == getQualifiedClassName(ce.items[0]) && persist.uid == ce.items[0].uid)
+										|| _context.meta_objectEquals(persist, ce.items[0]))) {
+										// Found remaining add event for newly persisted item
+										savedArray.splice(idx, 1);
+										idx--;
+										break;
+									}
+								}
+							}
+							else if (ce.kind == CollectionEventKind.REMOVE && removals != null) {
+								for each (var removal:Object in removals) {
+									if (ce.items && ce.items.length == 1 && ce.items[0] is IEntity 
+										&& ((removal is IEntityRef && removal.className == getQualifiedClassName(ce.items[0]) && removal.uid == ce.items[0].uid)
+										|| _context.meta_objectEquals(removal, ce.items[0]))) {
+										// Found remaining add event for newly persisted item
+										savedArray.splice(idx, 1);
+										idx--;
+										break;
+									}
+								}
+							}
+						}
+						
+						if (savedArray.length == 0)
+							delete save[p];
+					}
+				}
+				
+				var count:uint = 0;
+				for (p in save) {
+					if (p != desc.versionPropertyName)
+						count++;
+				}
+				if (count == 0) {
+					delete _savedProperties[object];
+					_dirtyCount--;
+				}
+				
+				var newDirtyEntity:Boolean = isEntityChanged(object);
+				if (newDirtyEntity !== oldDirtyEntity) {
+					var pce:PropertyChangeEvent = new PropertyChangeEvent("dirtyChange", false, false, 
+						PropertyChangeEventKind.UPDATE, "meta_dirty", oldDirtyEntity, newDirtyEntity);
+					object.dispatchEvent(pce);
+				}
+			}
+			
+			if ((_dirtyCount > 0) !== oldDirty)
+				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "meta_dirty", oldDirty, _dirtyCount > 0));
 		}
         
         
@@ -877,14 +977,10 @@ package org.granite.tide.data {
 						}
 					}
 				}
-				else if (save && (ObjectUtil.isSimple(val) || ObjectUtil.isSimple(save[p]) || val is ByteArray || save[p] is ByteArray)) {
+				else if (save && (EntityManager.isSimple(val) || EntityManager.isSimple(save[p]))) {
                     if (save[p] !== undefined)
                         entity[p] = save[p];
                 }
-				else if (save && (val is Enum || save[p] is Enum || val is IValue || save[p] is IValue)) {
-					if (save[p] !== undefined)
-						entity[p] = save[p];
-				} 
                 else if (val is IEntity || (save && save[p] is IEntity)) {
                 	if (save && save[p] !== undefined && !_context.meta_objectEquals(val, save[p]))
                 		entity[p] = save[p];

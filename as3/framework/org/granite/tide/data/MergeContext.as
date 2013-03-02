@@ -74,6 +74,8 @@ package org.granite.tide.data {
         private var _context:BaseContext = null;
         private var _entityManager:EntityManager = null;
         private var _dirtyCheckContext:DirtyCheckContext = null;
+		private var _entityCache:Dictionary = null;
+		private var _mergeStack:Array = [];
         public var externalData:Boolean = false;
         public var sourceContext:BaseContext = null;
         public var mergeUpdate:Boolean = false;
@@ -100,6 +102,7 @@ package org.granite.tide.data {
          *  Clears merge context
          */ 
         public function clear():void {
+			_entityCache = null;
             _mergeConflicts = null;
             _versionChangeCache = null;
             resolvingConflict = false;
@@ -107,6 +110,8 @@ package org.granite.tide.data {
             merging = false;
             mergeUpdate = false;
         }
+		
+		
 
         public function addConflict(localEntity:IEntity, receivedEntity:Object):void {
             if (_mergeConflicts == null)
@@ -115,6 +120,7 @@ package org.granite.tide.data {
         }
 
         public function initMergeConflicts():void {
+			_entityCache = null;
             _versionChangeCache = null;
             resolvingConflict = false;
         }
@@ -127,12 +133,51 @@ package org.granite.tide.data {
         public function get mergeConflicts():Conflicts {
             return _mergeConflicts;
         }
-
+		
+		public function get entityCache():Dictionary {
+			return _entityCache;
+		}
+		public function initMerge():void {
+			if (_entityCache == null) {
+				_entityCache = new Dictionary();
+				mergeUpdate = true;
+			}			
+		}
+		public function saveEntityCache():Dictionary {
+			var entityCache:Dictionary = _entityCache;
+			_entityCache = new Dictionary();
+			return entityCache;
+		}
+		public function restoreEntityCache(entityCache:Dictionary):void {
+			_entityCache = entityCache;
+		}
+		
         public function get versionChangeCache():Dictionary {
             if (_versionChangeCache == null)
                 _versionChangeCache = new Dictionary(true);
             return _versionChangeCache;
         }
+		
+		public function pushMerge(obj:Object, dest:Object, push:Boolean = true):void {
+			_entityCache[obj] = dest;
+			if (push)
+				_mergeStack.push(dest);
+		}
+		public function getCachedMerge(obj:Object):* {
+			return _entityCache[obj];
+		}
+		public function popMerge():* {
+			return _mergeStack.pop();
+		}
+		public function get currentMerge():* {
+			return _mergeStack[_mergeStack.length-1];
+		}
+		public function set currentMerge(merge:*):void {
+			_mergeStack[_mergeStack.length-1] = merge;
+		}
+		public function get mergeStackSize():uint {
+			return _mergeStack.length;
+		}
 
         public function getEntityDescriptor(entity:IEntity):EntityDescriptor {
             return _context.meta_tide.getEntityDescriptor(entity);
@@ -143,15 +188,23 @@ package org.granite.tide.data {
         }
 		
 		public function getSavedProperties(object:Object):Object {
-			return _entityManager.savedProperties[object];
+			return _dirtyCheckContext.savedProperties[object];
+		}
+		
+		public function isUnsaved(object:Object):Boolean {
+			return _dirtyCheckContext.isUnsaved(object);
 		}
 
         public function mergeExternal(object:Object, dest:Object, parent:Object = null, propertyName:String = null):Object {
             return _entityManager.mergeExternal(object, dest, null, parent, propertyName);
         }
-
+		
+		public function attach(object:Object):void {
+			_entityManager.attach(object, new Dictionary());
+		}
+		
         public function objectEquals(obj1:Object, obj2:Object):Boolean {
-            return _context.meta_objectEquals(obj1, obj2);
+            return _entityManager.objectEquals(obj1, obj2);
         }
 
         public function isEntityChanged(entity:IEntity):Boolean {
@@ -162,8 +215,8 @@ package org.granite.tide.data {
             _dirtyCheckContext.markNotDirty(entity, owner);
         }
 
-        public function checkAndMarkNotDirty(entity:Object, source:Object, owner:IEntity):Boolean {
-            return _dirtyCheckContext.checkAndMarkNotDirty(entity, source, owner);
+        public function checkAndMarkNotDirty(entity:IEntity, source:Object):Boolean {
+            return _dirtyCheckContext.checkAndMarkNotDirty(entity, source);
         }
     }
 }

@@ -65,10 +65,14 @@ public class GravityConfig implements GraniteConfigReloadListener {
     private long keepAliveTimeMillis = DEFAULT_KEEP_ALIVE_TIME_MILLIS;
     private int queueCapacity = DEFAULT_QUEUE_CAPACITY;
 
-	
-	public GravityConfig(GraniteConfig graniteConfig) {
+    // Container specific ChannelFactory
+    private final ChannelFactory<?> channelFactory;
+    
+	public GravityConfig(GraniteConfig graniteConfig, ChannelFactory<?> channelFactory) {
 		
 		parseConfig(graniteConfig.getGravityConfig());
+		
+		this.channelFactory = channelFactory;
 	}
 	
 	private void parseConfig(XMap config) {
@@ -178,4 +182,7 @@ public class GravityConfig implements GraniteConfigReloadListener {
 	public void setQueueCapacity(int queueCapacity) {
 		this.queueCapacity = queueCapacity;
 	}
-}
+	
+    public ChannelFactory<?> getChannelFactory() {
+        return channelFactory;
+}}

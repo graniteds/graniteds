@@ -2,10 +2,12 @@ package org.granite.test.tide.data
 {
     import org.flexunit.Assert;
     import org.granite.meta;
+    import org.granite.persistence.PersistentSet;
     import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
+    import org.granite.tide.collections.PersistentCollection;
     
     
     public class TestMergeLazyEntity 
@@ -79,6 +81,22 @@ package org.granite.test.tide.data
 			var c:Contact4 = Contact4(tmp.meta_mergeFromContext(_ctx, contact, false, true));
 			
 			Assert.assertTrue("Person initialized", c.person.meta::isInitialized());
+		}
+		
+		
+		[Test]
+		public function testMergeLazyEntityColl():void {
+			var person:Person = new Person(NaN, NaN, "test", "test");
+			var contact:Contact = new Contact(NaN, NaN, person, "test@test.com");
+			person.contacts = new PersistentSet();
+			person.contacts.addItem(contact);
+			
+			_ctx.meta_attach(person);
+			
+			var tmpCtx:BaseContext = _ctx.newTemporaryContext();
+			var mergedPerson:Person = tmpCtx.meta_mergeFromContext(_ctx, person, false, true) as Person;
+			
+			Assert.assertFalse("Person contacts", person.contacts === PersistentCollection(mergedPerson.contacts).object);
 		}
     }
 }

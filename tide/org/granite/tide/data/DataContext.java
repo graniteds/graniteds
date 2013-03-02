@@ -201,11 +201,11 @@ public class DataContext {
     	}
 
 		public int compareTo(EntityUpdate u) {
-		    if (priority != u.priority)
-		        return priority - u.priority;
+			if (type.ordinal() != u.type.ordinal())
+				return type.ordinal() - u.type.ordinal();
 		    if (!entity.equals(u.entity))
 		        return entity.hashCode() - u.entity.hashCode();
-		    return type.ordinal() - u.type.ordinal();
+	        return priority - u.priority;
 		}
     }
     

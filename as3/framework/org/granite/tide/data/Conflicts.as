@@ -94,11 +94,15 @@ package org.granite.tide.data {
         
         public function acceptServer(conflict:Conflict):void {
         	var saveTracking:Boolean = _context.meta_tracking;
-        	_context.meta_tracking = false;
-        	_context.meta_resetEntity(conflict.localEntity);
+			try {
+				_context.meta_tracking = false;
+        		_context.meta_resetEntity(conflict.localEntity);
 			
-        	_entityManager.resolveMergeConflicts(conflict.receivedEntity, conflict.localEntity, false);
-        	_context.meta_tracking = saveTracking;
+        		_entityManager.resolveMergeConflicts(conflict.receivedEntity, conflict.localEntity, false);
+			}
+			finally {
+        		_context.meta_tracking = saveTracking;
+			}
         }
         
         public function acceptAllServer():void {

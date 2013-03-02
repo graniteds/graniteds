@@ -23,17 +23,18 @@ package org.granite.test.tide.spring
         
         private var _operation:String = null;
         private var _args:Array = null;
-        private var _timer:Timer = new Timer(50, 1);
+        private var _timer:Timer = null;
         private var _responders:Array = new Array();
         
         
-        function MockSpringAsyncToken(message:IMessage) {
+        function MockSpringAsyncToken(message:IMessage, delay:Number = 50) {
             super(message);
+			_timer = new Timer(delay, 1);
             _timer.addEventListener(TimerEvent.TIMER_COMPLETE, timerHandler);
         }
         
         public function send(operation:String, args:Array):void {
-            _responders = new Array();
+            _responders = [];
             _operation = operation;
             _args = args;
             _timer.reset();
@@ -90,7 +91,7 @@ package org.granite.test.tide.spring
             return new FaultEvent(FaultEvent.FAULT, false, true, fault, this, emsg);
         }
         
-        protected function buildResult(result:Object = null, results:Array = null):ResultEvent {
+        protected function buildResult(result:Object = null, results:Array = null, updates:Array = null):ResultEvent {
             var msg:AcknowledgeMessage = new AcknowledgeMessage();
             var res:InvocationResult = new InvocationResult();
             res.result = result;
@@ -113,6 +114,7 @@ package org.granite.test.tide.spring
             }
             res.events = new ArrayCollection();
             res.messages = new ArrayCollection();
+			res.updates = updates;
             return new ResultEvent(ResultEvent.RESULT, false, false, res, this, msg);
         }
     }
