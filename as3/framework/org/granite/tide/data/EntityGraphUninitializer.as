@@ -74,6 +74,10 @@ package org.granite.tide.data {
             var dest:IEntity = _tmpContext.meta_mergeFromContext(_context, entity) as IEntity;
 
             internalUninitializeEntityGraph(dest, new Dictionary());
+			
+			// Detach all entities from temporary context
+			_tmpContext.meta_clear();
+			
             return dest;
         }
 

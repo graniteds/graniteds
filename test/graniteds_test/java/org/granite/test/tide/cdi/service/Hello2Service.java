@@ -1,6 +1,6 @@
 package org.granite.test.tide.cdi.service;
 
-import org.granite.test.tide.cdi.entity.Contact;
+import org.granite.test.tide.data.Contact;
 
 
 public class Hello2Service {

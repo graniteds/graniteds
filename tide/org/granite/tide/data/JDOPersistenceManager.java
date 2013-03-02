@@ -41,7 +41,11 @@ public class JDOPersistenceManager extends AbstractTidePersistenceManager implem
 	}
 
 	public JDOPersistenceManager(PersistenceManagerFactory pmf) {
-		super(new JDOTransactionManager());
+		this(pmf, null);
+	}
+	
+	public JDOPersistenceManager(PersistenceManagerFactory pmf, TideTransactionManager tm) {
+		super(tm != null ? tm : new JDOTransactionManager());
 		pm = pmf.getPersistenceManager();
 	}
 	

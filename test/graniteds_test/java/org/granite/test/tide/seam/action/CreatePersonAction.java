@@ -1,12 +1,12 @@
 package org.granite.test.tide.seam.action;
 
-import org.granite.test.tide.seam.entity.Person;
+import org.granite.test.tide.data.Person;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Out;
 import org.jboss.seam.annotations.Scope;
-import org.jboss.seam.international.StatusMessages;
 import org.jboss.seam.international.StatusMessage.Severity;
+import org.jboss.seam.international.StatusMessages;
 
 
 @Name("createPerson")

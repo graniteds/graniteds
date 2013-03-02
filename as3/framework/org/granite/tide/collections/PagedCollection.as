@@ -146,14 +146,8 @@ package org.granite.tide.collections {
 		 *  @return collection total length
 		 */
 		public override function get length():int {
-		    if (_initializing) {
-		    	if (!_initSent) {
-		    		log.debug("initial find");
-			    	find(0, _max);
-			    	_initSent = true;
-			    }
+			if (initialFind())
 		        return 0;
-		    }
 		    else if (localIndex == null)
 		        return 0;
 			return _count;
@@ -266,7 +260,20 @@ package org.granite.tide.collections {
             else
 				log.debug("refresh");			
             
-			find(_first, _last);
+			if (!initialFind())
+				find(_first, _last);
+			return true;
+		}
+		
+		private function initialFind():Boolean {
+			if (_max > 0 && !_initializing)
+				return false;
+			
+			if (!_initSent) {
+				log.debug("initial find");
+				find(0, _max);
+				_initSent = true;
+			}
 			return true;
 		}
 		
@@ -616,103 +623,96 @@ package org.granite.tide.collections {
 			
 			var a:Array;
 			var i:int;
-			if (_max == 0 || _initializing) {
-				if (!_initSent) {
-					log.debug("initial find");
-				    find(0, _max);
-				    _initSent = true;
-				}
+			if (initialFind())
 			    return null;
+			
+			if (_firstGetNext == -1) {
+				if (_maxGetAfterHandle == -1)
+					_maxGetAfterHandle = index;
+				else if (index > _maxGetAfterHandle)
+					_maxGetAfterHandle = index;
+					
+				if (index < _maxGetAfterHandle)
+					_firstGetNext = index;
+			}
+			else if (index > _maxGetAfterHandle && _firstGetNext < _maxGetAfterHandle)
+				_firstGetNext = index;
+		
+			if (localIndex && _ipes != null) {
+				// Check if requested page is already pending, and rethrow existing error
+				// Always rethrow when data is after (workaround for probable bug of Flex DataGrid)
+				for (i = 0; i < _ipes.length; i++) {
+					a = _ipes[i] as Array;
+					ipe = ItemPendingError(a[0]);
+					if (index >= int(a[1]) && index < int(a[2]) && int(a[2]) > _last && ipe.responders == null && index != _firstGetNext) {
+					    log.debug("forced rethrow of existing IPE for index {0} ({1} - {2})", index, int(a[1]), int(a[2]));
+						a[3].push(index);
+					    // log.debug("stacktrace {0}", ipe.getStackTrace());
+					    if (ListCollectionView.mx_internal::VERSION.substring(0, 1) != "2")
+						    throw ipe;
+					}
+				}
+			}
+    	    
+			if (localIndex && index >= _first && index < _last) {	// Local data available for index
+			    var j:int = index-_first;
+			    // log.debug("getItemAt index {0} (current {1} to {2})", index, _first, _last);
+				return localIndex[j];
+			}
+			
+			if (!_throwIpe)
+			    return null;
+			
+			if (_ipes != null) {
+				// Check if requested page is already pending, and rethrow existing error
+				for (i = 0; i < _ipes.length; i++) {
+					a = _ipes[i] as Array;
+					ipe = ItemPendingError(a[0]);
+					if (index >= int(a[1]) && index < int(a[2])) {
+					    log.debug("rethrow existing IPE for index {0} ({1} - {2})", index, int(a[1]), int(a[2]));
+						a[3].push(index);
+						throw ipe;
+					}
+				}
+			}
+    	    
+		    var page:int = index / _max;
+		    
+			// Trigger a results query for requested page
+			var nfi:int = 0;
+			var nla:int = 0;
+			var idx:int = page * _max;
+			if (index >= _last && index < _last + _max) {
+				nfi = _first;
+				nla = _last + _max;
+				if (nla > nfi + 2*_max)
+				    nfi = nla - 2*_max;
+				if (nfi < 0)
+				    nfi = 0;
+				if (nla > _count)
+				    nla = _count;
+			}
+			else if (index < _first && index >= _first - _max) {
+				nfi = _first - _max;
+				if (nfi < 0)
+					nfi = 0;
+				nla = _last;
+				if (nla > nfi + 2*_max)
+				    nla = nfi + 2*_max;
+				if (nla > _count)
+				    nla = _count;
 			}
 			else {
-				if (_firstGetNext == -1) {
-					if (_maxGetAfterHandle == -1)
-						_maxGetAfterHandle = index;
-					else if (index > _maxGetAfterHandle)
-						_maxGetAfterHandle = index;
-						
-					if (index < _maxGetAfterHandle)
-						_firstGetNext = index;
-				}
-				else if (index > _maxGetAfterHandle && _firstGetNext < _maxGetAfterHandle)
-					_firstGetNext = index;
-			
-    			if (localIndex && _ipes != null) {
-    				// Check if requested page is already pending, and rethrow existing error
-    				// Always rethrow when data is after (workaround for probable bug of Flex DataGrid)
-    				for (i = 0; i < _ipes.length; i++) {
-    					a = _ipes[i] as Array;
-    					ipe = ItemPendingError(a[0]);
-    					if (index >= int(a[1]) && index < int(a[2]) && int(a[2]) > _last && ipe.responders == null && index != _firstGetNext) {
-    					    log.debug("forced rethrow of existing IPE for index {0} ({1} - {2})", index, int(a[1]), int(a[2]));
-							a[3].push(index);
-						    // log.debug("stacktrace {0}", ipe.getStackTrace());
-    					    if (ListCollectionView.mx_internal::VERSION.substring(0, 1) != "2")
-    						    throw ipe;
-    					}
-    				}
-    			}
-        	    
-    			if (localIndex && index >= _first && index < _last) {	// Local data available for index
-    			    var j:int = index-_first;
-    			    // log.debug("getItemAt index {0} (current {1} to {2})", index, _first, _last);
-    				return localIndex[j];
-    			}
-    			
-    			if (!_throwIpe)
-    			    return null;
-    			
-    			if (_ipes != null) {
-    				// Check if requested page is already pending, and rethrow existing error
-    				for (i = 0; i < _ipes.length; i++) {
-    					a = _ipes[i] as Array;
-    					ipe = ItemPendingError(a[0]);
-    					if (index >= int(a[1]) && index < int(a[2])) {
-    					    log.debug("rethrow existing IPE for index {0} ({1} - {2})", index, int(a[1]), int(a[2]));
-							a[3].push(index);
-    						throw ipe;
-    					}
-    				}
-    			}
-        	    
-			    var page:int = index / _max;
-			    
-    			// Trigger a results query for requested page
-    			var nfi:int = 0;
-    			var nla:int = 0;
-    			var idx:int = page * _max;
-    			if (index >= _last && index < _last + _max) {
-    				nfi = _first;
-    				nla = _last + _max;
-    				if (nla > nfi + 2*_max)
-    				    nfi = nla - 2*_max;
-    				if (nfi < 0)
-    				    nfi = 0;
-    				if (nla > _count)
-    				    nla = _count;
-    			}
-    			else if (index < _first && index >= _first - _max) {
-    				nfi = _first - _max;
-    				if (nfi < 0)
-    					nfi = 0;
-    				nla = _last;
-    				if (nla > nfi + 2*_max)
-    				    nla = nfi + 2*_max;
-    				if (nla > _count)
-    				    nla = _count;
-    			}
-    			else {
-    				nfi = index - _max;
-    				nla = nfi + 2 * _max;
-    				if (nfi < 0)
-    					nfi = 0;
-    				if (nla > _count)
-    				    nla = _count;
-    			}
-				log.debug("request find for index " + index);
-    			find(nfi, nla);
-            }
-			
+				nfi = index - _max;
+				nla = nfi + 2 * _max;
+				if (nfi < 0)
+					nfi = 0;
+				if (nla > _count)
+				    nla = _count;
+			}
+			log.debug("request find for index " + index);
+			find(nfi, nla);
+            
 			// Throw ItemPendingError for requested index
 			// log.debug("ItemPendingError for index " + index + " triggered " + nfi + " to " + nla);
 			ipe = new ItemPendingError("Items pending from " + nfi + " to " + nla + " for index " + index);

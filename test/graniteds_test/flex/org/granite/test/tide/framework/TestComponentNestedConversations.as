@@ -1,7 +1,6 @@
 package org.granite.test.tide.framework
 {
     import org.flexunit.Assert;
-    
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
     import org.granite.tide.events.TideUIConversationEvent;
@@ -51,6 +50,18 @@ package org.granite.test.tide.framework
         	
         	Assert.assertTrue("Context 2.3 component 2 triggered", ctx23.myComponent2.triggered);
         	Assert.assertFalse("Context 2.1 component 2 not triggered", ctx21.myComponent2.triggered);
+			
+			ctx1.meta_end(false);
+			
+			Assert.assertNull("Context 1.1 destroyed", _ctx.meta_tide.getContext("1.1", "1", false));
+			Assert.assertNull("Context 1.2 destroyed", _ctx.meta_tide.getContext("1.2", "1", false));
+			Assert.assertNotNull("Context 2.1 not destroyed", _ctx.meta_tide.getContext("2.1", "2", false));
+			
+			ctx2.meta_end(false);
+			
+			Assert.assertNull("Context 2.1 destroyed", _ctx.meta_tide.getContext("2.1", "2", false));
+			Assert.assertNull("Context 2.2 destroyed", _ctx.meta_tide.getContext("2.2", "2", false));
+			Assert.assertNull("Context 2.3 destroyed", _ctx.meta_tide.getContext("2.3", "2", false));
         }
     }
 }

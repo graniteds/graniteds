@@ -497,11 +497,23 @@ package org.granite.tide {
 		        	var ctx:BaseContext = _contextManager.findContext(component as IUIComponent);
 		            if ((info.scope != "conversation" && ctx.meta_isGlobal())
 		            	|| (info.scope == "conversation" && !ctx.meta_isGlobal())) {
-		            	    
+						
+						// If already present in the context with another name, remove it
+						var existingName:String = null;
+						for (var n:String in ctx) {
+							if (n != name && ctx.meta_getInstance(n, false, true) === component) {
+								log.debug("component instance renamed from {0} to {1}", n, name);
+								existingName = n;
+								break;
+							}
+						}
+						if (existingName != null)
+							removeComponent(existingName);
+		            	
 		            	var instance:Object = ctx.meta_getInstance(name, false, true);
 		            	if (instance !== component) {
 			        		ctx[name] = component;
-			        		log.info("added component " + name);
+			        		log.info("added component {0}", name);
 			        	}
 			       	}
 		        	
@@ -591,7 +603,7 @@ package org.granite.tide {
 				
 				if (autoName) {
 					removeComponent(name);
-			        log.info("removed component " + name);
+			        log.info("removed component {0}", name);
 				}
 				else {
 		        	var ctx:BaseContext = _contextManager.findContext(component as IUIComponent, false);
@@ -599,7 +611,7 @@ package org.granite.tide {
 		            	var instance:Object = ctx.meta_getInstance(name, false, true);
 		            	if (instance !== null) {
 		        			ctx[name] = null;
-			        		log.info("removed component instance " + name);
+			        		log.info("removed component instance {0}", name);
 			        	}
 			       	}
 			   	}
@@ -1410,7 +1422,7 @@ package org.granite.tide {
 
 			if (ro.channelSet) {
 				var asyncToken:AsyncToken = ro.channelSet.logout();	// Workaround described in BLZ-310
-				asyncToken.addResponder(new Responder(logoutComplete, null));
+				asyncToken.addResponder(new Responder(logoutComplete, logoutFault));
 			}
 			else
 				logoutComplete(null);
@@ -1421,8 +1433,9 @@ package org.granite.tide {
 		 * 	
 		 * 	Handler method for logout complete
 		 */
-		private function logoutComplete(event:Event):void {
-			ro.logout();
+		private function logoutComplete(event:Event, logoutRemoteObject:Boolean = true):void {
+			if (logoutRemoteObject)
+				ro.logout();
 			
 			log.info("Tide application logout");
 			
@@ -1432,6 +1445,12 @@ package org.granite.tide {
 			_waitForLogout = 0;
 			
 			getContext().raiseEvent(LOGGED_OUT);
+		}
+		
+		private function logoutFault(event:Event):void {
+			log.warn("Channel logout failed, assume the client is logged out");
+			
+			logoutComplete(event, false);
 		}
         
         
@@ -1914,7 +1933,7 @@ package org.granite.tide {
             var handled:Boolean = false;
             if (tideResponder) {
                 var event:TideResultEvent = new TideResultEvent(TideResultEvent.RESULT, context, false, true, data.token, componentResponder, result);
-                tideResponder.result(event);
+				tideResponder.result(event);
                 if (event.isDefaultPrevented())
                 	handled = true;
             }

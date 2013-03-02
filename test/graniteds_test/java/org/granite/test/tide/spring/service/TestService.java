@@ -1,7 +1,7 @@
 package org.granite.test.tide.spring.service;
 
-import org.granite.test.tide.spring.entity.AbstractEntity;
-import org.granite.test.tide.spring.entity.Person;
+import org.granite.test.tide.data.AbstractEntity;
+import org.granite.test.tide.data.Person;
 import org.springframework.stereotype.Service;
 
 

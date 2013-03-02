@@ -261,6 +261,7 @@
                 <dirset dir="classes/gravity"/>
                 <dirset dir="classes/tide"/>
                 <pathelement location="lib/aspectjweaver-1.5.4.jar"/>
+                <pathelement location="lib/jdo2-api-2.3-eb.jar"/>
                 <pathelement location="lib/org.springframework.core.jar"/>
                 <pathelement location="lib/org.springframework.beans.jar"/>
                 <pathelement location="lib/org.springframework.context.jar"/>
@@ -408,7 +409,7 @@
             	<exclude name="org/granite/osgi/**"/>
             	<exclude name="META-INF/**"/>
             </fileset>
-            <fileset dir="classes/tide">
+            <fileset dir="tide">
                 <include name="org/granite/tide/Expression.java"/>
                 <include name="org/granite/tide/IInvocation*.java"/>
                 <include name="org/granite/tide/IUID.java"/>
@@ -1194,6 +1195,12 @@
 	 ! Run tests
 	 !-->
 	<target name="tests">
+        <ant dir="test/graniteds_test" antfile="build.xml" target="clean" inheritall="false">
+            <property name="gds.dir" value="${basedir}"/>
+            <property name="FLEX_HOME" value="${FLEX_HOME_TESTS}"/>
+            <property name="GDS_VERSION" value="${GDS_VERSION}"/>
+        </ant>
+        
 		<ant dir="test/graniteds_test" antfile="build.xml" target="tests" inheritall="false">
 			<property name="gds.dir" value="${basedir}"/>
 			<property name="FLEX_HOME" value="${FLEX_HOME_TESTS}"/>
@@ -1209,6 +1216,7 @@
     	<mkdir dir="distserverjars"/>
     	<mkdir dir="distclientswcs"/>
     	<mkdir dir="distclientjars"/>
+        <mkdir dir="distclienttestjars"/>
     	
         <!-- GDS -->
         <mkdir dir="graniteds"/>
@@ -1224,6 +1232,12 @@
             <fileset dir="build">
                 <include name="*.jar"/>
             	<exclude name="*-client.jar"/>
+            </fileset>              
+        </copy>
+        <copy todir="distclienttestjars">
+            <fileset dir="build">
+                <include name="granite.jar"/>
+                <include name="granite-hibernate.jar"/>
             </fileset>              
         </copy>
         <copy todir="distclientswcs">

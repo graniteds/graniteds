@@ -3,15 +3,17 @@ package org.granite.test.tide.spring;
 import java.util.Map;
 
 import org.granite.collections.BasicMap;
-import org.granite.test.tide.spring.entity.Contact;
-import org.granite.test.tide.spring.entity.Person;
+import org.granite.test.tide.data.Contact;
+import org.granite.test.tide.data.Person;
 import org.granite.test.tide.spring.service.Hello2Service;
 import org.granite.tide.invocation.InvocationResult;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.test.context.ContextConfiguration;
 
 
+@ContextConfiguration
 public class TideRemotingTest extends AbstractTideTestCase {
     
 	@Test

@@ -23,6 +23,7 @@ package org.granite.messaging.amf.io.convert.impl;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.convert.Converters;
@@ -100,7 +101,23 @@ public class Map2Map extends Converter {
                     (keyType.equals(Object.class) || keyType instanceof WildcardType) &&
                     (valueType.equals(Object.class) || valueType instanceof WildcardType))
                     return value;
-
+                
+                // Check if all keys and values are compatible
+                if (targetClass.isInstance(value)) {
+                	Class<?> keyClass = TypeUtil.classOfType(keyType);
+                	Class<?> valueClass = TypeUtil.classOfType(valueType);
+                	
+                	boolean compatible = true;                	
+                	for (Entry<?, ?> entry : ((Map<?, ?>)value).entrySet()) {
+                		if (!keyClass.isInstance(entry.getKey()) || !valueClass.isInstance(entry.getValue())) {
+                			compatible = false;
+                			break;
+                		}
+                	}
+                	if (compatible)
+                		return value;
+                }
+                
                 Map<Object, Object> targetInstance = null;
                 try {
                     targetInstance = MapUtil.newMap(targetClass, map.size());

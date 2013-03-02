@@ -128,11 +128,11 @@
     
     <persistence-unit name="seam-pu" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <class>org.granite.test.tide.seam.entity.AbstractEntity</class>
-        <class>org.granite.test.tide.seam.entity.Person</class>
-        <class>org.granite.test.tide.seam.entity.Contact</class>
-        <class>org.granite.test.tide.seam.entity.Address</class>
-        <class>org.granite.test.tide.seam.entity.Country</class>
+        <class>org.granite.test.tide.data.AbstractEntity</class>
+        <class>org.granite.test.tide.data.Person</class>
+        <class>org.granite.test.tide.data.Contact</class>
+        <class>org.granite.test.tide.data.Address</class>
+        <class>org.granite.test.tide.data.Country</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
@@ -147,11 +147,11 @@
     
     <persistence-unit name="cdi-pu" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <class>org.granite.test.tide.cdi.entity.AbstractEntity</class>
-        <class>org.granite.test.tide.cdi.entity.Person</class>
-        <class>org.granite.test.tide.cdi.entity.Contact</class>
-        <class>org.granite.test.tide.cdi.entity.Address</class>
-        <class>org.granite.test.tide.cdi.entity.Country</class>
+        <class>org.granite.test.tide.data.AbstractEntity</class>
+        <class>org.granite.test.tide.data.Person</class>
+        <class>org.granite.test.tide.data.Contact</class>
+        <class>org.granite.test.tide.data.Address</class>
+        <class>org.granite.test.tide.data.Country</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>

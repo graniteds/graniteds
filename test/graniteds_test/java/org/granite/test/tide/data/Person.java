@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.test.tide.seam.entity;
+package org.granite.test.tide.data;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,11 +31,10 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-
-import org.jboss.seam.annotations.Name;
+import javax.persistence.Table;
 
 @Entity
-@Name("person")
+@Table(name="PERSON")
 public class Person extends AbstractEntity { // , DocumentedEntity {
     
     private static final long serialVersionUID = 1L;

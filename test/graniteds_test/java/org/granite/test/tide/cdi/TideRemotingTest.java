@@ -3,9 +3,9 @@ package org.granite.test.tide.cdi;
 import java.util.Map;
 
 import org.granite.collections.BasicMap;
-import org.granite.test.tide.cdi.entity.Contact;
 import org.granite.test.tide.cdi.service.Hello2Service;
 import org.granite.test.tide.cdi.service.Hello3Service;
+import org.granite.test.tide.data.Contact;
 import org.granite.tide.invocation.InvocationResult;
 import org.junit.Assert;
 import org.junit.Test;

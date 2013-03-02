@@ -83,6 +83,7 @@ package org.granite.test.tide.data
 
             c = new EntityGraphUninitializer(_ctx).uninitializeEntityGraph(contact) as Contact4;
 
+			Assert.assertNull("Contact not attached to context", c.meta::entityManager);
             Assert.assertFalse("Contact associations uninitialized", c.address.meta::isInitialized());
             Assert.assertTrue("Contact person association initialized", c.person.meta::isInitialized());
             Assert.assertFalse("Person contacts coll uninitialized", c.person.meta::isInitialized("contacts"));
@@ -118,6 +119,7 @@ package org.granite.test.tide.data
 
             var p:Person11 = new EntityGraphUninitializer(_ctx).uninitializeEntityGraph(person) as Person11;
 
+			Assert.assertNull("Person not attached to context", p.meta::entityManager);
             Assert.assertTrue("Contacts coll initialized", p.meta::isInitialized("contacts"));
             var c:Contact4 = p.contacts.getItemAt(0) as Contact4;
             Assert.assertStrictlyEquals("Contact person", p, c.person);
@@ -126,6 +128,7 @@ package org.granite.test.tide.data
 
             c = new EntityGraphUninitializer(_ctx).uninitializeEntityGraph(contact) as Contact4;
 
+			Assert.assertNull("Contact not attached to context", c.meta::entityManager);
             Assert.assertFalse("Contact associations uninitialized", c.person.meta::isInitialized());
             Assert.assertTrue("Contact associations uninitialized", c.address.meta::isInitialized());
         }
@@ -163,6 +166,7 @@ package org.granite.test.tide.data
 
             var p:Person11 = new EntityGraphUninitializer(_ctx).uninitializeEntityGraph(person) as Person11;
 
+			Assert.assertNull("Person not attached to context", p.meta::entityManager);
             Assert.assertTrue("Contacts coll initialized", p.meta::isInitialized("contacts"));
             var c:Contact4 = p.contacts.getItemAt(1) as Contact4;
             Assert.assertTrue("Contact address initialized", c.address.meta::isInitialized());
@@ -203,6 +207,7 @@ package org.granite.test.tide.data
 
             var p:Person11 = new EntityGraphUninitializer(_ctx).uninitializeEntityGraph(person) as Person11;
 
+			Assert.assertNull("Person not attached to context", p.meta::entityManager);
             Assert.assertFalse("Contacts coll uninitialized", p.meta::isInitialized("contacts"));
             Assert.assertFalse("Map uninitialized", p.meta::isInitialized("map"));
 
@@ -210,6 +215,7 @@ package org.granite.test.tide.data
 
             p = new EntityGraphUninitializer(_ctx).uninitializeEntityGraph(person) as Person11;
 
+			Assert.assertNull("Person not attached to context", p.meta::entityManager);
             Assert.assertFalse("Contacts coll initialized", p.meta::isInitialized("contacts"));
             Assert.assertTrue("Map initialized", p.meta::isInitialized("map"));
 		}
@@ -235,6 +241,7 @@ package org.granite.test.tide.data
 			
 			var c:Classification = new EntityGraphUninitializer(_ctx).uninitializeEntityGraph(cl2) as Classification;
 			
+			Assert.assertNull("Classification not attached to context", c.meta::entityManager);
 			Assert.assertTrue("Existing classification initialized", c.superclasses.getItemAt(0).meta::isInitialized());
 		}
     }

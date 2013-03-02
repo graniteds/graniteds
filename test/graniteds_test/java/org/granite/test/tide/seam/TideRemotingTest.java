@@ -4,9 +4,9 @@ import java.util.Map;
 
 import org.granite.collections.BasicMap;
 import org.granite.messaging.service.security.SecurityServiceException;
+import org.granite.test.tide.data.Contact;
+import org.granite.test.tide.data.Person;
 import org.granite.tide.invocation.InvocationResult;
-import org.granite.test.tide.seam.entity.Contact;
-import org.granite.test.tide.seam.entity.Person;
 import org.junit.Assert;
 import org.junit.Test;
 

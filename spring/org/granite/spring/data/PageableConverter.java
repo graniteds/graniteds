@@ -57,7 +57,7 @@ public class PageableConverter extends Converter implements Reverter {
 			if (pageInfo.getSortInfo() != null && pageInfo.getSortInfo().getOrder() != null && pageInfo.getSortInfo().getOrder().length > 0) {
 				List<Order> orders = new ArrayList<Order>(pageInfo.getSortInfo().getOrder().length);
 				for (int i = 0; i < pageInfo.getSortInfo().getOrder().length; i++)
-					orders.add(new Order(pageInfo.getSortInfo().getDesc()[i] ? Direction.ASC : Direction.DESC, pageInfo.getSortInfo().getOrder()[i]));			
+					orders.add(new Order(pageInfo.getSortInfo().getDesc()[i] ? Direction.DESC : Direction.ASC, pageInfo.getSortInfo().getOrder()[i]));			
 				sort = new Sort(orders);			
 			}
 			return new PageRequest(pageInfo.getFirstResult(), pageInfo.getMaxResults(), sort);
