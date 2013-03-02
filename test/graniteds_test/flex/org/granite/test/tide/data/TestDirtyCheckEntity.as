@@ -114,6 +114,31 @@ package org.granite.test.tide.data
         }
 		
 		[Test]
+		public function testDirtyCheckEntity2():void {
+			var person:Person13 = new Person13();
+			
+			BindingUtils.bindProperty(this, "ctxDirty", _ctx, "meta_dirty");
+			BindingUtils.bindProperty(this, "personDirty", person, "meta_dirty");
+			
+			person.version = 0;
+			_ctx.person = _ctx.meta_mergeExternalData(person);
+			person = _ctx.person;
+			
+			person.testNum = 0;
+			
+			Assert.assertTrue("Person dirty", _ctx.meta_isEntityChanged(person));
+			Assert.assertTrue("Person dirty 2", personDirty);
+			Assert.assertTrue("Context dirty", _ctx.meta_dirty);
+			
+			person.testNum = NaN;
+			
+			Assert.assertFalse("Person not dirty", _ctx.meta_isEntityChanged(person));
+			Assert.assertFalse("Person not dirty 2", personDirty);
+			Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
+			Assert.assertFalse("Context not dirty 2", ctxDirty);
+		}
+		
+		[Test]
 		public function testDirtyCheckEntityAddedToCollReset():void {
 			var person:Person = new Person();
 			person.id = 1;

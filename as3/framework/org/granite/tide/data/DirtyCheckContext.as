@@ -193,8 +193,8 @@ package org.granite.tide.data {
                 val = (entity == embedded && p == propName ? value : entity[p]);
                 saveval = save ? save[p] : null;
                 var o:Object;
-                if (save && ((val && (ObjectUtil.isSimple(val) || val is ByteArray))
-                	|| (saveval && (ObjectUtil.isSimple(saveval) || saveval is ByteArray)))) {
+                if (save && ((val != null && (ObjectUtil.isSimple(val) || val is ByteArray))
+                	|| (saveval != null && (ObjectUtil.isSimple(saveval) || saveval is ByteArray)))) {
                     if (saveval !== undefined && ObjectUtil.compare(val, save[p]) != 0) {
                         dirty = true;
                         break;
