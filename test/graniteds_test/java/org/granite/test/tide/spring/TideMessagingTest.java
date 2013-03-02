@@ -15,7 +15,6 @@ import org.granite.gravity.GravityManager;
 import org.granite.gravity.adapters.ActiveMQServiceAdapter;
 import org.granite.gravity.adapters.JMSServiceAdapter;
 import org.granite.spring.SpringGraniteConfig;
-import org.granite.test.tide.MockChannelFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,7 +39,7 @@ public class TideMessagingTest extends AbstractJUnit4SpringContextTests {
 	
 	@Before
 	public void setup() throws Exception {
-        GravityConfig gravityConfig = new GravityConfig(springConfig.getGraniteConfig(), new MockChannelFactory());        
+        GravityConfig gravityConfig = new GravityConfig(springConfig.getGraniteConfig());        
 		Gravity gravity = new DefaultGravityFactory().newGravity(gravityConfig, springConfig.getServicesConfig(), springConfig.getGraniteConfig());
         gravity.start();
         servletContext.setAttribute(Gravity.class.getName(), gravity);
