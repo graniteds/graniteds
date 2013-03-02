@@ -977,8 +977,8 @@ package org.granite.tide.data {
             }
             */
 
-			if (dest is IEntity && !ignore && !_mergeContext.skipDirtyCheck && !_mergeContext.resolvingConflict)
-				_dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), obj);
+			if (dest != null && !ignore && !_mergeContext.skipDirtyCheck && !_mergeContext.resolvingConflict)
+				_dirtyCheckContext.checkAndMarkNotDirty(dest, obj);
 			
 			if (dest != null)
 				log.debug("mergeEntity result: {0}", BaseContext.toString(dest));

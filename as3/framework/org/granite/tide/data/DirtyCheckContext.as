@@ -743,7 +743,7 @@ package org.granite.tide.data {
 		 *  @param owner owner entity for embedded objects
 		 *  @return true if the entity is still dirty after comparing with incoming object
 		 */ 
-		public function checkAndMarkNotDirty(entity:IEntity, source:Object):Boolean {
+		public function checkAndMarkNotDirty(entity:Object, source:Object):Boolean {
 			delete _unsavedEntities[entity];
 			
 			var save:Object = _savedProperties[entity];
@@ -751,9 +751,18 @@ package org.granite.tide.data {
 				return false;
 			
 			var oldDirty:Boolean = _dirtyCount > 0;			
-			var oldDirtyEntity:Boolean = isEntityChanged(entity);
 			
-			var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(entity));
+			var owner:IEntity = null;
+			if (entity is IEntity)
+				owner = entity as IEntity;
+			else {
+				var ownerEntity:Array = _context.meta_getOwnerEntity(entity) as Array;
+				if (ownerEntity != null && ownerEntity[0] is IEntity)
+					owner = ownerEntity[0] as IEntity;
+			}
+			var oldDirtyEntity:Boolean = isEntityChanged(owner);
+			
+			var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(owner);
 			var merged:Array = [];
 			
 			for (var propName:String in save) {
@@ -780,11 +789,11 @@ package org.granite.tide.data {
 				_dirtyCount--;
 			}
 			
-			var newDirtyEntity:Boolean = isEntityChanged(entity);
+			var newDirtyEntity:Boolean = isEntityChanged(owner);
 			if (newDirtyEntity !== oldDirtyEntity) {
 				var pce:PropertyChangeEvent = new PropertyChangeEvent("dirtyChange", false, false, 
 					PropertyChangeEventKind.UPDATE, "meta_dirty", oldDirtyEntity, newDirtyEntity);
-				entity.dispatchEvent(pce);
+				owner.dispatchEvent(pce);
 			}
 			
 			if ((_dirtyCount > 0) !== oldDirty)
@@ -798,7 +807,16 @@ package org.granite.tide.data {
 			var oldDirty:Boolean = _dirtyCount > 0;
 			
 			for (var object:Object in _savedProperties) {
-				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(object));
+				var owner:IEntity = null;
+				if (object is IEntity)
+					owner = IEntity(object);
+				else {
+					var ownerEntity:Array = _context.meta_getOwnerEntity(object) as Array;
+					if (ownerEntity != null && ownerEntity[0] is IEntity)
+						owner = ownerEntity[0] as IEntity;
+				}
+				
+				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(owner);
 				
 				var oldDirtyEntity:Boolean = isEntityChanged(object);
 				
