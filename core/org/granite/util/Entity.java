@@ -83,21 +83,32 @@ public class Entity {
 	
 	public Object getIdentifier() {
 		if (wrappedEntity == null)
-			throw new IllegalStateException("No entity instance defined"); 
+			throw new IllegalStateException("No entity instance defined");
 		
+		return getIdentifier(wrappedEntity);
+	}
+	
+	public Object getIdentifier(Object entity) {		
 	    if (identifierGetter != null)
-	    	return Reflections.invokeAndWrap(identifierGetter, wrappedEntity);
+	    	return Reflections.invokeAndWrap(identifierGetter, entity);
 	    else if (identifierField != null)
-	    	return Reflections.getAndWrap(identifierField, wrappedEntity);
+	    	return Reflections.getAndWrap(identifierField, entity);
 	    else
-	    	throw new IllegalStateException("@Id attribute not found for entity class: " + wrappedEntity.getClass().getName());
+	    	throw new IllegalStateException("@Id attribute not found for entity class: " + entity.getClass().getName());
 	}
 	
 	public Object getVersion() {
+		if (wrappedEntity == null)
+			throw new IllegalStateException("No entity instance defined");
+		
+		return getVersion(wrappedEntity);
+	}
+	
+	public Object getVersion(Object entity) {
 	    if (versionGetter != null)
-	    	return Reflections.invokeAndWrap(versionGetter, wrappedEntity);
+	    	return Reflections.invokeAndWrap(versionGetter, entity);
 	    else if (versionField != null)
-	    	return Reflections.getAndWrap(versionField, wrappedEntity);
+	    	return Reflections.getAndWrap(versionField, entity);
 	    return null;
 	}
 
