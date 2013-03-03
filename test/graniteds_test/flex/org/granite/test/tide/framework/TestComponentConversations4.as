@@ -30,5 +30,16 @@ package org.granite.test.tide.framework
 			Assert.assertStrictlyEquals("Global component [Inject]", _ctx.myComponent2, localCtx.myComponentConversation.myComponentZ);
 			Assert.assertStrictlyEquals("Global component [Inject]", _ctx.myComponent2, localCtx.myComponentConversationB.myComponent);
         }
+		
+		[Test]
+		public function testComponentNestedConversations4():void {
+			var localCtx:BaseContext = Spring.getInstance().getContext("test");
+			var nestedCtx:BaseContext = Spring.getInstance().getContext("nested", localCtx.contextId);
+			
+			Assert.assertStrictlyEquals("Global component [In]", _ctx.myComponent, nestedCtx.myComponentConversation.myComponent);
+			Assert.assertStrictlyEquals("Global component [Inject]", _ctx.myComponent2, nestedCtx.myComponentConversation.myComponentY);
+			Assert.assertStrictlyEquals("Global component [Inject]", _ctx.myComponent2, nestedCtx.myComponentConversation.myComponentZ);
+			Assert.assertStrictlyEquals("Global component [Inject]", _ctx.myComponent2, nestedCtx.myComponentConversationB.myComponent);
+		}
     }
 }
