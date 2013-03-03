@@ -15,7 +15,7 @@ package org.granite.test.tide {
     use namespace flash_proxy;
 
 
-    [RemoteClass(alias="org.granite.test.tide.PersonService")]
+    [RemoteClass(alias="org.granite.test.tide.PersonServiceFold")]
     public class PersonServiceFold extends Component {
         
         public function PersonServiceFold():void {
