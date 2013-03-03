@@ -67,7 +67,8 @@ package org.granite.test.tide.framework
 		public var test53:org.granite.test.tide.framework.TestUIComponentGDS781;
 		public var test54:org.granite.test.tide.framework.TestUIComponentGDS781b;
 		public var test55:org.granite.test.tide.framework.TestUIComponentModules;
-		public var test56:org.granite.test.tide.framework.TestEventInterceptor;
+		public var test56:org.granite.test.tide.framework.TestUIComponentConversation;
+		public var test57:org.granite.test.tide.framework.TestEventInterceptor;
 	//	public var test57:org.granite.test.tide.framework.TestComponentFlexModules;
 	}
 }

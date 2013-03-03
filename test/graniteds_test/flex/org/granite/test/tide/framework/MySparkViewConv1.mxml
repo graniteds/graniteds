@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  xmlns:test="org.granite.test.tide.framework.*"
+		  width="400" height="300"
+		  creationComplete="creationComplete()">
+	
+	<fx:Metadata>
+		[Name]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			[In(create="true")]
+			public var view2:MySparkViewConv2;
+			
+			[Inject(create="true")]
+			public var view5:MySparkViewConv5;
+			
+			private function creationComplete():void {
+				views.addElement(view2);
+				
+				var view4:MySparkViewConv4 = new MySparkViewConv4();
+				views.addElement(view4);
+			}
+		]]>
+	</fx:Script>
+	
+	<s:VGroup id="views">
+		<test:MySparkViewConv3 id="view3"/>
+	</s:VGroup>
+	
+</s:VGroup>
