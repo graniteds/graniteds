@@ -1204,7 +1204,7 @@ package org.granite.tide {
     	 *  @param entity an entity
     	 *  @return the entity descriptor for the entity class
     	 */ 
-    	public function getEntityDescriptor(entity:IEntity):EntityDescriptor {
+    	public function getEntityDescriptor(entity:Object):EntityDescriptor {
     	    var className:String = getQualifiedClassName(entity);
     	    var desc:EntityDescriptor = _entityDescriptors[className] as EntityDescriptor;
     	    if (desc == null) {

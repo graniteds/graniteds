@@ -47,7 +47,7 @@ package org.granite.tide {
         public var mergeGDS21:Boolean;
         
         
-        public function EntityDescriptor(entity:IEntity):void {
+        public function EntityDescriptor(entity:Object):void {
 			
 			var type:Type = Type.forInstance(entity);
 			className = type.alias;
@@ -64,6 +64,9 @@ package org.granite.tide {
             for each (var f:String in fields)
                 lazy[f] = true;
 
+			if (!(entity is IEntity))
+				return;
+			
 			try {
 	        	if (Object(entity).meta::merge !== undefined) {
 	            	mergeGDS21 = true;

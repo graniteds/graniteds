@@ -94,8 +94,8 @@ package org.granite.tide.data {
             var save:Object = _savedProperties[_context.meta_getCachedObject(entity)];
             if (entity is IEntity && save != null)
                 dirty = true;
-
-            var desc:EntityDescriptor = entity is IEntity ? _context.meta_tide.getEntityDescriptor(IEntity(entity)) : null;
+			
+            var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(entity);
             var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
             for each (var p:String in cinfo.properties) {
                 var v:Object = entity[p];

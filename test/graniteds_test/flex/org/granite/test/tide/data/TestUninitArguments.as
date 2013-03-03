@@ -265,5 +265,24 @@ package org.granite.test.tide.data
 			
 			Assert.assertFalse("Contacts coll uninitialized", p.meta::isInitialized("contacts"));
 		}
+		
+		[Test]
+		public function TestUninitializeArguments7():void {
+			var person:Person12 = new Person12();
+			person.id = 1;
+			person.version = 0;
+			person.uid = "P1";
+			person.lastName = "test";
+			person.contactList = new Contacts11();
+			person.contactList.contacts = new PersistentSet(true);
+			
+			person = Person12(_ctx.meta_mergeExternalData(person));
+			
+			person.lastName = "bla";
+			
+			var p:Person12 = new EntityGraphUninitializer(_ctx).uninitializeEntityGraph(person) as Person12;
+			
+			Assert.assertFalse("Contacts coll uninitialized", IPersistentCollection(p.contactList.contacts).isInitialized());
+		}
     }
 }
