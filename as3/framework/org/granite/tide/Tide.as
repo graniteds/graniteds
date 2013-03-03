@@ -134,6 +134,9 @@ package org.granite.tide {
 		public static const QCN_ILIST:String = getQualifiedClassName(IList);
 		public static const QCN_IUICOMPONENT:String = getQualifiedClassName(IUIComponent);
 		
+		public static const WINDOW_CREATE:String = "globalNotifyWindowCreate";
+		public static const WINDOW_CLOSE:String = "globalNotifyWindowClose";
+		
         
 	    private static var _tide:Tide;
 	    
@@ -392,7 +395,11 @@ package org.granite.tide {
 	            app.systemManager.addEventListener(Event.ADDED, addedHandler, 0, false, true);
 				app.addEventListener(Event.REMOVED, removedHandler, 0, false, true);
 	            app.systemManager.addEventListener(Event.REMOVED, removedHandler, 0, false, true);
-	        }
+				app.addEventListener(WINDOW_CREATE, nativeAddedHandler, 0, false, true); 
+				app.systemManager.addEventListener(WINDOW_CREATE, nativeAddedHandler, 0, false, true); 
+				app.addEventListener(WINDOW_CLOSE, nativeRemovedHandler, 0, false, true); 
+				app.systemManager.addEventListener(WINDOW_CLOSE, nativeRemovedHandler, 0, false, true); 	        
+			}
 	        
             ctx.raiseEvent(STARTUP);
 		}
@@ -408,6 +415,10 @@ package org.granite.tide {
 	        app.systemManager.removeEventListener(Event.ADDED, addedHandler);
 			app.removeEventListener(Event.REMOVED, removedHandler);
 	        app.systemManager.removeEventListener(Event.REMOVED, removedHandler);
+			app.removeEventListener(WINDOW_CREATE, nativeAddedHandler); 
+			app.systemManager.removeEventListener(WINDOW_CREATE, nativeAddedHandler); 
+			app.removeEventListener(WINDOW_CLOSE, nativeRemovedHandler); 
+			app.systemManager.removeEventListener(WINDOW_CLOSE, nativeRemovedHandler); 	        
 		}
 		
 		
@@ -642,8 +653,37 @@ package org.granite.tide {
 			   	_currentModulePrefix = saveModulePrefix;
 		    }
 		}
-				
-				
+
+		
+		private function nativeAddedHandler(event:Event):void {
+			var window:Object = Object(event).window;
+			
+			internalAdd(window); 
+			window.addEventListener(Event.ADDED, addedHandler, false, 0, true); 
+			window.systemManager.addEventListener(Event.ADDED, addedHandler, false, 0, true); 
+			window.addEventListener(Event.REMOVED, removedHandler, false, 0, true); 
+			window.systemManager.addEventListener(Event.REMOVED, removedHandler, false, 0, true); 
+			window.addEventListener(WINDOW_CREATE, nativeAddedHandler, false, 0, true); 
+			window.systemManager.addEventListener(WINDOW_CREATE, nativeAddedHandler, false, 0, true); 
+			window.addEventListener(WINDOW_CLOSE, nativeRemovedHandler, false, 0, true); 
+			window.systemManager.addEventListener(WINDOW_CLOSE, nativeRemovedHandler, false, 0, true); 
+		} 
+
+		private function nativeRemovedHandler(event:Event):void { 
+			var window:Object = Object(event).window;
+			
+			window.removeEventListener(Event.ADDED, addedHandler); 
+			window.systemManager.removeEventListener(Event.ADDED, addedHandler); 
+			window.removeEventListener(Event.REMOVED, removedHandler); 
+			window.systemManager.removeEventListener(Event.REMOVED, removedHandler); 
+			window.removeEventListener(WINDOW_CREATE, nativeAddedHandler); 
+			window.systemManager.removeEventListener(WINDOW_CREATE, nativeAddedHandler); 
+			window.removeEventListener(WINDOW_CLOSE, nativeRemovedHandler); 
+			window.systemManager.removeEventListener(WINDOW_CLOSE, nativeRemovedHandler); 
+			internalRemove(window);
+		}
+		
+		
 		/**
 		 * 	Register a Tide module
 		 * 
