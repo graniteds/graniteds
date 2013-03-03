@@ -244,5 +244,26 @@ package org.granite.test.tide.data
 			Assert.assertNull("Classification not attached to context", c.meta::entityManager);
 			Assert.assertTrue("Existing classification initialized", c.superclasses.getItemAt(0).meta::isInitialized());
 		}
+		
+		[Test]
+		public function TestUninitializeArguments6():void {
+			var person:Person4b = new Person4b();
+			person.id = 1;
+			person.version = 0;
+			person.uid = "P1";
+			person.address = new EmbeddedAddress2();
+			person.address.address1 = "test";
+			person.address.location = new EmbeddedLocation();
+			person.address.location.city = "bla";
+			person.contacts = new PersistentSet(true);
+			
+			person = Person4b(_ctx.meta_mergeExternalData(person));
+			
+			person.address.location.city = "blo";
+			
+			var p:Person4b = new EntityGraphUninitializer(_ctx).uninitializeEntityGraph(person) as Person4b;
+			
+			Assert.assertFalse("Contacts coll uninitialized", p.meta::isInitialized("contacts"));
+		}
     }
 }

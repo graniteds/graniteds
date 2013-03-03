@@ -41,6 +41,7 @@ package org.granite.test.tide.data {
         public function set contacts(value:ListCollectionView):void {
             _contacts = value;
         }
+		[Lazy]
         public function get contacts():ListCollectionView {
             return _contacts;
         }

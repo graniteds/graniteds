@@ -99,7 +99,7 @@ package org.granite.tide.data {
             var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
             for each (var p:String in cinfo.properties) {
                 var v:Object = entity[p];
-                if (v == null || p == desc.versionPropertyName)
+                if (v == null || (desc != null && p == desc.versionPropertyName))
                     continue;
                 if (entity is IEntity && !entity.meta::isInitialized(p))
                     continue;
