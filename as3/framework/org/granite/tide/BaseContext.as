@@ -956,8 +956,17 @@ package org.granite.tide {
                     // IEventDispatcher(prev).removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, meta_componentPropertyChangeHandler);
                 }
                 
-                if (prev != null)
+                if (prev != null) {
                     _entityManager.removeReference(prev, null, null, new ContextVariable(n));
+					
+					meta_tide.removeManagedInstance(prev);
+				}
+				
+				if (value != null) {
+					var existing:Array = meta_tide.getManagedInstance(value);
+					if (existing != null)
+						existing[0][existing[1]] = null;
+				}
                 
                 saveTracking = _tracking;
                 _tracking = true;
@@ -971,6 +980,9 @@ package org.granite.tide {
                 
                 if (value != null) {
                     var n:String = name is QName ? QName(name).localName : name;
+					
+					meta_tide.setManagedInstance(value, this, n);
+					
                     if (value is IEntity) {
                         // Setup context for entity context variable
                         _entityManager.addReference(value, null, null, new ContextVariable(n));

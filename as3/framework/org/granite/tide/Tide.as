@@ -140,6 +140,7 @@ package org.granite.tide {
 	    private var _destination:String = null;
 	            
 		private var _componentStore:ComponentStore = null;
+		private var _managedInstances:Dictionary = new Dictionary(true);
 		private var _contextManager:IContextManager;
 		private var _entityDescriptors:Dictionary = new Dictionary(true);
         private var _componentClass:Class;
@@ -323,6 +324,18 @@ package org.granite.tide {
 		public function set currentModulePrefix(prefix:String):void {
 			_currentModulePrefix = prefix;
 		}
+		
+		
+		public function getManagedInstance(component:Object):Array {
+			return _managedInstances[component] as Array;
+		}
+		public function setManagedInstance(component:Object, context:BaseContext, name:String):void {
+			_managedInstances[component] = [ context, name ];
+		}
+		public function removeManagedInstance(component:Object):void {
+			delete _managedInstances[component];
+		}
+		
 		
 		/**
 		 *  @private
