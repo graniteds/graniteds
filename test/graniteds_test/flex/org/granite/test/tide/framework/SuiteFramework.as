@@ -9,6 +9,8 @@ package org.granite.test.tide.framework
 		public var test3:org.granite.test.tide.framework.TestAnnotatedComponent;
 		public var test4:org.granite.test.tide.framework.TestComponentConversations;
 		public var test5:org.granite.test.tide.framework.TestComponentConversations2;
+		public var test5b:org.granite.test.tide.framework.TestComponentConversations3;
+		public var test5c:org.granite.test.tide.framework.TestComponentConversations4;
 		public var test6:org.granite.test.tide.framework.TestComponentEventScope;
 		public var test7:org.granite.test.tide.framework.TestComponentInjection;
 		public var test8:org.granite.test.tide.framework.TestComponentInjection2;
