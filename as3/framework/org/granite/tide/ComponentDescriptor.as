@@ -31,6 +31,7 @@ package org.granite.tide {
     [ExcludeClass]
     public class ComponentDescriptor {
         public var name:String;
+		public var autoUIName:Boolean = false;
         public var factory:ComponentFactory;
         public var xmlDescriptor:XML;
 		public var types:Array = [];

@@ -491,24 +491,30 @@ package org.granite.tide {
 			internalAdd(event.target);
 		}
 		
-		private function internalAdd(component:Object):void {
+		private function internalAdd(component:Object, parent:Object = null):void {
 			var className:String = getQualifiedClassName(component);
 			if (!_componentStore.isFxClass(className)) {
 				var info:ComponentInfo = DescribeTypeCache.describeType(component)['componentInfo'] as ComponentInfo;
 				if (info.name != null) {
 					var name:String = null;
+					var autoName:Boolean = false;
 					if (info.name.length > 0)
 						name = info.name;
-					else if (info.module.length > 0)
+					else if (info.module.length > 0) {
 						name = info.module + "." + internalUIComponentName(component);
-					else
+						autoName = true;
+					}
+					else {
 						name = internalUIComponentName(component);
+						autoName = true;
+					}
 	            	
 	            	var saveModulePrefix:String = _currentModulePrefix;
 	            	_currentModulePrefix = "";
 					
-		        	var ctx:BaseContext = _contextManager.findContext(component as IUIComponent);
-		            if ((info.scope != "conversation" && ctx.meta_isGlobal())
+		        	var ctx:BaseContext = _contextManager.findContext(parent != null ? parent as IUIComponent : component as IUIComponent);
+		            if (!info.scope 
+						|| (info.scope != "conversation" && ctx.meta_isGlobal())
 		            	|| (info.scope == "conversation" && !ctx.meta_isGlobal())) {
 						
 						// If already present in the context with another name, remove it
@@ -520,14 +526,23 @@ package org.granite.tide {
 								break;
 							}
 						}
-						if (existingName != null)
-							removeComponent(existingName);
+						var add:Boolean = true;
+						if (existingName != null) {
+							if (getDescriptor(n, false).autoUIName)
+								removeComponent(existingName);
+							else
+								add = false;
+						}
 		            	
-		            	var instance:Object = ctx.meta_getInstance(name, false, true);
-		            	if (instance !== component) {
-			        		ctx[name] = component;
-			        		log.info("added component {0}", name);
-			        	}
+						if (add) {
+			            	var instance:Object = ctx.meta_getInstance(name, false, true);
+			            	if (instance !== component) {
+				        		ctx[name] = component;
+								if (autoName)
+									getDescriptor(name).autoUIName = true;
+				        		log.info("added component {0}", name);
+				        	}
+						}
 			       	}
 		        	
 		        	_currentModulePrefix = saveModulePrefix;
@@ -540,7 +555,7 @@ package org.granite.tide {
 				try {
 					if (!(component is IDEFERREDCONTENTOWNER_CLASS) || component.deferredContentCreated) {
 						for (i = 0; i < component.numElements; i++)
-							internalAdd(component.getElementAt(i));
+							internalAdd(component.getElementAt(i), parent != null ? parent : component);
 					}
 				}
 				catch (e:SecurityError) {
@@ -550,7 +565,7 @@ package org.granite.tide {
 			else if (component is DisplayObjectContainer) {
 				try {
 					for (i = 0; i < component.numChildren; i++)
-						internalAdd(component.getChildAt(i));
+						internalAdd(component.getChildAt(i), parent != null ? parent : component);
 				}
 				catch (e:SecurityError) {
 					// Stop here: component does not allow access to its children
@@ -599,22 +614,17 @@ package org.granite.tide {
 			var info:ComponentInfo = DescribeTypeCache.describeType(component)['componentInfo'] as ComponentInfo;
 			if (info.name != null) {
 				var name:String = null;
-				var autoName:Boolean = false;
 				if (info.name.length > 0)
 					name = info.name;
-				else if (info.module.length > 0) {
-					autoName = true;
+				else if (info.module.length > 0)
 					name = info.module + "." + internalUIComponentName(component);
-				}
-				else {
-					autoName = true;
+				else
 					name = internalUIComponentName(component);
-				}
 				
             	var saveModulePrefix:String = _currentModulePrefix;
             	_currentModulePrefix = "";
 				
-				if (autoName) {
+				if (getDescriptor(name).autoUIName) {
 					removeComponent(name);
 			        log.info("removed component {0}", name);
 				}
