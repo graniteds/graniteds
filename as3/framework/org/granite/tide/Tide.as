@@ -494,6 +494,27 @@ package org.granite.tide {
 		
 		/**
 		 * 	@private
+		 * 	Find the context where the uiComponent is managed
+		 * 
+		 * 	@param uiComponent an UI component
+		 * 	@param returnDefault also search in default context
+		 *
+		 * 	@return the context managing the uiComponent
+		 */
+		public function findContext(uiComponent:IUIComponent, returnDefault:Boolean = true):BaseContext {
+			var ctxName:Array = getManagedInstance(uiComponent) as Array;
+			if (ctxName != null)
+				return ctxName[0] as BaseContext;
+			
+			if (uiComponent.parent != null && uiComponent.parent is IUIComponent)
+				return findContext(uiComponent.parent as IUIComponent);
+			
+			return returnDefault ? getContext() : null;
+		}
+		
+		
+		/**
+		 * 	@private
 		 * 	Internal handler for ADDED events that scans UI components for [Name] annotations
 		 * 
 		 * 	@param event the ADDED event
@@ -523,24 +544,21 @@ package org.granite.tide {
 	            	var saveModulePrefix:String = _currentModulePrefix;
 	            	_currentModulePrefix = "";
 					
-		        	var ctx:BaseContext = _contextManager.findContext(parent != null ? parent as IUIComponent : component as IUIComponent);
+		        	var ctx:BaseContext = findContext(parent != null ? parent as IUIComponent : component as IUIComponent);
 		            if (!info.scope 
 						|| (info.scope != "conversation" && ctx.meta_isGlobal())
 		            	|| (info.scope == "conversation" && !ctx.meta_isGlobal())) {
 						
 						// If already present in the context with another name, remove it
-						var existingName:String = null;
-						for (var n:String in ctx) {
-							if (n != name && ctx.meta_getInstance(n, false, true) === component) {
-								log.debug("component instance renamed from {0} to {1}", n, name);
-								existingName = n;
-								break;
-							}
-						}
+						var existingCtxName:Array = getManagedInstance(component);
+						var existingName:String = existingCtxName != null ? existingCtxName[1] as String : null; 
+						
 						var add:Boolean = true;
 						if (existingName != null) {
-							if (getDescriptor(n, false).autoUIName)
+							if (getDescriptor(existingName, false).autoUIName) {
+								log.debug("component instance renamed from {0} to {1}", existingName, name);
 								removeComponent(existingName);
+							}
 							else
 								add = false;
 						}
@@ -640,7 +658,7 @@ package org.granite.tide {
 			        log.info("removed component {0}", name);
 				}
 				else {
-		        	var ctx:BaseContext = _contextManager.findContext(component as IUIComponent, false);
+		        	var ctx:BaseContext = findContext(component as IUIComponent, false);
 		        	if (ctx != null) {
 		            	var instance:Object = ctx.meta_getInstance(name, false, true);
 		            	if (instance !== null) {
@@ -1798,7 +1816,7 @@ package org.granite.tide {
 		    
 		    _objectsInitializing.push({ context: ctx, entity: path ? path.path : obj.entity, propertyName: obj.propertyName });
 		    
-		    getContext().application.callLater(doInitializeObjects, [ctx]);
+		    currentApplication().callLater(doInitializeObjects, [ctx]);
 		}
 		
 		private function doInitializeObjects(ctx:BaseContext):void {

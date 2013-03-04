@@ -20,9 +20,6 @@
 
 package org.granite.tide {
     
-    import mx.core.IUIComponent;
-    
-	
 	/**
 	 * 	Interface for context managers
 	 * 
@@ -47,10 +44,6 @@ package org.granite.tide {
 		function addToContextsToDestroy(contextId:String):void;
 		
 	    function removeFromContextsToDestroy(contextId:String):void;
-	    
-		function findContext(uiComponent:IUIComponent, returnDefault:Boolean = true):BaseContext;
-		
-		function findContextForUIComponent(uiComponent:IUIComponent):BaseContext;
 		
 		function unregisterComponent(name:String, component:Object):void;
 		

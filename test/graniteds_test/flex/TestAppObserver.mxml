@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<s:Application
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	preinitialize="Spring.getInstance().initApplication()">
+	
+	<fx:Metadata>
+		[Name]
+	</fx:Metadata>
+	
+	<fx:Script><![CDATA[
+		import mx.core.IVisualElement;
+		import mx.events.ModuleEvent;
+		import mx.modules.IModuleInfo;
+		import mx.modules.ModuleManager;
+		
+		import org.granite.tide.Tide;
+		import org.granite.tide.events.TideUIEvent;
+		import org.granite.tide.spring.Spring;
+		
+		
+		[Observer("fuck")]
+		public function fuckHandler():void {
+			trace("Fuck!!");
+		}
+	]]></fx:Script>
+	
+	<s:VGroup>
+		<s:Button label="Fuck!!" click="dispatchEvent(new TideUIEvent('fuck'))"/>
+	</s:VGroup>
+</s:Application>

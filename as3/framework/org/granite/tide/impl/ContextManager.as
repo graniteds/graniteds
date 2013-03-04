@@ -276,48 +276,6 @@ package org.granite.tide.impl {
 		
 		/**
 		 * 	@private
-		 * 	Find the context where the uiComponent is managed
-		 * 
-		 * 	@param uiComponent an UI component
-		 * 	@param returnDefault also search in default context
-		 *
-		 * 	@return the context managing the uiComponent
-		 */
-		public function findContext(uiComponent:IUIComponent, returnDefault:Boolean = true):BaseContext {
-			var ctx:BaseContext = findContextForUIComponent(uiComponent);
-			if (ctx != null)
-				return ctx;
-			
-			if (uiComponent.parent != null && uiComponent.parent is IUIComponent)
-				return findContext(uiComponent.parent as IUIComponent);
-			
-			return returnDefault ? _ctx[Tide.DEFAULT_CONTEXT] : null;
-		}
-		
-		/**
-		 * 	@private
-		 * 	Check is the UI component is registered in any managed context
-		 *	
-		 * 	@param uiComponent an UI component
-		 * 	@return the context which manages the UI component or null if not found
-		 */ 
-		public function findContextForUIComponent(uiComponent:IUIComponent):BaseContext {
-			var defaultContext:BaseContext = _ctx[Tide.DEFAULT_CONTEXT]; 
-			if (defaultContext.meta_listensTo(uiComponent))
-				return defaultContext;
-			
-			for each (var ctx:BaseContext in _ctx) {
-				if (ctx === defaultContext)
-					continue;
-				if (ctx.meta_listensTo(uiComponent))
-					return ctx;
-			}
-			
-			return null;
-		}
-		
-		/**
-		 * 	@private
 		 *  
 		 * 	Unregister listeners for component in all contexts
 		 * 
