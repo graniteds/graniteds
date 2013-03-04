@@ -26,6 +26,7 @@
     <application path="TestLoadModule2.mxml"/>
     <application path="TestRunner.mxml"/>
     <application path="FlexUnitApplication.mxml"/>
+    <application path="TestAppObserver.mxml"/>
   </applications>
   <modules>
     <module application="flex/TestLoadModule.mxml" destPath="TestModule.swf" optimize="false" sourcePath="flex/TestModule.mxml"/>
