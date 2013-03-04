@@ -32,8 +32,8 @@ public abstract class AbstractJDOExternalizerTest {
 	public void before() throws Exception {
 		Properties props = new Properties();
 		String provider = setProperties(props);
-		persistenceManagerFactory = JDOHelper.getPersistenceManagerFactory();
-
+		persistenceManagerFactory = JDOHelper.getPersistenceManagerFactory(props);
+		
 		InputStream is = getClass().getClassLoader().getResourceAsStream("WEB-INF/granite/granite-config-" + provider + ".xml");
 		graniteConfig = new GraniteConfig(null, is, null, null);
 		servicesConfig = new ServicesConfig(null, null, false);
