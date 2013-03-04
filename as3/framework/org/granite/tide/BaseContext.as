@@ -525,7 +525,7 @@ package org.granite.tide {
          *
          *  @param tracking
          */
-        public function set meta_tracking(tracking:Boolean):void {
+        public function meta_setTracking(tracking:Boolean):void {
             _tracking = tracking;
         }
         
@@ -741,9 +741,13 @@ package org.granite.tide {
 				
 				if (parentContext != null) {
 					var saveTracking:Boolean = parentContext.meta_tracking;
-					parentContext.meta_tracking = false;
-					result = parentContext.meta_getInstance(name, create, forceNoCreate);
-					parentContext.meta_tracking = saveTracking;
+					try {
+						parentContext.meta_setTracking(false);
+						result = parentContext.meta_getInstance(name, create, forceNoCreate);
+					}
+					finally {
+						parentContext.meta_setTracking(saveTracking);
+					}
 				}
             }
             
@@ -941,9 +945,13 @@ package org.granite.tide {
 				
 				if (parentContext != null) {
 					saveTracking = parentContext.meta_tracking;
-					parentContext.meta_tracking = false;
-					parentContext.setProperty(name, value); 
-					parentContext.meta_tracking = saveTracking;
+					try {
+						parentContext.meta_setTracking(false);
+						parentContext.setProperty(name, value);
+					}
+					finally {
+						parentContext.meta_setTracking(saveTracking);
+					}
 					isset = true;
 				}
             }

@@ -405,7 +405,7 @@ package org.granite.tide.cdi {
             
             log.debug("result {0}", result);
 
-            meta_tracking = false;
+            meta_setTracking(false);
             
             var mergeExternal:Boolean = true;
             if (ires != null) {
@@ -514,7 +514,7 @@ package org.granite.tide.cdi {
 	                InvocationResult(ires).result = result;
 	        }
 
-            meta_tracking = true;
+            meta_setTracking(true);
             
             if (ires) {
 				// Remove all received results from current results list

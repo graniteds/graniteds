@@ -182,7 +182,7 @@ package org.granite.tide.data {
         public function isEntityChanged(entity:Object, embedded:Object = null, propName:String = null, value:* = null):Boolean {
             var saveTracking:Boolean = _context.meta_tracking;
 			try {
-	            _context.meta_tracking = false;
+	            _context.meta_setTracking(false);
 				
 	            var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
 	            var p:String;
@@ -228,7 +228,7 @@ package org.granite.tide.data {
 	            }
 			}
 			finally {            
-            	_context.meta_tracking = saveTracking;
+            	_context.meta_setTracking(saveTracking);
 			}
 			
             return false;
@@ -243,7 +243,7 @@ package org.granite.tide.data {
 			
 			var saveTracking:Boolean = _context.meta_tracking;
 			try {
-				_context.meta_tracking = false;
+				_context.meta_setTracking(false);
 				
 				var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
 				var p:String;
@@ -307,7 +307,7 @@ package org.granite.tide.data {
 				}
 			}
 			finally {            
-				_context.meta_tracking = saveTracking;
+				_context.meta_setTracking(saveTracking);
 			}
 			
 			return false;

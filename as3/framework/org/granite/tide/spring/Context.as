@@ -257,7 +257,7 @@ package org.granite.tide.spring {
                 var invocationResult:InvocationResult = InvocationResult(ires);
                 mergeExternal = invocationResult.merge;
                 
-                meta_tracking = false;
+                meta_setTracking(false);
 				
 				if (invocationResult.updates)
 					meta_handleUpdates(null, invocationResult.updates);
@@ -324,7 +324,7 @@ package org.granite.tide.spring {
 	                InvocationResult(ires).result = result;
 	        }
             
-            meta_tracking = true;
+			meta_setTracking(true);
             
         	// Dispatch received data update events
             if (ires != null && InvocationResult(ires).updates)
@@ -334,7 +334,7 @@ package org.granite.tide.spring {
             
             log.debug("result merged into local context");
         }
-
+		
         /**
 		 * 	@private
          *  Manages a remote call fault

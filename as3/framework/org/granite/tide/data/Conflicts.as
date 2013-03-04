@@ -75,16 +75,20 @@ package org.granite.tide.data {
         
         public function acceptClient(conflict:Conflict):void {
         	var saveTracking:Boolean = _context.meta_tracking;
-        	_context.meta_tracking = false;
-        	var modifiedEntity:Object = ObjectUtil.copy(conflict.localEntity);
-            // Reset the local entity to its last stable state
-        	_context.meta_resetEntity(conflict.localEntity);
-            // Merge with the incoming entity (to update version, id and all)
-            if (conflict.receivedEntity != null)
-        	    _entityManager.mergeExternal(conflict.receivedEntity, conflict.localEntity);
-        	
-        	_entityManager.resolveMergeConflicts(modifiedEntity, conflict.localEntity, true);
-        	_context.meta_tracking = saveTracking;
+			try {
+	        	_context.meta_setTracking(false);
+	        	var modifiedEntity:Object = ObjectUtil.copy(conflict.localEntity);
+	            // Reset the local entity to its last stable state
+	        	_context.meta_resetEntity(conflict.localEntity);
+	            // Merge with the incoming entity (to update version, id and all)
+	            if (conflict.receivedEntity != null)
+	        	    _entityManager.mergeExternal(conflict.receivedEntity, conflict.localEntity);
+	        	
+	        	_entityManager.resolveMergeConflicts(modifiedEntity, conflict.localEntity, true);
+			}
+			finally {
+        		_context.meta_setTracking(saveTracking);
+			}
         }
         
         public function acceptAllClient():void {
@@ -95,13 +99,13 @@ package org.granite.tide.data {
         public function acceptServer(conflict:Conflict):void {
         	var saveTracking:Boolean = _context.meta_tracking;
 			try {
-				_context.meta_tracking = false;
+				_context.meta_setTracking(false);
         		_context.meta_resetEntity(conflict.localEntity);
 			
         		_entityManager.resolveMergeConflicts(conflict.receivedEntity, conflict.localEntity, false);
 			}
 			finally {
-        		_context.meta_tracking = saveTracking;
+        		_context.meta_setTracking(saveTracking);
 			}
         }
         

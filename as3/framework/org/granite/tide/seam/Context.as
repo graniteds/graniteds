@@ -445,7 +445,7 @@ package org.granite.tide.seam {
                 _tide.setComponentScope(componentName, invocationResult.scope);
                 _tide.setComponentRestrict(componentName, invocationResult.restrict ? Tide.RESTRICT_YES : Tide.RESTRICT_NO);
                 
-                meta_tracking = false;
+                meta_setTracking(false);
                 
                 var resultMap:IList = invocationResult.results;
                 if (resultMap) {
@@ -531,7 +531,7 @@ package org.granite.tide.seam {
 	                InvocationResult(ires).result = result;
 	        }
             
-            meta_tracking = true;
+            meta_setTracking(true);
             
             this['statusMessages'].setFromServer(invocationResult);
             

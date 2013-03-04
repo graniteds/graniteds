@@ -115,7 +115,7 @@ package org.granite.tide.ejb {
             
             log.debug("result {0}", result);
 
-            meta_tracking = false;
+            meta_setTracking(false);
             
             var mergeExternal:Boolean = true;
             if (ires) {
@@ -163,7 +163,7 @@ package org.granite.tide.ejb {
             if (ires != null)
                 InvocationResult(ires).result = result;
 
-            meta_tracking = true;
+            meta_setTracking(true);
             
             if (ires) {
             	// Dispatch received data update events
