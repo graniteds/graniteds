@@ -9,10 +9,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 
+import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
-import org.datanucleus.jdo.JDOPersistenceManagerFactory;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
@@ -32,7 +32,7 @@ public abstract class AbstractJDOExternalizerTest {
 	public void before() throws Exception {
 		Properties props = new Properties();
 		String provider = setProperties(props);
-		persistenceManagerFactory = new JDOPersistenceManagerFactory(props);
+		persistenceManagerFactory = JDOHelper.getPersistenceManagerFactory();
 
 		InputStream is = getClass().getClassLoader().getResourceAsStream("WEB-INF/granite/granite-config-" + provider + ".xml");
 		graniteConfig = new GraniteConfig(null, is, null, null);

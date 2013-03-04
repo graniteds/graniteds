@@ -251,7 +251,7 @@
                 <path refid="test.classpath"/>
             	<pathelement location="${gds.lib}/eclipselink.jar"/>
             	<pathelement location="${gds.lib}/datanucleus-core.jar"/>
-            	<pathelement location="${gds.lib}/jdo2-api-2.3-eb.jar"/>
+            	<pathelement location="${gds.lib}/jdo-api.jar"/>
             	<path refid="hibernate4.jar"/>
             </classpath>
         </javac>
@@ -281,7 +281,7 @@
                 <path refid="test.classpath"/>
                 <pathelement location="${gds.lib}/eclipselink.jar"/>
                 <pathelement location="${gds.lib}/datanucleus-core.jar"/>
-                <pathelement location="${gds.lib}/jdo2-api-2.3-eb.jar"/>
+                <pathelement location="${gds.lib}/jdo-api.jar"/>
             </classpath>
         </javac>
         <copy todir="classesh4">
@@ -613,18 +613,17 @@
         
     <target name="tests.datanucleus" depends="build.javac">        
         <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
-        	<jvmarg value="-javaagent:${gds.lib}/datanucleus-enhancer.jar=-api=JPA,org.granite.test.externalizers"/>
+        	<jvmarg value="-javaagent:${gds.lib}/datanucleus-core.jar=-api=JPA,org.granite.test.externalizers"/>
         	
              <classpath>
                  <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
                  <path refid="main.jar"/>
                  <pathelement location="${gds.lib}/jpa-2.0-api.jar"/>
-                 <pathelement location="${gds.lib}/jdo2-api-2.3-eb.jar"/>
+                 <pathelement location="${gds.lib}/jdo-api.jar"/>
                  <pathelement location="${gds.lib}/jta.jar"/>
                  <pathelement location="${gds.lib}/datanucleus-core.jar"/>
                  <pathelement location="${gds.lib}/datanucleus-rdbms.jar"/>
                  <pathelement location="${gds.lib}/datanucleus-jpa.jar"/>
-                 <pathelement location="${gds.lib}/datanucleus-enhancer.jar"/>
                  <pathelement location="${gds.lib}/asm-3.0.jar"/>
                  <path refid="granite.jar"/>
                  <pathelement location="${gds.build}/granite-datanucleus.jar"/>
@@ -644,16 +643,16 @@
 	    
 	<target name="tests.datanucleus.jdo" depends="build.javac">        
 	    <junit printsummary="yes" showoutput="false" fork="true" forkmode="once">
-	    	<jvmarg value="-javaagent:${gds.lib}/datanucleus-enhancer.jar=-api=JDO,org.granite.test.externalizers"/>
+	    	<jvmarg value="-javaagent:${gds.lib}/datanucleus-core.jar=-api=JDO,org.granite.test.externalizers"/>
 	    	
 	         <classpath>
 	             <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
 	             <path refid="main.jar"/>
-	             <pathelement location="${gds.lib}/jdo2-api-2.3-eb.jar"/>
+	             <pathelement location="${gds.lib}/jdo-api.jar"/>
 	             <pathelement location="${gds.lib}/jta.jar"/>
 	             <pathelement location="${gds.lib}/datanucleus-core.jar"/>
 	             <pathelement location="${gds.lib}/datanucleus-rdbms.jar"/>
-	             <pathelement location="${gds.lib}/datanucleus-enhancer.jar"/>
+                     <pathelement location="${gds.lib}/datanucleus-jdo.jar"/>
 	             <pathelement location="${gds.lib}/asm-3.0.jar"/>
 	             <path refid="granite.jar"/>
 	             <pathelement location="${gds.build}/granite-datanucleus.jar"/>

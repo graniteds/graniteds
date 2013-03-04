@@ -57,7 +57,7 @@
 	<classpathentry kind="lib" path="/graniteds/lib/weld-spi.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/weld-se-core.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/weld-core-test.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/jdo2-api-2.3-eb.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jdo-api.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/datanucleus-core.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/ejb-api.jar"/>
 	<classpathentry kind="lib" path="lib/openejb-lite.jar"/>
@@ -65,5 +65,6 @@
 	<classpathentry kind="lib" path="lib/shrinkwrap-extension-openejb.jar"/>
 	<classpathentry kind="lib" path="lib/shrinkwrap-impl-base.jar"/>
 	<classpathentry kind="lib" path="lib/shrinkwrap-spi.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/datanucleus-jdo.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

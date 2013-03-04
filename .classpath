@@ -62,7 +62,7 @@
 	<classpathentry kind="lib" path="lib/jboss-vfs3.jar"/>
 	<classpathentry kind="lib" path="lib/aspectjweaver-1.5.4.jar"/>
 	<classpathentry kind="lib" path="lib/apache-activemq.jar"/>
-	<classpathentry kind="lib" path="lib/jdo2-api-2.3-eb.jar"/>
+	<classpathentry kind="lib" path="lib/jdo-api.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.aop.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.asm.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.beans.jar"/>

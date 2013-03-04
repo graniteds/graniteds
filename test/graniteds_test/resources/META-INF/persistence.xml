@@ -27,7 +27,7 @@
     version="2.0">
     
     <persistence-unit name="datanucleus-pu" transaction-type="RESOURCE_LOCAL">
-        <provider>org.datanucleus.jpa.PersistenceProviderImpl</provider>
+        <!--provider>org.datanucleus.api.jpa.PersistenceProviderImpl</provider-->
         <class>org.granite.test.externalizers.Entity2</class>        
         <class>org.granite.test.externalizers.Entity3</class>        
         <class>org.granite.test.externalizers.Entity4</class>
@@ -48,7 +48,7 @@
     </persistence-unit>
     
     <persistence-unit name="hibernate-pu" transaction-type="RESOURCE_LOCAL">
-        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <!--provider>org.hibernate.ejb.HibernatePersistence</provider-->
         <class>org.granite.test.externalizers.Entity2</class>        
         <class>org.granite.test.externalizers.Entity3</class>        
         <class>org.granite.test.externalizers.Entity4</class>
@@ -68,7 +68,7 @@
     </persistence-unit>
     
     <persistence-unit name="hibernate4-pu" transaction-type="RESOURCE_LOCAL">
-        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <!--provider>org.hibernate.ejb.HibernatePersistence</provider-->
         <class>org.granite.test.externalizers.Entity2</class>        
         <class>org.granite.test.externalizers.Entity3</class>        
         <class>org.granite.test.externalizers.Entity4</class>
@@ -88,7 +88,7 @@
     </persistence-unit>
 
     <persistence-unit name="eclipselink-pu" transaction-type="RESOURCE_LOCAL">
-        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <!--provider>org.eclipse.persistence.jpa.PersistenceProvider</provider-->
         <class>org.granite.test.externalizers.Entity2</class>        
         <class>org.granite.test.externalizers.Entity3</class>        
         <class>org.granite.test.externalizers.Entity4</class>        
@@ -108,7 +108,7 @@
     </persistence-unit>
     
     <persistence-unit name="openjpa-pu" transaction-type="RESOURCE_LOCAL">
-        <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+        <!--provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider-->
         <class>org.granite.test.externalizers.Entity2</class>        
         <class>org.granite.test.externalizers.Entity3</class>        
         <class>org.granite.test.externalizers.Entity4</class>
