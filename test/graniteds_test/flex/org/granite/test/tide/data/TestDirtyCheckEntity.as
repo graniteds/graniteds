@@ -224,5 +224,64 @@ package org.granite.test.tide.data
             Assert.assertFalse("Context not dirty after reset", _ctx.meta_dirty);
             Assert.assertEquals("Map reset", "test", person.testMap.get("test"));
         }
-    }
+		
+		
+		public var person1Dirty:Boolean = false;
+		public var person2Dirty:Boolean = false;
+		
+		[Test]
+		public function testDirtyCheckEntityPartial():void {
+			var person1:Person = new Person();
+			var person2:Person = new Person(); 
+			
+			person1.uid = "P1";
+			person1.contacts = new ArrayCollection();
+			person1.version = 0;
+			var contact1:Contact = new Contact();
+			contact1.uid = "C1";
+			contact1.version = 0;
+			contact1.person = person1;
+			person1.contacts.addItem(contact1);
+			_ctx.person1 = _ctx.meta_mergeExternalData(person1);
+			person1 = _ctx.person1;
+			
+			person2.uid = "P2";
+			person2.contacts = new ArrayCollection();
+			_ctx.person2 = _ctx.meta_mergeExternalData(person2);
+			person2 = _ctx.person2;
+			
+			BindingUtils.bindProperty(this, "person1Dirty", _ctx,
+				{ name: "meta_deepDirty", getter: function(ctx:BaseContext):Boolean { return ctx.meta_deepDirty(person1); } }
+			);
+			BindingUtils.bindProperty(this, "person2Dirty", _ctx,
+				{ name: "meta_deepDirty", getter: function(ctx:BaseContext):Boolean { return ctx.meta_deepDirty(person2); } }
+			);
+			
+			Assert.assertFalse("Person 1 not dirty", _ctx.meta_deepDirty(person1));
+			Assert.assertFalse("Person 2 not dirty", _ctx.meta_deepDirty(person2));
+			Assert.assertFalse("Person 1 not dirty", person1Dirty);
+			Assert.assertFalse("Person 2 not dirty", person2Dirty);
+			
+			person2.lastName = "toto";
+			
+			Assert.assertFalse("Person 1 not dirty", _ctx.meta_deepDirty(person1));
+			Assert.assertTrue("Person 2 dirty", _ctx.meta_deepDirty(person2));
+			Assert.assertFalse("Person 1 not dirty", person1Dirty);
+			Assert.assertTrue("Person 2 dirty", person2Dirty);
+			
+			person2.lastName = null;
+			
+			Assert.assertFalse("Person 1 not dirty", _ctx.meta_deepDirty(person1));
+			Assert.assertFalse("Person 2 not dirty", _ctx.meta_deepDirty(person2));
+			Assert.assertFalse("Person 1 not dirty", person1Dirty);
+			Assert.assertFalse("Person 2 not dirty", person2Dirty);
+			
+			person1.contacts.getItemAt(0).email = "toto@toto.com";
+			
+			Assert.assertTrue("Person 1 deep dirty", _ctx.meta_deepDirty(person1));
+			Assert.assertFalse("Person 2 not dirty", _ctx.meta_deepDirty(person2));
+			Assert.assertTrue("Person 1 deep dirty", person1Dirty);
+			Assert.assertFalse("Person 2 not dirty", person2Dirty);
+		}
+	}
 }

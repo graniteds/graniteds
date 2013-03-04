@@ -1654,6 +1654,10 @@ package org.granite.tide.data {
         public function isEntityChanged(entity:IEntity, propName:String = null, value:* = null):Boolean {
             return _dirtyCheckContext.isEntityChanged(entity, propName, value);
         }
+		
+		public function isEntityDeepChanged(entity:IEntity):Boolean {
+			return _dirtyCheckContext.isEntityDeepChanged(entity);
+		}
         
         
         /**

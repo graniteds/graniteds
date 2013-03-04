@@ -10,9 +10,9 @@ package org.granite.test.tide.data {
     import flash.utils.ByteArray;
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
-import flash.utils.IExternalizable;
+	import flash.utils.IExternalizable;
 
-import mx.collections.ListCollectionView;
+	import mx.collections.ListCollectionView;
     
     import org.granite.meta;
     import org.granite.test.tide.AbstractEntity;

@@ -75,5 +75,41 @@ package org.granite.test.tide.data
 			
 			Assert.assertFalse("Classification merged not dirty", _ctx.meta_dirty);
         }
+		
+		[Test]
+		public function testDirtyCheckEntityCircularRef2():void {
+			var parent:Classification = new Classification();
+			parent.id = 1;
+			parent.version = 0;
+			parent.uid = "P1";
+			parent.subclasses = new PersistentSet(true);
+			parent.superclasses = new PersistentSet(true);
+			
+			_ctx.parent = _ctx.meta_mergeExternal(parent);
+			parent = Classification(_ctx.parent);
+			
+			var child:Classification = new Classification();
+			child.id = 2;
+			child.version = 0;
+			child.uid = "C1";
+			child.subclasses = new PersistentSet(true);
+			child.superclasses = new PersistentSet(true);
+			_ctx.child = _ctx.meta_mergeExternal(child);
+			child = Classification(_ctx.child);
+			
+			Assert.assertFalse("Classification not dirty", _ctx.meta_dirty);
+			
+			parent.subclasses.addItem(child);
+			child.superclasses.addItem(parent);
+			child.name = "test";
+			
+			Assert.assertTrue("Parent deep dirty", _ctx.meta_deepDirty(parent));
+			Assert.assertTrue("Child deep dirty", _ctx.meta_deepDirty(child));
+			
+			child.superclasses.removeItemAt(0);
+			parent.subclasses.removeItemAt(0);
+			
+			Assert.assertFalse("Parent not dirty", _ctx.meta_deepDirty(parent));
+		}
     }
 }

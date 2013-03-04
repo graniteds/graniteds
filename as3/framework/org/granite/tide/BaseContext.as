@@ -554,9 +554,15 @@ package org.granite.tide {
          *
          *  @return is dirty
          */
+		[Bindable(event="dirtyChange")]
         public function get meta_dirty():Boolean {
             return _entityManager.dirty;
         }
+		
+		[Bindable(event="dirtyChange")]
+		public function meta_deepDirty(entity:IEntity):Boolean {
+			return _entityManager.isEntityDeepChanged(entity);
+		}
 		
 		/**
 		 * 	Enables or disabled dirty checking in this context
@@ -1953,11 +1959,14 @@ package org.granite.tide {
          */ 
         public function meta_isEntityChanged(entity:IEntity, propName:String = null, value:* = null):Boolean {
             var saveTracking:Boolean = _tracking;
-            _tracking = false;
-            
-            var dirty:Boolean = _entityManager.isEntityChanged(entity, propName, value);
-            
-            _tracking = saveTracking;
+			try {
+	            _tracking = false;
+	            
+	            var dirty:Boolean = _entityManager.isEntityChanged(entity, propName, value);
+			}
+			finally {
+            	_tracking = saveTracking;
+			}
             return dirty;
         }
         

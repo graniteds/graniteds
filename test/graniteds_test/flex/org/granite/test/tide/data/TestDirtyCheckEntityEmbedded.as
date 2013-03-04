@@ -4,6 +4,7 @@ package org.granite.test.tide.data
     import mx.collections.ArrayCollection;
     
     import org.flexunit.Assert;
+    import org.granite.test.tide.Contact2;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
     
@@ -147,6 +148,32 @@ package org.granite.test.tide.data
 			Assert.assertFalse("Context dirty", _ctx.meta_dirty);
 			Assert.assertFalse("Person not dirty", _ctx.meta_isEntityChanged(person));
 			Assert.assertFalse("Person not dirty", personDirty);
+		}
+		
+		[Test]
+		public function testDirtyCheckEntityEmbedded4():void {
+			var person:Person12 = new Person12();			
+			person.version = 0;
+			person.id = 1;
+			person.uid = "P1";
+			person.contactList = new Contacts11();
+			
+			var contact:Contact2 = new Contact2();
+			contact.version = 0;
+			contact.id = 1;
+			contact.uid = "C1";
+			
+			person.contactList.contacts = new ArrayCollection();
+			person.contactList.contacts.addItem(contact);
+			
+			_ctx.person = _ctx.meta_mergeExternalData(person);
+			person = _ctx.person;
+			
+			Assert.assertFalse("Person not dirty", _ctx.meta_deepDirty(person));
+			
+			person.contactList.contacts.getItemAt(0).email = "toto@tutu.com";
+			
+			Assert.assertTrue("Person deep dirty", _ctx.meta_deepDirty(person));
 		}
     }
 }
