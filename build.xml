@@ -130,7 +130,7 @@
                 <dirset dir="classes/core"/>
                 <dirset dir="classes/gravity"/>
                 <pathelement location="lib/jta.jar"/>
-                <pathelement location="lib/jdo2-api-2.3-eb.jar"/>
+                <pathelement location="lib/jdo-api.jar"/>
             	<pathelement location="lib/javassist.jar"/>
             </classpath>
         </javac>
@@ -209,7 +209,7 @@
             <classpath>
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
-                <pathelement location="lib/jdo2-api-2.3-eb.jar"/>
+                <pathelement location="lib/jdo-api.jar"/>
                 <pathelement location="lib/openjpa.jar"/>
             </classpath>
         </javac>
@@ -225,9 +225,10 @@
             <classpath>
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
-                <pathelement location="lib/jdo2-api-2.3-eb.jar"/>
+                <pathelement location="lib/jdo-api.jar"/>
                 <pathelement location="lib/datanucleus-core.jar"/>
                 <pathelement location="lib/datanucleus-jpa.jar"/>
+                <pathelement location="lib/datanucleus-jdo.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/datanucleus">
@@ -261,7 +262,7 @@
                 <dirset dir="classes/gravity"/>
                 <dirset dir="classes/tide"/>
                 <pathelement location="lib/aspectjweaver-1.5.4.jar"/>
-                <pathelement location="lib/jdo2-api-2.3-eb.jar"/>
+                <pathelement location="lib/jdo-api.jar"/>
                 <pathelement location="lib/org.springframework.core.jar"/>
                 <pathelement location="lib/org.springframework.beans.jar"/>
                 <pathelement location="lib/org.springframework.context.jar"/>
