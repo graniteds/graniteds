@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="400" height="300">
+	
+	<fx:Script>
+		<![CDATA[
+			import org.granite.tide.BaseContext;
+			
+			public var triggered:int = 0;
+			
+			[Inject]
+			public var context:BaseContext;
+			
+			[Observer]
+			public function myEventHandler(event:MyEvent):void {
+				triggered = ++context.myEventTriggered;
+			}
+		]]>
+	</fx:Script>
+</s:Group>

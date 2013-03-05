@@ -333,7 +333,8 @@ package org.granite.tide {
 			return _managedInstances[component] as Array;
 		}
 		public function setManagedInstance(component:Object, context:BaseContext, name:String):void {
-			_managedInstances[component] = [ context, name ];
+			if (component is IUIComponent)
+				_managedInstances[component] = [ context, name ];
 		}
 		public function removeManagedInstance(component:Object):void {
 			delete _managedInstances[component];

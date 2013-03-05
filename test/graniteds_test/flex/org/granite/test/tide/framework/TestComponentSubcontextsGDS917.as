@@ -18,22 +18,22 @@ package org.granite.test.tide.framework
             Tide.getInstance().setComponentGlobal("myEventTriggered", true);
             _ctx = Tide.getInstance().getContext();
             _ctx.myEventTriggered = 0;
-			Tide.getInstance().addComponent("com.foo.myComponentB", MyComponentSubcontextB);
-            Tide.getInstance().addComponent("com.foo.bar.myComponentA1", MyComponentSubcontextA1);
+			Tide.getInstance().addComponent("com.foo.myPanelB", MyPanelB);
+            Tide.getInstance().addComponent("com.foo.bar.myPanelA1", MyPanelA1);
         }
         
         
         [Test]
         public function testComponentSubcontextsGDS917():void {
-			var myComponentB:MyComponentSubcontextB = _ctx["com.foo.myComponentB"] as MyComponentSubcontextB;
-			myComponentB.dispatchEvent(new MyEvent());
+			var myPanelB:MyPanelB = _ctx["com.foo.myPanelB"] as MyPanelB;
+			myPanelB.dispatchEvent(new MyEvent());
 			
-			Assert.assertEquals("Component foo.bar.A1 not triggered", 0, _ctx["com.foo.bar.myComponentA1"].triggered);
+			Assert.assertEquals("Component foo.bar.A1 not triggered", 0, _ctx["com.foo.bar.myPanelA1"].triggered);
 			
-			_ctx["com.foo.bar.myComponentB"] = myComponentB;
-			myComponentB.dispatchEvent(new MyEvent());
+			_ctx["com.foo.bar.myPanelB"] = myPanelB;
+			myPanelB.dispatchEvent(new MyEvent());
         	
-        	Assert.assertEquals("Component foo.bar.A1 triggered", 1, _ctx["com.foo.bar.myComponentA1"].triggered);
+        	Assert.assertEquals("Component foo.bar.A1 triggered", 1, _ctx["com.foo.bar.myPanelA1"].triggered);
         }
     }
 }
