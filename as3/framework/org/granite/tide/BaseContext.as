@@ -554,7 +554,6 @@ package org.granite.tide {
          *
          *  @return is dirty
          */
-		[Bindable(event="dirtyChange")]
         public function get meta_dirty():Boolean {
             return _entityManager.dirty;
         }
@@ -983,19 +982,29 @@ package org.granite.tide {
 				}
                 
                 saveTracking = _tracking;
-                _tracking = true;
-                
-                if (base)
-                	base.meta_internalSetProperty(baseName, value);
-                else
-                	super.setProperty(name, value);
-                
-                _tracking = saveTracking;
+				try {
+	                _tracking = true;
+	                
+	                if (base)
+	                	base.meta_internalSetProperty(baseName, value);
+	                else
+	                	super.setProperty(name, value);
+				}
+				finally {
+                	_tracking = saveTracking;
+				}
                 
                 if (value != null) {
                     var n:String = name is QName ? QName(name).localName : name;
 					
 					meta_tide.setManagedInstance(value, this, n);
+					
+					// When forcing a context value in the global context, change the scope of an existing conversation component
+					if (meta_isGlobal() && meta_tide.isComponent(n) && meta_tide.isComponentInConversation(n)) {
+						meta_tide.setComponentScope(n, Tide.SCOPE_SESSION);
+						if (value != prev)
+							dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, n, prev, value));
+					}
 					
                     if (value is IEntity) {
                         // Setup context for entity context variable

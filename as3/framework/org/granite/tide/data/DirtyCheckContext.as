@@ -108,19 +108,23 @@ package org.granite.tide.data {
 			
         	_savedProperties = new Dictionary(true);
 			_dirtyCount = 0;
-			if (wasDirty && dispatch)
+			if (wasDirty && dispatch) {
+				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(_context, "meta_dirty", true, false));
 				_context.dispatchEvent(new DirtyChangeEvent(false));
+			}
         }
 		
 		private function dispatchCtxDirty(oldDirty:Boolean, dirtyCount:int):void {
-			if ((dirtyCount > 0) !== oldDirty)
-				_context.dispatchEvent(new DirtyChangeEvent(dirtyCount > 0));
+			if ((dirtyCount > 0) !== oldDirty) {
+				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(_context, "meta_dirty", oldDirty, dirtyCount > 0));
+				_context.dispatchEvent(new DirtyChangeEvent(dirtyCount > 0));				
+			}
 		}
 		
 		private function dispatchEntityDirty(object:Object, oldDirtyEntity:Boolean):Boolean {
 			var newDirtyEntity:Boolean = isEntityChanged(object);
 			if (newDirtyEntity !== oldDirtyEntity)
-				object.dispatchEvent(new DirtyChangeEvent(newDirtyEntity));			
+				object.dispatchEvent(PropertyChangeEvent.createUpdateEvent(object, "meta_dirty", oldDirtyEntity, newDirtyEntity));			
 			return newDirtyEntity;
 		}
         
