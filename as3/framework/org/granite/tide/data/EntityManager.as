@@ -74,6 +74,11 @@ package org.granite.tide.data {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.data.EntityManager");
     
+		public static const INITIALIZE:String = "initialize";
+		public static const UNINITIALIZE:String = "uninitialize";
+		
+		public static const LOAD_STATE_CHANGE:String = "loadStateChange";
+		
     	private var _context:BaseContext;
         private var _customMergers:Array = null;
 
