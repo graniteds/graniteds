@@ -11,8 +11,8 @@ package org.granite.test.tide.framework {
 
     public class MyManagedEvent extends Event {
 		
-		public function MyManagedEvent():void {
-			super("myManagedEvent");
+		public function MyManagedEvent(eventType:String = "myManagedEvent"):void {
+			super(eventType);
 		}
     }
 }
