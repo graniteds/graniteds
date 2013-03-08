@@ -67,6 +67,9 @@
             <compiler.library-path dir="build" append="true">
                 <include name="granite-essentials.swc" />
             </compiler.library-path>
+            <compiler.library-path dir="lib" append="true">
+                <include name="flex-websocket-client.swc"/>
+            </compiler.library-path>
         	<define name="CONFIG::debugging" value="false"/>
             <define name="CONFIG::flex40" value="false"/>
             <define name="CONFIG::flex45" value="true"/>
