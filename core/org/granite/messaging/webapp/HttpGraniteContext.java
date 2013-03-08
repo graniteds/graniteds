@@ -66,7 +66,7 @@ public class HttpGraniteContext extends ServletGraniteContext {
         HttpServletRequest request,
         HttpServletResponse response) {
     	
-        super(graniteConfig, servicesConfig, servletContext, null, request.getHeader("GDSClientType"));
+        super(graniteConfig, servicesConfig, servletContext, (String)null, request.getHeader("GDSClientType"));
         this.request = request;
         this.response = response;
     }

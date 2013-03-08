@@ -54,10 +54,12 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 		String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameters().getParameter("GDSClientId");
 		String sessionId = null;
 		
-		if (request.getHeader("GDSSessionId") != null)
-			sessionId = request.getHeader("GDSSessionId");
-		if (sessionId == null && request.getParameters().getParameter("GDSSessionId") != null)
-			sessionId = request.getParameters().getParameter("GDSSessionId");
+		for (int i = 0; i < request.getCookies().getCookieCount(); i++) {
+			if ("JSESSIONID".equals(request.getCookies().getCookie(i).getName())) {
+				sessionId = request.getCookies().getCookie(i).getValue().getString();
+				break;
+			}
+		}
 		String clientType = null;
 		if (request.getHeader("GDSClientType") != null)
 			clientType = request.getHeader("GDSClientType");

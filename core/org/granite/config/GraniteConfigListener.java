@@ -78,6 +78,7 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
     public static final String GRANITE_CONFIG_ATTRIBUTE = "org.granite.config.flexFilter";
     public static final String GRANITE_MBEANS_ATTRIBUTE = "registerGraniteMBeans";
     
+    public static final String GRANITE_SESSION_TRACKING = "org.granite.config.sessionTracking";
     public static final String GRANITE_SESSION_MAP = "org.granite.config.sessionMap";
 
     private static final Logger log = Logger.getLogger(GraniteConfigListener.class);
@@ -98,8 +99,10 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
             if (flexFilterClass != null)
             	configureServices(context, flexFilterClass);
             
-            Map<String, HttpSession> sessionMap = new ConcurrentHashMap<String, HttpSession>(200);
-            sce.getServletContext().setAttribute(GRANITE_SESSION_MAP, sessionMap);
+            if ("true".equals(sce.getServletContext().getInitParameter(GRANITE_SESSION_TRACKING))) {
+	            Map<String, HttpSession> sessionMap = new ConcurrentHashMap<String, HttpSession>(200);
+	            sce.getServletContext().setAttribute(GRANITE_SESSION_MAP, sessionMap);
+            }
             
             if (gConfig.isRegisterMBeans()) {
             	GraniteMBeanInitializer.registerMBeans(context, 

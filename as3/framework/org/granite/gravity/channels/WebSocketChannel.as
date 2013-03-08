@@ -103,10 +103,8 @@ package org.granite.gravity.channels {
 			var headers:String = "";
 			if (_clientId != null)
 				headers += "GDSClientId: " + _clientId + "\r\n";
-			if (_sessionId != null)
-				headers += "GDSSessionId: " + _sessionId + "\r\n";
 			
-            _webSocket = new WebSocket(1, resolveUri(), [ "org.granite.gravity" ], "", "", headers);
+            _webSocket = new WebSocket(1, resolveUri(), [ "org.granite.gravity" ], "", _sessionId != null ? "JSESSIONID=" + _sessionId : "", headers);
             _webSocket.addEventListener(WebSocketEvent.OPEN, onOpen);
 			_webSocket.addEventListener(WebSocketEvent.ERROR, onError);
 			_webSocket.addEventListener(WebSocketEvent.CLOSE, onClose);
