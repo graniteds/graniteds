@@ -71,7 +71,7 @@ package org.granite.tide.collections {
 	
 	    private var _localInitializing:Boolean = false;
         private var _itemPendingError:ItemPendingError = null;
-        private var _initializationCallback:Function = null;
+        private var _initializationCallbacks:Array = null;
 	    
 	    
         public function get entity():Object {
@@ -137,9 +137,10 @@ package org.granite.tide.collections {
                 _itemPendingError = null;
             }
             
-            if (_initializationCallback != null) {
-            	_initializationCallback(this);
-            	_initializationCallback = null;
+            if (_initializationCallbacks != null) {
+				for each (var callback:Function in _initializationCallbacks)
+					callback(this);
+            	_initializationCallbacks = null;
             }
             
             dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.REFRESH));
@@ -152,7 +153,7 @@ package org.granite.tide.collections {
         public function uninitialize():void {
             IPersistentCollection(list).uninitialize();
             _itemPendingError = null;
-        	_initializationCallback = null;
+        	_initializationCallbacks = null;
             _localInitializing = false;
             
             dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.REFRESH));
@@ -171,7 +172,9 @@ package org.granite.tide.collections {
 			if (isInitialized())
 				callback(this);
 			else {
-				_initializationCallback = callback;
+				if (_initializationCallbacks == null)
+					_initializationCallbacks = [];
+				_initializationCallbacks.push(callback);
 				requestInitialization();
 			}
 		}
