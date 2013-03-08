@@ -58,16 +58,16 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 			sessionId = request.getHeader("GDSSessionId");
 		if (sessionId == null && request.getParameters().getParameter("GDSSessionId") != null)
 			sessionId = request.getParameters().getParameter("GDSSessionId");
-		String amfMode = null;
+		String clientType = null;
 		if (request.getHeader("GDSClientType") != null)
-			amfMode = request.getHeader("GDSClientType");
-		if (amfMode == null && request.getParameters().getParameter("GDSClientType") != null)
-			amfMode = request.getParameters().getParameter("GDSClientType");
+			clientType = request.getHeader("GDSClientType");
+		if (clientType == null && request.getParameters().getParameter("GDSClientType") != null)
+			clientType = request.getParameters().getParameter("GDSClientType");
 		
 		// Utterly hackish and ugly: we create the thread local here because there is no other way to access the request
 		// It will be cleared in onConnect which executes later in the same thread
 		ServletGraniteContext graniteContext = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), 
-				servletContext, sessionId, amfMode);
+				servletContext, sessionId, clientType);
 		if (connectMessageId != null)
 			graniteContext.getRequest().setAttribute("connectId", connectMessageId);
 		if (clientId != null)
