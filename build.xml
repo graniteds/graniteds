@@ -1009,7 +1009,7 @@
             <compiler.library-path dir="build" append="true">
                 <include name="granite-essentials.swc" />
             </compiler.library-path>
-        	<compiler.library-path dir="lib" append="true">
+        	<compiler.library-path dir="build" append="true">
         		<include name="flex-websocket-client.swc"/>
         	</compiler.library-path>
         	<define name="CONFIG::debugging" value="false"/>
