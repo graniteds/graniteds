@@ -9,8 +9,8 @@ public class GlassFishWebSocketChannelFactory extends AbstractChannelFactory<Gla
 		super(gravity);
 	}
 
-	public GlassFishWebSocketChannel newChannel(String id) {
-		return new GlassFishWebSocketChannel(getGravity(), id, this);
+	public GlassFishWebSocketChannel newChannel(String id, String clientType) {
+		return new GlassFishWebSocketChannel(getGravity(), id, this, clientType);
 	}
 
 }

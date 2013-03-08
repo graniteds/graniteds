@@ -14,8 +14,8 @@ public class JettyWebSocketChannelFactory extends AbstractChannelFactory<JettyWe
 		this.servletContext = servletContext;
 	}
 
-	public JettyWebSocketChannel newChannel(String id) {
-		return new JettyWebSocketChannel(getGravity(), id, this, servletContext);
+	public JettyWebSocketChannel newChannel(String id, String clientType) {
+		return new JettyWebSocketChannel(getGravity(), id, this, servletContext, clientType);
 	}
 
 }

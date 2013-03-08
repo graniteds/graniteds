@@ -32,7 +32,7 @@ public class GenericChannelFactory extends AbstractChannelFactory<GenericChannel
 		super(gravity);
 	}
 
-	public GenericChannel newChannel(String id) {
-		return new GenericChannel(getGravity(), id, this);
+	public GenericChannel newChannel(String id, String clientType) {
+		return new GenericChannel(getGravity(), id, this, clientType);
 	}
 }

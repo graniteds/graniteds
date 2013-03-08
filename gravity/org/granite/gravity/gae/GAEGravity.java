@@ -68,7 +68,7 @@ public class GAEGravity extends DefaultGravity {
     			return channel;
     	}
     	
-    	channel = channelFactory.newChannel(UUIDUtil.randomUUID());
+    	channel = channelFactory.newChannel(UUIDUtil.randomUUID(), null);
     	Expiration expiration = Expiration.byDeltaMillis((int)getGravityConfig().getChannelIdleTimeoutMillis());
         gaeCache.put(CHANNEL_PREFIX + channel.getId(), channel, expiration);
     	gaeCache.put(GAEChannel.MSG_COUNT_PREFIX + channel.getId(), 0L, expiration);

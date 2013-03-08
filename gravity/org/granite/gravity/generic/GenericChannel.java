@@ -37,8 +37,8 @@ public class GenericChannel extends AbstractChannel {
 
     private WaitingContinuation continuation = null;
 
-    public GenericChannel(Gravity gravity, String id, GenericChannelFactory factory) {
-    	super(gravity, id, factory);
+    public GenericChannel(Gravity gravity, String id, GenericChannelFactory factory, String clientType) {
+    	super(gravity, id, factory, clientType);
     }
 
     public void setContinuation(WaitingContinuation continuation) {

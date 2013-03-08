@@ -32,6 +32,8 @@ public interface Channel {
 
     public String getId();
     
+    public String getClientType();
+    
     public Gravity getGravity();
     
     public ChannelFactory<?> getFactory();

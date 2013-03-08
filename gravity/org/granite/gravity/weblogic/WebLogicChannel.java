@@ -52,8 +52,8 @@ public class WebLogicChannel extends AbstractChannel {
     private final AtomicReference<RequestResponseKey> key = new AtomicReference<RequestResponseKey>();
 
     
-	public WebLogicChannel(Gravity gravity, String id, WebLogicChannelFactory factory) {
-		super(gravity, id, factory);
+	public WebLogicChannel(Gravity gravity, String id, WebLogicChannelFactory factory, String clientType) {
+		super(gravity, id, factory, clientType);
 	}
 	
 	public void setRequestResponseKey(RequestResponseKey key) {

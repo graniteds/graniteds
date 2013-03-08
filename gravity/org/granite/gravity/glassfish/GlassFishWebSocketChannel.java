@@ -32,8 +32,8 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 	private Message connectAckMessage;
 
 	
-	public GlassFishWebSocketChannel(Gravity gravity, String id, GlassFishWebSocketChannelFactory factory) {
-    	super(gravity, id, factory);
+	public GlassFishWebSocketChannel(Gravity gravity, String id, GlassFishWebSocketChannelFactory factory, String clientType) {
+    	super(gravity, id, factory, clientType);
     }
 	
 	public void setConnectAckMessage(Message ackMessage) {
@@ -110,7 +110,7 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 	}
 	
 	private Gravity initializeRequest(Gravity gravity) {
-		SimpleGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>());
+		SimpleGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>(), clientType);
 		return gravity;
 	}
 
@@ -180,7 +180,7 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 			// Setup serialization context (thread local)
 			Gravity gravity = getGravity();
 	        GraniteContext context = SimpleGraniteContext.createThreadInstance(
-	            gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>()
+	            gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>(), clientType
 	        );
 	        
 	        os = new ByteArrayOutputStream(500);

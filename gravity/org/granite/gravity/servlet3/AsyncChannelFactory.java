@@ -32,7 +32,7 @@ public class AsyncChannelFactory extends AbstractChannelFactory<AsyncChannel> {
 		super(gravity);
 	}
 
-	public AsyncChannel newChannel(String id) {
-        return new AsyncChannel(getGravity(), id, this);
+	public AsyncChannel newChannel(String id, String clientType) {
+        return new AsyncChannel(getGravity(), id, this, clientType);
     }
 }

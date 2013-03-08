@@ -7,7 +7,7 @@ import org.granite.gravity.ChannelFactory;
 public class MockChannelFactory implements ChannelFactory<Channel> {
 
 	@Override
-	public Channel newChannel(String id) {
+	public Channel newChannel(String id, String clientType) {
 		return null;
 	}
 

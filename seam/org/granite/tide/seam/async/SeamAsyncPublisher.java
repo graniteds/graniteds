@@ -59,7 +59,7 @@ public class SeamAsyncPublisher implements AsyncPublisher {
     	if (gravity == null)
     		throw new RuntimeException("Gravity service not configured, it is required for asynchronous event publishing");
     	
-    	gravity.initThread();
+    	gravity.initThread(null, null);
     }
     
     public void publishMessage(String sessionId, Object body) {

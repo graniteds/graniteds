@@ -43,8 +43,8 @@ public class AsyncChannel extends AbstractChannel {
     
     private final AtomicReference<AsyncContext> asyncContext = new AtomicReference<AsyncContext>();
 
-	public AsyncChannel(Gravity gravity, String id, AsyncChannelFactory factory) {
-        super(gravity, id, factory);
+	public AsyncChannel(Gravity gravity, String id, AsyncChannelFactory factory, String clientType) {
+        super(gravity, id, factory, clientType);
 	}
 
 	public void setAsyncContext(AsyncContext asyncContext) {

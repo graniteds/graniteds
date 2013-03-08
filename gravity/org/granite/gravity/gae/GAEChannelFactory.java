@@ -31,7 +31,7 @@ public class GAEChannelFactory extends AbstractChannelFactory<GAEChannel> {
 		super(gravity);
 	}
 
-    public GAEChannel newChannel(String id) {
-        return new GAEChannel((GAEGravity)getGravity(), id, this);
+    public GAEChannel newChannel(String id, String clientType) {
+        return new GAEChannel((GAEGravity)getGravity(), id, this, clientType);
     }
 }

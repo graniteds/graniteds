@@ -41,12 +41,17 @@ public abstract class GraniteContext {
     private final ServicesConfig servicesConfig;
     private final AMFContext amfContext;
     private final String sessionId;
+    private final String clientType;
 
     public GraniteContext(GraniteConfig graniteConfig, ServicesConfig servicesConfig, String sessionId) {
+    	this(graniteConfig, servicesConfig, sessionId, null);
+    }
+    public GraniteContext(GraniteConfig graniteConfig, ServicesConfig servicesConfig, String sessionId, String clientType) {
         this.servicesConfig = servicesConfig;
         this.graniteConfig = graniteConfig;
         this.amfContext = new AMFContextImpl();
         this.sessionId = sessionId;
+        this.clientType = clientType != null ? clientType : "as3";
     }
 
     public static GraniteContext getCurrentInstance() {
@@ -71,6 +76,10 @@ public abstract class GraniteContext {
 
     public AMFContext getAMFContext() {
         return amfContext;
+    }
+    
+    public String getClientType() {
+    	return clientType;
     }
     
     public String getSessionId() {

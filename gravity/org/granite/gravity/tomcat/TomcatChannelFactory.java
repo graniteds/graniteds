@@ -32,7 +32,7 @@ public class TomcatChannelFactory extends AbstractChannelFactory<TomcatChannel> 
 		super(gravity);
 	}
 
-	public TomcatChannel newChannel(String id) {
-        return new TomcatChannel(getGravity(), id, this);
+	public TomcatChannel newChannel(String id, String clientType) {
+        return new TomcatChannel(getGravity(), id, this, clientType);
     }
 }

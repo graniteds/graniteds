@@ -32,7 +32,7 @@ public class ContinuationChannelFactory extends AbstractChannelFactory<Continuat
 		super(gravity);
 	}
 
-	public ContinuationChannel newChannel(String id) {
-		return new ContinuationChannel(getGravity(), id, this);
+	public ContinuationChannel newChannel(String id, String clientType) {
+		return new ContinuationChannel(getGravity(), id, this, clientType);
 	}
 }

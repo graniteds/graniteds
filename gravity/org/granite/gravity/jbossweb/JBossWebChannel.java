@@ -43,8 +43,8 @@ public class JBossWebChannel extends AbstractChannel {
 
     private final AtomicReference<HttpEvent> event = new AtomicReference<HttpEvent>();
 
-    public JBossWebChannel(Gravity gravity, String id, JBossWebChannelFactory factory) {
-        super(gravity, id, factory);
+    public JBossWebChannel(Gravity gravity, String id, JBossWebChannelFactory factory, String clientType) {
+        super(gravity, id, factory, clientType);
     }
     
     public void setHttpEvent(HttpEvent event) {

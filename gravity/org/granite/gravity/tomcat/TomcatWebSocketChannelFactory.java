@@ -14,8 +14,8 @@ public class TomcatWebSocketChannelFactory extends AbstractChannelFactory<Tomcat
 		this.servletContext = servletContext;
 	}
 
-	public TomcatWebSocketChannel newChannel(String id) {
-		return new TomcatWebSocketChannel(getGravity(), id, this, servletContext);
+	public TomcatWebSocketChannel newChannel(String id, String clientType) {
+		return new TomcatWebSocketChannel(getGravity(), id, this, servletContext, clientType);
 	}
 
 }

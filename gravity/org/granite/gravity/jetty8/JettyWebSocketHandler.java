@@ -35,6 +35,7 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 		try {
 			String connectMessageId = request.getHeader("connectId") != null ? request.getHeader("connectId") : request.getParameter("connectId");
 			String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameter("GDSClientId");
+			String clientType = request.getHeader("GDSClientType") != null ? request.getHeader("GDSClientType") : request.getParameter("GDSClientType");
 			String sessionId = null;
 			HttpSession session = request.getSession(false);
 			if (session != null)
@@ -45,7 +46,7 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 				sessionId = request.getParameter("GDSSessionId");
 			
 	        ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), 
-	        		this.servletContext, sessionId); 
+	        		this.servletContext, sessionId, clientType); 
 			
 			log.info("WebSocket connection started %s clientId %s sessionId %s", protocol, clientId, sessionId);
 			

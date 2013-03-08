@@ -57,6 +57,7 @@ public class GAEChannel implements Channel, Serializable {
     private static MemcacheService gaeCache = MemcacheServiceFactory.getMemcacheService();
 
     protected final String id;
+    protected final String clientType;
     protected final GAEGravity gravity;
     protected final GAEChannelFactory factory;
 
@@ -64,11 +65,12 @@ public class GAEChannel implements Channel, Serializable {
     private final long expiration;
 
 
-    GAEChannel(GAEGravity gravity, String id, GAEChannelFactory factory) {
+    GAEChannel(GAEGravity gravity, String id, GAEChannelFactory factory, String clientType) {
         if (id == null)
         	throw new NullPointerException("id cannot be null");
         
         this.id = id;
+        this.clientType = clientType;
         this.factory = factory;
         this.gravity = gravity;
     	this.expiration = gravity.getGravityConfig().getChannelIdleTimeoutMillis();
@@ -76,6 +78,10 @@ public class GAEChannel implements Channel, Serializable {
 
 	public String getId() {
 		return id;
+	}
+	
+	public String getClientType() {
+		return clientType;
 	}
 	
 	public GAEChannelFactory getFactory() {

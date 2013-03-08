@@ -44,8 +44,8 @@ public class TomcatChannel extends AbstractChannel {
     private final AtomicReference<CometEvent> event = new AtomicReference<CometEvent>();
 
     
-    public TomcatChannel(Gravity gravity, String id, TomcatChannelFactory factory) {
-        super(gravity, id, factory);
+    public TomcatChannel(Gravity gravity, String id, TomcatChannelFactory factory, String clientType) {
+        super(gravity, id, factory, clientType);
     }
     
     public void setCometEvent(CometEvent event) {

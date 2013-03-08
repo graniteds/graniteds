@@ -39,8 +39,8 @@ public class ContinuationChannel extends AbstractChannel {
 
     private Continuation continuation = null;
 
-    public ContinuationChannel(Gravity gravity, String id, ContinuationChannelFactory factory) {
-    	super(gravity, id, factory);
+    public ContinuationChannel(Gravity gravity, String id, ContinuationChannelFactory factory, String clientType) {
+    	super(gravity, id, factory, clientType);
     }
 
     public void setContinuation(Continuation continuation) {

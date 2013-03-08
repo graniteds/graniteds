@@ -29,6 +29,8 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.granite.clustering.DistributedDataFactory;
 import org.granite.config.api.Configuration;
+import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.RemoteClass;
 import org.granite.messaging.amf.io.AMF3Deserializer;
@@ -50,7 +53,10 @@ import org.granite.messaging.amf.io.util.ActionScriptClassDescriptor;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.messaging.amf.io.util.DefaultClassGetter;
 import org.granite.messaging.amf.io.util.JavaClassDescriptor;
+import org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer;
+import org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
+import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.DefaultMethodMatcher;
 import org.granite.messaging.service.ExceptionConverter;
@@ -62,8 +68,8 @@ import org.granite.scan.ScannedItem;
 import org.granite.scan.ScannedItemHandler;
 import org.granite.scan.Scanner;
 import org.granite.scan.ScannerFactory;
-import org.granite.util.TypeUtil;
 import org.granite.util.StreamUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -83,6 +89,10 @@ public class GraniteConfig implements ScannedItemHandler {
     private static final String GRANITE_CONFIG_PROPERTIES = "META-INF/granite-config.properties";
 
     final ExternalizerFactory EXTERNALIZER_FACTORY = new ExternalizerFactory();
+    private static final Externalizer LONG_EXTERNALIZER = new LongExternalizer();
+    private static final Externalizer BIGINTEGER_EXTERNALIZER = new BigIntegerExternalizer();
+    private static final Externalizer BIGDECIMAL_EXTERNALIZER = new BigDecimalExternalizer();
+    
     final ActionScriptClassDescriptorFactory ASC_DESCRIPTOR_FACTORY = new ActionScriptClassDescriptorFactory();
     final JavaClassDescriptorFactory JC_DESCRIPTOR_FACTORY = new JavaClassDescriptorFactory();
     final TideComponentMatcherFactory TIDE_COMPONENT_MATCHER_FACTORY = new TideComponentMatcherFactory();
@@ -412,6 +422,16 @@ public class GraniteConfig implements ScannedItemHandler {
 	}
 
 	public Externalizer getExternalizer(String type) {
+        if ("java".equals(GraniteContext.getCurrentInstance().getClientType())) {
+        	// Force use of number externalizers when serializing from/to a Java client
+        	if (Long.class.getName().equals(type))
+        		return LONG_EXTERNALIZER;
+        	else if (BigInteger.class.getName().equals(type))
+        		return BIGINTEGER_EXTERNALIZER;
+        	else if (BigDecimal.class.getName().equals(type))
+        		return BIGDECIMAL_EXTERNALIZER;
+        }
+        
         return getElementByType(
             type,
             EXTERNALIZER_FACTORY,
@@ -894,7 +914,7 @@ public class GraniteConfig implements ScannedItemHandler {
     ///////////////////////////////////////////////////////////////////////////
     // Other helpers.
 
-    private <T> T getElementByType(
+	private <T> T getElementByType(
         String type,
         ConfigurableFactory<T> factory,
         ConcurrentHashMap<String, T> elementsByType,

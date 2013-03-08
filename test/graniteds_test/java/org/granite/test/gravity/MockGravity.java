@@ -67,7 +67,7 @@ public class MockGravity implements Gravity {
 		return null;
 	}
 
-	public GraniteContext initThread() {
+	public GraniteContext initThread(String sessionId, String clientType) {
 		return null;
 	}
 

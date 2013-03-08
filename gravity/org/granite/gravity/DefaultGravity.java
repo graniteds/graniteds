@@ -123,7 +123,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         	if (!started) {
 	            adapterFactory = new AdapterFactory(this);
 	            internalStart();
-	            serverChannel = new ServerChannel(this, ServerChannel.class.getName(), null);
+	            serverChannel = new ServerChannel(this, ServerChannel.class.getName(), null, null);
 	            started = true;
         	}
         }
@@ -319,13 +319,14 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	    		return channel;
     	}
     	
-    	channel = channelFactory.newChannel(UUIDUtil.randomUUID());
+    	String clientType = GraniteContext.getCurrentInstance().getClientType();
+    	channel = channelFactory.newChannel(UUIDUtil.randomUUID(), clientType);
     	TimeChannel<C> timeChannel = new TimeChannel<C>(channel);
         for (int i = 0; channels.putIfAbsent(channel.getId(), timeChannel) != null; i++) {
             if (i >= 10)
                 throw new RuntimeException("Could not find random new clientId after 10 iterations");
             channel.destroy();
-            channel = channelFactory.newChannel(UUIDUtil.randomUUID());
+            channel = channelFactory.newChannel(UUIDUtil.randomUUID(), clientType);
             timeChannel = new TimeChannel<C>(channel);
         }
 
@@ -350,32 +351,33 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     }
 
     @SuppressWarnings("unchecked")
-	public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
-        if (channelId == null)
+	public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String clientId) {
+        if (clientId == null)
             return null;
 
-		TimeChannel<C> timeChannel = (TimeChannel<C>)channels.get(channelId);
+		TimeChannel<C> timeChannel = (TimeChannel<C>)channels.get(clientId);
         if (timeChannel == null) {
 	        // Look for existing channel id/subscriptions in distributed data (clustering).
         	try {
 	        	DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
-	        	if (gdd != null && gdd.hasChannelId(channelId)) {
-	        		log.debug("Found channel id in distributed data: %s", channelId);
-	        		String channelFactoryClassName = gdd.getChannelFactoryClassName(channelId);
+	        	if (gdd != null && gdd.hasChannelId(clientId)) {
+	        		log.debug("Found channel id in distributed data: %s", clientId);
+	        		String channelFactoryClassName = gdd.getChannelFactoryClassName(clientId);
 	        		channelFactory = TypeUtil.newInstance(channelFactoryClassName, ChannelFactory.class);
-	        		C channel = channelFactory.newChannel(channelId);
+	        		String clientType = GraniteContext.getCurrentInstance().getClientType();
+	        		C channel = channelFactory.newChannel(clientId, clientType);
 	    	    	timeChannel = new TimeChannel<C>(channel);
-	    	        if (channels.putIfAbsent(channelId, timeChannel) == null) {
-	    	        	for (CommandMessage subscription : gdd.getSubscriptions(channelId)) {
-	    	        		log.debug("Resubscribing channel: %s - %s", channelId, subscription);
+	    	        if (channels.putIfAbsent(clientId, timeChannel) == null) {
+	    	        	for (CommandMessage subscription : gdd.getSubscriptions(clientId)) {
+	    	        		log.debug("Resubscribing channel: %s - %s", clientId, subscription);
 	    	        		handleSubscribeMessage(channelFactory, subscription, false);
 	    	        	}
-	    	        	access(channelId);
+	    	        	access(clientId);
 	    	        }
 	        	}
         	}
         	catch (Exception e) {
-    			log.error(e, "Could not recreate channel/subscriptions from distributed data: %s", channelId);
+    			log.error(e, "Could not recreate channel/subscriptions from distributed data: %s", clientId);
         	}
         }
 
@@ -539,14 +541,10 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     ///////////////////////////////////////////////////////////////////////////
     // Other Public API methods.
 
-    public GraniteContext initThread() {
-    	return initThread(null);
-    }
-    
-    public GraniteContext initThread(String sessionId) {
+    public GraniteContext initThread(String sessionId, String clientType) {
         GraniteContext context = GraniteContext.getCurrentInstance();
         if (context == null)
-            context = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, sessionId, applicationMap);
+            context = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, sessionId, applicationMap, clientType);
         return context;
     }
     
@@ -559,7 +557,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     }
 
     public Message publishMessage(Channel fromChannel, AsyncMessage message) {
-        initThread();
+        initThread(null, fromChannel != null ? fromChannel.getClientType() : serverChannel.getClientType());
 
         return handlePublishMessage(null, message, fromChannel != null ? fromChannel : serverChannel);
     }
@@ -873,8 +871,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
 		private static final long serialVersionUID = 1L;
 		
-		public ServerChannel(Gravity gravity, String channelId, ChannelFactory<ServerChannel> factory) {
-    		super(gravity, channelId, factory);
+		public ServerChannel(Gravity gravity, String channelId, ChannelFactory<ServerChannel> factory, String clientType) {
+    		super(gravity, channelId, factory, clientType);
     	}
 
 		@Override

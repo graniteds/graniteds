@@ -32,7 +32,7 @@ public class JBossWebChannelFactory extends AbstractChannelFactory<JBossWebChann
 		super(gravity);
 	}
 
-    public JBossWebChannel newChannel(String id) {
-        return new JBossWebChannel(getGravity(), id, this);
+    public JBossWebChannel newChannel(String id, String clientType) {
+        return new JBossWebChannel(getGravity(), id, this, clientType);
     }
 }

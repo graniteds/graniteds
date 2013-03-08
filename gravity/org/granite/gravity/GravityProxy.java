@@ -68,8 +68,8 @@ public class GravityProxy implements Gravity {
     ///////////////////////////////////////////////////////////////////////////
     // Operations.
 
-    public GraniteContext initThread() {
-    	return getGravity().initThread();
+    public GraniteContext initThread(String sessionId, String clientType) {
+    	return getGravity().initThread(sessionId, clientType);
     }
     public void releaseThread() {
     	getGravity().releaseThread();

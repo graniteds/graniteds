@@ -32,7 +32,7 @@ public class WebLogicChannelFactory extends AbstractChannelFactory<WebLogicChann
 		super(gravity);
 	}
 
-	public WebLogicChannel newChannel(String id) {
-		return new WebLogicChannel(getGravity(), id, this);
+	public WebLogicChannel newChannel(String id, String clientType) {
+		return new WebLogicChannel(getGravity(), id, this, clientType);
 	}
 }

@@ -33,8 +33,8 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	private Message connectAckMessage;
 
 	
-	public JettyWebSocketChannel(Gravity gravity, String id, JettyWebSocketChannelFactory factory, ServletContext servletContext) {
-    	super(gravity, id, factory);
+	public JettyWebSocketChannel(Gravity gravity, String id, JettyWebSocketChannelFactory factory, ServletContext servletContext, String clientType) {
+    	super(gravity, id, factory, clientType);
     	this.servletContext = servletContext;
     }
 	
@@ -127,7 +127,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	}
 	
 	private Gravity initializeRequest() {
-		ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId);
+		ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId, clientType);
 		return gravity;
 	}
 
@@ -196,7 +196,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 			
 			// Setup serialization context (thread local)
 			Gravity gravity = getGravity();
-	        GraniteContext context = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId);
+	        GraniteContext context = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId, clientType);
 	        
 	        os = new ByteArrayOutputStream(500);
 	        ObjectOutput amf3Serializer = context.getGraniteConfig().newAMF3Serializer(os);

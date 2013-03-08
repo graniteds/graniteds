@@ -57,7 +57,7 @@ public interface Gravity extends ShutdownListener {
     ///////////////////////////////////////////////////////////////////////////
     // Operations.
 
-    public GraniteContext initThread();
+    public GraniteContext initThread(String sessionId, String clientType);
     public void releaseThread();
 	
 	public ServiceAdapter getServiceAdapter(String messageType, String destinationId);
@@ -67,9 +67,9 @@ public interface Gravity extends ShutdownListener {
     public void stop() throws Exception;
     public void stop(boolean now) throws Exception;
 
-    public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId);
-    public Channel removeChannel(String channelId);
-    public boolean access(String channelId);
+    public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String clientId);
+    public Channel removeChannel(String clientId);
+    public boolean access(String clientId);
     public void execute(AsyncChannelRunner runnable);
     public boolean cancel(AsyncChannelRunner runnable);
 

@@ -53,6 +53,7 @@ public abstract class AbstractChannel implements Channel {
 
     protected final String id;
     protected final String sessionId;
+	protected final String clientType;
     protected final Gravity gravity;
     protected final ChannelFactory<? extends Channel> factory;
     // protected final ServletConfig servletConfig;
@@ -71,12 +72,13 @@ public abstract class AbstractChannel implements Channel {
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
 
-    protected AbstractChannel(Gravity gravity, String id, ChannelFactory<? extends Channel> factory) {        
+    protected AbstractChannel(Gravity gravity, String id, ChannelFactory<? extends Channel> factory, String clientType) {        
         if (id == null)
         	throw new NullPointerException("id cannot be null");
         
         this.id = id;
     	GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+    	this.clientType = clientType;
     	this.sessionId = graniteContext != null ? graniteContext.getSessionId() : null;
         this.gravity = gravity;
         this.factory = factory;
@@ -98,6 +100,10 @@ public abstract class AbstractChannel implements Channel {
 	public String getId() {
         return id;
     }
+	
+	public String getClientType() {
+		return clientType;
+	}
 	
 	public ChannelFactory<? extends Channel> getFactory() {
 		return factory;

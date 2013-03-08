@@ -759,7 +759,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                     dmsg.setDestination(getDestination().getId());
                     
                     if (Boolean.TRUE.equals(message.getBooleanProperty(Gravity.BYTEARRAY_BODY_HEADER))) {
-                        getGravity().initThread();
+                        getGravity().initThread(null, channel.getClientType());
                         try {
 	                        ByteArrayOutputStream baos = new ByteArrayOutputStream(100);
 	                        AMF3Serializer ser = new AMF3Serializer(baos);

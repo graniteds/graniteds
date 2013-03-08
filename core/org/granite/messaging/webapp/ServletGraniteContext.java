@@ -75,9 +75,10 @@ public class ServletGraniteContext extends GraniteContext {
         GraniteConfig graniteConfig,
         ServicesConfig servicesConfig,
         ServletContext context,
-        String sessionId) {
+        String sessionId,
+        String clientType) {
 
-        ServletGraniteContext graniteContext = new ServletGraniteContext(graniteConfig, servicesConfig, context, sessionId);
+        ServletGraniteContext graniteContext = new ServletGraniteContext(graniteConfig, servicesConfig, context, sessionId, clientType);
         setCurrentInstance(graniteContext);
         return graniteContext;
     }
@@ -87,9 +88,10 @@ public class ServletGraniteContext extends GraniteContext {
         GraniteConfig graniteConfig,
         ServicesConfig servicesConfig,
         ServletContext servletContext,
-        String sessionId) {
+        String sessionId,
+        String clientType) {
 
-        super(graniteConfig, servicesConfig, sessionId);
+        super(graniteConfig, servicesConfig, sessionId, clientType);
         this.servletContext = servletContext;
     }
 

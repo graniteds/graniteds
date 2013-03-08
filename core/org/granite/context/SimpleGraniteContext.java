@@ -38,23 +38,33 @@ public class SimpleGraniteContext extends GraniteContext {
         ServicesConfig servicesConfig,
         Map<String, Object> applicationMap) {
     	
-    	return createThreadInstance(graniteConfig, servicesConfig, null, applicationMap);
+    	return createThreadInstance(graniteConfig, servicesConfig, null, applicationMap, null);
+    }
+    
+    public static SimpleGraniteContext createThreadInstance(
+        GraniteConfig graniteConfig,
+        ServicesConfig servicesConfig,
+        Map<String, Object> applicationMap,
+        String clientType) {
+    	
+    	return createThreadInstance(graniteConfig, servicesConfig, null, applicationMap, clientType);
     }
     
     public static SimpleGraniteContext createThreadInstance(
         GraniteConfig graniteConfig,
         ServicesConfig servicesConfig,
         String sessionId,
-        Map<String, Object> applicationMap) {
+        Map<String, Object> applicationMap,
+        String clientType) {
 
-        SimpleGraniteContext graniteContext = new SimpleGraniteContext(graniteConfig, servicesConfig, sessionId, applicationMap);
+        SimpleGraniteContext graniteContext = new SimpleGraniteContext(graniteConfig, servicesConfig, sessionId, applicationMap, clientType);
         setCurrentInstance(graniteContext);
         return graniteContext;
     }
 
 
-    private SimpleGraniteContext(GraniteConfig graniteConfig, ServicesConfig servicesConfig, String sessionId, Map<String, Object> applicationMap) {
-        super(graniteConfig, servicesConfig, sessionId);
+    private SimpleGraniteContext(GraniteConfig graniteConfig, ServicesConfig servicesConfig, String sessionId, Map<String, Object> applicationMap, String clientType) {
+        super(graniteConfig, servicesConfig, sessionId, clientType);
         this.applicationMap = applicationMap;
     }
 

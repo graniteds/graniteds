@@ -26,7 +26,7 @@ package org.granite.gravity;
  */
 public interface ChannelFactory<C extends Channel> {
 	
-    public C newChannel(String id);
+    public C newChannel(String id, String clientType);
 
     public void destroy();
 }
