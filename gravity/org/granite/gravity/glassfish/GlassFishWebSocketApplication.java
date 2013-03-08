@@ -53,15 +53,16 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 			connectMessageId = request.getParameters().getParameter("connectId");
 		String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameters().getParameter("GDSClientId");
 		String sessionId = null;
+		
 		if (request.getHeader("GDSSessionId") != null)
 			sessionId = request.getHeader("GDSSessionId");
 		if (sessionId == null && request.getParameters().getParameter("GDSSessionId") != null)
 			sessionId = request.getParameters().getParameter("GDSSessionId");
 		String amfMode = null;
-		if (request.getHeader("GDSAMFMode") != null)
-			amfMode = request.getHeader("GDSAMFMode");
-		if (amfMode == null && request.getParameters().getParameter("GDSAMFMode") != null)
-			amfMode = request.getParameters().getParameter("GDSAMFMode");
+		if (request.getHeader("GDSClientType") != null)
+			amfMode = request.getHeader("GDSClientType");
+		if (amfMode == null && request.getParameters().getParameter("GDSClientType") != null)
+			amfMode = request.getParameters().getParameter("GDSClientType");
 		
 		// Utterly hackish and ugly: we create the thread local here because there is no other way to access the request
 		// It will be cleared in onConnect which executes later in the same thread
