@@ -145,16 +145,6 @@ package org.granite.tide.data {
         }
 		
 		
-		public function initTmpMergeContext():MergeContext {
-			_mergeContext = new MergeContext(_context, this, _dirtyCheckContext);
-			return _mergeContext;
-		}
-		
-		public function restoreMergeContext(mergeContext:MergeContext):void {
-			_mergeContext = mergeContext;
-		}
-		
-		
 		/**
 		 *  Clear the current dirty state context
 		 *  @param dispatch dispatch a PropertyChangeEvent on meta_dirty if the context was dirty before clearing
