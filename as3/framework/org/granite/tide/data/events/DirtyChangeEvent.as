@@ -30,11 +30,13 @@ package org.granite.tide.data.events {
     	
     	public static const DIRTY_CHANGE:String = "dirtyChange";
         
+		public var object:Object;
         public var dirty:Boolean;
         
 
-        public function DirtyChangeEvent(dirty:Boolean):void {
+        public function DirtyChangeEvent(object:Object, dirty:Boolean):void {
             super(DIRTY_CHANGE, false, false);
+			this.object = object;
             this.dirty = dirty;
         }
     }

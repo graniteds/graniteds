@@ -47,11 +47,19 @@ package org.granite.test.tide.data
 			person1.contacts.addItem(contact1);
 			_ctx.person1 = _ctx.meta_mergeExternalData(person1);
 			person1 = _ctx.person1;
+			contact1 = person1.contacts.getItemAt(0) as Contact;
 			
 			person2.uid = "P2";
 			person2.contacts = new ArrayCollection();
+			person2.version = 0;
+			var contact2:Contact = new Contact();
+			contact2.uid = "C2";
+			contact2.version = 0;
+			contact2.person = person2;
+			person2.contacts.addItem(contact2);
 			_ctx.person2 = _ctx.meta_mergeExternalData(person2);
 			person2 = _ctx.person2;
+			contact2 = person2.contacts.getItemAt(0) as Contact;
 			
 			var form:TestForm = new TestForm();
 			_ctx.testForm = form;
@@ -70,6 +78,33 @@ package org.granite.test.tide.data
 			
 			Assert.assertTrue("Save all enabled", form.saveAllButton.enabled);
 			Assert.assertFalse("Save disabled", form.saveButton.enabled);
+			
+			person2.lastName = null;
+			
+			Assert.assertFalse("Save all disabled", form.saveAllButton.enabled);
+			Assert.assertFalse("Save enabled", form.saveButton.enabled);
+			
+			contact1.email = "toto@tutu.com";
+			
+			Assert.assertTrue("Save all enabled", form.saveAllButton.enabled);
+			Assert.assertTrue("Save enabled", form.saveAllButton.enabled);
+			
+			contact1.email = null;
+			contact2.email = "test@tutu.com";
+			
+			Assert.assertTrue("Save all enabled", form.saveAllButton.enabled);
+			Assert.assertFalse("Save disabled", form.saveButton.enabled);
+			
+			contact1.email = "toto@tutu.com";
+			
+			Assert.assertTrue("Save all enabled", form.saveAllButton.enabled);
+			Assert.assertTrue("Save enabled", form.saveButton.enabled);
+
+			contact1.email = null;
+			contact2.email = null;
+			
+			Assert.assertFalse("Save all disabled", form.saveAllButton.enabled);
+			Assert.assertFalse("Save enabled", form.saveButton.enabled);
 		}
 	}
 }

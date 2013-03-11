@@ -101,30 +101,30 @@ package org.granite.tide.data {
         public function clear(dispatch:Boolean = true):void {
 			var wasDirty:Boolean = dirty;
 			
-			if (dispatch) {
-				for (var object:Object in _savedProperties)
-					object.dispatchEvent(new DirtyChangeEvent(false));
-			}
+			var oldSavedProperties:Dictionary = _savedProperties;
+			_savedProperties = new Dictionary(true);
 			
-        	_savedProperties = new Dictionary(true);
 			_dirtyCount = 0;
 			if (wasDirty && dispatch) {
+				for (var object:Object in oldSavedProperties) {
+					object.dispatchEvent(PropertyChangeEvent.createUpdateEvent(object, "meta_dirty", true, false));			
+					_context.dispatchEvent(new DirtyChangeEvent(object, false));
+				}
 				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(_context, "meta_dirty", true, false));
-				_context.dispatchEvent(new DirtyChangeEvent(false));
 			}
         }
 		
 		private function dispatchCtxDirty(oldDirty:Boolean, dirtyCount:int):void {
-			if ((dirtyCount > 0) !== oldDirty) {
+			if ((dirtyCount > 0) !== oldDirty)
 				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(_context, "meta_dirty", oldDirty, dirtyCount > 0));
-				_context.dispatchEvent(new DirtyChangeEvent(dirtyCount > 0));				
-			}
 		}
 		
 		private function dispatchEntityDirty(object:Object, oldDirtyEntity:Boolean):Boolean {
 			var newDirtyEntity:Boolean = isEntityChanged(object);
-			if (newDirtyEntity !== oldDirtyEntity)
-				object.dispatchEvent(PropertyChangeEvent.createUpdateEvent(object, "meta_dirty", oldDirtyEntity, newDirtyEntity));			
+			if (newDirtyEntity !== oldDirtyEntity) {
+				object.dispatchEvent(PropertyChangeEvent.createUpdateEvent(object, "meta_dirty", oldDirtyEntity, newDirtyEntity));
+				_context.dispatchEvent(new DirtyChangeEvent(object, newDirtyEntity));				
+			}
 			return newDirtyEntity;
 		}
         
