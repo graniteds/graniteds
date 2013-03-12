@@ -21,5 +21,9 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6,
  J2SE-1.5,
  OSGi/Minimum-1.1
 Export-Package: org.granite.config.api,
- org.granite.messaging.service.annotations
+ org.granite.messaging.service.annotations,
+ org.granite.tide.data.DataPublishListener,
+ org.granite.tide.data.DataObserveParams,
+ org.granite.tide.data.DataPublishParams,
+ org.granite.tide.data.DataTopicParams
 Bundle-Vendor: graniteds.org
