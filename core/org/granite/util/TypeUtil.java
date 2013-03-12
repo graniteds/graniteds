@@ -179,24 +179,22 @@ public abstract class TypeUtil {
 			sclass = sclass.getSuperclass();
 		}
 		
-		if (type.getGenericInterfaces() != null) {
-			for (Type t : type.getGenericInterfaces()) {
-				if (t instanceof ParameterizedType)
-					supertypes.add((ParameterizedType)t);
-				else {
-					// Case of service proxies: direct interfaces are never generic => try up one level
-					Class<?> i = classOfType(t);
-					for (Type t2 : i.getGenericInterfaces()) {
-						if (t2 instanceof ParameterizedType)
-							supertypes.add((ParameterizedType)t2);
-					}
-				}
-			}
-		}
+		collectGenericInterfaces(type.getGenericInterfaces(), supertypes);
 		
 		return supertypes.isEmpty() ? null : supertypes.toArray(new ParameterizedType[supertypes.size()]);
     }
     
+    private static void collectGenericInterfaces(Type[] types, List<ParameterizedType> supertypes) {
+    	if (types == null)
+    		return;
+		for (Type t : types) {
+			if (t instanceof ParameterizedType)
+				supertypes.add((ParameterizedType)t);
+			else
+				collectGenericInterfaces(((Class<?>)t).getGenericInterfaces(), supertypes);
+		}
+    }
+   
     public static Type resolveTypeVariable(Type genericType, Class<?> declaringClass, ParameterizedType[] declaringTypes) {
     	if (genericType instanceof TypeVariable && declaringTypes != null) {
     		int index = -1;
