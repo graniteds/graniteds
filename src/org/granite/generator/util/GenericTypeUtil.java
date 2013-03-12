@@ -45,13 +45,14 @@ public abstract class GenericTypeUtil {
 			sclass = sclass.getSuperclass();
 		}
 		
-		if (type.getGenericInterfaces() != null)
-			collectGenericInterfaces(type.getGenericInterfaces(), supertypes);
+		collectGenericInterfaces(type.getGenericInterfaces(), supertypes);
 		
 		return supertypes.isEmpty() ? null : supertypes.toArray(new ParameterizedType[supertypes.size()]);
     }
     
     private static void collectGenericInterfaces(Type[] types, List<ParameterizedType> supertypes) {
+    	if (types == null)
+    		return;
 		for (Type t : types) {
 			if (t instanceof ParameterizedType)
 				supertypes.add((ParameterizedType)t);
