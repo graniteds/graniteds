@@ -36,17 +36,28 @@ public abstract class GenericTypeUtil {
     public static ParameterizedType[] getDeclaringTypes(Class<?> type) {
 		List<ParameterizedType> supertypes = new ArrayList<ParameterizedType>();
 		
-		if (type.getGenericSuperclass() instanceof ParameterizedType)
-			supertypes.add((ParameterizedType)type.getGenericSuperclass());
-		
-		if (type.getGenericInterfaces() != null) {
-			for (Type t : type.getGenericInterfaces()) {
-				if (t instanceof ParameterizedType)
-					supertypes.add((ParameterizedType)t);
-			}
+		Type stype = type.getGenericSuperclass();
+		Class<?> sclass = type.getSuperclass();
+		while (sclass != null && sclass != Object.class) {
+			if (stype instanceof ParameterizedType)
+				supertypes.add((ParameterizedType)stype);
+			stype = sclass.getGenericSuperclass();
+			sclass = sclass.getSuperclass();
 		}
 		
+		if (type.getGenericInterfaces() != null)
+			collectGenericInterfaces(type.getGenericInterfaces(), supertypes);
+		
 		return supertypes.isEmpty() ? null : supertypes.toArray(new ParameterizedType[supertypes.size()]);
+    }
+    
+    private static void collectGenericInterfaces(Type[] types, List<ParameterizedType> supertypes) {
+		for (Type t : types) {
+			if (t instanceof ParameterizedType)
+				supertypes.add((ParameterizedType)t);
+			else
+				collectGenericInterfaces(((Class<?>)t).getGenericInterfaces(), supertypes);
+		}
     }
 
     public static Type primitiveToWrapperType(Type type) {

@@ -28,6 +28,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,7 +152,7 @@ public class JavaRemoteDestination extends JavaAbstractType {
 		ParameterizedType[] declaringTypes = GenericTypeUtil.getDeclaringTypes(type);
 		
 		if (type.isInterface())
-			methods = filterOverrides(type.getMethods());
+			methods = filterOverrides(type.getMethods(), declaringTypes);
 		else
 			methods = type.getDeclaredMethods();
 		
@@ -286,18 +287,24 @@ public class JavaRemoteDestination extends JavaAbstractType {
 	}
 	
 	
-	public static Method[] filterOverrides(Method[] methods) {
+	public static Method[] filterOverrides(Method[] methods, ParameterizedType[] declaringTypes) {
 		List<Method> filteredMethods = new ArrayList<Method>();
 		for (Method method : methods) {
+			// Apply generic information
+			Type[] paramTypes = new Type[method.getGenericParameterTypes().length];
+			for (int i = 0; i < method.getGenericParameterTypes().length; i++)
+				paramTypes[i] = GenericTypeUtil.resolveTypeVariable(method.getGenericParameterTypes()[i], method.getDeclaringClass(), declaringTypes);
+			
 			// Lookup an override in subinterfaces
 			boolean foundOverride = false;
 			for (Method m : methods) {
 				if (method == m)
 					continue;
-				if (m.getName().equals(method.getName()) && Arrays.equals(m.getParameterTypes(), method.getParameterTypes()) &&
-					method.getDeclaringClass().isAssignableFrom(m.getDeclaringClass())) {
-					foundOverride = true;
-					break;
+				if (m.getName().equals(method.getName()) && method.getDeclaringClass().isAssignableFrom(m.getDeclaringClass())) {
+					if (Arrays.equals(paramTypes, m.getParameterTypes())) {
+						foundOverride = true;
+						break;
+					}
 				}
 			}
 			if (!foundOverride)
