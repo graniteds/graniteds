@@ -26,5 +26,11 @@
 		<s:TextArea id="textArea2"
 					maxChars="{MAX_CHARS}"
 					text="@{model.field.subField2}"/>
+		
+		<s:TextArea id="textArea3"
+					text="@{this.model.field.subField3}"/>
+		
+		<s:TextArea id="textArea4"
+					text="@{this.model.field.subField4}"/>
 	</s:Panel>
 </s:Group>

@@ -621,6 +621,8 @@ package org.granite.validation {
 				// Lookup in existing bindings
 				for each (var binding:Binding in bindings) {
 					var destString:String = binding.mx_internal::destString;
+					if (destString.indexOf("this.") == 0)
+						destString = destString.substring(5);
 					
 					var inputProp:String = null;
 					var modelProp:String = null;
@@ -633,6 +635,8 @@ package org.granite.validation {
 						
 						if (binding.twoWayCounterpart) {
 							var twoWayCounterpartDestString:String = binding.twoWayCounterpart.mx_internal::destString;
+							if (twoWayCounterpartDestString.indexOf("this.") == 0)
+								twoWayCounterpartDestString = twoWayCounterpartDestString.substring(5);
 							if (twoWayCounterpartDestString.indexOf(".") > 0) {
 								if (entityPath != null && twoWayCounterpartDestString.indexOf(entityPath) == 0)
 									modelProp = twoWayCounterpartDestString.substring(entityPath.length + 1);

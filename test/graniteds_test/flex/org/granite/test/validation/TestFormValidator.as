@@ -73,6 +73,14 @@ package org.granite.test.validation
 			
 			Assert.assertTrue("Text 2 validated", form.fv.validateEntity());
 			
+			form.textArea3.text = "test";			
+			
+			Assert.assertFalse("Text 3 not validated", form.fv.validateEntity());
+			
+			form.textArea3.text = "testLongEnough";			
+			
+			Assert.assertTrue("Text 3 validated", form.fv.validateEntity());
+			
 		}
 			
 	}
