@@ -39,11 +39,13 @@ public class TideUserEvents implements Serializable {
     private ConcurrentHashMap<String, UserEvents> userEventsMap = new ConcurrentHashMap<String, UserEvents>();
     
     
-    public synchronized void registerEventType(String sessionId, Class<?> eventType) {
+    public void registerEventType(String sessionId, Class<?> eventType) {
         UserEvents userEvents = userEventsMap.get(sessionId);
         if (userEvents == null) {
             userEvents = new UserEvents();
-            userEventsMap.put(sessionId, userEvents);
+            UserEvents tmpUserEvents = userEventsMap.putIfAbsent(sessionId, userEvents); 
+            if (tmpUserEvents != null) 
+            	userEvents = tmpUserEvents; 
         }
         userEvents.addEventType(eventType);
     }

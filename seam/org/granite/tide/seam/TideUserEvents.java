@@ -48,7 +48,10 @@ public class TideUserEvents {
         UserEvents userEvents = userEventsMap.get(sessionId);
         if (userEvents == null) {
             userEvents = new UserEvents();
-            userEventsMap.put(sessionId, userEvents);
+            userEventsMap.put(sessionId, userEvents); 
+            UserEvents tmpUserEvents = userEventsMap.putIfAbsent(sessionId, userEvents); 
+            if (tmpUserEvents != null) 
+            	userEvents = tmpUserEvents;         
         }
         userEvents.addEventType(eventType);
     }

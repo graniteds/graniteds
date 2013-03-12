@@ -85,7 +85,9 @@ public class SimpleServiceAdapter extends ServiceAdapter {
         TopicId tid = _topicIdCache.get(id);
         if (tid == null) {
             tid = new TopicId(id);
-            _topicIdCache.put(id, tid);
+            TopicId tmpTid = _topicIdCache.putIfAbsent(id, tid); 
+            if (tmpTid != null) 
+            	tid = tmpTid; 
         }
         return tid;
     }

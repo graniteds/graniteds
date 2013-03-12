@@ -83,7 +83,9 @@ public class GAEServiceAdapter extends ServiceAdapter {
         GAETopicId tid = _topicIdCache.get(id);
         if (tid == null) {
             tid = new GAETopicId(id);
-            _topicIdCache.put(id, tid);
+            GAETopicId tmpTid = _topicIdCache.putIfAbsent(id, tid); 
+            if(tmpTid != null) 
+            	tid = tmpTid;
         }
         return tid;
     }

@@ -68,7 +68,7 @@ public class EjbServiceContext extends TideServiceContext  {
     public static final String CAPITALIZED_DESTINATION_ID = "{capitalized.component.name}";
     public static final String DESTINATION_ID = "{component.name}";
     
-    private transient Map<String, EjbComponent> ejbLookupCache = new ConcurrentHashMap<String, EjbComponent>();
+    private transient ConcurrentHashMap<String, EjbComponent> ejbLookupCache = new ConcurrentHashMap<String, EjbComponent>();
     private final Set<String> remoteObservers = new HashSet<String>();
     
     private final InitialContext initialContext;
@@ -232,8 +232,9 @@ public class EjbServiceContext extends TideServiceContext  {
             else
             	log.warn("Ejb " + componentName + " was not scanned: remove method will not be called if it is a Stateful bean. Add META-INF/services-config.properties if needed.");
             
-            ejbLookupCache.put(componentName, component);
-            
+            EjbComponent tmpComponent = ejbLookupCache.putIfAbsent(componentName, component); 
+            if (tmpComponent != null) 
+            	component = tmpComponent; 
             return component.ejbInstance;
         }
         catch (NamingException e) {

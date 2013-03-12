@@ -400,7 +400,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 			log.error(e, "Could not remove channel id from distributed data: %s", channelId);
 		}
         
-        TimeChannel<?> timeChannel = channels.get(channelId);
+        TimeChannel<?> timeChannel = channels.remove(channelId);
         Channel channel = null;
         if (timeChannel != null) {
         	try {
@@ -425,12 +425,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	            }
         	}
         	finally {
-        		try {
-        			channel.destroy();
-        		}
-        		finally {
-        			channels.remove(channelId);
-        		}
+    			channel.destroy();
         	}
         }
 
