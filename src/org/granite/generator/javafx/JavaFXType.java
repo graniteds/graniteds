@@ -21,6 +21,7 @@
 package org.granite.generator.javafx;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.granite.generator.as3.ClientType;
@@ -57,6 +58,7 @@ public class JavaFXType implements ClientType {
     private final String propertyTypeName;
     private final String propertyImplTypeName;
     private final Object nullValue;
+    private final Set<String> imports = new HashSet<String>(); 
 
     ///////////////////////////////////////////////////////////////////////////
     // Constructors.
@@ -74,6 +76,12 @@ public class JavaFXType implements ClientType {
         this.nullValue = nullValue;
         this.propertyTypeName = propertyTypeName;
         this.propertyImplTypeName = propertyImplTypeName;
+    	if (hasPackage())
+    		imports.add(ungenerify(qualifiedName));
+    	if (propertyTypeName != null)
+    		imports.add(ungenerify(propertyTypeName));
+    	if (propertyImplTypeName != null)
+    		imports.add(ungenerify(propertyImplTypeName));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -131,14 +139,15 @@ public class JavaFXType implements ClientType {
     
     @Override
 	public Set<String> getImports() {
-    	Set<String> imports = new HashSet<String>();
-    	if (hasPackage())
-    		imports.add(ungenerify(qualifiedName));
-    	if (propertyTypeName != null)
-    		imports.add(ungenerify(propertyTypeName));
-    	if (propertyImplTypeName != null)
-    		imports.add(ungenerify(propertyImplTypeName));
     	return imports;
+    }
+    
+    public void addImports(Set<String> classNames) {
+    	for (String className : classNames) {
+    		if (className.indexOf(".") < 0 || className.startsWith("java.lang"))
+    			continue;
+    		imports.add(ungenerify(className));
+    	}
     }
     
     private String ungenerify(String className) {
@@ -155,6 +164,36 @@ public class JavaFXType implements ClientType {
     @Override
 	public JavaFXType translatePackage(PackageTranslator translator) {
     	return new JavaFXType(translator.translate(packageName), getName(), getPropertyTypeName(), getPropertyImplTypeName(), getNullValue());
+    }
+    
+    @Override
+    public JavaFXType translatePackages(List<PackageTranslator> translators) {
+    	boolean translate = false;
+    	
+        PackageTranslator translator = PackageTranslator.forPackage(translators, packageName);
+        String translatedPackageName = packageName;
+        if (translator != null) {
+        	translate = true;
+        	translatedPackageName = translator.translate(packageName);
+        }
+        
+    	Set<String> translatedImports = new HashSet<String>();
+    	for (String imp : imports) {
+    		translator = PackageTranslator.forPackage(translators, imp);
+    		if (translator != null) {
+    			translate = true;
+        		translatedImports.add(translator.translate(imp));
+    		}
+    		else
+        		translatedImports.add(imp);
+    	}
+    	
+    	if (!translate)
+    		return this;
+    	
+    	JavaFXType translatedType = new JavaFXType(translatedPackageName, getName(), getPropertyTypeName(), getPropertyImplTypeName(), getNullValue());
+		translatedType.addImports(translatedImports);
+    	return translatedType;
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -31,7 +31,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -46,6 +45,7 @@ import org.granite.generator.as3.reflect.JavaMethod.MethodType;
 import org.granite.generator.util.GenericTypeUtil;
 import org.granite.messaging.service.annotations.IgnoredMethod;
 import org.granite.messaging.service.annotations.RemoteDestination;
+import org.granite.util.ClassUtil;
 
 /**
  * @author Franck WOLFF
@@ -300,8 +300,15 @@ public class JavaRemoteDestination extends JavaAbstractType {
 			for (Method m : methods) {
 				if (method == m)
 					continue;
-				if (m.getName().equals(method.getName()) && method.getDeclaringClass().isAssignableFrom(m.getDeclaringClass())) {
-					if (Arrays.equals(paramTypes, m.getParameterTypes())) {
+				if (m.getName().equals(method.getName()) && m.getParameterTypes().length == paramTypes.length && method.getDeclaringClass().isAssignableFrom(m.getDeclaringClass())) {
+					boolean same = true;
+					for (int i = 0; i < paramTypes.length; i++) {
+						if (!ClassUtil.classOfType(paramTypes[i]).equals(ClassUtil.classOfType(m.getParameterTypes()[i]))) {
+							same = false;
+							break;
+						}
+					}
+					if (same) {
 						foundOverride = true;
 						break;
 					}

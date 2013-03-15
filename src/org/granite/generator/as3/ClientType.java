@@ -20,6 +20,7 @@
 
 package org.granite.generator.as3;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -46,7 +47,11 @@ public interface ClientType {
     
     public Set<String> getImports();
     
+    public void addImports(Set<String> imports);
+    
     public ClientType toArrayType();
     
     public ClientType translatePackage(PackageTranslator translator);
+    
+    public ClientType translatePackages(List<PackageTranslator> translators);
 }

@@ -21,6 +21,7 @@
 package org.granite.generator.as3;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 
@@ -121,6 +122,10 @@ public class As3Type implements ClientType {
     }
     
     @Override
+    public void addImports(Set<String> imports) {    	
+    }
+    
+    @Override
 	public As3Type toArrayType() {
     	return ARRAY;
     }
@@ -128,6 +133,23 @@ public class As3Type implements ClientType {
     @Override
 	public As3Type translatePackage(PackageTranslator translator) {
     	return new As3Type(translator.translate(packageName), getName());
+    }
+    
+    @Override
+    public As3Type translatePackages(List<PackageTranslator> translators) {
+    	boolean translate = false;
+    	
+        PackageTranslator translator = PackageTranslator.forPackage(translators, packageName);
+        String translatedPackageName = packageName;
+        if (translator != null) {
+        	translate = true;
+        	translatedPackageName = translator.translate(packageName);
+        }
+    	
+    	if (!translate)
+    		return this;
+    	
+    	return new As3Type(translatedPackageName, getName());
     }
 
     ///////////////////////////////////////////////////////////////////////////

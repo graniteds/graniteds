@@ -20,6 +20,7 @@
 
 package org.granite.generator.as3.reflect;
 
+import java.util.List;
 import java.util.Set;
 
 import org.granite.generator.as3.ClientType;
@@ -95,6 +96,10 @@ public class ClientImport extends JavaImport {
 		public Set<String> getImports() {
 			return null;
 		}
+	    
+		@Override
+	    public void addImports(Set<String> imports) {	    	
+	    }
 
 		@Override
 		public ClientType toArrayType() {
@@ -103,6 +108,11 @@ public class ClientImport extends JavaImport {
 
 		@Override
 		public ClientType translatePackage(PackageTranslator translator) {
+			return null;
+		}
+
+		@Override
+		public ClientType translatePackages(List<PackageTranslator> translators) {
 			return null;
 		}
     	

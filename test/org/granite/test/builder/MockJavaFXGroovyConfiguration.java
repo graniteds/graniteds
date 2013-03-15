@@ -1,7 +1,7 @@
 package org.granite.test.builder;
 
 import java.io.File;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,8 +60,13 @@ public class MockJavaFXGroovyConfiguration implements JavaAs3GroovyConfiguration
 		return as3TypeFactory;
 	}
 
+	private List<PackageTranslator> translators = new ArrayList<PackageTranslator>();
+	
 	public List<PackageTranslator> getTranslators() {
-		return Collections.emptyList();
+		return translators;
+	}
+	public void addTranslator(String java, String client) {
+		translators.add(new PackageTranslator(java, client));
 	}
 
 	public PackageTranslator getPackageTranslator(String packageName) {

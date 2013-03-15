@@ -187,14 +187,7 @@ public abstract class JavaClientGroovyTransformer
         if (clientType == null)
         	clientType = getConfig().getAs3TypeFactory().getAs3Type(clazz);
         
-        if (getConfig().getTranslators().isEmpty() || clazz.getPackage() == null)
-            return clientType;
-
-        String packageName = clazz.getPackage().getName();
-        PackageTranslator translator = PackageTranslator.forPackage(getConfig().getTranslators(), packageName);
-
-        if (translator != null)
-            clientType = clientType.translatePackage(translator);
+        clientType = clientType.translatePackages(getConfig().getTranslators());
 
         return clientType;
 	}
