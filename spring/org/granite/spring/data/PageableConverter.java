@@ -102,7 +102,7 @@ public class PageableConverter extends Converter implements Reverter {
 		}
 
 		public int getPageNumber() {
-			return offset / pageSize;
+			return pageSize > 0 ? offset / pageSize : 0;
 		}
 
 		public int getPageSize() {
