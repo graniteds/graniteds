@@ -1557,9 +1557,14 @@ package org.granite.tide {
 	            _entityManager.attachEntity(IEntity(obj.entity));
 	        }
 	        
-            _tracking = false;
-            _tide.initializeObject(this, obj, path);
-            _tracking = true;
+			var saveTracking:Boolean = _tracking;
+			try {
+				_tracking = false;
+            	_tide.initializeObject(this, obj, path);
+			}
+			finally {
+            	_tracking = saveTracking;
+			}
         }
         
         
