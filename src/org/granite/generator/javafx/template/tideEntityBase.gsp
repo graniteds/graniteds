@@ -191,6 +191,13 @@ public class ${jClass.as3Type.name}Base<%
         return true;
     }<%
     }
+	
+	%>
+	@SuppressWarnings("unused")
+	private static final String[] __externalizedProperties = { <%
+		jClass.properties.eachWithIndex { jProperty, idx -> if (idx > 0) { %>, <% } %>"${jProperty.name}"<% }
+	%> };
+	<%
 
 	for (jProperty in jClass.properties) {
 	    if (jProperty instanceof org.granite.generator.as3.reflect.JavaMember && jProperty.clientType.propertyTypeName != null) {%>

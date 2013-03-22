@@ -109,9 +109,12 @@ public class TestGenEntity {
 		
 		String base = Util.readFile(outputs[0].getFile());
 		Assert.assertTrue("AbstractEntityBase1 contains [Id]", base.indexOf("[Id]") >= 0);
+		Assert.assertTrue("AbstractEntityBase1 contains _id", base.indexOf("private var _id:Number") >= 0);
+		Assert.assertTrue("AbstractEntityBase1 contains _createdBy before _id", base.indexOf("private var _id:Number") > base.indexOf("private var _createdBy:String"));
 		Assert.assertTrue("AbstractEntityBase1 contains _uid", base.indexOf("private var _uid:String") >= 0);
 		Assert.assertTrue("AbstractEntityBase1 contains get uid", base.indexOf("public function get uid():String") >= 0);
 	}
+
 	
 	@Test
 	public void testTideTemplateBean() throws Exception {
