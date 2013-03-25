@@ -1,17 +1,16 @@
 package org.granite.test.tide.data
 {
-    import org.flexunit.Assert;
-    
     import mx.collections.ArrayCollection;
-
+    import mx.data.utils.Managed;
+    
+    import org.flexunit.Assert;
     import org.granite.persistence.PersistentSet;
-
+    import org.granite.test.tide.Contact;
+    import org.granite.test.tide.Person;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
     import org.granite.tide.data.Conflicts;
     import org.granite.tide.data.events.TideDataConflictsEvent;
-    import org.granite.test.tide.Contact;
-    import org.granite.test.tide.Person;
     
     
     public class TestMergeConflictEntity 
@@ -266,5 +265,107 @@ package org.granite.test.tide.data
         private function acceptServerConflictsHandler(event:TideDataConflictsEvent):void {
         	event.conflicts.acceptAllServer();
         }
+		
+		[Test]
+		public function testMergeConflictEntity5():void {
+			var person:Person = new Person();
+			person.id = 1; 
+			person.version = 0;
+			person.firstName = "toto";
+			person.lastName = "toto";
+			person.contacts = new PersistentSet(true);
+			var contact:Contact = new Contact();
+			contact.id = 1;
+			contact.version = 0;
+			contact.person = person;
+			person.contacts.addItem(contact);
+			_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+			person = _ctx.person;
+			
+			person.lastName = "tutu";
+			
+			Assert.assertTrue("Person dirty", _ctx.meta_isEntityChanged(person));
+			
+			var person2:Person = new Person();
+			person2.contacts = new PersistentSet(true);
+			person2.id = person.id;
+			person2.version = 1;
+			person2.uid = person.uid;
+			person2.firstName = "tata";
+			person2.lastName = "tata";
+			var contact2:Contact = new Contact();
+			contact2.id = contact.id;
+			contact2.version = 0;
+			contact2.uid = contact.uid;
+			contact2.person = person2;
+			person2.contacts.addItem(contact2);
+			
+			_ctx.meta_mergeExternalData([person2], null, "S2");
+			
+			Assert.assertTrue("Person dirty after merge", _ctx.meta_isEntityChanged(person));
+			
+			Assert.assertEquals("Person firstName", "toto", person.firstName);
+			Assert.assertEquals("Person lastName", "tutu", person.lastName);
+			
+			Managed.resetEntity(person);
+			
+			Assert.assertEquals("Person firstName", "tata", person.firstName);
+			Assert.assertEquals("Person lastName", "tata", person.lastName);
+		}
+		
+		[Test]
+		public function testMergeConflictEntity6():void {
+			var person:Person = new Person();
+			person.id = 1;
+			person.version = 0;
+			person.uid = "P1";
+			person.firstName = "toto";
+			person.lastName = "toto";
+			person.contacts = new ArrayCollection();
+			var contact:Contact = new Contact();
+			contact.id = 1;
+			contact.version = 0;
+			contact.person = person;
+			person.contacts.addItem(contact);
+			_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+			person = Person(_ctx.person);
+			contact = Contact(person.contacts.getItemAt(0));
+			
+			var contact2:Contact = new Contact();
+			contact2.person = person;
+			person.contacts.addItem(contact2);
+			
+			Assert.assertTrue("Person dirty", _ctx.meta_isEntityChanged(person));
+			
+			var personb:Person = new Person();
+			personb.contacts = new ArrayCollection();
+			personb.id = person.id;
+			personb.version = 1;
+			personb.uid = person.uid;
+			personb.firstName = "toto";
+			personb.lastName = "toto";
+			var contactb:Contact = new Contact();
+			contactb.id = 3;
+			contactb.version = 0;
+			contactb.uid = "C3";
+			contactb.person = personb;
+			contactb.email = "toto@toto.net";
+			personb.contacts.addItem(contactb);
+			
+			_conflicts = null;
+			_ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, conflictsHandler);
+			
+			_ctx.meta_mergeExternalData([personb], null, "S2");
+			
+			Assert.assertTrue("Person dirty after merge", _ctx.meta_isEntityChanged(person));
+			Assert.assertNotNull("Conflict", _conflicts);
+			
+			Assert.assertEquals("Contacts count", 2, person.contacts.length);
+			
+			Managed.resetEntity(person);
+			
+			Assert.assertEquals("Contacts count", 1, person.contacts.length);
+			Assert.assertEquals("Contact", 3, person.contacts.getItemAt(0).id);
+		}
     }
 }

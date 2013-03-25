@@ -52,8 +52,8 @@ package org.granite.tide.data {
             _entityManager = entityManager;
         }
         
-        public function addConflict(localEntity:IEntity, receivedEntity:Object):void {
-        	var conflict:Conflict = new Conflict(this, localEntity, receivedEntity);
+        public function addConflict(localEntity:IEntity, receivedEntity:Object, properties:Array = null):void {
+        	var conflict:Conflict = new Conflict(this, localEntity, receivedEntity, properties);
         	_conflicts.push(conflict);
         }
         

@@ -70,7 +70,7 @@ package org.granite.test.tide.data
 			contact3.email = "";
 			
 			Assert.assertTrue("Context dirty", _ctx.meta_dirty);
-			Assert.assertTrue("Contacts collection dirty", _ctx.meta_getSavedProperties()[person].contacts[0].kind == CollectionEventKind.ADD);
+			Assert.assertEquals("Contacts collection snapshot", 2, _ctx.meta_getSavedProperties()[person].contacts.length);
         }
 		
 		[Test]

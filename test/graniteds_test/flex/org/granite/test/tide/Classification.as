@@ -28,6 +28,11 @@ package org.granite.test.tide {
 		private var _name:String;
         private var _subclasses:ListCollectionView;
         private var _superclasses:ListCollectionView;
+		
+		
+		public function Classification(id:Number = NaN, version:Number = NaN, uid:String = null):void {
+			super(id, version, uid);
+		}
         
         
 		public function set name(value:String):void {

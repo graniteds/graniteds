@@ -1,13 +1,13 @@
 package org.granite.test.tide.data
 {
-    import org.flexunit.Assert;
-    
     import mx.collections.ArrayCollection;
+    import mx.data.utils.Managed;
     
-    import org.granite.tide.BaseContext;
-    import org.granite.tide.Tide;
+    import org.flexunit.Assert;
     import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
+    import org.granite.tide.BaseContext;
+    import org.granite.tide.Tide;
     
     
     public class TestMergeDirtyEntity 

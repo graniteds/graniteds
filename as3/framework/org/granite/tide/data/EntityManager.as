@@ -934,10 +934,7 @@ package org.granite.tide.data {
                     	}
                     	else {
                     		// Data has been changed locally and not persisted, don't overwrite when version number is unchanged
-                    		if (_dirtyCheckContext.isEntityChanged(IEntity(dest)))
-                    			_mergeContext.mergeUpdate = false;
-                    		else
-                    			_mergeContext.mergeUpdate = true;
+							_mergeContext.mergeUpdate = !_dirtyCheckContext.isEntityChanged(IEntity(dest));
                     	}
                     }
                     else if (!_mergeContext.resolvingConflict)
@@ -963,17 +960,9 @@ package org.granite.tide.data {
             }
             else
                 EntityManager.defaultMerge(_context, obj, dest, _mergeContext.mergeUpdate, expr, parent, propertyName);
-            
-            /*  GDS-863
-            if (previous && obj !== previous && previous is IUID && _dirtyCheckContext.isSaved(previous)) {
-                var pce:PropertyChangeEvent = new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE,
-                    false, false, PropertyChangeEventKind.UPDATE, null, previous, previous);
-                previous.dispatchEvent(pce);
-            }
-            */
-
-			if (dest != null && !ignore && !_mergeContext.skipDirtyCheck && !_mergeContext.resolvingConflict)
-				_dirtyCheckContext.checkAndMarkNotDirty(dest, obj);
+			
+			if (dest is IEntity && !ignore && !_mergeContext.skipDirtyCheck && !_mergeContext.resolvingConflict)
+				_dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), obj);
 			
 			if (dest != null)
 				log.debug("mergeEntity result: {0}", BaseContext.toString(dest));

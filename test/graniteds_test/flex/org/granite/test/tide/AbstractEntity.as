@@ -35,7 +35,15 @@ package org.granite.test.tide {
         private var _id:Number;
         private var _uid:String;
         private var _version:Number;
+		
+		
+		public function AbstractEntity(id:Number = NaN, version:Number = NaN, uid:String = null):void {
+			_id = id;
+			_version = version;
+			_uid = uid;
+		}
 
+		
         meta function isInitialized(name:String = null):Boolean {
             if (!name)
                 return __initialized;

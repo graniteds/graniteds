@@ -25,6 +25,7 @@ package org.granite.tide.data {
     import flash.utils.getQualifiedClassName;
     
     import mx.collections.IList;
+    import mx.collections.ListCollectionView;
     import mx.core.IUID;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
@@ -339,6 +340,34 @@ package org.granite.tide.data {
 			}
 			return val1 === val2;
 		}
+
+		private function isSameList(save:Array, coll:IList):Boolean {
+			if (save.length != coll.length)
+				return false;
+			else {
+				for (var i:uint = 0; i < save.length; i++) {
+					if (!isSame(save[i], coll.getItemAt(i)))
+						return false;
+				}
+			}
+			return true;
+		}		
+		
+		private function isSameMap(save:Array, map:IMap):Boolean {
+			if (save.length != map.length)
+				return false;
+			else {
+				for (var i:uint = 0; i < save.length; i++) {
+					var key:* = save[i][0];
+					if (!map.containsKey(key))
+						return false;
+					if (!isSame(save[i][1], map.get(key)))
+						return false;
+				}
+			}
+			return true;
+		}		
+
 		
 		private function isSameExt(val1:*, val2:*):Boolean {
 			var found:Boolean, idx:uint, e:Object, f:Object, key:*;
@@ -566,91 +595,42 @@ package org.granite.tide.data {
 					_dirtyCount++;
 			}
 		
+			var i:int;
         	var save:Array = esave[propName] as Array;
-			if (save == null)
+			var coll:IList = IList(event.target);
+			while (coll is ListCollectionView)
+				coll = ListCollectionView(coll).list;
+			
+			if (save == null) {
 				save = esave[propName] = [];
-            
-			if (esave && (desc.versionPropertyName == null 
-				|| esave[desc.versionPropertyName] == Object(owner)[desc.versionPropertyName]
-				|| (isNaN(esave[desc.versionPropertyName]) && isNaN(Object(owner)[desc.versionPropertyName])))) {
 				
-	            var found:Boolean = false;
-				var count:int, p:Object, i:int, j:int;
-	            var pce:PropertyChangeEvent = null, ce:CollectionEvent = null;
-				var location:int = event.location;
+				// Save collection snapshot
+				for (i = 0; i < coll.length; i++)
+					save.push(coll.getItemAt(i));
 				
-				var actualLocations:Array = [];
-				for (i = 0; i < save.length; i++) {
-					actualLocations[i] = save[i].location;
-                    for (j = 0; j < i; j++) {
-                        if (save[j].kind == CollectionEventKind.REMOVE && actualLocations[i] <= save[j].location)
-                            actualLocations[j]--;
-						else if (save[j].kind == CollectionEventKind.ADD && actualLocations[i] <= save[j].location)
-							actualLocations[j]++;
+				// Adjust with last event
+				if (event.kind == CollectionEventKind.ADD)
+					save.splice(event.location, event.items.length);
+				else if (event.kind == CollectionEventKind.REMOVE) {
+					for (i = 0; i < event.items.length; i++)
+						save.splice(event.location+i, 0, event.items[i]);
+				}
+				else if (event.kind == CollectionEventKind.REPLACE)
+					save[event.location] = event.items[0].oldValue;
+			}
+			else {
+				if (isSameList(save, coll)) {
+					delete esave[propName];
+					var count:uint = 0;
+					for (var p:String in esave) {
+						if (p != desc.versionPropertyName)
+							count++;
+					}
+					if (count == 0) {
+						delete _savedProperties[owner];
+						_dirtyCount--;
 					}
 				}
-
-	            for (i = 0; i < save.length; i++) {						
-	                if (((event.kind == CollectionEventKind.ADD && save[i].kind == CollectionEventKind.REMOVE)
-	                    || (event.kind == CollectionEventKind.REMOVE && save[i].kind == CollectionEventKind.ADD))
-	                    && event.items.length == 1 && save[i].items.length == 1 
-						&& isSame(event.items[0], save[i].items[0]) && location == actualLocations[i]) {
-						
-	                    save.splice(i, 1);
-						// Adjust location of other events saved after the one that we just discarded because an element added/removed locally has been removed/added
-						for (j = i; j < save.length; j++) {
-							ce = CollectionEvent(save[j]);
-							if (event.kind == CollectionEventKind.REMOVE && ce.kind == CollectionEventKind.ADD && ce.location > event.location)
-								ce.location--;
-							else if (event.kind == CollectionEventKind.ADD && ce.kind == CollectionEventKind.REMOVE && ce.location > event.location)
-								ce.location++;
-						}
-						
-	                    if (save.length == 0) {
-	                        delete esave[propName];
-							count = 0;
-							for (p in esave) {
-								if (p != desc.versionPropertyName)
-									count++;
-							}
-							if (count == 0) {
-								delete _savedProperties[owner];
-								_dirtyCount--;
-							}
-	                    }
-	                    i--;
-	                    found = true;
-	                }
-					else if (event.kind == CollectionEventKind.REPLACE && save[i].kind == CollectionEventKind.REPLACE
-						&& event.items.length == 1 && save[i].items.length == 1
-						&& event.location == actualLocations[i]) {
-						
-						if (isSame(event.items[0].oldValue, save[i].items[0].newValue)
-							&& isSame(event.items[0].newValue, save[i].items[0].oldValue)) {
-							
-							save.splice(i, 1);
-							if (save.length == 0) {
-								delete esave[propName];
-								count = 0;
-								for (p in esave) {
-									if (p != desc.versionPropertyName)
-										count++;
-								}
-								if (count == 0) {
-									delete _savedProperties[owner];
-									_dirtyCount--;
-								}
-							}
-							i--;
-						}
-						else {
-							save[i].items[0].newValue = event.items[0].newValue;
-						}
-						found = true;
-					}
-	            }
-	            if (!found)
-	                save.push(event);
 			}
 			
 			dispatchEntityDirty(owner, oldDirtyEntity);
@@ -694,69 +674,58 @@ package org.granite.tide.data {
 					_dirtyCount++;
 			}
 			
+			var key:*, i:uint;
 			var save:Array = esave[propName] as Array;
-			if (save == null)
-				save = esave[propName] = [];
+			var map:IMap = IMap(event.target);
+			if (map is IWrapper)
+				map = IWrapper(map).object as IMap;
 			
-			if (esave && (desc.versionPropertyName == null 
-				|| esave[desc.versionPropertyName] == Object(owner)[desc.versionPropertyName]
-				|| (isNaN(esave[desc.versionPropertyName]) && isNaN(Object(owner)[desc.versionPropertyName])))) {
-		            
-	            var found:Boolean = false;
-				var count:int, p:Object;
-	            var pce:PropertyChangeEvent = null;
-	            for (var i:int = 0; i < save.length; i++) {
-	                if (((event.kind == CollectionEventKind.ADD && save[i].kind == CollectionEventKind.REMOVE)
-	                    || (event.kind == CollectionEventKind.REMOVE && save[i].kind == CollectionEventKind.ADD))
-	                    && event.items.length == 1 && save[i].items.length == 1 && event.location == save[i].location 
-	                    && event.items[0][0] === save[i].items[0][0] && event.items[0][1] === save[i].items[0][1]) {
-						
-						save.splice(i, 1);
-						if (save.length == 0) {
-							delete esave[propName];
-							count = 0;
-							for (p in esave) {
-								if (p != desc.versionPropertyName)
-									count++;
-							}
-							if (count == 0) {
-								delete _savedProperties[owner];
-								_dirtyCount--;
+			if (save == null) {
+				save = esave[propName] = [];
+				
+				// Save map snapshot
+				for each (key in map.keySet) {
+					var found:Boolean = false;
+					if (event.kind == CollectionEventKind.ADD) {
+						for (i = 0; i < event.items.length; i++) {
+							if (isSame(key, event.items[i][0])) {
+								found = true;
+								break;
 							}
 						}
-						i--;
-						found = true;
-	                }
-					else if (event.kind == CollectionEventKind.REPLACE && save[i].kind == CollectionEventKind.REPLACE
-						&& event.items.length == 1 && save[i].items.length == 1
-						&& event.items[0].property == save[i].items[0].property) {
-						
-						if (isSame(event.items[0].oldValue, save[i].items[0].newValue)
-							&& isSame(event.items[0].newValue, save[i].items[0].oldValue)) {
-						
-							save.splice(i, 1);
-							if (save.length == 0) {
-								delete esave[propName];
-								count = 0;
-								for (p in esave) {
-									if (p != desc.versionPropertyName)
-										count++;
-								}
-								if (count == 0) {
-									delete _savedProperties[owner];
-									_dirtyCount--;
-								}
-							}
-							i--;
-						}
-						else {
-							save[i].items[0].newValue = event.items[0].newValue;
-						}
-						found = true;
 					}
-	            }
-	            if (!found)
-	                save.push(event);
+					else if (event.kind == CollectionEventKind.REPLACE) {
+						for (i = 0; i < event.items.length; i++) {
+							if (isSame(key, event.items[i].property)) {
+								save.push([ key, event.items[i].oldValue ]);
+								found = true;
+								break;
+							}
+						}
+					}
+					if (!found)
+						save.push([ key, map.get(key) ]);
+				}
+				
+				// Add removed element if needed
+				if (event.kind == CollectionEventKind.REMOVE) {
+					for (i = 0; i < event.items.length; i++)
+						save.push([ event.items[i][0], event.items[i][1] ]);
+				}
+			}
+			else {
+				if (isSameMap(save, map)) {
+					delete esave[propName];
+					var count:uint = 0;
+					for (var p:String in esave) {
+						if (p != desc.versionPropertyName)
+							count++;
+					}
+					if (count == 0) {
+						delete _savedProperties[owner];
+						_dirtyCount--;
+					}
+				}
 			}
 			
 			dispatchEntityDirty(owner, oldDirtyEntity);
@@ -812,37 +781,69 @@ package org.granite.tide.data {
 				return false;
 			
 			var oldDirty:Boolean = _dirtyCount > 0;			
+			var oldDirtyEntity:Boolean = isEntityChanged(entity);
 			
-			var owner:IEntity = null;
-			if (entity is IEntity)
-				owner = entity as IEntity;
-			else {
-				var ownerEntity:Array = _context.meta_getOwnerEntity(entity) as Array;
-				if (ownerEntity != null && ownerEntity[0] is IEntity)
-					owner = ownerEntity[0] as IEntity;
-			}
-			var oldDirtyEntity:Boolean = isEntityChanged(owner);
-			
-			var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(owner);
 			var merged:Array = [];
 			
-			for (var propName:String in save) {
-				if (propName == desc.versionPropertyName)
+			var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
+			var propName:String;
+			var localValue:Object, sourceValue:Object, saveval:*;
+			
+			var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(entity));
+			var versionPropertyName:String = desc != null ? desc.versionPropertyName : null;
+			
+			if (sourceValue is IEntity)
+				save[versionPropertyName] = sourceValue[versionPropertyName];
+			
+			for each (propName in cinfo.properties) {
+				if (propName == versionPropertyName || propName == 'meta_dirty')
 					continue;
-				var localValue:Object = entity[propName];
-				var sourceValue:Object = source.hasOwnProperty(propName) ? source[propName] : null;
+				
+				if (!source.hasOwnProperty(propName))
+					continue;
+				
+				localValue = entity[propName];
 				if (localValue is IPropertyHolder)
 					localValue = localValue.object;
-				if (isSameExt(localValue, sourceValue))
-					merged.push(propName);
-			}
+				saveval = save ? save[propName] : null;
 			
+				sourceValue = source[propName];
+				
+				if (isSameExt(sourceValue, localValue)) {
+					merged.push(propName);
+					continue;
+				}
+				
+				if (sourceValue == null || ObjectUtil.isSimple(sourceValue) || sourceValue is ByteArray || sourceValue is IValue || sourceValue is Enum || sourceValue is XML) {
+					save[propName] = sourceValue;
+				}
+				else if (sourceValue is IUID) {
+					save[propName] = _context.meta_getCachedObject(sourceValue, true);
+				}
+				else if (sourceValue is IList && !(sourceValue is IPersistentCollection && !IPersistentCollection(sourceValue).isInitialized())) {
+					save[propName] = [];
+					var coll:IList = sourceValue as IList;
+					while (coll is ListCollectionView)
+						coll = ListCollectionView(coll).list;
+					for (var i:uint = 0; i < coll.length; i++)
+						save[propName].push(coll.getItemAt(i));
+				}
+				else if (sourceValue is IMap && !(sourceValue is IPersistentCollection && !IPersistentCollection(sourceValue).isInitialized())) {
+					save[propName] = [];
+					var map:IMap = sourceValue as IMap;
+					if (map is IWrapper)
+						map = IWrapper(map).object as IMap;
+					for each (var key:Object in map.keySet)
+						save[propName].push([ key, map.get(key) ]);
+				}
+			}
+						
 			for each (propName in merged)
 				delete save[propName];
 			
 			var count:uint = 0;
 			for (propName in save) {
-				if (propName != desc.versionPropertyName)
+				if (propName != versionPropertyName)
 					count++;
 			}
 			if (count == 0) {
@@ -850,7 +851,7 @@ package org.granite.tide.data {
 				_dirtyCount--;
 			}
 			
-			var newDirtyEntity:Boolean = dispatchEntityDirty(owner, oldDirtyEntity);
+			var newDirtyEntity:Boolean = dispatchEntityDirty(entity, oldDirtyEntity);
 			
 			dispatchCtxDirty(oldDirty, _dirtyCount);
 			
@@ -881,36 +882,65 @@ package org.granite.tide.data {
 				for (p in save) {
 					if (save[p] is Array) {
 						var savedArray:Array = save[p] as Array;
-						for (var idx:int = 0; idx < savedArray.length; idx++) {
-							var ce:CollectionEvent = CollectionEvent(savedArray[idx]);
-							if (ce.kind == CollectionEventKind.ADD && persists != null) {
-								for each (var persist:Object in persists) {
-									if (ce.items && ce.items.length == 1 && ce.items[0] is IEntity
-										&& ((persist is IEntityRef && persist.className == getQualifiedClassName(ce.items[0]) && persist.uid == ce.items[0].uid)
-										|| _context.meta_objectEquals(persist, ce.items[0]))) {
-										// Found remaining add event for newly persisted item
-										savedArray.splice(idx, 1);
-										idx--;
-										break;
+						var idx:uint, removal:Object, persist:Object;
+						if (object[p] is IList) {
+							if (removals != null) {
+								for (idx = 0; idx < savedArray.length; idx++) {
+									for each (removal in removals) {
+										if (savedArray[idx] is IEntity 
+											&& ((removal is IEntityRef && removal.className == getQualifiedClassName(savedArray[idx]) && removal.uid == savedArray[idx].uid)
+											|| _context.meta_objectEquals(removal, savedArray[idx]))) {
+											// Found remaining add event for newly persisted item
+											savedArray.splice(idx, 1);
+											idx--;
+										}
 									}
 								}
 							}
-							else if (ce.kind == CollectionEventKind.REMOVE && removals != null) {
-								for each (var removal:Object in removals) {
-									if (ce.items && ce.items.length == 1 && ce.items[0] is IEntity 
-										&& ((removal is IEntityRef && removal.className == getQualifiedClassName(ce.items[0]) && removal.uid == ce.items[0].uid)
-										|| _context.meta_objectEquals(removal, ce.items[0]))) {
-										// Found remaining add event for newly persisted item
-										savedArray.splice(idx, 1);
-										idx--;
-										break;
+							if (persists != null) {
+								for each (persist in persists) {
+									var found:Array = [], found2:int, j:int;
+									for (j = 0; j < object[p].length; j++) {
+										if (_context.meta_objectEquals(persist, object[p].getItemAt(j)))
+											found.push(j);
 									}
+									for (j = 0; j < savedArray.length; j++) {
+										if (_context.meta_objectEquals(persist, savedArray[j])) {
+											savedArray.splice(j, 1);
+											j--;
+										}
+									}
+									for each (idx in found)
+										savedArray.splice(idx, 0, persist);
 								}
 							}
+							
+							if (isSameList(savedArray, object[p]))
+								delete save[p];
 						}
-						
-						if (savedArray.length == 0)
-							delete save[p];
+						else if (object[p] is IMap) {
+							for (idx = 0; idx < savedArray.length; idx++) {
+								for each (removal in removals) {
+									if (savedArray[idx][0] is IEntity 
+										&& ((removal is IEntityRef && removal.className == getQualifiedClassName(savedArray[idx]) && removal.uid == savedArray[idx][0].uid)
+											|| _context.meta_objectEquals(removal, savedArray[idx][0]))) {
+										// Found remaining add event for newly persisted item
+										savedArray.splice(idx, 1);
+										idx--;
+									}
+									else if (savedArray[idx][1] is IEntity 
+										&& ((removal is IEntityRef && removal.className == getQualifiedClassName(savedArray[idx]) && removal.uid == savedArray[idx][1].uid)
+											|| _context.meta_objectEquals(removal, savedArray[idx][1]))) {
+										// Found remaining add event for newly persisted item
+										savedArray.splice(idx, 1);
+										idx--;
+									}
+								}
+							}
+							
+							if (isSameMap(savedArray, object[p]))
+								delete save[p];
+						}
 					}
 				}
 				
@@ -952,7 +982,7 @@ package org.granite.tide.data {
             var save:Object = _savedProperties[entity];
             var a:int, b:int, z:int;
             var ce:CollectionEvent;
-            var savedArray:Array
+            var savedArray:Array, e:Object;
             var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(entity);
             
             var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
@@ -963,85 +993,57 @@ package org.granite.tide.data {
                 var val:Object = entity[p];
                 var o:Object, removed:Array = null;
 				if (val is IList && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
+					var coll:IList = IList(val);
+					while (coll is ListCollectionView)
+						coll = ListCollectionView(coll).list;
+					
 					savedArray = save ? save[p] as Array : null;
 					if (savedArray) {
-						for (a = savedArray.length-1; a >= 0; a--) {
-							ce = savedArray[a] as CollectionEvent;
-							if (ce.kind == CollectionEventKind.ADD) {
-								if (removed == null)
-									removed = [];
-								for (z = 0; z < ce.items.length; z++)
-									removed.push(ce.target.removeItemAt(ce.location));
-							}
-							else if (ce.kind == CollectionEventKind.REMOVE) {
-								for (z = 0; z < ce.items.length; z++)
-									ce.target.addItemAt(ce.items[z], ce.location+z); 
-							}
-							else if (ce.kind == CollectionEventKind.REPLACE) {
-								if (removed == null)
-									removed = [];
-								for (z = 0; z < ce.items.length; z++) {
-									removed.push(ce.target.setItemAt(ce.items[z].oldValue, ce.location+z));
-								}
-							}
+						for (z = 0; z < coll.length; z++) {
+							if (coll.getItemAt(z) is IEntity)
+								resetEntity(IEntity(coll.getItemAt(z)), cache);
 						}
+						coll.removeAll();
+						for each (e in savedArray)
+							coll.addItem(e);
 						
-						// Must be here because collection reset has triggered other useless CollectionEvents
+						// Must be here because collection reset has triggered dirty checking
 						markNotDirty(val, entity);
 					}
-					for each (o in val) {
-						if (o is IEntity)
-							resetEntity(IEntity(o), cache);
-					}
-					if (removed != null) {
-						for each (o in removed) {
-							if (o is IEntity)
-								resetEntity(IEntity(o), cache);
-						}
+					
+					for (z = 0; z < coll.length; z++) {
+						if (coll.getItemAt(z) is IEntity)
+							resetEntity(IEntity(coll.getItemAt(z)), cache);
 					}
 				}
 				else if (val is IMap && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
 					var map:IMap = IMap(val);
+					if (map is IWrapper)
+						map = IWrapper(map).object as IMap;
+					
+					var key:*, value:*;
 					savedArray = save ? save[p] as Array : null;
 					if (savedArray) {
-						for (a = savedArray.length-1; a >= 0; a--) {
-							ce = savedArray[a] as CollectionEvent;
-							if (ce.kind == CollectionEventKind.ADD) {
-								if (removed == null)
-									removed = [];
-								for (z = 0; z < ce.items.length; z++) {
-									removed.push(map.remove(ce.items[z][0]));
-									removed.push(ce.items[z][0]);
-								}
-							}
-							else if (ce.kind == CollectionEventKind.REMOVE) {
-								for (z = 0; z < ce.items.length; z++)
-									map.put(ce.items[z][0], ce.items[z][1]);
-							}
-							else if (ce.kind == CollectionEventKind.REPLACE) {
-								if (removed == null)
-									removed = [];
-								for (z = 0; z < ce.items.length; z++) {
-									removed.push(map.put(ce.items[z].property, ce.items[z].oldValue));
-								}
-							}
+						for each (key in map.keySet) {
+							value = map.get(key);
+							if (key is IEntity)
+								resetEntity(IEntity(key), cache);
+							if (value is IEntity)
+								resetEntity(IEntity(value), cache);
 						}
+						map.clear();
+						for each (e in savedArray)
+							map.put(e[0], e[1]);
 						
-						// Must be here because collection reset has triggered other useless CollectionEvents
+						// Must be here because map reset has triggered dirty checking
 						markNotDirty(val, entity);
 					}
-					for each (var key:Object in map.keySet) {
-						var value:Object = map.get(key);
+					for each (key in map.keySet) {
+						value = map.get(key);
 						if (key is IEntity)
 							resetEntity(IEntity(key), cache);
 						if (value is IEntity)
 							resetEntity(IEntity(value), cache);
-					}
-					if (removed != null) {
-						for each (o in removed) {
-							if (o is IEntity)
-								resetEntity(IEntity(o), cache);
-						}
 					}
 				}
 				else if (save && (EntityManager.isSimple(val) || EntityManager.isSimple(save[p]))) {
@@ -1056,8 +1058,8 @@ package org.granite.tide.data {
                 }
             }
             
-            // Must be here because entity reset may have triggered useless new saved properties
-            markNotDirty(entity, entity);
+            // Must be here because entity reset may have triggered dirty checking
+            markNotDirty(entity);
         }
 		
 		
