@@ -58,7 +58,7 @@ package org.granite.test.tide.data
 			
 			Assert.assertTrue("Context dirty", _ctx.meta_dirty);
 			
-			Assert.assertEquals("Saved events", 3, _ctx.meta_getSavedProperties()[person].contacts.length);
+			Assert.assertEquals("Saved snapshot", 0, _ctx.meta_getSavedProperties()[person].contacts.length);
 			
 			Managed.resetEntity(person);
 			
@@ -148,7 +148,7 @@ package org.granite.test.tide.data
 			
 			Assert.assertTrue("Context dirty", _ctx.meta_dirty);
 			
-			Assert.assertEquals("Saved events", 3, _ctx.meta_getSavedProperties()[person].contacts.length);
+			Assert.assertEquals("Saved snapshot", 1, _ctx.meta_getSavedProperties()[person].contacts.length);
 			
 			Managed.resetEntity(person);
 			
@@ -189,7 +189,7 @@ package org.granite.test.tide.data
 			c = person.contacts.removeItemAt(1) as Contact;
 			person.contacts.addItemAt(c, 0);
 			
-			Assert.assertEquals("Saved events", 4, _ctx.meta_getSavedProperties()[person].contacts.length);
+			Assert.assertEquals("Saved snapshot", 3, _ctx.meta_getSavedProperties()[person].contacts.length);
 			
 			Managed.resetEntity(person);
 			

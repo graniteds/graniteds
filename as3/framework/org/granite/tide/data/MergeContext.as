@@ -116,7 +116,18 @@ package org.granite.tide.data {
         public function addConflict(localEntity:IEntity, receivedEntity:Object):void {
             if (_mergeConflicts == null)
                 _mergeConflicts = new Conflicts(_context,  _entityManager);
-            _mergeConflicts.addConflict(localEntity, receivedEntity);
+			
+			var save:Object = _dirtyCheckContext.savedProperties[localEntity];
+			var desc:EntityDescriptor = getEntityDescriptor(localEntity);
+			var properties:Array = [];
+			for (var propName:String in save) {
+				if (propName == desc.versionPropertyName)
+					continue;
+				properties.push(propName);
+			}
+			properties.sort();
+			
+            _mergeConflicts.addConflict(localEntity, receivedEntity, properties);
         }
 
         public function initMergeConflicts():void {

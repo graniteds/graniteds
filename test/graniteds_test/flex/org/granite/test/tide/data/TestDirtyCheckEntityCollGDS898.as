@@ -57,8 +57,7 @@ package org.granite.test.tide.data
 			
 			person.contacts.removeItemAt(0);
 			
-			Assert.assertEquals("Saved events", 1, _ctx.meta_getSavedProperties()[person].contacts.length);
-			Assert.assertEquals("Saved event location", 0, _ctx.meta_getSavedProperties()[person].contacts[0].location);
+			Assert.assertEquals("Saved snapshot", 0, _ctx.meta_getSavedProperties()[person].contacts.length);
         }
 
         [Test]
@@ -90,8 +89,7 @@ package org.granite.test.tide.data
 
 			person.contacts.removeItemAt(1);
 
-			Assert.assertEquals("Saved events", 1, _ctx.meta_getSavedProperties()[person].contacts.length);
-			Assert.assertEquals("Saved event location", 0, _ctx.meta_getSavedProperties()[person].contacts[0].location);
+			Assert.assertEquals("Saved snapshot", 0, _ctx.meta_getSavedProperties()[person].contacts.length);
 
             person.contacts.removeItemAt(0);
             Assert.assertFalse("Context dirty", _ctx.meta_dirty);
@@ -134,8 +132,7 @@ package org.granite.test.tide.data
 			
 			Assert.assertTrue("Context dirty", _ctx.meta_dirty);
 			
-			Assert.assertEquals("Saved events", 1, _ctx.meta_getSavedProperties()[person].contacts.length);
-			Assert.assertEquals("Saved remove event location", 0, _ctx.meta_getSavedProperties()[person].contacts[0].location);
+			Assert.assertEquals("Saved snapshot", 2, _ctx.meta_getSavedProperties()[person].contacts.length);
 
             var contact4:Contact = new Contact();
             contact4.id = 1;

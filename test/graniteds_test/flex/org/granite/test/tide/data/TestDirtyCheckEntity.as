@@ -185,7 +185,7 @@ package org.granite.test.tide.data
             Assert.assertTrue("Context dirty after put", _ctx.meta_dirty);
 
             Managed.resetEntity(person);
-
+			
             Assert.assertFalse("Context not dirty after reset", _ctx.meta_dirty);
             Assert.assertEquals("Map reset", "test", person.testMap.get("test"));
         }

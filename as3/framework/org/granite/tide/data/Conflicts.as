@@ -52,8 +52,8 @@ package org.granite.tide.data {
             _entityManager = entityManager;
         }
         
-        public function addConflict(localEntity:IEntity, receivedEntity:Object):void {
-        	var conflict:Conflict = new Conflict(this, localEntity, receivedEntity);
+        public function addConflict(localEntity:IEntity, receivedEntity:Object, properties:Array = null):void {
+        	var conflict:Conflict = new Conflict(this, localEntity, receivedEntity, properties);
         	_conflicts.push(conflict);
         }
         
@@ -75,16 +75,20 @@ package org.granite.tide.data {
         
         public function acceptClient(conflict:Conflict):void {
         	var saveTracking:Boolean = _context.meta_tracking;
-        	_context.meta_tracking = false;
-        	var modifiedEntity:Object = ObjectUtil.copy(conflict.localEntity);
-            // Reset the local entity to its last stable state
-        	_context.meta_resetEntity(conflict.localEntity);
-            // Merge with the incoming entity (to update version, id and all)
-            if (conflict.receivedEntity != null)
-        	    _entityManager.mergeExternal(conflict.receivedEntity, conflict.localEntity);
-        	
-        	_entityManager.resolveMergeConflicts(modifiedEntity, conflict.localEntity, true);
-        	_context.meta_tracking = saveTracking;
+			try {
+	        	_context.meta_tracking = false;
+	        	var modifiedEntity:Object = ObjectUtil.copy(conflict.localEntity);
+	            // Reset the local entity to its last stable state
+	        	_context.meta_resetEntity(conflict.localEntity);
+	            // Merge with the incoming entity (to update version, id and all)
+	            if (conflict.receivedEntity != null)
+	        	    _entityManager.mergeExternal(conflict.receivedEntity, conflict.localEntity);
+	        	
+	        	_entityManager.resolveMergeConflicts(modifiedEntity, conflict.localEntity, true);
+			}
+			finally {
+        		_context.meta_tracking = saveTracking;
+			}
         }
         
         public function acceptAllClient():void {
