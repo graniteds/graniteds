@@ -1803,19 +1803,22 @@ package org.granite.tide {
             _entityManager.initMerge();
 
 			var isExternalData:Boolean = sourceSessionId && sourceSessionId != _tide.sessionId;
-        	if (isExternalData)
-        		_entityManager.externalData = true;
-        	
-        	var next:Object = meta_mergeExternal(obj, prev);
-
-            _entityManager.handleRemovalsAndPersists(removals, persists);
-        	
-			if (isExternalData) {
-        		_entityManager.handleMergeConflicts();        	
-	        	meta_clearCache();
+			try {
+	        	if (isExternalData)
+	        		_entityManager.externalData = true;
+	        	
+	        	var next:Object = meta_mergeExternal(obj, prev);
+	
+	            _entityManager.handleRemovalsAndPersists(removals, persists);
+	        	
+				if (isExternalData) {
+	        		_entityManager.handleMergeConflicts();        	
+		        	meta_clearCache();
+				}
 			}
-        	
-    		_entityManager.externalData = false;
+			finally {
+    			_entityManager.externalData = false;
+			}
     		return next;
         }
 
@@ -1922,11 +1925,14 @@ package org.granite.tide {
         public function meta_mergeExternal(obj:Object, previous:Object = null, expr:IExpression = null, 
 										   parent:Object = null, propertyName:String = null, setter:Function = null, forceUpdate:Boolean = false):Object {
             var saveTracking:Boolean = _tracking;
-            _tracking = false;
+			try {
+            	_tracking = false;
             
-        	var next:Object = _entityManager.mergeExternal(obj, previous, expr, parent, propertyName, setter);
-        	 
-            _tracking = saveTracking;
+        		var next:Object = _entityManager.mergeExternal(obj, previous, expr, parent, propertyName, setter);
+			}
+			finally {
+            	_tracking = saveTracking;
+			}
             
             return next;
         }

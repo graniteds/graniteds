@@ -22,7 +22,7 @@ package org.granite.test.tide.data
     
     public class TestDirtyCheckEntityUI
     {
-        private var _ctx:Context = Spring.getInstance().getSpringContext();
+        private var _ctx:Context;
         
         
         [Before]

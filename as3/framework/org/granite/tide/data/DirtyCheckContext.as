@@ -773,15 +773,16 @@ package org.granite.tide.data {
 		 *  @param owner owner entity for embedded objects
 		 *  @return true if the entity is still dirty after comparing with incoming object
 		 */ 
-		public function checkAndMarkNotDirty(entity:Object, source:Object):Boolean {
+		public function checkAndMarkNotDirty(entity:Object, source:Object, parent:Object = null):Boolean {
 			delete _unsavedEntities[entity];
 			
 			var save:Object = _savedProperties[entity];
 			if (save == null)
 				return false;
 			
+			var owner:Object = entity is IEntity ? entity : parent;
 			var oldDirty:Boolean = _dirtyCount > 0;			
-			var oldDirtyEntity:Boolean = isEntityChanged(entity);
+			var oldDirtyEntity:Boolean = isEntityChanged(owner);
 			
 			var merged:Array = [];
 			
@@ -789,10 +790,10 @@ package org.granite.tide.data {
 			var propName:String;
 			var localValue:Object, sourceValue:Object, saveval:*;
 			
-			var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(entity));
+			var desc:EntityDescriptor = entity is IEntity ? _context.meta_tide.getEntityDescriptor(entity) : null;
 			var versionPropertyName:String = desc != null ? desc.versionPropertyName : null;
 			
-			if (sourceValue is IEntity)
+			if (sourceValue is IEntity && versionPropertyName != null)
 				save[versionPropertyName] = sourceValue[versionPropertyName];
 			
 			for each (propName in cinfo.properties) {
@@ -851,7 +852,7 @@ package org.granite.tide.data {
 				_dirtyCount--;
 			}
 			
-			var newDirtyEntity:Boolean = dispatchEntityDirty(entity, oldDirtyEntity);
+			var newDirtyEntity:Boolean = dispatchEntityDirty(owner, oldDirtyEntity);
 			
 			dispatchCtxDirty(oldDirty, _dirtyCount);
 			
