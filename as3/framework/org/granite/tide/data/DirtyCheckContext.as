@@ -793,8 +793,8 @@ package org.granite.tide.data {
 			var desc:EntityDescriptor = entity is IEntity ? _context.meta_tide.getEntityDescriptor(entity) : null;
 			var versionPropertyName:String = desc != null ? desc.versionPropertyName : null;
 			
-			if (sourceValue is IEntity && versionPropertyName != null)
-				save[versionPropertyName] = sourceValue[versionPropertyName];
+			if (source is IEntity && versionPropertyName != null)
+				save[versionPropertyName] = source[versionPropertyName];
 			
 			for each (propName in cinfo.properties) {
 				if (propName == versionPropertyName || propName == 'meta_dirty')
@@ -900,7 +900,7 @@ package org.granite.tide.data {
 							}
 							if (persists != null) {
 								for each (persist in persists) {
-									var found:Array = [], found2:int, j:int;
+									var found:Array = [], j:int;
 									for (j = 0; j < object[p].length; j++) {
 										if (_context.meta_objectEquals(persist, object[p].getItemAt(j)))
 											found.push(j);
@@ -920,24 +920,27 @@ package org.granite.tide.data {
 								delete save[p];
 						}
 						else if (object[p] is IMap) {
-							for (idx = 0; idx < savedArray.length; idx++) {
-								for each (removal in removals) {
-									if (savedArray[idx][0] is IEntity 
-										&& ((removal is IEntityRef && removal.className == getQualifiedClassName(savedArray[idx]) && removal.uid == savedArray[idx][0].uid)
-											|| _context.meta_objectEquals(removal, savedArray[idx][0]))) {
-										// Found remaining add event for newly persisted item
-										savedArray.splice(idx, 1);
-										idx--;
-									}
-									else if (savedArray[idx][1] is IEntity 
-										&& ((removal is IEntityRef && removal.className == getQualifiedClassName(savedArray[idx]) && removal.uid == savedArray[idx][1].uid)
-											|| _context.meta_objectEquals(removal, savedArray[idx][1]))) {
-										// Found remaining add event for newly persisted item
-										savedArray.splice(idx, 1);
-										idx--;
+							if (removals != null) {
+								for (idx = 0; idx < savedArray.length; idx++) {
+									for each (removal in removals) {
+										if (savedArray[idx][0] is IEntity 
+											&& ((removal is IEntityRef && removal.className == getQualifiedClassName(savedArray[idx]) && removal.uid == savedArray[idx][0].uid)
+												|| _context.meta_objectEquals(removal, savedArray[idx][0]))) {
+											// Found remaining add event for newly persisted item
+											savedArray.splice(idx, 1);
+											idx--;
+										}
+										else if (savedArray[idx][1] is IEntity 
+											&& ((removal is IEntityRef && removal.className == getQualifiedClassName(savedArray[idx]) && removal.uid == savedArray[idx][1].uid)
+												|| _context.meta_objectEquals(removal, savedArray[idx][1]))) {
+											// Found remaining add event for newly persisted item
+											savedArray.splice(idx, 1);
+											idx--;
+										}
 									}
 								}
 							}
+							// TODO: persists ? 
 							
 							if (isSameMap(savedArray, object[p]))
 								delete save[p];
