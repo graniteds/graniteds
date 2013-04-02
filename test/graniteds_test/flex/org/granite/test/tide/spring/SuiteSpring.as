@@ -9,6 +9,7 @@ package org.granite.test.tide.spring
 		public var test3:org.granite.test.tide.spring.TestSpringExceptionHandler;
 		public var test4:org.granite.test.tide.spring.TestSpringRetryAfterFault;
 		public var test5:org.granite.test.tide.spring.TestSpringClientPagedQuery;
+		public var test5b:org.granite.test.tide.spring.TestSpringClientPagedQueryUI;
 		public var test6:org.granite.test.tide.spring.TestSpringPagedQueryController;
 		public var test7:org.granite.test.tide.spring.TestSpringServerPagedQuery;
 		public var test8:org.granite.test.tide.spring.TestGrailsPagedQuery;

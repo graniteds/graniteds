@@ -846,7 +846,7 @@ package org.granite.tide.data {
                 }
             }
             if (dest !== previous && previous && (objectEquals(previous, obj)
-				|| (parent != null && !(previous is IUID)))) 	// GDS-649 Case of embedded objects 
+				|| !(previous is IUID))) 	// GDS-649 Case of embedded objects 
                 dest = previous;
             			
             if (dest === obj && p == null && obj != null && _mergeContext.sourceContext != null) {

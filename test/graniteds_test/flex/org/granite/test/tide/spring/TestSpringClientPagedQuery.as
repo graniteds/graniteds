@@ -103,6 +103,60 @@ package org.granite.test.tide.spring
 		private function get1Timeout(event:Object, pass:Object = null):void {
 			Assert.assertEquals("Initial find called once", 1, _findCount);
 		}
+
+			
+		[Test(async)]
+		public function testSpringPagedQueryRefresh():void {
+			var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
+			pagedQuery.methodName = "find2";
+			
+			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, initialResultHandler);
+			pagedQuery.fullRefresh();
+		}
+		
+		private function initialResultHandler(event:Object, pass:Object = null):void {
+			for (var i:int = 0; i < 20; i++)
+				Assert.assertEquals("Elt " + i, i+1, _ctx.pagedQueryClient.getItemAt(i).id);
+			
+			_ctx.pagedQueryClient.getItemAt(10).lastName = "test";
+			
+			Async.handleEvent(this, _ctx.pagedQueryClient, PagedCollection.COLLECTION_PAGE_CHANGE, secondResultHandler);
+			_ctx.pagedQueryClient.refresh();
+		}
+				
+		private function secondResultHandler(event:Object, pass:Object = null):void {
+			for (var i:int = 0; i < 10; i++)
+				Assert.assertEquals("Elt " + i, i+1, _ctx.pagedQueryClient.getItemAt(i).id);
+			for (var j:int = 10; j < 20; j++)
+				Assert.assertEquals("Elt " + j, j+2, _ctx.pagedQueryClient.getItemAt(j).id);
+		}
+		
+		[Test(async)]
+		public function testSpringPagedQueryRefresh2():void {
+			var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
+			pagedQuery.methodName = "find3";
+			
+			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, initialResult2Handler);
+			pagedQuery.fullRefresh();
+		}
+		
+		private function initialResult2Handler(event:Object, pass:Object = null):void {
+			for (var i:int = 0; i < 10; i++)
+				Assert.assertEquals("Elt " + i, i+1, _ctx.pagedQueryClient.getItemAt(i).id);
+			
+			_ctx.pagedQueryClient.getItemAt(5).lastName = "test";
+			
+			Async.handleEvent(this, _ctx.pagedQueryClient, PagedCollection.COLLECTION_PAGE_CHANGE, secondResult2Handler);
+			_ctx.pagedQueryClient.refresh();
+		}
+		
+		private function secondResult2Handler(event:Object, pass:Object = null):void {
+			for (var i:int = 0; i < 5; i++)
+				Assert.assertEquals("Elt " + i, i+1, _ctx.pagedQueryClient.getItemAt(i).id);
+			for (var j:int = 5; j < 9; j++)
+				Assert.assertEquals("Elt " + j, j+2, _ctx.pagedQueryClient.getItemAt(j).id);
+		}
+		
 	}
 }
 
@@ -134,21 +188,67 @@ class MockSimpleCallAsyncToken extends MockSpringAsyncToken {
         super(null);
     }
 	
+	private static var count2:int = 0;
+	private static var count3:int = 0;
+	
     protected override function buildResponse(call:InvocationCall, componentName:String, op:String, params:Array):AbstractEvent {
+		var coll:ArrayCollection, first:int, max:int, i:int, person:Person;
+		
         if (componentName == "pagedQueryClient" && op == "find") {
-        	var coll:ArrayCollection = new ArrayCollection();
-        	var first:int = params[1];
-        	var max:int = params[2];
+			coll = new ArrayCollection();
+			first = params[1];
+			max = params[2];
         	if (max == 0)
         		max = 20;
-        	for (var i:int = first; i < first+max; i++) {
-        		var person:Person = new Person();
+        	for (i = first; i < first+max; i++) {
+        		person = new Person();
         		person.id = i;
         		person.lastName = "Person" + i;
         		coll.addItem(person);
         	}
             return buildResult({ resultCount: 1000, resultList: coll });
         }
+		else if (componentName == "pagedQueryClient" && op == "find2") {
+			coll = new ArrayCollection();
+			first = params[1];
+			max = params[2];
+			if (max == 0)
+				max = 20;
+			for (i = first; i < first+max; i++) {
+				person = new Person();
+				if (count2 > 0 && i >= 10)
+					person.id = i+2;
+				else
+					person.id = i+1;
+				person.uid = "P" + person.id;
+				person.version = 0;
+				person.lastName = "Person" + i;
+				coll.addItem(person);
+			}
+			count2++;
+			return buildResult({ resultCount: 1000, resultList: coll });
+		}
+		else if (componentName == "pagedQueryClient" && op == "find3") {
+			coll = new ArrayCollection();
+			first = params[1];
+			max = params[2];
+			if (max == 0)
+				max = 20;
+			var size:int = count3 == 0 ? 10 : 9;
+			for (i = 0; i < size; i++) {
+				person = new Person();
+				if (count3 > 0 && i >= 5)
+					person.id = i+2;
+				else
+					person.id = i+1;
+				person.uid = "P" + person.id;
+				person.version = 0;
+				person.lastName = "Person" + i;
+				coll.addItem(person);
+			}
+			count3++;
+			return buildResult({ resultCount: size, resultList: coll });
+		}
         
         return buildFault("Server.Error");
     }
