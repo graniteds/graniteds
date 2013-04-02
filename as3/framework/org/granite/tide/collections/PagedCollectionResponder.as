@@ -36,9 +36,9 @@ package org.granite.tide.collections {
 	    
 	    private var _resultHandlers:Array = new Array();
 	    private var _faultHandlers:Array = new Array();
-	    private var _mergeWith:Object = null;
 	    private var _first:int;
 	    private var _max:int;
+		private var _mergeWith:Object;
 	    
 	    
 	    public function PagedCollectionResponder(resultHandler:Function, faultHandler:Function, collection:IList, first:int, max:int):void {
@@ -71,7 +71,6 @@ package org.granite.tide.collections {
 	        for each (var faultHandler:Function in _faultHandlers)
 	            faultHandler(event, _first, _max);
 	    }
-        
         
         public function get mergeResultWith():Object {
             return _mergeWith;

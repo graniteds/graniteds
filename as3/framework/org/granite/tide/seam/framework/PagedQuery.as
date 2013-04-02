@@ -39,11 +39,11 @@ package org.granite.tide.seam.framework {
     import mx.utils.ArrayUtil;
     import mx.utils.ObjectUtil;
     
-    import org.granite.tide.Tide;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Component;
     import org.granite.tide.IComponent;
     import org.granite.tide.IPropertyHolder;
+    import org.granite.tide.Tide;
     import org.granite.tide.collections.PagedCollection;
     import org.granite.tide.collections.PagedCollectionResponder;
     import org.granite.tide.events.TideFaultEvent;
@@ -124,9 +124,10 @@ package org.granite.tide.seam.framework {
 		 *	Trigger a results query for the current filter
 		 *	@param first	: index of first required result
 		 *  @param last     : index of last required result
+		 *  @param merge	: should merge result with current wrapped list
 		 */
-		protected override function find(first:int, last:int):void {
-			super.find(first, last);
+		protected override function find(first:int, last:int, merge:Boolean = false):void {
+			super.find(first, last, merge);
 			
 			Object(_component).firstResult = first;
 			// Force evaluation of max, results and count

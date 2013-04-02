@@ -23,22 +23,15 @@ package org.granite.tide.collections {
     import flash.events.Event;
     import flash.events.IEventDispatcher;
     
-    import mx.binding.utils.BindingUtils;
     import mx.collections.*;
     import mx.collections.errors.ItemPendingError;
-    import mx.core.IPropertyChangeNotifier;
     import mx.core.IUID;
     import mx.core.mx_internal;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
-    import mx.events.PropertyChangeEventKind;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.rpc.events.FaultEvent;
-    import mx.rpc.events.ResultEvent;
-    import mx.utils.ArrayUtil;
-    import mx.utils.ObjectUtil;
     
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
@@ -95,7 +88,6 @@ package org.granite.tide.collections {
 		 * 	@private
 		 */
         protected var _count:int;         // Result count
-        private var _list:IList;
 		/**
 		 * 	@private
 		 */
@@ -134,7 +126,7 @@ package org.granite.tide.collections {
 			_first = 0;
 			_last = 0;
 			_count = 0;
-			_list = null;
+			list = null;
 			_initializing = true;
 			addEventListener("sortChanged", sortChangedHandler);
 		}
@@ -208,7 +200,7 @@ package org.granite.tide.collections {
 		public function clear():void {
 			_ipes = null;
 			clearLocalIndex();
-			_list = null;
+			list = null;
 			_first = 0;
 			_last = 0;
 			_count = 0;
@@ -229,8 +221,9 @@ package org.granite.tide.collections {
 		 *	Abstract method: trigger a results query for the current filter
 		 *	@param first	: index of first required result
 		 *  @param last     : index of last required result
+		 *  @param merge	: should merge the result with the current wrapped list
 		 */
-		protected function find(first:int, last:int):void {
+		protected function find(first:int, last:int, merge:Boolean = false):void {
 			log.debug("find from {0} to {1}", first, last);
 			
 			if (beforeFindCall != null)
@@ -283,7 +276,7 @@ package org.granite.tide.collections {
 				log.debug("refresh");			
             
 			if (!initialFind())
-				find(_first, _last);
+				find(_first, _last, true);
 			return true;
 		}
 		
@@ -391,7 +384,7 @@ package org.granite.tide.collections {
 		 *  @param event the result event
 		 */
 		protected function handleResult(result:Object, event:TideResultEvent = null):void {
-			_list = result.resultList as IList;
+			list = result.resultList as IList;
 			
 			if (this.sort != null)
 				this.sort.compareFunction = nullCompare;	// Avoid automatic sorting
@@ -444,7 +437,7 @@ package org.granite.tide.collections {
 		        for each (entityName in entityNames)
 		        	_context.removeEventListener("org.granite.tide.data.refresh." + entityName, refreshHandler);
 		    }
-			localIndex = _list.toArray();
+			localIndex = list.toArray();
 		    if (localIndex != null) {
 		    	entityNames = [];
 		        for (i = 0; i < localIndex.length; i++) {
@@ -476,10 +469,14 @@ package org.granite.tide.collections {
 							log.debug("call IPE responders (received {0} - {1} expected {2} - {3})", int(a0[1]), int(a0[2]), expectedFirst, expectedLast);
     		            	var saveThrowIpe:Boolean = _throwIpe;
     		            	_throwIpe = throwIPEDuringResponders;
-            				// Trigger responders for current pending item
-            				for (var j:int = 0; j < ipe.responders.length; j++)
-            					ipe.responders[j].result(event);
-            				_throwIpe = saveThrowIpe;
+							try {
+	            				// Trigger responders for current pending item
+	            				for (var j:int = 0; j < ipe.responders.length; j++)
+	            					ipe.responders[j].result(event);
+							}
+							finally {
+            					_throwIpe = saveThrowIpe;
+							}
     		            }
 						else {
 							// Client did not set a responder on the IPE ?
@@ -509,9 +506,13 @@ package org.granite.tide.collections {
 		    if (dispatchRefresh) {
 		        _tempSort = new NullSort();
 	        	saveThrowIpe = _throwIpe;
-	            _throwIpe = false;
-		        super.refresh();
-		        _throwIpe = saveThrowIpe;
+				try {
+		            _throwIpe = false;
+			        super.refresh();
+				}
+				finally {
+			    	_throwIpe = saveThrowIpe;
+				}
 		        _tempSort = null;
 		    }
 		    
@@ -542,11 +543,33 @@ package org.granite.tide.collections {
         }
  
  
-        [Bindable("listChanged")]
-    	public override function get list():IList {
-    	    return _list;
-    	}
-
+		// Override get/set list/dispatch/reset^M
+		// to avoid the call to reset() in ListCollectionView when the received list^M
+		// is updated^M
+		public override function dispatchEvent(event:Event):Boolean {
+			if (event.type == "listChanged")
+				return false;
+			return super.dispatchEvent(event);
+		}
+		
+		private var _settingList:Boolean = false;
+		
+		public override function set list(value:IList):void {
+			try {
+				_settingList = true;
+				super.list = value;
+			}
+			finally {
+				_settingList = false;
+			}
+		}
+		
+		mx_internal override function reset():void {
+			if (_settingList)
+				return;
+			super.mx_internal::reset();
+		}
+																							
         CONFIG::flex40 {
             [Bindable("sortChanged")]
             public override function get sort():Sort {
@@ -615,10 +638,14 @@ package org.granite.tide.collections {
 					if ((_max == 0 && int(a[1]) == 0 && int(a[2]) == 0) || (int(a[1]) == _first && int(a[2]) == _last)) {
 						if (ipe.responders != null) {
 				        	var saveThrowIpe:Boolean = _throwIpe;
-				            _throwIpe = throwIPEDuringResponders;
-							for (var j:int = 0; j < ipe.responders.length; j++)
-								ipe.responders[j].fault(event);
-    		            	_throwIpe = saveThrowIpe;
+							try {
+					            _throwIpe = throwIPEDuringResponders;
+								for (var j:int = 0; j < ipe.responders.length; j++)
+									ipe.responders[j].fault(event);
+							}
+							finally {
+    		            		_throwIpe = saveThrowIpe;
+							}
 						}
 					}
 					else
@@ -800,7 +827,7 @@ package org.granite.tide.collections {
 		
 		private function nullCompare(o1:Object, o2:Object, fields:Array = null):int {
 			if (o1 is IUID && o2 is IUID) {
-				if (IUID(o1) == IUID(o2))
+				if (IUID(o1).uid == IUID(o2).uid)
 					return 0;
 				return 1;
 			}

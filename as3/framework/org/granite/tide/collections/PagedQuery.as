@@ -152,9 +152,10 @@ package org.granite.tide.collections {
 		 *	Trigger a results query for the current filter
 		 *	@param first	: index of first required result
 		 *  @param last     : index of last required result
+		 *  @param merge	: should merge result with current wrapped list
 		 */
-		protected override function find(first:int, last:int):void {
-			super.find(first, last);
+		protected override function find(first:int, last:int, merge:Boolean = false):void {
+			super.find(first, last, merge);
 			
 			var max:int = 0;
 			if (_initializing && _max > 0)
@@ -162,8 +163,8 @@ package org.granite.tide.collections {
 			else if (!_initializing)
 			    max = last-first;
 			var findResponder:PagedCollectionResponder = new PagedCollectionResponder(findResult, findFault, 
-				_initializing ? null : this, first, max);
-				
+				_initializing || !merge ? null : list, first, max);
+			
 			var filter:Object = _internalFilter;
 			
 			doFind(filter, first, max, sort, findResponder);
