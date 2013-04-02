@@ -25,7 +25,6 @@ import org.granite.tide.TidePersistenceManager;
 import org.granite.tide.TideTransactionManager;
 import org.granite.tide.data.AbstractTidePersistenceManager;
 import org.granite.tide.data.JDOPersistenceManager;
-import org.granite.tide.data.JPAPersistenceManager;
 import org.granite.tide.data.NoPersistenceManager;
 import org.granite.util.TypeUtil;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
@@ -50,7 +49,7 @@ public class SpringPersistenceManager implements TidePersistenceManager {
 	public SpringPersistenceManager(PlatformTransactionManager transactionManager) {
 		TideTransactionManager tm = new SpringTransactionManager(transactionManager);
 		if (transactionManager instanceof JpaTransactionManager) {
-			pm = new JPAPersistenceManager(((JpaTransactionManager)transactionManager).getEntityManagerFactory(), tm);
+			pm = new SpringJPAPersistenceManager((JpaTransactionManager)transactionManager, tm);
 			return;
 		}
 		
@@ -58,8 +57,6 @@ public class SpringPersistenceManager implements TidePersistenceManager {
 			pm = new JDOPersistenceManager(((JdoTransactionManager)transactionManager).getPersistenceManagerFactory(), tm);
 			return;
 		}
-		
-		
 		
 		// Check for Hibernate 3
 		if (transactionManager instanceof HibernateTransactionManager) {
@@ -76,6 +73,7 @@ public class SpringPersistenceManager implements TidePersistenceManager {
 			return;
 		}
 		
+		// Check for Hibernate 4
 		try {
 			Class<?> hibernate4TM = TypeUtil.forName("org.springframework.orm.hibernate4.HibernateTransactionManager");
 			if (hibernate4TM.isInstance(transactionManager)) {

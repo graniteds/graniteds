@@ -43,7 +43,6 @@ import org.granite.messaging.service.ServiceInvocationContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.tide.IInvocationCall;
 import org.granite.tide.IInvocationResult;
-import org.granite.tide.TidePersistenceManager;
 import org.granite.tide.annotations.BypassTideMerge;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.invocation.ContextUpdate;
@@ -424,7 +423,6 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		
 		private Object getBindValue(boolean request, Class<?> requiredType) {
 			GraniteContext context = GraniteContext.getCurrentInstance();
-			TidePersistenceManager pm = SpringMVCServiceContext.this.getTidePersistenceManager(true);
 			ClassGetter classGetter = context.getGraniteConfig().getClassGetter();
 			Object value = request ? wrapper.getRequestValue(getObjectName()) : wrapper.getBindValue(getObjectName());
 			if (requiredType != null) {
@@ -433,7 +431,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 					value = converter.convert(value, requiredType);
 			}
 			if (value != null && !request)
-				return SpringMVCServiceContext.this.mergeExternal(pm, classGetter, value, null, null, null);
+				return SpringMVCServiceContext.this.mergeExternal(classGetter, value, null, null, null);
 			return value;
 		}
 

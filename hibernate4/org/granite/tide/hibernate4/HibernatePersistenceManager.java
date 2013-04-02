@@ -52,6 +52,10 @@ public class HibernatePersistenceManager extends AbstractTidePersistenceManager 
         this.sessionFactory = sf;
 	}
 	
+	@Override
+	public void close() {		
+	}
+	
 	/**
 	 * attaches the entity to the JPA context.
 	 * @return the attached entity
