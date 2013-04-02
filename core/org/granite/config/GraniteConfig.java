@@ -57,6 +57,7 @@ import org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
+import org.granite.messaging.amf.io.util.externalizer.MapExternalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.DefaultMethodMatcher;
 import org.granite.messaging.service.ExceptionConverter;
@@ -92,6 +93,7 @@ public class GraniteConfig implements ScannedItemHandler {
     private static final Externalizer LONG_EXTERNALIZER = new LongExternalizer();
     private static final Externalizer BIGINTEGER_EXTERNALIZER = new BigIntegerExternalizer();
     private static final Externalizer BIGDECIMAL_EXTERNALIZER = new BigDecimalExternalizer();
+    private static final Externalizer MAP_EXTERNALIZER = new MapExternalizer();
     
     final ActionScriptClassDescriptorFactory ASC_DESCRIPTOR_FACTORY = new ActionScriptClassDescriptorFactory();
     final JavaClassDescriptorFactory JC_DESCRIPTOR_FACTORY = new JavaClassDescriptorFactory();
@@ -430,6 +432,15 @@ public class GraniteConfig implements ScannedItemHandler {
         		return BIGINTEGER_EXTERNALIZER;
         	else if (BigDecimal.class.getName().equals(type))
         		return BIGDECIMAL_EXTERNALIZER;
+        	else {
+            	try {
+	        		if (Map.class.isAssignableFrom(TypeUtil.forName(type)))
+	        			return MAP_EXTERNALIZER;
+            	}
+            	catch (Exception e) {
+            		
+            	}
+        	}
         }
         
         return getElementByType(
