@@ -20,32 +20,36 @@
 
 package org.granite.tide.collections {
     
+    import mx.collections.IList;
+    
+    import org.granite.tide.ITideMergeResponder;
     import org.granite.tide.ITideResponder;
-    import org.granite.tide.events.TideResultEvent;
     import org.granite.tide.events.TideFaultEvent;
+    import org.granite.tide.events.TideResultEvent;
     
     
 	/**
 	 *  @private
 	 * 	Support class for paged collection implementation
 	 */
-	public class PagedCollectionResponder implements ITideResponder {
+	public class PagedCollectionResponder implements ITideMergeResponder {
 	    
 	    private var _resultHandlers:Array = new Array();
 	    private var _faultHandlers:Array = new Array();
-	    private var _collection:PagedCollection;
 	    private var _first:int;
 	    private var _max:int;
+		private var _mergeWith:Object;
 	    
 	    
-	    public function PagedCollectionResponder(resultHandler:Function, faultHandler:Function, collection:PagedCollection, first:int, max:int):void {
+	    public function PagedCollectionResponder(resultHandler:Function, faultHandler:Function, collection:IList, first:int, max:int):void {
 	        if (resultHandler != null)
 	            _resultHandlers.push(resultHandler);
 	        if (faultHandler != null)
 	            _faultHandlers.push(faultHandler);   
-	    	_collection = collection;
 	        _first = first;
 	        _max = max;
+			if (collection != null)
+				_mergeWith = { firstResult: first, maxResults: max, resultList: collection, resultCount: 0 };
 	    }
 	    
 	    public function addHandlers(resultHandler:Function = null, faultHandler:Function = null):void {
@@ -64,11 +68,10 @@ package org.granite.tide.collections {
 	    public function fault(event:TideFaultEvent):void {
 	        for each (var faultHandler:Function in _faultHandlers)
 	            faultHandler(event, _first, _max);
-	    } 
-        
+	    }         
         
         public function get mergeResultWith():Object {
-            return _collection;
+            return _mergeWith;
         }
 	}
 }
