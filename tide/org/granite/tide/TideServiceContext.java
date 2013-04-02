@@ -140,18 +140,14 @@ public abstract class TideServiceContext implements Serializable {
     	
     
     public Object mergeExternal(Object obj, Object previous) {
-        TidePersistenceManager pm = getTidePersistenceManager(false);
         ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
-        return mergeExternal(pm, classGetter, obj, previous, null, null);
+        return mergeExternal(classGetter, obj, previous, null, null);
     }
     
     @SuppressWarnings("unchecked")
-    protected Object mergeExternal(TidePersistenceManager pm, ClassGetter classGetter, Object obj, Object previous, Object owner, String propertyName) {
+    protected Object mergeExternal(ClassGetter classGetter, Object obj, Object previous, Object owner, String propertyName) {
         if (obj == null)
             return null;
-        
-        if (pm == null)
-            return obj;
         
         if (!classGetter.isInitialized(owner, propertyName, obj)) {
             if (previous != null)
@@ -167,16 +163,16 @@ public abstract class TideServiceContext implements Serializable {
             next = prev;
         }
         else if (obj instanceof Collection) {
-            next = mergeCollection(pm, classGetter, (Collection<Object>)obj, previous, owner, propertyName);
+            next = mergeCollection(classGetter, (Collection<Object>)obj, previous, owner, propertyName);
         }
         else if (obj.getClass().isArray()) {
-            next = mergeArray(pm, classGetter, obj, previous, owner, propertyName);
+            next = mergeArray(classGetter, obj, previous, owner, propertyName);
         }
         else if (obj instanceof Map) {
-            next = mergeMap(pm, classGetter, (Map<Object, Object>)obj, previous, owner, propertyName);
+            next = mergeMap(classGetter, (Map<Object, Object>)obj, previous, owner, propertyName);
         }
         else if (classGetter.isEntity(obj) || obj.getClass().isAnnotationPresent(ExternalizedBean.class)) {
-            next = mergeEntity(pm, classGetter, obj, previous, owner, propertyName);
+            next = mergeEntity(classGetter, obj, previous, owner, propertyName);
         }
 
         return next;
@@ -190,7 +186,7 @@ public abstract class TideServiceContext implements Serializable {
     	return obj1.equals(obj2);
     }
 
-    private Object mergeEntity(TidePersistenceManager pm, ClassGetter classGetter, Object obj, Object previous, Object owner, String propertyName) {
+    private Object mergeEntity(ClassGetter classGetter, Object obj, Object previous, Object owner, String propertyName) {
         Object dest = obj;
         boolean isEntity = classGetter.isEntity(obj);
         
@@ -217,7 +213,7 @@ public abstract class TideServiceContext implements Serializable {
                 Field field = (Field)fieldValue[0];
                 Object objv = fieldValue[1];
                 Object destv = fieldValue[2];
-                objv = mergeExternal(pm, classGetter, objv, destv, obj, field.getName());
+                objv = mergeExternal(classGetter, objv, destv, obj, field.getName());
             	field.set(dest, objv);
             }
         }
@@ -228,7 +224,7 @@ public abstract class TideServiceContext implements Serializable {
         return dest;
     }
 
-    private Object mergeCollection(TidePersistenceManager pm, ClassGetter classGetter, Collection<Object> coll, Object previous, Object owner, String propertyName) {
+    private Object mergeCollection(ClassGetter classGetter, Collection<Object> coll, Object previous, Object owner, String propertyName) {
         if (log.isDebugEnabled())
             log.debug("Context mergeCollection: " + coll + (previous != null ? " previous " + previous.getClass().getName() : ""));
 
@@ -244,7 +240,7 @@ public abstract class TideServiceContext implements Serializable {
         
         if (coll == prevColl) {
         	for (Object obj : coll)
-                mergeExternal(pm, classGetter, obj, obj, null, null);
+                mergeExternal(classGetter, obj, obj, null, null);
         }
         else {
 	        List<Object> addedToColl = new ArrayList<Object>();
@@ -257,7 +253,7 @@ public abstract class TideServiceContext implements Serializable {
 	                for (int j = 0; j < prevList.size(); j++) {
 	                    Object prev = prevList.get(j);
 	                    if (prev != null && equals(prev, obj)) {
-	                        obj = mergeExternal(pm, classGetter, obj, prev, null, null);
+	                        obj = mergeExternal(classGetter, obj, prev, null, null);
 	                        if (i < prevList.size()) {
 		                        if (j != i)
 		                            prevList.set(j, prevList.get(i));
@@ -283,7 +279,7 @@ public abstract class TideServiceContext implements Serializable {
 	                for (int j = 0; j < prevColl.size(); j++) {
 	                    Object prev = iprevcoll.next();
 	                    if (prev != null && equals(prev, obj)) {
-	                        obj = mergeExternal(pm, classGetter, obj, prev, null, null);
+	                        obj = mergeExternal(classGetter, obj, prev, null, null);
 	                        if (obj != prev) {
 	                            if (prevColl instanceof List<?>)
 	                                ((List<Object>)prevColl).set(j, obj);
@@ -297,7 +293,7 @@ public abstract class TideServiceContext implements Serializable {
 	                }
 	                prevColl.addAll(added);
 	                if (!found) {
-	                    obj = mergeExternal(pm, classGetter, obj, null, null, null);
+	                    obj = mergeExternal(classGetter, obj, null, null, null);
 	                    prevColl.add(obj);
 	                }
 	            }
@@ -337,7 +333,7 @@ public abstract class TideServiceContext implements Serializable {
         return coll;
     }
 
-    private Object mergeArray(TidePersistenceManager pm, ClassGetter classGetter, Object array, Object previous, Object owner, String propertyName) {
+    private Object mergeArray(ClassGetter classGetter, Object array, Object previous, Object owner, String propertyName) {
         if (log.isDebugEnabled())
             log.debug("Context mergeArray: " + array + (previous != null ? " previous " + previous.getClass().getName() : ""));
 
@@ -348,13 +344,13 @@ public abstract class TideServiceContext implements Serializable {
         
         for (int i = 0; i < length; i++) {
             Object obj = Array.get(array, i);
-            Array.set(prevArray, i, mergeExternal(pm, classGetter, obj, null, null, null));
+            Array.set(prevArray, i, mergeExternal(classGetter, obj, null, null, null));
         }
 
         return prevArray;
     }
 
-    private Object mergeMap(TidePersistenceManager pm, ClassGetter classGetter, Map<Object, Object> map, Object previous, Object owner, String propertyName) {
+    private Object mergeMap(ClassGetter classGetter, Map<Object, Object> map, Object previous, Object owner, String propertyName) {
         if (log.isDebugEnabled())
             log.debug("Context mergeMap: " + map + (previous != null ? " previous " + previous.getClass().getName() : ""));
 
@@ -370,8 +366,8 @@ public abstract class TideServiceContext implements Serializable {
         
         if (map == prevMap) {
         	for (Map.Entry<Object, Object> me : map.entrySet()) {
-        		mergeExternal(pm, classGetter, me.getKey(), null, null, null);
-        		mergeExternal(pm, classGetter, me.getValue(), null, null, null);
+        		mergeExternal(classGetter, me.getKey(), null, null, null);
+        		mergeExternal(classGetter, me.getValue(), null, null, null);
         	}
         }
         else {
@@ -379,8 +375,8 @@ public abstract class TideServiceContext implements Serializable {
 	            if (map != prevMap) {
 	                prevMap.clear();
 	                for (Map.Entry<Object, Object> me : map.entrySet()) {
-	                    Object key = mergeExternal(pm, classGetter, me.getKey(), null, null, null);
-	                    Object value = mergeExternal(pm, classGetter, me.getValue(), null, null, null);
+	                    Object key = mergeExternal(classGetter, me.getKey(), null, null, null);
+	                    Object value = mergeExternal(classGetter, me.getValue(), null, null, null);
 	                    prevMap.put(key, value);
 	                }
 	            }
@@ -392,8 +388,8 @@ public abstract class TideServiceContext implements Serializable {
 	        for (Iterator<Map.Entry<Object, Object>> ime = map.entrySet().iterator(); ime.hasNext(); ) {
 	            Map.Entry<Object, Object> me = ime.next();
 	            ime.remove();
-	            Object key = mergeExternal(pm, classGetter, me.getKey(), null, null, null);
-	            Object value = mergeExternal(pm, classGetter, me.getValue(), null, null, null);
+	            Object key = mergeExternal(classGetter, me.getKey(), null, null, null);
+	            Object value = mergeExternal(classGetter, me.getValue(), null, null, null);
 	            addedToMap.add(new Object[] { key, value });
 	        }
 	        for (Object[] me : addedToMap)

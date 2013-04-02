@@ -38,7 +38,9 @@ public class JPAPersistenceManager extends AbstractTidePersistenceManager implem
 	
 	private static final Logger log = Logger.getLogger(JPAPersistenceManager.class);
 	
-	protected EntityManager em;
+	protected EntityManager entityManager;
+	protected EntityManagerFactory entityManagerFactory;
+	protected boolean shouldCloseEntityManager = false;
 
 	
 	public JPAPersistenceManager(TideTransactionManager tm) {
@@ -55,7 +57,7 @@ public class JPAPersistenceManager extends AbstractTidePersistenceManager implem
     	if (em == null)
     		throw new RuntimeException("entity manager cannot be null");
     	
-    	this.em =  em;    	
+    	this.entityManager =  em;
 	}
 	
 	public JPAPersistenceManager(EntityManagerFactory emf) {
@@ -68,15 +70,29 @@ public class JPAPersistenceManager extends AbstractTidePersistenceManager implem
     	if (emf == null)
     		throw new RuntimeException("entity manager factory cannot be null");
     	
-    	this.em = emf.createEntityManager();
+    	this.entityManagerFactory = emf;
 	}
 	
 	public Object getCurrentTransaction() {
-	    EntityTransaction et = em.getTransaction();   // Try to get a local resource transaction
+		initEntityManager();
+	    EntityTransaction et = entityManager.getTransaction();   // Try to get a local resource transaction
 	    et.begin();
 	    return et;
 	}
-
+	
+	protected void initEntityManager() {
+		if (this.entityManager != null)
+			return;
+    	this.entityManager = entityManagerFactory.createEntityManager();
+    	shouldCloseEntityManager = true;
+	}
+	
+	@Override
+	public void close() {
+		if (shouldCloseEntityManager && this.entityManager != null)
+			this.entityManager.close();
+	}
+	
 	
     /**
      * Finds the entity with the JPA context.
@@ -90,11 +106,13 @@ public class JPAPersistenceManager extends AbstractTidePersistenceManager implem
         if (id == null)
             return null;
         
-        if (fetch == null || em.getDelegate().getClass().getName().indexOf(".hibernate.") < 0)
-        	return em.find(entity.getClass(), id);
+        initEntityManager();
+        
+        if (fetch == null || entityManager.getDelegate().getClass().getName().indexOf(".hibernate.") < 0)
+        	return entityManager.find(entity.getClass(), id);
         
         for (String f : fetch) {
-	        Query q = em.createQuery("select e from " + entity.getClass().getName() + " e left join fetch e." + f + " where e = :entity");
+	        Query q = entityManager.createQuery("select e from " + entity.getClass().getName() + " e left join fetch e." + f + " where e = :entity");
 	        q.setParameter("entity", entity);
 	        List<?> results = q.getResultList();
 	        if (!results.isEmpty())

@@ -54,7 +54,13 @@ public class JDOPersistenceManager extends AbstractTidePersistenceManager implem
         t.begin();
         return t;
 	}
-
+	
+	@Override
+	public void close() {
+		if (pm != null && !pm.isClosed())
+			pm.close();
+	}
+	
 	
     /**
      * Finds the entity with the JDO persistence manager.

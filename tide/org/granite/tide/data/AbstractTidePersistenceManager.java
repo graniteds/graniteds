@@ -60,42 +60,49 @@ public abstract class AbstractTidePersistenceManager implements TidePersistenceM
 		Object attachedEntity = null;
         ClassGetter getter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
         
-		Object tx = tm.begin(pm instanceof TideTransactionPersistenceManager ? (TideTransactionPersistenceManager)pm : null);
-		if (tx == null)
-		    throw new RuntimeException("Could not initiate transaction for lazy initialization");
-		
-		try {
-            //the get is called to give the children a chance to override and
-            //use the implemented method
-			if (propertyNames != null)
-				attachedEntity = fetchEntity(entity, propertyNames);
-			else
-				attachedEntity = entity;
-            
-            if (attachedEntity != null && propertyNames != null) {
-                for (int i = 0; i < propertyNames.length; i++) {
-                	Object initializedObj = attachedEntity;
-                	String[] pnames = propertyNames[i].split("\\.");
-                	for (int j = 0; j < pnames.length; j++)
-                		initializedObj = Reflections.getGetterMethod(initializedObj.getClass(), pnames[j]).invoke(initializedObj);
-                	
-                    //This is here to make sure the list is forced to return a value while operating inside of a 
-                    //session. Forcing the  initialization of object.
-                    if (getter != null)
-                        getter.initialize(entity, propertyNames[i], initializedObj);
-                }
-            }
-		    
-            tm.commit(tx);
-	    }
-	    catch (Exception e) {
-	    	String propertyName = propertyNames != null && propertyNames.length > 0 ? propertyNames[0] : "";
-	    	log.error(e, "Error during lazy-initialization of collection: %s", propertyName);
-	        tm.rollback(tx);
-	    }
+        try {
+			Object tx = tm.begin(pm instanceof TideTransactionPersistenceManager ? (TideTransactionPersistenceManager)pm : null);
+			if (tx == null)
+			    throw new RuntimeException("Could not initiate transaction for lazy initialization");
+			
+			try {
+	            //the get is called to give the children a chance to override and
+	            //use the implemented method
+				if (propertyNames != null)
+					attachedEntity = fetchEntity(entity, propertyNames);
+				else
+					attachedEntity = entity;
+	            
+	            if (attachedEntity != null && propertyNames != null) {
+	                for (int i = 0; i < propertyNames.length; i++) {
+	                	Object initializedObj = attachedEntity;
+	                	String[] pnames = propertyNames[i].split("\\.");
+	                	for (int j = 0; j < pnames.length; j++)
+	                		initializedObj = Reflections.getGetterMethod(initializedObj.getClass(), pnames[j]).invoke(initializedObj);
+	                	
+	                    //This is here to make sure the list is forced to return a value while operating inside of a 
+	                    //session. Forcing the  initialization of object.
+	                    if (getter != null)
+	                        getter.initialize(entity, propertyNames[i], initializedObj);
+	                }
+	            }
+			    
+	            tm.commit(tx);
+		    }
+		    catch (Exception e) {
+		    	String propertyName = propertyNames != null && propertyNames.length > 0 ? propertyNames[0] : "";
+		    	log.error(e, "Error during lazy-initialization of collection: %s", propertyName);
+		        tm.rollback(tx);
+		    }
+        }
+        finally {
+        	close();
+        }
         
         return attachedEntity;
 	} 
+	
+	protected abstract void close();
 	
     /**
      * Fetch the entity with its lazy properties from the persistence context.

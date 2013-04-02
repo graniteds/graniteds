@@ -340,43 +340,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
         			log.debug("More than one Spring transaction manager found, specify a persistence-manager-bean-name or entity-manager-factory-bean-name");
         		else if (tms.size() == 1) {
         			PlatformTransactionManager ptm = (PlatformTransactionManager)tms.values().iterator().next();
-        			
-	        		try {
-	        			// Check if a JPA factory is setup
-	        			// If we find one, define a persistence manager with the JPA factory and Spring transaction manager
-						Class<?> emfiClass = ClassUtil.forName("org.springframework.orm.jpa.EntityManagerFactoryInfo");
-		        		Map<String, ?> emfs = springContext.getBeansOfType(emfiClass);
-						if (emfs.size() == 1) {
-							try {
-								Class<?> emfClass = ClassUtil.forName("javax.persistence.EntityManagerFactory");
-					            Class<?> pcmClass = ClassUtil.forName("org.granite.tide.data.JPAPersistenceManager");
-					            Constructor<?>[] cs = pcmClass.getConstructors();
-				            	for (Constructor<?> c : cs) {
-					            	if (c.getParameterTypes().length == 2 && emfClass.isAssignableFrom(c.getParameterTypes()[0])
-					            		&& TideTransactionManager.class.isAssignableFrom(c.getParameterTypes()[1])) {
-					            		log.debug("Created JPA persistence manager with Spring transaction manager");
-					        			TideTransactionManager tm = new SpringTransactionManager(ptm);
-					            		return (TidePersistenceManager)c.newInstance(((EntityManagerFactoryInfo)emfs.values().iterator().next()).getNativeEntityManagerFactory(), tm);
-					            	}
-				            	}
-							}
-							catch (Exception e) {
-								log.error(e, "Could not setup persistence manager for JPA " + emfs.keySet().iterator().next());
-							}
-						}
-	        		}
-					catch (ClassNotFoundException e) {
-						// Ignore: JPA not present on classpath
-					}
-					catch (NoClassDefFoundError e) {
-						// Ignore: JPA not present on classpath
-					}
-					catch (Exception e) {
-						log.error("Could not lookup EntityManagerFactoryInfo", e);
-					}
-					
-        			// If no entity manager, we define a Spring persistence manager 
-					// that will try to infer persistence info from the Spring transaction manager
+        			// Define a Spring persistence manager that will try to infer persistence info from the Spring transaction manager
 					return new SpringPersistenceManager(ptm);
         		}
         	}
