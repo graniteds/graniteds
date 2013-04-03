@@ -62,22 +62,26 @@ package org.granite.collections {
         }
 
         override public function addItemAt(item:Object, index:int):void {
-            if ((item is IUID) && dictionary[IUID(item).uid] === undefined) {
-                super.addItemAt(item, index);
-                dictionary[IUID(item).uid] = item;
-            } else if (dictionary[item] === undefined) {
+			if (item is IUID) {
+				if (dictionary[IUID(item).uid] === undefined) {
+					super.addItemAt(item, index);
+					dictionary[IUID(item).uid] = item;
+				}
+			}
+            else if (dictionary[item] === undefined) {
                 super.addItemAt(item, index);
                 dictionary[item] = item;
             }
         }
-
+		
         override public function setItemAt(item:Object, index:int):Object {
             var old:Object = super.setItemAt(item, index);
 
             if (old is IUID) {
                 if (dictionary[IUID(old).uid] !== undefined)
                     delete dictionary[IUID(old).uid];
-            } else if (dictionary[old] !== undefined)
+            } 
+			else if (dictionary[old] !== undefined)
                 delete dictionary[old];
 
             if (item is IUID)
