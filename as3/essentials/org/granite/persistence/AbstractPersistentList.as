@@ -108,9 +108,12 @@ import mx.core.IUID;
             _initialized = input.readObject() as Boolean;
             _metadata = input.readObject() as String;
             if (_initialized) {
-                _dirty = input.readObject() as Boolean;
+                var dirty:Boolean = input.readObject() as Boolean;
                 super.readExternal(input);
+				_dirty = dirty;	// GDS-1092: Delay assignment of dirty because super.readExternal may have triggered dirtyCheckHandler
             }
+			else	// GDS-1092: Delay assignment of dirty because super.readExternal may have triggered dirtyCheckHandler
+				removeEventListener(CollectionEvent.COLLECTION_CHANGE, dirtyCheckHandler);
         }
 
         override public function writeExternal(output:IDataOutput):void {
