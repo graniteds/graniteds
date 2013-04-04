@@ -3,6 +3,7 @@ package org.granite.test.tide.data
     import mx.collections.ArrayCollection;
     
     import org.flexunit.Assert;
+    import org.granite.collections.IPersistentCollection;
     import org.granite.meta;
     import org.granite.persistence.PersistentSet;
     import org.granite.test.tide.Classification;
@@ -10,6 +11,7 @@ package org.granite.test.tide.data
     import org.granite.test.tide.Person;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
+    import org.granite.tide.collections.PersistentCollection;
 
 
     public class TestUninitAssociations {
@@ -95,12 +97,38 @@ package org.granite.test.tide.data
 			var c:Contact3 = Contact3(tmpctx.meta_mergeFromContext(_ctx, contact, false, true));
 			
 			Assert.assertFalse("Person assoc proxied", c.meta::isInitialized("person"));
-			Assert.assertEquals("Person detachedState", "blabla", c.person.meta::detachedState);
-			
+			Assert.assertEquals("Person detachedState", "blabla", c.person.meta::detachedState);		
 		}
 		
 		[Test]
-		public function TestUninitializeToManyAssociations():void {
+		public function TestUninitializeToManyAssociations1():void {
+			var person:Person9 = new Person9();
+			person.id = 1;
+			person.version = 0;
+			person.uid = "P1";
+			person.lastName = "Toto";
+			person.contacts = new PersistentSet();
+			var contact:Contact3 = new Contact3();
+			contact.id = 1;
+			contact.version = 0;
+			contact.uid = "C1";
+			contact.email = "toto@toto.com";
+			contact.person = person;
+			person.contacts.addItem(contact);
+			
+			person = Person9(_ctx.meta_mergeExternalData(person));
+			
+			person.contacts.removeItemAt(0);
+			
+			var tmpctx:BaseContext = _ctx.newTemporaryContext();
+			var p:Person9 = Person9(tmpctx.meta_mergeFromContext(_ctx, person, false, true));
+			
+			Assert.assertTrue("Person contacts initialized", IPersistentCollection(p.contacts).isInitialized());
+			Assert.assertTrue("Person contacts set dirty", PersistentSet(PersistentCollection(p.contacts).list).isDirty());
+		}
+		
+		[Test]
+		public function TestUninitializeToManyAssociations2():void {
 			var cl1:Classification = new Classification();
 			cl1.id = 1;
 			cl1.uid = "CL1";
