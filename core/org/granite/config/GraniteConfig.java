@@ -21,6 +21,7 @@
 package org.granite.config;
 
 import java.io.ByteArrayInputStream;
+import java.io.Externalizable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -424,6 +425,17 @@ public class GraniteConfig implements ScannedItemHandler {
 	}
 
 	public Externalizer getExternalizer(String type) {
+        Externalizer externalizer = getElementByType(
+            type,
+            EXTERNALIZER_FACTORY,
+            externalizersByType,
+            externalizersByInstanceOf,
+            externalizersByAnnotatedWith,
+            scannedExternalizers
+        );
+        if (externalizer != null)
+        	return externalizer;
+        
         if ("java".equals(GraniteContext.getCurrentInstance().getClientType())) {
         	// Force use of number externalizers when serializing from/to a Java client
         	if (Long.class.getName().equals(type))
@@ -434,7 +446,8 @@ public class GraniteConfig implements ScannedItemHandler {
         		return BIGDECIMAL_EXTERNALIZER;
         	else {
             	try {
-	        		if (Map.class.isAssignableFrom(TypeUtil.forName(type)))
+            		Class<?> clazz = TypeUtil.forName(type);
+	        		if (Map.class.isAssignableFrom(clazz) && !Externalizable.class.isAssignableFrom(clazz))
 	        			return MAP_EXTERNALIZER;
             	}
             	catch (Exception e) {
@@ -443,14 +456,7 @@ public class GraniteConfig implements ScannedItemHandler {
         	}
         }
         
-        return getElementByType(
-            type,
-            EXTERNALIZER_FACTORY,
-            externalizersByType,
-            externalizersByInstanceOf,
-            externalizersByAnnotatedWith,
-            scannedExternalizers
-        );
+        return null;
     }
 	
 	public Map<String, Externalizer> getExternalizersByType() {
