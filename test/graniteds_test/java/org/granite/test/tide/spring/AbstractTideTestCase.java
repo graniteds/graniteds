@@ -90,7 +90,7 @@ public class AbstractTideTestCase implements ApplicationContextAware {
     
     protected InvocationResult invokeComponent(String componentName, Class<?> componentClass, String operation, Object[] params, String[] listeners, Object[] updates, String[] results, String conversationId) {
         RemotingMessage callMessage = new RemotingMessage();
-        callMessage.setDestination("spring");
+        callMessage.setDestination("server");
         callMessage.setOperation("invokeComponent");
         Object[] args = new Object[5];
         args[0] = componentName;
@@ -131,7 +131,7 @@ public class AbstractTideTestCase implements ApplicationContextAware {
     @SuppressWarnings("unchecked")
 	public Object initializeObject(Object entity, String[] fetch) {
         RemotingMessage callMessage = new RemotingMessage();
-        callMessage.setDestination("spring");
+        callMessage.setDestination("server");
         callMessage.setOperation("initializeObject");
         Object[] args = new Object[2];
         args[0] = entity;
