@@ -76,7 +76,7 @@ package org.granite.tide.cdi {
 		}
 		
 		public static function getInstance(destination:String = null):Cdi {
-			return Tide.getInstance(destination != null ? destination : "cdi", Cdi) as Cdi;
+			return Tide.getInstance(destination != null ? destination : "server", Cdi) as Cdi;
 		}
 		
 		/**

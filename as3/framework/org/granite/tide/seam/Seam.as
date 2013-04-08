@@ -70,7 +70,7 @@ package org.granite.tide.seam {
 		}
 		
 		public static function getInstance(destination:String = null):Seam {
-			return Tide.getInstance(destination != null ? destination : "seam", Seam) as Seam;
+			return Tide.getInstance(destination != null ? destination : "server", Seam) as Seam;
 		}
 		
 		/**

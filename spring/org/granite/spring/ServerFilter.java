@@ -74,6 +74,7 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
     private List<Class<? extends ExceptionConverter>> exceptionConverters = null;
     private AMF3MessageInterceptor amf3MessageInterceptor;
     private boolean tide = false;
+    private String type = "server";
     
 
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
@@ -183,18 +184,18 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
         		service = new Service("granite-service", "flex.messaging.services.RemotingService", 
         			"flex.messaging.messages.RemotingMessage", null, null, new HashMap<String, Destination>());
         	}
-        	Destination destination = servicesConfig.findDestinationById("flex.messaging.messages.RemotingMessage", "spring");
+        	Destination destination = servicesConfig.findDestinationById("flex.messaging.messages.RemotingMessage", type);
         	if (destination == null) {
         		List<String> channelIds = new ArrayList<String>();
         		channelIds.add("graniteamf");
-        		destination = new Destination("spring", channelIds, new XMap(), tideRoles, null, null);
+        		destination = new Destination(type, channelIds, new XMap(), tideRoles, null, null);
         		destination.getProperties().put("factory", factory.getId());
         		destination.getProperties().put("validator-name", "tideValidator");
         		service.getDestinations().put(destination.getId(), destination);
         		servicesConfig.addService(service);
         	}
         	
-        	log.info("Registered Tide/Spring service factory and destination");
+        	log.info("Registered Tide/Spring service factory and destination %s", type);
         }
         else {
         	Factory factory = servicesConfig.findFactoryById("spring-factory");
@@ -246,6 +247,10 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
 	
 	public void setTide(boolean tide) {
 		this.tide = tide;
+	}
+	
+	public void setType(String type) {
+		this.type = type;
 	}
 	
 	

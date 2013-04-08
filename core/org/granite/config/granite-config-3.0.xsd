@@ -54,6 +54,7 @@
     <xs:attributeGroup name="attlist.ServerFilter">
 		<xs:attribute name="url-pattern" type="xs:string"/>
         <xs:attribute name="tide" type="xs:boolean" default="false"/>
+        <xs:attribute name="type" type="xs:string" default="server"/>
     </xs:attributeGroup>
     
     <xs:element name="tide-roles" type="graniteds:multiValuedProperty">

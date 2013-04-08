@@ -74,7 +74,7 @@ package org.granite.tide.spring {
 		}
 		
 		public static function getInstance(destination:String = null):Spring {
-			return Tide.getInstance(destination != null ? destination : "spring", Spring) as Spring;
+			return Tide.getInstance(destination != null ? destination : "server", Spring) as Spring;
 		}
 		
 		/**

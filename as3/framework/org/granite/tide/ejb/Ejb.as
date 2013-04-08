@@ -73,7 +73,7 @@ package org.granite.tide.ejb {
 		}
 		
 		public static function getInstance(destination:String = null):Ejb {
-			return Tide.getInstance(destination != null ? destination : "ejb", Ejb) as Ejb;
+			return Tide.getInstance(destination != null ? destination : "server", Ejb) as Ejb;
 		}
 		
 		/**

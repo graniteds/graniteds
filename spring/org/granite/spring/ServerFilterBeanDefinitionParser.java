@@ -58,7 +58,7 @@ public class ServerFilterBeanDefinitionParser extends AbstractSingleBeanDefiniti
 
         element.setAttribute(ID_ATTRIBUTE, SERVER_FILTER_BEAN_NAME);
         
-        mapOptionalAttributes(element, parserContext, builder, "tide");
+        mapOptionalAttributes(element, parserContext, builder, "tide", "type");
         
         Object source = parserContext.extractSource(element);
 
