@@ -57,7 +57,7 @@ public class TideDataPublishingAdviceBeanDefinitionParser implements BeanDefinit
 			AopNamespaceUtils.registerAutoProxyCreatorIfNecessary(parserContext, element);
 
 			if (!parserContext.getRegistry().containsBeanDefinition(DATA_PUBLISHING_ADVISOR_BEAN_NAME)) {
-				// Create the TransactionInterceptor definition.
+				// Create the interceptor definition.
 				RootBeanDefinition interceptorDef = new RootBeanDefinition(TideDataPublishingInterceptor.class);
 				interceptorDef.setSource(parserContext.extractSource(element));
 				interceptorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
