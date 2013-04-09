@@ -316,6 +316,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
         private javax.jms.Session jmsProducerSession = null;
         private javax.jms.MessageProducer jmsProducer = null;
         private Map<String, JMSConsumer> consumers = new HashMap<String, JMSConsumer>();
+        private boolean useGlassFishNoExceptionListenerWorkaround = false;
         private boolean useGlassFishNoCommitWorkaround = false;
         
         private ExceptionListener connectionExceptionListener = new ConnectionExceptionListener();
@@ -349,7 +350,17 @@ public class JMSServiceAdapter extends ServiceAdapter {
         	
             try {
                 jmsConnection = jmsConnectionFactory.createConnection();
-                jmsConnection.setExceptionListener(connectionExceptionListener);
+                if (!useGlassFishNoExceptionListenerWorkaround) {
+                	try {
+                		jmsConnection.setExceptionListener(connectionExceptionListener);
+                	}
+                	catch (JMSException e) {
+                		if (e.getMessage().startsWith("MQJMSRA_DC2001: Unsupported:setExceptionListener()"))
+                			useGlassFishNoExceptionListenerWorkaround = true;
+                		else
+                			throw e;
+                	}
+                }
                 jmsConnection.start();
                 log.debug("JMS client connected for channel " + channel.getId());
             }
