@@ -461,6 +461,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
             	ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
             	AMF3Deserializer deser = new AMF3Deserializer(bais);
             	msg = deser.readObject();
+            	deser.close(); // makes jdk7 happy (Resource leak: 'deser' is never closed)...
             }
             else
             	msg = message.getBody();
