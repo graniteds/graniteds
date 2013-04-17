@@ -63,14 +63,15 @@ public abstract class JavaClassDescriptor {
     protected abstract List<Property> introspectProperties();
 
     public static String getClassName(Class<?> clazz) {
-        if (Map.class.isAssignableFrom(clazz) &&
-            !Externalizable.class.isAssignableFrom(clazz) &&
-            GraniteContext.getCurrentInstance().getGraniteConfig().getExternalizer(clazz.getName()) == null)
-            return "";
+        if (Map.class.isAssignableFrom(clazz) && !Externalizable.class.isAssignableFrom(clazz)) {
+            Externalizer externalizer = GraniteContext.getCurrentInstance().getGraniteConfig().getExternalizer(clazz.getName());
+            if (externalizer == null)
+            	return "";
+        }
         RemoteClass alias = clazz.getAnnotation(RemoteClass.class);
         return alias != null ? alias.value() : clazz.getName();
     }
-
+    
     public Class<?> getType() {
         return type;
     }
