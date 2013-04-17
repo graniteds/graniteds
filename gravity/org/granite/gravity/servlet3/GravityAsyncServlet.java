@@ -21,8 +21,12 @@
 package org.granite.gravity.servlet3;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.servlet.AsyncContext;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,6 +36,14 @@ import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
+import org.granite.messaging.jmf.DefaultCodecRegistry;
+import org.granite.messaging.jmf.DefaultSharedContext;
+import org.granite.messaging.jmf.JMFDeserializer;
+import org.granite.messaging.jmf.JMFSerializer;
+import org.granite.messaging.jmf.SharedContext;
+import org.granite.util.ContentType;
+import org.granite.util.JMFAMFUtil;
+import org.granite.util.UUIDUtil;
 
 import flex.messaging.messages.Message;
 
@@ -44,6 +56,22 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 
 	private static final Logger log = Logger.getLogger(GravityAsyncServlet.class);
     
+    protected SharedContext jmfSharedContext = null;
+    
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+		
+        ServletContext servletContext = config.getServletContext();
+        synchronized (servletContext) {
+        	final String key = SharedContext.class.getName();
+        	jmfSharedContext = (SharedContext)servletContext.getAttribute(key);
+        	if (jmfSharedContext == null) {
+        		jmfSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), JMFAMFUtil.AMF_DEFAULT_STORED_STRINGS);
+        		servletContext.setAttribute(key, jmfSharedContext);
+        	}
+        }
+	}
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -55,7 +83,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 			throw new ServletException("Gravity Servlet3 implementation doesn't support dispatch(...) mode");
 
 		Gravity gravity = GravityManager.getGravity(getServletContext());
-		AsyncChannelFactory channelFactory = new AsyncChannelFactory(gravity);
+		AsyncChannelFactory channelFactory = newAsyncChannelFactory(gravity, request.getContentType());
         
 		try {
             initializeRequest(gravity, request, response);
@@ -112,7 +140,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 
             log.debug("<< [AMF3 RESPONSES] %s", (Object)amf3Responses);
 
-            serialize(gravity, response, amf3Responses);
+            serialize(gravity, response, amf3Responses, request.getContentType());
         }
         catch (IOException e) {
             log.error(e, "Gravity message error");
@@ -125,5 +153,86 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
         finally {
         	cleanupRequest(request);
         }
+	}
+
+
+	@Override
+	public void destroy() {
+		jmfSharedContext = null;
+
+		super.destroy();
+	}
+	
+	protected AsyncChannelFactory newAsyncChannelFactory(Gravity gravity, String contentType) {
+		if (ContentType.JMF_AMF.mimeType().equals(contentType))
+			return new JMFAsyncChannelFactory(gravity, jmfSharedContext);
+		return new AsyncChannelFactory(gravity);
+	}
+
+	@Override
+	protected Message[] deserialize(Gravity gravity, HttpServletRequest request) throws ClassNotFoundException, IOException {
+		if (ContentType.JMF_AMF.mimeType().equals(request.getContentType())) {
+			InputStream is = request.getInputStream();
+			try {
+				return deserializeJMFAMF(gravity, request, is);
+			}
+			finally {
+				is.close();
+			}
+		}
+		return super.deserialize(gravity, request);
+	}
+
+	@Override
+	protected Message[] deserialize(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException {
+		if (ContentType.JMF_AMF.mimeType().equals(request.getContentType()))
+			return deserializeJMFAMF(gravity, request, is);
+		return super.deserialize(gravity, request, is);
+	}
+	
+	protected Message[] deserializeJMFAMF(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException {
+        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
+		JMFDeserializer deserializer = new JMFDeserializer(is, jmfSharedContext);
+        return (Message[])deserializer.readObject();
+	}
+
+	protected void serialize(Gravity gravity, HttpServletResponse response, Message[] messages, String contentType) throws IOException {
+		if (ContentType.JMF_AMF.mimeType().equals(contentType))
+			serializeJMFAMF(gravity, response, messages);
+		else
+			super.serialize(gravity, response, messages);
+	}
+
+	protected void serializeJMFAMF(Gravity gravity, HttpServletResponse response, Message[] messages) throws IOException {
+		OutputStream os = null;
+		try {
+            // For SDK 2.0.1_Hotfix2+ (LCDS 2.5+).
+			String dsId = null;
+            for (Message message : messages) {
+	            if ("nil".equals(message.getHeader(Message.DS_ID_HEADER))) {
+	            	if (dsId == null)
+	            		dsId = UUIDUtil.randomUUID();
+	                message.getHeaders().put(Message.DS_ID_HEADER, dsId);
+	            }
+            }
+			
+	        response.setStatus(HttpServletResponse.SC_OK);
+	        response.setContentType(ContentType.JMF_AMF.mimeType());
+	        response.setDateHeader("Expire", 0L);
+	        response.setHeader("Cache-Control", "no-store");
+	        
+	        os = response.getOutputStream();
+
+	        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'serializer' is never closed)...
+            JMFSerializer serializer = new JMFSerializer(os, jmfSharedContext);
+            serializer.writeObject(messages);
+	        
+	        os.flush();
+	        response.flushBuffer();
+		}
+		finally {
+			if (os != null)
+				os.close();
+		}
 	}
 }

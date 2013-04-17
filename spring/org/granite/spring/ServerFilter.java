@@ -49,6 +49,7 @@ import org.granite.messaging.webapp.AMFEndpoint;
 import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -57,7 +58,7 @@ import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.ModelAndView;
 
 
-public class ServerFilter implements InitializingBean, ApplicationContextAware, ServletContextAware, HandlerAdapter {
+public class ServerFilter implements InitializingBean, DisposableBean, ApplicationContextAware, ServletContextAware, HandlerAdapter {
 	
     private static final Logger log = Logger.getLogger(ServerFilter.class);
 	
@@ -76,6 +77,7 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
     private boolean tide = false;
     private String type = "server";
     
+    private AMFEndpoint amfEndpoint = null;
 
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
 		this.context = context;
@@ -215,8 +217,16 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
         	
         	log.info("Registered Spring service factory");
         }
+        
+        amfEndpoint = new AMFEndpoint();
+        amfEndpoint.init(servletContext);
 	}
 	
+	public void destroy() throws Exception {
+		amfEndpoint.destroy();
+		amfEndpoint = null;
+	}
+
 	public void setTideRoles(List<String> tideRoles) {
 		this.tideRoles = tideRoles;
 	}
@@ -259,7 +269,7 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
 	}
 	
     public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		AMFEndpoint.service(graniteConfig, servicesConfig, servletContext, request, response);
+    	amfEndpoint.service(graniteConfig, servicesConfig, servletContext, request, response);
 		return null;
     }
 

@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -44,6 +45,13 @@ import org.granite.logging.Logger;
 import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.amf.io.AMF0Deserializer;
 import org.granite.messaging.amf.io.AMF0Serializer;
+import org.granite.messaging.jmf.DefaultCodecRegistry;
+import org.granite.messaging.jmf.DefaultSharedContext;
+import org.granite.messaging.jmf.JMFDeserializer;
+import org.granite.messaging.jmf.JMFSerializer;
+import org.granite.messaging.jmf.SharedContext;
+import org.granite.util.ContentType;
+import org.granite.util.JMFAMFUtil;
 import org.granite.util.ServletParams;
 
 /**
@@ -53,13 +61,15 @@ public class AMFMessageFilter implements Filter {
 
     private static final Logger log = Logger.getLogger(AMFMessageFilter.class);
     
-    private FilterConfig config = null;
-    private GraniteConfig graniteConfig = null;
-    private ServicesConfig servicesConfig = null;
+    protected FilterConfig config = null;
+    protected GraniteConfig graniteConfig = null;
+    protected ServicesConfig servicesConfig = null;
     
-    private Integer inputBufferSize = null;
-    private Integer outputBufferSize = null;
-    private boolean closeStreams = true;
+    protected Integer inputBufferSize = null;
+    protected Integer outputBufferSize = null;
+    protected boolean closeStreams = true;
+    
+    protected SharedContext jmfSharedContext = null;
 
     public void init(FilterConfig config) throws ServletException {
         this.config = config;
@@ -76,6 +86,16 @@ public class AMFMessageFilter implements Filter {
         	throw new ServletException("Illegal value for outputBufferSize=" + outputBufferSize + " (should be > 0, fix your web.xml)");
         
         log.info("Using configuration: {closeStreams=%s, inputBufferSize=%s, outputBufferSize=%s}", closeStreams, inputBufferSize, outputBufferSize);
+        
+        ServletContext servletContext = config.getServletContext();
+        synchronized (servletContext) {
+        	final String key = SharedContext.class.getName();
+        	jmfSharedContext = (SharedContext)servletContext.getAttribute(key);
+        	if (jmfSharedContext == null) {
+        		jmfSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), JMFAMFUtil.AMF_DEFAULT_STORED_STRINGS);
+        		servletContext.setAttribute(key, jmfSharedContext);
+        	}
+        }
     }
 
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -86,6 +106,15 @@ public class AMFMessageFilter implements Filter {
 
         HttpServletRequest request = (HttpServletRequest)req;
         HttpServletResponse response = (HttpServletResponse)resp;
+        
+        if (ContentType.JMF_AMF.mimeType().equals(request.getContentType()))
+        	doJMFAMFFilter(request, response, chain);
+        else
+        	doAMFFilter(request, response, chain);
+    }
+    
+    protected void doAMFFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+        throws IOException, ServletException {
         
         log.debug(">> Incoming AMF0 request from: %s", request.getRequestURL());
 
@@ -121,7 +150,7 @@ public class AMFMessageFilter implements Filter {
             log.debug("<< Serializing AMF0 response: %s", amf0Response);
 
             response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType(AMF0Message.CONTENT_TYPE);
+            response.setContentType(ContentType.AMF.mimeType());
 	        response.setDateHeader("Expire", 0L);
 	        response.setHeader("Cache-Control", "no-store");
             
@@ -169,10 +198,91 @@ public class AMFMessageFilter implements Filter {
             GraniteContext.release();
         }
     }
+    
+    protected void doJMFAMFFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+        throws IOException, ServletException {
+        
+    	log.debug(">> Incoming JMF+AMF request from: %s", request.getRequestURL());
+
+        InputStream is = null;
+        OutputStream os = null;
+        
+        try {
+        	is = request.getInputStream();
+        	
+            GraniteContext context = HttpGraniteContext.createThreadIntance(
+                graniteConfig, servicesConfig, config.getServletContext(),
+                request, response
+            );
+
+            AMFContextImpl amf = (AMFContextImpl)context.getAMFContext();
+
+            log.debug(">> Deserializing JMF+AMF request...");
+
+            @SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
+			JMFDeserializer deserializer = new JMFDeserializer(is, jmfSharedContext);
+            AMF0Message amf0Request = (AMF0Message)deserializer.readObject();
+
+            amf.setAmf0Request(amf0Request);
+
+            log.debug(">> Chaining AMF0 request: %s", amf0Request);
+
+            chain.doFilter(request, response);
+
+            AMF0Message amf0Response = amf.getAmf0Response();
+
+            log.debug("<< Serializing JMF+AMF response: %s", amf0Response);
+
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType(ContentType.JMF_AMF.mimeType());
+	        response.setDateHeader("Expire", 0L);
+	        response.setHeader("Cache-Control", "no-store");
+            
+	        os = response.getOutputStream();
+
+            @SuppressWarnings("all") // JDK7 warning (Resource leak: 'serializer' is never closed)...
+	        JMFSerializer serializer = new JMFSerializer(os, jmfSharedContext);
+            serializer.writeObject(amf0Response);
+            
+            response.flushBuffer();
+        }
+        catch (IOException e) {
+        	if ("org.apache.catalina.connector.ClientAbortException".equals(e.getClass().getName()))
+        		log.debug(e, "Connection closed by client");
+        	else
+        		log.error(e, "JMF+AMF message error");
+            throw e;
+        }
+        catch (Exception e) {
+            log.error(e, "JMF+AMF message error");
+            throw new ServletException(e);
+        }
+        finally {
+        	if (is != null) {
+        		try {
+        			is.close();
+        		} catch (IOException e) {
+        			log.error(e, "Error while closing request input stream");
+        		}
+        	}
+        	
+        	if (os != null) {
+        		try {
+        			os.close();
+        		} catch (IOException e) {
+        			log.error(e, "Error while closing response output stream");
+        		}
+        	}
+        	
+            GraniteContext.release();
+        }
+    }
 
     public void destroy() {
         this.config = null;
         this.graniteConfig = null;
         this.servicesConfig = null;
+        
+        this.jmfSharedContext = null;
     }
 }
