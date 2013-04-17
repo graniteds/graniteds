@@ -39,5 +39,16 @@ package org.granite.collections {
                 value = new UIDArraySet(value.toArray());
             super.list = value;
         }
+		
+		override public function addAllAt(addList:IList, index:int):void { 
+			var length:int = addList.length; 
+			var position:int = 0; 
+			for (var i:int = 0; i < length; i++) { 
+				var oldLength:int = this.length; 
+				this.addItemAt(addList.getItemAt(i), position+index); 
+				if (oldLength < this.length) 
+					position++;
+			} 
+		}
     }
 }
