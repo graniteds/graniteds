@@ -20,7 +20,6 @@
 
 package org.granite.tide.hibernate;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.granite.tide.validators.EntityValidator;
