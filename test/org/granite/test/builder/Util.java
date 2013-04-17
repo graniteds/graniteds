@@ -15,11 +15,16 @@ public class Util {
 	
 	public static String readFile(File file) throws IOException {
 		BufferedReader fr = new BufferedReader(new FileReader(file));
-		StringBuilder sb = new StringBuilder();
-		String line;
-		while ((line = fr.readLine()) != null)
-			sb.append(line).append("\n");
-		return sb.toString();
+		try {
+			StringBuilder sb = new StringBuilder();
+			String line;
+			while ((line = fr.readLine()) != null)
+				sb.append(line).append("\n");
+			return sb.toString();
+		}
+		finally {
+			fr.close();
+		}
 	}
 	
 	public static JavaMethod findMethod(JavaRemoteDestination jrd, String name, Class<?>... argTypes) {

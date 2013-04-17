@@ -34,18 +34,22 @@ public class MockJavaAs3GroovyConfiguration implements JavaAs3GroovyConfiguratio
 		this.tide = tide;
 	}
 	
+	@Override
 	public GroovyTemplateFactory getGroovyTemplateFactory() {
 		return groovyTemplateFactory;
 	}
 
+	@Override
 	public ClassLoader getClassLoader() {
 		return getClass().getClassLoader();
 	}
 
+	@Override
 	public String getUid() {
 		return "uid";
 	}
 
+	@Override
 	public boolean isGenerated(Class<?> clazz) {
 		return fileSetClasses.contains(clazz);
 	}
@@ -55,10 +59,12 @@ public class MockJavaAs3GroovyConfiguration implements JavaAs3GroovyConfiguratio
 			fileSetClasses.add(clazz);
 	}
 
+	@Override
 	public As3TypeFactory getAs3TypeFactory() {
 		return as3TypeFactory;
 	}
 
+	@Override
 	public List<PackageTranslator> getTranslators() {
 		return Collections.emptyList();
 	}
@@ -67,14 +73,17 @@ public class MockJavaAs3GroovyConfiguration implements JavaAs3GroovyConfiguratio
 		return null;
 	}
 
+	@Override
 	public EntityFactory getEntityFactory() {
 		return entityFactory;
 	}
 
+	@Override
 	public RemoteDestinationFactory getRemoteDestinationFactory() {
 		return remoteDestinationFactory;
 	}
 
+	@Override
 	public TemplateUri[] getTemplateUris(Kind kind, Class<?> clazz) {
 		switch (kind) {
 		case ENTITY:

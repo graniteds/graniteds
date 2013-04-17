@@ -142,7 +142,8 @@ public class JavaFXType implements ClientType {
     	return imports;
     }
     
-    public void addImports(Set<String> classNames) {
+    @Override
+	public void addImports(Set<String> classNames) {
     	for (String className : classNames) {
     		if (className.indexOf(".") < 0 || className.startsWith("java.lang"))
     			continue;
