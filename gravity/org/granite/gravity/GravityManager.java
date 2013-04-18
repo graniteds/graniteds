@@ -60,9 +60,12 @@ public class GravityManager {
 	 * @throws ServletException if something goes wrong (GravityFactory not found, Gravity.start() error, etc.)
 	 */
     public static Gravity start(ServletConfig servletConfig) throws ServletException {
+        return start(servletConfig.getServletContext());
+    }
+    
+    public static Gravity start(ServletContext context) throws ServletException {
     	Gravity gravity = null;
     	
-    	ServletContext context = servletConfig.getServletContext();
     	synchronized (context) {
 	    	
     		gravity = (Gravity)context.getAttribute(GRAVITY_KEY);
