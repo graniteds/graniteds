@@ -23,7 +23,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	TestJMFLong.class,
 	TestJMFObject.class,
 	TestJMFShort.class,
-	TestJMFString.class,
+	TestJMFString.class
 })
 public class AllTests {
 
