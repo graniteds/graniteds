@@ -31,10 +31,20 @@ public enum ContentType {
 	private final String mimeType;
 	
 	ContentType(String mimeType) {
+		if (mimeType == null)
+			throw new NullPointerException("mimeType cannot be null");
 		this.mimeType = mimeType;
 	}
 
 	public String mimeType() {
 		return mimeType;
+	}
+	
+	public static ContentType forMimeType(String mimeType) {
+		for (ContentType type : values()) {
+			if (type.mimeType.equals(mimeType))
+				return type;
+		}
+		return null;
 	}
 }
