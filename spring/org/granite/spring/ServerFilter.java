@@ -51,6 +51,7 @@ import org.granite.util.XMap;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.ServletContextAware;
@@ -62,8 +63,10 @@ public class ServerFilter implements InitializingBean, DisposableBean, Applicati
 	
     private static final Logger log = Logger.getLogger(ServerFilter.class);
 	
-    private ApplicationContext context = null;
+    @Autowired(required=false)
     private ServletContext servletContext = null;
+    private ApplicationContext context = null;
+    
     private GraniteConfig graniteConfig = null;
     private ServicesConfig servicesConfig = null;
     
