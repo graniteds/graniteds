@@ -311,6 +311,7 @@
             <batchtest todir="test-reports/java" fork="true">
                 <fileset dir="java">
                 	<include name="**/*Test.java"/>
+                	<include name="**/TestJMF*.java"/>
                     <exclude name="**/seam/*Test.java"/>
                     <exclude name="**/spring/*Test.java"/>
                     <exclude name="**/ejb/*Test.java"/>
