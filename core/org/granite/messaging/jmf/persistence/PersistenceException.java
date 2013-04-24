@@ -18,30 +18,32 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.codec;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-
-import org.granite.messaging.jmf.ExtendedObjectInput;
-import org.granite.messaging.jmf.ExtendedObjectOutput;
+package org.granite.messaging.jmf.persistence;
 
 /**
  * @author Franck WOLFF
  */
-public interface ExtendedObjectCodec {
+public class PersistenceException extends RuntimeException {
 
-	boolean canEncode(Class<?> cls);
-	boolean canDecode(Class<?> cls);
+	private static final long serialVersionUID = 1L;
 
-	String getEncodedClassName(Class<?> cls);
-	
-	void encode(ExtendedObjectOutput out, Object v) throws IOException, IllegalAccessException;
-	
-	Object newInstance(ExtendedObjectInput in, Class<?> cls)
-		throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException,
-		SecurityException, NoSuchMethodException;
-	
-	void decode(ExtendedObjectInput in, Object v)
-		throws IOException, ClassNotFoundException, IllegalAccessException;
+	public PersistenceException() {
+	}
+
+	public PersistenceException(String message) {
+		super(message);
+	}
+
+	public PersistenceException(Throwable cause) {
+		super(cause);
+	}
+
+	public PersistenceException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public PersistenceException(String message, Throwable cause,
+			boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
 }

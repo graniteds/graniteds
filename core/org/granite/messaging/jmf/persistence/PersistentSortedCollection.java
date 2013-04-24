@@ -18,30 +18,14 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.codec;
+package org.granite.messaging.jmf.persistence;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-
-import org.granite.messaging.jmf.ExtendedObjectInput;
-import org.granite.messaging.jmf.ExtendedObjectOutput;
+import java.util.Comparator;
 
 /**
  * @author Franck WOLFF
  */
-public interface ExtendedObjectCodec {
+public interface PersistentSortedCollection<E> extends PersistentCollection {
 
-	boolean canEncode(Class<?> cls);
-	boolean canDecode(Class<?> cls);
-
-	String getEncodedClassName(Class<?> cls);
-	
-	void encode(ExtendedObjectOutput out, Object v) throws IOException, IllegalAccessException;
-	
-	Object newInstance(ExtendedObjectInput in, Class<?> cls)
-		throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException,
-		SecurityException, NoSuchMethodException;
-	
-	void decode(ExtendedObjectInput in, Object v)
-		throws IOException, ClassNotFoundException, IllegalAccessException;
+	Comparator<? super E> comparator();
 }

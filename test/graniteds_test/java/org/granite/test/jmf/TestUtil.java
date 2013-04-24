@@ -15,6 +15,7 @@ import org.granite.messaging.jmf.DefaultSharedContext;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFDumper;
 import org.granite.messaging.jmf.JMFSerializer;
+import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 
 public class TestUtil {
@@ -45,11 +46,15 @@ public class TestUtil {
 		}
 		
 		public ByteArrayJMFSerializer(CodecRegistry codecRegistry) {
-			super(new ByteArrayOutputStream(), new DefaultSharedContext(codecRegistry));
+			this(new DefaultSharedContext(codecRegistry));
 		}
 		
 		public ByteArrayJMFSerializer(List<ExtendedObjectCodec> extendedCodecs) {
-			super(new ByteArrayOutputStream(), new DefaultSharedContext(new DefaultCodecRegistry(extendedCodecs)));
+			this(new DefaultSharedContext(new DefaultCodecRegistry(extendedCodecs)));
+		}
+		
+		public ByteArrayJMFSerializer(SharedContext sharedContext) {
+			super(new ByteArrayOutputStream(), sharedContext);
 		}
 		
 		public byte[] toByteArray() {
@@ -72,11 +77,15 @@ public class TestUtil {
 		}
 		
 		public ByteArrayJMFDeserializer(byte[] bytes, CodecRegistry codecRegistry) {
-			super(new ByteArrayInputStream(bytes), new DefaultSharedContext(codecRegistry));
+			this(bytes, new DefaultSharedContext(codecRegistry));
 		}
 		
 		public ByteArrayJMFDeserializer(byte[] bytes, List<ExtendedObjectCodec> extendedCodecs) {
-			super(new ByteArrayInputStream(bytes), new DefaultSharedContext(new DefaultCodecRegistry(extendedCodecs)));
+			this(bytes, new DefaultSharedContext(new DefaultCodecRegistry(extendedCodecs)));
+		}
+		
+		public ByteArrayJMFDeserializer(byte[] bytes, SharedContext sharedContext) {
+			super(new ByteArrayInputStream(bytes), sharedContext);
 		}
 
 		public int readVariableInt() throws IOException {
@@ -95,7 +104,11 @@ public class TestUtil {
 		}
 		
 		public ByteArrayJMFDumper(byte[] bytes, CodecRegistry codecRegistry, PrintStream ps) {
-			super(new ByteArrayInputStream(bytes), new DefaultSharedContext(codecRegistry), ps);
+			this(bytes, new DefaultSharedContext(codecRegistry), ps);
+		}
+		
+		public ByteArrayJMFDumper(byte[] bytes, SharedContext sharedContext, PrintStream ps) {
+			super(new ByteArrayInputStream(bytes), sharedContext, ps);
 		}
 	}
 	

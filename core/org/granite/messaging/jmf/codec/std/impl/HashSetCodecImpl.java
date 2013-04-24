@@ -57,11 +57,13 @@ public class HashSetCodecImpl extends AbstractIntegerStringCodec<HashSet<?>> imp
 		else {
 			ctx.addToStoredObjects(v);
 			
-			IntegerComponents ics = intComponents(v.size());
+			Object[] snapshot = v.toArray();
+			
+			IntegerComponents ics = intComponents(snapshot.length);
 			os.write((ics.length << 5) | JMF_HASH_SET);
 			writeIntData(ctx, ics);
 
-			for (Object element : v)
+			for (Object element : snapshot)
 				ctx.writeObject(element);
 		}
 	}

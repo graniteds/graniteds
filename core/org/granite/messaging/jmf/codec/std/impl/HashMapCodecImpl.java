@@ -58,13 +58,15 @@ public class HashMapCodecImpl extends AbstractIntegerStringCodec<HashMap<?, ?>> 
 		else {
 			ctx.addToStoredObjects(v);
 			
-			IntegerComponents ics = intComponents(v.size());
+			Map.Entry<?, ?>[] snapshot = v.entrySet().toArray(new Map.Entry<?, ?>[0]);
+			
+			IntegerComponents ics = intComponents(snapshot.length);
 			os.write((ics.length << 5) | JMF_HASH_MAP);
 			writeIntData(ctx, ics);
-
-			for (Map.Entry<?, ?> element : v.entrySet()) {
-				ctx.writeObject(element.getKey());
-				ctx.writeObject(element.getValue());
+			
+			for (Map.Entry<?, ?> entry : snapshot) {
+				ctx.writeObject(entry.getKey());
+				ctx.writeObject(entry.getValue());
 			}
 		}
 	}

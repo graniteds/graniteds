@@ -84,18 +84,22 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 			
 			ctx.addToStoredObjects(v);
 			
-			writeString(ctx, v.getClass().getName(), TYPE_HANDLER);
+			Class<?> cls = v.getClass();
+			String className = cls.getName();
+					
+			ExtendedObjectCodec extendedCodec = ctx.getSharedContext().getCodecRegistry().findExtendedEncoder(v.getClass());
+			if (extendedCodec != null)
+				className = extendedCodec.getEncodedClassName(cls);
 			
-			if (v instanceof Externalizable)
+			writeString(ctx, className, TYPE_HANDLER);
+			
+			if (extendedCodec != null)
+				extendedCodec.encode(ctx, v);
+			else if (v instanceof Externalizable)
 				((Externalizable)v).writeExternal(ctx);
-			else {
-				ExtendedObjectCodec extendedCodec = ctx.getSharedContext().getCodecRegistry().findExtendedEncoder(v.getClass());
-				if (extendedCodec != null)
-					extendedCodec.encode(ctx, v);
-				else
-					encodeSerializable(ctx, (Serializable)v);
-			}
-			
+			else
+				encodeSerializable(ctx, (Serializable)v);
+
 			os.write(JMF_OBJECT_END);
 		}
 	}
@@ -129,23 +133,21 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 			if (!Serializable.class.isAssignableFrom(cls))
 				throw new NotSerializableException(cls.getName());
 			
-			if (Externalizable.class.isAssignableFrom(cls)) {
+			ExtendedObjectCodec extendedCodec = codecRegistry.findExtendedDecoder(cls);
+			if (extendedCodec != null) {
+				v = extendedCodec.newInstance(ctx, cls);
+				ctx.addToStoredObjects(v);
+				extendedCodec.decode(ctx, v);
+			}
+			else if (Externalizable.class.isAssignableFrom(cls)) {
 				v = ObjectCodecUtil.findDefaultContructor(cls).newInstance();
 				ctx.addToStoredObjects(v);
 				((Externalizable)v).readExternal(ctx);
 			}
 			else {
-				ExtendedObjectCodec extendedCodec = codecRegistry.findExtendedDecoder(cls);
-				if (extendedCodec != null) {
-					v = extendedCodec.newInstance(cls);
-					ctx.addToStoredObjects(v);
-					extendedCodec.decode(ctx, v);
-				}
-				else {
-					v = ObjectCodecUtil.findDefaultContructor(cls).newInstance();
-					ctx.addToStoredObjects(v);
-					decodeSerializable(ctx, (Serializable)v);
-				}
+				v = ObjectCodecUtil.findDefaultContructor(cls).newInstance();
+				ctx.addToStoredObjects(v);
+				decodeSerializable(ctx, (Serializable)v);
 			}
 			
 			int mark = ctx.safeRead();
@@ -161,7 +163,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 
 		List<Field> fields = ObjectCodecUtil.findSerializableFields(v.getClass());
 		for (Field field : fields)
-			ctx.readField(v, field);
+			ctx.readAndSetField(v, field);
 	}
 
 	public void dump(DumpContext ctx, int parameterizedJmfType) throws IOException {

@@ -18,30 +18,34 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.codec;
+package org.granite.hibernate.jmf;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
-import org.granite.messaging.jmf.ExtendedObjectInput;
-import org.granite.messaging.jmf.ExtendedObjectOutput;
+import org.hibernate.collection.PersistentList;
 
 /**
  * @author Franck WOLFF
  */
-public interface ExtendedObjectCodec {
+public class PersistentListCodec extends AbstractPersistentCollectionCodec<PersistentList> {
 
-	boolean canEncode(Class<?> cls);
-	boolean canDecode(Class<?> cls);
+	public PersistentListCodec() {
+		super(PersistentList.class);
+	}
 
-	String getEncodedClassName(Class<?> cls);
-	
-	void encode(ExtendedObjectOutput out, Object v) throws IOException, IllegalAccessException;
-	
-	Object newInstance(ExtendedObjectInput in, Class<?> cls)
-		throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException,
-		SecurityException, NoSuchMethodException;
-	
-	void decode(ExtendedObjectInput in, Object v)
-		throws IOException, ClassNotFoundException, IllegalAccessException;
+	@Override
+	protected PersistentList newCollection(boolean initialized) {
+		return (initialized ? new PersistentList(null, new ArrayList<Object>()) : new PersistentList(null));
+	}
+
+	@Override
+	protected Object[] getElements(PersistentList collection) {
+		return collection.toArray();
+	}
+
+	@Override
+	protected void setElements(PersistentList collection, Object[] elements) {
+		collection.addAll(Arrays.asList(elements));
+	}
 }

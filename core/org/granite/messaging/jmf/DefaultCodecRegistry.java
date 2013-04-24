@@ -216,13 +216,15 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	}
 
 	public int jmfTypeOfPrimitiveClass(Class<?> cls) {
+		if (!cls.isPrimitive())
+			return -1;
 		StandardCodec<?> codec = classToCodec.get(cls);
 		return (codec instanceof PrimitiveCodec ? ((PrimitiveCodec<?>)codec).getPrimitiveType() : -1);
 	}
 
 	public Class<?> primitiveClassOfJmfType(int jmfType) {
 		StandardCodec<?> codec = typeToCodec.get(Integer.valueOf(jmfType));
-		return (codec instanceof PrimitiveCodec ? ((PrimitiveCodec<?>)codec).getPrimitiveClass() : null);
+		return (codec instanceof PrimitiveCodec && ((PrimitiveCodec<?>)codec).getPrimitiveType() == jmfType ? ((PrimitiveCodec<?>)codec).getPrimitiveClass() : null);
 	}
 	
 	protected List<StandardCodec<?>> getStandardCodecs() {

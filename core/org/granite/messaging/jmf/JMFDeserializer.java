@@ -250,10 +250,14 @@ public class JMFDeserializer implements InputContext {
 	///////////////////////////////////////////////////////////////////////////
 	// ExtendedObjectInput implementation
 
-	public void readField(Object obj, Field field) throws IOException, ClassNotFoundException, IllegalAccessException {
+	public void readAndSetField(Object obj, Field field) throws IOException, ClassNotFoundException, IllegalAccessException {
 		if (field.getType().isPrimitive())
 			codecRegistry.getPrimitiveFieldCodec(field.getType()).decodePrimitive(this, obj, field);
 		else
 			field.set(obj, readObject());
+	}
+
+	public ClassLoader getClassLoader() {
+		return context.getClassLoader();
 	}
 }

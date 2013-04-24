@@ -435,6 +435,9 @@ public class TestJMFArray implements JMFConstants {
 
 		objects = new Object[]{"bla", 234, 1.0, null, 0L, 3.0F, 'c'};
 		Assert.assertTrue(Arrays.equals(objects, (Object[])serializeDeserializeArray(objects)));
+
+		Integer[] integers = {1, 2, 3, 4, 5};
+		Assert.assertTrue(Arrays.equals(integers, (Integer[])serializeDeserializeArray(integers)));
 		
 		Object[][] objects2d = {};
 		Assert.assertTrue(Arrays.deepEquals(objects2d, (Object[][])serializeDeserializeArray(objects2d)));

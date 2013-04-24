@@ -54,7 +54,11 @@ public class EntityCodec implements ExtendedObjectCodec {
 		return cls.isAnnotationPresent(Entity.class) || cls.isAnnotationPresent(MappedSuperclass.class);
 	}
 
-	public Object newInstance(Class<?> cls)
+	public String getEncodedClassName(Class<?> cls) {
+		return cls.getName();
+	}
+
+	public Object newInstance(ExtendedObjectInput in, Class<?> cls)
 		throws InstantiationException, IllegalAccessException, InvocationTargetException,
 		SecurityException, NoSuchMethodException {
 		
@@ -69,6 +73,6 @@ public class EntityCodec implements ExtendedObjectCodec {
 		
 		List<Field> fields = ObjectCodecUtil.findSerializableFields(cls);
 		for (Field field : fields)
-			in.readField(v, field);
+			in.readAndSetField(v, field);
 	}
 }
