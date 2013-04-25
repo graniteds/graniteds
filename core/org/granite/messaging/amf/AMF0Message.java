@@ -25,7 +25,6 @@ public class AMF0Message implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String CONTENT_TYPE = "application/x-amf";
     public static final int CURRENT_VERSION = 3;
 
     protected int version = CURRENT_VERSION;

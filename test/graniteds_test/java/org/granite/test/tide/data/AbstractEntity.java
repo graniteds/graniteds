@@ -77,7 +77,6 @@ public abstract class AbstractEntity implements Serializable {
         return uid().hashCode();
     }
     
-    @SuppressWarnings("unused")
 	@PrePersist
     private void onPrePersist() {
         uid();

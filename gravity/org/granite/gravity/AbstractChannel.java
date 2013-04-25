@@ -36,8 +36,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
-import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.util.ContentType;
 
 import flex.messaging.messages.AsyncMessage;
 
@@ -213,6 +213,14 @@ public abstract class AbstractChannel implements Channel {
 		return runReceived(null);
 	}
 	
+	protected ObjectOutput newSerializer(GraniteContext context, OutputStream os) {
+		return context.getGraniteConfig().newAMF3Serializer(os);
+	}
+	
+	protected String getSerializerContentType() {
+		return ContentType.AMF.mimeType();
+	}
+	
 	public boolean runReceived(AsyncHttpContext asyncHttpContext) {
 		
 		boolean httpAsParam = (asyncHttpContext != null); 
@@ -264,16 +272,16 @@ public abstract class AbstractChannel implements Channel {
 	        // Write messages to response output stream.
 
 	        response.setStatus(HttpServletResponse.SC_OK);
-	        response.setContentType(AMF0Message.CONTENT_TYPE);
+	        response.setContentType(getSerializerContentType());
 	        response.setDateHeader("Expire", 0L);
 	        response.setHeader("Cache-Control", "no-store");
 	        
 	        os = response.getOutputStream();
-	        ObjectOutput amf3Serializer = context.getGraniteConfig().newAMF3Serializer(os);
+	        ObjectOutput serializer = newSerializer(context, os);
 	        
 	        log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
 	        
-	        amf3Serializer.writeObject(messagesArray);
+	        serializer.writeObject(messagesArray);
 	        
 	        os.flush();
 	        response.flushBuffer();

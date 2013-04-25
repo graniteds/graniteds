@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.granite.context.GraniteContext;
-import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.util.ContentType;
 import org.granite.util.UUIDUtil;
 
 import flex.messaging.messages.CommandMessage;
@@ -98,7 +98,7 @@ public class GravityServletUtil {
             }
 			
 	        response.setStatus(HttpServletResponse.SC_OK);
-	        response.setContentType(AMF0Message.CONTENT_TYPE);
+	        response.setContentType(ContentType.AMF.mimeType());
 	        response.setDateHeader("Expire", 0L);
 	        response.setHeader("Cache-Control", "no-store");
 	        

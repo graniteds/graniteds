@@ -115,9 +115,11 @@ public class DefaultConvertersTest {
         BigInteger.valueOf(Long.MAX_VALUE)
     };
 
-    private ArrayList<?> arrayListOfWildcard = new ArrayList();
+    @SuppressWarnings("all")
+	private ArrayList<?> arrayListOfWildcard = new ArrayList();
     private Field arrayListOfWildcardField = null;
 
+    @SuppressWarnings("all")
     private HashMap<?, ?> hashMapOfWildcards = new HashMap();
     private Field hashMapOfWildcardsField = null;
 
@@ -153,6 +155,7 @@ public class DefaultConvertersTest {
     private Set<Long> setOfLong = null;
     private Field setOfLongField = null;
     
+    @SuppressWarnings("all")
     private List<ValueExpression> listOfValueExpressions = null;
     private Field listOfValueExpressionsField = null;
     
@@ -871,6 +874,7 @@ public class DefaultConvertersTest {
     public static class C<T> {C<? extends T> c = this;}
     public static class D<T> {D<T> d = this;}
 
+	@SuppressWarnings("all")
 	public static abstract class AbstractParent<T extends AbstractParent> {
 		T parent;
 
@@ -883,6 +887,7 @@ public class DefaultConvertersTest {
 		}
 	}
 
+	@SuppressWarnings("all")
 	public static class Child extends AbstractParent {/**/}
 	
 	public static class SubChild extends AbstractParent<Child> {/**/}

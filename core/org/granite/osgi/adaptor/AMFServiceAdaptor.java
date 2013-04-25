@@ -45,6 +45,7 @@ import org.granite.messaging.amf.process.AMF0MessageProcessor;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.osgi.Activator;
 import org.granite.osgi.constants.OSGIConstants;
+import org.granite.util.ContentType;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
@@ -122,7 +123,7 @@ public class AMFServiceAdaptor extends HttpServlet {
 				log.info("<<<<< Returning AMF0 response: " + amf0Response);
 
 			//Phase3 Send back response to the client
-			response.setContentType(AMF0Message.CONTENT_TYPE);
+			response.setContentType(ContentType.AMF.mimeType());
 			AMF0Serializer serializer = new AMF0Serializer(new DataOutputStream(response.getOutputStream()));
 			serializer.serializeMessage(amf0Response);
 			if(log.isInfoEnabled())

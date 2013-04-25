@@ -38,6 +38,13 @@ import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.amf.io.AMF0Deserializer;
 import org.granite.messaging.amf.io.AMF0Serializer;
 import org.granite.messaging.amf.process.AMF0MessageProcessor;
+import org.granite.messaging.jmf.DefaultCodecRegistry;
+import org.granite.messaging.jmf.DefaultSharedContext;
+import org.granite.messaging.jmf.JMFDeserializer;
+import org.granite.messaging.jmf.JMFSerializer;
+import org.granite.messaging.jmf.SharedContext;
+import org.granite.util.ContentType;
+import org.granite.util.JMFAMFUtil;
 
 /**
  * @author Franck WOLFF
@@ -45,8 +52,34 @@ import org.granite.messaging.amf.process.AMF0MessageProcessor;
 public class AMFEndpoint {
 
     private static final Logger log = Logger.getLogger(AMFEndpoint.class);
-	
-    public static void service(GraniteConfig graniteConfig, ServicesConfig servicesConfig, ServletContext context,
+    
+    private SharedContext jmfSharedContext = null;
+
+    public void init(ServletContext context) {
+        synchronized (context) {
+        	final String key = SharedContext.class.getName();
+        	jmfSharedContext = (SharedContext)context.getAttribute(key);
+        	if (jmfSharedContext == null) {
+        		jmfSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), JMFAMFUtil.AMF_DEFAULT_STORED_STRINGS);
+        		context.setAttribute(key, jmfSharedContext);
+        	}
+        }
+    }
+    
+    public void destroy() {
+    	jmfSharedContext = null;
+    }
+    
+    public void service(GraniteConfig graniteConfig, ServicesConfig servicesConfig, ServletContext context,
+    		HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    	
+    	if (ContentType.JMF_AMF.mimeType().equals(request.getContentType()))
+    		serviceJMFAMF(graniteConfig, servicesConfig, context, request, response);
+    	else
+    		serviceAMF(graniteConfig, servicesConfig, context, request, response);
+    }
+    
+    protected void serviceAMF(GraniteConfig graniteConfig, ServicesConfig servicesConfig, ServletContext context,
     		HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {	    
 	    log.debug(">> Incoming AMF0 request from: %s", request.getRequestURL());
 
@@ -73,7 +106,7 @@ public class AMFEndpoint {
 	        log.debug("<< Serializing AMF0 response: %s", amf0Response);
 	
 	        response.setStatus(HttpServletResponse.SC_OK);
-	        response.setContentType(AMF0Message.CONTENT_TYPE);
+	        response.setContentType(ContentType.AMF.mimeType());
 	        response.setDateHeader("Expire", 0L);
 	        response.setHeader("Cache-Control", "no-store");
 	        
@@ -93,6 +126,62 @@ public class AMFEndpoint {
 	    }
 	    catch (Exception e) {
 	        log.error(e, "AMF message error");
+	        throw new ServletException(e);
+	    }
+	    finally {
+	        GraniteContext.release();
+	    }
+	}
+    
+    protected void serviceJMFAMF(GraniteConfig graniteConfig, ServicesConfig servicesConfig, ServletContext context,
+    		HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {	    
+	    log.debug(">> Incoming JMF+AMF request from: %s", request.getRequestURL());
+
+	    InputStream is = null;
+	    OutputStream os = null;
+	    
+	    try {
+    		is = request.getInputStream();
+	    	
+	        HttpGraniteContext.createThreadIntance(
+	            graniteConfig, servicesConfig, context,
+	            request, response
+	        );
+	
+	        log.debug(">> Deserializing JMF+AMF request...");
+	
+	        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
+			JMFDeserializer deserializer = new JMFDeserializer(is, jmfSharedContext);
+	        AMF0Message amf0Request = (AMF0Message)deserializer.readObject();
+
+            log.debug(">> Processing AMF0 request: %s", amf0Request);
+
+            AMF0Message amf0Response = AMF0MessageProcessor.process(amf0Request);
+	
+	        log.debug("<< Serializing JMF+AMF response: %s", amf0Response);
+	
+	        response.setStatus(HttpServletResponse.SC_OK);
+	        response.setContentType(ContentType.JMF_AMF.mimeType());
+	        response.setDateHeader("Expire", 0L);
+	        response.setHeader("Cache-Control", "no-store");
+	        
+	        os = response.getOutputStream();
+	        
+	        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'serializer' is never closed)...
+			JMFSerializer serializer = new JMFSerializer(os, jmfSharedContext);
+	        serializer.writeObject(amf0Response);
+	        
+	        response.flushBuffer();
+	    }
+	    catch (IOException e) {
+	    	if ("org.apache.catalina.connector.ClientAbortException".equals(e.getClass().getName()))
+	    		log.debug(e, "Connection closed by client");
+	    	else
+	    		log.error(e, "JMF+AMF message error");
+	        throw e;
+	    }
+	    catch (Exception e) {
+	        log.error(e, "JMF+AMF message error");
 	        throw new ServletException(e);
 	    }
 	    finally {

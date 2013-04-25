@@ -84,6 +84,8 @@ public class ServerFilter extends AbstractFilter {
     private boolean tide = false;
     private String type = "server";
     
+    private AMFEndpoint amfEndpoint = null;
+
     
     public ServerFilter() {
     	super();
@@ -92,11 +94,27 @@ public class ServerFilter extends AbstractFilter {
     
     
     @Override
-    public void init(FilterConfig config) {
+    public void init(FilterConfig config) throws ServletException {
+    	super.init(config);
+    	
     	this.config = config;
+    	
+    	this.amfEndpoint = new AMFEndpoint();
+    	this.amfEndpoint.init(config.getServletContext());
     }
 	
     
+	@Override
+	public void destroy() {
+		super.destroy();
+		
+		this.config = null;
+		
+		this.amfEndpoint.destroy();
+		this.amfEndpoint = null;
+	}
+
+
 	@Create
 	public void seamInit() {
 		Seam21GraniteConfig seam21GraniteConfig = (Seam21GraniteConfig)Component.getInstance(Seam21GraniteConfig.class, true);
@@ -244,8 +262,10 @@ public class ServerFilter extends AbstractFilter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
      	throws IOException, ServletException {
 		if (isMappedToCurrentRequestPath(request)) {         
-			AMFEndpoint.service(graniteConfig, servicesConfig, config.getServletContext(), 
-					(HttpServletRequest)request, (HttpServletResponse)response);
+			amfEndpoint.service(
+				graniteConfig, servicesConfig, config.getServletContext(), 
+				(HttpServletRequest)request, (HttpServletResponse)response
+			);
 		}
 		else { 
 			chain.doFilter(request, response);

@@ -1,0 +1,198 @@
+package org.granite.test.jmf;
+
+import static org.granite.test.jmf.TestUtil.bytes;
+import static org.granite.test.jmf.TestUtil.toHexString;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Arrays;
+
+import org.granite.messaging.jmf.CodecRegistry;
+import org.granite.messaging.jmf.DefaultCodecRegistry;
+import org.granite.messaging.jmf.JMFConstants;
+import org.granite.messaging.jmf.JMFDumper;
+import org.granite.test.jmf.TestUtil.ByteArrayJMFDeserializer;
+import org.granite.test.jmf.TestUtil.ByteArrayJMFDumper;
+import org.granite.test.jmf.TestUtil.ByteArrayJMFSerializer;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+public class TestJMFDouble implements JMFConstants {
+	
+	private CodecRegistry codecRegistry;
+	
+	@Before
+	public void before() {
+		codecRegistry = new DefaultCodecRegistry();
+	}
+	
+	@After
+	public void after() {
+		codecRegistry = null;
+	}
+	
+	@Test
+	public void testSomeDouble() throws IOException {
+
+		checkDouble(Double.NaN, 				bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0xC0, 0x7F ));
+		checkDouble(Double.MAX_VALUE, 			bytes( JMF_DOUBLE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x7F ));
+		checkDouble(Double.MIN_VALUE, 			bytes( JMF_DOUBLE, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ));
+		checkDouble(Double.MIN_NORMAL, 			bytes( JMF_DOUBLE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00 ));
+		checkDouble(Double.NEGATIVE_INFINITY, 	bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0xFF ));
+		checkDouble(Double.POSITIVE_INFINITY, 	bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0x7F ));
+
+		checkDouble(Math.PI, 					bytes( JMF_DOUBLE, 0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0x40 ));
+		checkDouble(-Math.PI, 					bytes( JMF_DOUBLE, 0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0xC0 ));
+		checkDouble(Math.pow(Math.PI, 620), 	bytes( JMF_DOUBLE, 0x45, 0x66, 0xF7, 0x54, 0x0A, 0x6F, 0xEE, 0x7F ));
+		checkDouble(-Math.pow(Math.PI, 620), 	bytes( JMF_DOUBLE, 0x45, 0x66, 0xF7, 0x54, 0x0A, 0x6F, 0xEE, 0xFF ));
+		checkDouble(Math.E, 					bytes( JMF_DOUBLE, 0x69, 0x57, 0x14, 0x8B, 0x0A, 0xBF, 0x05, 0x40 ));
+		checkDouble(-Math.E, 					bytes( JMF_DOUBLE, 0x69, 0x57, 0x14, 0x8B, 0x0A, 0xBF, 0x05, 0xC0 ));
+
+		checkDouble(-1.0000000000000004, 		bytes( JMF_DOUBLE, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
+		checkDouble(-1.0000000000000003, 		bytes( JMF_DOUBLE, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
+		checkDouble(-1.0000000000000002, 		bytes( JMF_DOUBLE, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
+		checkDouble(-1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0xBF ));
+		checkDouble(-1.0, 						bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0xBF ));
+		
+		checkDouble(-0.0,						bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x00, 0x80 ));
+		checkDouble(0.0,						bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x00, 0x00 ));
+		
+		checkDouble(1.0, 						bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0x3F ));
+		checkDouble(1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0x3F ));
+		checkDouble(1.0000000000000002, 		bytes( JMF_DOUBLE, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
+		checkDouble(1.0000000000000003, 		bytes( JMF_DOUBLE, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
+		checkDouble(1.0000000000000004, 		bytes( JMF_DOUBLE, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
+		
+		for (double d = -1000.0; d < 1000.0; d++)
+			checkDouble(d);
+		
+		for (double d = -10.0002; d < 11.0; d += 0.01)
+			checkDouble(d);
+	}
+	
+	@Test
+	public void testSomeDoubleObject() throws ClassNotFoundException, IOException {
+		
+		checkDoubleObject(null,						bytes( JMF_NULL ));
+
+		checkDoubleObject(Double.NaN, 				bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0xC0, 0x7F ));
+		checkDoubleObject(Double.MAX_VALUE, 		bytes( JMF_DOUBLE_OBJECT, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x7F ));
+		checkDoubleObject(Double.MIN_VALUE, 		bytes( JMF_DOUBLE_OBJECT, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ));
+		checkDoubleObject(Double.MIN_NORMAL, 		bytes( JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00 ));
+		checkDoubleObject(Double.NEGATIVE_INFINITY, bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0xFF ));
+		checkDoubleObject(Double.POSITIVE_INFINITY, bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0x7F ));
+
+		checkDoubleObject(Math.PI, 					bytes( JMF_DOUBLE_OBJECT, 0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0x40 ));
+		checkDoubleObject(-Math.PI, 				bytes( JMF_DOUBLE_OBJECT, 0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0xC0 ));
+		checkDoubleObject(Math.pow(Math.PI, 620), 	bytes( JMF_DOUBLE_OBJECT, 0x45, 0x66, 0xF7, 0x54, 0x0A, 0x6F, 0xEE, 0x7F ));
+		checkDoubleObject(-Math.pow(Math.PI, 620), 	bytes( JMF_DOUBLE_OBJECT, 0x45, 0x66, 0xF7, 0x54, 0x0A, 0x6F, 0xEE, 0xFF ));
+		checkDoubleObject(Math.E, 					bytes( JMF_DOUBLE_OBJECT, 0x69, 0x57, 0x14, 0x8B, 0x0A, 0xBF, 0x05, 0x40 ));
+		checkDoubleObject(-Math.E, 					bytes( JMF_DOUBLE_OBJECT, 0x69, 0x57, 0x14, 0x8B, 0x0A, 0xBF, 0x05, 0xC0 ));
+
+		checkDoubleObject(-1.0000000000000004, 		bytes( JMF_DOUBLE_OBJECT, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
+		checkDoubleObject(-1.0000000000000003, 		bytes( JMF_DOUBLE_OBJECT, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
+		checkDoubleObject(-1.0000000000000002, 		bytes( JMF_DOUBLE_OBJECT, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
+		checkDoubleObject(-1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0xBF ));
+		checkDoubleObject(-1.0, 					bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0xBF ));
+		
+		checkDoubleObject(-0.0,						bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x00, 0x80 ));
+		checkDoubleObject(0.0,						bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x00, 0x00 ));
+		
+		checkDoubleObject(1.0, 						bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0x3F ));
+		checkDoubleObject(1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0x3F ));
+		checkDoubleObject(1.0000000000000002, 		bytes( JMF_DOUBLE_OBJECT, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
+		checkDoubleObject(1.0000000000000003, 		bytes( JMF_DOUBLE_OBJECT, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
+		checkDoubleObject(1.0000000000000004, 		bytes( JMF_DOUBLE_OBJECT, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
+		
+		for (double d = -1000.0; d < 1000.0; d++)
+			checkDoubleObject(d);
+		
+		for (double d = -10.0002; d < 11.0; d += 0.01)
+			checkDoubleObject(d);
+	}
+
+	private void checkDouble(double v) throws IOException {
+		checkDouble(v, null);
+	}
+	
+	private void checkDouble(double v, byte[] expected) throws IOException {
+		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
+		serializer.writeDouble(v);
+		serializer.close();
+		byte[] bytes = serializer.toByteArray();
+		
+		if (expected != null && !Arrays.equals(bytes, expected)) {
+			System.out.println(toHexString(bytes));
+			StringBuilder sb = new StringBuilder("Expected ")
+				.append(toHexString(expected))
+				.append(" != ")
+				.append(toHexString(bytes))
+				.append(String.format(" for 0x%016X (%a)", Double.doubleToLongBits(v), v));
+			
+			fail(sb.toString());
+		}
+		
+		PrintStream ps = TestUtil.newNullPrintStream();
+		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
+		dumper.dump();
+		dumper.close();
+		
+		ByteArrayJMFDeserializer deserializer = new ByteArrayJMFDeserializer(bytes, codecRegistry);
+		double u = deserializer.readDouble();
+		deserializer.close();
+		
+		if (Double.compare(v, u) != 0) {
+			StringBuilder sb = new StringBuilder(
+					String.format("0x%016X (%a) != 0x%016X (%a) ",
+					Double.doubleToLongBits(v), v, Double.doubleToLongBits(u), u)
+				)
+				.append(toHexString(bytes));
+			
+			fail(sb.toString());
+		}
+	}
+
+	private void checkDoubleObject(Double v) throws ClassNotFoundException, IOException {
+		checkDoubleObject(v, null);
+	}
+	
+	private void checkDoubleObject(Double v, byte[] expected) throws ClassNotFoundException, IOException {
+		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
+		serializer.writeObject(v);
+		serializer.close();
+		byte[] bytes = serializer.toByteArray();
+		
+		if (expected != null && !Arrays.equals(bytes, expected)) {
+			System.out.println(toHexString(bytes));
+			StringBuilder sb = new StringBuilder("Expected ")
+				.append(toHexString(expected))
+				.append(" != ")
+				.append(toHexString(bytes))
+				.append(" for ")
+				.append(v);
+			
+			fail(sb.toString());
+		}
+		
+		PrintStream ps = TestUtil.newNullPrintStream();
+		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
+		dumper.dump();
+		dumper.close();
+		
+		ByteArrayJMFDeserializer deserializer = new ByteArrayJMFDeserializer(bytes, codecRegistry);
+		Object u = deserializer.readObject();
+		deserializer.close();
+		
+		if (!(u instanceof Double || u == null))
+			fail("u isn't a Double or null: " + u);
+		
+		if ((v != null && !v.equals(u)) || (v == null && u != null)) {
+			StringBuilder sb = new StringBuilder(String.format("%a != %a ", v, u))
+				.append(toHexString(bytes));
+			
+			fail(sb.toString());
+		}
+	}
+}
