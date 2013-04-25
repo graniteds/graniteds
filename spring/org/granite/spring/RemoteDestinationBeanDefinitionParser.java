@@ -48,6 +48,10 @@ public class RemoteDestinationBeanDefinitionParser extends AbstractSingleBeanDef
     	
         mapOptionalAttributes(element, parserContext, builder, "id", "source");
         
+        String securizerRef = element.getAttribute("securizer");
+        if (StringUtils.hasText(securizerRef))
+        	builder.addPropertyReference("securizer", securizerRef);
+        
         Object sourceElement = parserContext.extractSource(element);
         ManagedList<String> roles = new ManagedList<String>();
         roles.setSource(sourceElement);

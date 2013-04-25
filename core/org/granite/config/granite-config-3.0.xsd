@@ -164,6 +164,7 @@
 		<xs:attribute name="id" type="xs:string"/>
 		<xs:attribute name="name" type="xs:string"/>
 		<xs:attribute name="source" type="xs:string"/>
+		<xs:attribute name="securizer" type="xs:string"/>
     </xs:attributeGroup>
 	
 	
@@ -182,6 +183,7 @@
     <xs:attributeGroup name="attlist.MessagingDestination">
 		<xs:attribute name="id" type="xs:string"/>
 		<xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="securizer" type="xs:string"/>
         <xs:attribute name="no-local" type="xs:boolean" default="false"/>
         <xs:attribute name="session-selector" type="xs:boolean" default="false"/>
     </xs:attributeGroup>

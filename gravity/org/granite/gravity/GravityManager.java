@@ -27,6 +27,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
+import org.granite.config.ConfigProvider;
 import org.granite.config.GraniteConfig;
 import org.granite.config.GraniteConfigListener;
 import org.granite.config.ServletGraniteConfig;
@@ -38,6 +39,7 @@ import org.granite.gravity.config.AbstractMessagingDestination;
 import org.granite.gravity.config.servlet3.ActiveMQTopicDestination;
 import org.granite.gravity.config.servlet3.JmsTopicDestination;
 import org.granite.gravity.config.servlet3.MessagingDestination;
+import org.granite.gravity.security.GravityDestinationSecurizer;
 import org.granite.util.TypeUtil;
 
 /**
@@ -71,17 +73,18 @@ public class GravityManager {
 		        GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(context);
 	    		ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(context);
 	            
-	            Class<?> flexFilterClass = (Class<?>)context.getAttribute(GraniteConfigListener.GRANITE_CONFIG_ATTRIBUTE);
-	            if (flexFilterClass != null)
-	            	configureServices(context, flexFilterClass);
-		
+	            Class<?> serverFilterClass = (Class<?>)context.getAttribute(GraniteConfigListener.GRANITE_CONFIG_ATTRIBUTE);
+	            if (serverFilterClass != null)
+	            	configureServices(context, serverFilterClass);
+	            
 		        GravityConfig gravityConfig = new GravityConfig(graniteConfig);
 		        
 		        String gravityFactory = gravityConfig.getGravityFactory();
 		        try {
 					GravityFactory factory = TypeUtil.newInstance(gravityFactory, GravityFactory.class);
 					gravity = factory.newGravity(gravityConfig, servicesConfig, graniteConfig);
-				} catch (Exception e) {
+				} 
+		        catch (Exception e) {
 					throw new ServletException("Could not create Gravity instance with factory: " + gravityFactory, e);
 				}
 		
@@ -136,16 +139,19 @@ public class GravityManager {
     }
     
     
-    private static void configureServices(ServletContext context, Class<?> flexFilterClass) throws ServletException {
-        ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(context);
-    	
-        for (Field field : flexFilterClass.getDeclaredFields()) {
+    private static void configureServices(ServletContext servletContext, Class<?> serverFilterClass) throws ServletException {
+        ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(servletContext);
+        
+        ConfigProvider configProvider = (ConfigProvider)servletContext.getAttribute(GraniteConfigListener.GRANITE_CONFIG_PROVIDER_ATTRIBUTE);
+        
+        for (Field field : serverFilterClass.getDeclaredFields()) {
         	if (field.isAnnotationPresent(MessagingDestination.class)) {
         		MessagingDestination md = field.getAnnotation(MessagingDestination.class);
         		AbstractMessagingDestination messagingDestination = new AbstractMessagingDestination();
         		messagingDestination.setId(field.getName());
         		messagingDestination.setNoLocal(md.noLocal());
         		messagingDestination.setSessionSelector(md.sessionSelector());
+        		initSecurizer(messagingDestination, md.securizer(), configProvider);
         		messagingDestination.initServices(servicesConfig);
         	}
         	else if (field.isAnnotationPresent(JmsTopicDestination.class)) {
@@ -154,6 +160,8 @@ public class GravityManager {
         		messagingDestination.setId(field.getName());
         		messagingDestination.setNoLocal(md.noLocal());
         		messagingDestination.setSessionSelector(md.sessionSelector());
+        		initSecurizer(messagingDestination, md.securizer(), configProvider);
+        		messagingDestination.initServices(servicesConfig);
         		messagingDestination.setName(md.name());
         		messagingDestination.setTextMessages(md.textMessages());
         		messagingDestination.setAcknowledgeMode(md.acknowledgeMode());
@@ -168,6 +176,8 @@ public class GravityManager {
         		messagingDestination.setId(field.getName());
         		messagingDestination.setNoLocal(md.noLocal());
         		messagingDestination.setSessionSelector(md.sessionSelector());
+        		initSecurizer(messagingDestination, md.securizer(), configProvider);
+        		messagingDestination.initServices(servicesConfig);
         		messagingDestination.setName(md.name());
         		messagingDestination.setTextMessages(md.textMessages());
         		messagingDestination.setAcknowledgeMode(md.acknowledgeMode());
@@ -182,6 +192,14 @@ public class GravityManager {
         		messagingDestination.initServices(servicesConfig);
         	}
         }
-        
+    }
+    
+    private static void initSecurizer(AbstractMessagingDestination messagingDestination, Class<? extends GravityDestinationSecurizer> securizerClass, ConfigProvider configProvider) {
+		if (securizerClass != GravityDestinationSecurizer.class) {
+			if (configProvider != null)
+				messagingDestination.setSecurizer(configProvider.findInstance(securizerClass));
+			if (messagingDestination.getSecurizer() == null)
+				messagingDestination.setSecurizerClassName(securizerClass.getName());
+		}
     }
 }

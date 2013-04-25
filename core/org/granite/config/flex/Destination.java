@@ -44,7 +44,7 @@ public class Destination implements Serializable {
     private final List<String> roles;
     private final Adapter adapter;
     private final Class<?> scannedClass;
-    private final DestinationSecurizer securizer;
+    private DestinationSecurizer securizer;
     
     private DestinationRemoveListener removeListener;
 
@@ -109,6 +109,10 @@ public class Destination implements Serializable {
 	public DestinationSecurizer getSecurizer() {
         return securizer;
     }
+	
+	public void setSecurizer(DestinationSecurizer securizer) {
+		this.securizer = securizer;
+	}
 
 
     public static Destination forElement(XMap element, Adapter defaultAdapter, Map<String, Adapter> adaptersMap) {

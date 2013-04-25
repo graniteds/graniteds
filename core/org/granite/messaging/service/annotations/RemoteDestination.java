@@ -27,6 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.granite.messaging.service.security.RemotingDestinationSecurizer;
+
 /**
  * @author William DRAI
  */
@@ -49,6 +51,8 @@ public @interface RemoteDestination {
     public String factory() default "";
     
     public String[] securityRoles() default {};
+    
+    public Class<? extends RemotingDestinationSecurizer> securizer() default RemotingDestinationSecurizer.class;
     
     /**
      * Used for pojo services only.

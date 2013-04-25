@@ -42,6 +42,10 @@ public class MessagingDestinationBeanDefinitionParser extends AbstractSingleBean
         
         mapOptionalAttributes(element, parserContext, builder, "id", "no-local", "session-selector");
         
+        String securizerRef = element.getAttribute("securizer");
+        if (StringUtils.hasText(securizerRef))
+        	builder.addPropertyReference("securizer", securizerRef);
+        
         Object sourceElement = parserContext.extractSource(element);
         ManagedList<String> roles = new ManagedList<String>();
         roles.setSource(sourceElement);

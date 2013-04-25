@@ -30,6 +30,7 @@ import org.granite.config.flex.EndPoint;
 import org.granite.config.flex.Service;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.logging.Logger;
+import org.granite.messaging.service.security.RemotingDestinationSecurizer;
 import org.granite.util.XMap;
 
 
@@ -43,6 +44,7 @@ public class AbstractRemoteDestination {
    
     private String id = null;
     private String source = null;
+    private RemotingDestinationSecurizer securizer = null;
     private List<String> roles = null;
     
     
@@ -62,6 +64,14 @@ public class AbstractRemoteDestination {
 		this.source = source;
 	}
 	
+	public RemotingDestinationSecurizer getSecurizer() {
+		return securizer;
+	}
+
+	public void setSecurizer(RemotingDestinationSecurizer securizer) {
+		this.securizer = securizer;
+	}
+
 	public List<String> getRoles() {
 		return roles;
 	}
@@ -103,6 +113,8 @@ public class AbstractRemoteDestination {
     	List<String> channelIds = new ArrayList<String>();
     	channelIds.add("graniteamf");
     	Destination destination = new Destination(source, channelIds, new XMap(), roles, null, null);
+    	if (securizer != null)
+    		destination.setSecurizer(securizer);
     	return destination;
 	}
 }

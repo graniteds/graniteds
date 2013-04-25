@@ -32,6 +32,7 @@ import org.granite.config.flex.Destination;
 import org.granite.config.flex.EndPoint;
 import org.granite.config.flex.Service;
 import org.granite.config.flex.ServicesConfig;
+import org.granite.gravity.security.GravityDestinationSecurizer;
 import org.granite.logging.Logger;
 import org.granite.util.XMap;
 
@@ -46,6 +47,8 @@ public class AbstractMessagingDestination {
    
     private String id = null;
     private List<String> roles = null;
+    private String securizerClassName = null;
+    private GravityDestinationSecurizer securizer = null;
     private boolean noLocal = false;
     private boolean sessionSelector = false;
     
@@ -80,9 +83,23 @@ public class AbstractMessagingDestination {
 	public void setSessionSelector(boolean sessionSelector) {
 		this.sessionSelector = sessionSelector;
 	}
-
 	
-    protected void init(AbstractFrameworkGraniteConfig graniteConfig) {
+    public String getSecurizerClassName() {
+		return securizerClassName;
+	}
+
+	public void setSecurizerClassName(String securizerClassName) {
+		this.securizerClassName = securizerClassName;
+	}
+	
+    public GravityDestinationSecurizer getSecurizer() {
+		return securizer;
+	}
+	public void setSecurizer(GravityDestinationSecurizer securizer) {
+		this.securizer = securizer;
+	}
+
+	protected void init(AbstractFrameworkGraniteConfig graniteConfig) {
     	ServicesConfig servicesConfig = graniteConfig.getServicesConfig();
     	initServices(servicesConfig);
     }
@@ -132,6 +149,10 @@ public class AbstractMessagingDestination {
     	Destination destination = new Destination(id, channelIds, new XMap(), roles, adapter, null);
     	destination.getProperties().put("no-local", String.valueOf(noLocal));
     	destination.getProperties().put("session-selector", String.valueOf(sessionSelector));
+    	if (getSecurizerClassName() != null)
+    		destination.getProperties().put("securizer", securizerClassName);
+    	if (getSecurizer() != null)
+    		destination.setSecurizer(getSecurizer());
     	return destination;
 	}
 }

@@ -40,6 +40,7 @@ import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ExceptionConverter;
+import org.granite.messaging.service.security.RemotingDestinationSecurizer;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.tide.TideComponentAnnotatedWithMatcher;
 import org.granite.messaging.service.tide.TideComponentInstanceOfMatcher;
@@ -50,6 +51,7 @@ import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.ServletContextAware;
@@ -62,6 +64,7 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
     private static final Logger log = Logger.getLogger(ServerFilter.class);
 	
     private ApplicationContext context = null;
+    @Autowired(required=false)
     private ServletContext servletContext = null;
     private GraniteConfig graniteConfig = null;
     private ServicesConfig servicesConfig = null;
@@ -76,7 +79,7 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
     private boolean tide = false;
     private String type = "server";
     
-
+    
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
 		this.context = context;
 	}
@@ -193,6 +196,17 @@ public class ServerFilter implements InitializingBean, ApplicationContextAware, 
         		destination.getProperties().put("validator-name", "tideValidator");
         		service.getDestinations().put(destination.getId(), destination);
         		servicesConfig.addService(service);
+        	}
+        	
+        	if (destination.getSecurizer() == null) {
+                Map<String, RemotingDestinationSecurizer> securizers = context.getBeansOfType(RemotingDestinationSecurizer.class);
+                if (securizers.size() > 1)
+                	log.error("More than one Remoting Destination Securizer bean defined");
+                else if (!securizers.isEmpty()) {
+                	log.debug("Remoting Destination Securizer bean " + securizers.keySet().iterator().next() + " selected");
+                	RemotingDestinationSecurizer securizer = securizers.values().iterator().next();
+                	destination.setSecurizer(securizer);
+                }
         	}
         	
         	log.info("Registered Tide/Spring service factory and destination %s", type);

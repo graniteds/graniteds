@@ -43,6 +43,10 @@ public class JmsTopicDestinationBeanDefinitionParser extends AbstractSingleBeanD
         mapOptionalAttributes(element, parserContext, builder, "id", "name", "connection-factory", "jndi-name", "destination-jndi-name",
         		"acknowledge-mode", "transacted-sessions", "text-messages", "no-local", "session-selector");
         
+        String securizerRef = element.getAttribute("securizer");
+        if (StringUtils.hasText(securizerRef))
+        	builder.addPropertyReference("securizer", securizerRef);
+        
         Object sourceElement = parserContext.extractSource(element);
         ManagedList<String> roles = new ManagedList<String>();
         roles.setSource(sourceElement);

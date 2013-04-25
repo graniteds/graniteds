@@ -34,9 +34,8 @@ public class MessagingDestination extends AbstractMessagingDestination implement
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
 		this.context = context;
 	}
-
 	
-    public void afterPropertiesSet() {
+	public void afterPropertiesSet() {
 		SpringGraniteConfig springGraniteConfig = context.getBeansOfType(SpringGraniteConfig.class).values().iterator().next();
 		
 		init(springGraniteConfig);

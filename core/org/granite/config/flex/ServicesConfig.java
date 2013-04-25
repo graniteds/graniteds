@@ -34,6 +34,7 @@ import java.util.Map;
 import org.granite.config.api.Configuration;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.annotations.RemoteDestination;
+import org.granite.messaging.service.security.RemotingDestinationSecurizer;
 import org.granite.scan.ScannedItem;
 import org.granite.scan.ScannedItemHandler;
 import org.granite.scan.Scanner;
@@ -163,6 +164,10 @@ public class ServicesConfig implements ScannedItemHandler {
             	for (String role : anno.securityRoles())
             		roles.add(role);
             }
+            
+            // Securizer
+            if (anno.securizer() != RemotingDestinationSecurizer.class)
+            	props.put("securizer", anno.securizer().getName());
             
             Destination destination = new Destination(anno.id(), channelIds, props, roles, null, clazz);
             

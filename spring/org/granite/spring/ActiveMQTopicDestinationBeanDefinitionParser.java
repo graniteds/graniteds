@@ -44,6 +44,10 @@ public class ActiveMQTopicDestinationBeanDefinitionParser extends AbstractSingle
         		"acknowledge-mode", "transacted-sessions", "text-messages", "no-local", "session-selector", "broker-url", "create-broker", 
         		"wait-for-start", "durable", "file-store-root");
         
+        String securizerRef = element.getAttribute("securizer");
+        if (StringUtils.hasText(securizerRef))
+        	builder.addPropertyReference("securizer", securizerRef);
+        
         Object sourceElement = parserContext.extractSource(element);
         ManagedList<String> roles = new ManagedList<String>();
         roles.setSource(sourceElement);

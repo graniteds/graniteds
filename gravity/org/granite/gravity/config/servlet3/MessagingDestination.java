@@ -27,6 +27,8 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.granite.gravity.security.GravityDestinationSecurizer;
+
 
 @Inherited
 @Retention(RUNTIME)
@@ -36,4 +38,6 @@ public @interface MessagingDestination {
 	boolean noLocal() default true;
 	
 	boolean sessionSelector() default false;
+	
+	Class<? extends GravityDestinationSecurizer> securizer() default GravityDestinationSecurizer.class;
 }

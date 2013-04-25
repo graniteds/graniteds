@@ -56,6 +56,8 @@ public class RemoteDestination extends AbstractRemoteDestination implements Init
     	props.put("source", getSource());
     	Class<?> beanClass = context.getType(getSource());
     	Destination destination = new Destination(getSource(), channelIds, props, getRoles(), null, beanClass);
+    	if (getSecurizer() != null)
+    		destination.setSecurizer(getSecurizer());
     	return destination;
 	}
 }

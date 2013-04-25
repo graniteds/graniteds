@@ -59,6 +59,7 @@ import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.ServiceFactory;
 import org.granite.messaging.service.SimpleServiceFactory;
+import org.granite.messaging.service.security.RemotingDestinationSecurizer;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.tide.TideComponentAnnotatedWithMatcher;
 import org.granite.messaging.service.tide.TideComponentInstanceOfMatcher;
@@ -75,7 +76,8 @@ import org.granite.util.XMap;
 public class GraniteConfigListener implements ServletContextListener, HttpSessionListener {
 
     private static final String GRANITE_CONFIG_SHUTDOWN_KEY = GraniteConfig.class.getName() + "_SHUTDOWN";
-    public static final String GRANITE_CONFIG_ATTRIBUTE = "org.granite.config.flexFilter";
+    public static final String GRANITE_CONFIG_ATTRIBUTE = "org.granite.config.serverFilter";
+    public static final String GRANITE_CONFIG_PROVIDER_ATTRIBUTE = "org.granite.config.configProvider";
     public static final String GRANITE_MBEANS_ATTRIBUTE = "registerGraniteMBeans";
     
     public static final String GRANITE_SESSION_TRACKING = "org.granite.config.sessionTracking";
@@ -89,15 +91,15 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
 
             log.info("Initializing GraniteDS...");
             
-            Class<?> flexFilterClass = (Class<?>)context.getAttribute(GRANITE_CONFIG_ATTRIBUTE);
-            if (flexFilterClass != null)
+            Class<?> serverFilterClass = (Class<?>)context.getAttribute(GRANITE_CONFIG_ATTRIBUTE);
+            if (serverFilterClass != null)
             	context.setAttribute(ServletGraniteConfig.GRANITE_CONFIG_DEFAULT_KEY, "org/granite/config/servlet3/granite-config-servlet3.xml");
             
             GraniteConfig gConfig = ServletGraniteConfig.loadConfig(context);
             ServletServicesConfig.loadConfig(context);
             
-            if (flexFilterClass != null)
-            	configureServices(context, flexFilterClass);
+            if (serverFilterClass != null)
+            	configureServices(context, serverFilterClass);
             
             if ("true".equals(sce.getServletContext().getInitParameter(GRANITE_SESSION_TRACKING))) {
 	            Map<String, HttpSession> sessionMap = new ConcurrentHashMap<String, HttpSession>(200);
@@ -151,9 +153,9 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
     }
     
     
-    private void configureServices(ServletContext context, Class<?> serverFilterClass) throws ServletException {
-        GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(context);
-        ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(context);
+    private void configureServices(ServletContext servletContext, Class<?> serverFilterClass) throws ServletException {
+        GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(servletContext);
+        ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(servletContext);
     	
         ServerFilter serverFilter = serverFilterClass.getAnnotation(ServerFilter.class);
         
@@ -167,7 +169,9 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
         
         if (!serverFilter.configProviderClass().equals(ConfigProvider.class)) {
         	try {
-        		configProvider = TypeUtil.newInstance(serverFilter.configProviderClass(), new Class[] { ServletContext.class }, new Object[] { context });
+        		configProvider = TypeUtil.newInstance(serverFilter.configProviderClass(), new Class[] { ServletContext.class }, new Object[] { servletContext });
+        		
+        		servletContext.setAttribute(GRANITE_CONFIG_PROVIDER_ATTRIBUTE, configProvider);
         		
         		if (configProvider.useTide() != null)
         			useTide = configProvider.useTide();
@@ -341,8 +345,8 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
     	if (lookup.indexOf("{context.root}") >= 0) {
     		try {
     			// Call by reflection because of JDK 1.4
-    			Method m = context.getClass().getMethod("getContextPath");
-    			String contextPath = (String)m.invoke(context);
+    			Method m = servletContext.getClass().getMethod("getContextPath");
+    			String contextPath = (String)m.invoke(servletContext);
     			lookup = lookup.replace("{context.root}", contextPath.substring(1));
     		}
     		catch (Exception e) {
@@ -374,6 +378,12 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
 	        	if (!("".equals(serverFilter.validatorClassName())))
 	        		destination.getProperties().put("validator-class-name", serverFilter.validatorClassName());
 	        	service.getDestinations().put(type, destination);
+	        	
+	        	if (destination.getSecurizer() == null && configProvider != null) {
+                	RemotingDestinationSecurizer securizer = configProvider.findInstance(RemotingDestinationSecurizer.class);
+                	destination.setSecurizer(securizer);
+	        	}
+	        	
 	        	servicesConfig.addService(service);
         	}
             
