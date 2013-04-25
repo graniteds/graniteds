@@ -41,7 +41,7 @@ import flex.messaging.messages.RemotingMessage;
 public class JMFAMFUtil {
 	
 	public static List<String> AMF_DEFAULT_STORED_STRINGS = Collections.unmodifiableList(Arrays.asList(
-			
+		
 		AMF0Message.class.getName(),
 		AMF0Header.class.getName(),
 		AMF0Body.class.getName(),

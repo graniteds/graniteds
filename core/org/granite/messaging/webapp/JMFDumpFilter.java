@@ -30,7 +30,6 @@ import java.io.PrintStream;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
@@ -42,12 +41,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.granite.logging.Logger;
-import org.granite.messaging.jmf.DefaultCodecRegistry;
-import org.granite.messaging.jmf.DefaultSharedContext;
 import org.granite.messaging.jmf.JMFDumper;
+import org.granite.messaging.jmf.JMFServletContextListener;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.ContentType;
-import org.granite.util.JMFAMFUtil;
 
 /**
  * @author Franck WOLFF
@@ -59,15 +56,9 @@ public class JMFDumpFilter implements Filter {
     private SharedContext jmfSharedContext = null;
 
     public void init(FilterConfig config) throws ServletException {
-        ServletContext servletContext = config.getServletContext();
-        synchronized (servletContext) {
-        	final String key = SharedContext.class.getName() + ":DUMP";
-        	jmfSharedContext = (SharedContext)servletContext.getAttribute(key);
-        	if (jmfSharedContext == null) {
-        		jmfSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), JMFAMFUtil.AMF_DEFAULT_STORED_STRINGS);
-        		servletContext.setAttribute(key, jmfSharedContext);
-        	}
-        }
+    	jmfSharedContext = JMFServletContextListener.getDumpSharedContext(config.getServletContext());
+    	if (jmfSharedContext == null)
+    		throw JMFServletContextListener.newSharedContextNotInitializedException();
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

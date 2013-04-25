@@ -20,9 +20,12 @@
 
 package org.granite.hibernate.jmf;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
+import org.granite.messaging.jmf.ExtendedObjectInput;
+import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentList;
 
 /**
@@ -34,18 +37,13 @@ public class PersistentListCodec extends AbstractPersistentCollectionCodec<Persi
 		super(PersistentList.class);
 	}
 
-	@Override
-	protected PersistentList newCollection(boolean initialized) {
-		return (initialized ? new PersistentList(null, new ArrayList<Object>()) : new PersistentList(null));
-	}
-
-	@Override
-	protected Object[] getElements(PersistentList collection) {
-		return collection.toArray();
-	}
-
-	@Override
-	protected void setElements(PersistentList collection, Object[] elements) {
-		collection.addAll(Arrays.asList(elements));
+	public PersistentList newInstance(ExtendedObjectInput in, Class<?> cls)
+			throws IOException, ClassNotFoundException, InstantiationException,
+			IllegalAccessException, InvocationTargetException,
+			SecurityException, NoSuchMethodException {
+		
+		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot();
+		snapshot.readInitializationData(in);
+		return (snapshot.isInitialized() ? new PersistentList(null, new ArrayList<Object>()) : new PersistentList(null));
 	}
 }

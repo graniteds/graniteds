@@ -20,40 +20,36 @@
 
 package org.granite.hibernate.jmf;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
 import java.util.TreeSet;
 
+import org.granite.messaging.jmf.ExtendedObjectInput;
+import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentSortedSet;
 
 /**
  * @author Franck WOLFF
  */
-public class PersistentSortedSetCodec extends AbstractPersistentSortedCollectionCodec<PersistentSortedSet> {
+public class PersistentSortedSetCodec extends AbstractPersistentCollectionCodec<PersistentSortedSet> {
 
 	public PersistentSortedSetCodec() {
 		super(PersistentSortedSet.class);
 	}
 
-	@Override
-	protected String getComparatorClassName(PersistentSortedSet collection) {
-		if (collection.wasInitialized())
-			return (collection.comparator() != null ? collection.comparator().getClass().getName() : null);
-		return null;
-	}
-
-	@Override
-	protected PersistentSortedSet newCollection(boolean initialized, Comparator<Object> comparator) {
-		return (initialized ? new PersistentSortedSet(null, new TreeSet<Object>(comparator)) : new PersistentSortedSet(null));
-	}
-
-	@Override
-	protected Object[] getElements(PersistentSortedSet collection) {
-		return collection.toArray();
-	}
-
-	@Override
-	protected void setElements(PersistentSortedSet collection, Object[] elements) {
-		collection.addAll(Arrays.asList(elements));
+	public PersistentSortedSet newInstance(ExtendedObjectInput in, Class<?> cls)
+			throws IOException, ClassNotFoundException, InstantiationException,
+			IllegalAccessException, InvocationTargetException,
+			SecurityException, NoSuchMethodException {
+		
+		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot(true);
+		snapshot.readInitializationData(in);
+		
+		if (!snapshot.isInitialized())
+			return new PersistentSortedSet(null);
+		
+		Comparator<? super Object> comparator = snapshot.newComparator(in.getClassLoader());
+		return new PersistentSortedSet(null, new TreeSet<Object>(comparator));
 	}
 }

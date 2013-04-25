@@ -81,11 +81,13 @@ public class AbstractGravityServlet extends HttpServlet {
 		return GravityServletUtil.initializeRequest(getServletConfig(), gravity, request, response);
 	}
 
-	protected Message[] deserialize(Gravity gravity, HttpServletRequest request) throws ClassNotFoundException, IOException {
+	@SuppressWarnings("unused")
+	protected Message[] deserialize(Gravity gravity, HttpServletRequest request) throws ClassNotFoundException, IOException, ServletException {
 		return GravityServletUtil.deserialize(gravity, request);
 	}
 	
-	protected Message[] deserialize(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException {
+	@SuppressWarnings("unused")
+	protected Message[] deserialize(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException, ServletException {
 		return GravityServletUtil.deserialize(gravity, request, is);
 	}
 	

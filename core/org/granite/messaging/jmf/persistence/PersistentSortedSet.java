@@ -20,7 +20,6 @@
 
 package org.granite.messaging.jmf.persistence;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.SortedSet;
@@ -74,39 +73,25 @@ public class PersistentSortedSet<E> extends AbstractPersistentSimpleCollection<E
 	}
 
 	@Override
-	protected PersistentCollectionSnapshot newSnapshot(boolean blank) {
-		if (blank || !wasInitialized())
-			return new PersistentSortedCollectionSnapshot();
-		
-		String comparatorClassName = null;
-		if (getCollection().comparator() != null)
-			comparatorClassName = getCollection().comparator().getClass().getName();
-		
-		return new PersistentSortedCollectionSnapshot(getCollection().toArray(), isDirty(), comparatorClassName);
+	protected PersistentCollectionSnapshot createSnapshot(boolean forReading) {
+		if (forReading || !wasInitialized())
+			return new PersistentCollectionSnapshot(true);
+		return new PersistentCollectionSnapshot(true, isDirty(), getCollection());
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
-		PersistentSortedCollectionSnapshot sortedSnapshot = (PersistentSortedCollectionSnapshot)snapshot;
 		if (snapshot.isInitialized()) {
 			Comparator<? super E> comparator = null;
-			
-			String comparatorClassName = sortedSnapshot.getComparatorClassName();
-			if (comparatorClassName != null) {
-				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-				try {
-					Class<Comparator<? super E>> comparatorClass = (Class<Comparator<? super E>>)classLoader.loadClass(comparatorClassName);
-					comparator = comparatorClass.getDeclaredConstructor().newInstance();
-				}
-				catch (Exception e) {
-					throw new RuntimeException("Could not create instance of comparator: " + comparatorClassName, e);
-				}
+			try {
+				comparator = snapshot.newComparator(getClassLoader());
 			}
-			
+			catch (Exception e) {
+				throw new RuntimeException("Could not create instance of comparator", e);
+			}
 			SortedSet<E> set = new TreeSet<E>(comparator);
-			set.addAll((Collection<? extends E>)Arrays.asList(snapshot.getElements()));
-			
+			set.addAll((Collection<? extends E>)snapshot.getElementsAsCollection());
 			init(set, snapshot.isDirty());
 		}
 		else

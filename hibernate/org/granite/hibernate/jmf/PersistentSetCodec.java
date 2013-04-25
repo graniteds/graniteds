@@ -20,9 +20,12 @@
 
 package org.granite.hibernate.jmf;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 
+import org.granite.messaging.jmf.ExtendedObjectInput;
+import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentSet;
 
 /**
@@ -34,18 +37,13 @@ public class PersistentSetCodec extends AbstractPersistentCollectionCodec<Persis
 		super(PersistentSet.class);
 	}
 
-	@Override
-	protected PersistentSet newCollection(boolean initialized) {
-		return (initialized ? new PersistentSet(null, new HashSet<Object>()) : new PersistentSet(null));
-	}
-
-	@Override
-	protected Object[] getElements(PersistentSet collection) {
-		return collection.toArray();
-	}
-
-	@Override
-	protected void setElements(PersistentSet collection, Object[] elements) {
-		collection.addAll(Arrays.asList(elements));
+	public PersistentSet newInstance(ExtendedObjectInput in, Class<?> cls)
+			throws IOException, ClassNotFoundException, InstantiationException,
+			IllegalAccessException, InvocationTargetException,
+			SecurityException, NoSuchMethodException {
+		
+		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot();
+		snapshot.readInitializationData(in);
+		return (snapshot.isInitialized() ? new PersistentSet(null, new HashSet<Object>()) : new PersistentSet(null));
 	}
 }

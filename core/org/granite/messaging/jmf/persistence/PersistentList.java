@@ -21,7 +21,6 @@
 package org.granite.messaging.jmf.persistence;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
@@ -106,7 +105,7 @@ public class PersistentList<E> extends AbstractPersistentSimpleCollection<E, Lis
 	@Override
 	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
 		if (snapshot.isInitialized())
-			init(new ArrayList<E>((Collection<? extends E>)Arrays.asList(snapshot.getElements())), snapshot.isDirty());
+			init(new ArrayList<E>((Collection<? extends E>)snapshot.getElementsAsCollection()), snapshot.isDirty());
 		else
 			init(null, false);
 	}

@@ -22,12 +22,20 @@ package org.granite.messaging.jmf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.granite.messaging.jmf.persistence.PersistentBag;
+import org.granite.messaging.jmf.persistence.PersistentList;
+import org.granite.messaging.jmf.persistence.PersistentMap;
+import org.granite.messaging.jmf.persistence.PersistentSet;
+import org.granite.messaging.jmf.persistence.PersistentSortedMap;
+import org.granite.messaging.jmf.persistence.PersistentSortedSet;
 
 /**
  * @author Franck WOLFF
@@ -56,7 +64,14 @@ public class DefaultSharedContext implements SharedContext {
 		HashSet.class.getName(),
 		
 		Map.class.getName(),
-		HashMap.class.getName()
+		HashMap.class.getName(),
+		
+		PersistentList.class.getName(),
+		PersistentMap.class.getName(),
+		PersistentSet.class.getName(),
+		PersistentBag.class.getName(),
+		PersistentSortedSet.class.getName(),
+		PersistentSortedMap.class.getName()
 	);
 	
 	
@@ -79,10 +94,11 @@ public class DefaultSharedContext implements SharedContext {
 	public DefaultSharedContext(CodecRegistry codecRegistry, List<String> defaultStoredStrings, ClassLoader classLoader) {
 		this.codecRegistry = codecRegistry;
 		
-		this.defaultStoredStrings = new ArrayList<String>();
-		this.defaultStoredStrings.addAll(JAVA_DEFAULT_STORED_STRINGS);
+		Set<String> defaultStoredStringsSet = new HashSet<String>(JAVA_DEFAULT_STORED_STRINGS);
 		if (defaultStoredStrings != null)
-			this.defaultStoredStrings.addAll(defaultStoredStrings);
+			defaultStoredStringsSet.addAll(defaultStoredStrings);
+		
+		this.defaultStoredStrings = Collections.unmodifiableList(new ArrayList<String>(defaultStoredStringsSet));
 
 		this.classLoader = classLoader;
 	}

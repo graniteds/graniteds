@@ -26,7 +26,6 @@ import java.io.OutputStream;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,13 +35,11 @@ import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
-import org.granite.messaging.jmf.DefaultCodecRegistry;
-import org.granite.messaging.jmf.DefaultSharedContext;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFSerializer;
+import org.granite.messaging.jmf.JMFServletContextListener;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.ContentType;
-import org.granite.util.JMFAMFUtil;
 import org.granite.util.UUIDUtil;
 
 import flex.messaging.messages.Message;
@@ -62,15 +59,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		
-        ServletContext servletContext = config.getServletContext();
-        synchronized (servletContext) {
-        	final String key = SharedContext.class.getName();
-        	jmfSharedContext = (SharedContext)servletContext.getAttribute(key);
-        	if (jmfSharedContext == null) {
-        		jmfSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), JMFAMFUtil.AMF_DEFAULT_STORED_STRINGS);
-        		servletContext.setAttribute(key, jmfSharedContext);
-        	}
-        }
+        jmfSharedContext = JMFServletContextListener.getSharedContext(config.getServletContext());
 	}
 
 	@Override
@@ -163,14 +152,18 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 		super.destroy();
 	}
 	
-	protected AsyncChannelFactory newAsyncChannelFactory(Gravity gravity, String contentType) {
-		if (ContentType.JMF_AMF.mimeType().equals(contentType))
-			return new JMFAsyncChannelFactory(gravity, jmfSharedContext);
+	protected AsyncChannelFactory newAsyncChannelFactory(Gravity gravity, String contentType) throws ServletException {
+		if (ContentType.JMF_AMF.mimeType().equals(contentType)) {
+	    	if (jmfSharedContext == null)
+	    		throw JMFServletContextListener.newSharedContextNotInitializedException();
+			
+	    	return new JMFAsyncChannelFactory(gravity, jmfSharedContext);
+		}
 		return new AsyncChannelFactory(gravity);
 	}
 
 	@Override
-	protected Message[] deserialize(Gravity gravity, HttpServletRequest request) throws ClassNotFoundException, IOException {
+	protected Message[] deserialize(Gravity gravity, HttpServletRequest request) throws ClassNotFoundException, IOException, ServletException {
 		if (ContentType.JMF_AMF.mimeType().equals(request.getContentType())) {
 			InputStream is = request.getInputStream();
 			try {
@@ -184,27 +177,33 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 	}
 
 	@Override
-	protected Message[] deserialize(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException {
+	protected Message[] deserialize(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException, ServletException {
 		if (ContentType.JMF_AMF.mimeType().equals(request.getContentType()))
 			return deserializeJMFAMF(gravity, request, is);
 		return super.deserialize(gravity, request, is);
 	}
 	
-	protected Message[] deserializeJMFAMF(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException {
-        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
+	protected Message[] deserializeJMFAMF(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException, ServletException {
+    	if (jmfSharedContext == null)
+    		throw JMFServletContextListener.newSharedContextNotInitializedException();
+    	
+    	@SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
 		JMFDeserializer deserializer = new JMFDeserializer(is, jmfSharedContext);
         return (Message[])deserializer.readObject();
 	}
 
-	protected void serialize(Gravity gravity, HttpServletResponse response, Message[] messages, String contentType) throws IOException {
+	protected void serialize(Gravity gravity, HttpServletResponse response, Message[] messages, String contentType) throws IOException, ServletException {
 		if (ContentType.JMF_AMF.mimeType().equals(contentType))
 			serializeJMFAMF(gravity, response, messages);
 		else
 			super.serialize(gravity, response, messages);
 	}
 
-	protected void serializeJMFAMF(Gravity gravity, HttpServletResponse response, Message[] messages) throws IOException {
-		OutputStream os = null;
+	protected void serializeJMFAMF(Gravity gravity, HttpServletResponse response, Message[] messages) throws IOException, ServletException {
+    	if (jmfSharedContext == null)
+    		throw JMFServletContextListener.newSharedContextNotInitializedException();
+    	
+    	OutputStream os = null;
 		try {
             // For SDK 2.0.1_Hotfix2+ (LCDS 2.5+).
 			String dsId = null;

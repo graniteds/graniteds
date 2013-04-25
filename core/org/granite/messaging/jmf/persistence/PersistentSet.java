@@ -20,7 +20,6 @@
 
 package org.granite.messaging.jmf.persistence;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -50,7 +49,7 @@ public class PersistentSet<E> extends AbstractPersistentSimpleCollection<E, Set<
 	@Override
 	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
 		if (snapshot.isInitialized())
-			init(new HashSet<E>((Collection<? extends E>)Arrays.asList(snapshot.getElements())), snapshot.isDirty());
+			init(new HashSet<E>((Collection<? extends E>)snapshot.getElementsAsCollection()), snapshot.isDirty());
 		else
 			init(null, false);
 	}

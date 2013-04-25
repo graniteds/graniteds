@@ -20,9 +20,12 @@
 
 package org.granite.hibernate.jmf;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
+import org.granite.messaging.jmf.ExtendedObjectInput;
+import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentBag;
 
 /**
@@ -34,18 +37,13 @@ public class PersistentBagCodec extends AbstractPersistentCollectionCodec<Persis
 		super(PersistentBag.class);
 	}
 
-	@Override
-	protected PersistentBag newCollection(boolean initialized) {
-		return (initialized ? new PersistentBag(null, new ArrayList<Object>()) : new PersistentBag(null));
-	}
-
-	@Override
-	protected Object[] getElements(PersistentBag collection) {
-		return collection.toArray();
-	}
-
-	@Override
-	protected void setElements(PersistentBag collection, Object[] elements) {
-		collection.addAll(Arrays.asList(elements));
+	public PersistentBag newInstance(ExtendedObjectInput in, Class<?> cls)
+			throws IOException, ClassNotFoundException, InstantiationException,
+			IllegalAccessException, InvocationTargetException,
+			SecurityException, NoSuchMethodException {
+		
+		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot();
+		snapshot.readInitializationData(in);
+		return (snapshot.isInitialized() ? new PersistentBag(null, new ArrayList<Object>()) : new PersistentBag(null));
 	}
 }

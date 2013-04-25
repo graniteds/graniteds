@@ -20,55 +20,36 @@
 
 package org.granite.hibernate.jmf;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.TreeMap;
 
+import org.granite.messaging.jmf.ExtendedObjectInput;
+import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentSortedMap;
 
 /**
  * @author Franck WOLFF
  */
-public class PersistentSortedMapCodec extends AbstractPersistentSortedCollectionCodec<PersistentSortedMap> {
+public class PersistentSortedMapCodec extends AbstractPersistentCollectionCodec<PersistentSortedMap> {
 
 	public PersistentSortedMapCodec() {
 		super(PersistentSortedMap.class);
 	}
 
-	@Override
-	protected String getComparatorClassName(PersistentSortedMap collection) {
-		if (collection.wasInitialized())
-			return (collection.comparator() != null ? collection.comparator().getClass().getName() : null);
-		return null;
-	}
-
-	@Override
-	protected PersistentSortedMap newCollection(boolean initialized, Comparator<Object> comparator) {
-		return (initialized ? new PersistentSortedMap(null, new TreeMap<Object, Object>(comparator)) : new PersistentSortedMap(null));
-	}
-
-	@Override
-	protected Object[] getElements(PersistentSortedMap collection) {
-		Map.Entry<?, ?>[] entries = (Map.Entry<?, ?>[])collection.entrySet().toArray();
-		Object[] elements = new Object[entries.length * 2];
+	public PersistentSortedMap newInstance(ExtendedObjectInput in, Class<?> cls)
+			throws IOException, ClassNotFoundException, InstantiationException,
+			IllegalAccessException, InvocationTargetException,
+			SecurityException, NoSuchMethodException {
 		
-		int j = 0;
-		for (int i = 0; i < entries.length; i++) {
-			Map.Entry<?, ?> entry = entries[i];
-			elements[j++] = entry.getKey();
-			elements[j++] = entry.getValue();
-		}
+		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot(true);
+		snapshot.readInitializationData(in);
 		
-		return elements;
-	}
-
-	@Override
-	protected void setElements(PersistentSortedMap collection, Object[] elements) {
-		if ((elements.length % 2) != 0)
-			throw new IllegalArgumentException("elements length should be a multiple of 2: " + elements.length);
+		if (!snapshot.isInitialized())
+			return new PersistentSortedMap(null);
 		
-		final int length = elements.length / 2;
-		for (int i = 0; i < length; i += 2)
-			collection.put(elements[i], elements[i+1]);
+		Comparator<? super Object> comparator = snapshot.newComparator(in.getClassLoader());
+		return new PersistentSortedMap(null, new TreeMap<Object, Object>(comparator));
 	}
 }

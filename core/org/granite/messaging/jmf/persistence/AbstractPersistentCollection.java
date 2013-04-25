@@ -57,6 +57,10 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 	protected C getCollection() {
 		return collection;
 	}
+	
+	protected ClassLoader getClassLoader() {
+		return Thread.currentThread().getContextClassLoader();
+	}
 
 	public boolean wasInitialized() {
 		return collection != null;
@@ -74,16 +78,16 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 		dirty = false;
 	}
 	
-	protected abstract PersistentCollectionSnapshot newSnapshot(boolean blank);
+	protected abstract PersistentCollectionSnapshot createSnapshot(boolean forReading);
 	protected abstract void updateFromSnapshot(PersistentCollectionSnapshot snapshot);
 
 	public void writeExternal(ObjectOutput out) throws IOException {
-		PersistentCollectionSnapshot snapshot = newSnapshot(false);
+		PersistentCollectionSnapshot snapshot = createSnapshot(false);
 		snapshot.writeExternal(out);
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		PersistentCollectionSnapshot snapshot = newSnapshot(true);
+		PersistentCollectionSnapshot snapshot = createSnapshot(true);
 		snapshot.readExternal(in);
 		updateFromSnapshot(snapshot);
 	}

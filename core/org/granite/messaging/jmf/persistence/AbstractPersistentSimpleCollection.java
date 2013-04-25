@@ -120,9 +120,9 @@ public abstract class AbstractPersistentSimpleCollection<E, C extends Collection
 	}
 
 	@Override
-	protected PersistentCollectionSnapshot newSnapshot(boolean blank) {
-		if (blank || !wasInitialized())
+	protected PersistentCollectionSnapshot createSnapshot(boolean forReading) {
+		if (forReading || !wasInitialized())
 			return new PersistentCollectionSnapshot();
-		return new PersistentCollectionSnapshot(getCollection().toArray(), isDirty());
+		return new PersistentCollectionSnapshot(true, isDirty(), getCollection());
 	}
 }
