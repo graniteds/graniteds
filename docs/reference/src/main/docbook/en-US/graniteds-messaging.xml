@@ -11,8 +11,8 @@
 	Both can be used with the same producer/consumer based API.
 	</para>
 	<para> 
-	The Comet implementation is freely based on the <ulink url="http://cometd.com/bayeux/Bayeux">Bayeux</ulink> 
-	protocol specification (1.0draft1 at this time) and adapted from the Jetty 6.1.x implementation of a comet server. 
+	The Comet implementation is freely inspired from the <ulink url="http://cometd.com/bayeux/Bayeux">Bayeux</ulink> 
+	protocol specification and adapted from the Jetty 6.1.x implementation of a cometd server. 
 	</para>
 	<para>
 	The WebSocket server implementation uses the native WebSocket capabilities of the deployment application server when available (Tomcat 7.0.29+, GlassFish 3.1.2+, Jetty 8.1.1+)
@@ -792,7 +792,7 @@ consumerFrance.subscribe(new ResponseListener() { ... }).get();
         </para>
         
         <para>
-        Here is a sample configuration:
+        Here is a sample configuration to use an embedded ActiveMQ provider:
         </para>
         
         <programlisting role="XML">
@@ -821,6 +821,40 @@ consumerFrance.subscribe(new ResponseListener() { ... }).get();
       <file-store-root>/var/activemq/data</file-store-root>
       <create-broker>true</create-broker>
       <wait-for-start>false</wait-for-start>
+    </server>
+  </properties>
+  ...
+  <adapter ref="activemq"/>
+</destination>]]>
+        </programlisting>
+        
+        <para>
+        And a sample configuration to use an external ActiveMQ provider:
+        </para>
+         
+        <programlisting role="XML">
+<![CDATA[<adapters>
+  <adapter-definition
+    id="activemq"
+    class="org.granite.gravity.adapters.ActiveMQServiceAdapter"/>
+</adapters>
+
+<destination id="chat-activemq">
+  <properties>
+    <jms>
+      <destination-type>Topic</destination-type>
+      <!-- Optional: forces usage of simple text messages
+      <message-type>javax.jms.TextMessage</message-type>
+      -->
+      <connection-factory>ConnectionFactory</connection-factory>
+      <destination-jndi-name>topic/testTopic</destination-jndi-name>
+      <destination-name>TestTopic</destination-name>
+      <acknowledge-mode>AUTO_ACKNOWLEDGE</acknowledge-mode>
+      <transacted-sessions>false</transacted-sessions>
+    </jms>
+    
+    <server>
+      <broker-url>tcp://activemq-server:61616</broker-url>
     </server>
   </properties>
   ...
@@ -1066,8 +1100,8 @@ public interface GravityDestinationSecurizer extends DestinationSecurizer {
         throws SecurityServiceException;
 }
         </programlisting>
-
-        <para>
+        
+        <para>        
         You then have to tell GraniteDS where to use your securizer:
         </para>
 
@@ -1086,5 +1120,39 @@ public interface GravityDestinationSecurizer extends DestinationSecurizer {
     ...
 </services-config>]]>
         </programlisting>
+
+        <para>
+        Your custom implementation of this interface is expected to throw a <literal>SecurityServiceException</literal> when the user has no right to execute 
+        the requested action (subscription or publishing).
+        You can also override the subscription message in the method <literal>canSubcribe</literal> if for example you want to force a particular subtopic 
+        or selector depending on the user access rights and not only rely on the client to define the subscription parameters.
+        </para>
+        
+        <programlisting role="JAVA">
+<![CDATA[public class CustomDestinationSecurizer implements GravityDestinationSecurizer {
+    
+    public void canSubscribe(GravityInvocationContext context) throws SecurityServiceException {
+        String profile = getProfileForCurrentUser();
+        if (profile.equals("limited"))
+            throws new SecurityServiceException("Access denied");
+        
+        if (profile.equals("restricted"))
+            ((CommandMessage)context.getMessage()).getHeaders().put("DSSubtopic", "forcedCustomTopic");
+    }
+    
+    public void canPublish(GravityInvocationContext context) throws SecurityServiceException {
+        String profile = getProfileForCurrentUser();
+        if (profile.equals("limited"))
+            throws new SecurityServiceException("Access denied");
+    }
+}
+]]>
+        </programlisting>
+        
+        <para>
+        If you have configured a security service, the current thread has already been authenticated at this point, so you are able to get user information
+        depending your security implementation. 
+        For example, with Spring Security, you can use <literal>SecurityContextHolder.getContext().getAuthentication()</literal>.
+        </para>
 	</section>
 </chapter>
