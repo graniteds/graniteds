@@ -31,13 +31,7 @@ public class HibernateJobService implements JobService {
 	}
 	
 	protected Session getSession() {
-		try {
-			Method m = sessionFactory.getClass().getMethod("getCurrentSession");
-			return (Session)m.invoke(sessionFactory);
-		} 
-		catch (Exception e) {
-			throw new RuntimeException("Could not getCurrentSession");
-		}
+		return sessionFactory.getCurrentSession();
 	}
 	
 	public void init() {

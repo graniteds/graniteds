@@ -61,6 +61,11 @@
     
     <graniteds:tide-data-publishing-advice mode="proxy" order="2"/>
     
-    <bean id="jobService" class="org.granite.test.tide.spring.service.HibernateJobService"/>
+    <bean id="personService" class="org.granite.test.tide.spring.service.HibernatePersonService">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+    <bean id="jobService" class="org.granite.test.tide.spring.service.HibernateJobService">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
 	
 </beans>
