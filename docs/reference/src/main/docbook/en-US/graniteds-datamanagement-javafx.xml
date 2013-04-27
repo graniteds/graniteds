@@ -811,7 +811,67 @@ public abstract class MyEntity {
 }
         </programlisting>
         <para>
-        Add the Tide data annotation on all services, example here with a Spring service:
+        When using the Hibernate native API instead of JPA, you can use the following listener configuration:        
+        </para>
+        <programlisting role="JAVA">
+<![CDATA[Configuration configuration = new Configuration();
+...
+configuration.setListener("post-insert", new HibernateDataPublishListener());
+configuration.setListener("post-update", new HibernateDataPublishListener());
+configuration.setListener("post-delete", new HibernateDataPublishListener());
+]]>
+        </programlisting>
+        <para>
+        With Hibernate XML config:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<hibernate-configuration>    
+    <session-factory>
+       ... 
+        <event type="post-insert">
+            <listener class="org.granite.tide.hibernate.HibernateDataPublishListener"/>
+        </event>
+        <event type="post-update">
+            <listener class="org.granite.tide.hibernate.HibernateDataPublishListener"/>
+        </event>
+        <event type="post-delete">
+            <listener class="org.granite.tide.hibernate.HibernateDataPublishListener"/>
+        </event>
+    </session-factory>
+</hibernate-configuration>]]>
+       </programlisting>  
+        <para>
+        And with Spring:
+        </para>
+        <programlisting role="XML">
+<![CDATA[<bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="hibernateProperties">
+        <props>
+            <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+            <prop key="hibernate.show_sql">false</prop>
+            <prop key="hibernate.hbm2ddl.auto">update</prop>
+        </props>
+    </property>
+    <property name="eventListeners">
+        <map>
+            <entry key="post-insert">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></list>
+            </entry>
+            <entry key="post-update">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></list>
+            </entry>
+            <entry key="post-delete">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></list>
+            </entry>
+        </map>
+    </property>
+    ...
+</bean>]]>
+       </programlisting>        
+        <para>
+        Then add the Tide data annotation on all services, example here with a Spring service:
         </para>
         <programlisting role="JAVA">
 @DataEnabled(topic="dataTopic", publish=PublishMode.ON_SUCCESS)
