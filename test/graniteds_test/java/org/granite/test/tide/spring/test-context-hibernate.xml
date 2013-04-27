@@ -61,6 +61,6 @@
     
     <graniteds:tide-data-publishing-advice mode="proxy" order="2"/>
     
-    <bean id="jobService" class="org.granite.test.tide.spring.service.JPAJobService"/>
+    <bean id="jobService" class="org.granite.test.tide.spring.service.HibernateJobService"/>
 	
 </beans>
