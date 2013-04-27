@@ -51,7 +51,7 @@
         </para>
     </section>
     
-    <section id="gettingstarted.examples" condition="flex">
+    <!--section id="gettingstarted.examples" condition="flex">
         <title>Example projects</title>
         <para>
         Installing and testing GraniteDS sample application is a quick process, provided that you have downloaded 
@@ -66,7 +66,7 @@
         Follow these few steps:
         <orderedlist>
             <listitem><para>
-            Download <ulink url="http://www.graniteds.org/confluence/display/DOWNLOAD">graniteds-***.zip</ulink> and save it somewhere.
+            Download <ulink url="http://www.graniteds.org/confluence/display/DOWNLOAD">graniteds-dist-***.zip</ulink> and save it somewhere.
             </para></listitem>
             <listitem><para>
             Start Eclipse, right click in your "Package Explorer", choose <emphasis>Import... -> General/Existing Project into Workspace -> Next</emphasis>, 
@@ -90,7 +90,7 @@
         </orderedlist>
         You may now look at the code of each example and understand how each sample works.
         </para>
-    </section>
+    </section-->
     
     <section id="gettingstarted.helloworld.flex" condition="flex">
         <title>Hello World, POJO</title>
