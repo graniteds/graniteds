@@ -20,9 +20,12 @@
 
 package org.granite.tide.spring;
 
+import org.granite.tide.data.DataContext;
+import org.granite.tide.data.DataEnabled.PublishMode;
 import org.granite.tide.data.TideSynchronizationManager;
-import org.granite.tide.hibernate4.HibernateDataPublishingProcess;
 import org.hibernate.Session;
+import org.hibernate.action.spi.BeforeTransactionCompletionProcess;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.internal.SessionImpl;
 import org.springframework.orm.hibernate4.SessionHolder;
 
@@ -44,4 +47,20 @@ public class Hibernate4SynchronizationManager implements TideSynchronizationMana
 		((SessionImpl)session).getActionQueue().registerProcess(new HibernateDataPublishingProcess(shouldRemoveContextAtEnd));
 		return true;
 	}
+	
+	private static class HibernateDataPublishingProcess implements BeforeTransactionCompletionProcess {
+		
+		private boolean removeContext;
+		
+		public HibernateDataPublishingProcess(boolean removeContext) {
+			this.removeContext = removeContext;
+		}
+		
+		public void doBeforeTransactionCompletion(SessionImplementor session) {
+			DataContext.publish(PublishMode.ON_COMMIT);
+			if (removeContext)
+				DataContext.remove();
+		}
+	}
+
 }
