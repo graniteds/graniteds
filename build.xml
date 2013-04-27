@@ -263,6 +263,7 @@
                 <dirset dir="classes/tide"/>
                 <pathelement location="lib/aspectjweaver-1.5.4.jar"/>
                 <pathelement location="lib/jdo-api.jar"/>
+                <pathelement location="lib/jpa-2.0-api.jar"/>
                 <pathelement location="lib/org.springframework.core.jar"/>
                 <pathelement location="lib/org.springframework.beans.jar"/>
                 <pathelement location="lib/org.springframework.context.jar"/>
@@ -271,6 +272,7 @@
                 <pathelement location="lib/org.springframework.orm.jar"/>
                 <pathelement location="lib/org.springframework.web.jar"/>
                 <pathelement location="lib/org.springframework.web.servlet.jar"/>
+                <pathelement location="lib/hibernate-core-4.0.1.jar"/>
                 <pathelement location="lib/spring-data-commons-core.jar"/>
                 <pathelement location="lib/spring-data-jpa.jar"/>
                 <pathelement location="lib/spring-security-core-3.0.jar"/>
