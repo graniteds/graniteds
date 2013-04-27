@@ -20,9 +20,12 @@
 
 package org.granite.hibernate.jmf;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.Map;
 
+import org.granite.messaging.jmf.ExtendedObjectInput;
+import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentMap;
 
 /**
@@ -34,33 +37,13 @@ public class PersistentMapCodec extends AbstractPersistentCollectionCodec<Persis
 		super(PersistentMap.class);
 	}
 
-	@Override
-	protected PersistentMap newCollection(boolean initialized) {
-		return (initialized ? new PersistentMap(null, new HashMap<Object, Object>()) : new PersistentMap(null));
-	}
-
-	@Override
-	protected Object[] getElements(PersistentMap collection) {
-		Map.Entry<?, ?>[] entries = (Map.Entry<?, ?>[])collection.entrySet().toArray();
-		Object[] elements = new Object[entries.length * 2];
+	public PersistentMap newInstance(ExtendedObjectInput in, Class<?> cls)
+			throws IOException, ClassNotFoundException, InstantiationException,
+			IllegalAccessException, InvocationTargetException,
+			SecurityException, NoSuchMethodException {
 		
-		int j = 0;
-		for (int i = 0; i < entries.length; i++) {
-			Map.Entry<?, ?> entry = entries[i];
-			elements[j++] = entry.getKey();
-			elements[j++] = entry.getValue();
-		}
-		
-		return elements;
-	}
-
-	@Override
-	protected void setElements(PersistentMap collection, Object[] elements) {
-		if ((elements.length % 2) != 0)
-			throw new IllegalArgumentException("elements length should be a multiple of 2: " + elements.length);
-		
-		final int length = elements.length / 2;
-		for (int i = 0; i < length; i += 2)
-			collection.put(elements[i], elements[i+1]);
+		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot();
+		snapshot.readInitializationData(in);
+		return (snapshot.isInitialized() ? new PersistentMap(null, new HashMap<Object, Object>()) : new PersistentMap(null));
 	}
 }

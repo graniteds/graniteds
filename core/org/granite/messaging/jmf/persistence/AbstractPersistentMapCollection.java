@@ -111,43 +111,4 @@ public abstract class AbstractPersistentMapCollection<K, V, C extends Map<K, V>>
 		checkInitialized();
 		return new SetProxy<Map.Entry<K, V>>(this, getCollection().entrySet());
 	}
-
-	@SuppressWarnings("unchecked")
-	protected Object[] getMapElements() {
-		Map.Entry<K, V>[] entries = (Map.Entry<K, V>[])getCollection().entrySet().toArray();
-
-		Object[] elements = new Object[entries.length * 2];
-		
-		int j = 0;
-		for (int i = 0; i < entries.length; i++) {
-			Map.Entry<K, V> entry = entries[i];
-			elements[j++] = entry.getKey();
-			elements[j++] = entry.getValue();
-		}
-		
-		return elements;
-	}
-	
-	protected abstract Map<K, V> newCollection(PersistentCollectionSnapshot snapshot);
-
-	@SuppressWarnings("unchecked")
-	@Override
-	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
-		if (snapshot.isInitialized()) {
-			Object[] elements = snapshot.getElements();
-			
-			if ((elements.length % 2) != 0)
-				throw new IllegalArgumentException("elements length should be a multiple of 2: " + elements.length);
-		
-			final int length = elements.length / 2;
-			
-			Map<K, V> map = newCollection(snapshot);
-			for (int i = 0; i < length; i += 2)
-				map.put((K)elements[i], (V)elements[i+1]);
-
-			init((C)map, snapshot.isDirty());
-		}
-		else
-			init(null, false);
-	}
 }

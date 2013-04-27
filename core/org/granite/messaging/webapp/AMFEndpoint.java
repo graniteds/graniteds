@@ -38,13 +38,11 @@ import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.amf.io.AMF0Deserializer;
 import org.granite.messaging.amf.io.AMF0Serializer;
 import org.granite.messaging.amf.process.AMF0MessageProcessor;
-import org.granite.messaging.jmf.DefaultCodecRegistry;
-import org.granite.messaging.jmf.DefaultSharedContext;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFSerializer;
+import org.granite.messaging.jmf.JMFServletContextListener;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.ContentType;
-import org.granite.util.JMFAMFUtil;
 
 /**
  * @author Franck WOLFF
@@ -56,14 +54,8 @@ public class AMFEndpoint {
     private SharedContext jmfSharedContext = null;
 
     public void init(ServletContext context) {
-        synchronized (context) {
-        	final String key = SharedContext.class.getName();
-        	jmfSharedContext = (SharedContext)context.getAttribute(key);
-        	if (jmfSharedContext == null) {
-        		jmfSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), JMFAMFUtil.AMF_DEFAULT_STORED_STRINGS);
-        		context.setAttribute(key, jmfSharedContext);
-        	}
-        }
+        jmfSharedContext = JMFServletContextListener.getSharedContext(context);
+        
     }
     
     public void destroy() {
@@ -135,7 +127,11 @@ public class AMFEndpoint {
     
     protected void serviceJMFAMF(GraniteConfig graniteConfig, ServicesConfig servicesConfig, ServletContext context,
     		HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {	    
-	    log.debug(">> Incoming JMF+AMF request from: %s", request.getRequestURL());
+	    
+    	log.debug(">> Incoming JMF+AMF request from: %s", request.getRequestURL());
+    	
+    	if (jmfSharedContext == null)
+    		throw JMFServletContextListener.newSharedContextNotInitializedException();
 
 	    InputStream is = null;
 	    OutputStream os = null;

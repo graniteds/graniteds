@@ -53,15 +53,14 @@ public class ObjectCodecUtil {
 		}
 	};
 	
-	public static Constructor<?> findDefaultContructor(Class<?> cls) throws SecurityException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+	@SuppressWarnings("unchecked")
+	public static <T> Constructor<T> findDefaultContructor(Class<T> cls) throws SecurityException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 		try {
 			return cls.getConstructor();
 		}
 		catch (NoSuchMethodException e) {
-			// fallback...
+			return (Constructor<T>)defaultConstructorFactory.findDefaultConstructor(cls);
 		}
-		
-		return defaultConstructorFactory.findDefaultConstructor(cls);
 	}
 	
 	public static List<Field> findSerializableFields(Class<?> cls) throws SecurityException {

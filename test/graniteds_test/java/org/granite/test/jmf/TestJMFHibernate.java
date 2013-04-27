@@ -4,14 +4,22 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
+import org.granite.hibernate.jmf.PersistentBagCodec;
 import org.granite.hibernate.jmf.PersistentListCodec;
 import org.granite.hibernate.jmf.PersistentMapCodec;
 import org.granite.hibernate.jmf.PersistentSetCodec;
+import org.granite.hibernate.jmf.PersistentSortedMapCodec;
 import org.granite.hibernate.jmf.PersistentSortedSetCodec;
 import org.granite.messaging.jmf.DefaultCodecRegistry;
 import org.granite.messaging.jmf.DefaultSharedContext;
@@ -22,8 +30,12 @@ import org.granite.test.jmf.TestUtil.ByteArrayJMFDeserializer;
 import org.granite.test.jmf.TestUtil.ByteArrayJMFDumper;
 import org.granite.test.jmf.TestUtil.ByteArrayJMFSerializer;
 import org.hibernate.LazyInitializationException;
+import org.hibernate.collection.PersistentBag;
 import org.hibernate.collection.PersistentList;
+import org.hibernate.collection.PersistentMap;
 import org.hibernate.collection.PersistentSet;
+import org.hibernate.collection.PersistentSortedMap;
+import org.hibernate.collection.PersistentSortedSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,24 +50,18 @@ public class TestJMFHibernate {
 	@Before
 	public void before() {
 		
-		List<String> defaultStoredStrings = Arrays.asList(
-			org.granite.messaging.jmf.persistence.PersistentList.class.getName(),
-			org.granite.messaging.jmf.persistence.PersistentMap.class.getName(),
-			org.granite.messaging.jmf.persistence.PersistentSet.class.getName(),
-			org.granite.messaging.jmf.persistence.PersistentSortedSet.class.getName()
+		List<ExtendedObjectCodec> extendedObjectCodecs = Arrays.asList((ExtendedObjectCodec)
+			new PersistentListCodec(),
+			new PersistentSetCodec(),
+			new PersistentBagCodec(),
+			new PersistentMapCodec(),
+			new PersistentSortedSetCodec(),
+			new PersistentSortedMapCodec()
 		);
 		
-		dumpSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), defaultStoredStrings);
-		
-		ExtendedObjectCodec[] extendedObjectCodecs = {
-			new PersistentListCodec(),
-			new PersistentMapCodec(),
-			new PersistentSetCodec(),
-			new PersistentSortedSetCodec()
-		};
-		serverSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(Arrays.asList(extendedObjectCodecs)), defaultStoredStrings);
-		
-		clientSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), defaultStoredStrings);
+		dumpSharedContext = new DefaultSharedContext(new DefaultCodecRegistry());
+		serverSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(extendedObjectCodecs));
+		clientSharedContext = new DefaultSharedContext(new DefaultCodecRegistry());
 	}
 	
 	@After
@@ -67,7 +73,7 @@ public class TestJMFHibernate {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testPersitentList() throws ClassNotFoundException, IOException {
+	public void testPersistentList() throws ClassNotFoundException, IOException {
 		PersistentList list = new PersistentList(null);
 		
 		Object collection = serializeAndDeserializeServerToServer(list, false);
@@ -304,7 +310,7 @@ public class TestJMFHibernate {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testPersitentSet() throws ClassNotFoundException, IOException {
+	public void testPersistentSet() throws ClassNotFoundException, IOException {
 		PersistentSet set = new PersistentSet(null);
 		
 		Object collection = serializeAndDeserializeServerToServer(set, false);
@@ -379,6 +385,392 @@ public class TestJMFHibernate {
 		Assert.assertFalse(((PersistentSet)collection).isDirty());
 		Assert.assertFalse(((PersistentSet)collection).isEmpty());
 		Assert.assertTrue(((PersistentSet)collection).size() == 3);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testPersistentBag() throws ClassNotFoundException, IOException {
+		PersistentBag bag = new PersistentBag(null);
+		
+		Object collection = serializeAndDeserializeServerToServer(bag, false);
+		Assert.assertTrue(collection instanceof PersistentBag);
+		Assert.assertFalse(((PersistentBag)collection).wasInitialized());
+		try {
+			((PersistentBag)collection).add(new Object());
+			Assert.fail("Should throw a org.hibernate.LazyInitializationException");
+		}
+		catch (LazyInitializationException e) {
+		}
+		
+		collection = serializeAndDeserializeServerToClient(bag, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentBag);
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentBag<?>)collection).wasInitialized());
+		try {
+			((org.granite.messaging.jmf.persistence.PersistentBag<Object>)collection).add(new Object());
+			Assert.fail("Should throw a org.granite.messaging.jmf.persistence.LazyInitializationException");
+		}
+		catch (org.granite.messaging.jmf.persistence.LazyInitializationException e) {
+		}
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentBag);
+		Assert.assertFalse(((PersistentBag)collection).wasInitialized());
+		try {
+			((PersistentBag)collection).add(new Object());
+			Assert.fail("Should throw a org.hibernate.LazyInitializationException");
+		}
+		catch (LazyInitializationException e) {
+		}
+		
+		bag = new PersistentBag(null, new HashSet<Object>());
+		
+		collection = serializeAndDeserializeServerToServer(bag, false);
+		Assert.assertTrue(collection instanceof PersistentBag);
+		Assert.assertTrue(((PersistentBag)collection).wasInitialized());
+		Assert.assertFalse(((PersistentBag)collection).isDirty());
+		Assert.assertTrue(((PersistentBag)collection).isEmpty());
+		
+		collection = serializeAndDeserializeServerToClient(bag, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentBag);
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentBag<?>)collection).wasInitialized());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentBag<?>)collection).isDirty());
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentBag<?>)collection).isEmpty());
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentBag);
+		Assert.assertTrue(((PersistentBag)collection).wasInitialized());
+		Assert.assertFalse(((PersistentBag)collection).isDirty());
+		Assert.assertTrue(((PersistentBag)collection).isEmpty());
+		
+		bag = new PersistentBag(null, new HashSet<Integer>(Arrays.asList(1, 2, 3)));
+		
+		collection = serializeAndDeserializeServerToServer(bag, false);
+		Assert.assertTrue(collection instanceof PersistentBag);
+		Assert.assertTrue(((PersistentBag)collection).wasInitialized());
+		Assert.assertFalse(((PersistentBag)collection).isDirty());
+		Assert.assertFalse(((PersistentBag)collection).isEmpty());
+		Assert.assertTrue(((PersistentBag)collection).size() == 3);
+		
+		collection = serializeAndDeserializeServerToClient(bag, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentBag);
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentBag<?>)collection).wasInitialized());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentBag<?>)collection).isDirty());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentBag<?>)collection).isEmpty());
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentBag<?>)collection).size() == 3);
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentBag);
+		Assert.assertTrue(((PersistentBag)collection).wasInitialized());
+		Assert.assertFalse(((PersistentBag)collection).isDirty());
+		Assert.assertFalse(((PersistentBag)collection).isEmpty());
+		Assert.assertTrue(((PersistentBag)collection).size() == 3);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testPersistentMap() throws ClassNotFoundException, IOException {
+		PersistentMap map = new PersistentMap(null);
+		
+		Object collection = serializeAndDeserializeServerToServer(map, false);
+		Assert.assertTrue(collection instanceof PersistentMap);
+		Assert.assertFalse(((PersistentMap)collection).wasInitialized());
+		try {
+			((PersistentMap)collection).put(new Object(), new Object());
+			Assert.fail("Should throw a org.hibernate.LazyInitializationException");
+		}
+		catch (LazyInitializationException e) {
+		}
+		
+		collection = serializeAndDeserializeServerToClient(map, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentMap);
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentMap<?, ?>)collection).wasInitialized());
+		try {
+			((org.granite.messaging.jmf.persistence.PersistentMap<Object, Object>)collection).put(new Object(), new Object());
+			Assert.fail("Should throw a org.granite.messaging.jmf.persistence.LazyInitializationException");
+		}
+		catch (org.granite.messaging.jmf.persistence.LazyInitializationException e) {
+		}
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentMap);
+		Assert.assertFalse(((PersistentMap)collection).wasInitialized());
+		try {
+			((PersistentMap)collection).put(new Object(), new Object());
+			Assert.fail("Should throw a org.hibernate.LazyInitializationException");
+		}
+		catch (LazyInitializationException e) {
+		}
+		
+		map = new PersistentMap(null, new HashMap<Object, Object>());
+		
+		collection = serializeAndDeserializeServerToServer(map, false);
+		Assert.assertTrue(collection instanceof PersistentMap);
+		Assert.assertTrue(((PersistentMap)collection).wasInitialized());
+		Assert.assertFalse(((PersistentMap)collection).isDirty());
+		Assert.assertTrue(((PersistentMap)collection).isEmpty());
+		
+		collection = serializeAndDeserializeServerToClient(map, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentMap);
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentMap<?, ?>)collection).wasInitialized());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentMap<?, ?>)collection).isDirty());
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentMap<?, ?>)collection).isEmpty());
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentMap);
+		Assert.assertTrue(((PersistentMap)collection).wasInitialized());
+		Assert.assertFalse(((PersistentMap)collection).isDirty());
+		Assert.assertTrue(((PersistentMap)collection).isEmpty());
+		
+		Map<Integer, Boolean> content = new HashMap<Integer, Boolean>();
+		content.put(1, true);
+		content.put(2, false);
+		content.put(3, null);
+		map = new PersistentMap(null, content);
+		
+		collection = serializeAndDeserializeServerToServer(map, false);
+		Assert.assertTrue(collection instanceof PersistentMap);
+		Assert.assertTrue(((PersistentMap)collection).wasInitialized());
+		Assert.assertFalse(((PersistentMap)collection).isDirty());
+		Assert.assertFalse(((PersistentMap)collection).isEmpty());
+		Assert.assertTrue(((PersistentMap)collection).size() == 3);
+		
+		collection = serializeAndDeserializeServerToClient(map, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentMap);
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentMap<?, ?>)collection).wasInitialized());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentMap<?, ?>)collection).isDirty());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentMap<?, ?>)collection).isEmpty());
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentMap<?, ?>)collection).size() == 3);
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentMap);
+		Assert.assertTrue(((PersistentMap)collection).wasInitialized());
+		Assert.assertFalse(((PersistentMap)collection).isDirty());
+		Assert.assertFalse(((PersistentMap)collection).isEmpty());
+		Assert.assertTrue(((PersistentMap)collection).size() == 3);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testPersistentSortedSet() throws ClassNotFoundException, IOException {
+		PersistentSortedSet sortedSet = new PersistentSortedSet(null);
+		
+		Object collection = serializeAndDeserializeServerToServer(sortedSet, false);
+		Assert.assertTrue(collection instanceof PersistentSortedSet);
+		Assert.assertFalse(((PersistentSortedSet)collection).wasInitialized());
+		try {
+			((PersistentSortedSet)collection).add(new Object());
+			Assert.fail("Should throw a org.hibernate.LazyInitializationException");
+		}
+		catch (LazyInitializationException e) {
+		}
+		
+		collection = serializeAndDeserializeServerToClient(sortedSet, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentSortedSet);
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).wasInitialized());
+		try {
+			((org.granite.messaging.jmf.persistence.PersistentSortedSet<Object>)collection).add(new Object());
+			Assert.fail("Should throw a org.granite.messaging.jmf.persistence.LazyInitializationException");
+		}
+		catch (org.granite.messaging.jmf.persistence.LazyInitializationException e) {
+		}
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentSortedSet);
+		Assert.assertFalse(((PersistentSortedSet)collection).wasInitialized());
+		try {
+			((PersistentSortedSet)collection).add(new Object());
+			Assert.fail("Should throw a org.hibernate.LazyInitializationException");
+		}
+		catch (LazyInitializationException e) {
+		}
+		
+		sortedSet = new PersistentSortedSet(null, new TreeSet<Object>());
+		
+		collection = serializeAndDeserializeServerToServer(sortedSet, false);
+		Assert.assertTrue(collection instanceof PersistentSortedSet);
+		Assert.assertTrue(((PersistentSortedSet)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedSet)collection).isDirty());
+		Assert.assertTrue(((PersistentSortedSet)collection).isEmpty());
+		
+		collection = serializeAndDeserializeServerToClient(sortedSet, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentSortedSet);
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).wasInitialized());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).isDirty());
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).isEmpty());
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentSortedSet);
+		Assert.assertTrue(((PersistentSortedSet)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedSet)collection).isDirty());
+		Assert.assertTrue(((PersistentSortedSet)collection).isEmpty());
+		
+		sortedSet = new PersistentSortedSet(null, new TreeSet<Integer>(Arrays.asList(1, 2, 3)));
+		
+		collection = serializeAndDeserializeServerToServer(sortedSet, false);
+		Assert.assertTrue(collection instanceof PersistentSortedSet);
+		Assert.assertTrue(((PersistentSortedSet)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedSet)collection).isDirty());
+		Assert.assertFalse(((PersistentSortedSet)collection).isEmpty());
+		Assert.assertTrue(((PersistentSortedSet)collection).size() == 3);
+		
+		collection = serializeAndDeserializeServerToClient(sortedSet, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentSortedSet);
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).wasInitialized());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).isDirty());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).isEmpty());
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).size() == 3);
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentSortedSet);
+		Assert.assertTrue(((PersistentSortedSet)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedSet)collection).isDirty());
+		Assert.assertFalse(((PersistentSortedSet)collection).isEmpty());
+		Assert.assertTrue(((PersistentSortedSet)collection).size() == 3);
+		
+		sortedSet = new PersistentSortedSet(null, new TreeSet<Integer>(new Comparator<Integer>() {
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				return o2.compareTo(o1);
+			}
+		}));
+		sortedSet.addAll(Arrays.asList(1, 2, 3));
+		sortedSet.clearDirty();
+		
+		collection = serializeAndDeserializeServerToServer(sortedSet, false);
+		Assert.assertTrue(collection instanceof PersistentSortedSet);
+		Assert.assertTrue(((PersistentSortedSet)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedSet)collection).isDirty());
+		Assert.assertFalse(((PersistentSortedSet)collection).isEmpty());
+		Assert.assertTrue(((PersistentSortedSet)collection).size() == 3);
+		
+		collection = serializeAndDeserializeServerToClient(sortedSet, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentSortedSet);
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).wasInitialized());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).isDirty());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).isEmpty());
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedSet<?>)collection).size() == 3);
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentSortedSet);
+		Assert.assertTrue(((PersistentSortedSet)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedSet)collection).isDirty());
+		Assert.assertFalse(((PersistentSortedSet)collection).isEmpty());
+		Assert.assertTrue(((PersistentSortedSet)collection).size() == 3);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testPersistentSortedMap() throws ClassNotFoundException, IOException {
+		PersistentSortedMap sortedMap = new PersistentSortedMap(null);
+		
+		Object collection = serializeAndDeserializeServerToServer(sortedMap, false);
+		Assert.assertTrue(collection instanceof PersistentSortedMap);
+		Assert.assertFalse(((PersistentSortedMap)collection).wasInitialized());
+		try {
+			((PersistentSortedMap)collection).put(new Object(), new Object());
+			Assert.fail("Should throw a org.hibernate.LazyInitializationException");
+		}
+		catch (LazyInitializationException e) {
+		}
+		
+		collection = serializeAndDeserializeServerToClient(sortedMap, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentSortedMap);
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).wasInitialized());
+		try {
+			((org.granite.messaging.jmf.persistence.PersistentSortedMap<Object, Object>)collection).put(new Object(), new Object());
+			Assert.fail("Should throw a org.granite.messaging.jmf.persistence.LazyInitializationException");
+		}
+		catch (org.granite.messaging.jmf.persistence.LazyInitializationException e) {
+		}
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentSortedMap);
+		Assert.assertFalse(((PersistentSortedMap)collection).wasInitialized());
+		try {
+			((PersistentSortedMap)collection).put(new Object(), new Object());
+			Assert.fail("Should throw a org.hibernate.LazyInitializationException");
+		}
+		catch (LazyInitializationException e) {
+		}
+		
+		sortedMap = new PersistentSortedMap(null, new TreeMap<Object, Object>());
+		
+		collection = serializeAndDeserializeServerToServer(sortedMap, false);
+		Assert.assertTrue(collection instanceof PersistentSortedMap);
+		Assert.assertTrue(((PersistentSortedMap)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedMap)collection).isDirty());
+		Assert.assertTrue(((PersistentSortedMap)collection).isEmpty());
+		
+		collection = serializeAndDeserializeServerToClient(sortedMap, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentSortedMap);
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).wasInitialized());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).isDirty());
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).isEmpty());
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentSortedMap);
+		Assert.assertTrue(((PersistentSortedMap)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedMap)collection).isDirty());
+		Assert.assertTrue(((PersistentSortedMap)collection).isEmpty());
+		
+		SortedMap<Integer, Boolean> content = new TreeMap<Integer, Boolean>();
+		content.put(1, true);
+		content.put(2, false);
+		content.put(3, null);
+		sortedMap = new PersistentSortedMap(null, content);
+		
+		collection = serializeAndDeserializeServerToServer(sortedMap, false);
+		Assert.assertTrue(collection instanceof PersistentSortedMap);
+		Assert.assertTrue(((PersistentSortedMap)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedMap)collection).isDirty());
+		Assert.assertFalse(((PersistentSortedMap)collection).isEmpty());
+		Assert.assertTrue(((PersistentSortedMap)collection).size() == 3);
+		
+		collection = serializeAndDeserializeServerToClient(sortedMap, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentSortedMap);
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).wasInitialized());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).isDirty());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).isEmpty());
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).size() == 3);
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentSortedMap);
+		Assert.assertTrue(((PersistentSortedMap)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedMap)collection).isDirty());
+		Assert.assertFalse(((PersistentSortedMap)collection).isEmpty());
+		Assert.assertTrue(((PersistentSortedMap)collection).size() == 3);
+		
+		sortedMap = new PersistentSortedMap(null, new TreeMap<Integer, Boolean>(new Comparator<Integer>() {
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				return o2.compareTo(o1);
+			}
+		}));
+		sortedMap.put(1, true);
+		sortedMap.put(2, false);
+		sortedMap.put(3, null);
+		sortedMap.clearDirty();
+		
+		collection = serializeAndDeserializeServerToServer(sortedMap, false);
+		Assert.assertTrue(collection instanceof PersistentSortedMap);
+		Assert.assertTrue(((PersistentSortedMap)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedMap)collection).isDirty());
+		Assert.assertFalse(((PersistentSortedMap)collection).isEmpty());
+		Assert.assertTrue(((PersistentSortedMap)collection).size() == 3);
+		
+		collection = serializeAndDeserializeServerToClient(sortedMap, false);
+		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentSortedMap);
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).wasInitialized());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).isDirty());
+		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).isEmpty());
+		Assert.assertTrue(((org.granite.messaging.jmf.persistence.PersistentSortedMap<?, ?>)collection).size() == 3);
+		
+		collection = serializeAndDeserializeClientToServer(collection, false);
+		Assert.assertTrue(collection instanceof PersistentSortedMap);
+		Assert.assertTrue(((PersistentSortedMap)collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedMap)collection).isDirty());
+		Assert.assertFalse(((PersistentSortedMap)collection).isEmpty());
+		Assert.assertTrue(((PersistentSortedMap)collection).size() == 3);
 	}
 	
 	private Object serializeAndDeserializeServerToServer(Object obj, boolean dump) throws ClassNotFoundException, IOException {

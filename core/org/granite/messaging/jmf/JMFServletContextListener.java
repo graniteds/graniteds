@@ -27,6 +27,7 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
 
 import org.granite.config.GraniteConfigListener;
 import org.granite.logging.Logger;
@@ -40,28 +41,45 @@ public class JMFServletContextListener implements ServletContextListener {
 
     private static final Logger log = Logger.getLogger(GraniteConfigListener.class);
 
-	public static final String EXTENDED_OBJECT_CODECS = "extended-object-codecs";
-	public static final String DEFAULT_STORED_STRINGS = "default-stored-strings";
-	public static final String ATTRIBUTE_KEY = SharedContext.class.getName();
+	public static final String EXTENDED_OBJECT_CODECS_PARAM = "extended-object-codecs";
+	public static final String DEFAULT_STORED_STRINGS_PARAM = "default-stored-strings";
+	
+	public static final String SHARED_CONTEXT_KEY = SharedContext.class.getName();
+	public static final String DUMP_SHARED_CONTEXT_KEY = SharedContext.class.getName() + ":DUMP";
 
+	public static SharedContext getSharedContext(ServletContext servletContext) {
+		return (SharedContext)servletContext.getAttribute(SHARED_CONTEXT_KEY);
+	}
+
+	public static SharedContext getDumpSharedContext(ServletContext servletContext) {
+		return (SharedContext)servletContext.getAttribute(DUMP_SHARED_CONTEXT_KEY);
+	}
+	
+	public static ServletException newSharedContextNotInitializedException() {
+		return new ServletException(
+			"JMF shared context not initialized (configure " + JMFServletContextListener.class.getName() + " in your web.xml)"
+		);
+	}
+	
 	public void contextInitialized(ServletContextEvent event) {
 		log.info("Loading JMF shared context");
 		
         ServletContext servletContext = event.getServletContext();
         
         List<ExtendedObjectCodec> extendedObjectCodecs = loadExtendedObjectCodec(servletContext);
-        CodecRegistry codecRegistry = new DefaultCodecRegistry(extendedObjectCodecs);
-        
         List<String> defaultStoredStrings = loadDefaultStoredStrings(servletContext);
-        SharedContext sharedContext = new DefaultSharedContext(codecRegistry, defaultStoredStrings);
         
-        servletContext.setAttribute(ATTRIBUTE_KEY, sharedContext);
+        SharedContext sharedContext = new DefaultSharedContext(new DefaultCodecRegistry(extendedObjectCodecs), defaultStoredStrings);
+        servletContext.setAttribute(SHARED_CONTEXT_KEY, sharedContext);
+        
+        SharedContext dumpSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), defaultStoredStrings);
+        servletContext.setAttribute(DUMP_SHARED_CONTEXT_KEY, dumpSharedContext);
 		
         log.info("JMF shared context loaded");
 	}
 	
 	protected List<ExtendedObjectCodec> loadExtendedObjectCodec(ServletContext servletContext) {
-        String extendedObjectCodecsParam = servletContext.getInitParameter(EXTENDED_OBJECT_CODECS);
+        String extendedObjectCodecsParam = servletContext.getInitParameter(EXTENDED_OBJECT_CODECS_PARAM);
 		
         if (extendedObjectCodecsParam == null)
 			return Collections.emptyList();
@@ -89,7 +107,7 @@ public class JMFServletContextListener implements ServletContextListener {
 	protected List<String> loadDefaultStoredStrings(ServletContext servletContext) {
         List<String> defaultStoredStrings = new ArrayList<String>(JMFAMFUtil.AMF_DEFAULT_STORED_STRINGS);
 		
-        String defaultStoredStringsParam = servletContext.getInitParameter(DEFAULT_STORED_STRINGS);
+        String defaultStoredStringsParam = servletContext.getInitParameter(DEFAULT_STORED_STRINGS_PARAM);
 		
         if (defaultStoredStringsParam != null) {
         	for (String value : defaultStoredStringsParam.trim().split("\\s*\\,\\s*")) {
@@ -105,6 +123,6 @@ public class JMFServletContextListener implements ServletContextListener {
 	public void contextDestroyed(ServletContextEvent event) {
         ServletContext servletContext = event.getServletContext();
         
-        servletContext.removeAttribute(ATTRIBUTE_KEY);
+        servletContext.removeAttribute(SHARED_CONTEXT_KEY);
 	}
 }

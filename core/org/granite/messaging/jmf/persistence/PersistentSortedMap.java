@@ -23,7 +23,6 @@ package org.granite.messaging.jmf.persistence;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 
 /**
@@ -39,9 +38,6 @@ public class PersistentSortedMap<K, V> extends AbstractPersistentMapCollection<K
 	}
 
 	public PersistentSortedMap(SortedMap<K, V> collection, boolean clone) {	
-		if (collection instanceof SortedSet)
-			throw new IllegalArgumentException("Should not be a SortedSet: " + collection);
-		
 		if (collection != null)
 			init(clone ? new TreeMap<K, V>(collection) : collection, false);
 	}
@@ -77,36 +73,28 @@ public class PersistentSortedMap<K, V> extends AbstractPersistentMapCollection<K
 	}
 
 	@Override
-	protected PersistentCollectionSnapshot newSnapshot(boolean blank) {
-		if (blank || !wasInitialized())
-			return new PersistentSortedCollectionSnapshot();
-		
-		String comparatorClassName = null;
-		if (getCollection().comparator() != null)
-			comparatorClassName = getCollection().comparator().getClass().getName();
-		
-		return new PersistentSortedCollectionSnapshot(getMapElements(), isDirty(), comparatorClassName);
+	protected PersistentCollectionSnapshot createSnapshot(boolean forReading) {
+		if (forReading || !wasInitialized())
+			return new PersistentCollectionSnapshot(true);
+		return new PersistentCollectionSnapshot(true, isDirty(), this);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	protected Map<K, V> newCollection(PersistentCollectionSnapshot snapshot) {
-		PersistentSortedCollectionSnapshot sortedSnapshot = (PersistentSortedCollectionSnapshot)snapshot;
-
-		Comparator<? super K> comparator = null;
-		String comparatorClassName = sortedSnapshot.getComparatorClassName();
-		
-		if (comparatorClassName != null) {
-			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
+		if (snapshot.isInitialized()) {
+			Comparator<? super K> comparator = null;
 			try {
-				@SuppressWarnings("unchecked")
-				Class<Comparator<? super K>> comparatorClass = (Class<Comparator<? super K>>)classLoader.loadClass(comparatorClassName);
-				comparator = comparatorClass.getDeclaredConstructor().newInstance();
+				comparator = snapshot.newComparator(getClassLoader());
 			}
 			catch (Exception e) {
-				throw new RuntimeException("Could not create instance of comparator: " + comparatorClassName, e);
+				throw new RuntimeException("Could not create instance of comparator", e);
 			}
+			SortedMap<K, V> map = new TreeMap<K, V>(comparator);
+			map.putAll((Map<K, V>)snapshot.getElementsAsMap());
+			init(map, snapshot.isDirty());
 		}
-		
-		return new TreeMap<K, V>(comparator);
+		else
+			init(null, false);
 	}
 }

@@ -21,14 +21,15 @@
 package org.granite.hibernate.jmf;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
 
 import org.granite.messaging.jmf.ExtendedObjectInput;
 import org.granite.messaging.jmf.ExtendedObjectOutput;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
-import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot.CoreData;
-import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot.InitializationData;
 import org.hibernate.collection.PersistentCollection;
 
 /**
@@ -57,44 +58,35 @@ public abstract class AbstractPersistentCollectionCodec<H extends PersistentColl
 	public String getEncodedClassName(Class<?> cls) {
 		return clientCollectionClassName;
 	}
-	
-	protected abstract H newCollection(boolean initialized);
-	protected abstract Object[] getElements(H collection);
-	protected abstract void setElements(H collection, Object[] elements);
-	
-	protected PersistentCollectionSnapshot newPersistentCollectionSnapshot(H collection) {
-		if (!collection.wasInitialized())
-			return new PersistentCollectionSnapshot();
-		return new PersistentCollectionSnapshot(getElements(collection), collection.isDirty());
-	}
-	
+
 	public void encode(ExtendedObjectOutput out, Object v) throws IOException, IllegalAccessException {
-		@SuppressWarnings("unchecked")
-		PersistentCollectionSnapshot snapshot = newPersistentCollectionSnapshot((H)v);
+		PersistentCollectionSnapshot snapshot = null;
+
+		PersistentCollection collection = (PersistentCollection)v;
+		if (!collection.wasInitialized())
+			snapshot = new PersistentCollectionSnapshot(collection instanceof SortedSet || collection instanceof SortedMap);
+		else if (collection instanceof Map)
+			snapshot = new PersistentCollectionSnapshot(true, collection.isDirty(), (Map<?, ?>)collection);
+		else
+			snapshot = new PersistentCollectionSnapshot(true, collection.isDirty(), (Collection<?>)collection);
+
 		snapshot.writeExternal(out);
 	}
 
-	public Object newInstance(ExtendedObjectInput in, Class<?> cls) throws IOException, ClassNotFoundException, InstantiationException,
-			IllegalAccessException, InvocationTargetException,
-			SecurityException, NoSuchMethodException {
-		
-		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot();
-		InitializationData initializationData = snapshot.readInitializationData(in);
-		
-		return newCollection(initializationData.isInitialized());
-	}
-
+	@SuppressWarnings("unchecked")
 	public void decode(ExtendedObjectInput in, Object v) throws IOException, ClassNotFoundException, IllegalAccessException {
-		@SuppressWarnings("unchecked")
-		H collection = (H)v;
-
+		PersistentCollection collection = (PersistentCollection)v;
 		if (collection.wasInitialized()) {
-			PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot();
-			CoreData coreData = snapshot.readCoreData(in);
-
-			setElements(collection, coreData.getElements());
+			boolean sorted = (collection instanceof SortedSet || collection instanceof SortedMap);
+			PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot(sorted);
+			snapshot.readCoreData(in);
 			
-			if (coreData.isDirty())
+			if (collection instanceof Map)
+				((Map<Object, Object>)collection).putAll(snapshot.getElementsAsMap());
+			else
+				((Collection<Object>)collection).addAll(snapshot.getElementsAsCollection());
+
+			if (snapshot.isDirty())
 				collection.dirty();
 			else
 				collection.clearDirty();

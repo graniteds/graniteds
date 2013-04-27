@@ -22,7 +22,7 @@ package org.granite.messaging.jmf.persistence;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedSet;
+import java.util.SortedMap;
 
 /**
  * @author Franck WOLFF
@@ -37,22 +37,26 @@ public class PersistentMap<K, V> extends AbstractPersistentMapCollection<K, V, M
 	}
 
 	public PersistentMap(Map<K, V> collection, boolean clone) {	
-		if (collection instanceof SortedSet)
-			throw new IllegalArgumentException("Should not be a SortedSet: " + collection);
+		if (collection instanceof SortedMap)
+			throw new IllegalArgumentException("Should not be a SortedMap: " + collection);
 		
 		if (collection != null)
 			init(clone ? new HashMap<K, V>(collection) : collection, false);
 	}
 
 	@Override
-	protected PersistentCollectionSnapshot newSnapshot(boolean blank) {
-		if (blank || !wasInitialized())
+	protected PersistentCollectionSnapshot createSnapshot(boolean forReading) {
+		if (forReading || !wasInitialized())
 			return new PersistentCollectionSnapshot();
-		return new PersistentCollectionSnapshot(getMapElements(), isDirty());
+		return new PersistentCollectionSnapshot(true, isDirty(), this);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	protected Map<K, V> newCollection(PersistentCollectionSnapshot snapshot) {
-		return new HashMap<K, V>();
+	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
+		if (snapshot.isInitialized())
+			init(new HashMap<K, V>((Map<K, V>)snapshot.getElementsAsMap()), snapshot.isDirty());
+		else
+			init(null, false);
 	}
 }

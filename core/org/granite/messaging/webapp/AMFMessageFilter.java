@@ -28,7 +28,6 @@ import java.io.OutputStream;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -45,13 +44,11 @@ import org.granite.logging.Logger;
 import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.amf.io.AMF0Deserializer;
 import org.granite.messaging.amf.io.AMF0Serializer;
-import org.granite.messaging.jmf.DefaultCodecRegistry;
-import org.granite.messaging.jmf.DefaultSharedContext;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFSerializer;
+import org.granite.messaging.jmf.JMFServletContextListener;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.ContentType;
-import org.granite.util.JMFAMFUtil;
 import org.granite.util.ServletParams;
 
 /**
@@ -87,15 +84,7 @@ public class AMFMessageFilter implements Filter {
         
         log.info("Using configuration: {closeStreams=%s, inputBufferSize=%s, outputBufferSize=%s}", closeStreams, inputBufferSize, outputBufferSize);
         
-        ServletContext servletContext = config.getServletContext();
-        synchronized (servletContext) {
-        	final String key = SharedContext.class.getName();
-        	jmfSharedContext = (SharedContext)servletContext.getAttribute(key);
-        	if (jmfSharedContext == null) {
-        		jmfSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), JMFAMFUtil.AMF_DEFAULT_STORED_STRINGS);
-        		servletContext.setAttribute(key, jmfSharedContext);
-        	}
-        }
+        jmfSharedContext = JMFServletContextListener.getSharedContext(config.getServletContext());
     }
 
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -203,6 +192,9 @@ public class AMFMessageFilter implements Filter {
         throws IOException, ServletException {
         
     	log.debug(">> Incoming JMF+AMF request from: %s", request.getRequestURL());
+    	
+    	if (jmfSharedContext == null)
+    		throw JMFServletContextListener.newSharedContextNotInitializedException();
 
         InputStream is = null;
         OutputStream os = null;

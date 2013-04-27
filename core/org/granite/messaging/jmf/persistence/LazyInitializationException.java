@@ -41,9 +41,4 @@ public class LazyInitializationException extends PersistenceException {
 	public LazyInitializationException(String message, Throwable cause) {
 		super(message, cause);
 	}
-
-	public LazyInitializationException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
 }
