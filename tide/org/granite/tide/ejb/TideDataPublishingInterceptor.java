@@ -24,11 +24,11 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.naming.InitialContext;
-import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled;
+import org.granite.tide.data.TideDataPublishingSynchronization;
 import org.granite.tide.data.DataEnabled.PublishMode;
 import org.granite.tide.data.JMSDataDispatcher;
 
@@ -65,7 +65,7 @@ public class TideDataPublishingInterceptor {
         	if (dataEnabled.publish().equals(PublishMode.ON_COMMIT)) {
         		InitialContext ctx = new InitialContext();
         		TransactionSynchronizationRegistry tsr = (TransactionSynchronizationRegistry)ctx.lookup("java:comp/TransactionSynchronizationRegistry");
-        		tsr.registerInterposedSynchronization(new DataPublishingSynchronization(shouldRemoveContextAtEnd));
+        		tsr.registerInterposedSynchronization(new TideDataPublishingSynchronization(shouldRemoveContextAtEnd));
         		onCommit = true;
         	}
         	
@@ -78,26 +78,5 @@ public class TideDataPublishingInterceptor {
         	if (shouldRemoveContextAtEnd && !onCommit)
         		DataContext.remove();
         }
-    }
-    
-    private static class DataPublishingSynchronization implements Synchronization {
-    	
-    	private final boolean removeContext;
-    	
-    	public DataPublishingSynchronization(boolean removeContext) {
-    		this.removeContext = removeContext;
-    	}
-
-		public void beforeCompletion() {
-			DataContext.publish(PublishMode.ON_COMMIT);
-			if (removeContext)
-				DataContext.remove();
-		}
-
-		public void afterCompletion(int status) {
-			if (removeContext)
-				DataContext.remove();
-		}
-    	
     }
 }

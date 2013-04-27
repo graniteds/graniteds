@@ -28,7 +28,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="/graniteds/lib/jpa-2.0-api.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/eclipselink.jar"/>
-	<classpathentry kind="lib" path="/graniteds/lib/hibernate-core-4.0.0.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/spring-test.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.aop.jar"/>
@@ -66,5 +65,6 @@
 	<classpathentry kind="lib" path="lib/shrinkwrap-impl-base.jar"/>
 	<classpathentry kind="lib" path="lib/shrinkwrap-spi.jar"/>
 	<classpathentry kind="lib" path="/graniteds/lib/datanucleus-jdo.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate-core-4.0.1.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

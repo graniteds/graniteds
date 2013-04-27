@@ -20,14 +20,19 @@
 
 package org.granite.tide.spring;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled;
-import org.granite.tide.data.DataUpdatePostprocessor;
 import org.granite.tide.data.DataEnabled.PublishMode;
+import org.granite.tide.data.DataUpdatePostprocessor;
+import org.granite.tide.data.TideSynchronizationManager;
+import org.granite.util.TypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -35,6 +40,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 /**
  * Spring AOP interceptor to handle publishing of data changes instead of relying on the default behaviour
  * This can be used outside of a HTTP Granite context and inside the security/transaction context
+ * 
+ * Ensure that the order of the interceptor is correctly setup to use ON_COMMIT publish mode: this interceptor must be executed inside a transaction
  *  
  * @author William DRAI
  */
@@ -44,6 +51,30 @@ public class TideDataPublishingInterceptor implements MethodInterceptor {
 	
 	private Gravity gravity;
 	private DataUpdatePostprocessor dataUpdatePostprocessor;
+	
+	private Map<String, TideSynchronizationManager> syncsMap = new HashMap<String, TideSynchronizationManager>();
+	
+	public TideDataPublishingInterceptor() {
+		try {
+			syncsMap.put("org.springframework.orm.hibernate3.SessionHolder", TypeUtil.newInstance("org.granite.tide.spring.Hibernate3SynchronizationManager", TideSynchronizationManager.class));
+		}
+		catch (Throwable e) {
+			// Hibernate 3 not present
+		}
+		try {
+			syncsMap.put("org.springframework.orm.hibernate4.SessionHolder", TypeUtil.newInstance("org.granite.tide.spring.Hibernate4SynchronizationManager", TideSynchronizationManager.class));
+		}
+		catch (Throwable e) {
+			// Hibernate 4 not present
+		}
+		try {
+			syncsMap.put("org.springframework.orm.jpa.EntityManagerHolder", TypeUtil.newInstance("org.granite.tide.spring.JPASynchronizationManager", TideSynchronizationManager.class));
+		}
+		catch (Throwable e) {
+			// JPA not present
+		}
+	}
+	
 	
 	public void setGravity(Gravity gravity) {
 		this.gravity = gravity;
@@ -73,11 +104,23 @@ public class TideDataPublishingInterceptor implements MethodInterceptor {
         try {
         	if (dataEnabled.publish().equals(PublishMode.ON_COMMIT) && !TransactionSynchronizationManager.isCurrentTransactionReadOnly()) {
         		 if (TransactionSynchronizationManager.isSynchronizationActive()) {
-        			 TransactionSynchronizationManager.registerSynchronization(new DataPublishingTransactionSynchronization(shouldRemoveContextAtEnd));
+        			 boolean registered = false;
+        			 for (Object resource : TransactionSynchronizationManager.getResourceMap().values()) {
+        				 if (syncsMap.containsKey(resource.getClass().getName())) {
+        					 registered = syncsMap.get(resource.getClass().getName()).registerSynchronization(resource, shouldRemoveContextAtEnd);
+        					 break;
+        				 }
+        			 }
+        			 if (!registered)
+        				 TransactionSynchronizationManager.registerSynchronization(new DataPublishingTransactionSynchronization(shouldRemoveContextAtEnd));
+        			 else
+						 TransactionSynchronizationManager.registerSynchronization(new DataContextCleanupTransactionSynchronization());
         			 onCommit = true;
         		 }
-        		 else
-        			 log.warn("Could not register synchronization for ON_COMMIT publish mode, check that the Spring PlatformTransactionManager supports it");
+        		 else {
+        			 log.error("Could not register synchronization for ON_COMMIT publish mode, check that the Spring PlatformTransactionManager supports it "
+        					 + "and that the order of the TransactionInterceptor is lower than the order of TideDataPublishingInterceptor");
+        		 }
         	}
         	
         	Object ret = invocation.proceed();
@@ -104,13 +147,25 @@ public class TideDataPublishingInterceptor implements MethodInterceptor {
 			if (!readOnly)
 				DataContext.publish(PublishMode.ON_COMMIT);
 		}
-
+		
 		@Override
 		public void beforeCompletion() {
 			if (removeContext)
 				DataContext.remove();
 		}
+		
+		@Override
+		public void afterCompletion(int status) {
+			if (removeContext)
+				DataContext.remove();
+		}
+    }
 
+    private static class DataContextCleanupTransactionSynchronization extends TransactionSynchronizationAdapter {
     	
+		@Override
+		public void afterCompletion(int status) {
+			DataContext.remove();
+		}
     }
 }

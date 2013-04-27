@@ -87,8 +87,8 @@
     <path id="hibernate4.jar">
         <fileset dir="${gds.lib}">
             <include name="jpa-2.0-api.jar"/>
-            <include name="hibernate-core-4.0.0.jar"/>
-            <include name="hibernate-entitymanager-4.0.0.jar"/>
+            <include name="hibernate-core-4.0.1.jar"/>
+            <include name="hibernate-entitymanager-4.0.1.jar"/>
             <include name="hibernate-commons-annotations-3.2.0.Final.jar"/>
             <include name="dom4j.jar"/>
             <include name="antlr-2.7.7.jar"/>

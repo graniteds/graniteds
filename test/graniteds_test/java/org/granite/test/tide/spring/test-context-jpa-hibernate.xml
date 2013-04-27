@@ -5,10 +5,12 @@
   	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   	xmlns:aop="http://www.springframework.org/schema/aop"
   	xmlns:tx="http://www.springframework.org/schema/tx"
+  	xmlns:graniteds="http://www.graniteds.org/config"
   	xsi:schemaLocation="
     	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
        	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
-       	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+       	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+       	http://www.graniteds.org/config http://www.graniteds.org/public/dtd/3.0.0/granite-config-3.0.xsd">
 
   	
   	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
@@ -44,5 +46,16 @@
             </props>
         </property>
     </bean>
+    
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    
+    <tx:annotation-driven transaction-manager="transactionManager" mode="proxy" order="1"/>
+    
+    <graniteds:tide-data-publishing-advice mode="proxy" order="2"/>
+    
+    <bean id="jobService" class="org.granite.test.tide.spring.service.JPAJobService"/>
 	
 </beans>

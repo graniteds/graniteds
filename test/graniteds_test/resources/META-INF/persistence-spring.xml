@@ -33,6 +33,11 @@
        <class>org.granite.test.tide.data.Contact</class>
        <class>org.granite.test.tide.data.Address</class>
        <class>org.granite.test.tide.data.Country</class>
+       <class>org.granite.test.tide.data.Customer</class>
+       <class>org.granite.test.tide.data.User</class>
+       <class>org.granite.test.tide.data.Job</class>
+       <class>org.granite.test.tide.data.JobApplication</class>
+       <class>org.granite.test.tide.data.Meeting</class>
     </persistence-unit>
     
 </persistence>

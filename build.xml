@@ -164,7 +164,7 @@
                 <path refid="gds.classpath"/>
                 <dirset dir="classes/core"/>
                 <dirset dir="classes/tide"/>
-                <pathelement location="lib/hibernate-core-4.0.0.jar"/>
+                <pathelement location="lib/hibernate-core-4.0.1.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/hibernate4">

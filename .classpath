@@ -79,7 +79,7 @@
 	<classpathentry kind="lib" path="lib/spring-security-core-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/spring-security-web-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/jta.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate-core-4.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate-core-4.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-interceptor-core.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-websocket-8.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-continuation-8.1.1.jar"/>
