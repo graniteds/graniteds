@@ -542,7 +542,7 @@ public class PersonServiceBean implements PersonService {
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
         http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
-        http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.3.0/granite-config-2.3.xsd">
+        http://www.graniteds.org/config http://www.graniteds.org/public/dtd/3.0.0/granite-config-3.0.xsd">
 
         ...
     

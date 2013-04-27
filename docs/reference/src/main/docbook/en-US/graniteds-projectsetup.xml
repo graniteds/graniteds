@@ -97,7 +97,7 @@
 		<programlisting role="XML">
 <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE granite-config PUBLIC "-//Granite Data Services//DTD granite-config internal//EN"
-    "http://www.graniteds.org/public/dtd/2.3.0/granite-config.dtd">
+    "http://www.graniteds.org/public/dtd/3.0.0/granite-config.dtd">
 
 <granite-config/>]]>
         </programlisting>
@@ -107,7 +107,7 @@
 		<programlisting role="XML">
 <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE granite-config PUBLIC "-//Granite Data Services//DTD granite-config internal//EN"
-    "http://www.graniteds.org/public/dtd/2.3.0/granite-config.dtd">
+    "http://www.graniteds.org/public/dtd/3.0.0/granite-config.dtd">
 
 <granite-config scan="true"/>]]>
         </programlisting>

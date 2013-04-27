@@ -1002,7 +1002,7 @@ public class MyService {
     xmlns:graniteds="http://www.graniteds.org/config"
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-        http://www.graniteds.org/config http://www.graniteds.org/public/dtd/2.3.0/granite-config-2.3.xsd">
+        http://www.graniteds.org/config http://www.graniteds.org/public/dtd/3.0.0/granite-config-3.0.xsd">
     ...
 <graniteds:tide-data-publishing-advice/>]]>            
         </programlisting>
