@@ -79,10 +79,10 @@ public class HashMapCodecImpl extends AbstractIntegerStringCodec<HashMap<?, ?>> 
 		
 		final int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0)
-			return (HashMap<?, ?>)ctx.getFromStoredObjects(indexOrLength);
+			return (HashMap<?, ?>)ctx.getSharedObject(indexOrLength);
 
 		HashMap<Object, Object> v = new HashMap<Object, Object>(indexOrLength);
-		ctx.addToStoredObjects(v);
+		ctx.addSharedObject(v);
 		
 		for (int index = 0; index < indexOrLength; index++) {
 			Object key = ctx.readObject();
@@ -103,13 +103,13 @@ public class HashMapCodecImpl extends AbstractIntegerStringCodec<HashMap<?, ?>> 
 		
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0) {
-			String v = (String)ctx.getFromStoredObjects(indexOrLength);
+			String v = (String)ctx.getSharedObject(indexOrLength);
 			ctx.indentPrintLn("<" + v + "@" + indexOrLength + ">");
 			return;
 		}
 
 		String v = HashMap.class.getName() + "[" + indexOrLength + "]";
-		int indexOfStoredObject = ctx.addToStoredObjects(v);
+		int indexOfStoredObject = ctx.addSharedObject(v);
 		ctx.indentPrintLn(v + "@" + indexOfStoredObject + " {");
 		ctx.incrIndent(1);
 		

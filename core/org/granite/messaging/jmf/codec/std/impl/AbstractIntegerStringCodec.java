@@ -86,6 +86,9 @@ public abstract class AbstractIntegerStringCodec<T> extends AbstractStandardCode
 	}
 	
 	protected void writeString(OutputContext ctx, String v, StringTypeHandler handler) throws IOException {
+		if (v == null)
+			throw new NullPointerException("String value cannot be null");
+		
 		final OutputStream os = ctx.getOutputStream();
 		
 		int indexOfStoredString = ctx.indexOfStoredStrings(v);
@@ -122,13 +125,13 @@ public abstract class AbstractIntegerStringCodec<T> extends AbstractStandardCode
 	
 	protected String readString(InputContext ctx, int parameterizedJmfType, int indexOrLength, StringTypeHandler handler) throws IOException {
 		if (handler.isReference(parameterizedJmfType))
-			return ctx.getFromStoredStrings(indexOrLength);
+			return ctx.getSharedString(indexOrLength);
 
 		byte[] bytes = new byte[indexOrLength];
 		ctx.safeReadFully(bytes);
 		String s = new String(bytes, UTF8);
 		
-		ctx.addToStoredStrings(s);
+		ctx.addSharedString(s);
 		
 		return s;
 	}

@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 import java.util.List;
 
 import org.granite.messaging.jmf.CodecRegistry;
@@ -87,15 +88,15 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 			Class<?> cls = v.getClass();
 			String className = cls.getName();
 					
-			ExtendedObjectCodec extendedCodec = ctx.getSharedContext().getCodecRegistry().findExtendedEncoder(v.getClass());
+			ExtendedObjectCodec extendedCodec = ctx.getSharedContext().getCodecRegistry().findExtendedEncoder(ctx, v);
 			if (extendedCodec != null)
-				className = extendedCodec.getEncodedClassName(cls);
+				className = extendedCodec.getEncodedClassName(ctx, v);
 			
 			writeString(ctx, className, TYPE_HANDLER);
 			
 			if (extendedCodec != null)
 				extendedCodec.encode(ctx, v);
-			else if (v instanceof Externalizable)
+			else if (v instanceof Externalizable && !Proxy.isProxyClass(cls))
 				((Externalizable)v).writeExternal(ctx);
 			else
 				encodeSerializable(ctx, (Serializable)v);
@@ -107,7 +108,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 	protected void encodeSerializable(OutputContext ctx, Serializable v) throws IOException, IllegalAccessException {
 		List<Field> fields = ObjectCodecUtil.findSerializableFields(v.getClass());
 		for (Field field : fields)
-			ctx.writeField(v, field);
+			ctx.getAndWriteField(v, field);
 	}
 	
 	public Object decode(InputContext ctx, int parameterizedJmfType)
@@ -124,7 +125,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 4) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0)
-			v = ctx.getFromStoredObjects(indexOrLength);
+			v = ctx.getSharedObject(indexOrLength);
 		else {
 			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
 			
@@ -133,20 +134,21 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 			if (!Serializable.class.isAssignableFrom(cls))
 				throw new NotSerializableException(cls.getName());
 			
-			ExtendedObjectCodec extendedCodec = codecRegistry.findExtendedDecoder(cls);
+			ExtendedObjectCodec extendedCodec = codecRegistry.findExtendedDecoder(ctx, cls);
 			if (extendedCodec != null) {
+				int index = ctx.addUnresolvedSharedObject(cls);
 				v = extendedCodec.newInstance(ctx, cls);
-				ctx.addToStoredObjects(v);
+				ctx.setUnresolvedSharedObject(index, v);
 				extendedCodec.decode(ctx, v);
 			}
 			else if (Externalizable.class.isAssignableFrom(cls)) {
 				v = ObjectCodecUtil.findDefaultContructor(cls).newInstance();
-				ctx.addToStoredObjects(v);
+				ctx.addSharedObject(v);
 				((Externalizable)v).readExternal(ctx);
 			}
 			else {
 				v = ObjectCodecUtil.findDefaultContructor(cls).newInstance();
-				ctx.addToStoredObjects(v);
+				ctx.addSharedObject(v);
 				decodeSerializable(ctx, (Serializable)v);
 			}
 			
@@ -177,12 +179,12 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 4) & 0x03, false);
 		
 		if ((parameterizedJmfType & 0x80) != 0) {
-			String className = (String)ctx.getFromStoredObjects(indexOrLength);
+			String className = (String)ctx.getSharedObject(indexOrLength);
 			ctx.indentPrintLn("<" + className + "@" + indexOrLength + ">");
 		}
 		else {
 			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
-			int indexOfStoredObject = ctx.addToStoredObjects(className);
+			int indexOfStoredObject = ctx.addSharedObject(className);
 			ctx.indentPrintLn(className + "@" + indexOfStoredObject + " {");
 			ctx.incrIndent(1);
 			

@@ -138,7 +138,7 @@ public class PersistentCollectionSnapshot implements Externalizable {
 		out.writeBoolean(initialized);
 		if (initialized) {
 			if (sorted)
-				out.writeObject(comparatorClassName);
+				out.writeUTF(comparatorClassName);
 			out.writeBoolean(dirty);
 			out.writeObject(elements);
 		}
@@ -150,11 +150,11 @@ public class PersistentCollectionSnapshot implements Externalizable {
 			readCoreData(in);
 	}
 	
-	public void readInitializationData(ObjectInput in) throws IOException, ClassNotFoundException {
+	public void readInitializationData(ObjectInput in) throws IOException {
 		initialized = in.readBoolean();
 		
 		if (initialized && sorted)
-			comparatorClassName = (String)in.readObject();
+			comparatorClassName = in.readUTF();
 	}
 	
 	public void readCoreData(ObjectInput in) throws IOException, ClassNotFoundException {

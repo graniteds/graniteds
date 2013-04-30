@@ -32,6 +32,7 @@ import org.granite.messaging.jmf.codec.std.DoubleCodec;
 import org.granite.messaging.jmf.codec.std.FloatCodec;
 import org.granite.messaging.jmf.codec.std.IntegerCodec;
 import org.granite.messaging.jmf.codec.std.LongCodec;
+import org.granite.messaging.jmf.codec.std.NullCodec;
 import org.granite.messaging.jmf.codec.std.ShortCodec;
 import org.granite.messaging.jmf.codec.std.StringCodec;
 
@@ -40,6 +41,8 @@ import org.granite.messaging.jmf.codec.std.StringCodec;
  */
 public interface CodecRegistry extends JMFConstants {
 
+	NullCodec getNullCodec();
+	
 	BooleanCodec getBooleanCodec();
 	CharacterCodec getCharacterCodec();
 	ByteCodec getByteCodec();
@@ -53,8 +56,8 @@ public interface CodecRegistry extends JMFConstants {
 	<T> StandardCodec<T> getCodec(int jmfType);
 	<T> StandardCodec<T> getCodec(Class<?> cls);
 	
-	ExtendedObjectCodec findExtendedEncoder(Class<?> cls);
-	ExtendedObjectCodec findExtendedDecoder(Class<?> cls);
+	ExtendedObjectCodec findExtendedEncoder(ExtendedObjectOutput out, Object v);
+	ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, Class<?> cls);
 	
 	static interface PrimitiveFieldCodec {
 		public void encodePrimitive(OutputContext ctx, Object v, Field field) throws IllegalAccessException, IOException;

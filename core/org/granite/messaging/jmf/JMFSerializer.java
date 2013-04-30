@@ -93,7 +93,10 @@ public class JMFSerializer implements OutputContext {
 	}
 
 	public void writeUTF(String s) throws IOException {
-		codecRegistry.getStringCodec().encode(this, s);
+		if (s == null)
+			codecRegistry.getNullCodec().encode(this, s);
+		else
+			codecRegistry.getStringCodec().encode(this, s);
 	}
 
 	public void writeObject(Object obj) throws IOException {
@@ -193,7 +196,11 @@ public class JMFSerializer implements OutputContext {
 	///////////////////////////////////////////////////////////////////////////
 	// ExtendedObjectOutput implementation
 
-	public void writeField(Object obj, Field field) throws IOException, IllegalAccessException {
+	public ClassLoader getClassLoader() {
+		return context.getClassLoader();
+	}
+
+	public void getAndWriteField(Object obj, Field field) throws IOException, IllegalAccessException {
 		if (field.getType().isPrimitive())
 			codecRegistry.getPrimitiveFieldCodec(field.getType()).encodePrimitive(this, obj, field);
 		else

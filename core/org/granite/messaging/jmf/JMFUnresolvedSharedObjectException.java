@@ -20,37 +20,25 @@
 
 package org.granite.messaging.jmf;
 
-import java.io.IOException;
-import java.io.ObjectOutput;
-import java.lang.reflect.Field;
-
 /**
  * @author Franck WOLFF
  */
-public interface ExtendedObjectOutput extends ObjectOutput {
+public class JMFUnresolvedSharedObjectException extends RuntimeException {
 
-	/**
-	 * Return the {@link ClassLoader} registered in the global JMF {@link SharedContext}.
-	 * 
-	 * @return A <tt>ClassLoader</tt> that can be used to load classes during the
-	 * 		serialization process.
-	 */
-	ClassLoader getClassLoader();
-	
-	void getAndWriteField(Object obj, Field field) throws IOException, IllegalAccessException;
-	
-	@Deprecated
-	public void write(int b) throws IOException;
+	private static final long serialVersionUID = 1L;
 
-	@Deprecated
-	public void write(byte[] b) throws IOException;
+	public JMFUnresolvedSharedObjectException() {
+	}
 
-	@Deprecated
-	public void write(byte[] b, int off, int len) throws IOException;
+	public JMFUnresolvedSharedObjectException(String message) {
+		super(message);
+	}
 
-	@Deprecated
-	public void writeBytes(String s) throws IOException;
-	
-	@Deprecated
-	public void writeChars(String s) throws IOException;
+	public JMFUnresolvedSharedObjectException(Throwable cause) {
+		super(cause);
+	}
+
+	public JMFUnresolvedSharedObjectException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

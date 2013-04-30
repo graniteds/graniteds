@@ -47,15 +47,15 @@ public abstract class AbstractPersistentCollectionCodec<H extends PersistentColl
 		this.clientCollectionClassName = JMF_PERSISTENCE_PACKAGE + "." + hibernateCollectionClass.getSimpleName();
 	}
 
-	public boolean canEncode(Class<?> cls) {
-		return cls == hibernateCollectionClass;
+	public boolean canEncode(ExtendedObjectOutput out, Object v) {
+		return v.getClass() == hibernateCollectionClass;
 	}
 
-	public boolean canDecode(Class<?> cls) {
+	public boolean canDecode(ExtendedObjectInput in, Class<?> cls) {
 		return clientCollectionClassName.equals(cls.getName());
 	}
 
-	public String getEncodedClassName(Class<?> cls) {
+	public String getEncodedClassName(ExtendedObjectOutput out, Object v) {
 		return clientCollectionClassName;
 	}
 

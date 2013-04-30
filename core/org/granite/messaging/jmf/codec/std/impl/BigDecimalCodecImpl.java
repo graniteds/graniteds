@@ -75,7 +75,7 @@ public class BigDecimalCodecImpl extends AbstractIntegerStringCodec<BigDecimal> 
 		
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0)
-			return (BigDecimal)ctx.getFromStoredObjects(indexOrLength);
+			return (BigDecimal)ctx.getSharedObject(indexOrLength);
 
 		int scale = ctx.safeRead();
 		

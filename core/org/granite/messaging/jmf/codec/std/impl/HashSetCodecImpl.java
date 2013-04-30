@@ -76,10 +76,10 @@ public class HashSetCodecImpl extends AbstractIntegerStringCodec<HashSet<?>> imp
 		
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0)
-			return (HashSet<?>)ctx.getFromStoredObjects(indexOrLength);
+			return (HashSet<?>)ctx.getSharedObject(indexOrLength);
 
 		HashSet<Object> v = new HashSet<Object>(indexOrLength);
-		ctx.addToStoredObjects(v);
+		ctx.addSharedObject(v);
 		
 		for (int index = 0; index < indexOrLength; index++)
 			v.add(ctx.readObject());
@@ -97,13 +97,13 @@ public class HashSetCodecImpl extends AbstractIntegerStringCodec<HashSet<?>> imp
 		
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0) {
-			String v = (String)ctx.getFromStoredObjects(indexOrLength);
+			String v = (String)ctx.getSharedObject(indexOrLength);
 			ctx.indentPrintLn("<" + v + "@" + indexOrLength + ">");
 			return;
 		}
 
 		String v = HashSet.class.getName() + "[" + indexOrLength + "]";
-		int indexOfStoredObject = ctx.addToStoredObjects(v);
+		int indexOfStoredObject = ctx.addSharedObject(v);
 		ctx.indentPrintLn(v + "@" + indexOfStoredObject + " {");
 		ctx.incrIndent(1);
 		

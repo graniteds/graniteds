@@ -72,7 +72,7 @@ public class BigIntegerCodecImpl extends AbstractIntegerStringCodec<BigInteger> 
 		
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0)
-			return (BigInteger)ctx.getFromStoredObjects(indexOrLength);
+			return (BigInteger)ctx.getSharedObject(indexOrLength);
 
 		byte[] magnitude = new byte[indexOrLength];
 		ctx.safeReadFully(magnitude);

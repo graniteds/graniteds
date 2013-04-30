@@ -76,10 +76,10 @@ public class ArrayListCodecImpl extends AbstractIntegerStringCodec<ArrayList<?>>
 		
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0)
-			return (ArrayList<?>)ctx.getFromStoredObjects(indexOrLength);
+			return (ArrayList<?>)ctx.getSharedObject(indexOrLength);
 
 		ArrayList<Object> v = new ArrayList<Object>(indexOrLength);
-		ctx.addToStoredObjects(v);
+		ctx.addSharedObject(v);
 		
 		for (int index = 0; index < indexOrLength; index++)
 			v.add(index, ctx.readObject());
@@ -97,13 +97,13 @@ public class ArrayListCodecImpl extends AbstractIntegerStringCodec<ArrayList<?>>
 		
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0) {
-			String v = (String)ctx.getFromStoredObjects(indexOrLength);
+			String v = (String)ctx.getSharedObject(indexOrLength);
 			ctx.indentPrintLn("<" + v + "@" + indexOrLength + ">");
 			return;
 		}
 
 		String v = ArrayList.class.getName() + "[" + indexOrLength + "]";
-		int indexOfStoredObject = ctx.addToStoredObjects(v);
+		int indexOfStoredObject = ctx.addSharedObject(v);
 		ctx.indentPrintLn(v + "@" + indexOfStoredObject + " {");
 		ctx.incrIndent(1);
 		

@@ -40,6 +40,7 @@ import org.granite.messaging.jmf.codec.std.DoubleCodec;
 import org.granite.messaging.jmf.codec.std.FloatCodec;
 import org.granite.messaging.jmf.codec.std.IntegerCodec;
 import org.granite.messaging.jmf.codec.std.LongCodec;
+import org.granite.messaging.jmf.codec.std.NullCodec;
 import org.granite.messaging.jmf.codec.std.ShortCodec;
 import org.granite.messaging.jmf.codec.std.StringCodec;
 import org.granite.messaging.jmf.codec.std.impl.ArrayCodecImpl;
@@ -66,6 +67,28 @@ import org.granite.messaging.jmf.codec.std.impl.StringCodecImpl;
  * @author Franck WOLFF
  */
 public class DefaultCodecRegistry implements CodecRegistry {
+
+	private static final int[] UNPARAMETERIZED_JMF_TYPES = new int[256];
+	static {
+		for (int parameterizedJmfType = 0; parameterizedJmfType < 256; parameterizedJmfType++) {
+			int jmfType;
+			
+			if ((parameterizedJmfType & 0x08) == 0x00)
+				jmfType = (parameterizedJmfType & 0x07);
+			else if ((parameterizedJmfType & 0x18) == 0x08)
+				jmfType = (parameterizedJmfType & 0x0F);
+			else if ((parameterizedJmfType & 0x38) == 0x18)
+				jmfType = (parameterizedJmfType & 0x1F);
+			else if ((parameterizedJmfType & 0x78) == 0x38)
+				jmfType = (parameterizedJmfType & 0x3F);
+			else
+				jmfType = parameterizedJmfType;
+			
+			UNPARAMETERIZED_JMF_TYPES[parameterizedJmfType] = jmfType;
+		}
+	}
+
+	private NullCodec nullCodec;
 
 	private BooleanCodec booleanCodec;
 	private CharacterCodec characterCodec;
@@ -116,6 +139,8 @@ public class DefaultCodecRegistry implements CodecRegistry {
 				
 				if (codec.getObjectType() == JMF_STRING)
 					initStringCodec((StringCodec)codec);
+				else if (codec.getObjectType() == JMF_NULL)
+					initNullCodec((NullCodec)codec);
 			}
 			else if (codec instanceof ConditionalObjectCodec) {
 				assertNull(typeToCodec.put(codec.getObjectType(), codec));
@@ -126,6 +151,10 @@ public class DefaultCodecRegistry implements CodecRegistry {
 		}
 		
 		checkPrimitiveCodecs();
+	}
+
+	public NullCodec getNullCodec() {
+		return nullCodec;
 	}
 
 	public BooleanCodec getBooleanCodec() {
@@ -183,17 +212,17 @@ public class DefaultCodecRegistry implements CodecRegistry {
 		return codec;
 	}
 
-	public ExtendedObjectCodec findExtendedEncoder(Class<?> cls) {
+	public ExtendedObjectCodec findExtendedEncoder(ExtendedObjectOutput out, Object v) {
 		for (ExtendedObjectCodec c : extendedCodecs) {
-			if (c.canEncode(cls))
+			if (c.canEncode(out, v))
 				return c;
 		}
 		return null;
 	}
 
-	public ExtendedObjectCodec findExtendedDecoder(Class<?> cls) {
+	public ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, Class<?> cls) {
 		for (ExtendedObjectCodec c : extendedCodecs) {
-			if (c.canDecode(cls))
+			if (c.canDecode(in, cls))
 				return c;
 		}
 		return null;
@@ -202,17 +231,9 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	public PrimitiveFieldCodec getPrimitiveFieldCodec(Class<?> fieldCls) {
 		return primitiveFieldCodecs.get(fieldCls);
 	}
-
+	
 	public int extractJmfType(int parameterizedJmfType) {
-		if ((parameterizedJmfType & 0x08) == 0x00)
-			return (parameterizedJmfType & 0x07);
-		if ((parameterizedJmfType & 0x18) == 0x08)
-			return (parameterizedJmfType & 0x0F);
-		if ((parameterizedJmfType & 0x38) == 0x18)
-			return (parameterizedJmfType & 0x1F);
-		if ((parameterizedJmfType & 0x78) == 0x38)
-			return (parameterizedJmfType & 0x3F);
-		return parameterizedJmfType;
+		return UNPARAMETERIZED_JMF_TYPES[parameterizedJmfType];
 	}
 
 	public int jmfTypeOfPrimitiveClass(Class<?> cls) {
@@ -263,6 +284,9 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	}
 	
 	private void checkPrimitiveCodecs() {
+		if (nullCodec == null)
+			throw new JMFConfigurationException("No Null codec");
+		
 		if (booleanCodec == null)
 			throw new JMFConfigurationException("No Boolean codec");
 		if (characterCodec == null)
@@ -279,6 +303,7 @@ public class DefaultCodecRegistry implements CodecRegistry {
 			throw new JMFConfigurationException("No Float codec");
 		if (doubleCodec == null)
 			throw new JMFConfigurationException("No Double codec");
+		
 		if (stringCodec == null)
 			throw new JMFConfigurationException("No String codec");
 	}
@@ -381,5 +406,9 @@ public class DefaultCodecRegistry implements CodecRegistry {
 
 	private void initStringCodec(StringCodec codec) {
 		stringCodec = codec;
+	}
+
+	private void initNullCodec(NullCodec codec) {
+		nullCodec = codec;
 	}
 }

@@ -36,6 +36,8 @@ public class TestJMFString implements JMFConstants {
 	@Test
 	public void testStringUTF() throws IOException {
 
+		checkString(null, bytes( JMF_NULL ));
+		
 		for (char c = 0; c < 0x80; c++)
 			checkString(String.valueOf(c), bytes( JMF_STRING, 0x01, (byte)c ));
 		
@@ -62,6 +64,8 @@ public class TestJMFString implements JMFConstants {
 	@Test
 	public void testStringUTFObject() throws ClassNotFoundException, IOException {
 
+		checkStringObject(null, bytes( JMF_NULL ));
+		
 		for (char c = 0; c < 0x80; c++)
 			checkStringObject(String.valueOf(c), bytes( JMF_STRING, 0x01, (byte)c ));
 		

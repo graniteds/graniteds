@@ -88,7 +88,7 @@ public class EnumCodecImpl extends AbstractIntegerStringCodec<Object> implements
 		
 		Object v = null;
 		if ((parameterizedJmfType & 0x80) != 0)
-			v = ctx.getFromStoredObjects(indexOrLength);
+			v = ctx.getSharedObject(indexOrLength);
 		else {
 			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
 			Class<?> cls = ctx.getSharedContext().getClassLoader().loadClass(className);
@@ -96,7 +96,7 @@ public class EnumCodecImpl extends AbstractIntegerStringCodec<Object> implements
 			int ordinal = codecRegistry.getIntegerCodec().readVariableInt(ctx);
 			
 			v = cls.getEnumConstants()[ordinal];
-			ctx.addToStoredObjects(v);
+			ctx.addSharedObject(v);
 		}
 		
 		return v;
@@ -112,14 +112,14 @@ public class EnumCodecImpl extends AbstractIntegerStringCodec<Object> implements
 		
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 4) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0) {
-			String className = (String)ctx.getFromStoredObjects(indexOrLength);
+			String className = (String)ctx.getSharedObject(indexOrLength);
 			ctx.indentPrintLn("<" + className + "@" + indexOrLength + ">");
 		}
 		else {
 			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
 			int ordinal = codecRegistry.getIntegerCodec().readVariableInt(ctx);
 			
-			int indexOfStoredObject = ctx.addToStoredObjects(className);
+			int indexOfStoredObject = ctx.addSharedObject(className);
 			ctx.indentPrintLn(className + "@" + indexOfStoredObject + ": <" + ordinal + ">");
 		}
 	}
