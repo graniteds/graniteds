@@ -66,8 +66,9 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 		return JMF_OBJECT;
 	}
 
-	public boolean accept(Class<?> cls) {
-		return !cls.isArray() && !cls.isArray();
+	public boolean accept(Object v) {
+		Class<?> cls = v.getClass();
+		return !cls.isArray() && !cls.isEnum() && !(v instanceof Class);
 	}
 
 	public void encode(OutputContext ctx, Object v) throws IOException, IllegalAccessException {

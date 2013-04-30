@@ -54,7 +54,7 @@ public interface CodecRegistry extends JMFConstants {
 	StringCodec getStringCodec();
 
 	<T> StandardCodec<T> getCodec(int jmfType);
-	<T> StandardCodec<T> getCodec(Class<?> cls);
+	<T> StandardCodec<T> getCodec(Object v);
 	
 	ExtendedObjectCodec findExtendedEncoder(ExtendedObjectOutput out, Object v);
 	ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, Class<?> cls);

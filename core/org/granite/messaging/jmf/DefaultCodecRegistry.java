@@ -50,6 +50,7 @@ import org.granite.messaging.jmf.codec.std.impl.BigIntegerCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.BooleanCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.ByteCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.CharacterCodecImpl;
+import org.granite.messaging.jmf.codec.std.impl.ClassCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.DateCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.DoubleCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.EnumCodecImpl;
@@ -199,11 +200,12 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> StandardCodec<T> getCodec(Class<?> cls) {
+	public <T> StandardCodec<T> getCodec(Object v) {
+		Class<?> cls = (v != null ? v.getClass() : null);
 		StandardCodec<T> codec = (StandardCodec<T>)classToCodec.get(cls);
 		if (codec == null) {
 			for (ConditionalObjectCodec condCodec : conditionalObjectCodecs) {
-				if (condCodec.accept(cls)) {
+				if (condCodec.accept(v)) {
 					codec = (StandardCodec<T>)condCodec;
 					break;
 				}
@@ -274,6 +276,7 @@ public class DefaultCodecRegistry implements CodecRegistry {
 
 			new EnumCodecImpl(),
 			new ArrayCodecImpl(),
+			new ClassCodecImpl(),
 			new ObjectCodecImpl()
 		);
 	}

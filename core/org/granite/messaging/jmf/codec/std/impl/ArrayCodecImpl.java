@@ -43,8 +43,8 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 		return JMF_ARRAY;
 	}
 
-	public boolean accept(Class<?> cls) {
-		return cls.isArray();
+	public boolean accept(Object v) {
+		return v.getClass().isArray();
 	}
 
 	public void encode(OutputContext ctx, Object v) throws IOException {

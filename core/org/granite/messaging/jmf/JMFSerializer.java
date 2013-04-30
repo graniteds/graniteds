@@ -100,11 +100,9 @@ public class JMFSerializer implements OutputContext {
 	}
 
 	public void writeObject(Object obj) throws IOException {
-		Class<?> cls = (obj == null ? null : obj.getClass());
-		
-		StandardCodec<Object> codec = codecRegistry.getCodec(cls);
+		StandardCodec<Object> codec = codecRegistry.getCodec(obj);
 		if (codec == null)
-			throw new JMFEncodingException("Unsupported Java class: " + (cls != null ? cls.getName() : null));
+			throw new JMFEncodingException("Unsupported Java class: " + obj);
 		
 		try {
 			codec.encode(this, obj);
