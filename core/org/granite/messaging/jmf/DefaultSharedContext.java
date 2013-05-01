@@ -36,6 +36,7 @@ import org.granite.messaging.jmf.persistence.PersistentMap;
 import org.granite.messaging.jmf.persistence.PersistentSet;
 import org.granite.messaging.jmf.persistence.PersistentSortedMap;
 import org.granite.messaging.jmf.persistence.PersistentSortedSet;
+import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
  * @author Franck WOLFF
@@ -76,7 +77,7 @@ public class DefaultSharedContext implements SharedContext {
 	
 	
 	private final CodecRegistry codecRegistry;
-	private final ClassLoader classLoader;
+	private final Reflection reflection;
 	private final List<String> defaultStoredStrings;
 	
 	public DefaultSharedContext() {
@@ -94,21 +95,21 @@ public class DefaultSharedContext implements SharedContext {
 	public DefaultSharedContext(CodecRegistry codecRegistry, List<String> defaultStoredStrings, ClassLoader classLoader) {
 		this.codecRegistry = codecRegistry;
 		
+		this.reflection = new Reflection(classLoader);
+		
 		Set<String> defaultStoredStringsSet = new HashSet<String>(JAVA_DEFAULT_STORED_STRINGS);
 		if (defaultStoredStrings != null)
 			defaultStoredStringsSet.addAll(defaultStoredStrings);
 		
 		this.defaultStoredStrings = Collections.unmodifiableList(new ArrayList<String>(defaultStoredStringsSet));
-
-		this.classLoader = classLoader;
 	}
 
 	public CodecRegistry getCodecRegistry() {
 		return codecRegistry;
 	}
 
-	public ClassLoader getClassLoader() {
-		return (classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader());
+	public Reflection getReflection() {
+		return reflection;
 	}
 
 	public List<String> getDefaultStoredStrings() {

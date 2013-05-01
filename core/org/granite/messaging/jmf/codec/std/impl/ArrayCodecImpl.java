@@ -328,7 +328,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 		Object v =  null;
 		
 		String componentTypeName = readString(ctx, parameterizedJmfComponentType, JMF_STRING_TYPE_HANDLER);
-		Class<?> componentType = ctx.getSharedContext().getClassLoader().loadClass(componentTypeName);
+		Class<?> componentType = ctx.getSharedContext().getReflection().loadClass(componentTypeName);
 		
 		if (dimensions == 0)
 			v = readObjectArray(ctx, componentType, length);

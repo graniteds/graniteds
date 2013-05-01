@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-import org.granite.messaging.jmf.codec.util.ObjectCodecUtil;
+import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
  * @author Franck WOLFF
@@ -113,16 +113,13 @@ public class PersistentCollectionSnapshot implements Externalizable {
 		return comparatorClassName;
 	}
 	
-	public <T> Comparator<T> newComparator(ClassLoader classLoader)
-		throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException,
-		InvocationTargetException, NoSuchMethodException, SecurityException {
+	public <T> Comparator<T> newComparator(Reflection reflection)
+		throws ClassNotFoundException, InstantiationException, IllegalAccessException,
+		IllegalArgumentException, InvocationTargetException, SecurityException, NoSuchMethodException {
 		
 		if (comparatorClassName == null)
 			return null;
-		
-		@SuppressWarnings("unchecked")
-		Class<Comparator<T>> comparatorClass = (Class<Comparator<T>>)classLoader.loadClass(comparatorClassName);
-		return ObjectCodecUtil.findDefaultContructor(comparatorClass).newInstance();
+		return reflection.newInstance(comparatorClassName);
 	}
 
 	@SuppressWarnings("unchecked")

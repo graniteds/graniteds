@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.granite.messaging.jmf.codec.StandardCodec;
+import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
  * @author Franck WOLFF
@@ -271,8 +272,8 @@ public class JMFDeserializer implements InputContext {
 	///////////////////////////////////////////////////////////////////////////
 	// ExtendedObjectInput implementation
 
-	public ClassLoader getClassLoader() {
-		return context.getClassLoader();
+	public Reflection getReflection() {
+		return context.getReflection();
 	}
 
 	public void readAndSetField(Object obj, Field field) throws IOException, ClassNotFoundException, IllegalAccessException {

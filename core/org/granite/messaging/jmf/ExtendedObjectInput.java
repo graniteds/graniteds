@@ -25,6 +25,7 @@ import java.io.ObjectInput;
 import java.lang.reflect.Field;
 
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
+import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
  * The <tt>ExtendedObjectInput</tt> interface extends <tt>ObjectInput</tt> and add two methods that
@@ -52,12 +53,12 @@ import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 public interface ExtendedObjectInput extends ObjectInput {
 
 	/**
-	 * Return the {@link ClassLoader} registered in the global JMF {@link SharedContext}.
+	 * Return the {@link Reflection} registered in the global JMF {@link SharedContext}.
 	 * 
-	 * @return A <tt>ClassLoader</tt> that can be used to load classes during the
+	 * @return A <tt>Reflection</tt> utility that can be used to load classes during the
 	 * 		deserialization process.
 	 */
-	ClassLoader getClassLoader();
+	Reflection getReflection();
 
 	/**
 	 * Read the next data in the current input stream and set the given <tt>field</tt> of

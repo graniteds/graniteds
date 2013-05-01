@@ -18,20 +18,15 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf;
+package org.granite.messaging.jmf.reflect;
 
-import java.util.List;
-
-import org.granite.messaging.jmf.reflect.Reflection;
+import java.lang.reflect.Constructor;
 
 /**
  * @author Franck WOLFF
  */
-public interface SharedContext {
-
-	CodecRegistry getCodecRegistry();
+public interface ConstructorFactory {
 	
-	Reflection getReflection();
-	
-	List<String> getDefaultStoredStrings();
+	public Constructor<?> newConstructorForSerialization(Class<?> cls)
+	    throws NoSuchMethodException, SecurityException;
 }

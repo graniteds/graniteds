@@ -37,7 +37,6 @@ import org.granite.logging.Logger;
 import org.granite.messaging.jmf.ExtendedObjectInput;
 import org.granite.messaging.jmf.ExtendedObjectOutput;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
-import org.granite.messaging.jmf.codec.util.ObjectCodecUtil;
 import org.hibernate.proxy.AbstractSerializableProxy;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.LazyInitializer;
@@ -131,7 +130,7 @@ public class EntityCodec implements ExtendedObjectCodec {
         }
 		
         // Write all fields in lexical order. 
-		List<Field> fields = ObjectCodecUtil.findSerializableFields(v.getClass());
+		List<Field> fields = out.getReflection().findSerializableFields(v.getClass());
 		for (Field field : fields)
 			out.getAndWriteField(v, field);
 	}
@@ -156,7 +155,7 @@ public class EntityCodec implements ExtendedObjectCodec {
         }
 		
 		if (initialized)
-			return ObjectCodecUtil.findDefaultContructor(cls).newInstance();
+			return in.getReflection().newInstance(cls);
 		
 		SerializableProxyAdapter proxyAdapter = serializableProxyAdapters.get(cls);
 		if (proxyAdapter == null)
@@ -167,7 +166,7 @@ public class EntityCodec implements ExtendedObjectCodec {
 
 	public void decode(ExtendedObjectInput in, Object v) throws IOException, ClassNotFoundException, IllegalAccessException {
 		if (!(v instanceof HibernateProxy)) {
-			List<Field> fields = ObjectCodecUtil.findSerializableFields(v.getClass());
+			List<Field> fields = in.getReflection().findSerializableFields(v.getClass());
 			for (Field field : fields)
 				in.readAndSetField(v, field);
 		}
@@ -187,7 +186,7 @@ public class EntityCodec implements ExtendedObjectCodec {
 
 	        if (className != null && className.length() > 0) {
             	try {
-					cls = out.getClassLoader().loadClass(className);
+					cls = out.getReflection().loadClass(className);
 				} catch (ClassNotFoundException e) {
 			        cls = initializer.getPersistentClass();
 				}

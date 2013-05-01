@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.granite.messaging.jmf.reflect.Reflection;
+
 /**
  * @author Franck WOLFF
  */
@@ -81,11 +83,11 @@ public class PersistentSortedMap<K, V> extends AbstractPersistentMapCollection<K
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
+	protected void updateFromSnapshot(Reflection reflection, PersistentCollectionSnapshot snapshot) {
 		if (snapshot.isInitialized()) {
 			Comparator<? super K> comparator = null;
 			try {
-				comparator = snapshot.newComparator(getClassLoader());
+				comparator = snapshot.newComparator(reflection);
 			}
 			catch (Exception e) {
 				throw new RuntimeException("Could not create instance of comparator", e);

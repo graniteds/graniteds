@@ -91,7 +91,7 @@ public class EnumCodecImpl extends AbstractIntegerStringCodec<Object> implements
 			v = ctx.getSharedObject(indexOrLength);
 		else {
 			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
-			Class<?> cls = ctx.getSharedContext().getClassLoader().loadClass(className);
+			Class<?> cls = ctx.getSharedContext().getReflection().loadClass(className);
 			
 			int ordinal = codecRegistry.getIntegerCodec().readVariableInt(ctx);
 			

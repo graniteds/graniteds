@@ -30,7 +30,7 @@ public class ClassCodecImpl extends AbstractIntegerStringCodec<Object> implement
 	}
 
 	public boolean accept(Object v) {
-		return (v instanceof Class) && !((Class<?>)v).isAnonymousClass();
+		return (v instanceof Class);
 	}
 
 	public void encode(OutputContext ctx, Object v) throws IOException, IllegalAccessException {
@@ -47,7 +47,7 @@ public class ClassCodecImpl extends AbstractIntegerStringCodec<Object> implement
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
 		String className = readString(ctx, parameterizedJmfType, TYPE_HANDLER);
-		return ctx.getClassLoader().loadClass(className);
+		return ctx.getReflection().loadClass(className);
 	}
 
 	public void dump(DumpContext ctx, int parameterizedJmfType) throws IOException {

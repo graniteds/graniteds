@@ -25,6 +25,8 @@ import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.granite.messaging.jmf.reflect.Reflection;
+
 /**
  * @author Franck WOLFF
  */
@@ -81,11 +83,11 @@ public class PersistentSortedSet<E> extends AbstractPersistentSimpleCollection<E
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
+	protected void updateFromSnapshot(Reflection reflection, PersistentCollectionSnapshot snapshot) {
 		if (snapshot.isInitialized()) {
 			Comparator<? super E> comparator = null;
 			try {
-				comparator = snapshot.newComparator(getClassLoader());
+				comparator = snapshot.newComparator(reflection);
 			}
 			catch (Exception e) {
 				throw new RuntimeException("Could not create instance of comparator", e);

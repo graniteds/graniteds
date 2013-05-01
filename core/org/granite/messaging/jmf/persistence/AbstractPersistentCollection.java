@@ -33,6 +33,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
+import org.granite.messaging.jmf.ExtendedObjectInput;
+import org.granite.messaging.jmf.reflect.Reflection;
+
 /**
  * @author Franck WOLFF
  */
@@ -79,7 +82,7 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 	}
 	
 	protected abstract PersistentCollectionSnapshot createSnapshot(boolean forReading);
-	protected abstract void updateFromSnapshot(PersistentCollectionSnapshot snapshot);
+	protected abstract void updateFromSnapshot(Reflection reflection, PersistentCollectionSnapshot snapshot);
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		PersistentCollectionSnapshot snapshot = createSnapshot(false);
@@ -87,9 +90,12 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		if (!(in instanceof ExtendedObjectInput))
+			throw new IllegalArgumentException("Not an " + ExtendedObjectInput.class.getSimpleName() + ": " + in);
+		
 		PersistentCollectionSnapshot snapshot = createSnapshot(true);
 		snapshot.readExternal(in);
-		updateFromSnapshot(snapshot);
+		updateFromSnapshot(((ExtendedObjectInput)in).getReflection(), snapshot);
 	}
 	
 	static class IteratorProxy<E> implements Iterator<E> {

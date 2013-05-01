@@ -49,7 +49,7 @@ public class PersistentSortedSetCodec extends AbstractPersistentCollectionCodec<
 		if (!snapshot.isInitialized())
 			return new PersistentSortedSet(null);
 		
-		Comparator<? super Object> comparator = snapshot.newComparator(in.getClassLoader());
+		Comparator<? super Object> comparator = snapshot.newComparator(in.getReflection());
 		return new PersistentSortedSet(null, new TreeSet<Object>(comparator));
 	}
 }

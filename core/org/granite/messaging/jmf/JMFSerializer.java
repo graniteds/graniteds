@@ -28,6 +28,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.granite.messaging.jmf.codec.StandardCodec;
+import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
  * @author Franck WOLFF
@@ -194,8 +195,8 @@ public class JMFSerializer implements OutputContext {
 	///////////////////////////////////////////////////////////////////////////
 	// ExtendedObjectOutput implementation
 
-	public ClassLoader getClassLoader() {
-		return context.getClassLoader();
+	public Reflection getReflection() {
+		return context.getReflection();
 	}
 
 	public void getAndWriteField(Object obj, Field field) throws IOException, IllegalAccessException {

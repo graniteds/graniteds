@@ -38,7 +38,6 @@ import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.codec.StandardCodec;
 import org.granite.messaging.jmf.codec.std.ObjectCodec;
-import org.granite.messaging.jmf.codec.util.ObjectCodecUtil;
 
 /**
  * @author Franck WOLFF
@@ -107,7 +106,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 	}
 	
 	protected void encodeSerializable(OutputContext ctx, Serializable v) throws IOException, IllegalAccessException {
-		List<Field> fields = ObjectCodecUtil.findSerializableFields(v.getClass());
+		List<Field> fields = ctx.getReflection().findSerializableFields(v.getClass());
 		for (Field field : fields)
 			ctx.getAndWriteField(v, field);
 	}
@@ -130,7 +129,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 		else {
 			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
 			
-			Class<?> cls = ctx.getSharedContext().getClassLoader().loadClass(className);
+			Class<?> cls = ctx.getSharedContext().getReflection().loadClass(className);
 			
 			if (!Serializable.class.isAssignableFrom(cls))
 				throw new NotSerializableException(cls.getName());
@@ -143,12 +142,12 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 				extendedCodec.decode(ctx, v);
 			}
 			else if (Externalizable.class.isAssignableFrom(cls)) {
-				v = ObjectCodecUtil.findDefaultContructor(cls).newInstance();
+				v = ctx.getReflection().newInstance(cls);
 				ctx.addSharedObject(v);
 				((Externalizable)v).readExternal(ctx);
 			}
 			else {
-				v = ObjectCodecUtil.findDefaultContructor(cls).newInstance();
+				v = ctx.getReflection().newInstance(cls);
 				ctx.addSharedObject(v);
 				decodeSerializable(ctx, (Serializable)v);
 			}
@@ -164,7 +163,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 	protected void decodeSerializable(InputContext ctx, Serializable v)
 		throws IOException, ClassNotFoundException, IllegalAccessException {
 
-		List<Field> fields = ObjectCodecUtil.findSerializableFields(v.getClass());
+		List<Field> fields = ctx.getReflection().findSerializableFields(v.getClass());
 		for (Field field : fields)
 			ctx.readAndSetField(v, field);
 	}
