@@ -31,13 +31,13 @@ public interface JMFConstants {
 
 	// Types with 4 bits of parameters (bit 4 always 0)
 	
-	static final int JMF_LONG				= 0x00; // JMF_XXXX_0000
-	static final int JMF_LONG_OBJECT		= 0x01; // JMF_XXXX_0001
-	static final int JMF_OBJECT				= 0x02; // JMF_XXXX_0010
+	static final int JMF_CLASS				= 0x00; // JMF_XXXX_0000
+	static final int JMF_OBJECT				= 0x01; // JMF_XXXX_0001
+	static final int JMF_ENUM				= 0x02; // JMF_XXXX_0010
 	static final int JMF_ARRAY				= 0x03; // JMF_XXXX_0011
-	static final int JMF_ENUM				= 0x04; // JMF_XXXX_0100
+	static final int JMF_LONG				= 0x04; // JMF_XXXX_0100
+	static final int JMF_LONG_OBJECT		= 0x05; // JMF_XXXX_0101
 
-	static final int JMF_XXXX_0101			= 0x05;
 	static final int JMF_XXXX_0110			= 0x06;
 	static final int JMF_XXXX_0111			= 0x07;
 	
@@ -86,6 +86,7 @@ public interface JMFConstants {
 	static final int JMF_DATE				= 0x7E; // JMF_0111_1110
 	
 	static final int JMF_0111_1111			= 0x7F;
+	
 	static final int JMF_1111_1000			= 0xF8;
 	static final int JMF_1111_1001			= 0xF9;
 	static final int JMF_1111_1010			= 0xFA;

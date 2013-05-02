@@ -36,9 +36,12 @@ public interface InputContext extends ExtendedObjectInput, JMFConstants {
 	void safeReadFully(byte[] b, int off, int len) throws IOException;
 	void safeSkip(long n) throws IOException;
 	
-	int addToStoredStrings(String s);
-	String getFromStoredStrings(int index);
+	int addSharedString(String s);
+	String getSharedString(int index);
 	
-	int addToStoredObjects(Object o);
-	Object getFromStoredObjects(int index);
+	int addSharedObject(Object o);
+	Object getSharedObject(int index);
+
+	int addUnresolvedSharedObject(Class<?> cls);
+	Object setUnresolvedSharedObject(int index, Object o);
 }

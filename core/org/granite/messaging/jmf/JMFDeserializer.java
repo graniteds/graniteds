@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.granite.messaging.jmf.codec.StandardCodec;
+import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
  * @author Franck WOLFF
@@ -101,7 +102,12 @@ public class JMFDeserializer implements InputContext {
 	}
 
 	public String readUTF() throws IOException {
-		return codecRegistry.getStringCodec().decode(this, safeRead());
+		int parameterizedJmfType = safeRead();
+		
+		if (parameterizedJmfType == JMF_NULL)
+			return (String)codecRegistry.getNullCodec().decode(this, parameterizedJmfType);
+		
+		return codecRegistry.getStringCodec().decode(this, parameterizedJmfType);
 	}
 
 	public Object readObject() throws ClassNotFoundException, IOException {
@@ -227,28 +233,48 @@ public class JMFDeserializer implements InputContext {
 		}
 	}
 
-	public int addToStoredStrings(String s) {
+	public int addSharedString(String s) {
 		int index = storedStrings.size();
 		storedStrings.add(index, s);
 		return index;
 	}
 	
-	public String getFromStoredStrings(int index) {
+	public String getSharedString(int index) {
 		return storedStrings.get(index);
 	}
 	
-	public int addToStoredObjects(Object o) {
+	public int addSharedObject(Object o) {
 		int index = storedObjects.size();
 		storedObjects.add(index, o);
 		return index;
 	}
 	
-	public Object getFromStoredObjects(int index) {
-		return storedObjects.get(index);
+	public Object getSharedObject(int index) {
+		Object o = storedObjects.get(index);
+		if (o instanceof UnresolvedSharedObject)
+			throw new JMFUnresolvedSharedObjectException("Unresolved shared object: " + o);
+		return o;
+	}
+	
+	public int addUnresolvedSharedObject(Class<?> cls) {
+		int index = storedObjects.size();
+		storedObjects.add(index, new UnresolvedSharedObject(cls, index));
+		return index;
+	}
+	
+	public Object setUnresolvedSharedObject(int index, Object o) {
+		Object uso = storedObjects.set(index, o);
+		if (!(uso instanceof UnresolvedSharedObject))
+			throw new JMFUnresolvedSharedObjectException("Not an unresolved shared object: " + uso);
+		return uso;
 	}
 	
 	///////////////////////////////////////////////////////////////////////////
 	// ExtendedObjectInput implementation
+
+	public Reflection getReflection() {
+		return context.getReflection();
+	}
 
 	public void readAndSetField(Object obj, Field field) throws IOException, ClassNotFoundException, IllegalAccessException {
 		if (field.getType().isPrimitive())
@@ -256,8 +282,28 @@ public class JMFDeserializer implements InputContext {
 		else
 			field.set(obj, readObject());
 	}
+	
+	static class UnresolvedSharedObject {
+		
+		private final Class<?> cls;
+		private final int index;
 
-	public ClassLoader getClassLoader() {
-		return context.getClassLoader();
+		public UnresolvedSharedObject(Class<?> cls, int index) {
+			this.cls = cls;
+			this.index = index;
+		}
+
+		public Class<?> getCls() {
+			return cls;
+		}
+
+		public int getIndex() {
+			return index;
+		}
+
+		@Override
+		public String toString() {
+			return UnresolvedSharedObject.class.getName() + " {cls=" + cls + ", index=" + index + "}";
+		}
 	}
 }

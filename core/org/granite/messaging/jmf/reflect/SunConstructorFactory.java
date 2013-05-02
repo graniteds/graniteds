@@ -18,12 +18,26 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.codec;
+package org.granite.messaging.jmf.reflect;
+
+import java.lang.reflect.Constructor;
+
+import sun.reflect.ReflectionFactory;
 
 /**
  * @author Franck WOLFF
  */
-public interface ConditionalObjectCodec extends StandardCodec<Object> {
+public class SunConstructorFactory implements ConstructorFactory {
+    
+    public Constructor<?> newConstructorForSerialization(Class<?> cls)
+    	throws NoSuchMethodException, SecurityException {
 
-	boolean accept(Object v);
+    	ReflectionFactory factory = ReflectionFactory.getReflectionFactory();
+    	Constructor<?> constructor = Object.class.getDeclaredConstructor();
+    	
+    	constructor = factory.newConstructorForSerialization(cls, constructor);
+        constructor.setAccessible(true);
+        
+        return constructor;
+    }
 }

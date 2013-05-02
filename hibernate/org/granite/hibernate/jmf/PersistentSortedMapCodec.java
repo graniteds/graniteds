@@ -49,7 +49,7 @@ public class PersistentSortedMapCodec extends AbstractPersistentCollectionCodec<
 		if (!snapshot.isInitialized())
 			return new PersistentSortedMap(null);
 		
-		Comparator<? super Object> comparator = snapshot.newComparator(in.getClassLoader());
+		Comparator<? super Object> comparator = snapshot.newComparator(in.getReflection());
 		return new PersistentSortedMap(null, new TreeMap<Object, Object>(comparator));
 	}
 }

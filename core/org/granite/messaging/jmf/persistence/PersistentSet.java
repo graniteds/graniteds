@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 
+import org.granite.messaging.jmf.reflect.Reflection;
+
 /**
  * @author Franck WOLFF
  */
@@ -47,7 +49,7 @@ public class PersistentSet<E> extends AbstractPersistentSimpleCollection<E, Set<
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
+	protected void updateFromSnapshot(Reflection reflection, PersistentCollectionSnapshot snapshot) {
 		if (snapshot.isInitialized())
 			init(new HashSet<E>((Collection<? extends E>)snapshot.getElementsAsCollection()), snapshot.isDirty());
 		else

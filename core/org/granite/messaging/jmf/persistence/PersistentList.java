@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.granite.messaging.jmf.reflect.Reflection;
+
 /**
  * @author Franck WOLFF
  */
@@ -103,7 +105,7 @@ public class PersistentList<E> extends AbstractPersistentSimpleCollection<E, Lis
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
+	protected void updateFromSnapshot(Reflection reflection, PersistentCollectionSnapshot snapshot) {
 		if (snapshot.isInitialized())
 			init(new ArrayList<E>((Collection<? extends E>)snapshot.getElementsAsCollection()), snapshot.isDirty());
 		else

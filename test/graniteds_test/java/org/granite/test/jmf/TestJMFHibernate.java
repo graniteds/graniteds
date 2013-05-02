@@ -86,7 +86,7 @@ public class TestJMFHibernate {
 		catch (LazyInitializationException e) {
 		}
 		
-		collection = serializeAndDeserializeServerToClient(list, false);
+		collection = serializeAndDeserializeServerToClient(list, true);
 		Assert.assertTrue(collection instanceof org.granite.messaging.jmf.persistence.PersistentList);
 		Assert.assertFalse(((org.granite.messaging.jmf.persistence.PersistentList<?>)collection).wasInitialized());
 		try {

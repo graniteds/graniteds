@@ -43,8 +43,8 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 		return JMF_ARRAY;
 	}
 
-	public boolean accept(Class<?> cls) {
-		return cls.isArray();
+	public boolean accept(Object v) {
+		return v.getClass().isArray();
 	}
 
 	public void encode(OutputContext ctx, Object v) throws IOException {
@@ -70,7 +70,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 		
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 4) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0)
-			v = ctx.getFromStoredObjects(indexOrLength);
+			v = ctx.getSharedObject(indexOrLength);
 		else {
 			int dimensions = ((parameterizedJmfType & 0x40) == 0 ? 0 : ctx.safeRead());
 			int parameterizedJmfComponentType = ctx.safeRead();
@@ -97,7 +97,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 		
 		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 4) & 0x03, false);
 		if ((parameterizedJmfType & 0x80) != 0)
-			ctx.indentPrintLn("<" + ctx.getFromStoredObjects(indexOrLength) + "@" + indexOrLength + ">");
+			ctx.indentPrintLn("<" + ctx.getSharedObject(indexOrLength) + "@" + indexOrLength + ">");
 		else {
 			int dimensions = ((parameterizedJmfType & 0x40) == 0 ? 0 : ctx.safeRead());
 			int parameterizedJmfComponentType = ctx.safeRead();
@@ -328,13 +328,13 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 		Object v =  null;
 		
 		String componentTypeName = readString(ctx, parameterizedJmfComponentType, JMF_STRING_TYPE_HANDLER);
-		Class<?> componentType = ctx.getSharedContext().getClassLoader().loadClass(componentTypeName);
+		Class<?> componentType = ctx.getSharedContext().getReflection().loadClass(componentTypeName);
 		
 		if (dimensions == 0)
 			v = readObjectArray(ctx, componentType, length);
 		else {
 			v = newArray(componentType, length, dimensions);
-			ctx.addToStoredObjects(v);
+			ctx.addSharedObject(v);
 			
 			int subDimensions = dimensions - 1;
 			for (int index = 0; index < length; index++) {
@@ -346,7 +346,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 				else if (subJmfType == JMF_ARRAY) {
 					int subLengthOrIndex = readIntData(ctx, (subParameterizedJmfType >> 4) & 0x03, false);
 					if ((subParameterizedJmfType & 0x80) != 0)
-						Array.set(v, index, ctx.getFromStoredObjects(subLengthOrIndex));
+						Array.set(v, index, ctx.getSharedObject(subLengthOrIndex));
 					else {
 						int subParameterizedJmfComponentType = ctx.safeRead();
 						Array.set(v, index, readObjectArray(ctx, subParameterizedJmfComponentType, subLengthOrIndex, subDimensions));
@@ -367,7 +367,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 			dumpObjectArray(ctx, componentTypeName, length);
 		else {
 			String v = newDumpObjectArray(componentTypeName, length, dimensions);
-			int indexOfStoredObject = ctx.addToStoredObjects(v);
+			int indexOfStoredObject = ctx.addSharedObject(v);
 			ctx.indentPrintLn(v + "@" + indexOfStoredObject + ": {");
 			ctx.incrIndent(1);
 			
@@ -381,7 +381,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 				else if (subJmfType == JMF_ARRAY) {
 					int subLengthOrIndex = readIntData(ctx, (subParameterizedJmfType >> 4) & 0x03, false);
 					if ((subParameterizedJmfType & 0x80) != 0)
-						ctx.indentPrintLn("<" + ctx.getFromStoredObjects(subLengthOrIndex) + "@" + subLengthOrIndex + ">");
+						ctx.indentPrintLn("<" + ctx.getSharedObject(subLengthOrIndex) + "@" + subLengthOrIndex + ">");
 					else {
 						int subParameterizedJmfComponentType = ctx.safeRead();
 						dumpObjectArray(ctx, subParameterizedJmfComponentType, subLengthOrIndex, subDimensions);
@@ -398,7 +398,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 	
 	protected Object readObjectArray(InputContext ctx, Class<?> componentType, int length) throws IOException, ClassNotFoundException {
 		Object v = Array.newInstance(componentType, length);
-		ctx.addToStoredObjects(v);
+		ctx.addSharedObject(v);
 		
 		for (int index = 0; index < length; index++)
 			Array.set(v, index, ctx.readObject());
@@ -408,7 +408,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 	
 	protected void dumpObjectArray(DumpContext ctx, String componentTypeName, int length) throws IOException {
 		String v = newDumpObjectArray(componentTypeName, length, 0);
-		int indexOfStoredObject = ctx.addToStoredObjects(v);
+		int indexOfStoredObject = ctx.addSharedObject(v);
 		ctx.indentPrintLn(v + "@" + indexOfStoredObject + ": {");
 		ctx.incrIndent(1);
 		
@@ -446,7 +446,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 			v = readPrimitiveArray(ctx, componentType, jmfComponentType, length);
 		else {
 			v = newArray(componentType, length, dimensions);
-			ctx.addToStoredObjects(v);
+			ctx.addSharedObject(v);
 			
 			int subDimensions = dimensions - 1;
 			for (int index = 0; index < length; index++) {
@@ -456,7 +456,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 				else {
 					int subLengthOrIndex = readIntData(ctx, (subArrayJmfType >> 4) & 0x03, false);
 					if ((subArrayJmfType & 0x80) != 0)
-						Array.set(v, index, ctx.getFromStoredObjects(subLengthOrIndex));
+						Array.set(v, index, ctx.getSharedObject(subLengthOrIndex));
 					else
 						Array.set(v, index, readPrimitiveArray(ctx, componentType, jmfComponentType, subLengthOrIndex, subDimensions));
 				}
@@ -471,7 +471,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 			dumpPrimitiveArray(ctx, componentType, jmfComponentType, length);
 		else {
 			String v = newDumpPrimitiveArray(jmfComponentType, length, dimensions);
-			int indexOfStoredObject = ctx.addToStoredObjects(v);
+			int indexOfStoredObject = ctx.addSharedObject(v);
 			ctx.indentPrintLn(v + "@" + indexOfStoredObject + ": {");
 			ctx.incrIndent(1);
 			
@@ -483,7 +483,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 				else {
 					int subLengthOrIndex = readIntData(ctx, (subArrayJmfType >> 4) & 0x03, false);
 					if ((subArrayJmfType & 0x80) != 0)
-						ctx.indentPrintLn("<" + ctx.getFromStoredObjects(subLengthOrIndex) + "@" + subLengthOrIndex + ">");
+						ctx.indentPrintLn("<" + ctx.getSharedObject(subLengthOrIndex) + "@" + subLengthOrIndex + ">");
 					else
 						dumpPrimitiveArray(ctx, componentType, jmfComponentType, subLengthOrIndex, subDimensions);
 				}
@@ -579,7 +579,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 			}
 		}
 		
-		ctx.addToStoredObjects(v);
+		ctx.addSharedObject(v);
 		
 		return v;
 	}
@@ -587,7 +587,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 	protected void dumpPrimitiveArray(DumpContext ctx, Class<?> componentType, int jmfComponentType, int length) throws IOException {
 
 		String v = newDumpPrimitiveArray(jmfComponentType, length, 0);
-		int indexOfStoredObject = ctx.addToStoredObjects(v);
+		int indexOfStoredObject = ctx.addSharedObject(v);
 		ctx.indentPrint(v + "@" + indexOfStoredObject + ": {");
 		
 		switch (jmfComponentType) {

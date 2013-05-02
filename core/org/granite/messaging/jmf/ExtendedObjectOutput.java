@@ -24,12 +24,22 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.lang.reflect.Field;
 
+import org.granite.messaging.jmf.reflect.Reflection;
+
 /**
  * @author Franck WOLFF
  */
 public interface ExtendedObjectOutput extends ObjectOutput {
 	
-	void writeField(Object obj, Field field) throws IOException, IllegalAccessException;
+	/**
+	 * Return the {@link Reflection} registered in the global JMF {@link SharedContext}.
+	 * 
+	 * @return A <tt>Reflection</tt> utility that can be used to load classes during the
+	 * 		serialization process.
+	 */
+	Reflection getReflection();
+	
+	void getAndWriteField(Object obj, Field field) throws IOException, IllegalAccessException;
 	
 	@Deprecated
 	public void write(int b) throws IOException;

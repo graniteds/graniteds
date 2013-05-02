@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.granite.messaging.jmf.reflect.Reflection;
+
 /**
  * @author Franck WOLFF
  */
@@ -53,7 +55,7 @@ public class PersistentMap<K, V> extends AbstractPersistentMapCollection<K, V, M
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void updateFromSnapshot(PersistentCollectionSnapshot snapshot) {
+	protected void updateFromSnapshot(Reflection reflection, PersistentCollectionSnapshot snapshot) {
 		if (snapshot.isInitialized())
 			init(new HashMap<K, V>((Map<K, V>)snapshot.getElementsAsMap()), snapshot.isDirty());
 		else

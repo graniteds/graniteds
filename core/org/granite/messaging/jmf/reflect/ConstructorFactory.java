@@ -18,12 +18,15 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.codec;
+package org.granite.messaging.jmf.reflect;
+
+import java.lang.reflect.Constructor;
 
 /**
  * @author Franck WOLFF
  */
-public interface ConditionalObjectCodec extends StandardCodec<Object> {
-
-	boolean accept(Object v);
+public interface ConstructorFactory {
+	
+	public Constructor<?> newConstructorForSerialization(Class<?> cls)
+	    throws NoSuchMethodException, SecurityException;
 }

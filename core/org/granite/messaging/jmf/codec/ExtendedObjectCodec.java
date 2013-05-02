@@ -31,13 +31,15 @@ import org.granite.messaging.jmf.ExtendedObjectOutput;
  */
 public interface ExtendedObjectCodec {
 
-	boolean canEncode(Class<?> cls);
-	boolean canDecode(Class<?> cls);
-
-	String getEncodedClassName(Class<?> cls);
+	boolean canEncode(ExtendedObjectOutput out, Object v);
+	
+	String getEncodedClassName(ExtendedObjectOutput out, Object v);
 	
 	void encode(ExtendedObjectOutput out, Object v) throws IOException, IllegalAccessException;
+
 	
+	boolean canDecode(ExtendedObjectInput in, Class<?> cls);
+
 	Object newInstance(ExtendedObjectInput in, Class<?> cls)
 		throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException,
 		SecurityException, NoSuchMethodException;

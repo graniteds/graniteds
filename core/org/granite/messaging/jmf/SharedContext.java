@@ -22,6 +22,8 @@ package org.granite.messaging.jmf;
 
 import java.util.List;
 
+import org.granite.messaging.jmf.reflect.Reflection;
+
 /**
  * @author Franck WOLFF
  */
@@ -29,7 +31,7 @@ public interface SharedContext {
 
 	CodecRegistry getCodecRegistry();
 	
-	ClassLoader getClassLoader();
+	Reflection getReflection();
 	
 	List<String> getDefaultStoredStrings();
 }

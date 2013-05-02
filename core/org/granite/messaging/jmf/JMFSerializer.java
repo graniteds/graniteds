@@ -28,6 +28,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.granite.messaging.jmf.codec.StandardCodec;
+import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
  * @author Franck WOLFF
@@ -93,15 +94,16 @@ public class JMFSerializer implements OutputContext {
 	}
 
 	public void writeUTF(String s) throws IOException {
-		codecRegistry.getStringCodec().encode(this, s);
+		if (s == null)
+			codecRegistry.getNullCodec().encode(this, s);
+		else
+			codecRegistry.getStringCodec().encode(this, s);
 	}
 
 	public void writeObject(Object obj) throws IOException {
-		Class<?> cls = (obj == null ? null : obj.getClass());
-		
-		StandardCodec<Object> codec = codecRegistry.getCodec(cls);
+		StandardCodec<Object> codec = codecRegistry.getCodec(obj);
 		if (codec == null)
-			throw new JMFEncodingException("Unsupported Java class: " + (cls != null ? cls.getName() : null));
+			throw new JMFEncodingException("Unsupported Java class: " + obj);
 		
 		try {
 			codec.encode(this, obj);
@@ -193,7 +195,11 @@ public class JMFSerializer implements OutputContext {
 	///////////////////////////////////////////////////////////////////////////
 	// ExtendedObjectOutput implementation
 
-	public void writeField(Object obj, Field field) throws IOException, IllegalAccessException {
+	public Reflection getReflection() {
+		return context.getReflection();
+	}
+
+	public void getAndWriteField(Object obj, Field field) throws IOException, IllegalAccessException {
 		if (field.getType().isPrimitive())
 			codecRegistry.getPrimitiveFieldCodec(field.getType()).encodePrimitive(this, obj, field);
 		else
