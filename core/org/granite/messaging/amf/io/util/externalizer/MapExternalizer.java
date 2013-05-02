@@ -23,6 +23,7 @@ package org.granite.messaging.amf.io.util.externalizer;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -50,8 +51,10 @@ public class MapExternalizer extends DefaultExternalizer {
 
     @Override
     public void writeExternal(Object o, ObjectOutput out) throws IOException, IllegalAccessException {
+    	// Copy the map to limit the possibility of concurrent modification exceptions
+    	// use a LinkedHashMap to keep order of elements
     	@SuppressWarnings("unchecked")
-		Map<Object, Object> map = (Map<Object, Object>)o;
+		Map<Object, Object> map = new LinkedHashMap<Object, Object>((Map<Object, Object>)o);
         out.writeInt(map.size());
     	for (Entry<Object, Object> entry : map.entrySet()) {
     		out.writeObject(entry.getKey());
