@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Ce fichier est généré automatiquement et n'est pas destiné à être modifié. -->
+
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:flexui="flexunit.flexui.*"
+			   minWidth="640" minHeight="480" creationComplete="onCreationComplete()">
+	<fx:Script>
+		<![CDATA[
+			import org.granite.test.math.SuiteMath;
+			import org.granite.test.tide.cdi.SuiteCdi;
+			import org.granite.test.tide.data.SuiteData;
+			import org.granite.test.tide.ejb.SuiteEjb;
+			import org.granite.test.tide.framework.SuiteFramework;
+			import org.granite.test.tide.seam.SuiteSeam;
+			import org.granite.test.tide.spring.SuiteSpring;
+			import org.granite.test.util.SuiteUtil;
+			import org.granite.test.validation.SuiteValidation;
+			
+			public function currentRunTestSuite():Array {
+				return [			
+					SuiteUtil,
+					SuiteMath,
+					SuiteValidation,
+					SuiteFramework,
+					SuiteData,
+					SuiteEjb,
+					SuiteSpring,
+					SuiteSeam,
+					SuiteCdi
+				];
+			}
+			
+			
+			private function onCreationComplete():void {
+				testRunner.runWithFlexUnit4Runner(currentRunTestSuite(), "graniteds_test");
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Placer ici les éléments non visuels (services et objets de valeur, par exemple). -->
+	</fx:Declarations>
+	<flexui:FlexUnitTestRunnerUI id="testRunner" portNumber="8765">
+	</flexui:FlexUnitTestRunnerUI>
+</s:Application>
