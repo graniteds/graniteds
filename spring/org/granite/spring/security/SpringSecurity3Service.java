@@ -180,6 +180,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
                     }                
                 }
                 
+		    	log.debug("Define authentication and save to repo: %s", authentication != null ? authentication.getName() : "none");
                 HttpRequestResponseHolder holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
     	        SecurityContext securityContext = securityContextRepository.loadContext(holder);
     	        securityContext.setAuthentication(authentication);
@@ -195,6 +196,10 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
             } 
             catch (AuthenticationException e) {
             	handleAuthenticationExceptions(e);
+            }
+            finally {
+        		log.debug("Clear authentication");
+	            SecurityContextHolder.clearContext();
             }
         }
 
@@ -246,15 +251,21 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
 		        holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
 		        SecurityContext contextBeforeChainExecution = securityContextRepository.loadContext(holder);
 			    SecurityContextHolder.setContext(contextBeforeChainExecution);
-			    if (isAuthenticated(authentication))
+			    if (isAuthenticated(authentication)) {
+			    	log.debug("Restore authentication: %s", authentication.getName());
 			    	contextBeforeChainExecution.setAuthentication(authentication);
-			    else
+			    }
+			    else {
 			    	authentication = contextBeforeChainExecution.getAuthentication();
+			    	log.debug("Restore authentication from repository: %s", authentication != null ? authentication.getName() : "none");
+			    }
 			    
 			    graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, 0);
         	}
-        	else
+        	else {
+        		log.debug("Increment service reentrance counter");
 			    graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, (Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED)+1);
+        	}
         }
         
         if (context.getDestination().isSecured()) {
@@ -263,7 +274,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
                 throw SecurityServiceException.newNotLoggedInException("User not logged in");
             }
             if (!userCanAccessService(context, authentication)) { 
-                log.debug("Access denied for user %s", authentication.getName());
+                log.debug("Access denied for user %s", authentication != null ? authentication.getName() : "not authenticated");
                 throw SecurityServiceException.newAccessDeniedException("User not in required role");
             }
         }
@@ -286,6 +297,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
             if (graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null) {
             	if ((Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED) == 0) {
 		            SecurityContext contextAfterChainExecution = SecurityContextHolder.getContext();
+            		log.debug("Clear authentication and save to repo: %s", contextAfterChainExecution.getAuthentication() != null ? contextAfterChainExecution.getAuthentication().getName() : "none");
 		            SecurityContextHolder.clearContext();
 		            try {
 		            	securityContextRepository.saveContext(contextAfterChainExecution, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
@@ -295,8 +307,14 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
 		            }
 		            graniteContext.getRequest().removeAttribute(SECURITY_SERVICE_APPLIED);
             	}
-            	else
+            	else if (graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED) == null) {
+            		log.debug("Clear authentication");
+		            SecurityContextHolder.clearContext();
+            	}
+            	else {
+            		log.debug("Decrement service reentrance counter");
             		graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, (Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED)-1);
+            	}
             }
         }
     }
