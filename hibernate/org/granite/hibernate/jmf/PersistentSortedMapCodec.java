@@ -38,7 +38,7 @@ public class PersistentSortedMapCodec extends AbstractPersistentCollectionCodec<
 		super(PersistentSortedMap.class);
 	}
 
-	public PersistentSortedMap newInstance(ExtendedObjectInput in, Class<?> cls)
+	public PersistentSortedMap newInstance(ExtendedObjectInput in, String className)
 			throws IOException, ClassNotFoundException, InstantiationException,
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {

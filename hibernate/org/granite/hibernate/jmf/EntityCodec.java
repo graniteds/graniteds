@@ -135,7 +135,8 @@ public class EntityCodec implements ExtendedObjectCodec {
 			out.getAndWriteField(v, field);
 	}
 
-	public boolean canDecode(ExtendedObjectInput in, Class<?> cls) {
+	public boolean canDecode(ExtendedObjectInput in, String className) throws ClassNotFoundException {
+		Class<?> cls = in.getReflection().loadClass(className);
 		return (
 			cls.isAnnotationPresent(Entity.class) ||
 			cls.isAnnotationPresent(MappedSuperclass.class) ||
@@ -143,9 +144,11 @@ public class EntityCodec implements ExtendedObjectCodec {
 		);
 	}
 
-	public Object newInstance(ExtendedObjectInput in, Class<?> cls)
+	public Object newInstance(ExtendedObjectInput in, String className)
 		throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException,
 		InvocationTargetException, SecurityException, NoSuchMethodException, IOException {
+		
+		Class<?> cls = in.getReflection().loadClass(className);
 		
 		boolean initialized = true;
 		

@@ -37,7 +37,7 @@ public class PersistentBagCodec extends AbstractPersistentCollectionCodec<Persis
 		super(PersistentBag.class);
 	}
 
-	public PersistentBag newInstance(ExtendedObjectInput in, Class<?> cls)
+	public PersistentBag newInstance(ExtendedObjectInput in, String className)
 			throws IOException, ClassNotFoundException, InstantiationException,
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {

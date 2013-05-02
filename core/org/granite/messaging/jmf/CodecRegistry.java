@@ -57,12 +57,16 @@ public interface CodecRegistry extends JMFConstants {
 	<T> StandardCodec<T> getCodec(Object v);
 	
 	ExtendedObjectCodec findExtendedEncoder(ExtendedObjectOutput out, Object v);
-	ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, Class<?> cls);
+	ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, String className)
+		throws ClassNotFoundException;
 	
 	static interface PrimitiveFieldCodec {
-		public void encodePrimitive(OutputContext ctx, Object v, Field field) throws IllegalAccessException, IOException;
-		public void decodePrimitive(InputContext ctx, Object v, Field field) throws IllegalAccessException, IOException;
+		public void encodePrimitive(OutputContext ctx, Object v, Field field)
+			throws IllegalAccessException, IOException;
+		public void decodePrimitive(InputContext ctx, Object v, Field field)
+			throws IllegalAccessException, IOException;
 	}
+	
 	PrimitiveFieldCodec getPrimitiveFieldCodec(Class<?> fieldCls);
 
 	int extractJmfType(int parameterizedJmfType);

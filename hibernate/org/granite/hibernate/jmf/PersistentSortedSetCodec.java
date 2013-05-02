@@ -38,7 +38,7 @@ public class PersistentSortedSetCodec extends AbstractPersistentCollectionCodec<
 		super(PersistentSortedSet.class);
 	}
 
-	public PersistentSortedSet newInstance(ExtendedObjectInput in, Class<?> cls)
+	public PersistentSortedSet newInstance(ExtendedObjectInput in, String className)
 			throws IOException, ClassNotFoundException, InstantiationException,
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {

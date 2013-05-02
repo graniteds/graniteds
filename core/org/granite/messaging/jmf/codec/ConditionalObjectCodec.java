@@ -25,5 +25,5 @@ package org.granite.messaging.jmf.codec;
  */
 public interface ConditionalObjectCodec extends StandardCodec<Object> {
 
-	boolean accept(Object v);
+	boolean canEncode(Object v);
 }

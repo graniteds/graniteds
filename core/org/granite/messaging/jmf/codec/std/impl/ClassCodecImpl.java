@@ -29,7 +29,7 @@ public class ClassCodecImpl extends AbstractIntegerStringCodec<Object> implement
 		return JMF_CLASS;
 	}
 
-	public boolean accept(Object v) {
+	public boolean canEncode(Object v) {
 		return (v instanceof Class);
 	}
 

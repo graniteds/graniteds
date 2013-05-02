@@ -37,7 +37,7 @@ public class PersistentSetCodec extends AbstractPersistentCollectionCodec<Persis
 		super(PersistentSet.class);
 	}
 
-	public PersistentSet newInstance(ExtendedObjectInput in, Class<?> cls)
+	public PersistentSet newInstance(ExtendedObjectInput in, String className)
 			throws IOException, ClassNotFoundException, InstantiationException,
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {

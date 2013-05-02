@@ -53,7 +53,7 @@ public class EnumCodecImpl extends AbstractIntegerStringCodec<Object> implements
 		return JMF_ENUM;
 	}
 
-	public boolean accept(Object v) {
+	public boolean canEncode(Object v) {
 		return v.getClass().isEnum();
 	}
 

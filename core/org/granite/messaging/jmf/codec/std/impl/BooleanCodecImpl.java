@@ -60,7 +60,7 @@ public class BooleanCodecImpl extends AbstractStandardCodec<Boolean> implements 
 		if (jmfType != JMF_BOOLEAN_OBJECT)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
-		return ((parameterizedJmfType & 0x80) != 0);
+		return Boolean.valueOf(((parameterizedJmfType & 0x80) != 0));
 	}
 
 	public void encodePrimitive(OutputContext ctx, boolean v) throws IOException {

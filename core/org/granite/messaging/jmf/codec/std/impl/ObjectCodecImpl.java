@@ -65,7 +65,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 		return JMF_OBJECT;
 	}
 
-	public boolean accept(Object v) {
+	public boolean canEncode(Object v) {
 		Class<?> cls = v.getClass();
 		return !cls.isArray() && !cls.isEnum() && !(v instanceof Class);
 	}
@@ -129,27 +129,29 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 		else {
 			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
 			
-			Class<?> cls = ctx.getSharedContext().getReflection().loadClass(className);
-			
-			if (!Serializable.class.isAssignableFrom(cls))
-				throw new NotSerializableException(cls.getName());
-			
-			ExtendedObjectCodec extendedCodec = codecRegistry.findExtendedDecoder(ctx, cls);
+			ExtendedObjectCodec extendedCodec = codecRegistry.findExtendedDecoder(ctx, className);
 			if (extendedCodec != null) {
-				int index = ctx.addUnresolvedSharedObject(cls);
-				v = extendedCodec.newInstance(ctx, cls);
+				int index = ctx.addUnresolvedSharedObject(className);
+				v = extendedCodec.newInstance(ctx, className);
 				ctx.setUnresolvedSharedObject(index, v);
 				extendedCodec.decode(ctx, v);
 			}
-			else if (Externalizable.class.isAssignableFrom(cls)) {
-				v = ctx.getReflection().newInstance(cls);
-				ctx.addSharedObject(v);
-				((Externalizable)v).readExternal(ctx);
-			}
 			else {
-				v = ctx.getReflection().newInstance(cls);
-				ctx.addSharedObject(v);
-				decodeSerializable(ctx, (Serializable)v);
+				Class<?> cls = ctx.getSharedContext().getReflection().loadClass(className);
+				
+				if (!Serializable.class.isAssignableFrom(cls))
+					throw new NotSerializableException(cls.getName());
+				
+				if (Externalizable.class.isAssignableFrom(cls)) {
+					v = ctx.getReflection().newInstance(cls);
+					ctx.addSharedObject(v);
+					((Externalizable)v).readExternal(ctx);
+				}
+				else {
+					v = ctx.getReflection().newInstance(cls);
+					ctx.addSharedObject(v);
+					decodeSerializable(ctx, (Serializable)v);
+				}
 			}
 			
 			int mark = ctx.safeRead();

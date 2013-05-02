@@ -42,6 +42,6 @@ public interface InputContext extends ExtendedObjectInput, JMFConstants {
 	int addSharedObject(Object o);
 	Object getSharedObject(int index);
 
-	int addUnresolvedSharedObject(Class<?> cls);
+	int addUnresolvedSharedObject(String className);
 	Object setUnresolvedSharedObject(int index, Object o);
 }

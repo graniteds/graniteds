@@ -51,8 +51,8 @@ public abstract class AbstractPersistentCollectionCodec<H extends PersistentColl
 		return v.getClass() == hibernateCollectionClass;
 	}
 
-	public boolean canDecode(ExtendedObjectInput in, Class<?> cls) {
-		return clientCollectionClassName.equals(cls.getName());
+	public boolean canDecode(ExtendedObjectInput in, String className) {
+		return clientCollectionClassName.equals(className);
 	}
 
 	public String getEncodedClassName(ExtendedObjectOutput out, Object v) {

@@ -35,13 +35,16 @@ public interface ExtendedObjectCodec {
 	
 	String getEncodedClassName(ExtendedObjectOutput out, Object v);
 	
-	void encode(ExtendedObjectOutput out, Object v) throws IOException, IllegalAccessException;
+	void encode(ExtendedObjectOutput out, Object v)
+		throws IOException, IllegalAccessException;
 
 	
-	boolean canDecode(ExtendedObjectInput in, Class<?> cls);
+	boolean canDecode(ExtendedObjectInput in, String className)
+		throws ClassNotFoundException;
 
-	Object newInstance(ExtendedObjectInput in, Class<?> cls)
-		throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException,
+	Object newInstance(ExtendedObjectInput in, String className)
+		throws IOException, ClassNotFoundException, InstantiationException,
+		IllegalAccessException, InvocationTargetException,
 		SecurityException, NoSuchMethodException;
 	
 	void decode(ExtendedObjectInput in, Object v)

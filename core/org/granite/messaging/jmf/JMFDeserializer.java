@@ -256,9 +256,9 @@ public class JMFDeserializer implements InputContext {
 		return o;
 	}
 	
-	public int addUnresolvedSharedObject(Class<?> cls) {
+	public int addUnresolvedSharedObject(String className) {
 		int index = storedObjects.size();
-		storedObjects.add(index, new UnresolvedSharedObject(cls, index));
+		storedObjects.add(index, new UnresolvedSharedObject(className, index));
 		return index;
 	}
 	
@@ -285,16 +285,16 @@ public class JMFDeserializer implements InputContext {
 	
 	static class UnresolvedSharedObject {
 		
-		private final Class<?> cls;
+		private final String className;
 		private final int index;
 
-		public UnresolvedSharedObject(Class<?> cls, int index) {
-			this.cls = cls;
+		public UnresolvedSharedObject(String className, int index) {
+			this.className = className;
 			this.index = index;
 		}
 
-		public Class<?> getCls() {
-			return cls;
+		public String getClassName() {
+			return className;
 		}
 
 		public int getIndex() {
@@ -303,7 +303,7 @@ public class JMFDeserializer implements InputContext {
 
 		@Override
 		public String toString() {
-			return UnresolvedSharedObject.class.getName() + " {cls=" + cls + ", index=" + index + "}";
+			return UnresolvedSharedObject.class.getName() + " {className=" + className + ", index=" + index + "}";
 		}
 	}
 }

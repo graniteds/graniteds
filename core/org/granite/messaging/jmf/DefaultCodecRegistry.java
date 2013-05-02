@@ -205,7 +205,7 @@ public class DefaultCodecRegistry implements CodecRegistry {
 		StandardCodec<T> codec = (StandardCodec<T>)classToCodec.get(cls);
 		if (codec == null) {
 			for (ConditionalObjectCodec condCodec : conditionalObjectCodecs) {
-				if (condCodec.accept(v)) {
+				if (condCodec.canEncode(v)) {
 					codec = (StandardCodec<T>)condCodec;
 					break;
 				}
@@ -222,9 +222,11 @@ public class DefaultCodecRegistry implements CodecRegistry {
 		return null;
 	}
 
-	public ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, Class<?> cls) {
+	public ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, String className)
+		throws ClassNotFoundException {
+		
 		for (ExtendedObjectCodec c : extendedCodecs) {
-			if (c.canDecode(in, cls))
+			if (c.canDecode(in, className))
 				return c;
 		}
 		return null;

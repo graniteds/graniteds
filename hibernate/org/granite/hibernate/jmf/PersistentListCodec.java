@@ -37,7 +37,7 @@ public class PersistentListCodec extends AbstractPersistentCollectionCodec<Persi
 		super(PersistentList.class);
 	}
 
-	public PersistentList newInstance(ExtendedObjectInput in, Class<?> cls)
+	public PersistentList newInstance(ExtendedObjectInput in, String className)
 			throws IOException, ClassNotFoundException, InstantiationException,
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {

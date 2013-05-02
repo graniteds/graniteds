@@ -37,7 +37,7 @@ public class PersistentMapCodec extends AbstractPersistentCollectionCodec<Persis
 		super(PersistentMap.class);
 	}
 
-	public PersistentMap newInstance(ExtendedObjectInput in, Class<?> cls)
+	public PersistentMap newInstance(ExtendedObjectInput in, String className)
 			throws IOException, ClassNotFoundException, InstantiationException,
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {

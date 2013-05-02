@@ -28,17 +28,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Franck WOLFF
  */
 public class Reflection {
 	
-	private static final int STATIC_TRANSIENT_MASK = Modifier.STATIC | Modifier.TRANSIENT;
+	protected static final int STATIC_TRANSIENT_MASK = Modifier.STATIC | Modifier.TRANSIENT;
 
-	private final ClassLoader classLoader;
-	private final ConstructorFactory constructorFactory;
-	private final Comparator<Field> lexicalFieldComparator;
+	protected final ClassLoader classLoader;
+	protected final ConstructorFactory constructorFactory;
+	protected final Comparator<Field> lexicalFieldComparator;
+	protected final ConcurrentMap<Class<?>, List<Field>> serializableFieldsCache;
 	
 	public Reflection(ClassLoader classLoader) {
 		this.classLoader = classLoader;
@@ -50,6 +53,8 @@ public class Reflection {
 				return f1.getName().compareTo(f2.getName());
 			}
 		};
+		
+		this.serializableFieldsCache = new ConcurrentHashMap<Class<?>, List<Field>>();
 	}
 	
 	public ClassLoader getClassLoader() {
@@ -90,30 +95,28 @@ public class Reflection {
 	}
 	
 	public List<Field> findSerializableFields(Class<?> cls) throws SecurityException {
-		return findSerializableFields(cls, lexicalFieldComparator);
-	}
-	
-	public List<Field> findSerializableFields(Class<?> cls, Comparator<Field> fieldComparator)
-		throws SecurityException {
-
-		List<Class<?>> hierarchy = new ArrayList<Class<?>>();
-		for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass())
-			hierarchy.add(c);
+		List<Field> serializableFields = serializableFieldsCache.get(cls);
 		
-		List<Field> serializableFields = new ArrayList<Field>();
-		for (int i = hierarchy.size() - 1; i >= 0; i--) {
-			Class<?> c = hierarchy.get(i);
-			serializableFields.addAll(findSerializableDeclaredFields(c, fieldComparator));
+		if (serializableFields == null) {
+			List<Class<?>> hierarchy = new ArrayList<Class<?>>();
+			for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass())
+				hierarchy.add(c);
+			
+			serializableFields = new ArrayList<Field>();
+			for (int i = hierarchy.size() - 1; i >= 0; i--) {
+				Class<?> c = hierarchy.get(i);
+				serializableFields.addAll(findSerializableDeclaredFields(c));
+			}
+			serializableFields = Collections.unmodifiableList(serializableFields);
+			List<Field> previous = serializableFieldsCache.putIfAbsent(cls, serializableFields);
+			if (previous != null)
+				serializableFields = previous;
 		}
+		
 		return serializableFields;
 	}
-	
-	public List<Field> findSerializableDeclaredFields(Class<?> cls) throws SecurityException {
-		return findSerializableDeclaredFields(cls, lexicalFieldComparator);
-	}
 
-	public List<Field> findSerializableDeclaredFields(Class<?> cls, Comparator<Field> fieldComparator)
-		throws SecurityException {
+	protected List<Field> findSerializableDeclaredFields(Class<?> cls) throws SecurityException {
 		
 		if (!isRegularClass(cls))
 			throw new IllegalArgumentException("Not a regular class: " + cls);
@@ -130,14 +133,14 @@ public class Reflection {
 			}
 		}
 		
-		if (fieldComparator != null)
-			Collections.sort(serializableFields, fieldComparator);
+		Collections.sort(serializableFields, lexicalFieldComparator);
 		
 		return serializableFields;
 	}
 	
 	public boolean isRegularClass(Class<?> cls) {
-		return !cls.isAnnotation() && !cls.isArray() && !cls.isEnum() && !cls.isInterface() && !cls.isPrimitive();
+		return cls != Class.class && !cls.isAnnotation() && !cls.isArray() &&
+			!cls.isEnum() && !cls.isInterface() && !cls.isPrimitive();
 	}
 }
 
