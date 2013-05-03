@@ -30,6 +30,7 @@ package org.granite.tide.data {
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
+    import mx.events.PropertyChangeEventKind;
     import mx.logging.ILogger;
     import mx.logging.Log;
     import mx.utils.ObjectUtil;
@@ -108,7 +109,7 @@ package org.granite.tide.data {
 			_dirtyCount = 0;
 			if (wasDirty && dispatch) {
 				for (var object:Object in oldSavedProperties) {
-					object.dispatchEvent(PropertyChangeEvent.createUpdateEvent(object, "meta_dirty", true, false));			
+					object.dispatchEvent(new DirtyChangeEvent(object, false));
 					_context.dispatchEvent(new DirtyChangeEvent(object, false));
 				}
 				_context.dispatchEvent(PropertyChangeEvent.createUpdateEvent(_context, "meta_dirty", true, false));
@@ -123,7 +124,7 @@ package org.granite.tide.data {
 		private function dispatchEntityDirty(object:Object, oldDirtyEntity:Boolean):Boolean {
 			var newDirtyEntity:Boolean = isEntityChanged(object);
 			if (newDirtyEntity !== oldDirtyEntity) {
-				object.dispatchEvent(PropertyChangeEvent.createUpdateEvent(object, "meta_dirty", oldDirtyEntity, newDirtyEntity));
+				object.dispatchEvent(new DirtyChangeEvent(object, newDirtyEntity));
 				_context.dispatchEvent(new DirtyChangeEvent(object, newDirtyEntity));				
 			}
 			return newDirtyEntity;
