@@ -144,7 +144,8 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 					}
 					
 					Class<?> componentType = getComponentType(v);
-					writeString(ctx, componentType.getName(), JMF_STRING_TYPE_HANDLER);
+					String className = ctx.getAlias(componentType.getName());
+					writeString(ctx, className, JMF_STRING_TYPE_HANDLER);
 					
 					int subDimensions = dimensions - 1;
 					for (int index = 0; index < length; index++)
@@ -159,12 +160,13 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 
 		int length = Array.getLength(v);
 		Class<?> componentType = v.getClass().getComponentType();
+		String className = ctx.getAlias(componentType.getName());
 		
 		IntegerComponents ics = intComponents(length);
 		os.write((ics.length << 4) | JMF_ARRAY);
 		writeIntData(ctx, ics);
 
-		writeString(ctx, componentType.getName(), JMF_STRING_TYPE_HANDLER);
+		writeString(ctx, className, JMF_STRING_TYPE_HANDLER);
 		for (int index = 0; index < length; index++)
 			ctx.writeObject(Array.get(v, index));
 	}
@@ -328,6 +330,7 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 		Object v =  null;
 		
 		String componentTypeName = readString(ctx, parameterizedJmfComponentType, JMF_STRING_TYPE_HANDLER);
+		componentTypeName = ctx.getAlias(componentTypeName);
 		Class<?> componentType = ctx.getSharedContext().getReflection().loadClass(componentTypeName);
 		
 		if (dimensions == 0)

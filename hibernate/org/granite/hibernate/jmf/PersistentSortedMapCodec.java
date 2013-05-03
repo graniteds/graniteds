@@ -26,7 +26,8 @@ import java.util.Comparator;
 import java.util.TreeMap;
 
 import org.granite.messaging.jmf.ExtendedObjectInput;
-import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
+import org.granite.messaging.jmf.persistence.JMFPersistentCollectionSnapshot;
+import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentSortedMap;
 
 /**
@@ -43,13 +44,13 @@ public class PersistentSortedMapCodec extends AbstractPersistentCollectionCodec<
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {
 		
-		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot(true);
+		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(true);
 		snapshot.readInitializationData(in);
 		
 		if (!snapshot.isInitialized())
 			return new PersistentSortedMap(null);
 		
-		Comparator<? super Object> comparator = snapshot.newComparator(in.getReflection());
+		Comparator<? super Object> comparator = snapshot.newComparator(in);
 		return new PersistentSortedMap(null, new TreeMap<Object, Object>(comparator));
 	}
 }

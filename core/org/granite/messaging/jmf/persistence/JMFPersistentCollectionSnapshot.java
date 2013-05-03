@@ -20,7 +20,6 @@
 
 package org.granite.messaging.jmf.persistence;
 
-import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -36,12 +35,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-import org.granite.messaging.jmf.reflect.Reflection;
+import org.granite.messaging.jmf.ExtendedObjectInput;
+import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 
 /**
  * @author Franck WOLFF
  */
-public class PersistentCollectionSnapshot implements Externalizable {
+public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnapshot {
 	
 	protected boolean initialized = false;
 	protected boolean dirty = false;
@@ -49,14 +49,14 @@ public class PersistentCollectionSnapshot implements Externalizable {
 	protected boolean sorted = false;
 	protected String comparatorClassName = null;
 	
-	public PersistentCollectionSnapshot() {
+	public JMFPersistentCollectionSnapshot() {
 	}
 	
-	public PersistentCollectionSnapshot(boolean sorted) {
+	public JMFPersistentCollectionSnapshot(boolean sorted) {
 		this.sorted = sorted;
 	}
 
-	public PersistentCollectionSnapshot(boolean initialized, boolean dirty, Collection<?> collection) {
+	public JMFPersistentCollectionSnapshot(boolean initialized, boolean dirty, Collection<?> collection) {
 		this.initialized = initialized;
 		if (initialized) {
 			this.dirty = dirty;
@@ -72,7 +72,7 @@ public class PersistentCollectionSnapshot implements Externalizable {
 		}
 	}
 
-	public PersistentCollectionSnapshot(boolean initialized, boolean dirty, Map<?, ?> collection) {
+	public JMFPersistentCollectionSnapshot(boolean initialized, boolean dirty, Map<?, ?> collection) {
 		this.initialized = initialized;
 		if (initialized) {
 			this.dirty = dirty;
@@ -113,13 +113,14 @@ public class PersistentCollectionSnapshot implements Externalizable {
 		return comparatorClassName;
 	}
 	
-	public <T> Comparator<T> newComparator(Reflection reflection)
+	public <T> Comparator<T> newComparator(ObjectInput in)
 		throws ClassNotFoundException, InstantiationException, IllegalAccessException,
-		IllegalArgumentException, InvocationTargetException, SecurityException, NoSuchMethodException {
+		InvocationTargetException, SecurityException, NoSuchMethodException {
 		
 		if (comparatorClassName == null)
 			return null;
-		return reflection.newInstance(comparatorClassName);
+		
+		return ((ExtendedObjectInput)in).getReflection().newInstance(comparatorClassName);
 	}
 
 	@SuppressWarnings("unchecked")

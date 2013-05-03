@@ -26,7 +26,8 @@ import java.util.Comparator;
 import java.util.TreeSet;
 
 import org.granite.messaging.jmf.ExtendedObjectInput;
-import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
+import org.granite.messaging.jmf.persistence.JMFPersistentCollectionSnapshot;
+import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentSortedSet;
 
 /**
@@ -43,13 +44,13 @@ public class PersistentSortedSetCodec extends AbstractPersistentCollectionCodec<
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {
 		
-		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot(true);
+		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(true);
 		snapshot.readInitializationData(in);
 		
 		if (!snapshot.isInitialized())
 			return new PersistentSortedSet(null);
 		
-		Comparator<? super Object> comparator = snapshot.newComparator(in.getReflection());
+		Comparator<? super Object> comparator = snapshot.newComparator(in);
 		return new PersistentSortedSet(null, new TreeSet<Object>(comparator));
 	}
 }

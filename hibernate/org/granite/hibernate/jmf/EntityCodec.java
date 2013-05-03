@@ -144,6 +144,10 @@ public class EntityCodec implements ExtendedObjectCodec {
 		);
 	}
 
+	public String getDecodedClassName(ExtendedObjectInput in, String className) {
+		return in.getAlias(className);
+	}
+
 	public Object newInstance(ExtendedObjectInput in, String className)
 		throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException,
 		InvocationTargetException, SecurityException, NoSuchMethodException, IOException {

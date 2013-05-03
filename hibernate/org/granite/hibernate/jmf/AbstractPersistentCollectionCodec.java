@@ -28,8 +28,10 @@ import java.util.SortedSet;
 
 import org.granite.messaging.jmf.ExtendedObjectInput;
 import org.granite.messaging.jmf.ExtendedObjectOutput;
+import org.granite.messaging.jmf.JMFConstants;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
-import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
+import org.granite.messaging.jmf.persistence.JMFPersistentCollectionSnapshot;
+import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentCollection;
 
 /**
@@ -37,22 +39,16 @@ import org.hibernate.collection.PersistentCollection;
  */
 public abstract class AbstractPersistentCollectionCodec<H extends PersistentCollection> implements ExtendedObjectCodec {
 
-	protected static final String JMF_PERSISTENCE_PACKAGE = "org.granite.messaging.jmf.persistence";
-	
 	protected final Class<H> hibernateCollectionClass;
 	protected final String clientCollectionClassName;
 
 	public AbstractPersistentCollectionCodec(Class<H> hibernateCollectionClass) {
 		this.hibernateCollectionClass = hibernateCollectionClass;
-		this.clientCollectionClassName = JMF_PERSISTENCE_PACKAGE + "." + hibernateCollectionClass.getSimpleName();
+		this.clientCollectionClassName = JMFConstants.CLIENT_PERSISTENCE_COLLECTION_PACKAGE + "." + hibernateCollectionClass.getSimpleName();
 	}
 
 	public boolean canEncode(ExtendedObjectOutput out, Object v) {
 		return v.getClass() == hibernateCollectionClass;
-	}
-
-	public boolean canDecode(ExtendedObjectInput in, String className) {
-		return clientCollectionClassName.equals(className);
 	}
 
 	public String getEncodedClassName(ExtendedObjectOutput out, Object v) {
@@ -60,17 +56,25 @@ public abstract class AbstractPersistentCollectionCodec<H extends PersistentColl
 	}
 
 	public void encode(ExtendedObjectOutput out, Object v) throws IOException, IllegalAccessException {
-		PersistentCollectionSnapshot snapshot = null;
+		JMFPersistentCollectionSnapshot snapshot = null;
 
 		PersistentCollection collection = (PersistentCollection)v;
 		if (!collection.wasInitialized())
-			snapshot = new PersistentCollectionSnapshot(collection instanceof SortedSet || collection instanceof SortedMap);
+			snapshot = new JMFPersistentCollectionSnapshot(collection instanceof SortedSet || collection instanceof SortedMap);
 		else if (collection instanceof Map)
-			snapshot = new PersistentCollectionSnapshot(true, collection.isDirty(), (Map<?, ?>)collection);
+			snapshot = new JMFPersistentCollectionSnapshot(true, collection.isDirty(), (Map<?, ?>)collection);
 		else
-			snapshot = new PersistentCollectionSnapshot(true, collection.isDirty(), (Collection<?>)collection);
+			snapshot = new JMFPersistentCollectionSnapshot(true, collection.isDirty(), (Collection<?>)collection);
 
 		snapshot.writeExternal(out);
+	}
+
+	public boolean canDecode(ExtendedObjectInput in, String className) {
+		return clientCollectionClassName.equals(className);
+	}
+
+	public String getDecodedClassName(ExtendedObjectInput in, String className) {
+		return hibernateCollectionClass.getName();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -78,7 +82,7 @@ public abstract class AbstractPersistentCollectionCodec<H extends PersistentColl
 		PersistentCollection collection = (PersistentCollection)v;
 		if (collection.wasInitialized()) {
 			boolean sorted = (collection instanceof SortedSet || collection instanceof SortedMap);
-			PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot(sorted);
+			PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(sorted);
 			snapshot.readCoreData(in);
 			
 			if (collection instanceof Map)

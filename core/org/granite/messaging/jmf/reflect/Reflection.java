@@ -60,7 +60,7 @@ public class Reflection {
 	public ClassLoader getClassLoader() {
 		return (classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader());
 	}
-	
+
 	public Class<?> loadClass(String className) throws ClassNotFoundException {
 		return getClassLoader().loadClass(className);
 	}
@@ -72,14 +72,12 @@ public class Reflection {
 		return findDefaultContructor(cls).newInstance();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <T> T newInstance(String className)
 		throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException,
 		InvocationTargetException, SecurityException, NoSuchMethodException {
 		
-		@SuppressWarnings("unchecked")
-		Class<T> cls = (Class<T>)getClassLoader().loadClass(className);
-		
-		return findDefaultContructor(cls).newInstance();
+		return newInstance((Class<T>)loadClass(className));
 	}
 	
 

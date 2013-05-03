@@ -276,6 +276,10 @@ public class JMFDeserializer implements InputContext {
 		return context.getReflection();
 	}
 
+	public String getAlias(String className) {
+		return context.getAlias(className);
+	}
+
 	public void readAndSetField(Object obj, Field field) throws IOException, ClassNotFoundException, IllegalAccessException {
 		if (field.getType().isPrimitive())
 			codecRegistry.getPrimitiveFieldCodec(field.getType()).decodePrimitive(this, obj, field);

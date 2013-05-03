@@ -199,6 +199,10 @@ public class JMFSerializer implements OutputContext {
 		return context.getReflection();
 	}
 
+	public String getAlias(String className) {
+		return context.getAlias(className);
+	}
+
 	public void getAndWriteField(Object obj, Field field) throws IOException, IllegalAccessException {
 		if (field.getType().isPrimitive())
 			codecRegistry.getPrimitiveFieldCodec(field.getType()).encodePrimitive(this, obj, field);
