@@ -40,9 +40,13 @@ import org.granite.util.JMFAMFUtil;
 public class JMFServletContextListener implements ServletContextListener {
 
     private static final Logger log = Logger.getLogger(GraniteConfigListener.class);
+    
+    private static final String[] CODEC_EXTENSION_FACTORY_NAMES = {
+    	"org.granite.hibernate.jmf.Hibernate3CodecExtensionFactory"
+    };
 
-	public static final String EXTENDED_OBJECT_CODECS_PARAM = "extended-object-codecs";
-	public static final String DEFAULT_STORED_STRINGS_PARAM = "default-stored-strings";
+	public static final String EXTENDED_OBJECT_CODECS_PARAM = "jmf-extended-object-codecs";
+	public static final String DEFAULT_STORED_STRINGS_PARAM = "jmf-default-stored-strings";
 	
 	public static final String SHARED_CONTEXT_KEY = SharedContext.class.getName();
 	public static final String DUMP_SHARED_CONTEXT_KEY = SharedContext.class.getName() + ":DUMP";
@@ -66,7 +70,7 @@ public class JMFServletContextListener implements ServletContextListener {
 		
         ServletContext servletContext = event.getServletContext();
         
-        List<ExtendedObjectCodec> extendedObjectCodecs = loadExtendedObjectCodec(servletContext);
+        List<ExtendedObjectCodec> extendedObjectCodecs = loadExtendedObjectCodecs(servletContext);
         List<String> defaultStoredStrings = loadDefaultStoredStrings(servletContext);
         
         SharedContext sharedContext = new DefaultSharedContext(new DefaultCodecRegistry(extendedObjectCodecs), null, defaultStoredStrings);
@@ -78,11 +82,11 @@ public class JMFServletContextListener implements ServletContextListener {
         log.info("JMF shared context loaded");
 	}
 	
-	protected List<ExtendedObjectCodec> loadExtendedObjectCodec(ServletContext servletContext) {
+	protected List<ExtendedObjectCodec> loadExtendedObjectCodecs(ServletContext servletContext) {
         String extendedObjectCodecsParam = servletContext.getInitParameter(EXTENDED_OBJECT_CODECS_PARAM);
 		
         if (extendedObjectCodecsParam == null)
-			return Collections.emptyList();
+			return detectExtendedObjectCodecs();
 		
 		ClassLoader classLoader = getClass().getClassLoader();
         
@@ -91,7 +95,7 @@ public class JMFServletContextListener implements ServletContextListener {
         	if (className.length() == 0)
         		continue;
         	
-        	log.info("Loading JMF extended object codec: " + className);
+        	log.info("Loading JMF extended object codec: %s", className);
         	try {
 	        	@SuppressWarnings("unchecked")
 				Class<? extends ExtendedObjectCodec> cls = (Class<? extends ExtendedObjectCodec>)classLoader.loadClass(className);
@@ -102,6 +106,26 @@ public class JMFServletContextListener implements ServletContextListener {
         	}
         }
 		return extendedObjectCodecs;
+	}
+	
+	protected List<ExtendedObjectCodec> detectExtendedObjectCodecs() {
+    	log.info("Auto detecting extended object codec...");
+		
+    	ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		for (String factoryName : CODEC_EXTENSION_FACTORY_NAMES) {
+			try {
+				CodecExtensionFactory factory = (CodecExtensionFactory)classLoader.loadClass(factoryName).newInstance();
+				List<ExtendedObjectCodec> extendedObjectCodecs = factory.getCodecs();
+				log.info("Using %s: %s", factoryName, extendedObjectCodecs);
+				return extendedObjectCodecs;
+			}
+			catch (Throwable t) {
+				log.debug(t, "Could not load factory: %s", factoryName);
+			}
+		}
+		
+		log.info("No extended object codec detected");
+		return Collections.emptyList();
 	}
 	
 	protected List<String> loadDefaultStoredStrings(ServletContext servletContext) {

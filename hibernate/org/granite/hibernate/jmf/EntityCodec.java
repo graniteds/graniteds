@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.MappedSuperclass;
 
@@ -75,11 +74,7 @@ public class EntityCodec implements ExtendedObjectCodec {
 
 	public boolean canEncode(ExtendedObjectOutput out, Object v) {
 		Class<?> cls = getClass(out, v);
-		return (
-			cls.isAnnotationPresent(Entity.class) ||
-			cls.isAnnotationPresent(MappedSuperclass.class) ||
-			cls.isAnnotationPresent(Embeddable.class)
-		);
+		return (cls.isAnnotationPresent(Entity.class) || cls.isAnnotationPresent(MappedSuperclass.class));
 	}
 
 	public String getEncodedClassName(ExtendedObjectOutput out, Object v) {
@@ -119,15 +114,10 @@ public class EntityCodec implements ExtendedObjectCodec {
         	log.debug("Writing initialized HibernateProxy...");
             v = proxy.getHibernateLazyInitializer().getImplementation();
         }
-		
-        // v isn't anymore an HibernateProxy.
-        Class<?> cls = v.getClass();
-        
-        // Do not write initialization state for Embeddable objects.
-        if (cls.isAnnotationPresent(Entity.class) || cls.isAnnotationPresent(MappedSuperclass.class)) {
-        	out.writeBoolean(true);
-        	out.writeUTF(null);
-        }
+
+        // Write initialized flag & detachedState.
+        out.writeBoolean(true);
+        out.writeUTF(null);
 		
         // Write all fields in lexical order. 
 		List<Field> fields = out.getReflection().findSerializableFields(v.getClass());
@@ -137,11 +127,7 @@ public class EntityCodec implements ExtendedObjectCodec {
 
 	public boolean canDecode(ExtendedObjectInput in, String className) throws ClassNotFoundException {
 		Class<?> cls = in.getReflection().loadClass(className);
-		return (
-			cls.isAnnotationPresent(Entity.class) ||
-			cls.isAnnotationPresent(MappedSuperclass.class) ||
-			cls.isAnnotationPresent(Embeddable.class)
-		);
+		return (cls.isAnnotationPresent(Entity.class) || cls.isAnnotationPresent(MappedSuperclass.class));
 	}
 
 	public String getDecodedClassName(ExtendedObjectInput in, String className) {
@@ -154,16 +140,14 @@ public class EntityCodec implements ExtendedObjectCodec {
 		
 		Class<?> cls = in.getReflection().loadClass(className);
 		
-		boolean initialized = true;
-		
-        if (cls.isAnnotationPresent(Entity.class) || cls.isAnnotationPresent(MappedSuperclass.class)) {
-        	initialized = in.readBoolean();
-        	in.readUTF();
-        }
+        // Read initialized flag & detachedState.
+		boolean initialized = in.readBoolean();
+    	in.readUTF();
 		
 		if (initialized)
 			return in.getReflection().newInstance(cls);
 		
+        // Create an HibernateProxy.
 		SerializableProxyAdapter proxyAdapter = serializableProxyAdapters.get(cls);
 		if (proxyAdapter == null)
 			throw new IOException("Could not find SerializableProxyAdapter for: " + cls);

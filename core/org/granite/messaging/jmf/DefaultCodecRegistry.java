@@ -109,11 +109,11 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	private final List<ExtendedObjectCodec> extendedCodecs;
 	
 	public DefaultCodecRegistry() {
-		this(new ArrayList<ExtendedObjectCodec>());
+		this(null);
 	}
 		
 	public DefaultCodecRegistry(List<ExtendedObjectCodec> extendedCodecs) {
-		this.extendedCodecs = extendedCodecs;
+		this.extendedCodecs = (extendedCodecs != null ? extendedCodecs : new ArrayList<ExtendedObjectCodec>());
 
 		List<StandardCodec<?>> standardCodecs = getStandardCodecs();
 		for (StandardCodec<?> codec : standardCodecs) {
