@@ -13,9 +13,9 @@ import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DefaultCodecRegistry;
 import org.granite.messaging.jmf.JMFDumper;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
-import org.granite.test.jmf.TestUtil.ByteArrayJMFDeserializer;
-import org.granite.test.jmf.TestUtil.ByteArrayJMFDumper;
-import org.granite.test.jmf.TestUtil.ByteArrayJMFSerializer;
+import org.granite.test.jmf.Util.ByteArrayJMFDeserializer;
+import org.granite.test.jmf.Util.ByteArrayJMFDumper;
+import org.granite.test.jmf.Util.ByteArrayJMFSerializer;
 import org.granite.test.jmf.model.ExternalizableBean;
 import org.junit.After;
 import org.junit.Before;
@@ -121,9 +121,9 @@ public class TestJMFObject {
 		byte[] bytes = serializer.toByteArray();
 		
 		
-		PrintStream ps = TestUtil.newNullPrintStream();
+		PrintStream ps = Util.newNullPrintStream();
 		if (dump) {
-			System.out.println(bytes.length + "B. " + TestUtil.toHexString(bytes));
+			System.out.println(bytes.length + "B. " + Util.toHexString(bytes));
 			ps = System.out;
 		}
 		
