@@ -11,6 +11,7 @@ package org.granite.test.tide.spring
 	import org.flexunit.async.Async;
 	import org.granite.test.tide.Person;
 	import org.granite.tide.BaseContext;
+	import org.granite.tide.collections.PagedCollection;
 	import org.granite.tide.spring.PagedQuery;
     
     
