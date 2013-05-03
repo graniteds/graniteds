@@ -864,7 +864,7 @@
             	<exclude name="org/granite/config/flex/Servlet*"/>
             	<exclude name="org/granite/config/servlet3/**"/>
             	<exclude name="org/granite/messaging/amf/process/*Processor.class"/>
-            	<exclude name="org/granite/messaging/persistence/**"/>
+            	<exclude name="org/granite/messaging/persistence/*Externalizable*.class"/>
             	<exclude name="org/granite/messaging/webapp/**"/>
             	<exclude name="org/granite/osgi/**"/>
             	<exclude name="META-INF/**"/>

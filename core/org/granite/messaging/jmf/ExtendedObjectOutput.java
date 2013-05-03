@@ -39,6 +39,8 @@ public interface ExtendedObjectOutput extends ObjectOutput {
 	 */
 	Reflection getReflection();
 	
+	String getAlias(String className);
+	
 	void getAndWriteField(Object obj, Field field) throws IOException, IllegalAccessException;
 	
 	@Deprecated

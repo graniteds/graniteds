@@ -27,6 +27,8 @@ import java.nio.charset.Charset;
  */
 public interface JMFConstants {
 
+	static final String CLIENT_PERSISTENCE_COLLECTION_PACKAGE = "org.granite.client.persistence.collection";
+	
 	static final Charset UTF8 = Charset.forName("UTF-8");
 
 	// Types with 4 bits of parameters (bit 4 always 0)

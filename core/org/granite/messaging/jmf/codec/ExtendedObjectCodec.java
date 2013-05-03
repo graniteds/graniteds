@@ -39,9 +39,12 @@ public interface ExtendedObjectCodec {
 		throws IOException, IllegalAccessException;
 
 	
+	
 	boolean canDecode(ExtendedObjectInput in, String className)
 		throws ClassNotFoundException;
 
+	String getDecodedClassName(ExtendedObjectInput in, String className);
+	
 	Object newInstance(ExtendedObjectInput in, String className)
 		throws IOException, ClassNotFoundException, InstantiationException,
 		IllegalAccessException, InvocationTargetException,

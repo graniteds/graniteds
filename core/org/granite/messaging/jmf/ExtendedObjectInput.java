@@ -59,6 +59,8 @@ public interface ExtendedObjectInput extends ObjectInput {
 	 * 		deserialization process.
 	 */
 	Reflection getReflection();
+	
+	String getAlias(String className);
 
 	/**
 	 * Read the next data in the current input stream and set the given <tt>field</tt> of

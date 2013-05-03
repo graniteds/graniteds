@@ -34,4 +34,6 @@ public interface SharedContext {
 	Reflection getReflection();
 	
 	List<String> getDefaultStoredStrings();
+	
+	String getAlias(String className);
 }

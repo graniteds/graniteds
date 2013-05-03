@@ -25,7 +25,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import org.granite.messaging.jmf.ExtendedObjectInput;
-import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
+import org.granite.messaging.jmf.persistence.JMFPersistentCollectionSnapshot;
+import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentList;
 
 /**
@@ -42,7 +43,7 @@ public class PersistentListCodec extends AbstractPersistentCollectionCodec<Persi
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {
 		
-		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot();
+		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot();
 		snapshot.readInitializationData(in);
 		return (snapshot.isInitialized() ? new PersistentList(null, new ArrayList<Object>()) : new PersistentList(null));
 	}

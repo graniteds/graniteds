@@ -85,18 +85,19 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 			
 			ctx.addToStoredObjects(v);
 			
-			Class<?> cls = v.getClass();
-			String className = cls.getName();
-					
 			ExtendedObjectCodec extendedCodec = ctx.getSharedContext().getCodecRegistry().findExtendedEncoder(ctx, v);
-			if (extendedCodec != null)
-				className = extendedCodec.getEncodedClassName(ctx, v);
+			
+			String className = (
+				extendedCodec != null ?
+				extendedCodec.getEncodedClassName(ctx, v) :
+				ctx.getAlias(v.getClass().getName())
+			);
 			
 			writeString(ctx, className, TYPE_HANDLER);
 			
 			if (extendedCodec != null)
 				extendedCodec.encode(ctx, v);
-			else if (v instanceof Externalizable && !Proxy.isProxyClass(cls))
+			else if (v instanceof Externalizable && !Proxy.isProxyClass(v.getClass()))
 				((Externalizable)v).writeExternal(ctx);
 			else
 				encodeSerializable(ctx, (Serializable)v);
@@ -131,12 +132,14 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 			
 			ExtendedObjectCodec extendedCodec = codecRegistry.findExtendedDecoder(ctx, className);
 			if (extendedCodec != null) {
+				className = extendedCodec.getDecodedClassName(ctx, className);
 				int index = ctx.addUnresolvedSharedObject(className);
 				v = extendedCodec.newInstance(ctx, className);
 				ctx.setUnresolvedSharedObject(index, v);
 				extendedCodec.decode(ctx, v);
 			}
 			else {
+				className = ctx.getAlias(className);
 				Class<?> cls = ctx.getSharedContext().getReflection().loadClass(className);
 				
 				if (!Serializable.class.isAssignableFrom(cls))

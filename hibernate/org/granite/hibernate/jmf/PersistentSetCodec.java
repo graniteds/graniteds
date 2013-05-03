@@ -25,7 +25,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 
 import org.granite.messaging.jmf.ExtendedObjectInput;
-import org.granite.messaging.jmf.persistence.PersistentCollectionSnapshot;
+import org.granite.messaging.jmf.persistence.JMFPersistentCollectionSnapshot;
+import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 import org.hibernate.collection.PersistentSet;
 
 /**
@@ -42,7 +43,7 @@ public class PersistentSetCodec extends AbstractPersistentCollectionCodec<Persis
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {
 		
-		PersistentCollectionSnapshot snapshot = new PersistentCollectionSnapshot();
+		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot();
 		snapshot.readInitializationData(in);
 		return (snapshot.isInitialized() ? new PersistentSet(null, new HashSet<Object>()) : new PersistentSet(null));
 	}
