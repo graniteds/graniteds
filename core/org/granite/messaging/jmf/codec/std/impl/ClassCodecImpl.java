@@ -34,7 +34,7 @@ public class ClassCodecImpl extends AbstractIntegerStringCodec<Object> implement
 	}
 
 	public void encode(OutputContext ctx, Object v) throws IOException, IllegalAccessException {
-		writeString(ctx, ((Class<?>)v).getName(), TYPE_HANDLER);
+		writeString(ctx, ctx.getAlias(((Class<?>)v).getName()), TYPE_HANDLER);
 	}
 
 	public Object decode(InputContext ctx, int parameterizedJmfType)
@@ -47,6 +47,7 @@ public class ClassCodecImpl extends AbstractIntegerStringCodec<Object> implement
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
 		String className = readString(ctx, parameterizedJmfType, TYPE_HANDLER);
+		className = ctx.getAlias(className);
 		return ctx.getReflection().loadClass(className);
 	}
 
@@ -57,6 +58,7 @@ public class ClassCodecImpl extends AbstractIntegerStringCodec<Object> implement
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
 		String className = readString(ctx, parameterizedJmfType, TYPE_HANDLER);
+		className = ctx.getAlias(className);
 		ctx.indentPrintLn(Class.class.getName() + ": " + className + ".class");
 	}
 }

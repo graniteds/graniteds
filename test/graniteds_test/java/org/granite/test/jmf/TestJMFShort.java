@@ -1,7 +1,7 @@
 package org.granite.test.jmf;
 
-import static org.granite.test.jmf.TestUtil.bytes;
-import static org.granite.test.jmf.TestUtil.toHexString;
+import static org.granite.test.jmf.Util.bytes;
+import static org.granite.test.jmf.Util.toHexString;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -12,9 +12,9 @@ import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DefaultCodecRegistry;
 import org.granite.messaging.jmf.JMFConstants;
 import org.granite.messaging.jmf.JMFDumper;
-import org.granite.test.jmf.TestUtil.ByteArrayJMFDeserializer;
-import org.granite.test.jmf.TestUtil.ByteArrayJMFDumper;
-import org.granite.test.jmf.TestUtil.ByteArrayJMFSerializer;
+import org.granite.test.jmf.Util.ByteArrayJMFDeserializer;
+import org.granite.test.jmf.Util.ByteArrayJMFDumper;
+import org.granite.test.jmf.Util.ByteArrayJMFSerializer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,7 +92,7 @@ public class TestJMFShort implements JMFConstants {
 			fail(sb.toString());
 		}
 		
-		PrintStream ps = TestUtil.newNullPrintStream();
+		PrintStream ps = Util.newNullPrintStream();
 		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
 		dumper.dump();
 		dumper.close();
@@ -126,7 +126,7 @@ public class TestJMFShort implements JMFConstants {
 			fail(sb.toString());
 		}
 		
-		PrintStream ps = TestUtil.newNullPrintStream();
+		PrintStream ps = Util.newNullPrintStream();
 		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
 		dumper.dump();
 		dumper.close();

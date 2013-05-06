@@ -18,7 +18,7 @@ import org.granite.messaging.jmf.JMFSerializer;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 
-public class TestUtil {
+public class Util {
 	
 	public static byte[] bytes(int... values) {
 		byte[] bytes = new byte[values.length];
