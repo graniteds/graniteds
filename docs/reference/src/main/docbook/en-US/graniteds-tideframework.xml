@@ -1036,6 +1036,8 @@ public function eventHandler(event:MyEvent):void {
 	       <listitem>
 	       A global component can observe events dispatched from conversation components. Such an observer will receive events from all the existing conversation
 	       contexts and can determine if necessary the source context of the event with <literal>event.context</literal>.
+	       <warning>Note that in this case all parameters of the event must be serializable (annotated with <literal>[RemoteClass]</literal>) because the parameters 
+	       are cloned when passed from one context to another</warning>
 	       </listitem>
 	       <listitem>
 	       A conversation component cannot observe events dispatched from the global context.
