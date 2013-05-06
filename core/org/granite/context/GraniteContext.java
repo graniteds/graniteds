@@ -30,6 +30,8 @@ import org.granite.config.flex.ServicesConfig;
  */
 public abstract class GraniteContext {
 
+	public static final String SESSION_LAST_ACCESSED_TIME_KEY = "org.granite.session.lastAccessedTime";
+
     private static ThreadLocal<GraniteContext> instance = new ThreadLocal<GraniteContext>() {
         @Override
         protected GraniteContext initialValue() {

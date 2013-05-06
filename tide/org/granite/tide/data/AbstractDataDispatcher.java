@@ -91,6 +91,8 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 			return;
 		
 		DistributedData gdd = graniteContext.getGraniteConfig().getDistributedDataFactory().getInstance();
+		if (gdd == null)
+			return;	// Session expired
 		
 		List<DataObserveParams> selectors = DataObserveParams.fromSerializableForm(gdd.getDestinationDataSelectors(topicName));
 		List<DataObserveParams> newSelectors = new ArrayList<DataObserveParams>(selectors);

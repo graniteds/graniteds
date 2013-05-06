@@ -21,12 +21,16 @@
 package org.granite.messaging.service.security;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
+
+import javax.servlet.http.HttpSession;
 
 import org.granite.clustering.DistributedData;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageProcessor;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.Base64;
 
 import flex.messaging.messages.Message;
@@ -65,6 +69,20 @@ public abstract class AbstractSecurityService implements SecurityService {
         Object credentials = context.getMessage().getHeader(Message.REMOTE_CREDENTIALS_HEADER);
         if (credentials != null && !("".equals(credentials)))
             login(credentials, (String)context.getMessage().getHeader(Message.REMOTE_CREDENTIALS_CHARSET_HEADER));
+        
+        // Check session expiration
+        if (GraniteContext.getCurrentInstance() instanceof ServletGraniteContext) {
+        	HttpSession session = ((ServletGraniteContext)GraniteContext.getCurrentInstance()).getSession(false);
+        	if (session == null)
+        		return;
+        	
+        	long serverTime = new Date().getTime();
+        	long lastAccessedTime = (Long)session.getAttribute(GraniteContext.SESSION_LAST_ACCESSED_TIME_KEY);
+        	if (lastAccessedTime + session.getMaxInactiveInterval()*1000L + 1000L < serverTime) {
+        		log.info("No user-initiated action since last access, force session invalidation");
+        		session.invalidate();
+        	}
+        }
     }
 
     /**

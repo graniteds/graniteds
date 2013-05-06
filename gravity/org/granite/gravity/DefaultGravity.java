@@ -21,6 +21,7 @@
 package org.granite.gravity;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -45,6 +46,7 @@ import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.security.SecurityServiceException;
+import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.TypeUtil;
 import org.granite.util.UUIDUtil;
 
@@ -487,6 +489,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         	interceptor = GraniteContext.getCurrentInstance().getGraniteConfig().getAmf3MessageInterceptor();
         
         Message reply = null;
+        boolean publish = false;
         
         try {
 	        if (interceptor != null)
@@ -518,6 +521,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	        }
 	
 	        reply = handlePublishMessage(channelFactory, (AsyncMessage)message);
+	        publish = true;
         }
         finally {
 	        if (interceptor != null)
@@ -526,8 +530,15 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         
         if (reply != null) {
 	        GraniteContext context = GraniteContext.getCurrentInstance();
-	        if (context.getSessionId() != null)
+	        if (context.getSessionId() != null) {
 	        	reply.setHeader("org.granite.sessionId", context.getSessionId());
+	            if (publish && context instanceof ServletGraniteContext && ((ServletGraniteContext)context).getSession(false) != null) {
+	            	long serverTime = new Date().getTime();
+	            	((ServletGraniteContext)context).getSession().setAttribute(GraniteContext.SESSION_LAST_ACCESSED_TIME_KEY, serverTime);
+	            	reply.setHeader("org.granite.time", serverTime);
+	            	reply.setHeader("org.granite.sessionExp", ((ServletGraniteContext)context).getSession().getMaxInactiveInterval());
+	            }
+	        }
         }
         
         return reply;

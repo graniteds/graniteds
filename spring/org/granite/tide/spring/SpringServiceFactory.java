@@ -87,7 +87,9 @@ public class SpringServiceFactory extends ServiceFactory {
         String destinationId = request.getDestination();
 
         GraniteContext context = GraniteContext.getCurrentInstance();
-        Map<String, Object> cache = context.getSessionMap();
+        Map<String, Object> cache = context.getSessionMap(false);
+        if (cache == null)
+        	cache = context.getRequestMap();
         Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);
@@ -100,40 +102,46 @@ public class SpringServiceFactory extends ServiceFactory {
 
     private ServiceInvoker<?> getServiceInvoker(Map<String, Object> cache, Destination destination, String key) {
         GraniteContext context = GraniteContext.getCurrentInstance();
+        if (context.getSessionMap(false) == null)
+        	return internalGetServiceInvoker(cache, destination, key);
+        
         synchronized (context.getSessionLock()) {
-            ServiceInvoker<?> invoker = (ServiceInvoker<?>)cache.get(key);
-            if (invoker == null) {
-                SpringServiceContext tideContext = null;
-                ServletContext sc = ((HttpGraniteContext)context).getServletContext();
-                ApplicationContext springContext = this.springContext != null ? this.springContext : WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
-                Map<String, ?> beans = springContext.getBeansOfType(SpringServiceContext.class);
-                if (beans.size() > 1)
-                    throw new RuntimeException("More than one SpringServiceContext bean found");
-                else if (beans.size() == 1)
-                    tideContext = (SpringServiceContext)beans.values().iterator().next();
-                else {
-                	// Try to create Spring MVC context when Spring MVC available
-                	String className = "org.granite.tide.spring.SpringMVCServiceContext";
-                	try {
-                		Class<SpringServiceContext> clazz = TypeUtil.forName(className, SpringServiceContext.class);
-                		tideContext = clazz.getConstructor(ApplicationContext.class).newInstance(springContext);
-                	}
-                	catch (Exception e) {
-                		tideContext = new SpringServiceContext(springContext);
-                	}
-                }
-                
-                String persistenceManagerBeanName = destination.getProperties().get(PERSISTENCE_MANAGER_BEAN_NAME);
-            	tideContext.setPersistenceManagerBeanName(persistenceManagerBeanName);
-            	
-            	String entityManagerFactoryBeanName = destination.getProperties().get(ENTITY_MANAGER_FACTORY_BEAN_NAME);
-            	tideContext.setEntityManagerFactoryBeanName(entityManagerFactoryBeanName);
-                
-                invoker = new TideServiceInvoker<SpringServiceFactory>(destination, this, tideContext);
-                cache.put(key, invoker);
-            }
-            return invoker;
+        	return internalGetServiceInvoker(cache, destination, key);
         }
-
+    }
+    
+    private ServiceInvoker<?> internalGetServiceInvoker(Map<String, Object> cache, Destination destination, String key) {
+        ServiceInvoker<?> invoker = (ServiceInvoker<?>)cache.get(key);
+        if (invoker == null) {
+            SpringServiceContext tideContext = null;
+            ServletContext sc = ((HttpGraniteContext)GraniteContext.getCurrentInstance()).getServletContext();
+            ApplicationContext springContext = this.springContext != null ? this.springContext : WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
+            Map<String, ?> beans = springContext.getBeansOfType(SpringServiceContext.class);
+            if (beans.size() > 1)
+                throw new RuntimeException("More than one SpringServiceContext bean found");
+            else if (beans.size() == 1)
+                tideContext = (SpringServiceContext)beans.values().iterator().next();
+            else {
+            	// Try to create Spring MVC context when Spring MVC available
+            	String className = "org.granite.tide.spring.SpringMVCServiceContext";
+            	try {
+            		Class<SpringServiceContext> clazz = TypeUtil.forName(className, SpringServiceContext.class);
+            		tideContext = clazz.getConstructor(ApplicationContext.class).newInstance(springContext);
+            	}
+            	catch (Exception e) {
+            		tideContext = new SpringServiceContext(springContext);
+            	}
+            }
+            
+            String persistenceManagerBeanName = destination.getProperties().get(PERSISTENCE_MANAGER_BEAN_NAME);
+        	tideContext.setPersistenceManagerBeanName(persistenceManagerBeanName);
+        	
+        	String entityManagerFactoryBeanName = destination.getProperties().get(ENTITY_MANAGER_FACTORY_BEAN_NAME);
+        	tideContext.setEntityManagerFactoryBeanName(entityManagerFactoryBeanName);
+            
+            invoker = new TideServiceInvoker<SpringServiceFactory>(destination, this, tideContext);
+            cache.put(key, invoker);
+        }
+        return invoker;
     }
 }
