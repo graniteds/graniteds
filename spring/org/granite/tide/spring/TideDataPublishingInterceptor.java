@@ -113,7 +113,7 @@ public class TideDataPublishingInterceptor implements MethodInterceptor {
         			 }
         			 if (!registered)
         				 TransactionSynchronizationManager.registerSynchronization(new DataPublishingTransactionSynchronization(shouldRemoveContextAtEnd));
-        			 else
+        			 else if (shouldRemoveContextAtEnd)
 						 TransactionSynchronizationManager.registerSynchronization(new DataContextCleanupTransactionSynchronization());
         			 onCommit = true;
         		 }

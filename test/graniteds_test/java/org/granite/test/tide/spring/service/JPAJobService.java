@@ -75,6 +75,18 @@ public class JPAJobService implements JobService {
 		return new Object[] { customer, user, meeting };
 	}
     
+	public void newMeeting(Integer customerId, Integer userId) {
+		Customer customer = entityManager.find(Customer.class, customerId);
+		User user = entityManager.find(User.class, userId);
+		
+		Meeting meeting = new Meeting();
+		meeting.initUid();
+		meeting.setCustomer(customer);
+		meeting.setUser(user);
+		customer.getMeetings().add(meeting);
+		user.getMeetings().add(meeting);
+	}
+    
 	public Object[] closeMeeting(Integer meetingId) {
 		Meeting meeting = entityManager.find(Meeting.class, meetingId);
 		

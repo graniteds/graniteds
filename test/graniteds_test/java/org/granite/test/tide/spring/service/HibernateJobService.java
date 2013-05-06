@@ -90,6 +90,20 @@ public class HibernateJobService implements JobService {
 		
 		return new Object[] { customer, user, meeting };
 	}
+	
+	public void newMeeting(Integer customerId, Integer userId) {
+		Session session = getSession();
+		
+		Customer customer = (Customer)session.load(Customer.class, customerId);
+		User user = (User)session.load(User.class, userId);
+		
+		Meeting meeting = new Meeting();
+		meeting.initUid();
+		meeting.setCustomer(customer);
+		meeting.setUser(user);
+		customer.getMeetings().add(meeting);
+		user.getMeetings().add(meeting);
+	}
     
 	public Object[] closeMeeting(Integer meetingId) {
 		Session session = getSession();

@@ -6,6 +6,8 @@ import org.granite.test.tide.data.Job;
 import org.granite.test.tide.data.JobApplication;
 import org.granite.test.tide.data.Meeting;
 import org.granite.test.tide.spring.service.JobService;
+import org.granite.tide.data.DataContext;
+import org.granite.tide.invocation.InvocationResult;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +29,8 @@ public class AbstractTideDataPublishTest extends AbstractTideTestCase {
     public void testPublish1() {
 		Object[] result = jobService.apply(1, 1);
 		
+        Assert.assertNull("Thread cleaned up", DataContext.get());
+        
 		Assert.assertNotNull(getLastMessage());
 		Object[] updates = (Object[])getLastMessage().getBody();
 		Assert.assertTrue("Updates count", updates.length >= 1);
@@ -42,10 +46,31 @@ public class AbstractTideDataPublishTest extends AbstractTideTestCase {
     public void testPublish2() {
 		jobService.createMeeting(1, 1);
 		
+        Assert.assertNull("Thread cleaned up", DataContext.get());
+        
 		Assert.assertNotNull(getLastMessage());
 		Object[] updates = (Object[])getLastMessage().getBody();
 		
 		Assert.assertEquals("Updates count", 3, updates.length);
 		Assert.assertTrue("Meeting", ((Object[])updates[0])[1] instanceof Meeting);
+    }
+    
+	@Test
+    public void testPublish3() {
+        InvocationResult result = invokeComponent(null, JobService.class, "newMeeting", new Object[] { 1, 1 });
+        
+        Assert.assertNull("Thread cleaned up", DataContext.get());
+        
+        Object[][] resultUpdates = result.getUpdates();
+        
+        Assert.assertNotNull("Result updates", resultUpdates);
+		Assert.assertEquals("Result updates count", 3, resultUpdates.length);
+		Assert.assertTrue("Meeting", ((Object[])resultUpdates[0])[1] instanceof Meeting);
+        
+		Assert.assertNotNull(getLastMessage());
+		Object[] publishedUpdates = (Object[])getLastMessage().getBody();
+		
+		Assert.assertEquals("Published updates count", 3, publishedUpdates.length);
+		Assert.assertTrue("Meeting", ((Object[])publishedUpdates[0])[1] instanceof Meeting);
     }
 }
