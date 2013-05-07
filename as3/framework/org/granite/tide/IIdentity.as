@@ -30,5 +30,7 @@ package org.granite.tide {
 		function get loggedIn():Boolean;
 		
 		function set loggedIn(loggedIn:Boolean):void;
+		
+		function isLoggedIn(resultHandler:Function = null, faultHandler:Function = null):void;
 	}
 }

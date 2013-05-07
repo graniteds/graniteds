@@ -1597,6 +1597,27 @@ package org.granite.tide {
 		    
             sourceContext.raiseEvent(LOGIN);
         }
+
+		/**
+		 * 
+		 * @private
+		 * 
+		 * Called when session expiration has been detected
+		 * 
+		 * 	@param sourceContext source context of remote call
+		 */
+		public function sessionExpired(sourceContext:BaseContext):void {
+			log.info("Application session expired");
+			
+			_sessionId = null;
+			_firstCall = true;
+			
+			_logoutInProgress = false;
+			_waitForLogout = 0;
+			
+			sourceContext.raiseEvent(SESSION_EXPIRED);		
+			logout(sourceContext, null, true);
+		}
         
         
 		/**
