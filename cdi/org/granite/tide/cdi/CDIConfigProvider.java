@@ -27,7 +27,7 @@ public class CDIConfigProvider implements ConfigProvider {
 	}
 
 	public String getType() {
-		return "cdi";
+		return "server";
 	}
 
 	public Class<? extends ServiceFactory> getFactoryClass() {

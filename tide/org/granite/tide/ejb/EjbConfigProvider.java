@@ -20,7 +20,7 @@ public class EjbConfigProvider implements ConfigProvider {
 	}
 
 	public String getType() {
-		return "ejb";
+		return "server";
 	}
 
 	public Class<? extends ServiceFactory> getFactoryClass() {
