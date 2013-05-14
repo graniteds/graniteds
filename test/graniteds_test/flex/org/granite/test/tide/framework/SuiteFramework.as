@@ -4,6 +4,7 @@ package org.granite.test.tide.framework
 	[RunWith("org.flexunit.runners.Suite")]
 	public class SuiteFramework
 	{
+		public var test0:org.granite.test.tide.framework.TestUtil;
 		public var test1:org.granite.test.tide.framework.MyComponent3;
 		public var test2:org.granite.test.tide.framework.MyComponentConversation3;
 		public var test3:org.granite.test.tide.framework.TestAnnotatedComponent;
