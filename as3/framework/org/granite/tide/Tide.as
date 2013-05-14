@@ -53,6 +53,7 @@ package org.granite.tide {
 	import mx.utils.DescribeTypeCache;
 	import mx.utils.DescribeTypeCacheRecord;
 	import mx.utils.ObjectUtil;
+	import mx.utils.RPCObjectUtil;
 	
 	import org.granite.reflect.Annotation;
 	import org.granite.reflect.Method;
@@ -176,6 +177,14 @@ package org.granite.tide {
         
             DescribeTypeCache.registerCacheHandler("bindabilityInfo", bindabilityInfoHandler);
 			DescribeTypeCache.registerCacheHandler("componentInfo", componentInfoHandler);
+			
+			try {
+				RPCObjectUtil['externalToString'](tideToString);
+			}
+			catch (e:Error) {
+				// Ignore: only supported in Apache Flex 4.10+
+				log.debug("Could not override RPCObjectUtil.toString(). Consider upgrading to Apache Flex 4.10+.");
+			}
             
 		    init(Context, null);
 			
@@ -192,6 +201,10 @@ package org.granite.tide {
 		    _componentStore = new ComponentStore(this, _contextManager);
 		    
 	        addComponent("meta_dirty", Boolean);
+		}
+		
+		private function tideToString(value:Object, namespaceURIs:Array = null, exclude:Array = null):String {
+			return BaseContext.toString(value);
 		}
 		
 		
