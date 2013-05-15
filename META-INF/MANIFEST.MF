@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gas3 Ant Task & Granite Builder Plug-in
 Bundle-SymbolicName: org.granite.builder; singleton:=true
-Bundle-Version: 3.0.0.M1
+Bundle-Version: 3.0.0.M2
 Bundle-Activator: org.granite.builder.GraniteActivator
 Bundle-Vendor: Granite Data Services
 Require-Bundle: org.eclipse.ui,
