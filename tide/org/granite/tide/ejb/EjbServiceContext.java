@@ -305,9 +305,11 @@ public class EjbServiceContext extends TideServiceContext  {
     			results.add(new ContextUpdate(entry.getKey(), null, entry.getValue(), 3, false));
     		
 	        InvocationResult ires = new InvocationResult(result, results);
-			Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
-	    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
-				ires.setMerge(false);
+	        if (componentName != null || componentClass != null) {
+				Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
+		    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
+					ires.setMerge(false);
+	        }
 	        
 	        ires.setUpdates(updates);
 	        ires.setEvents(new ArrayList<ContextEvent>(threadContext.getRemoteEvents()));

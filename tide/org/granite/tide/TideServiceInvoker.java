@@ -322,8 +322,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         
         Throwable error = null;
         try {
-            if (componentName != null || componentClass != null)
-            	tideContext.prepareCall(context, call, componentName, componentClass);
+        	tideContext.prepareCall(context, call, componentName, componentClass);
         }
         catch (ServiceException e) {
         	error = e;
@@ -367,8 +366,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
     	finally {
             Throwable error = null;
             try {
-                if (componentName != null || componentClass != null)
-                	res = tideContext.postCall(context, result, componentName, componentClass);
+            	res = tideContext.postCall(context, result, componentName, componentClass);
             }
             catch (ServiceException e) {
             	error = e;
