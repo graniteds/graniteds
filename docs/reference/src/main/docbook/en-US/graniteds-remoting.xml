@@ -2489,7 +2489,8 @@ public class Person extends AbstractEntity {
 	        Some of these implementations (currently only <literal>TomcatSecurityService</literal>) accept an optional parameter. In the case of the 
 	        Tomcat service, it's the name of the service that will be used to execute the authentication in case you have many services defined in your
 	        <literal>server.xml</literal>.
-	
+	        </para>
+	       
 	        <programlisting role="XML">
 <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE granite-config PUBLIC
