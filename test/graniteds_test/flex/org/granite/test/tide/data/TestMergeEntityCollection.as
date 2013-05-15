@@ -82,5 +82,40 @@ package org.granite.test.tide.data
 			
 			Assert.assertEquals("Changes", 1, changes);
 		}
+		
+		[Test]
+		public function testMergeEntityCollection3():void {
+			var p1:Person = new Person(1, 0, "A1", "B1");
+			p1.contacts = new PersistentSet();
+			p1 = _ctx.meta_mergeExternalData(p1) as Person;
+			
+			var p1b:Person = new Person(1, 0, "A1", "B1");
+			p1b.contacts = new PersistentSet();
+			var c1b:Contact = new Contact(1, 0, p1b, "C1");
+			p1b.contacts.addItem(c1b);
+			
+			_ctx.meta_mergeExternalData(c1b);
+			
+			Assert.assertEquals("Element added", 1, p1.contacts.length);
+		}
+		
+		[Test]
+		public function testMergeEntityCollection4():void {
+			var u1:User2 = new User2(1, 0, "A1", "B1");
+			u1.meetings = new PersistentSet();
+			u1 = _ctx.meta_mergeExternalData(u1) as User2;
+			
+			var u1b:User2 = new User2(1, 0, "A1", "B1");
+			u1b.meetings = new PersistentSet();
+			var c1b:Client = new Client(1, 0, "A1", "B1");
+			c1b.meetings = new PersistentSet();
+			var m1b:Meeting = new Meeting(1, 0, c1b, u1b);
+			c1b.meetings.addItem(m1b);
+			u1b.meetings.addItem(m1b);
+			
+			_ctx.meta_mergeExternalData(m1b);
+			
+			Assert.assertEquals("Element added", 1, u1.meetings.length);
+		}
 	}
 }

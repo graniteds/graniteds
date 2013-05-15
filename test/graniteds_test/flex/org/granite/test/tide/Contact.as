@@ -27,6 +27,7 @@ package org.granite.test.tide {
 		if (!isNaN(id))
 			this.uid = "C" + id;
 		this.version = version;
+		this.person = person;
 		this.email = email;
 	}
 		
