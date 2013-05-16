@@ -489,17 +489,20 @@
 	    </jar> 
 
 	    <jar destfile="build/sources/java/granite-generator-share-sources.jar"> 
-	      <fileset dir="core"> 
-	        <include name="org/granite/util/ClassUtil.java"/> 
-	        <include name="org/granite/util/URIUtil.java"/> 
-	        <include name="org/granite/messaging/amf/io/util/Property.java"/> 
-	        <include name="org/granite/messaging/amf/io/util/externalizer/Externalizer.java"/> 
-	        <include name="org/granite/messaging/amf/io/util/externalizer/annotation/**.java"/> 
-	      </fileset> 
-          <fileset dir="tide">
-            <include name="org/granite/tide/annotations/**.java"/>
-            <include name="org/granite/tide/data/Lazy.java"/>
-          </fileset>
+            <fileset dir="classes/core">
+                <include name="org/granite/util/ClassUtil.class"/>
+                <include name="org/granite/util/ClassUtil$*.class"/>
+                <include name="org/granite/util/URIUtil.class"/>
+                <include name="org/granite/messaging/amf/io/util/Property.class"/>
+                <include name="org/granite/messaging/amf/io/util/externalizer/Externalizer.class"/>
+                <include name="org/granite/messaging/amf/io/util/externalizer/annotation/**"/>
+                <include name="org/granite/messaging/service/annotations/**"/>
+                <include name="org/granite/messaging/service/security/*DestinationSecurizer.class"/>
+           	</fileset>
+        	<fileset dir="classes/tide">
+                <include name="org/granite/tide/annotations/**"/>
+        		<include name="org/granite/tide/data/Lazy.class"/>
+            </fileset>
 	    </jar> 
 
 	    <!-- Build flex sources --> 
@@ -729,16 +732,19 @@
 	            <pathelement path="classes/guice/"/>
             </classpath>
 
-  	        <fileset dir="core"> 
-  	          <include name="org/granite/util/ClassUtil.java"/> 
-  	          <include name="org/granite/util/URIUtil.java"/> 
-  	          <include name="org/granite/messaging/amf/io/util/Property.java"/> 
-  	          <include name="org/granite/messaging/amf/io/util/externalizer/Externalizer.java"/> 
-  	          <include name="org/granite/messaging/amf/io/util/externalizer/annotation/**.java"/> 
-  	        </fileset> 
-            <fileset dir="tide">
-              <include name="org/granite/tide/annotations/**.java"/>
-              <include name="org/granite/tide/data/Lazy.java"/>
+            <fileset dir="classes/core">
+                <include name="org/granite/util/ClassUtil.class"/>
+                <include name="org/granite/util/ClassUtil$*.class"/>
+                <include name="org/granite/util/URIUtil.class"/>
+                <include name="org/granite/messaging/amf/io/util/Property.class"/>
+                <include name="org/granite/messaging/amf/io/util/externalizer/Externalizer.class"/>
+                <include name="org/granite/messaging/amf/io/util/externalizer/annotation/**"/>
+                <include name="org/granite/messaging/service/annotations/**"/>
+                <include name="org/granite/messaging/service/security/*DestinationSecurizer.class"/>
+           	</fileset>
+        	<fileset dir="classes/tide">
+                <include name="org/granite/tide/annotations/**"/>
+        		<include name="org/granite/tide/data/Lazy.class"/>
             </fileset>
 
             <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
@@ -955,6 +961,7 @@
                 <include name="org/granite/messaging/amf/io/util/externalizer/Externalizer.class"/>
                 <include name="org/granite/messaging/amf/io/util/externalizer/annotation/**"/>
                 <include name="org/granite/messaging/service/annotations/**"/>
+                <include name="org/granite/messaging/service/security/*DestinationSecurizer.class"/>
            	</fileset>
         	<fileset dir="classes/tide">
                 <include name="org/granite/tide/annotations/**"/>
