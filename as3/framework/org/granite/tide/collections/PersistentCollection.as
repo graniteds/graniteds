@@ -226,6 +226,20 @@ package org.granite.tide.collections {
             
             throw new Error("Cannot modify uninitialized collection: " + _entity + " property " + propertyName); 
         }
+		
+		public override function addAllAt(addList:IList, index:int):void { 
+			if (!(_localInitializing || isInitialized()))
+				throw new Error("Cannot modify uninitialized collection: " + _entity + " property " + propertyName); 
+			
+			var length:int = addList.length; 
+			var position:int = 0; 
+			for (var i:int = 0; i < length; i++) { 
+				var oldLength:int = this.length; 
+				this.addItemAt(addList.getItemAt(i), position+index); 
+				if (oldLength < this.length) 
+					position++;
+			} 
+		}
         
         public override function setItemAt(item:Object, index:int):Object {
             if (_localInitializing || isInitialized())

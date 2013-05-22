@@ -66,6 +66,38 @@ use namespace meta;
 
             Assert.assertEquals("Person contacts empty", 0, p.contacts.length);
         }
+		
+		[Test("GDS-1112")]
+		public function testEntityCollectionRemove():void {
+			var p:Person = new Person();
+			p.id = 1;
+			p.uid = "P01";
+			p.version = 0;
+			p.contacts = new PersistentSet(true);
+			var c1:Contact = new Contact();
+			c1.id = 1;
+			c1.uid = "C01";
+			c1.version = 0;
+			c1.person = p;
+			p.contacts.addItem(c1);
+			_ctx.person = _ctx.meta_mergeExternalData(p);
+			p = Person(_ctx.person);
+			
+			var np:Person = new Person();
+			np.id = 1;
+			np.uid = "P01";
+			np.version = 0;
+			np.contacts = new PersistentSet(false);
+			var nc:Contact = new Contact();
+			nc.id = 2;
+			nc.uid = "C02";
+			nc.version = 0;
+			nc.person = np;
+			
+			_ctx.meta_handleUpdates("SID", [[ 'REMOVE', nc ]]);
+			
+			Assert.assertEquals("Person contacts length", 1, p.contacts.length);
+		}
 
 
         [Test]
