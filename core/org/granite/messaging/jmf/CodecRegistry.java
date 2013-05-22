@@ -21,7 +21,7 @@
 package org.granite.messaging.jmf;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.codec.StandardCodec;
@@ -35,6 +35,7 @@ import org.granite.messaging.jmf.codec.std.LongCodec;
 import org.granite.messaging.jmf.codec.std.NullCodec;
 import org.granite.messaging.jmf.codec.std.ShortCodec;
 import org.granite.messaging.jmf.codec.std.StringCodec;
+import org.granite.messaging.jmf.reflect.Property;
 
 /**
  * @author Franck WOLFF
@@ -61,9 +62,9 @@ public interface CodecRegistry extends JMFConstants {
 		throws ClassNotFoundException;
 	
 	static interface PrimitiveFieldCodec {
-		public void encodePrimitive(OutputContext ctx, Object v, Field field)
-			throws IllegalAccessException, IOException;
-		public void decodePrimitive(InputContext ctx, Object v, Field field)
+		public void encodePrimitive(OutputContext ctx, Object v, Property field)
+			throws IllegalAccessException, IOException, InvocationTargetException;
+		public void decodePrimitive(InputContext ctx, Object v, Property field)
 			throws IllegalAccessException, IOException;
 	}
 	

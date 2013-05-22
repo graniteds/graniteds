@@ -25,6 +25,7 @@ import java.io.ObjectInput;
 import java.lang.reflect.Field;
 
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
+import org.granite.messaging.jmf.reflect.Property;
 import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
@@ -89,7 +90,7 @@ public interface ExtendedObjectInput extends ObjectInput {
 	 * @throws ClassNotFoundException If the class of a serialized object cannot be found.
 	 * @throws IllegalAccessException If the field cannot be accessed.
 	 */
-	void readAndSetField(Object obj, Field field) throws IOException, ClassNotFoundException, IllegalAccessException;
+	void readAndSetField(Object obj, Property field) throws IOException, ClassNotFoundException, IllegalAccessException;
 
 	/**
 	 * Should never be used with JMF {@link ExtendedObjectCodec}.

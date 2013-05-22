@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.List;
@@ -38,6 +37,7 @@ import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.codec.StandardCodec;
 import org.granite.messaging.jmf.codec.std.ObjectCodec;
+import org.granite.messaging.jmf.reflect.Property;
 
 /**
  * @author Franck WOLFF
@@ -70,7 +70,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 		return !cls.isArray() && !cls.isEnum() && !(v instanceof Class);
 	}
 
-	public void encode(OutputContext ctx, Object v) throws IOException, IllegalAccessException {
+	public void encode(OutputContext ctx, Object v) throws IOException, IllegalAccessException, InvocationTargetException {
 		final OutputStream os = ctx.getOutputStream();
 		
 		int indexOfStoredObject = ctx.indexOfStoredObjects(v);
@@ -106,9 +106,9 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 		}
 	}
 	
-	protected void encodeSerializable(OutputContext ctx, Serializable v) throws IOException, IllegalAccessException {
-		List<Field> fields = ctx.getReflection().findSerializableFields(v.getClass());
-		for (Field field : fields)
+	protected void encodeSerializable(OutputContext ctx, Serializable v) throws IOException, IllegalAccessException, InvocationTargetException {
+		List<Property> fields = ctx.getReflection().findSerializableFields(v.getClass());
+		for (Property field : fields)
 			ctx.getAndWriteField(v, field);
 	}
 	
@@ -168,8 +168,8 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 	protected void decodeSerializable(InputContext ctx, Serializable v)
 		throws IOException, ClassNotFoundException, IllegalAccessException {
 
-		List<Field> fields = ctx.getReflection().findSerializableFields(v.getClass());
-		for (Field field : fields)
+		List<Property> fields = ctx.getReflection().findSerializableFields(v.getClass());
+		for (Property field : fields)
 			ctx.readAndSetField(v, field);
 	}
 

@@ -22,8 +22,9 @@ package org.granite.messaging.jmf;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
+import org.granite.messaging.jmf.reflect.Property;
 import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
@@ -41,7 +42,7 @@ public interface ExtendedObjectOutput extends ObjectOutput {
 	
 	String getAlias(String className);
 	
-	void getAndWriteField(Object obj, Field field) throws IOException, IllegalAccessException;
+	void getAndWriteField(Object obj, Property field) throws IOException, IllegalAccessException, InvocationTargetException;
 	
 	@Deprecated
 	public void write(int b) throws IOException;

@@ -33,15 +33,15 @@ public class TestJMFClass implements JMFConstants {
 	@Test
 	public void testClass() throws ClassNotFoundException, IOException {
 		Class<?> cls = Object.class;
-		Class<?> clone = serializeDeserialize(cls, true);
+		Class<?> clone = serializeDeserialize(cls, false);
 		Assert.assertTrue(clone == cls);
 		
 		cls = String.class;
-		clone = serializeDeserialize(cls, true);
+		clone = serializeDeserialize(cls, false);
 		Assert.assertTrue(clone == cls);
 		
 		cls = ExternalizableBean.class;
-		clone = serializeDeserialize(cls, true);
+		clone = serializeDeserialize(cls, false);
 		Assert.assertTrue(clone == cls);
 	}
 	

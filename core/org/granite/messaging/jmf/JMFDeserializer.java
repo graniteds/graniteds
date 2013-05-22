@@ -23,12 +23,12 @@ package org.granite.messaging.jmf;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.granite.messaging.jmf.codec.StandardCodec;
+import org.granite.messaging.jmf.reflect.Property;
 import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
@@ -280,11 +280,11 @@ public class JMFDeserializer implements InputContext {
 		return context.getAlias(className);
 	}
 
-	public void readAndSetField(Object obj, Field field) throws IOException, ClassNotFoundException, IllegalAccessException {
+	public void readAndSetField(Object obj, Property field) throws IOException, ClassNotFoundException, IllegalAccessException {
 		if (field.getType().isPrimitive())
 			codecRegistry.getPrimitiveFieldCodec(field.getType()).decodePrimitive(this, obj, field);
 		else
-			field.set(obj, readObject());
+			field.setObject(obj, readObject());
 	}
 	
 	static class UnresolvedSharedObject {

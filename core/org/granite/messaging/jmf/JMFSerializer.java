@@ -22,12 +22,13 @@ package org.granite.messaging.jmf;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.granite.messaging.jmf.codec.StandardCodec;
+import org.granite.messaging.jmf.reflect.Property;
 import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
@@ -109,6 +110,9 @@ public class JMFSerializer implements OutputContext {
 			codec.encode(this, obj);
 		}
 		catch (IllegalAccessException e) {
+			throw new IOException(e);
+		}
+		catch (InvocationTargetException e) {
 			throw new IOException(e);
 		}
 	}
@@ -203,10 +207,10 @@ public class JMFSerializer implements OutputContext {
 		return context.getAlias(className);
 	}
 
-	public void getAndWriteField(Object obj, Field field) throws IOException, IllegalAccessException {
+	public void getAndWriteField(Object obj, Property field) throws IOException, IllegalAccessException, InvocationTargetException {
 		if (field.getType().isPrimitive())
 			codecRegistry.getPrimitiveFieldCodec(field.getType()).encodePrimitive(this, obj, field);
 		else
-			writeObject(field.get(obj));
+			writeObject(field.getObject(obj));
 	}
 }

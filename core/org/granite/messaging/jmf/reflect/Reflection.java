@@ -23,6 +23,7 @@ package org.granite.messaging.jmf.reflect;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,30 +32,34 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.granite.messaging.annotations.Include;
+import org.granite.messaging.annotations.Exclude;
+
 /**
  * @author Franck WOLFF
  */
 public class Reflection {
 	
 	protected static final int STATIC_TRANSIENT_MASK = Modifier.STATIC | Modifier.TRANSIENT;
+	protected static final int STATIC_PRIVATE_PROTECTED_MASK = Modifier.STATIC | Modifier.PRIVATE | Modifier.PROTECTED;
 
 	protected final ClassLoader classLoader;
 	protected final ConstructorFactory constructorFactory;
-	protected final Comparator<Field> lexicalFieldComparator;
-	protected final ConcurrentMap<Class<?>, List<Field>> serializableFieldsCache;
+	protected final Comparator<Property> lexicalPropertyComparator;
+	protected final ConcurrentMap<Class<?>, List<Property>> serializableFieldsCache;
 	
 	public Reflection(ClassLoader classLoader) {
 		this.classLoader = classLoader;
 		
 		this.constructorFactory = new SunConstructorFactory();
 		
-		this.lexicalFieldComparator = new Comparator<Field>() {
-			public int compare(Field f1, Field f2) {
-				return f1.getName().compareTo(f2.getName());
+		this.lexicalPropertyComparator = new Comparator<Property>() {
+			public int compare(Property p1, Property p2) {
+				return p1.getName().compareTo(p2.getName());
 			}
 		};
 		
-		this.serializableFieldsCache = new ConcurrentHashMap<Class<?>, List<Field>>();
+		this.serializableFieldsCache = new ConcurrentHashMap<Class<?>, List<Property>>();
 	}
 	
 	public ClassLoader getClassLoader() {
@@ -92,21 +97,21 @@ public class Reflection {
 		}
 	}
 	
-	public List<Field> findSerializableFields(Class<?> cls) throws SecurityException {
-		List<Field> serializableFields = serializableFieldsCache.get(cls);
+	public List<Property> findSerializableFields(Class<?> cls) throws SecurityException {
+		List<Property> serializableFields = serializableFieldsCache.get(cls);
 		
 		if (serializableFields == null) {
 			List<Class<?>> hierarchy = new ArrayList<Class<?>>();
 			for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass())
 				hierarchy.add(c);
 			
-			serializableFields = new ArrayList<Field>();
+			serializableFields = new ArrayList<Property>();
 			for (int i = hierarchy.size() - 1; i >= 0; i--) {
 				Class<?> c = hierarchy.get(i);
 				serializableFields.addAll(findSerializableDeclaredFields(c));
 			}
 			serializableFields = Collections.unmodifiableList(serializableFields);
-			List<Field> previous = serializableFieldsCache.putIfAbsent(cls, serializableFields);
+			List<Property> previous = serializableFieldsCache.putIfAbsent(cls, serializableFields);
 			if (previous != null)
 				serializableFields = previous;
 		}
@@ -114,24 +119,49 @@ public class Reflection {
 		return serializableFields;
 	}
 
-	protected List<Field> findSerializableDeclaredFields(Class<?> cls) throws SecurityException {
+	protected List<Property> findSerializableDeclaredFields(Class<?> cls) throws SecurityException {
 		
 		if (!isRegularClass(cls))
 			throw new IllegalArgumentException("Not a regular class: " + cls);
 
 		Field[] declaredFields = cls.getDeclaredFields();
-		List<Field> serializableFields = new ArrayList<Field>(declaredFields.length);
-		for (int i = 0; i < declaredFields.length; i++) {
-			Field field = declaredFields[i];
-			
+		List<Property> serializableFields = new ArrayList<Property>(declaredFields.length);
+		for (Field field : declaredFields) {
 			int modifiers = field.getModifiers();
-			if ((modifiers & STATIC_TRANSIENT_MASK) == 0) {
-				declaredFields[i].setAccessible(true);
-				serializableFields.add(field);
+			if ((modifiers & STATIC_TRANSIENT_MASK) == 0 && !field.isAnnotationPresent(Exclude.class)) {
+				field.setAccessible(true);
+				serializableFields.add(new FieldProperty(field));
 			}
 		}
 		
-		Collections.sort(serializableFields, lexicalFieldComparator);
+		Method[] declaredMethods = cls.getDeclaredMethods();
+		for (Method method : declaredMethods) {
+			int modifiers = method.getModifiers();
+			if ((modifiers & STATIC_PRIVATE_PROTECTED_MASK) == 0 &&
+				method.isAnnotationPresent(Include.class) &&
+				method.getParameterTypes().length == 0 &&
+				method.getReturnType() != Void.TYPE) {
+				
+				String name = method.getName();
+				if (name.startsWith("get")) {
+					if (name.length() <= 3)
+						continue;
+					name = name.substring(3, 4).toLowerCase() + name.substring(4);
+				}
+				else if (name.startsWith("is") &&
+					(method.getReturnType() == Boolean.class || method.getReturnType() == Boolean.TYPE)) {
+					if (name.length() <= 2)
+						continue;
+					name = name.substring(2, 3).toLowerCase() + name.substring(3);
+				}
+				else
+					continue;
+				
+				serializableFields.add(new MethodProperty(method, name));
+			}
+		}
+		
+		Collections.sort(serializableFields, lexicalPropertyComparator);
 		
 		return serializableFields;
 	}

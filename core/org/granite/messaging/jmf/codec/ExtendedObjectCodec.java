@@ -36,7 +36,7 @@ public interface ExtendedObjectCodec {
 	String getEncodedClassName(ExtendedObjectOutput out, Object v);
 	
 	void encode(ExtendedObjectOutput out, Object v)
-		throws IOException, IllegalAccessException;
+		throws IOException, IllegalAccessException, InvocationTargetException;
 
 	
 	

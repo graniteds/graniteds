@@ -1,9 +1,7 @@
 package org.granite.test.jmf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Date;
@@ -17,7 +15,10 @@ import org.granite.test.jmf.Util.ByteArrayJMFDeserializer;
 import org.granite.test.jmf.Util.ByteArrayJMFDumper;
 import org.granite.test.jmf.Util.ByteArrayJMFSerializer;
 import org.granite.test.jmf.model.ExternalizableBean;
+import org.granite.test.jmf.model.IncludeExclude;
+import org.granite.test.jmf.model.NotSerializable;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,7 +42,7 @@ public class TestJMFObject {
 	@Test
 	public void testNull() throws ClassNotFoundException, IOException {
 		Object clone = serializeAndDeserialize(null);
-		assertTrue("Not null", clone == null);
+		Assert.assertTrue("Not null", clone == null);
 	}
 
 	@Test
@@ -86,7 +87,36 @@ public class TestJMFObject {
 //		byte[] bytes = Util.serializeJava(obj);
 //		System.out.println("Serialization Java: " + bytes.length + "B.");
 		
-		assertEquals(obj, clone);
+		Assert.assertEquals(obj, clone);
+	}
+
+	@Test
+	public void testNotSerializable() throws ClassNotFoundException, IOException {
+		
+		NotSerializable obj = new NotSerializable();
+
+		try {
+			serializeAndDeserialize(obj);
+			Assert.fail("Should throw a NotSerializableException");
+		}
+		catch (NotSerializableException e) {
+		}
+	}
+	@Test
+	public void testIncludeExclude() throws ClassNotFoundException, IOException {
+		
+		IncludeExclude obj = new IncludeExclude();
+
+		obj.setNormal(true);
+		obj.setExclude("This is exclued");
+
+		Object clone = serializeAndDeserialize(obj);
+		
+//		byte[] bytes = Util.serializeJava(obj);
+//		System.out.println("Serialization Java: " + bytes.length + "B.");
+		
+		Assert.assertEquals(obj, clone);
+		Assert.assertNull(((IncludeExclude)clone).getExclude());
 	}
 
 //	@Test

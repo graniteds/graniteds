@@ -18,28 +18,31 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.codec;
+package org.granite.messaging.annotations;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-
-import org.granite.messaging.jmf.DumpContext;
-import org.granite.messaging.jmf.InputContext;
-import org.granite.messaging.jmf.JMFConstants;
-import org.granite.messaging.jmf.OutputContext;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * The <tt>Exclude</tt> annotation can be used to prevent a field serialization.
+ * <p>
+ * Typical usage:
+ * <pre>
+ * @Exclude
+ * private String aVerySensitiveData;
+ * </pre>
+ * </p>
+ * 
  * @author Franck WOLFF
  */
-public interface StandardCodec<T> extends JMFConstants {
+@Documented
+@Inherited
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface Exclude {
 
-	int getObjectType();
-	
-	void encode(OutputContext ctx, T v) throws IOException, IllegalAccessException, InvocationTargetException;
-	
-	T decode(InputContext ctx, int parameterizedJmfType)
-		throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException,
-		InvocationTargetException, SecurityException, NoSuchMethodException;
-	
-	void dump(DumpContext ctx, int parameterizedJmfType) throws IOException;
 }
