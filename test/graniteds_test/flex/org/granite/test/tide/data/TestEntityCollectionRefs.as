@@ -1,26 +1,17 @@
 package org.granite.test.tide.data
 {
-    import flash.events.TimerEvent;
-    import flash.system.System;
-    import flash.utils.Timer;
-    
-    import mx.collections.ArrayCollection;
-    
     import org.flexunit.Assert;
-    import org.flexunit.async.Async;
-import org.granite.meta;
-import org.granite.persistence.PersistentSet;
-import org.granite.test.tide.Contact;
-import org.granite.test.tide.Contact2;
-import org.granite.test.tide.Person;
-import org.granite.test.tide.Person0;
-import org.granite.test.tide.Person2;
-import org.granite.tide.BaseContext;
+    import org.granite.meta;
+    import org.granite.persistence.PersistentSet;
+    import org.granite.test.tide.Contact;
+    import org.granite.test.tide.Contact2;
+    import org.granite.test.tide.Person;
+    import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
-import org.granite.tide.data.Conflicts;
-import org.granite.tide.data.events.TideDataConflictsEvent;
+    import org.granite.tide.data.Conflicts;
+    import org.granite.tide.data.events.TideDataConflictsEvent;
 
-use namespace meta;
+	use namespace meta;	
     
     
     public class TestEntityCollectionRefs
@@ -32,6 +23,7 @@ use namespace meta;
         public function setUp():void {
             Tide.resetInstance();
             _ctx = Tide.getInstance().getContext();
+			_ctx.meta_uninitializeAllowed = false;
         }
         
         

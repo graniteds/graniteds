@@ -14,9 +14,9 @@ package org.granite.test.tide.data {
     
     import org.granite.meta;
     import org.granite.ns.tide;
+    import org.granite.test.tide.AbstractEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.IPropertyHolder;
-	import org.granite.test.tide.AbstractEntity;
     import org.granite.util.Enum;
 
     use namespace meta;
@@ -28,6 +28,7 @@ package org.granite.test.tide.data {
 
 		private var _salutation:Salutation;
         private var _contacts:ListCollectionView;
+		private var _locations:ListCollectionView;
         private var _firstName:String;
 		private var _address:Array;
         private var _lastName:String;
@@ -46,6 +47,13 @@ package org.granite.test.tide.data {
         public function get contacts():ListCollectionView {
             return _contacts;
         }
+		
+		public function set locations(value:ListCollectionView):void {
+			_locations = value;
+		}
+		public function get locations():ListCollectionView {
+			return _locations;
+		}
 
         public function set firstName(value:String):void {
             _firstName = value;
@@ -76,6 +84,7 @@ package org.granite.test.tide.data {
                 em.meta_mergeExternal(src._contacts, _contacts, null, this, 'contacts', function setter(o:*):void{_contacts = o as ListCollectionView}) as ListCollectionView;
                 em.meta_mergeExternal(src._firstName, _firstName, null, this, 'firstName', function setter(o:*):void{_firstName = o as String}) as String;
                 em.meta_mergeExternal(src._lastName, _lastName, null, this, 'lastName', function setter(o:*):void{_lastName = o as String}) as String;
+				em.meta_mergeExternal(src._locations, _locations, null, this, 'locations', function setter(o:*):void{_locations = o as ListCollectionView}) as ListCollectionView;
                 em.meta_mergeExternal(src._salutation, _salutation, null, this, 'salutation', function setter(o:*):void{_salutation = o as Salutation}) as Salutation;
             }
         }
@@ -87,6 +96,7 @@ package org.granite.test.tide.data {
                 _contacts = input.readObject() as ListCollectionView;
                 _firstName = input.readObject() as String;
                 _lastName = input.readObject() as String;
+				_locations = input.readObject() as ListCollectionView;
                 _salutation = Enum.readEnum(input) as Salutation;
             }
         }
@@ -98,6 +108,7 @@ package org.granite.test.tide.data {
                 output.writeObject((_contacts is IPropertyHolder) ? IPropertyHolder(_contacts).object : _contacts);
                 output.writeObject((_firstName is IPropertyHolder) ? IPropertyHolder(_firstName).object : _firstName);
                 output.writeObject((_lastName is IPropertyHolder) ? IPropertyHolder(_lastName).object : _lastName);
+				output.writeObject((_locations is IPropertyHolder) ? IPropertyHolder(_locations).object : _locations);
                 output.writeObject((_salutation is IPropertyHolder) ? IPropertyHolder(_salutation).object : _salutation);
             }
         }

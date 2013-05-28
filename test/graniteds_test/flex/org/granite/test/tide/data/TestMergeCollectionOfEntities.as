@@ -398,5 +398,145 @@ package org.granite.test.tide.data
 			
 			Assert.assertTrue("Context dirty", _ctx.meta_dirty);
 		}
+		
+		[Test]
+		public function testMergeCollectionOfEntities5():void {
+			_ctx.meta_uninitializeAllowed = false;
+			
+			var p:Person5 = new Person5();
+			p.uid = "P1";
+			p.id = 1;
+			p.version = 0;
+			p.contacts = new PersistentSet();
+			_ctx.meta_mergeExternalData(p);
+			_ctx.meta_clearCache();
+			
+			var pa:Person5 = new Person5();
+			pa.uid = "P1";
+			pa.id = 1;
+			pa.version = 1;
+			pa.contacts = new PersistentSet();
+			
+			var c1a:Contact5 = new Contact5();
+			c1a.uid = "C1";
+			c1a.id = 1;
+			c1a.version = 0;
+			c1a.person = pa;
+			c1a.email = "toto@toto.org";
+			var c2a:Contact5 = new Contact5();
+			c2a.uid = "C1";
+			c2a.id = 1;
+			c2a.version = 0;
+			c2a.person = pa;
+			c2a.email = "toto2@toto.org";
+			pa.contacts.addItem(c1a);
+			pa.contacts.addItem(c2a);
+			
+			var updates:Array = [ [ "UPDATE", pa ], [ "PERSIST", c1a ], [ "PERSIST", c2a ] ];
+			_ctx.meta_handleUpdates(null, updates);
+			
+			var pb:Person5 = new Person5();
+			pb.uid = "P1";
+			pb.id = 1;
+			pb.version = 1;
+			pb.contacts = new PersistentSet();
+			
+			var c1b:Contact5 = new Contact5();
+			c1b.uid = "C1";
+			c1b.id = 1;
+			c1b.version = 0;
+			c1b.person = pb;
+			c1b.email = "toto@toto.org";
+			var c2b:Contact5 = new Contact5();
+			c2b.uid = "C1";
+			c2b.id = 1;
+			c2b.version = 0;
+			c2b.person = pb;
+			c2b.email = "toto2@toto.org";
+			
+			updates = [ [ "UPDATE", pb ], [ "REMOVE", c1b, "person" ], [ "REMOVE", c2b, "person" ] ];
+			_ctx.meta_handleUpdates(null, updates);
+			
+			Assert.assertNotNull("Person attached", p.meta::entityManager);
+		}
+		
+		[Test]
+		public function testMergeCollectionOfEntities6():void {
+			_ctx.meta_uninitializeAllowed = false;
+			
+			var p:Person5 = new Person5();
+			p.uid = "P1";
+			p.id = 1;
+			p.version = 0;
+			p.contacts = new PersistentSet();
+			p.locations = new PersistentSet();
+			_ctx.meta_mergeExternalData(p);
+			_ctx.meta_clearCache();
+			
+			var pa:Person5 = new Person5();
+			pa.uid = "P1";
+			pa.id = 1;
+			pa.version = 1;
+			pa.contacts = new PersistentSet();
+			pa.locations = new PersistentSet();
+			
+			var c1a:Contact5 = new Contact5();
+			c1a.uid = "C1";
+			c1a.id = 1;
+			c1a.version = 0;
+			c1a.person = pa;
+			c1a.email = "toto@toto.org";
+			var c2a:Contact5 = new Contact5();
+			c2a.uid = "C1";
+			c2a.id = 1;
+			c2a.version = 0;
+			c2a.person = pa;
+			c2a.email = "toto2@toto.org";
+			pa.contacts.addItem(c1a);
+			pa.contacts.addItem(c2a);
+			var l1a:Location5 = new Location5();
+			l1a.uid = "L1";
+			l1a.id = 1;
+			l1a.version = 0;
+			l1a.person = pa;
+			l1a.email = "toto@toto.org";
+			var l2a:Location5 = new Location5();
+			l2a.uid = "C1";
+			l2a.id = 1;
+			l2a.version = 0;
+			l2a.person = pa;
+			l2a.email = "toto2@toto.org";
+			pa.locations.addItem(l1a);
+			pa.locations.addItem(l2a);
+			
+			var updates:Array = [ [ "UPDATE", pa ], [ "PERSIST", c1a ], [ "PERSIST", c2a ], [ "PERSIST", l1a ], [ "PERSIST", l2a ] ];
+			_ctx.meta_handleUpdates(null, updates);
+			
+			var pb:Person5 = new Person5();
+			pb.uid = "P1";
+			pb.id = 1;
+			pb.version = 1;
+			pb.contacts = new PersistentSet();
+			pb.locations = new PersistentSet(false);
+			
+			var c1b:Contact5 = new Contact5();
+			c1b.uid = "C1";
+			c1b.id = 1;
+			c1b.version = 0;
+			c1b.person = pb;
+			c1b.email = "toto@toto.org";
+			var c2b:Contact5 = new Contact5();
+			c2b.uid = "C1";
+			c2b.id = 1;
+			c2b.version = 0;
+			c2b.person = pb;
+			c2b.email = "toto2@toto.org";
+			
+			updates = [ [ "UPDATE", pb ], [ "REMOVE", c1b, "person" ], [ "REMOVE", c2b, "person" ] ];
+			_ctx.meta_handleUpdates(null, updates);
+			
+			Assert.assertNotNull("Person attached", p.meta::entityManager);
+			Assert.assertNotNull("Location attached", p.locations.getItemAt(0).meta::entityManager);
+		}
     }
 }

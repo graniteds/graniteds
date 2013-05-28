@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.granite.tide.data.DataEnabled.PublishMode;
@@ -122,7 +123,7 @@ public class DataContext {
     	Iterator<EntityUpdate> iu = processedDataUpdates.iterator();
     	while (iu.hasNext()) {
     		EntityUpdate u = iu.next();
-    		updates[i++] = new Object[] { u.type.name(), u.entity }; 
+    		updates[i++] = u.toArray(); 
     	}
 		return updates;
     }
@@ -206,6 +207,10 @@ public class DataContext {
 		    if (!entity.equals(u.entity))
 		        return entity.hashCode() - u.entity.hashCode();
 	        return priority - u.priority;
+		}
+		
+		public Object[] toArray() {
+			return new Object[] { type.name(), entity };
 		}
     }
     
