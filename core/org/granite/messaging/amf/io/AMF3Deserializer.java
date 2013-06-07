@@ -570,12 +570,12 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
         String result = null;
 
         int type = readAMF3Integer();
-        if ((type & 0x01) == 0) // stored String
-            result = getFromStoredStrings(type >> 1);
+        if ((type & 0x01) == 0) // stored object
+            result = (String)getFromStoredObjects(type >> 1);
         else {
             byte[] bytes = readBytes(type >> 1);
             result = new String(bytes, "UTF-8");
-            addToStoredStrings(result);
+            addToStoredObjects(result);
         }
 
         if (debugMore) logMore.debug("readAMF3XmlString() -> %s", result);
