@@ -91,4 +91,19 @@ public class MethodProperty implements Property {
 
 	public void setObject(Object holder, Object value) throws IllegalArgumentException, IllegalAccessException {
 	}
+
+	@Override
+	public int hashCode() {
+		return method.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof MethodProperty && ((MethodProperty)obj).method.equals(method));
+	}
+
+	@Override
+	public String toString() {
+		return method.toString();
+	}
 }

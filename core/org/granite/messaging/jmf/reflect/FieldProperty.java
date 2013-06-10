@@ -89,4 +89,19 @@ public class FieldProperty implements Property {
 	public void setObject(Object holder, Object value) throws IllegalArgumentException, IllegalAccessException {
 		field.set(holder, value);
 	}
+
+	@Override
+	public int hashCode() {
+		return field.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof FieldProperty && ((FieldProperty)obj).field.equals(field));
+	}
+
+	@Override
+	public String toString() {
+		return field.toString();
+	}
 }
