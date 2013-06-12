@@ -68,7 +68,7 @@ public abstract class AbstractEntity implements Serializable {
     public void initIdUid(Long id, String uid) {
         this.id = id;
         if (uid == null)
-            uid = "Person:" + id;
+            uid = getClass().getSimpleName() + ":" + id;
         this.uid = uid;
     }
     
