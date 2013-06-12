@@ -226,6 +226,7 @@
         <path refid="glassfish.jar"/>
     </path>
     <path id="test.classpath">
+        <pathelement location="${gds.lib}/hsqldb.jar"/>
         <pathelement location="${gds.lib}/h2.jar"/>
     </path>
     <path id="test.classpath.activemq">

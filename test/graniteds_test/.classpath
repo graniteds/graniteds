@@ -21,7 +21,6 @@
 	<classpathentry kind="lib" path="/graniteds/lib/jboss-seam.jar"/>
 	<classpathentry kind="lib" path="lib/shrinkwrap-extension-glassfish.jar"/>
 	<classpathentry kind="lib" path="lib/glassfish-embedded-all.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="lib" path="/graniteds/lib/javassist.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/graniteds"/>
 	<classpathentry kind="lib" path="/graniteds/lib/javax.servlet.jar"/>
