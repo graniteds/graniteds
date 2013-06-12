@@ -68,7 +68,7 @@ public class ProxyFactory {
             // Get proxy methods: even if CGLIB/Javassist LazyInitializer implementations share a common
         	// superclass, getProxyFactory/getProxy methods are declared as static in each inherited
         	// class with the same signature.
-            Class<?> initializerClass = TypeUtil.forName(initializerClassName);
+            Class<?> initializerClass = ClassUtil.forName(initializerClassName);
             getProxyFactory = initializerClass.getMethod("getProxyFactory", new Class[] { Class.class, Class[].class });
             
             // Hibernate 4.0.1 has an extra boolean parameter in last position: classOverridesEquals.
@@ -98,7 +98,7 @@ public class ProxyFactory {
     public HibernateProxy getProxyInstance(String persistentClassName, String entityName, Serializable id) {
         try {
             // Get ProxyFactory.
-            Class<?> persistentClass = TypeUtil.forName(persistentClassName);
+            Class<?> persistentClass = ClassUtil.forName(persistentClassName);
             Class<?> factory = (Class<?>)getProxyFactory.invoke(null, new Object[] { persistentClass, INTERFACES });
 
             // Convert id (if necessary).
