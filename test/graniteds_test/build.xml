@@ -290,6 +290,7 @@
                 <pathelement location="${gds.lib}/datanucleus-core.jar"/>
                 <pathelement location="${gds.lib}/jdo2-api-2.3-eb.jar"/>
             </classpath>
+        	<exclude name="**/Hibernate3**"/>
         </javac>
         <copy todir="classesh4">
             <fileset dir="resources">
