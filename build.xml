@@ -269,6 +269,7 @@
                 <pathelement location="lib/spring-security-acl-3.0.jar"/>
                 <pathelement location="lib/acegi-security-1.0.4.jar"/>
                 <pathelement location="lib/jboss-seam.jar"/>
+                <pathelement location="lib/jdo2-api-2.3-eb.jar"/>
             </classpath>
         </javac>
         <copy todir="classes/spring">
