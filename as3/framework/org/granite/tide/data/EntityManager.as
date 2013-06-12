@@ -767,7 +767,7 @@ package org.granite.tide.data {
 	            
 	            _mergeContext.mergeUpdate = saveMergeUpdate;
 	            
-	            if ((_mergeContext.mergeUpdate || forceUpdate) && setter != null && parent != null && propertyName != null && parent is IManaged) {
+	            if ((_mergeContext.mergeUpdate || forceUpdate || fromCache) && setter != null && parent != null && propertyName != null && parent is IManaged) {
 	            	if (!_mergeContext.resolvingConflict || propertyName != _context.meta_tide.getEntityDescriptor(IEntity(parent)).versionPropertyName) {
 		                setter(next);
 		                Managed.setProperty(IManaged(parent), propertyName, previous, next);
