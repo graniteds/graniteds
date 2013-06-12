@@ -5,6 +5,7 @@ package org.granite.test.tide.data
     import org.flexunit.Assert;
     import org.granite.math.Long;
     import org.granite.meta;
+    import org.granite.persistence.PersistentSet;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
 
@@ -130,6 +131,56 @@ package org.granite.test.tide.data
 			_ctx.meta_mergeExternalData(c2);
 			
 			Assert.assertTrue("Proxy ignored", p1.meta::isInitialized());
+		}
+		
+		[Test]
+		public function testMergeLazyResulty():void {
+			
+			var p:Patient4c = new Patient4c();
+			p.id = 1;
+			p.version = 0;
+			p.uid = "P1";
+			p.diagnosis = new PersistentSet(true);
+			p.visits = new PersistentSet(false);
+			
+			p = _ctx.meta_mergeExternalData(p) as Patient4c;
+			
+			var d:Diagnosisc = new Diagnosisc();
+			d.uid = "D1";
+			d.patient = p;
+			d.name = "Bla";
+			
+			p.diagnosis.addItem(d);
+			p.diagnosisAssessed = true;
+			
+			Assert.assertTrue("Patient dirty", _ctx.meta_isEntityChanged(p));
+			
+			var pb:Patient4c = new Patient4c();
+			pb.id = 1;
+			pb.version = 0;
+			pb.uid = "P1";
+			pb.diagnosis = new PersistentSet(false);
+			pb.visits = new PersistentSet(true);
+			var v1b:Visitc = new Visitc();
+			v1b.id = 1;
+			v1b.version = 0;
+			v1b.uid = "V1";
+			v1b.name = "visit";
+			v1b.patient = pb;
+			pb.visits.addItem(v1b);
+			var v2b:Visitc = new Visitc();
+			v2b.id = 1;
+			v2b.version = 0;
+			v2b.uid = "V2";
+			v2b.name = "visit";
+			v2b.patient = pb;
+			pb.visits.addItem(v2b);
+			
+			_ctx.meta_mergeExternalData(pb);
+			
+			Assert.assertEquals("Visits", 2, p.visits.length);
+			for each (var v:Visitc in p.visits)
+				Assert.assertStrictlyEquals(v.patient, p);
 		}
     }
 
