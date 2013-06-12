@@ -76,6 +76,10 @@ public abstract class AbstractEntity implements Serializable {
         return version;
     }
     
+    public String getUid() {
+    	return uid;
+    }
+   
     @Override
     public boolean equals(Object o) {
         return (o == this || (o instanceof AbstractEntity && uid().equals(((AbstractEntity)o).uid())));
