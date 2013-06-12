@@ -33,6 +33,13 @@ public class Address extends AbstractEntity {
     private static final long serialVersionUID = 1L;
 
 
+    public Address() {
+    }
+    
+    public Address(Long id, Long version, String uid) {
+    	super(id, version, uid);
+    }
+    
     @Basic
     private String address1;
     @Basic

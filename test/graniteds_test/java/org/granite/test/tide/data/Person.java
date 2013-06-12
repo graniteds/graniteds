@@ -46,6 +46,14 @@ public class Person extends AbstractEntity { // , DocumentedEntity {
         Dr
     }
     
+    public Person() {
+    }
+    
+    public Person(Long id, Long version, String uid) {
+    	super(id, version, uid);
+    	contacts = new HashSet<Contact>();
+    }
+    
     @Enumerated(EnumType.ORDINAL)
     private Salutation salutation;
 

@@ -35,6 +35,13 @@ public class Contact extends AbstractEntity {
     private static final long serialVersionUID = 1L;
 
 
+    public Contact() {
+    }
+    
+    public Contact(Long id, Long version, String uid) {
+    	super(id, version, uid);
+    }
+    
     @ManyToOne(optional=false)
     private Person person;
 
