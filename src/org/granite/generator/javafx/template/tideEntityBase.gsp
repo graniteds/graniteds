@@ -267,7 +267,6 @@ public class ${jClass.as3Type.name}Base<%
             }
         } 
         else {%>
-        
     public StringProperty uidProperty() {
     	return ${jClass.uid.name};
     }
@@ -282,8 +281,7 @@ public class ${jClass.as3Type.name}Base<%
     }
 
     if (generateDefaultUidMethods) {%>
-
-    public void set uid(String value) {
+    public void setUid(String value) {
         // noop...
     }
     public String getUid() {<%
@@ -291,36 +289,28 @@ public class ${jClass.as3Type.name}Base<%
         // First case: one or multiple (@IdClass) @Id simple fields.
         if (!jClass.firstIdentifier.isAnnotationPresent(EmbeddedId.class)) {
         %>
-            if (<%
-                for (int i = 0; i < jClass.identifiers.size(); i++) {
-                    JavaFieldProperty jId = jClass.identifiers.get(i);
-                    %><%= (i > 0) ? " && " : "" %>${jId.name} == null<%
-                }%>)
-                return UUID.randomUUID().toString().toUpperCase();
-            return getClass().getName() + "#[" + <%
-                for (int i = 0; i < jClass.identifiers.size(); i++) {
-                    JavaFieldProperty jId = jClass.identifiers.get(i);
-                    %><%= (i > 0) ? (" + \",\" + ") : "" %>${jId.name}.toString()<%
-                }%> + "]";<%
+        if (<%
+            for (int i = 0; i < jClass.identifiers.size(); i++) {
+                JavaFieldProperty jId = jClass.identifiers.get(i);
+                %><%= (i > 0) ? " && " : "" %>${jId.name}.get() == null<%
+            }%>)
+            return UUID.randomUUID().toString().toUpperCase();
+        return getClass().getName() + "#[" + <%
+            for (int i = 0; i < jClass.identifiers.size(); i++) {
+                JavaFieldProperty jId = jClass.identifiers.get(i);
+                %><%= (i > 0) ? (" + \",\" + ") : "" %>${jId.name}.toString()<%
+            }%> + "]";<%
         }
         // Second case: one @EmbeddedId composite field.
         else {
             JavaFieldProperty jId = jClass.firstIdentifier;
-        %>
-            if (!_${jId.name})
-                return UUID.randomUUID().toString().toUpperCase();
-            return getClass().getName() + "#[" + <%
-                int i = 0;
-                for (field in jId.type.declaredFields) {
-                    if (!Modifier.isStatic(field.modifiers) &&
-                        !Modifier.isTransient(field.modifiers) &&
-                        !field.isAnnotationPresent(Transient.class)) {
-                        %><%= (i++ > 0) ? (" + \",\" + ") : "" %>${jId.name}.${field.name}.toString()<%
-                    }
-                }%> + "]";<%
+    %>
+        if (${jId.name}.get() == null)
+            return UUID.randomUUID().toString().toUpperCase();
+        return getClass().getName() + "#[" + ${jId.name}.get().toString();<%
         }
         %>
-        }<%
+    }<%
     }
 
     ///////////////////////////////////////////////////////////////////////////
