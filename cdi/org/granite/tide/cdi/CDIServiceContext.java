@@ -450,9 +450,11 @@ public class CDIServiceContext extends TideServiceContext {
         InvocationResult ires = new InvocationResult(result, results);
         ires.setScope(scope);
         ires.setRestrict(restrict);
-		Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
-    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
-			ires.setMerge(false);
+        if (componentName != null || componentClass != null) {
+			Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
+	    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
+				ires.setMerge(false);
+        }
         
         ires.setUpdates(updates);
         
