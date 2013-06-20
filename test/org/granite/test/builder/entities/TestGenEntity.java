@@ -243,7 +243,11 @@ public class TestGenEntity {
 	
 	private void checkCompile(JavaFileObject... sources) {
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		String[] options = new String[] { "-classpath", "lib-test/granite-client.jar;lib-test/granite-java-client.jar;lib-test/granite-javafx-client.jar" };
+		String jfxJar = System.getenv("JAVA_HOME") + "/jre/lib/jfxrt.jar";
+		String[] options = new String[] { 
+			"-classpath", jfxJar + File.pathSeparator + "lib-test/granite-client.jar" + File.pathSeparator + "lib-test/granite-java-client.jar" + File.pathSeparator + "lib-test/granite-javafx-client.jar",
+			"-d", "test-classes"
+		};
 		Boolean compileOk = compiler.getTask(null, null, null, Arrays.asList(options), null, Arrays.asList(sources)).call();
 		Assert.assertTrue("Compilation ok", compileOk);
 	}	
