@@ -45,5 +45,8 @@ public class AbstractTideLazyLoadingHibernateTest extends AbstractTideTestCase {
         ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
         Assert.assertTrue("Person initialized", classGetter.isInitialized(null, null, result));
         Assert.assertTrue("Collection initialized", classGetter.isInitialized(result, "contacts", result.getContacts()));
+        
+		Assert.assertEquals("Sessions closed", sessionFactory.getStatistics().getSessionOpenCount(), 
+				sessionFactory.getStatistics().getSessionCloseCount());
     }
 }

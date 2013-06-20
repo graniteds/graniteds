@@ -20,7 +20,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 public class AbstractTideLazyLoadingJPATest extends AbstractTideTestCase {
 	
 	@PersistenceContext
-	private EntityManager entityManager;
+	protected EntityManager entityManager;
 	
 	@Inject
 	private PlatformTransactionManager txManager;
@@ -42,5 +42,10 @@ public class AbstractTideLazyLoadingJPATest extends AbstractTideTestCase {
         
         ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
         Assert.assertTrue("Collection initialized", classGetter.isInitialized(result, "contacts", null));
+        
+        checkSessionsClosed();
     }
+	
+	protected void checkSessionsClosed() {		
+	}
 }

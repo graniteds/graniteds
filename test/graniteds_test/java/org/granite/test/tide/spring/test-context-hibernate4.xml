@@ -36,6 +36,7 @@
                 <prop key="hibernate.dialect">org.hibernate.dialect.H2Dialect</prop>
                 <prop key="hibernate.showSql">true</prop>
                 <prop key="hibernate.hbm2ddl.auto">create</prop>
+                <prop key="hibernate.generate_statistics">true</prop>
             </props>
         </property>
     </bean>
