@@ -11,6 +11,7 @@ public class Hibernate4TideLazyLoadingJPATest extends AbstractTideLazyLoadingJPA
 	
 	protected void checkSessionsClosed() {
 		Session session = (Session)entityManager.getDelegate();
-		Assert.assertEquals("Sessions closed", 0L, session.getSessionFactory().getStatistics().getSessionOpenCount());
+		Assert.assertEquals("Sessions closed", session.getSessionFactory().getStatistics().getSessionOpenCount(), 
+				session.getSessionFactory().getStatistics().getSessionCloseCount());
 	}
 }
