@@ -19,6 +19,7 @@ package org.granite.test.tide.data
         public function setUp():void {
             Tide.resetInstance();
             _ctx = Tide.getInstance().getContext();
+			_ctx.meta_uninitializeAllowed = false;
         }
         
         
@@ -134,7 +135,7 @@ package org.granite.test.tide.data
 		}
 		
 		[Test]
-		public function testMergeLazyResulty():void {
+		public function testMergeLazyResult():void {
 			
 			var p:Patient4c = new Patient4c();
 			p.id = 1;
