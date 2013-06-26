@@ -21,7 +21,7 @@ public class PersonService {
     	EntityTransaction et = entityManager.getTransaction();
     	et.begin();
         Person person = new Person();
-        person.initIdUid(12, null);
+        person.initIdUid(12L, null);
         person.setLastName(lastName);
         entityManager.persist(person);
         entityManager.flush();

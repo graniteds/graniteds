@@ -40,30 +40,40 @@ public abstract class AbstractEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id @GeneratedValue 
-    private Integer id;
+    private Long id;
     
     /* "UUID" and "UID" are Oracle reserved keywords -> "ENTITY_UID" */
     @Column(name="ENTITY_UID", unique=true, nullable=false, updatable=false, length=36)
     private String uid;
 
     @Version
-    private Integer version;
+    private Long version;
     
-    public Integer getId() {
+    
+    public AbstractEntity() {    	
+    }
+    
+    public AbstractEntity(Long id, Long version, String uid) {
+    	this.id = id;
+    	this.version = version;
+    	this.uid = uid;
+    }
+    
+    public Long getId() {
         return id;
     }
     
     public void initUid() {
     	uid();
     }
-    public void initIdUid(Integer id, String uid) {
+    public void initIdUid(Long id, String uid) {
         this.id = id;
         if (uid == null)
             uid = "Person:" + id;
         this.uid = uid;
     }
     
-    public Integer getVersion() {
+    public Long getVersion() {
         return version;
     }
     
@@ -77,6 +87,7 @@ public abstract class AbstractEntity implements Serializable {
         return uid().hashCode();
     }
     
+	@SuppressWarnings("unused")
 	@PrePersist
     private void onPrePersist() {
         uid();

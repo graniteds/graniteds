@@ -26,25 +26,25 @@ public class JPAJobService implements JobService {
 	private EntityManager entityManager;
 	
 	public void init() {
-		Customer customer = entityManager.find(Customer.class, 1);
+		Customer customer = entityManager.find(Customer.class, 1L);
 		if (customer == null) {
 			customer = new Customer();
-			customer.initIdUid(1, "C1");
+			customer.initIdUid(1L, "C1");
 			Job job = new Job();
-			job.initIdUid(1, "J1");
+			job.initIdUid(1L, "J1");
 			customer.setJobs(new HashSet<Job>());
 			customer.getJobs().add(job);
 			job.setCustomer(customer);
 			job.setApplications(new HashSet<JobApplication>());
 			User user = new User();
-			user.initIdUid(1, "U1");
+			user.initIdUid(1L, "U1");
 			user.setApplications(new HashSet<JobApplication>());
 			entityManager.persist(customer);
 			entityManager.persist(user);
 		}
 	}
     
-	public Object[] apply(Integer jobId, Integer userId) {
+	public Object[] apply(Long jobId, Long userId) {
 		Job job = entityManager.find(Job.class, jobId);
 		User user = entityManager.find(User.class, userId);
 		
@@ -61,7 +61,7 @@ public class JPAJobService implements JobService {
 		return new Object[] { job, user, application };
 	}
     
-	public Object[] createMeeting(Integer customerId, Integer userId) {
+	public Object[] createMeeting(Long customerId, Long userId) {
 		Customer customer = entityManager.find(Customer.class, customerId);
 		User user = entityManager.find(User.class, userId);
 		
@@ -75,7 +75,7 @@ public class JPAJobService implements JobService {
 		return new Object[] { customer, user, meeting };
 	}
     
-	public void newMeeting(Integer customerId, Integer userId) {
+	public void newMeeting(Long customerId, Long userId) {
 		Customer customer = entityManager.find(Customer.class, customerId);
 		User user = entityManager.find(User.class, userId);
 		
@@ -87,7 +87,7 @@ public class JPAJobService implements JobService {
 		user.getMeetings().add(meeting);
 	}
     
-	public Object[] closeMeeting(Integer meetingId) {
+	public Object[] closeMeeting(Long meetingId) {
 		Meeting meeting = entityManager.find(Meeting.class, meetingId);
 		
 		meeting.getUser().getMeetings().remove(meeting);

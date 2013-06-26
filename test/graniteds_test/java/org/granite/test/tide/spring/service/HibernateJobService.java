@@ -36,27 +36,27 @@ public class HibernateJobService implements JobService {
 	public void init() {
 		Customer customer;
 		try {
-			customer = (Customer)getSession().load(Customer.class, 1);
+			customer = (Customer)getSession().load(Customer.class, 1L);
 			Hibernate.initialize(customer);
 		}
 		catch (ObjectNotFoundException e) {
 			customer = new Customer();
-			customer.initIdUid(1, "C1");
+			customer.initIdUid(1L, "C1");
 			Job job = new Job();
-			job.initIdUid(1, "J1");
+			job.initIdUid(1L, "J1");
 			customer.setJobs(new HashSet<Job>());
 			customer.getJobs().add(job);
 			job.setCustomer(customer);
 			job.setApplications(new HashSet<JobApplication>());
 			User user = new User();
-			user.initIdUid(1, "U1");
+			user.initIdUid(1L, "U1");
 			user.setApplications(new HashSet<JobApplication>());
 			getSession().persist(customer);
 			getSession().persist(user);
 		}
 	}
     
-	public Object[] apply(Integer jobId, Integer userId) {
+	public Object[] apply(Long jobId, Long userId) {
 		Session session = getSession();
 		
 		Job job = (Job)session.load(Job.class, jobId);
@@ -75,7 +75,7 @@ public class HibernateJobService implements JobService {
 		return new Object[] { job, user, application };
 	}
     
-	public Object[] createMeeting(Integer customerId, Integer userId) {
+	public Object[] createMeeting(Long customerId, Long userId) {
 		Session session = getSession();
 		
 		Customer customer = (Customer)session.load(Customer.class, customerId);
@@ -91,7 +91,7 @@ public class HibernateJobService implements JobService {
 		return new Object[] { customer, user, meeting };
 	}
 	
-	public void newMeeting(Integer customerId, Integer userId) {
+	public void newMeeting(Long customerId, Long userId) {
 		Session session = getSession();
 		
 		Customer customer = (Customer)session.load(Customer.class, customerId);
@@ -105,7 +105,7 @@ public class HibernateJobService implements JobService {
 		user.getMeetings().add(meeting);
 	}
     
-	public Object[] closeMeeting(Integer meetingId) {
+	public Object[] closeMeeting(Long meetingId) {
 		Session session = getSession();
 		
 		Meeting meeting = (Meeting)session.load(Meeting.class, meetingId);

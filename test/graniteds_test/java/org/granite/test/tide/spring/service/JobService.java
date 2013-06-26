@@ -6,11 +6,11 @@ public interface JobService {
 	
 	public void init();
     
-	public Object[] apply(Integer jobId, Integer userId);
+	public Object[] apply(Long jobId, Long userId);
     
-	public Object[] createMeeting(Integer customerId, Integer userId);
+	public Object[] createMeeting(Long customerId, Long userId);
 
-	public void newMeeting(Integer customerId, Integer userId);
+	public void newMeeting(Long customerId, Long userId);
 
-	public Object[] closeMeeting(Integer meetingId);
+	public Object[] closeMeeting(Long meetingId);
 }

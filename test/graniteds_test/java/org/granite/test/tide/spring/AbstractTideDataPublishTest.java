@@ -27,7 +27,7 @@ public class AbstractTideDataPublishTest extends AbstractTideTestCase {
     
 	@Test
     public void testPublish1() {
-		Object[] result = jobService.apply(1, 1);
+		Object[] result = jobService.apply(1L, 1L);
 		
         Assert.assertNull("Thread cleaned up", DataContext.get());
         
@@ -44,7 +44,7 @@ public class AbstractTideDataPublishTest extends AbstractTideTestCase {
     
 	@Test
     public void testPublish2() {
-		jobService.createMeeting(1, 1);
+		jobService.createMeeting(1L, 1L);
 		
         Assert.assertNull("Thread cleaned up", DataContext.get());
         

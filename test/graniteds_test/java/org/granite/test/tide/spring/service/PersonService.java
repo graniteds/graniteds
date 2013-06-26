@@ -19,7 +19,7 @@ public class PersonService {
     
     public void create(String lastName) {
         Person person = new Person();
-        person.initIdUid(12, null);
+        person.initIdUid(12L, null);
         person.setLastName(lastName);
         entityManager.persist(person);
     }

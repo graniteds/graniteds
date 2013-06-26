@@ -18,7 +18,7 @@ public class CreatePersonAction {
     
     public void create(String lastName) {
         person = new Person();
-        person.initIdUid(12, null);
+        person.initIdUid(12L, null);
         person.setLastName(lastName);
         
         StatusMessages.instance().add(Severity.ERROR, "person created");
