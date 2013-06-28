@@ -119,8 +119,13 @@ public class DataObserveParams implements Serializable {
     }	
     
     private boolean containsParams(DataObserveParams params) {
-    	if (this.selector != null)
-    		return !this.selector.equals(params.selector);
+    	if (this.selector != null && !this.selector.equals(params.selector))
+    		return false;
+    	
+    	if (this.params == null)
+    		return params.params == null;
+    	if (params.params == null)
+    		return true;
     	
     	for (Map.Entry<String, Set<String>> me : params.params.entrySet()) {
     		Set<String> values = this.params.get(me.getKey());
