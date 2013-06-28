@@ -40,6 +40,8 @@ import org.granite.messaging.webapp.ServletGraniteContext;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -48,6 +50,7 @@ import org.springframework.security.authentication.AuthenticationTrustResolverIm
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.encoding.PasswordEncoder;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -67,7 +70,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * @author Bouiaw
  * @author wdrai
  */
-public class SpringSecurity3Service extends AbstractSecurityService implements ApplicationContextAware {
+public class SpringSecurity3Service extends AbstractSecurityService implements ApplicationContextAware, ApplicationEventPublisherAware {
         
 	private static final Logger log = Logger.getLogger(SpringSecurity3Service.class);
 	
@@ -75,6 +78,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
     private static final String SECURITY_SERVICE_APPLIED = "__spring_security_granite_service_applied";
 	
     private ApplicationContext applicationContext = null;
+    private ApplicationEventPublisher eventPublisher = null;
 	private AuthenticationManager authenticationManager = null;
 	private AuthenticationTrustResolver authenticationTrustResolver = new AuthenticationTrustResolverImpl();
 	private SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -102,6 +106,10 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
 	
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
+	}
+	
+	public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
+		this.eventPublisher = eventPublisher;
 	}
 	
 	public void setAuthenticationManager(AuthenticationManager authenticationManager) {
@@ -191,7 +199,10 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
 	            catch (Exception e) {
 	            	log.error(e, "Could not save context after authentication");
 	            }
-
+	            
+	            if (eventPublisher != null)
+	            	eventPublisher.publishEvent(new AuthenticationSuccessEvent(authentication));
+	            
 	            endLogin(credentials, charset);
             } 
             catch (AuthenticationException e) {
