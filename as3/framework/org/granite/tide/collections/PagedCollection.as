@@ -103,6 +103,11 @@ package org.granite.tide.collections {
 		 */
 		protected var _filterRefresh:Boolean = false;
 		private var _ipes:Array;		// Array of ItemPendingErrors
+
+		/**
+		 * @private
+		 */
+		protected var _autoRefresh:Boolean = true;
 		
 		// GDS-523
 		public var uidProperty:String = "uid";
@@ -173,11 +178,17 @@ package org.granite.tide.collections {
 			
 			_elementName = elementClass != null ? ClassUtil.getUnqualifiedClassName(elementClass) : null;
 			
-			if (_elementName != null)
+			if (_autoRefresh && _elementName != null)
 	        	_context.addEventListener("org.granite.tide.data.refresh." + _elementName, refreshHandler, false, 0, true);
 		}
 		
-		
+		/**
+		 *  Set whether or not the collection will subscribe to org.granite.tide.data.refresh.<Entity Name> 
+		 *  events and automatically refresh when they are dispatched
+		 */
+		public function set autoRefresh(autoRefresh:Boolean):void {
+			_autoRefresh = autoRefresh;
+		}
 		
 		/**
 		 * 	Clear collection content
@@ -423,8 +434,10 @@ package org.granite.tide.collections {
 						
 		            startTrackUpdates(localIndex[i]);
 		        }
-		        for each (entityName in entityNames)
-		        	_context.addEventListener("org.granite.tide.data.refresh." + entityName, refreshHandler, false, 0, true);
+		        if(_autoRefresh) {
+		        	for each (entityName in entityNames)
+		        		_context.addEventListener("org.granite.tide.data.refresh." + entityName, refreshHandler, false, 0, true);
+		        }
 		    }
 		    
 			// Must be before collection event dispatch because it can trigger a new getItemAt
