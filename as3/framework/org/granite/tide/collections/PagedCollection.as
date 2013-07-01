@@ -302,7 +302,7 @@ package org.granite.tide.collections {
 		}
 
 		
-		private function refreshHandler(event:Event):void {
+		protected function refreshHandler(event:Event):void {
 			fullRefresh();
 		}
 		
