@@ -188,6 +188,10 @@ package org.granite.tide.collections {
 		 */
 		public function set autoRefresh(autoRefresh:Boolean):void {
 			_autoRefresh = autoRefresh;
+
+			// In case _elementName is already set
+			if (!autoRefresh && _elementName != null)
+	        	_context.removeEventListener("org.granite.tide.data.refresh." + _elementName, refreshHandler);
 		}
 		
 		/**
