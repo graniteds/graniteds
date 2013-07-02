@@ -252,6 +252,46 @@ package org.granite.tide.data {
 		
 		
 		/**
+		 *	Statistics on the entity manager
+		 * 
+		 *  @return statistics
+		 */
+		public function getStatistics():Object {
+			var trackingSize:uint = 0;
+			if (_trackingListeners != null) {
+				for (var tracking:Object in _trackingListeners)
+					trackingSize++;
+			}
+			
+			var refSize:uint = 0;
+			if (_entityReferences != null) {
+				for (var ref:Object in _entityReferences)
+					refSize++;
+			}
+			
+			var cacheSize:uint = 0;
+			if (_mergeContext.entityCache != null) {
+				for (var cache:Object in _mergeContext.entityCache)
+					cacheSize++;
+			}
+			
+			var dirtySize:uint = 0;
+			if (_dirtyCheckContext.savedProperties != null) {
+				for (var dirty:Object in _dirtyCheckContext.savedProperties)
+					dirtySize++;
+			}
+			
+			return {
+				cacheSize: _entitiesByUID.size,
+				referenceSize: refSize,
+				dirtyCacheSize: dirtySize,
+				trackingSize: trackingSize,
+				entityCacheSize: cacheSize
+			};
+		}
+		
+		
+		/**
 		 *  @private
 		 *  Attach an entity to this context
 		 * 
@@ -1543,22 +1583,27 @@ package org.granite.tide.data {
          *  @param propertyName property name of the owning object
          */ 
         public static function defaultMerge(em:IEntityManager, obj:Object, dest:Object, mergeUpdate:Boolean = true, expr:IExpression = null, parent:Object = null, propertyName:String = null):void {
+			var nextParent:Object = parent;
+			if (nextParent == null && !(dest.hasOwnProperty("__meta_nocache__") && dest.__meta_nocache__))
+				nextParent = dest;
+			
             var cinfo:Object = ObjectUtil.getClassInfo(obj, null, { includeTransient: false, includeReadOnly: false });
 			var rw:Array = [];
             for each (var p:String in cinfo.properties) {
                 var o:Object = obj[p];
 				var d:Object = dest[p];
-                o = em.meta_mergeExternal(o, d, expr, parent != null ? parent : dest, propertyName != null ? propertyName + '.' + p : p);
+                o = em.meta_mergeExternal(o, d, expr, nextParent, propertyName != null ? propertyName + '.' + p : p);
                 if (o !== d && mergeUpdate)
                 	dest[p] = o;
 				rw.push(p);
             }
+			
 			cinfo = ObjectUtil.getClassInfo(obj, rw, { includeReadOnly: true });
 			for each (p in cinfo.properties) {
 				if (obj[p] is IUID || dest[p] is IUID)
 					throw new Error("Cannot merge the read-only property " + p + " on bean " + obj + " with an IUID value, this will break local unicity and caching. Change property access to read-write.");  
 				
-				em.meta_mergeExternal(obj[p], dest[p], expr, parent != null ? parent : dest, propertyName != null ? propertyName + '.' + p : p);
+				em.meta_mergeExternal(obj[p], dest[p], expr, nextParent, propertyName != null ? propertyName + '.' + p : p);
 			}
         }
 

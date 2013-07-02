@@ -575,6 +575,15 @@ package org.granite.tide {
 		public function meta_getSavedProperties():Dictionary {
 			return _entityManager.savedProperties;
 		}
+		
+		/**
+		 *	Statistics on the entity manager
+		 * 
+		 *  @return statistics
+		 */
+		public function meta_getEntityManagerStatistics():Object {
+			return _entityManager.getStatistics();
+		}
         
         /**
          *  @private 
