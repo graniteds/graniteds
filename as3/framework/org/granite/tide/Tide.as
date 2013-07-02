@@ -1181,12 +1181,12 @@ package org.granite.tide {
 					    
 		    if (hasEventListener(type)) {
         		if (localEvent == null)
-        			localEvent = new TideContextEvent(type, context, currentParams);
+        			localEvent = new TideContextEvent(type, context, params);
         		super.dispatchEvent(localEvent);
 		    }
 		    if (context.hasEventListener(type)) {
         		if (localEvent == null)
-        			localEvent = new TideContextEvent(type, context, currentParams);
+        			localEvent = new TideContextEvent(type, context, params);
         		context.dispatchEvent(localEvent);
 		    }
 		    
