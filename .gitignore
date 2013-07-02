@@ -21,5 +21,9 @@ html-template
 /examples/**/.actionScriptProperties
 /examples/**/.flexProperties
 .FlexUnitSettings
+*.fdproj
+obj/*
+*.swp
+*~
 
 /auth.properties

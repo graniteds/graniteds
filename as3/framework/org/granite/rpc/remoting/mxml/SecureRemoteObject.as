@@ -25,7 +25,7 @@ package org.granite.rpc.remoting.mxml {
     import mx.logging.Log;
     import mx.logging.ILogger;
 
-    import mx.rpc.remoting.mxml.RemoteObject;
+    import org.granite.rpc.remoting.mxml.GraniteRemoteObject;
     import mx.rpc.events.FaultEvent;
 
     import org.granite.events.SecurityEvent;
@@ -36,7 +36,7 @@ package org.granite.rpc.remoting.mxml {
      *  
      * 	@author Franck WOLFF
      */
-    public dynamic class SecureRemoteObject extends RemoteObject {
+    public dynamic class SecureRemoteObject extends GraniteRemoteObject {
         
         private static var log:ILogger = Log.getLogger("org.granite.rpc.remoting.mxml.SecureRemoteObject");
 

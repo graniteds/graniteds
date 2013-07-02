@@ -21,13 +21,14 @@
 package org.granite.tide.rpc {
 
     import mx.rpc.remoting.mxml.Operation;
+    import org.granite.tide.rpc.GraniteOperation;
     import mx.core.mx_internal;
     
     import mx.rpc.AsyncToken;
     import mx.messaging.messages.IMessage;
-	import mx.messaging.events.MessageEvent;
+    import mx.messaging.events.MessageEvent;
     import mx.rpc.remoting.mxml.RemoteObject;
-	import mx.rpc.events.AbstractEvent;
+    import mx.rpc.events.AbstractEvent;
     import mx.rpc.events.ResultEvent;
     import mx.rpc.events.FaultEvent;
     
@@ -37,7 +38,7 @@ package org.granite.tide.rpc {
 
 
     [ExcludeClass]
-    public class TideOperation extends Operation {
+    public class TideOperation extends GraniteOperation {
 
 		private var _tide:Tide;
 		
