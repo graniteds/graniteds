@@ -10,7 +10,8 @@ package org.granite.test.tide.spring
     public class MockSpring extends Spring
     {
         public var token:MockSpringAsyncToken;
-        
+		public var tokenClass:Class = null;
+
         public function MockSpring(destination:String = null) {
             super(destination);
         }
@@ -55,8 +56,12 @@ class MockSpringOperation extends TideOperation {
     }
     
     public override function send(... args:Array):AsyncToken {
-        var token:MockSpringAsyncToken = MockSpring.getInstance().token;
-        token.send(_name, args);
+		var token:MockSpringAsyncToken = MockSpring.getInstance().token;
+		if (token == null) {
+			var tokenClass:Class = MockSpring.getInstance().tokenClass;
+			token = new tokenClass() as MockSpringAsyncToken;
+		}
+		token.send(_name, args);
         return token;
     }
 }
