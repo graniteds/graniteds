@@ -25,6 +25,7 @@ package org.granite.test.tide.spring
             MockSpring.reset();
             _ctx = MockSpring.getInstance().getSpringContext();
             MockSpring.getInstance().token = new MockSimpleCallAsyncToken();
+<<<<<<< HEAD
             MockSpring.getInstance().addComponentWithFactory("pagedQueryClient", PagedQuery, { elementClass: Person, maxResults: 75 });
         }
         
@@ -34,11 +35,29 @@ package org.granite.test.tide.spring
         	var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
 			
 			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, refreshHandler, 1000, 1);
+=======
+            MockSpring.getInstance().addComponentWithFactory("pagedQueryClient", PagedQuery, { maxResults: 75 });
+        }
+        
+        
+		private var timer:Timer = null;
+		private var refreshListener:Function = null;
+		
+        [Test(async)]
+        public function testSpringPagedQueryRefresh():void {
+        	var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
+			refreshListener = Async.asyncHandler(this, refreshHandler, 1000, 1);
+			pagedQuery.addEventListener(PagedCollection.COLLECTION_PAGE_CHANGE, refreshListener); 
+>>>>>>> 112b602... GDS-1133 PagedCollection result keeps references on all received
         	pagedQuery.fullRefresh();
         }
         
         private function refreshHandler(event:Object, pass:Object = null):void {
 			var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
+<<<<<<< HEAD
+=======
+			pagedQuery.removeEventListener(PagedCollection.COLLECTION_PAGE_CHANGE, refreshListener);
+>>>>>>> 112b602... GDS-1133 PagedCollection result keeps references on all received
 			
 			var count:Number = pass as Number;
 			if (count < 100) {
@@ -61,6 +80,7 @@ package org.granite.test.tide.spring
 			person.uid = "P" + count;
 			person.lastName = "Person" + count;
 			
+<<<<<<< HEAD
 			var updates:Array = [ [ 'PERSIST', person ] ];
 			_ctx.meta_handleUpdates(null, updates);
 			
@@ -126,6 +146,15 @@ package org.granite.test.tide.spring
 			_ctx.meta_handleUpdateEvents(updates);
 		}
 		
+=======
+			_ctx.meta_handleUpdates(null, [ [ 'PERSIST', person ] ]);
+			
+			refreshListener = Async.asyncHandler(this, refreshHandler, 1000, count+1);
+			pagedQuery.addEventListener(PagedCollection.COLLECTION_PAGE_CHANGE, refreshListener); 
+			pagedQuery.fullRefresh();
+		}
+		
+>>>>>>> 112b602... GDS-1133 PagedCollection result keeps references on all received
 	}
 }
 
