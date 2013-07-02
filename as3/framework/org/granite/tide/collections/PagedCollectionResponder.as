@@ -48,7 +48,10 @@ package org.granite.tide.collections {
 	            _faultHandlers.push(faultHandler);   
 	        _first = first;
 	        _max = max;
-			_mergeWith = { firstResult: first, maxResults: max, resultList: collection, resultCount: 0, __meta_nocache__: true };
+			if (collection != null)
+				_mergeWith = { firstResult: first, maxResults: max, resultList: collection, resultCount: 0, __meta_nocache__: true };
+			else
+				_mergeWith = { __meta_nocache__: true };
 	    }
 	    
 	    public function addHandlers(resultHandler:Function = null, faultHandler:Function = null):void {

@@ -25,24 +25,20 @@ package org.granite.test.tide.spring
             MockSpring.reset();
             _ctx = MockSpring.getInstance().getSpringContext();
             MockSpring.getInstance().token = new MockSimpleCallAsyncToken();
-            MockSpring.getInstance().addComponentWithFactory("pagedQueryClient", PagedQuery, { maxResults: 75 });
+            MockSpring.getInstance().addComponentWithFactory("pagedQueryClient", PagedQuery, { elementClass: Person, maxResults: 75 });
         }
         
         
-		private var timer:Timer = null;
-		private var refreshListener:Function = null;
-		
         [Test(async)]
         public function testSpringPagedQueryRefresh():void {
         	var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
-			refreshListener = Async.asyncHandler(this, refreshHandler, 1000, 1);
-			pagedQuery.addEventListener(PagedCollection.COLLECTION_PAGE_CHANGE, refreshListener); 
+			
+			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, refreshHandler, 1000, 1);
         	pagedQuery.fullRefresh();
         }
         
         private function refreshHandler(event:Object, pass:Object = null):void {
 			var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
-			pagedQuery.removeEventListener(PagedCollection.COLLECTION_PAGE_CHANGE, refreshListener);
 			
 			var count:Number = pass as Number;
 			if (count < 100) {
@@ -65,11 +61,69 @@ package org.granite.test.tide.spring
 			person.uid = "P" + count;
 			person.lastName = "Person" + count;
 			
-			_ctx.meta_handleUpdates(null, [ [ 'PERSIST', person ] ]);
+			var updates:Array = [ [ 'PERSIST', person ] ];
+			_ctx.meta_handleUpdates(null, updates);
 			
-			refreshListener = Async.asyncHandler(this, refreshHandler, 1000, count+1);
-			pagedQuery.addEventListener(PagedCollection.COLLECTION_PAGE_CHANGE, refreshListener); 
+			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, refreshHandler, 1000, count+1);
+			
+			_ctx.meta_handleUpdateEvents(updates);
+		}
+		
+		
+		private var _refreshCount:int = 0;
+		
+		[Test(async)]
+		public function testSpringPagedQueryRefresh2():void {
+			var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
+			pagedQuery.refreshFilter = function(objects:Array):Boolean {
+				for each (var obj:Object in objects) {
+					if (obj.id % 2 == 0)
+						return false;
+				}
+				return true;
+			};
+			
+			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, refresh2Handler, 1000, 1);
 			pagedQuery.fullRefresh();
+		}
+		
+		private function refresh2Handler(event:Object, count:Number = NaN):void {
+			_refreshCount++;
+			
+			var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
+			
+			if (count > 2) {
+				Assert.fail("Too many refreshes");
+				return;
+			}
+			
+			Async.delayCall(this, function():void { 
+				triggerRefresh2(pagedQuery, count);
+			}, 1000);
+		}
+		
+		private function timeout2Handler(count:Number = NaN):void {
+			var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
+			
+			// Check entityManager size
+			var statistics:Object = _ctx.meta_getEntityManagerStatistics();
+			Assert.assertEquals("No reference", 0, statistics.referenceSize);
+			Assert.assertEquals("Refresh count", 2, _refreshCount);
+		}
+		
+		private function triggerRefresh2(pagedQuery:PagedQuery, count:Number):void {
+			var person:Person = new Person();
+			person.id = count;
+			person.version = 0;
+			person.uid = "P" + count;
+			person.lastName = "Person" + count;
+			
+			var updates:Array = [ [ 'PERSIST', person ] ];
+			_ctx.meta_handleUpdates(null, updates);
+			
+			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, refresh2Handler, 1000, count+1, timeout2Handler);
+			
+			_ctx.meta_handleUpdateEvents(updates);
 		}
 		
 	}

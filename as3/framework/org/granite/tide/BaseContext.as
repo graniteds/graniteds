@@ -1822,7 +1822,7 @@ package org.granite.tide {
 		 *  @param updates list of data updates
 		 */
 		public function meta_handleUpdateEvents(updates:Array):void {
-			var refreshes:Array = new Array();
+			var refreshes:Dictionary = new Dictionary();
 			
 			for each (var update:Array in updates) {
 				var entity:Object = meta_getCachedObject(update[1], String(update[0]).toLowerCase() != "remove");
@@ -1835,14 +1835,16 @@ package org.granite.tide {
 					raiseEvent(eventType, entity);
 					
 					if (updateType == "persist" || updateType == "remove") {
-						if (refreshes.indexOf(entityName) < 0)
-							refreshes.push(entityName);
+						if (!refreshes[entityName])
+							refreshes[entityName] = [ entity ];
+						else
+							refreshes[entityName].push(entity);
 					} 
 				}
 			}
 			
-			for each (var refresh:String in refreshes)
-				raiseEvent("org.granite.tide.data.refresh." + refresh);
+			for (var refresh:String in refreshes)
+				raiseEvent("org.granite.tide.data.refresh." + refresh, refreshes[refresh]);
 		}
     
 		

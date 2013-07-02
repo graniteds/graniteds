@@ -42,6 +42,7 @@ package org.granite.tide.collections {
     
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
+    import org.granite.tide.events.TideContextEvent;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideResultEvent;
     import org.granite.util.ClassUtil;
@@ -308,7 +309,16 @@ package org.granite.tide.collections {
 		}
 
 		
-		private function refreshHandler(event:Event):void {
+		private var _refreshFilter:Function = null;
+		
+		public function set refreshFilter(filter:Function):void {
+			_refreshFilter = filter;
+		}
+		
+		private function refreshHandler(event:TideContextEvent):void {
+			if (_refreshFilter != null && !_refreshFilter(event.params[0]))
+				return;
+			
 			fullRefresh();
 		}
 		
@@ -423,7 +433,7 @@ package org.granite.tide.collections {
 		    var entityName:String;
 		    var entityNames:Array = null;
 		    if (localIndex != null) {
-		    	entityNames = new Array();
+		    	entityNames = [];
 		        for (i = 0; i < localIndex.length; i++) {
 					entityName = ClassUtil.getUnqualifiedClassName(localIndex[i]);
 					if (entityName != _elementName && entityNames.indexOf(entityName) < 0)
@@ -436,7 +446,7 @@ package org.granite.tide.collections {
 		    }
 			localIndex = list.toArray();
 		    if (localIndex != null) {
-		    	entityNames = new Array();
+		    	entityNames = [];
 		        for (i = 0; i < localIndex.length; i++) {
 					entityName = ClassUtil.getUnqualifiedClassName(localIndex[i]);
 					if (entityName != _elementName && entityNames.indexOf(entityName) < 0)
@@ -444,7 +454,7 @@ package org.granite.tide.collections {
 						
 		            startTrackUpdates(localIndex[i]);
 		        }
-		        if(_autoRefresh) {
+		        if (_autoRefresh) {
 		        	for each (entityName in entityNames)
 		        		_context.addEventListener("org.granite.tide.data.refresh." + entityName, refreshHandler, false, 0, true);
 		        }
