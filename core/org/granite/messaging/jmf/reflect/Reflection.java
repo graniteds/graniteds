@@ -20,6 +20,9 @@
 
 package org.granite.messaging.jmf.reflect;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -32,8 +35,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.granite.messaging.annotations.Include;
 import org.granite.messaging.annotations.Exclude;
+import org.granite.messaging.annotations.Include;
 
 /**
  * @author Franck WOLFF
@@ -42,11 +45,14 @@ public class Reflection {
 	
 	protected static final int STATIC_TRANSIENT_MASK = Modifier.STATIC | Modifier.TRANSIENT;
 	protected static final int STATIC_PRIVATE_PROTECTED_MASK = Modifier.STATIC | Modifier.PRIVATE | Modifier.PROTECTED;
+	protected static final Property NULL_PROPERTY = new NullProperty();
 
 	protected final ClassLoader classLoader;
 	protected final ConstructorFactory constructorFactory;
 	protected final Comparator<Property> lexicalPropertyComparator;
-	protected final ConcurrentMap<Class<?>, List<Property>> serializableFieldsCache;
+	
+	protected final ConcurrentMap<Class<?>, List<Property>> serializablePropertiesCache;
+	protected final ConcurrentMap<SinglePropertyKey, Property> singlePropertyCache;
 	
 	public Reflection(ClassLoader classLoader) {
 		this.classLoader = classLoader;
@@ -59,7 +65,8 @@ public class Reflection {
 			}
 		};
 		
-		this.serializableFieldsCache = new ConcurrentHashMap<Class<?>, List<Property>>();
+		this.serializablePropertiesCache = new ConcurrentHashMap<Class<?>, List<Property>>();
+		this.singlePropertyCache = new ConcurrentHashMap<SinglePropertyKey, Property>();
 	}
 	
 	public ClassLoader getClassLoader() {
@@ -97,40 +104,57 @@ public class Reflection {
 		}
 	}
 	
-	public List<Property> findSerializableFields(Class<?> cls) throws SecurityException {
-		List<Property> serializableFields = serializableFieldsCache.get(cls);
+	public Property findSerializableProperty(Class<?> cls, String name) throws SecurityException {
+		List<Property> properties = findSerializableProperties(cls);
+		for (Property property : properties) {
+			if (name.equals(property.getName()))
+				return property;
+		}
+		return null;
+	}
+	
+	public List<Property> findSerializableProperties(Class<?> cls) throws SecurityException {
+		List<Property> serializableProperties = serializablePropertiesCache.get(cls);
 		
-		if (serializableFields == null) {
+		if (serializableProperties == null) {
 			List<Class<?>> hierarchy = new ArrayList<Class<?>>();
 			for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass())
 				hierarchy.add(c);
 			
-			serializableFields = new ArrayList<Property>();
+			serializableProperties = new ArrayList<Property>();
 			for (int i = hierarchy.size() - 1; i >= 0; i--) {
 				Class<?> c = hierarchy.get(i);
-				serializableFields.addAll(findSerializableDeclaredFields(c));
+				serializableProperties.addAll(findSerializableDeclaredProperties(c));
 			}
-			serializableFields = Collections.unmodifiableList(serializableFields);
-			List<Property> previous = serializableFieldsCache.putIfAbsent(cls, serializableFields);
+			serializableProperties = Collections.unmodifiableList(serializableProperties);
+			List<Property> previous = serializablePropertiesCache.putIfAbsent(cls, serializableProperties);
 			if (previous != null)
-				serializableFields = previous;
+				serializableProperties = previous;
 		}
 		
-		return serializableFields;
+		return serializableProperties;
+	}
+	
+	protected FieldProperty newFieldProperty(Field field) {
+		return new SimpleFieldProperty(field);
+	}
+	
+	protected MethodProperty newMethodProperty(Method getter, Method setter, String name) {
+		return new SimpleMethodProperty(getter, setter, name);
 	}
 
-	protected List<Property> findSerializableDeclaredFields(Class<?> cls) throws SecurityException {
+	protected List<Property> findSerializableDeclaredProperties(Class<?> cls) throws SecurityException {
 		
 		if (!isRegularClass(cls))
 			throw new IllegalArgumentException("Not a regular class: " + cls);
 
 		Field[] declaredFields = cls.getDeclaredFields();
-		List<Property> serializableFields = new ArrayList<Property>(declaredFields.length);
+		List<Property> serializableProperties = new ArrayList<Property>(declaredFields.length);
 		for (Field field : declaredFields) {
 			int modifiers = field.getModifiers();
 			if ((modifiers & STATIC_TRANSIENT_MASK) == 0 && !field.isAnnotationPresent(Exclude.class)) {
 				field.setAccessible(true);
-				serializableFields.add(new FieldProperty(field));
+				serializableProperties.add(newFieldProperty(field));
 			}
 		}
 		
@@ -157,18 +181,364 @@ public class Reflection {
 				else
 					continue;
 				
-				serializableFields.add(new MethodProperty(method, name));
+				serializableProperties.add(newMethodProperty(method, null, name));
 			}
 		}
 		
-		Collections.sort(serializableFields, lexicalPropertyComparator);
+		Collections.sort(serializableProperties, lexicalPropertyComparator);
 		
-		return serializableFields;
+		return serializableProperties;
 	}
 	
 	public boolean isRegularClass(Class<?> cls) {
 		return cls != Class.class && !cls.isAnnotation() && !cls.isArray() &&
 			!cls.isEnum() && !cls.isInterface() && !cls.isPrimitive();
+	}
+	
+	public Property findProperty(Class<?> cls, String name, Class<?> type) {
+		NameTypePropertyKey key = new NameTypePropertyKey(cls, name, type);
+		
+		Property property = singlePropertyCache.get(key);
+		
+		if (property == null) {
+			Field field = null;
+			
+			for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
+				try {
+					field = c.getDeclaredField(name);
+				}
+				catch (Exception e) {
+					continue;
+				}
+				
+				if (field.getType() != type)
+					continue;
+				
+				field.setAccessible(true);
+				break;
+			}
+			
+			if (field == null)
+				property = NULL_PROPERTY;
+			else
+				property = newFieldProperty(field);
+			
+			Property previous = singlePropertyCache.putIfAbsent(key, property);
+			if (previous != null)
+				property = previous;
+		}
+		
+		return (property != NULL_PROPERTY ? property : null);
+	}
+	
+	public Property findProperty(Class<?> cls, Class<? extends Annotation> annotationClass) {
+		AnnotatedPropertyKey key = new AnnotatedPropertyKey(cls, annotationClass);
+		
+		Property property = singlePropertyCache.get(key);
+		
+		if (property == null) {
+			boolean searchFields = false;
+			boolean searchMethods = false;
+			
+			if (!annotationClass.isAnnotationPresent(Target.class))
+				searchFields = searchMethods = true;
+			else {
+				Target target = annotationClass.getAnnotation(Target.class);
+				for (ElementType targetType : target.value()) {
+					if (targetType == ElementType.FIELD)
+						searchFields = true;
+					else if (targetType == ElementType.METHOD)
+						searchMethods = true;
+				}
+			}
+			
+			if (searchFields == false && searchMethods == false)
+				return null;
+			
+			final int modifierMask = Modifier.PUBLIC | Modifier.STATIC;
+			
+			classLoop:
+			for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
+				if (searchMethods) {
+					for (Method method : c.getDeclaredMethods()) {
+						if ((method.getModifiers() & modifierMask) != Modifier.PUBLIC ||
+							!method.isAnnotationPresent(annotationClass))
+							continue;
+						
+						if (method.getReturnType() == Void.TYPE) {
+							if (method.getName().startsWith("set") && method.getParameterTypes().length == 1) {
+								String name = method.getName().substring(3);
+								
+								if (name.length() == 0)
+									continue;
+								
+								Method getter = null;
+								try {
+									getter = cls.getMethod("get" + name);
+								}
+								catch (Exception e) {
+									try {
+										getter = cls.getMethod("is" + name);
+									}
+									catch (Exception f) {
+									}
+								}
+								
+								if (getter != null && (getter.getModifiers() & Modifier.STATIC) != 0 &&
+									getter.getReturnType() != method.getParameterTypes()[0])
+									getter = null;
+								
+								if (getter == null)
+									continue;
+								
+								name = name.substring(0, 1).toLowerCase() + name.substring(1);
+								property = newMethodProperty(getter, method, name);
+								break classLoop;
+							}
+						}
+						else if (method.getParameterTypes().length == 0 && (method.getName().startsWith("get") || method.getName().startsWith("is"))) {
+							String name;
+							if (method.getName().startsWith("get"))
+								name = method.getName().substring(3);
+							else
+								name = method.getName().substring(2);
+							
+							if (name.length() == 0)
+								continue;
+							
+							Method setter = null;
+							try {
+								setter = cls.getMethod("set" + name);
+							}
+							catch (Exception e) {
+							}
+							
+							if (setter != null && (setter.getModifiers() & Modifier.STATIC) != 0 &&
+								method.getReturnType() != setter.getParameterTypes()[0])
+								setter = null;
+							
+							name = name.substring(0, 1).toLowerCase() + name.substring(1);
+							property = newMethodProperty(method, setter, name);
+							break classLoop;
+						}
+					}
+				}
+				
+				if (searchFields) {
+					for (Field field : c.getDeclaredFields()) {
+						if ((field.getModifiers() & Modifier.STATIC) == 0 && field.isAnnotationPresent(annotationClass)) {
+							property = newFieldProperty(field);
+							break classLoop;
+						}
+					}
+				}
+			}
+			
+			if (property == null)
+				property = NULL_PROPERTY;
+			
+			Property previous = singlePropertyCache.putIfAbsent(key, property);
+			if (previous != null)
+				property = previous;
+		}
+		
+		return (property != NULL_PROPERTY ? property : null);
+	}
+	
+	protected static interface SinglePropertyKey {
+	}
+	
+	protected static class AnnotatedPropertyKey implements SinglePropertyKey {
+		
+		private final Class<?> cls;
+		private final Class<? extends Annotation> annotationClass;
+		
+		public AnnotatedPropertyKey(Class<?> cls, Class<? extends Annotation> annotationClass) {
+			this.cls = cls;
+			this.annotationClass = annotationClass;
+		}
+
+		public Class<?> getCls() {
+			return cls;
+		}
+
+		public Class<? extends Annotation> getAnnotationClass() {
+			return annotationClass;
+		}
+
+		@Override
+		public int hashCode() {
+			return cls.hashCode() + annotationClass.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this)
+				return true;
+			if (!(obj instanceof AnnotatedPropertyKey))
+				return false;
+			AnnotatedPropertyKey key = (AnnotatedPropertyKey)obj;
+			return cls.equals(key.cls) && annotationClass.equals(key.annotationClass);
+		}
+	}
+	
+	protected static class NameTypePropertyKey implements SinglePropertyKey {
+		
+		private final Class<?> cls;
+		private final String name;
+		private final Class<?> type;
+
+		public NameTypePropertyKey(Class<?> cls, String name, Class<?> type) {
+			this.cls = cls;
+			this.name = name;
+			this.type = type;
+		}
+
+		public Class<?> getCls() {
+			return cls;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public Class<?> getType() {
+			return type;
+		}
+
+		@Override
+		public int hashCode() {
+			return cls.hashCode() + name.hashCode() + type.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this)
+				return true;
+			if (!(obj instanceof NameTypePropertyKey))
+				return false;
+			NameTypePropertyKey key = (NameTypePropertyKey)obj;
+			return cls.equals(key.cls) && name.equals(key.name) && type.equals(key.type);
+		}
+	}
+
+	protected static class NullProperty implements Property {
+
+		public Class<?> getType() {
+			throw new UnsupportedOperationException();
+		}
+
+		public String getName() {
+			throw new UnsupportedOperationException();
+		}
+
+		public boolean isReadable() {
+			throw new UnsupportedOperationException();
+		}
+
+		public boolean isWritable() {
+			throw new UnsupportedOperationException();
+		}
+
+		public boolean getBoolean(Object holder)
+			throws IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public char getChar(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public byte getByte(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public short getShort(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public int getInt(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public long getLong(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public float getFloat(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public double getDouble(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public Object getObject(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public void setBoolean(Object holder, boolean value)
+			throws IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public void setChar(Object holder, char value)
+			throws IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public void setByte(Object holder, byte value)
+			throws IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public void setShort(Object holder, short value)
+			throws IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public void setInt(Object holder, int value)
+			throws IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public void setLong(Object holder, long value)
+			throws IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public void setFloat(Object holder, float value)
+			throws IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public void setDouble(Object holder, double value)
+			throws IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
+
+		public void setObject(Object holder, Object value)
+			throws IllegalArgumentException, IllegalAccessException,
+			InvocationTargetException {
+			throw new UnsupportedOperationException();
+		}
 	}
 }
 

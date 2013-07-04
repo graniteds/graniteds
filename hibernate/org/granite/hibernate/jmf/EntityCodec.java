@@ -120,10 +120,10 @@ public class EntityCodec implements ExtendedObjectCodec {
         out.writeBoolean(true);
         out.writeUTF(null);
 		
-        // Write all fields in lexical order. 
-		List<Property> fields = out.getReflection().findSerializableFields(v.getClass());
-		for (Property field : fields)
-			out.getAndWriteField(v, field);
+        // Write all properties in lexical order. 
+		List<Property> properties = out.getReflection().findSerializableProperties(v.getClass());
+		for (Property property : properties)
+			out.getAndWriteProperty(v, property);
 	}
 
 	public boolean canDecode(ExtendedObjectInput in, String className) throws ClassNotFoundException {
@@ -156,11 +156,11 @@ public class EntityCodec implements ExtendedObjectCodec {
 		return proxyAdapter.getProxy(id);
 	}
 
-	public void decode(ExtendedObjectInput in, Object v) throws IOException, ClassNotFoundException, IllegalAccessException {
+	public void decode(ExtendedObjectInput in, Object v) throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException {
 		if (!(v instanceof HibernateProxy)) {
-			List<Property> fields = in.getReflection().findSerializableFields(v.getClass());
-			for (Property field : fields)
-				in.readAndSetField(v, field);
+			List<Property> properties = in.getReflection().findSerializableProperties(v.getClass());
+			for (Property property : properties)
+				in.readAndSetProperty(v, property);
 		}
 	}
 	

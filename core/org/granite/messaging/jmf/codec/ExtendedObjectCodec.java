@@ -51,5 +51,6 @@ public interface ExtendedObjectCodec {
 		SecurityException, NoSuchMethodException;
 	
 	void decode(ExtendedObjectInput in, Object v)
-		throws IOException, ClassNotFoundException, IllegalAccessException;
+		throws IOException, ClassNotFoundException, IllegalAccessException,
+		InvocationTargetException;
 }

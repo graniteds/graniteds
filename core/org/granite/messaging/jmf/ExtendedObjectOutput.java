@@ -42,7 +42,7 @@ public interface ExtendedObjectOutput extends ObjectOutput {
 	
 	String getAlias(String className);
 	
-	void getAndWriteField(Object obj, Property field) throws IOException, IllegalAccessException, InvocationTargetException;
+	void getAndWriteProperty(Object obj, Property property) throws IOException, IllegalAccessException, InvocationTargetException;
 	
 	@Deprecated
 	public void write(int b) throws IOException;

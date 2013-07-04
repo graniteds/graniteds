@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.granite.tide.data.DataEnabled.PublishMode;

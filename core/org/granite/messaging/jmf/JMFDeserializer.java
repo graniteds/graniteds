@@ -280,11 +280,11 @@ public class JMFDeserializer implements InputContext {
 		return context.getAlias(className);
 	}
 
-	public void readAndSetField(Object obj, Property field) throws IOException, ClassNotFoundException, IllegalAccessException {
-		if (field.getType().isPrimitive())
-			codecRegistry.getPrimitiveFieldCodec(field.getType()).decodePrimitive(this, obj, field);
+	public void readAndSetProperty(Object obj, Property property) throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException {
+		if (property.getType().isPrimitive())
+			codecRegistry.getPrimitivePropertyCodec(property.getType()).decodePrimitive(this, obj, property);
 		else
-			field.setObject(obj, readObject());
+			property.setObject(obj, readObject());
 	}
 	
 	static class UnresolvedSharedObject {

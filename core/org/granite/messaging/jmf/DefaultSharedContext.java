@@ -88,12 +88,16 @@ public class DefaultSharedContext implements SharedContext {
 	public DefaultSharedContext(CodecRegistry codecRegistry, ClassLoader classLoader, List<String> defaultStoredStrings) {
 		this.codecRegistry = (codecRegistry != null ? codecRegistry : new DefaultCodecRegistry());
 		
-		this.reflection = new Reflection(classLoader);
+		this.reflection = newReflection(classLoader);
 		
 		Set<String> defaultStoredStringsSet = new HashSet<String>(JAVA_DEFAULT_STORED_STRINGS);
 		if (defaultStoredStrings != null)
 			defaultStoredStringsSet.addAll(defaultStoredStrings);
 		this.defaultStoredStrings = Collections.unmodifiableList(new ArrayList<String>(defaultStoredStringsSet));
+	}
+	
+	protected Reflection newReflection(ClassLoader classLoader) {
+		return new Reflection(classLoader);
 	}
 
 	public CodecRegistry getCodecRegistry() {

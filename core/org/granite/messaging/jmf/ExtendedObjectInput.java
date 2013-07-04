@@ -23,6 +23,7 @@ package org.granite.messaging.jmf;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.reflect.Property;
@@ -31,7 +32,7 @@ import org.granite.messaging.jmf.reflect.Reflection;
 /**
  * The <tt>ExtendedObjectInput</tt> interface extends <tt>ObjectInput</tt> and add two methods that
  * help dealing with class loading ({@link #getClassLoader()}) and field assignments
- * ({@link #readAndSetField(Object, Field)}).
+ * ({@link #readAndSetProperty(Object, Field)}).
  * 
  * <p>
  * Implementation instances of this interface are passed as parameter to
@@ -73,8 +74,8 @@ public interface ExtendedObjectInput extends ObjectInput {
 	 * a field <tt>f2</tt> of type <tt>int</tt> (the primitive type): 
 	 * 
 	 * <pre>
-	 * in.readAndSetField(obj, f1);
-	 * in.readAndSetField(obj, f2);
+	 * in.readAndSetProperty(obj, f1);
+	 * in.readAndSetProperty(obj, f2);
 	 * </pre>
 	 * is equivalent to:
 	 * <pre>
@@ -82,15 +83,15 @@ public interface ExtendedObjectInput extends ObjectInput {
 	 * f2.setInt(obj, in.readInt());
 	 * </pre>
 	 * 
-	 * @param obj The instance of the class declaring the field.
-	 * @param field The field to set with the read value.
+	 * @param obj The instance of the class declaring the property.
+	 * @param property The property to set with the read value.
 	 * 
 	 * @throws IOException If any I/O error occur.
-	 * @throws JMFEncodingException If read data isn't of expected type (ie. the type of the given field).
+	 * @throws JMFEncodingException If read data isn't of expected type (ie. the type of the given property).
 	 * @throws ClassNotFoundException If the class of a serialized object cannot be found.
-	 * @throws IllegalAccessException If the field cannot be accessed.
+	 * @throws IllegalAccessException If the property cannot be accessed.
 	 */
-	void readAndSetField(Object obj, Property field) throws IOException, ClassNotFoundException, IllegalAccessException;
+	void readAndSetProperty(Object obj, Property property) throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException;
 
 	/**
 	 * Should never be used with JMF {@link ExtendedObjectCodec}.

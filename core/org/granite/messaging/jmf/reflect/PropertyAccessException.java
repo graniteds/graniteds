@@ -20,13 +20,30 @@
 
 package org.granite.messaging.jmf.reflect;
 
-import java.lang.reflect.Method;
-
 /**
  * @author Franck WOLFF
  */
-public interface MethodProperty extends Property {
+public class PropertyAccessException extends RuntimeException {
 
-	Method getGetter();
-	Method getSetter();
+	private static final long serialVersionUID = 1L;
+
+	public PropertyAccessException() {
+	}
+
+	public PropertyAccessException(String message) {
+		super(message);
+	}
+
+	public PropertyAccessException(Throwable cause) {
+		super(cause);
+	}
+
+	public PropertyAccessException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public PropertyAccessException(String message, Throwable cause,
+			boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
 }

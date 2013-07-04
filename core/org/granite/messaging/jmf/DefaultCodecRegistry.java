@@ -105,7 +105,7 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	private final Map<Integer, StandardCodec<?>> typeToCodec = new HashMap<Integer, StandardCodec<?>>();
 	private final Map<Class<?>, StandardCodec<?>> classToCodec = new HashMap<Class<?>, StandardCodec<?>>();
 	private final List<ConditionalObjectCodec> conditionalObjectCodecs = new ArrayList<ConditionalObjectCodec>();
-	private final Map<Class<?>, PrimitiveFieldCodec> primitiveFieldCodecs = new HashMap<Class<?>, PrimitiveFieldCodec>();
+	private final Map<Class<?>, PrimitivePropertyCodec> primitivePropertyCodecs = new HashMap<Class<?>, PrimitivePropertyCodec>();
 
 	private final List<ExtendedObjectCodec> extendedCodecs;
 	
@@ -233,8 +233,8 @@ public class DefaultCodecRegistry implements CodecRegistry {
 		return null;
 	}
 
-	public PrimitiveFieldCodec getPrimitiveFieldCodec(Class<?> fieldCls) {
-		return primitiveFieldCodecs.get(fieldCls);
+	public PrimitivePropertyCodec getPrimitivePropertyCodec(Class<?> propertyCls) {
+		return primitivePropertyCodecs.get(propertyCls);
 	}
 	
 	public int extractJmfType(int parameterizedJmfType) {
@@ -316,96 +316,96 @@ public class DefaultCodecRegistry implements CodecRegistry {
 
 	private void initBooleanCodec(BooleanCodec codec) {
 		booleanCodec = codec;
-		primitiveFieldCodecs.put(booleanCodec.getPrimitiveClass(), new PrimitiveFieldCodec() {
-			public void encodePrimitive(OutputContext ctx, Object v, Property field) throws IllegalAccessException, IOException, InvocationTargetException {
-				booleanCodec.encodePrimitive(ctx, field.getBoolean(v));
+		primitivePropertyCodecs.put(booleanCodec.getPrimitiveClass(), new PrimitivePropertyCodec() {
+			public void encodePrimitive(OutputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				booleanCodec.encodePrimitive(ctx, property.getBoolean(holder));
 			}
-			public void decodePrimitive(InputContext ctx, Object v, Property field) throws IllegalAccessException, IOException {
-				field.setBoolean(v, booleanCodec.decodePrimitive(ctx));
+			public void decodePrimitive(InputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				property.setBoolean(holder, booleanCodec.decodePrimitive(ctx));
 			}
 		});
 	}
 
 	private void initCharacterCodec(CharacterCodec codec) {
 		characterCodec = codec;
-		primitiveFieldCodecs.put(characterCodec.getPrimitiveClass(), new PrimitiveFieldCodec() {
-			public void encodePrimitive(OutputContext ctx, Object v, Property field) throws IllegalAccessException, IOException, InvocationTargetException {
-				characterCodec.encodePrimitive(ctx, field.getChar(v));
+		primitivePropertyCodecs.put(characterCodec.getPrimitiveClass(), new PrimitivePropertyCodec() {
+			public void encodePrimitive(OutputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				characterCodec.encodePrimitive(ctx, property.getChar(holder));
 			}
-			public void decodePrimitive(InputContext ctx, Object v, Property field) throws IllegalAccessException, IOException {
-				field.setChar(v, characterCodec.decodePrimitive(ctx));
+			public void decodePrimitive(InputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				property.setChar(holder, characterCodec.decodePrimitive(ctx));
 			}
 		});
 	}
 
 	private void initByteCodec(ByteCodec codec) {
 		byteCodec = codec;
-		primitiveFieldCodecs.put(byteCodec.getPrimitiveClass(), new PrimitiveFieldCodec() {
-			public void encodePrimitive(OutputContext ctx, Object v, Property field) throws IllegalAccessException, IOException, InvocationTargetException {
-				byteCodec.encodePrimitive(ctx, field.getByte(v));
+		primitivePropertyCodecs.put(byteCodec.getPrimitiveClass(), new PrimitivePropertyCodec() {
+			public void encodePrimitive(OutputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				byteCodec.encodePrimitive(ctx, property.getByte(holder));
 			}
-			public void decodePrimitive(InputContext ctx, Object v, Property field) throws IllegalAccessException, IOException {
-				field.setByte(v, byteCodec.decodePrimitive(ctx));
+			public void decodePrimitive(InputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				property.setByte(holder, byteCodec.decodePrimitive(ctx));
 			}
 		});
 	}
 
 	private void initShortCodec(ShortCodec codec) {
 		shortCodec = codec;
-		primitiveFieldCodecs.put(shortCodec.getPrimitiveClass(), new PrimitiveFieldCodec() {
-			public void encodePrimitive(OutputContext ctx, Object v, Property field) throws IllegalAccessException, IOException, InvocationTargetException {
-				shortCodec.encodePrimitive(ctx, field.getShort(v));
+		primitivePropertyCodecs.put(shortCodec.getPrimitiveClass(), new PrimitivePropertyCodec() {
+			public void encodePrimitive(OutputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				shortCodec.encodePrimitive(ctx, property.getShort(holder));
 			}
-			public void decodePrimitive(InputContext ctx, Object v, Property field) throws IllegalAccessException, IOException {
-				field.setShort(v, shortCodec.decodePrimitive(ctx));
+			public void decodePrimitive(InputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				property.setShort(holder, shortCodec.decodePrimitive(ctx));
 			}
 		});
 	}
 
 	private void initIntegerCodec(IntegerCodec codec) {
 		integerCodec = codec;
-		primitiveFieldCodecs.put(integerCodec.getPrimitiveClass(), new PrimitiveFieldCodec() {
-			public void encodePrimitive(OutputContext ctx, Object v, Property field) throws IllegalAccessException, IOException, InvocationTargetException {
-				integerCodec.encodePrimitive(ctx, field.getInt(v));
+		primitivePropertyCodecs.put(integerCodec.getPrimitiveClass(), new PrimitivePropertyCodec() {
+			public void encodePrimitive(OutputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				integerCodec.encodePrimitive(ctx, property.getInt(holder));
 			}
-			public void decodePrimitive(InputContext ctx, Object v, Property field) throws IllegalAccessException, IOException {
-				field.setInt(v, integerCodec.decodePrimitive(ctx));
+			public void decodePrimitive(InputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				property.setInt(holder, integerCodec.decodePrimitive(ctx));
 			}
 		});
 	}
 
 	private void initLongCodec(LongCodec codec) {
 		longCodec = codec;
-		primitiveFieldCodecs.put(longCodec.getPrimitiveClass(), new PrimitiveFieldCodec() {
-			public void encodePrimitive(OutputContext ctx, Object v, Property field) throws IllegalAccessException, IOException, InvocationTargetException {
-				longCodec.encodePrimitive(ctx, field.getLong(v));
+		primitivePropertyCodecs.put(longCodec.getPrimitiveClass(), new PrimitivePropertyCodec() {
+			public void encodePrimitive(OutputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				longCodec.encodePrimitive(ctx, property.getLong(holder));
 			}
-			public void decodePrimitive(InputContext ctx, Object v, Property field) throws IllegalAccessException, IOException {
-				field.setLong(v, longCodec.decodePrimitive(ctx));
+			public void decodePrimitive(InputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				property.setLong(holder, longCodec.decodePrimitive(ctx));
 			}
 		});
 	}
 
 	private void initFloatCodec(FloatCodec codec) {
 		floatCodec = codec;
-		primitiveFieldCodecs.put(floatCodec.getPrimitiveClass(), new PrimitiveFieldCodec() {
-			public void encodePrimitive(OutputContext ctx, Object v, Property field) throws IllegalAccessException, IOException, InvocationTargetException {
-				floatCodec.encodePrimitive(ctx, field.getFloat(v));
+		primitivePropertyCodecs.put(floatCodec.getPrimitiveClass(), new PrimitivePropertyCodec() {
+			public void encodePrimitive(OutputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				floatCodec.encodePrimitive(ctx, property.getFloat(holder));
 			}
-			public void decodePrimitive(InputContext ctx, Object v, Property field) throws IllegalAccessException, IOException {
-				field.setFloat(v, floatCodec.decodePrimitive(ctx));
+			public void decodePrimitive(InputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				property.setFloat(holder, floatCodec.decodePrimitive(ctx));
 			}
 		});
 	}
 
 	private void initDoubleCodec(DoubleCodec codec) {
 		doubleCodec = codec;
-		primitiveFieldCodecs.put(doubleCodec.getPrimitiveClass(), new PrimitiveFieldCodec() {
-			public void encodePrimitive(OutputContext ctx, Object v, Property field) throws IllegalAccessException, IOException, InvocationTargetException {
-				doubleCodec.encodePrimitive(ctx, field.getDouble(v));
+		primitivePropertyCodecs.put(doubleCodec.getPrimitiveClass(), new PrimitivePropertyCodec() {
+			public void encodePrimitive(OutputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				doubleCodec.encodePrimitive(ctx, property.getDouble(holder));
 			}
-			public void decodePrimitive(InputContext ctx, Object v, Property field) throws IllegalAccessException, IOException {
-				field.setDouble(v, doubleCodec.decodePrimitive(ctx));
+			public void decodePrimitive(InputContext ctx, Object holder, Property property) throws IllegalAccessException, IOException, InvocationTargetException {
+				property.setDouble(holder, doubleCodec.decodePrimitive(ctx));
 			}
 		});
 	}

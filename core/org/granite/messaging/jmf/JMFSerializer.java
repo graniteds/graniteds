@@ -207,10 +207,10 @@ public class JMFSerializer implements OutputContext {
 		return context.getAlias(className);
 	}
 
-	public void getAndWriteField(Object obj, Property field) throws IOException, IllegalAccessException, InvocationTargetException {
-		if (field.getType().isPrimitive())
-			codecRegistry.getPrimitiveFieldCodec(field.getType()).encodePrimitive(this, obj, field);
+	public void getAndWriteProperty(Object obj, Property property) throws IOException, IllegalAccessException, InvocationTargetException {
+		if (property.getType().isPrimitive())
+			codecRegistry.getPrimitivePropertyCodec(property.getType()).encodePrimitive(this, obj, property);
 		else
-			writeObject(field.getObject(obj));
+			writeObject(property.getObject(obj));
 	}
 }

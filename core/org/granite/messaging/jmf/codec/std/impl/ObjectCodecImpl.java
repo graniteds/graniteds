@@ -107,9 +107,9 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 	}
 	
 	protected void encodeSerializable(OutputContext ctx, Serializable v) throws IOException, IllegalAccessException, InvocationTargetException {
-		List<Property> fields = ctx.getReflection().findSerializableFields(v.getClass());
-		for (Property field : fields)
-			ctx.getAndWriteField(v, field);
+		List<Property> properties = ctx.getReflection().findSerializableProperties(v.getClass());
+		for (Property property : properties)
+			ctx.getAndWriteProperty(v, property);
 	}
 	
 	public Object decode(InputContext ctx, int parameterizedJmfType)
@@ -166,11 +166,11 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 	}
 	
 	protected void decodeSerializable(InputContext ctx, Serializable v)
-		throws IOException, ClassNotFoundException, IllegalAccessException {
+		throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException {
 
-		List<Property> fields = ctx.getReflection().findSerializableFields(v.getClass());
-		for (Property field : fields)
-			ctx.readAndSetField(v, field);
+		List<Property> properties = ctx.getReflection().findSerializableProperties(v.getClass());
+		for (Property property : properties)
+			ctx.readAndSetProperty(v, property);
 	}
 
 	public void dump(DumpContext ctx, int parameterizedJmfType) throws IOException {
