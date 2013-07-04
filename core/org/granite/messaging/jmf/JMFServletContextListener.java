@@ -73,10 +73,10 @@ public class JMFServletContextListener implements ServletContextListener {
         List<ExtendedObjectCodec> extendedObjectCodecs = loadExtendedObjectCodecs(servletContext);
         List<String> defaultStoredStrings = loadDefaultStoredStrings(servletContext);
         
-        SharedContext sharedContext = new DefaultSharedContext(new DefaultCodecRegistry(extendedObjectCodecs), null, defaultStoredStrings);
+        SharedContext sharedContext = new DefaultSharedContext(new DefaultCodecRegistry(extendedObjectCodecs), defaultStoredStrings, null);
         servletContext.setAttribute(SHARED_CONTEXT_KEY, sharedContext);
         
-        SharedContext dumpSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), null, defaultStoredStrings);
+        SharedContext dumpSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), defaultStoredStrings, null);
         servletContext.setAttribute(DUMP_SHARED_CONTEXT_KEY, dumpSharedContext);
 		
         log.info("JMF shared context loaded");
