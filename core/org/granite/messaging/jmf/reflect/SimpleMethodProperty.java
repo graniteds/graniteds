@@ -20,6 +20,7 @@
 
 package org.granite.messaging.jmf.reflect;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -55,6 +56,10 @@ public class SimpleMethodProperty implements MethodProperty {
 
 	public String getName() {
 		return name;
+	}
+
+	public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+		return getter.isAnnotationPresent(annotationClass) || (setter != null && setter.isAnnotationPresent(annotationClass));
 	}
 
 	public boolean isReadable() {
@@ -110,48 +115,57 @@ public class SimpleMethodProperty implements MethodProperty {
 	}
 
 	public void setBoolean(Object holder, boolean value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		if (setter != null)
-			setter.invoke(holder, value);
+		if (setter == null)
+			throw new IllegalAccessException("Property " + this + " isn't writable");
+		setter.invoke(holder, value);
 	}
 
 	public void setChar(Object holder, char value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		if (setter != null)
-			setter.invoke(holder, value);
+		if (setter == null)
+			throw new IllegalAccessException("Property " + this + " isn't writable");
+		setter.invoke(holder, value);
 	}
 
 	public void setByte(Object holder, byte value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		if (setter != null)
-			setter.invoke(holder, value);
+		if (setter == null)
+			throw new IllegalAccessException("Property " + this + " isn't writable");
+		setter.invoke(holder, value);
 	}
 
 	public void setShort(Object holder, short value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		if (setter != null)
-			setter.invoke(holder, value);
+		if (setter == null)
+			throw new IllegalAccessException("Property " + this + " isn't writable");
+		setter.invoke(holder, value);
 	}
 
 	public void setInt(Object holder, int value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		if (setter != null)
-			setter.invoke(holder, value);
+		if (setter == null)
+			throw new IllegalAccessException("Property " + this + " isn't writable");
+		setter.invoke(holder, value);
 	}
 
 	public void setLong(Object holder, long value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		if (setter != null)
-			setter.invoke(holder, value);
+		if (setter == null)
+			throw new IllegalAccessException("Property " + this + " isn't writable");
+		setter.invoke(holder, value);
 	}
 
 	public void setFloat(Object holder, float value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		if (setter != null)
-			setter.invoke(holder, value);
+		if (setter == null)
+			throw new IllegalAccessException("Property " + this + " isn't writable");
+		setter.invoke(holder, value);
 	}
 
 	public void setDouble(Object holder, double value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		if (setter != null)
-			setter.invoke(holder, value);
+		if (setter == null)
+			throw new IllegalAccessException("Property " + this + " isn't writable");
+		setter.invoke(holder, value);
 	}
 
 	public void setObject(Object holder, Object value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		if (setter != null)
-			setter.invoke(holder, value);
+		if (setter == null)
+			throw new IllegalAccessException("Property " + this + " isn't writable");
+		setter.invoke(holder, value);
 	}
 
 	@Override

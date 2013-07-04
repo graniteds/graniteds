@@ -20,6 +20,7 @@
 
 package org.granite.messaging.jmf.reflect;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -29,6 +30,8 @@ public interface Property {
 	
 	Class<?> getType();
 	String getName();
+	
+	boolean isAnnotationPresent(Class<? extends Annotation> annotationClass);
 	
 	boolean isReadable();
 	boolean isWritable();

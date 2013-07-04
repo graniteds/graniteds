@@ -20,6 +20,7 @@
 
 package org.granite.messaging.jmf.reflect;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 /**
@@ -48,6 +49,10 @@ public class SimpleFieldProperty implements FieldProperty {
 
 	public String getName() {
 		return field.getName();
+	}
+
+	public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+		return field.isAnnotationPresent(annotationClass);
 	}
 
 	public boolean isReadable() {

@@ -27,7 +27,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.granite.messaging.annotations.Include;
 import org.granite.messaging.jmf.codec.StandardCodec;
+import org.granite.messaging.jmf.reflect.NoopWritableProperty;
 import org.granite.messaging.jmf.reflect.Property;
 import org.granite.messaging.jmf.reflect.Reflection;
 
@@ -281,6 +283,9 @@ public class JMFDeserializer implements InputContext {
 	}
 
 	public void readAndSetProperty(Object obj, Property property) throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException {
+		if (property.isAnnotationPresent(Include.class))
+			property = new NoopWritableProperty(property.getType());
+		
 		if (property.getType().isPrimitive())
 			codecRegistry.getPrimitivePropertyCodec(property.getType()).decodePrimitive(this, obj, property);
 		else
