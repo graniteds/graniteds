@@ -124,4 +124,19 @@ public class NullProperty implements Property {
 		InvocationTargetException {
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public int hashCode() {
+		return 0;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return obj == this;
+	}
+
+	@Override
+	public String toString() {
+		return NullProperty.class.getSimpleName();
+	}
 }

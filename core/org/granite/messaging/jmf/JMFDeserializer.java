@@ -283,8 +283,8 @@ public class JMFDeserializer implements InputContext {
 	}
 
 	public void readAndSetProperty(Object obj, Property property) throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException {
-		if (property.isAnnotationPresent(Include.class))
-			property = new NoopWritableProperty(property.getType());
+		if (property.isAnnotationPresent(Include.class) && !property.isWritable())
+			property = new NoopWritableProperty(property.getName(), property.getType());
 		
 		if (property.getType().isPrimitive())
 			codecRegistry.getPrimitivePropertyCodec(property.getType()).decodePrimitive(this, obj, property);
