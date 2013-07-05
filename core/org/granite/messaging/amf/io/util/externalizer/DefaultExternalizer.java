@@ -46,9 +46,9 @@ import org.granite.messaging.amf.io.util.FieldProperty;
 import org.granite.messaging.amf.io.util.MethodProperty;
 import org.granite.messaging.amf.io.util.Property;
 import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedBean;
-import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
-import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty;
 import org.granite.messaging.amf.io.util.instantiator.AbstractInstantiator;
+import org.granite.messaging.annotations.Exclude;
+import org.granite.messaging.annotations.Include;
 import org.granite.util.Introspector;
 import org.granite.util.PropertyDescriptor;
 import org.granite.util.TypeUtil;
@@ -116,7 +116,7 @@ public class DefaultExternalizer implements Externalizer {
             log.debug("Reading bean %s with fields %s", o.getClass().getName(), fields);
             for (Property field : fields) {
                 Object value = in.readObject();
-                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class, true)))
+                if (!(field instanceof MethodProperty && field.isAnnotationPresent(Include.class, true)))
                 	field.setProperty(o, value);
             }
         }
@@ -188,7 +188,7 @@ public class DefaultExternalizer implements Externalizer {
                         !Modifier.isTransient(field.getModifiers()) &&
                         !Modifier.isStatic(field.getModifiers()) &&
                         !isPropertyIgnored(field) &&
-                        !field.isAnnotationPresent(IgnoredProperty.class)) {
+                        !field.isAnnotationPresent(Exclude.class)) {
 
                     	boolean found = false;
                     	if (returnSettersWhenAvailable && propertyDescriptors != null) {
@@ -212,7 +212,7 @@ public class DefaultExternalizer implements Externalizer {
                         Method getter = property.getReadMethod();
                         if (getter != null && !allFieldNames.contains(property.getName())) {
                             
-                        	DeclaredAnnotation<ExternalizedProperty> annotation = TypeUtil.getAnnotation(getter, ExternalizedProperty.class);
+                        	DeclaredAnnotation<Include> annotation = TypeUtil.getAnnotation(getter, Include.class);
                         	if (annotation == null || (annotation.declaringClass != c && !annotation.declaringClass.isInterface()))
                         		continue;
 

@@ -497,6 +497,7 @@
                 <include name="org/granite/messaging/amf/io/util/externalizer/Externalizer.class"/>
                 <include name="org/granite/messaging/amf/io/util/externalizer/annotation/**"/>
                 <include name="org/granite/messaging/service/annotations/**"/>
+                <include name="org/granite/messaging/annotations/**"/>
                 <include name="org/granite/messaging/service/security/*DestinationSecurizer.class"/>
            	</fileset>
         	<fileset dir="classes/tide">
@@ -739,6 +740,7 @@
                 <include name="org/granite/messaging/amf/io/util/Property.class"/>
                 <include name="org/granite/messaging/amf/io/util/externalizer/Externalizer.class"/>
                 <include name="org/granite/messaging/amf/io/util/externalizer/annotation/**"/>
+                <include name="org/granite/messaging/annotations/**"/>
                 <include name="org/granite/messaging/service/annotations/**"/>
                 <include name="org/granite/messaging/service/security/*DestinationSecurizer.class"/>
            	</fileset>
@@ -960,6 +962,7 @@
                 <include name="org/granite/messaging/amf/io/util/Property.class"/>
                 <include name="org/granite/messaging/amf/io/util/externalizer/Externalizer.class"/>
                 <include name="org/granite/messaging/amf/io/util/externalizer/annotation/**"/>
+                <include name="org/granite/messaging/annotations/**"/>
                 <include name="org/granite/messaging/service/annotations/**"/>
                 <include name="org/granite/messaging/service/security/*DestinationSecurizer.class"/>
            	</fileset>

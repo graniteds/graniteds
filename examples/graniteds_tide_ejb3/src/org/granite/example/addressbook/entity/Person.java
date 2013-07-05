@@ -33,7 +33,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import org.granite.example.addressbook.entity.types.NamedEntity;
-import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
+import org.granite.messaging.annotations.Include;
 import org.hibernate.annotations.Cascade;
 
 
@@ -103,7 +103,7 @@ public class Person extends AbstractEntity implements NamedEntity {
     }
 
 
-	@ExternalizedProperty
+    @Include
     public String getFullName() {
         StringBuilder sb = new StringBuilder();
         if (firstName != null && firstName.length() > 0)

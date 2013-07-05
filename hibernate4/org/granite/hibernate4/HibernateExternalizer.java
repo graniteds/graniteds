@@ -52,25 +52,25 @@ import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.messaging.amf.io.util.MethodProperty;
 import org.granite.messaging.amf.io.util.Property;
 import org.granite.messaging.amf.io.util.externalizer.DefaultExternalizer;
-import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
+import org.granite.messaging.annotations.Include;
 import org.granite.messaging.persistence.AbstractExternalizablePersistentCollection;
 import org.granite.messaging.persistence.ExternalizablePersistentBag;
 import org.granite.messaging.persistence.ExternalizablePersistentList;
 import org.granite.messaging.persistence.ExternalizablePersistentMap;
 import org.granite.messaging.persistence.ExternalizablePersistentSet;
-import org.granite.util.TypeUtil;
 import org.granite.util.StringUtil;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Sort;
 import org.hibernate.annotations.SortType;
-import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.collection.internal.PersistentBag;
 import org.hibernate.collection.internal.PersistentList;
 import org.hibernate.collection.internal.PersistentMap;
 import org.hibernate.collection.internal.PersistentSet;
 import org.hibernate.collection.internal.PersistentSortedMap;
 import org.hibernate.collection.internal.PersistentSortedSet;
+import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.LazyInitializer;
 
@@ -188,7 +188,7 @@ public class HibernateExternalizer extends DefaultExternalizer {
             log.debug("Reading entity %s with fields %s", oClass.getName(), fields);
             for (Property field : fields) {
                 Object value = in.readObject();
-                if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class, true))) {
+                if (!(field instanceof MethodProperty && field.isAnnotationPresent(Include.class, true))) {
                     
                 	if (value instanceof AbstractExternalizablePersistentCollection)
                 		value = newHibernateCollection((AbstractExternalizablePersistentCollection)value, field);

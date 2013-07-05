@@ -36,9 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RemoteDestination(id="personService", source="personService", securityRoles={"ROLE_ADMIN", "ROLE_USER"})
 public class PersonServiceBean extends AbstractEntityService implements PersonService {
 
-    private static final long serialVersionUID = 1L;
-
-
     @Transactional(readOnly=true)
     public List<Person> findAllPersons() {
         return findAll(Person.class);

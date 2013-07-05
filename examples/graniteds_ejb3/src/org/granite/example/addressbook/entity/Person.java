@@ -36,7 +36,7 @@ import javax.persistence.OneToOne;
 import org.granite.example.addressbook.entity.embed.Document;
 import org.granite.example.addressbook.entity.types.DocumentedEntity;
 import org.granite.example.addressbook.entity.types.NamedEntity;
-import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
+import org.granite.messaging.annotations.Include;
 
 
 /**
@@ -113,7 +113,7 @@ public class Person extends AbstractEntity implements NamedEntity, DocumentedEnt
         this.document = document;
     }
 
-    @ExternalizedProperty
+    @Include
     public String getFullName() {
         StringBuilder sb = new StringBuilder();
         if (firstName != null && firstName.length() > 0)

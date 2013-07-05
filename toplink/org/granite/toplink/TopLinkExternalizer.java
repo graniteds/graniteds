@@ -52,7 +52,7 @@ import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.messaging.amf.io.util.MethodProperty;
 import org.granite.messaging.amf.io.util.Property;
 import org.granite.messaging.amf.io.util.externalizer.DefaultExternalizer;
-import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
+import org.granite.messaging.annotations.Include;
 import org.granite.messaging.persistence.AbstractExternalizablePersistentCollection;
 import org.granite.messaging.persistence.ExternalizablePersistentList;
 import org.granite.messaging.persistence.ExternalizablePersistentMap;
@@ -128,7 +128,7 @@ public class TopLinkExternalizer extends DefaultExternalizer {
                     if (value instanceof ValueHolderInterface) {
                         topLinkFields.get("_toplink_" + field.getName() + "_vh").setProperty(o, value, false);
                     }
-                    else if (!(field instanceof MethodProperty && field.isAnnotationPresent(ExternalizedProperty.class, true))) { 
+                    else if (!(field instanceof MethodProperty && field.isAnnotationPresent(Include.class, true))) { 
                         if (value instanceof AbstractExternalizablePersistentCollection)
                             value = newIndirectCollection((AbstractExternalizablePersistentCollection)value, field.getType());
                         else {

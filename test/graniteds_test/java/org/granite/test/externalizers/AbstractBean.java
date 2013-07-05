@@ -2,7 +2,7 @@ package org.granite.test.externalizers;
 
 import org.granite.messaging.amf.io.util.externalizer.DefaultExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedBean;
-import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
+import org.granite.messaging.annotations.Include;
 
 @ExternalizedBean(type=DefaultExternalizer.class)
 public abstract class AbstractBean {
@@ -18,7 +18,7 @@ public abstract class AbstractBean {
 		this.prop1 = prop1;
 	}
 	
-	@ExternalizedProperty
+	@Include
     public abstract String getProp2();
 
 	public String getProp3() {
