@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.granite.generator.as3.ClientType;
-import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
+import org.granite.messaging.annotations.Include;
 import org.granite.util.ClassUtil;
 
 /**
@@ -80,7 +80,7 @@ public class JavaMethodProperty implements JavaProperty {
         this.clientType = clientType;
         this.externalizedProperty = (
         	readMethod != null &&
-        	ClassUtil.isAnnotationPresent(readMethod.getMember(), ExternalizedProperty.class)
+        	ClassUtil.isAnnotationPresent(readMethod.getMember(), Include.class)
         );
     }
 

@@ -42,8 +42,8 @@ import java.util.TreeMap;
 import org.granite.generator.as3.As3Type;
 import org.granite.generator.as3.ClientType;
 import org.granite.generator.as3.reflect.JavaMethod.MethodType;
-import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedProperty;
-import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty;
+import org.granite.messaging.annotations.Exclude;
+import org.granite.messaging.annotations.Include;
 import org.granite.tide.annotations.TideEvent;
 import org.granite.util.ClassUtil;
 import org.granite.util.ClassUtil.DeclaredAnnotation;
@@ -228,7 +228,7 @@ public class JavaBean extends JavaAbstractType {
             if (!Modifier.isStatic(field.getModifiers()) &&
             	!Modifier.isTransient(field.getModifiers()) &&
             	!"jdoDetachedState".equals(field.getName()) &&	// Specific for JDO statically enhanced classes
-            	!field.isAnnotationPresent(IgnoredProperty.class)) {
+            	!field.isAnnotationPresent(Exclude.class)) {
 
             	String name = field.getName();
                 JavaMethod readMethod = null;
@@ -262,7 +262,7 @@ public class JavaBean extends JavaAbstractType {
                 	getter.getDeclaringClass().equals(type) &&
                     !propertyMap.containsKey(property.getName())) {
                     
-                	DeclaredAnnotation<ExternalizedProperty> annotation = ClassUtil.getAnnotation(getter, ExternalizedProperty.class);
+                	DeclaredAnnotation<Include> annotation = ClassUtil.getAnnotation(getter, Include.class);
                 	if (annotation == null || (annotation.declaringClass != type && !annotation.declaringClass.isInterface()))
                 		continue;
 

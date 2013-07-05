@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 
-import org.granite.messaging.amf.io.util.externalizer.annotation.IgnoredProperty;
+import org.granite.messaging.annotations.Include;
 
 /**
  * @author Franck WOLFF
@@ -52,7 +52,7 @@ public class JavaStatefulDestination extends JavaRemoteDestination {
 	protected boolean shouldGenerateProperty(Method method) {
 		return Modifier.isPublic(method.getModifiers())
 			&& !Modifier.isStatic(method.getModifiers())
-			&& !method.isAnnotationPresent(IgnoredProperty.class)
+			&& !method.isAnnotationPresent(Include.class)
 			&& isPropertyAccessor(method);
 	}
 }
