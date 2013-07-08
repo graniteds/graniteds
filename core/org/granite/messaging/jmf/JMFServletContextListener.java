@@ -42,7 +42,8 @@ public class JMFServletContextListener implements ServletContextListener {
     private static final Logger log = Logger.getLogger(GraniteConfigListener.class);
     
     private static final String[] CODEC_EXTENSION_FACTORY_NAMES = {
-    	"org.granite.hibernate.jmf.Hibernate3CodecExtensionFactory"
+    	"org.granite.hibernate.jmf.Hibernate3CodecExtensionFactory",
+    	"org.granite.hibernate4.jmf.Hibernate4CodecExtensionFactory"
     };
 
 	public static final String EXTENDED_OBJECT_CODECS_PARAM = "jmf-extended-object-codecs";
