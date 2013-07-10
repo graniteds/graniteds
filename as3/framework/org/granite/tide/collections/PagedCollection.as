@@ -530,8 +530,8 @@ package org.granite.tide.collections {
 				}
 				finally {
 			    	_throwIpe = saveThrowIpe;
+					_tempSort = null;
 				}
-		        _tempSort = null;
 		    }
 		    
 		    _maxGetAfterHandle = -1;
@@ -575,9 +575,10 @@ package org.granite.tide.collections {
 		}
 		
 		private function listChangeHandler(event:CollectionEvent):void {
+			// Propagate underlying list events to paged collection listeners 
 			dispatchEvent(event);
 		}
-			
+		
 		
 		// Override sort to disable client side sorting
 		// while keeping the ability to define the sort fields
