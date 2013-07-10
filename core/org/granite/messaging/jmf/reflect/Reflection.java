@@ -186,15 +186,10 @@ public class Reflection {
 			}
 		}
 		
-		
-		if (!cls.isAnnotationPresent(PropertiesOrder.class))
-			Collections.sort(serializableProperties, lexicalPropertyComparator);
-		else {
-			PropertiesOrder propertiesOrder = cls.getAnnotation(PropertiesOrder.class);
-			String[] value = cls.getAnnotation(PropertiesOrder.class).value();
-			
-			if (value == null)
-				value = new String[0];
+		PropertiesOrder propertiesOrder = cls.getAnnotation(PropertiesOrder.class);
+		if (propertiesOrder != null) {
+			String[] value = propertiesOrder.value();
+
 			if (value.length != serializableProperties.size())
 				throw new ReflectionException("Illegal @PropertiesOrder value: " + propertiesOrder + " on: " + cls.getName() + " (bad length)");
 			
@@ -217,6 +212,8 @@ public class Reflection {
 					throw new ReflectionException("Illegal @PropertiesOrder value: " + propertiesOrder + " on: " + cls.getName() + " (\"" + propertyName + "\" isn't a property name)");
 			}
 		}
+		else
+			Collections.sort(serializableProperties, lexicalPropertyComparator);
 		
 		return serializableProperties;
 	}
