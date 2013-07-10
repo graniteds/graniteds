@@ -18,29 +18,32 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.annotations;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.granite.messaging.jmf.reflect;
 
 /**
- * The <tt>Exclude</tt> annotation can be used to prevent a field serialization.
- * <p>
- * Typical usage:
- * <pre>
- * @Exclude
- * private String aVerySensitiveData;
- * </pre>
- * </p>
- * 
  * @author Franck WOLFF
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface Exclude {
+public class ReflectionException extends RuntimeException {
 
+	private static final long serialVersionUID = 1L;
+
+	public ReflectionException() {
+	}
+
+	public ReflectionException(String message) {
+		super(message);
+	}
+
+	public ReflectionException(Throwable cause) {
+		super(cause);
+	}
+
+	public ReflectionException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public ReflectionException(String message, Throwable cause,
+			boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
 }

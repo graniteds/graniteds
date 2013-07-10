@@ -23,7 +23,7 @@ package org.granite.messaging.jmf.reflect;
 /**
  * @author Franck WOLFF
  */
-public class PropertyNotFoundException extends RuntimeException {
+public class PropertyNotFoundException extends ReflectionException {
 
 	private static final long serialVersionUID = 1L;
 

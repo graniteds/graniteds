@@ -23,7 +23,7 @@ package org.granite.messaging.jmf.reflect;
 /**
  * @author Franck WOLFF
  */
-public class PropertyAccessException extends RuntimeException {
+public class PropertyAccessException extends ReflectionException {
 
 	private static final long serialVersionUID = 1L;
 
