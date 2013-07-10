@@ -250,7 +250,7 @@ public abstract class AbstractAntJavaGenTask extends Task implements JavaAs3Groo
                             if (!jFile.exists())
                                 throw new FileNotFoundException(jFile.toString());
 
-                            String jClassName = name.substring(0, name.length() - 6).replace(File.separatorChar, '.');
+                            String jClassName = normalizeClassName(name.substring(0, name.length() - 6));
                             Class<?> jClass = loader.loadClass(jClassName);
                             
                             if (!jClass.isMemberClass() || jClass.isEnum()) {
@@ -293,7 +293,7 @@ public abstract class AbstractAntJavaGenTask extends Task implements JavaAs3Groo
                     if (name.endsWith(".class")) {
                         log(name, Project.MSG_VERBOSE);
                         try {
-	                        String jClassName = name.substring(0, name.length() - 6).replace(File.separatorChar, '.');
+	                        String jClassName = normalizeClassName(name.substring(0, name.length() - 6));
                             Class<?> jClass = loader.loadClass(jClassName);
                             
                             if (!jClass.isMemberClass() || jClass.isEnum()) {
@@ -453,6 +453,10 @@ public abstract class AbstractAntJavaGenTask extends Task implements JavaAs3Groo
         } finally {
         	loader.resetThreadContextLoader();
         }
+    }
+    
+    private String normalizeClassName(String name) {
+    	return name.replace('/', '.').replace('\\', '.');
     }
 
     ///////////////////////////////////////////////////////////////////////////
