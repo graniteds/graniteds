@@ -1719,8 +1719,8 @@ package org.granite.tide {
 		    var entity:Object = obj.entity;
 		    
 		    _objectsInitializing.push({ context: ctx, entity: path ? path.path : obj.entity, propertyName: obj.propertyName });
-		    
-		    getContext().application.callLater(doInitializeObjects, [ctx]);
+		    			
+		    currentApplication().callLater(doInitializeObjects, [ctx]);
 		}
 		
 		private function doInitializeObjects(ctx:BaseContext):void {

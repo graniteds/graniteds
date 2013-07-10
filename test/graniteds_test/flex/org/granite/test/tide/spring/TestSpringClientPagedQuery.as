@@ -5,6 +5,8 @@ package org.granite.test.tide.spring
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.ItemResponder;
+	import mx.collections.Sort;
+	import mx.collections.SortField;
 	import mx.collections.errors.ItemPendingError;
 	
 	import org.flexunit.Assert;
@@ -154,7 +156,29 @@ package org.granite.test.tide.spring
 			for (var j:int = 5; j < 9; j++)
 				Assert.assertEquals("Elt " + j, j+2, _ctx.pagedQueryClient.getItemAt(j).id);
 		}
+
+
+		[Test(async)]
+		public function testSpringPagedQueryRefresh3():void {
+			var pagedQuery:PagedQuery = _ctx.pagedQueryClient;
+			pagedQuery.methodName = "find4";
+			pagedQuery.sort = new Sort();
+			pagedQuery.sort.fields = [ new SortField("lastName", false, true) ]; 
+			
+			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, initialResult3Handler);
+			pagedQuery.refresh();
+		}
 		
+		private function initialResult3Handler(event:Object, pass:Object = null):void {
+			var i:int;
+			for (i = 0; i < 4; i++)
+				Assert.assertEquals("Elt " + i, i+1, _ctx.pagedQueryClient.getItemAt(i).id);
+			
+			_ctx.pagedQueryClient.getItemAt(1).lastName = "test";
+			
+			for (i = 0; i < 4; i++)
+				Assert.assertEquals("Elt " + i, i+1, _ctx.pagedQueryClient.getItemAt(i).id);
+		}
 	}
 }
 
@@ -188,7 +212,7 @@ class MockSimpleCallAsyncToken extends MockSpringAsyncToken {
 	private static var count3:int = 0;
 	
     protected override function buildResponse(call:InvocationCall, componentName:String, op:String, params:Array):AbstractEvent {
-		var coll:ArrayCollection, first:int, max:int, i:int, person:Person;
+		var coll:ArrayCollection, first:int, max:int, i:int, size:int, person:Person;
 		
         if (componentName == "pagedQueryClient" && op == "find") {
 			coll = new ArrayCollection();
@@ -230,7 +254,7 @@ class MockSimpleCallAsyncToken extends MockSpringAsyncToken {
 			max = params[2];
 			if (max == 0)
 				max = 20;
-			var size:int = count3 == 0 ? 10 : 9;
+			size = count3 == 0 ? 10 : 9;
 			for (i = 0; i < size; i++) {
 				person = new Person();
 				if (count3 > 0 && i >= 5)
@@ -244,6 +268,23 @@ class MockSimpleCallAsyncToken extends MockSpringAsyncToken {
 			}
 			count3++;
 			return buildResult({ resultCount: size, resultList: coll });
+		}
+		else if (componentName == "pagedQueryClient" && op == "find4") {
+			coll = new ArrayCollection();
+			first = params[1];
+			max = params[2];
+			if (max == 0)
+				max = 20;
+			size = 4;
+			for (i = 0; i < size; i++) {
+				person = new Person();
+				person.id = i+1;
+				person.uid = "P" + person.id;
+				person.version = 0;
+				person.lastName = "Person" + i;
+				coll.addItem(person);
+			}
+			return buildResult({ firstResult: first, maxResults: max, resultCount: size, resultList: coll });
 		}
         
         return buildFault("Server.Error");

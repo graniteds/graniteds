@@ -48,6 +48,7 @@ package org.granite.tide {
     import org.granite.reflect.Field;
     import org.granite.reflect.Method;
     import org.granite.reflect.Type;
+    import org.granite.tide.collections.PagedCollection;
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
     import org.granite.tide.data.EntityManager;
@@ -1689,6 +1690,9 @@ package org.granite.tide {
             else if (object is IPersistentCollection && !IPersistentCollection(object).isInitialized()) {
                 return object.toString();
             }
+//			else if (object is PagedCollection) {
+//				return object.toString();
+//			}
             else if (object is IList) {
                 s = getQualifiedClassName(object) + " [";
                 var l:IList = object as IList;

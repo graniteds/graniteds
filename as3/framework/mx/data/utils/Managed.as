@@ -67,7 +67,7 @@ package mx.data.utils {
 	        if (em)
 	            em.meta_setEntityProperty(obj, property.toString(), oldValue, newValue);
 	        
-	        if (newValue !== oldValue && (!(oldValue is Number) || !(newValue is Number) || !(isNaN(newValue) && isNaN(oldValue))))
+	        if (newValue !== oldValue && !(oldValue is Number && newValue is Number && isNaN(newValue) && isNaN(oldValue)))
 	            obj.dispatchEvent(PropertyChangeEvent.createUpdateEvent(obj, property, oldValue, newValue));
 	    }
 	    

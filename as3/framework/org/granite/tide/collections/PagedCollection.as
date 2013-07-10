@@ -91,6 +91,10 @@ package org.granite.tide.collections {
 		/**
 		 * 	@private
 		 */
+		protected var _list:IList;		  // Internal wrapped list
+		/**
+		 * 	@private
+		 */
 		protected var _fullRefresh:Boolean = false;
 		/**
 		 * 	@private
@@ -126,9 +130,28 @@ package org.granite.tide.collections {
 			_first = 0;
 			_last = 0;
 			_count = 0;
-			list = null;
+			_list = null;
 			_initializing = true;
 			addEventListener("sortChanged", sortChangedHandler);
+		}
+		
+		
+		public override function toString():String {
+			if (_initializing)
+				return "[Initializing paged collection]";
+			
+			var s:String = "PagedCollection(" + _first + "-" + _last + ") [";
+			if (localIndex == null)
+				s += "No local index";
+			else {
+				for (var i:int = 0; i < localIndex.length; i++) {
+					if (i > 0)
+						s += ", ";
+					s += BaseContext.toString(localIndex[i]);
+				}
+			}
+			s += "]";
+			return s;
 		}
 		
 		
@@ -185,10 +208,12 @@ package org.granite.tide.collections {
 		/**
 		 *  Set whether or not the collection will subscribe to org.granite.tide.data.refresh.<Entity Name> 
 		 *  events and automatically refresh when they are dispatched
+		 * 
+		 * 	@param autoRefresh enable automatic refresh on external data events
 		 */
 		public function set autoRefresh(autoRefresh:Boolean):void {
 			_autoRefresh = autoRefresh;
-
+			
 			// In case _elementName is already set
 			if (!autoRefresh && _elementName != null)
 	        	_context.removeEventListener("org.granite.tide.data.refresh." + _elementName, refreshHandler);
@@ -200,7 +225,7 @@ package org.granite.tide.collections {
 		public function clear():void {
 			_ipes = null;
 			clearLocalIndex();
-			list = null;
+			_list = null;
 			_first = 0;
 			_last = 0;
 			_count = 0;
@@ -294,10 +319,6 @@ package org.granite.tide.collections {
 		
 		private function clearLocalIndex():void {
 			// Force complete refresh after changing sorting or filtering
-			if (localIndex != null) {
-				for (var i:int = 0; i < localIndex.length; i++)
-					stopTrackUpdates(localIndex[i]);
-			}
 			localIndex = null;
 		}
 
@@ -384,10 +405,11 @@ package org.granite.tide.collections {
 		 *  @param event the result event
 		 */
 		protected function handleResult(result:Object, event:TideResultEvent = null):void {
-			list = result.resultList as IList;
+			var l:IList = result.resultList as IList;
+			list = l is ListCollectionView ? ListCollectionView(l).list : l;
 			
 			if (this.sort != null)
-				this.sort.compareFunction = nullCompare;	// Avoid automatic sorting
+				this.sort.compareFunction = nullCompare;	// Prevent automatic sorting
 			
 			var expectedFirst:int = 0;
 			var expectedLast:int = 0;
@@ -431,8 +453,6 @@ package org.granite.tide.collections {
 					entityName = ClassUtil.getUnqualifiedClassName(localIndex[i]);
 					if (entityName != _elementName && entityNames.indexOf(entityName) < 0)
 						entityNames.push(entityName);
-
-		            stopTrackUpdates(localIndex[i]);
 		        }
 		        for each (entityName in entityNames)
 		        	_context.removeEventListener("org.granite.tide.data.refresh." + entityName, refreshHandler);
@@ -444,8 +464,6 @@ package org.granite.tide.collections {
 					entityName = ClassUtil.getUnqualifiedClassName(localIndex[i]);
 					if (entityName != _elementName && entityNames.indexOf(entityName) < 0)
 						entityNames.push(entityName);
-						
-		            startTrackUpdates(localIndex[i]);
 		        }
 		        if (_autoRefresh) {
 		        	for each (entityName in entityNames)
@@ -522,54 +540,49 @@ package org.granite.tide.collections {
 		    if (dispatchReset)
 		    	dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
 		}
-		
-		
-//		public override function dispatchEvent(event:Event):Boolean {
-//			if (_tempSort is NullSort && event is CollectionEvent && CollectionEvent(event).kind == CollectionEventKind.REFRESH)
-//				CollectionEvent(event).kind = CollectionEventKind.RESET;
-//			return super.dispatchEvent(event);
-//		} 
     	
 		
-		private var _tempSort:NullSort = null;
-    	
     	// All this ugly hack because ListCollectionView.revision is private
         mx_internal override function getBookmarkIndex(bookmark:CursorBookmark):int {
         	var saveThrowIpe:Boolean = _throwIpe;
-            _throwIpe = false;
-            var index:int = super.getBookmarkIndex(bookmark);
-            _throwIpe = saveThrowIpe;
-            return index;
-        }
- 
- 
-		// Override get/set list/dispatch/reset^M
-		// to avoid the call to reset() in ListCollectionView when the received list^M
-		// is updated^M
-		public override function dispatchEvent(event:Event):Boolean {
-			if (event.type == "listChanged")
-				return false;
-			return super.dispatchEvent(event);
-		}
-		
-		private var _settingList:Boolean = false;
-		
-		public override function set list(value:IList):void {
 			try {
-				_settingList = true;
-				super.list = value;
+	            _throwIpe = false;
+	            return super.getBookmarkIndex(bookmark);
 			}
 			finally {
-				_settingList = false;
+				_throwIpe = saveThrowIpe;
 			}
+			return -1;
+        }
+ 
+
+		[Bindable("listChanged")]
+		public override function get list():IList {
+			return _list;
 		}
 		
-		mx_internal override function reset():void {
-			if (_settingList)
+		public override function set list(value:IList):void {
+			if (value == _list)
 				return;
-			super.mx_internal::reset();
+				
+			if (_list)
+				_list.removeEventListener(CollectionEvent.COLLECTION_CHANGE, listChangeHandler);
+			
+			_list = value;
+			
+			if (value)
+				value.addEventListener(CollectionEvent.COLLECTION_CHANGE, listChangeHandler, false, 0, true);
 		}
-																							
+		
+		private function listChangeHandler(event:CollectionEvent):void {
+			dispatchEvent(event);
+		}
+			
+		
+		// Override sort to disable client side sorting
+		// while keeping the ability to define the sort fields
+		private var _tempSort:NullSort = null;
+		
         CONFIG::flex40 {
             [Bindable("sortChanged")]
             public override function get sort():Sort {
@@ -839,27 +852,6 @@ package org.granite.tide.collections {
 			}
 			return 0;
 		}
-		
-		
-        protected function startTrackUpdates(item:Object):void {
-            if (item && item is IEventDispatcher)
-                IEventDispatcher(item).addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, itemUpdateHandler, false, 0, true);
-        }
-        
-        protected function stopTrackUpdates(item:Object):void {
-            if (item && item is IEventDispatcher)
-                IEventDispatcher(item).removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, itemUpdateHandler);    
-	    }
-	    
-        protected function itemUpdateHandler(event:PropertyChangeEvent):void {
-    		if (hasEventListener(CollectionEvent.COLLECTION_CHANGE)) {
-		        var ce:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE);
-		        ce.kind = CollectionEventKind.UPDATE;
-		        ce.items.push(event);
-		        ce.location = -1;
-		        dispatchEvent(ce);
-		    }
-        }
 	}
 }
 
@@ -877,4 +869,8 @@ class NullSort extends Sort {
     public override function sort(array:Array):void {
         _sorted = true;
     }
+	
+	public override function propertyAffectsSort(propertyName:String):Boolean {
+		return false;
+	}
 }
