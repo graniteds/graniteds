@@ -130,7 +130,7 @@ package org.granite.tide.collections {
 			_first = 0;
 			_last = 0;
 			_count = 0;
-			_list = null;
+			list = null;
 			_initializing = true;
 			addEventListener("sortChanged", sortChangedHandler);
 		}
@@ -225,7 +225,7 @@ package org.granite.tide.collections {
 		public function clear():void {
 			_ipes = null;
 			clearLocalIndex();
-			_list = null;
+			list = null;
 			_first = 0;
 			_last = 0;
 			_count = 0;
