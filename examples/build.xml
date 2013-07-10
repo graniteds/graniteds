@@ -215,6 +215,7 @@
 		<include name="asm-1.5.3.jar" if="spring3.lib"/>
 		<include name="commons-logging.jar" if="spring3.lib"/>
 		<include name="backport-util-concurrent*.jar" if="spring3.lib"/>
+		<include name="interceptor-api.jar" if="spring3.lib"/>
 	</fileset>
 	<fileset id="granite-spring.jar" dir="${gds.build}">
 		<include name="granite-spring.jar" if="gds-spring.lib"/>
@@ -317,6 +318,7 @@
 		            <srcfiles dir="build/swf" includes="**/*.mxml"/>
 		            <srcfiles dir="build/swf" includes="**/*.as"/>
 		            <srcfiles dir="${gds.build}" includes="granite-essentials.swc"/>
+		            <srcfiles dir="${gds.build}" includes="granite-flex45.swc"/>
 		            <srcfiles dir="${gds.build}" includes="granite.swc"/>
 		            <srcfiles dir="${resources.dir}" includes="WEB-INF/flex/services-config.xml"/>
 		        </uptodate>
@@ -397,6 +399,7 @@
 				<include name="log4j.properties"/>
 			</zipfileset>
             <fileset dir="build/swf" includes="*.swf"/>
+            <fileset dir="build/swf" includes="*.html"/>
             <fileset dir="flex">
                 <include name="*.js"/>
                 <include name="*.html"/>
@@ -649,10 +652,10 @@
         <echo message="Defining gas3 task..."/>
         <taskdef name="gas3" classname="org.granite.generator.ant.AntJavaAs3Task">
         	<!--classpath>
-        		<fileset dir="E:/java/builder/plugins">
-        			<include name="org.granite.builder_2.2.0.SP2.jar"/>
+        		<fileset dir="C:/Dev/builder/plugins">
+        			<include name="org.granite.builder_E.2.4.0.jar"/>
         		</fileset>
-        		<fileset dir="C:/java/workspace34/graniteds_builder/lib">
+        		<fileset dir="C:/Dev/workspaceseam3/graniteds_builder/lib">
         			<include name="*.jar"/>
         		</fileset>
         	</classpath-->
