@@ -9,6 +9,7 @@ package org.granite.test.tide.spring
 	import mx.controls.DataGrid;
 	import mx.controls.dataGridClasses.DataGridColumn;
 	import mx.events.CollectionEvent;
+	import mx.events.CollectionEventKind;
 	
 	import org.flexunit.Assert;
 	import org.flexunit.async.Async;
@@ -48,15 +49,19 @@ package org.granite.test.tide.spring
 			
 			UIImpersonator.addChild(dataGrid);
 			
-			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, initialResultHandler);
+			Async.handleEvent(this, pagedQuery, CollectionEvent.COLLECTION_CHANGE, initialResultHandler);
 		}
 		
 		private function initialResultHandler(event:Object, pass:Object = null):void {
+			if (event.kind != CollectionEventKind.REFRESH)
+				return;
+			
 			for (var i:int = 0; i < 20; i++)
 				Assert.assertEquals("Elt " + i, i+1, _ctx.pagedQueryClient.getItemAt(i).id);
 			
 			var dataGrid:DataGrid = UIImpersonator.getChildAt(0) as DataGrid;
-			dataGrid.selectedItem = _ctx.pagedQueryClient.getItemAt(10);
+			var object:Object = _ctx.pagedQueryClient.getItemAt(10);
+			dataGrid.selectedItem = object;
 			dataGrid.selectedItem.lastName = "test";
 			
 			Async.handleEvent(this, _ctx.pagedQueryClient, PagedCollection.COLLECTION_PAGE_CHANGE, secondResultHandler);
@@ -138,7 +143,7 @@ class MockSimpleCallAsyncToken extends MockSpringAsyncToken {
 				coll.addItem(person);
 			}
 			count++;
-			return buildResult({ resultCount: 1000, resultList: coll });
+			return buildResult({ firstResult: first, maxResults: max, resultCount: 1000, resultList: coll });
 		}
         
         return buildFault("Server.Error");
