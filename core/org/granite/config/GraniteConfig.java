@@ -834,11 +834,13 @@ public class GraniteConfig implements ScannedItemHandler {
 
     private void loadCustomJMFExtendedCodecs(XMap element, boolean custom) {
     	String jmfExtendedCodecsMode = element.get("jmf-extended-codecs/@mode");
-    	try {
-    		this.jmfExtendedCodecsMode = JMF_EXTENSIONS_MODE.valueOf(jmfExtendedCodecsMode.toLowerCase());
-    	}
-    	catch (Exception e) {
-        	throw new GraniteConfigException("Illegal JMF extended codecs mode: " + jmfExtendedCodecsMode, e);
+    	if (jmfExtendedCodecsMode != null) {
+	    	try {
+	    		this.jmfExtendedCodecsMode = JMF_EXTENSIONS_MODE.valueOf(jmfExtendedCodecsMode.toLowerCase());
+	    	}
+	    	catch (Exception e) {
+	        	throw new GraniteConfigException("Illegal JMF extended codecs mode: " + jmfExtendedCodecsMode, e);
+	    	}
     	}
     	
     	for (XMap codec : element.getAll("jmf-extended-codecs/jmf-extended-codec")) {
@@ -855,11 +857,13 @@ public class GraniteConfig implements ScannedItemHandler {
 
     private void loadCustomJMFDefaultStoredStrings(XMap element, boolean custom) {
     	String jmfDefaultStoredStringsMode = element.get("jmf-default-stored-strings/@mode");
-    	try {
-    		this.jmfDefaultStoredStringsMode = JMF_EXTENSIONS_MODE.valueOf(jmfDefaultStoredStringsMode.toLowerCase());
-    	}
-    	catch (Exception e) {
-        	throw new GraniteConfigException("Illegal JMF default stored strings mode: " + jmfDefaultStoredStringsMode, e);
+    	if (jmfDefaultStoredStringsMode != null) {
+    		try {
+	    		this.jmfDefaultStoredStringsMode = JMF_EXTENSIONS_MODE.valueOf(jmfDefaultStoredStringsMode.toLowerCase());
+	    	}
+	    	catch (Exception e) {
+	        	throw new GraniteConfigException("Illegal JMF default stored strings mode: " + jmfDefaultStoredStringsMode, e);
+	    	}
     	}
     	
     	for (XMap codec : element.getAll("jmf-default-stored-strings/jmf-default-stored-string"))
