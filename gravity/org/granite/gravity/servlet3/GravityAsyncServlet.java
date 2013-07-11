@@ -30,6 +30,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.granite.config.GraniteConfigListener;
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.Gravity;
@@ -37,7 +38,6 @@ import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFSerializer;
-import org.granite.messaging.jmf.JMFServletContextListener;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.ContentType;
 import org.granite.util.UUIDUtil;
@@ -59,7 +59,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		
-        jmfSharedContext = JMFServletContextListener.getSharedContext(config.getServletContext());
+        jmfSharedContext = GraniteConfigListener.getSharedContext(config.getServletContext());
 	}
 
 	@Override
@@ -155,7 +155,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 	protected AsyncChannelFactory newAsyncChannelFactory(Gravity gravity, String contentType) throws ServletException {
 		if (ContentType.JMF_AMF.mimeType().equals(contentType)) {
 	    	if (jmfSharedContext == null)
-	    		throw JMFServletContextListener.newSharedContextNotInitializedException();
+	    		throw GraniteConfigListener.newSharedContextNotInitializedException();
 			
 	    	return new JMFAsyncChannelFactory(gravity, jmfSharedContext);
 		}
@@ -185,7 +185,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 	
 	protected Message[] deserializeJMFAMF(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException, ServletException {
     	if (jmfSharedContext == null)
-    		throw JMFServletContextListener.newSharedContextNotInitializedException();
+    		throw GraniteConfigListener.newSharedContextNotInitializedException();
     	
     	@SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
 		JMFDeserializer deserializer = new JMFDeserializer(is, jmfSharedContext);
@@ -201,7 +201,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 
 	protected void serializeJMFAMF(Gravity gravity, HttpServletResponse response, Message[] messages) throws IOException, ServletException {
     	if (jmfSharedContext == null)
-    		throw JMFServletContextListener.newSharedContextNotInitializedException();
+    		throw GraniteConfigListener.newSharedContextNotInitializedException();
     	
     	OutputStream os = null;
 		try {

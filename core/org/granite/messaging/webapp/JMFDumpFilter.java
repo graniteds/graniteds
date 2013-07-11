@@ -40,9 +40,9 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
+import org.granite.config.GraniteConfigListener;
 import org.granite.logging.Logger;
 import org.granite.messaging.jmf.JMFDumper;
-import org.granite.messaging.jmf.JMFServletContextListener;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.ContentType;
 
@@ -56,9 +56,9 @@ public class JMFDumpFilter implements Filter {
     private SharedContext jmfSharedContext = null;
 
     public void init(FilterConfig config) throws ServletException {
-    	jmfSharedContext = JMFServletContextListener.getDumpSharedContext(config.getServletContext());
+    	jmfSharedContext = GraniteConfigListener.getDumpSharedContext(config.getServletContext());
     	if (jmfSharedContext == null)
-    		throw JMFServletContextListener.newSharedContextNotInitializedException();
+    		throw GraniteConfigListener.newSharedContextNotInitializedException();
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

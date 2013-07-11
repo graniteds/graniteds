@@ -37,11 +37,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
-import javax.servlet.ServletException;
 
+import org.granite.config.GraniteConfig.JMF_EXTENSIONS_MODE;
 import org.granite.config.flex.Channel;
 import org.granite.config.flex.Destination;
 import org.granite.config.flex.EndPoint;
@@ -56,6 +57,12 @@ import org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
+import org.granite.messaging.jmf.DefaultCodecRegistry;
+import org.granite.messaging.jmf.DefaultSharedContext;
+import org.granite.messaging.jmf.SharedContext;
+import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
+import org.granite.messaging.jmf.codec.ExtendedObjectCodecService;
+import org.granite.messaging.jmf.reflect.Reflection;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.ServiceFactory;
 import org.granite.messaging.service.SimpleServiceFactory;
@@ -65,8 +72,10 @@ import org.granite.messaging.service.tide.TideComponentAnnotatedWithMatcher;
 import org.granite.messaging.service.tide.TideComponentInstanceOfMatcher;
 import org.granite.messaging.service.tide.TideComponentNameMatcher;
 import org.granite.messaging.service.tide.TideComponentTypeMatcher;
-import org.granite.util.TypeUtil;
+import org.granite.scan.ServiceLoader;
+import org.granite.util.JMFAMFUtil;
 import org.granite.util.ServletParams;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 
 
@@ -82,13 +91,16 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
     
     public static final String GRANITE_SESSION_TRACKING = "org.granite.config.sessionTracking";
     public static final String GRANITE_SESSION_MAP = "org.granite.config.sessionMap";
+    
+    public static final String JMF_INITIALIZATION = "jmf-initialization";
+	public static final String SHARED_CONTEXT_KEY = SharedContext.class.getName();
+	public static final String DUMP_SHARED_CONTEXT_KEY = SharedContext.class.getName() + ":DUMP";
 
     private static final Logger log = Logger.getLogger(GraniteConfigListener.class);
 
     public void contextInitialized(ServletContextEvent sce) {
+        ServletContext context = sce.getServletContext();
         try {
-            ServletContext context = sce.getServletContext();
-
             log.info("Initializing GraniteDS...");
             
             Class<?> serverFilterClass = (Class<?>)context.getAttribute(GRANITE_CONFIG_ATTRIBUTE);
@@ -101,9 +113,9 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
             if (serverFilterClass != null)
             	configureServices(context, serverFilterClass);
             
-            if ("true".equals(sce.getServletContext().getInitParameter(GRANITE_SESSION_TRACKING))) {
+            if ("true".equals(context.getInitParameter(GRANITE_SESSION_TRACKING))) {
 	            Map<String, HttpSession> sessionMap = new ConcurrentHashMap<String, HttpSession>(200);
-	            sce.getServletContext().setAttribute(GRANITE_SESSION_MAP, sessionMap);
+	            context.setAttribute(GRANITE_SESSION_MAP, sessionMap);
             }
             
             if (gConfig.isRegisterMBeans()) {
@@ -111,6 +123,10 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
             			ServletGraniteConfig.getServletConfig(context), 
             			ServletServicesConfig.getServletConfig(context));
             }
+            
+            String jmfInitialization = context.getInitParameter(JMF_INITIALIZATION);
+            if (jmfInitialization == null || "true".equals(jmfInitialization))
+            	loadJMFSharedContext(context, gConfig);
 
             log.info("GraniteDS initialized");
         }
@@ -416,7 +432,72 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
 		}
 		return false;
 	}
+	
+	private static void loadJMFSharedContext(ServletContext servletContext, GraniteConfig graniteConfig) {
+		log.info("Loading JMF shared context");
 
+		List<ExtendedObjectCodec> extendedObjectCodecs = null;
+		
+		if (graniteConfig.getJmfExtendedCodecsMode() == JMF_EXTENSIONS_MODE.REPLACE)
+			extendedObjectCodecs = graniteConfig.getJmfExtendedCodecs();
+		else {
+			extendedObjectCodecs = new ArrayList<ExtendedObjectCodec>();
+			
+			if (graniteConfig.getJmfExtendedCodecsMode() == JMF_EXTENSIONS_MODE.PREPPEND)
+				extendedObjectCodecs.addAll(graniteConfig.getJmfExtendedCodecs());
+			
+			for (ExtendedObjectCodecService service : ServiceLoader.load(ExtendedObjectCodecService.class))
+				extendedObjectCodecs.addAll(Arrays.asList(service.getExtensions()));
+			
+			if (graniteConfig.getJmfExtendedCodecsMode() == JMF_EXTENSIONS_MODE.APPEND)
+				extendedObjectCodecs.addAll(graniteConfig.getJmfExtendedCodecs());
+		}
+		
+		log.debug("Using JMF extended codecs: %s", extendedObjectCodecs);
+		
+		List<String> defaultStoredStrings = null;
+		if (graniteConfig.getJmfDefaultStoredStringsMode() == JMF_EXTENSIONS_MODE.REPLACE)
+			defaultStoredStrings = graniteConfig.getJmfDefaultStoredStrings();
+		else {
+			defaultStoredStrings = new ArrayList<String>();
+			
+			if (graniteConfig.getJmfDefaultStoredStringsMode() == JMF_EXTENSIONS_MODE.PREPPEND)
+				defaultStoredStrings.addAll(graniteConfig.getJmfDefaultStoredStrings());
+			
+			defaultStoredStrings.addAll(JMFAMFUtil.AMF_DEFAULT_STORED_STRINGS);
+			
+			if (graniteConfig.getJmfDefaultStoredStringsMode() == JMF_EXTENSIONS_MODE.APPEND)
+				defaultStoredStrings.addAll(graniteConfig.getJmfDefaultStoredStrings());
+		}
+		
+		log.debug("Using JMF default stored strings: %s", defaultStoredStrings);
+		
+		Reflection reflection = graniteConfig.getJmfReflection();
+		
+		log.debug("Using JMF reflection: %s", reflection.getClass().getName());
+        
+		SharedContext sharedContext = new DefaultSharedContext(new DefaultCodecRegistry(extendedObjectCodecs), defaultStoredStrings, reflection);
+        servletContext.setAttribute(SHARED_CONTEXT_KEY, sharedContext);
+        
+        SharedContext dumpSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), defaultStoredStrings, reflection);
+        servletContext.setAttribute(DUMP_SHARED_CONTEXT_KEY, dumpSharedContext);
+		
+        log.info("JMF shared context loaded");
+	}
+	
+	public static SharedContext getSharedContext(ServletContext servletContext) {
+		return (SharedContext)servletContext.getAttribute(SHARED_CONTEXT_KEY);
+	}
+
+	public static SharedContext getDumpSharedContext(ServletContext servletContext) {
+		return (SharedContext)servletContext.getAttribute(DUMP_SHARED_CONTEXT_KEY);
+	}
+	
+	public static ServletException newSharedContextNotInitializedException() {
+		return new ServletException(
+			"JMF shared context not initialized (remove or set to true '" + JMF_INITIALIZATION + "' param in your web.xml)"
+		);
+	}
 	
 	public void sessionCreated(HttpSessionEvent se) {
 		@SuppressWarnings("unchecked")

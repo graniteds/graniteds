@@ -29,6 +29,9 @@
     instantiators?,
     class-getter?,
     externalizers?,
+    jmf-extended-codecs?,
+    jmf-default-stored-strings?,
+    jmf-reflection?,
     descriptors?,
     exception-converters?,
     security?,
@@ -112,6 +115,33 @@
 	type CDATA #IMPLIED
 	instance-of CDATA #IMPLIED
 	annotated-with CDATA #IMPLIED
+>
+
+<!ELEMENT jmf-extended-codecs (
+	jmf-extended-codec*
+)>
+<!ATTLIST jmf-extended-codecs
+	mode (prepend|append|replace) "append"
+>
+<!ELEMENT jmf-extended-codec EMPTY>
+<!ATTLIST jmf-extended-codec
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT jmf-default-stored-strings (
+	jmf-default-stored-string*
+)>
+<!ATTLIST jmf-default-stored-strings
+	mode (prepend|append|replace) "append"
+>
+<!ELEMENT jmf-default-stored-string EMPTY>
+<!ATTLIST jmf-default-stored-string
+	value CDATA #REQUIRED
+>
+
+<!ELEMENT jmf-reflection EMPTY>
+<!ATTLIST jmf-reflection
+	type CDATA #REQUIRED
 >
 
 <!ELEMENT descriptors (

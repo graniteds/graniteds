@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.granite.config.GraniteConfig;
+import org.granite.config.GraniteConfigListener;
 import org.granite.config.ServletGraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
@@ -46,7 +47,6 @@ import org.granite.messaging.amf.io.AMF0Deserializer;
 import org.granite.messaging.amf.io.AMF0Serializer;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFSerializer;
-import org.granite.messaging.jmf.JMFServletContextListener;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.ContentType;
 import org.granite.util.ServletParams;
@@ -84,7 +84,7 @@ public class AMFMessageFilter implements Filter {
         
         log.info("Using configuration: {closeStreams=%s, inputBufferSize=%s, outputBufferSize=%s}", closeStreams, inputBufferSize, outputBufferSize);
         
-        jmfSharedContext = JMFServletContextListener.getSharedContext(config.getServletContext());
+        jmfSharedContext = GraniteConfigListener.getSharedContext(config.getServletContext());
     }
 
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -194,7 +194,7 @@ public class AMFMessageFilter implements Filter {
     	log.debug(">> Incoming JMF+AMF request from: %s", request.getRequestURL());
     	
     	if (jmfSharedContext == null)
-    		throw JMFServletContextListener.newSharedContextNotInitializedException();
+    		throw GraniteConfigListener.newSharedContextNotInitializedException();
 
         InputStream is = null;
         OutputStream os = null;

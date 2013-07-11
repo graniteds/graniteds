@@ -60,6 +60,8 @@ import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.MapExternalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
+import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
+import org.granite.messaging.jmf.reflect.Reflection;
 import org.granite.messaging.service.DefaultMethodMatcher;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.MethodMatcher;
@@ -82,6 +84,12 @@ import org.xml.sax.SAXException;
  */
 public class GraniteConfig implements ScannedItemHandler {
 
+	public enum JMF_EXTENSIONS_MODE {
+		PREPPEND,
+		APPEND,
+		REPLACE
+	}
+	
     ///////////////////////////////////////////////////////////////////////////
     // Static fields.
 
@@ -142,6 +150,17 @@ public class GraniteConfig implements ScannedItemHandler {
     private final Map<String, String> externalizersByInstanceOf = new HashMap<String, String>();
     private final Map<String, String> externalizersByAnnotatedWith = new HashMap<String, String>();
 
+    // JMF extended codecs.
+    private JMF_EXTENSIONS_MODE jmfExtendedCodecsMode = JMF_EXTENSIONS_MODE.APPEND;
+    private final List<ExtendedObjectCodec> jmfExtendedCodecs = new ArrayList<ExtendedObjectCodec>();
+
+    // JMF default stored strings.
+    private JMF_EXTENSIONS_MODE jmfDefaultStoredStringsMode = JMF_EXTENSIONS_MODE.APPEND;
+    private final List<String> jmfDefaultStoredStrings = new ArrayList<String>();
+    
+    // JMF reflection.
+    private Reflection jmfReflection = null;
+    
     // Java descriptors configuration.
     private final ConcurrentHashMap<String, Class<? extends JavaClassDescriptor>> javaDescriptorsByType
         = new ConcurrentHashMap<String, Class<? extends JavaClassDescriptor>>();
@@ -474,9 +493,28 @@ public class GraniteConfig implements ScannedItemHandler {
 	public List<Externalizer> getScannedExternalizers() {
 		return scannedExternalizers;
 	}
-
 	
-    public Class<? extends ActionScriptClassDescriptor> getActionScriptDescriptor(String type) {
+    public JMF_EXTENSIONS_MODE getJmfExtendedCodecsMode() {
+		return jmfExtendedCodecsMode;
+	}
+
+	public List<ExtendedObjectCodec> getJmfExtendedCodecs() {
+		return jmfExtendedCodecs;
+	}
+
+	public JMF_EXTENSIONS_MODE getJmfDefaultStoredStringsMode() {
+		return jmfDefaultStoredStringsMode;
+	}
+
+	public Reflection getJmfReflection() {
+		return jmfReflection;
+	}
+
+	public List<String> getJmfDefaultStoredStrings() {
+		return jmfDefaultStoredStrings;
+	}
+
+	public Class<? extends ActionScriptClassDescriptor> getActionScriptDescriptor(String type) {
         return getElementByType(type, ASC_DESCRIPTOR_FACTORY, as3DescriptorsByType, as3DescriptorsByInstanceOf, null, null);
     }
 
@@ -607,6 +645,9 @@ public class GraniteConfig implements ScannedItemHandler {
         loadCustomInstantiators(element, custom);
         loadCustomClassGetter(element, custom);
         loadCustomExternalizers(element, custom);
+        loadCustomJMFExtendedCodecs(element, custom);
+        loadCustomJMFDefaultStoredStrings(element, custom);
+        loadCustomJMFReflection(element, custom);
         loadCustomDescriptors(element, custom);
         loadCustomExceptionConverters(element, custom);
         loadCustomTideComponents(element, custom);
@@ -789,6 +830,54 @@ public class GraniteConfig implements ScannedItemHandler {
                 }
             }
         }
+    }
+
+    private void loadCustomJMFExtendedCodecs(XMap element, boolean custom) {
+    	String jmfExtendedCodecsMode = element.get("jmf-extended-codecs/@mode");
+    	try {
+    		this.jmfExtendedCodecsMode = JMF_EXTENSIONS_MODE.valueOf(jmfExtendedCodecsMode.toLowerCase());
+    	}
+    	catch (Exception e) {
+        	throw new GraniteConfigException("Illegal JMF extended codecs mode: " + jmfExtendedCodecsMode, e);
+    	}
+    	
+    	for (XMap codec : element.getAll("jmf-extended-codecs/jmf-extended-codec")) {
+            String codecType = codec.get("@type");
+
+            try {
+				jmfExtendedCodecs.add((ExtendedObjectCodec)TypeUtil.newInstance(codecType));
+			}
+            catch (Exception e) {
+            	throw new GraniteConfigException("Could not instantiate JMF extended codec: " + codecType, e);
+			}
+        }
+    }
+
+    private void loadCustomJMFDefaultStoredStrings(XMap element, boolean custom) {
+    	String jmfDefaultStoredStringsMode = element.get("jmf-default-stored-strings/@mode");
+    	try {
+    		this.jmfDefaultStoredStringsMode = JMF_EXTENSIONS_MODE.valueOf(jmfDefaultStoredStringsMode.toLowerCase());
+    	}
+    	catch (Exception e) {
+        	throw new GraniteConfigException("Illegal JMF default stored strings mode: " + jmfDefaultStoredStringsMode, e);
+    	}
+    	
+    	for (XMap codec : element.getAll("jmf-default-stored-strings/jmf-default-stored-string"))
+			jmfDefaultStoredStrings.add(codec.get("@value"));
+    }
+
+    private void loadCustomJMFReflection(XMap element, boolean custom) {
+    	String jmfReflection = element.get("jmf-reflection/@type");
+    	if (jmfReflection == null)
+    		this.jmfReflection = new Reflection(null);
+    	else {
+	    	try {
+	    		this.jmfReflection = (Reflection)TypeUtil.newInstance(jmfReflection);
+	    	}
+	    	catch (Exception e) {
+            	throw new GraniteConfigException("Could not instantiate JMF reflection: " + jmfReflection, e);
+	    	}
+    	}
     }
 
     /**

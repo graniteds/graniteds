@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.granite.config.GraniteConfig;
+import org.granite.config.GraniteConfigListener;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
@@ -40,7 +41,6 @@ import org.granite.messaging.amf.io.AMF0Serializer;
 import org.granite.messaging.amf.process.AMF0MessageProcessor;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFSerializer;
-import org.granite.messaging.jmf.JMFServletContextListener;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.ContentType;
 
@@ -54,7 +54,7 @@ public class AMFEndpoint {
     private SharedContext jmfSharedContext = null;
 
     public void init(ServletContext context) {
-        jmfSharedContext = JMFServletContextListener.getSharedContext(context);
+        jmfSharedContext = GraniteConfigListener.getSharedContext(context);
         
     }
     
@@ -131,7 +131,7 @@ public class AMFEndpoint {
     	log.debug(">> Incoming JMF+AMF request from: %s", request.getRequestURL());
     	
     	if (jmfSharedContext == null)
-    		throw JMFServletContextListener.newSharedContextNotInitializedException();
+    		throw GraniteConfigListener.newSharedContextNotInitializedException();
 
 	    InputStream is = null;
 	    OutputStream os = null;
