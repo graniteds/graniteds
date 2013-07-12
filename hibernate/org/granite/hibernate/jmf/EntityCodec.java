@@ -37,7 +37,6 @@ import org.granite.messaging.jmf.ExtendedObjectInput;
 import org.granite.messaging.jmf.ExtendedObjectOutput;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.reflect.Property;
-import org.hibernate.proxy.AbstractSerializableProxy;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.LazyInitializer;
 
@@ -52,23 +51,16 @@ public class EntityCodec implements ExtendedObjectCodec {
 		
 	static class SerializableProxyAdapter {
 		
-		private static final Field idField;
-		static {
-			try {
-				idField = AbstractSerializableProxy.class.getDeclaredField("id");
-				idField.setAccessible(true);
-			}
-			catch (Throwable t) {
-				throw new ExceptionInInitializerError(t);
-			}
-		}
-		
-		private final AbstractSerializableProxy serializableProxy;
+		private final Object serializableProxy;
+		private final Field idField;
 		private final Method readResolveMethod;
 		
-		public SerializableProxyAdapter(HibernateProxy proxy) throws NoSuchMethodException, SecurityException {
-			this.serializableProxy = (AbstractSerializableProxy)proxy.writeReplace();
+		public SerializableProxyAdapter(HibernateProxy proxy) throws NoSuchMethodException, SecurityException, NoSuchFieldException {
+			this.serializableProxy = proxy.writeReplace();
 			
+			this.idField = serializableProxy.getClass().getDeclaredField("id");
+			this.idField.setAccessible(true);
+
 			this.readResolveMethod = serializableProxy.getClass().getDeclaredMethod("readResolve");
 			this.readResolveMethod.setAccessible(true);
 		}
