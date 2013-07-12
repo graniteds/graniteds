@@ -51,15 +51,10 @@ public class AMFEndpoint {
 
     private static final Logger log = Logger.getLogger(AMFEndpoint.class);
     
-    private SharedContext jmfSharedContext = null;
-
     public void init(ServletContext context) {
-        jmfSharedContext = GraniteConfigListener.getSharedContext(context);
-        
     }
     
     public void destroy() {
-    	jmfSharedContext = null;
     }
     
     public void service(GraniteConfig graniteConfig, ServicesConfig servicesConfig, ServletContext context,
@@ -130,6 +125,7 @@ public class AMFEndpoint {
 	    
     	log.debug(">> Incoming JMF+AMF request from: %s", request.getRequestURL());
     	
+    	SharedContext jmfSharedContext = GraniteConfigListener.getSharedContext(context);
     	if (jmfSharedContext == null)
     		throw GraniteConfigListener.newSharedContextNotInitializedException();
 
