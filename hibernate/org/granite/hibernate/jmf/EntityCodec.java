@@ -52,26 +52,34 @@ public class EntityCodec implements ExtendedObjectCodec {
 		
 	static class SerializableProxyAdapter {
 		
+		private static final Field idField;
+		static {
+			try {
+				idField = AbstractSerializableProxy.class.getDeclaredField("id");
+				idField.setAccessible(true);
+			}
+			catch (Throwable t) {
+				throw new ExceptionInInitializerError(t);
+			}
+		}
+		
 		private final AbstractSerializableProxy serializableProxy;
-		private final Field idField;
 		private final Method readResolveMethod;
 		
-		public SerializableProxyAdapter(Object serializableProxy) throws NoSuchFieldException, NoSuchMethodException, SecurityException {
-			this.serializableProxy = (AbstractSerializableProxy)serializableProxy;
-			
-			this.idField = AbstractSerializableProxy.class.getDeclaredField("id");
-			this.idField.setAccessible(true);
+		public SerializableProxyAdapter(HibernateProxy proxy) throws NoSuchMethodException, SecurityException {
+			this.serializableProxy = (AbstractSerializableProxy)proxy.writeReplace();
 			
 			this.readResolveMethod = serializableProxy.getClass().getDeclaredMethod("readResolve");
 			this.readResolveMethod.setAccessible(true);
 		}
 		
-		public synchronized HibernateProxy getProxy(Serializable id) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-			idField.set(serializableProxy, id);
-			return (HibernateProxy)readResolveMethod.invoke(serializableProxy);
+		public HibernateProxy newProxy(Serializable id) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+			synchronized (serializableProxy) {
+				idField.set(serializableProxy, id);
+				return (HibernateProxy)readResolveMethod.invoke(serializableProxy);
+			}
 		}
 	}
-	
 
 	public boolean canEncode(ExtendedObjectOutput out, Object v) {
 		Class<?> cls = getClass(out, v);
@@ -94,7 +102,7 @@ public class EntityCodec implements ExtendedObjectCodec {
             	Class<?> persistentClass = proxy.getHibernateLazyInitializer().getPersistentClass();
             	if (!serializableProxyAdapters.containsKey(persistentClass)) {
             		try {
-	            		SerializableProxyAdapter proxyAdapter = new SerializableProxyAdapter(proxy.writeReplace());
+	            		SerializableProxyAdapter proxyAdapter = new SerializableProxyAdapter(proxy);
 	            		serializableProxyAdapters.putIfAbsent(persistentClass, proxyAdapter);
             		}
             		catch (Exception e) {
@@ -153,7 +161,7 @@ public class EntityCodec implements ExtendedObjectCodec {
 		if (proxyAdapter == null)
 			throw new IOException("Could not find SerializableProxyAdapter for: " + cls);
 		Serializable id = (Serializable)in.readObject();
-		return proxyAdapter.getProxy(id);
+		return proxyAdapter.newProxy(id);
 	}
 
 	public void decode(ExtendedObjectInput in, Object v) throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException {
