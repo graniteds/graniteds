@@ -22,6 +22,7 @@ package org.granite.messaging.jmf.reflect;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author Franck WOLFF
@@ -96,6 +97,11 @@ public class SimpleFieldProperty implements FieldProperty {
 	}
 
 	public Object getObject(Object holder) throws IllegalArgumentException, IllegalAccessException {
+		return field.get(holder);
+	}
+
+	public Object getRawObject(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
 		return field.get(holder);
 	}
 

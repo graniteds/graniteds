@@ -114,6 +114,11 @@ public class SimpleMethodProperty implements MethodProperty {
 		return getter.invoke(holder);
 	}
 
+	public Object getRawObject(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
+		return getter.invoke(holder);
+	}
+
 	public void setBoolean(Object holder, boolean value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		if (setter == null)
 			throw new IllegalAccessException("Property " + this + " isn't writable");

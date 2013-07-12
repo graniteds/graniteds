@@ -46,6 +46,8 @@ public interface Property {
 	double getDouble(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
 	Object getObject(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
 	
+	Object getRawObject(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
+	
 	void setBoolean(Object holder, boolean value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
 	void setChar(Object holder, char value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
 	void setByte(Object holder, byte value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;

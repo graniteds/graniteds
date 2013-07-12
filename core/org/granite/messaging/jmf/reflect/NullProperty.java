@@ -71,6 +71,11 @@ public class NullProperty implements Property {
 		throw new UnsupportedOperationException();
 	}
 
+	public Object getRawObject(Object holder) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException {
+		throw new UnsupportedOperationException();
+	}
+
 	public void setBoolean(Object holder, boolean value)
 		throws IllegalArgumentException, IllegalAccessException,
 		InvocationTargetException {
