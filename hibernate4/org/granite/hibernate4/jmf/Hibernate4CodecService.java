@@ -30,13 +30,13 @@ public class Hibernate4CodecService implements ExtendedObjectCodecService {
 
 	public ExtendedObjectCodec[] getExtensions() {
 		return new ExtendedObjectCodec[] {
-			new EntityCodec(),
 			new PersistentSetCodec(),
 			new PersistentListCodec(),
 			new PersistentBagCodec(),
 			new PersistentMapCodec(),
 			new PersistentSortedSetCodec(),
-			new PersistentSortedMapCodec()
+			new PersistentSortedMapCodec(),
+			new EntityCodec()
 		};
 	}
 }
