@@ -58,8 +58,7 @@ public interface CodecRegistry extends JMFConstants {
 	<T> StandardCodec<T> getCodec(Object v);
 	
 	ExtendedObjectCodec findExtendedEncoder(ExtendedObjectOutput out, Object v);
-	ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, String className)
-		throws ClassNotFoundException;
+	ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, String className);
 	
 	static interface PrimitivePropertyCodec {
 		public void encodePrimitive(OutputContext ctx, Object holder, Property property)

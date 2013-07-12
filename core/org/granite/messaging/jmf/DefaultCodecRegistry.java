@@ -223,12 +223,14 @@ public class DefaultCodecRegistry implements CodecRegistry {
 		return null;
 	}
 
-	public ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, String className)
-		throws ClassNotFoundException {
-		
+	public ExtendedObjectCodec findExtendedDecoder(ExtendedObjectInput in, String className) {
 		for (ExtendedObjectCodec c : extendedCodecs) {
-			if (c.canDecode(in, className))
-				return c;
+			try {
+				if (c.canDecode(in, className))
+					return c;
+			}
+			catch (ClassNotFoundException e) {
+			}
 		}
 		return null;
 	}
