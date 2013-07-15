@@ -279,23 +279,26 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
         	}
         }
         
-        if (context.getDestination().isSecured()) {
-            if (!isAuthenticated(authentication) || (!allowAnonymousAccess && authentication instanceof AnonymousAuthenticationToken)) {
-                log.debug("User not authenticated!");
-                throw SecurityServiceException.newNotLoggedInException("User not logged in");
-            }
-            if (!userCanAccessService(context, authentication)) { 
-                log.debug("Access denied for user %s", authentication != null ? authentication.getName() : "not authenticated");
-                throw SecurityServiceException.newAccessDeniedException("User not in required role");
-            }
-        }
-
         try {
+	        if (context.getDestination().isSecured()) {
+	            if (!isAuthenticated(authentication) || (!allowAnonymousAccess && authentication instanceof AnonymousAuthenticationToken)) {
+	                log.debug("User not authenticated!");
+	                throw SecurityServiceException.newNotLoggedInException("User not logged in");
+	            }
+	            if (!userCanAccessService(context, authentication)) { 
+	                log.debug("Access denied for user %s", authentication != null ? authentication.getName() : "not authenticated");
+	                throw SecurityServiceException.newAccessDeniedException("User not in required role");
+	            }
+	        }
+	        
         	Object returnedObject = securityInterceptor != null 
         		? securityInterceptor.invoke(context)
         		: endAuthorization(context);
             
             return returnedObject;
+        }
+        catch (SecurityServiceException e) {
+        	throw e;
         }
         catch (AccessDeniedException e) {
         	throw SecurityServiceException.newAccessDeniedException(e.getMessage());
