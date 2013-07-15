@@ -25,12 +25,12 @@
  * THE GENERATOR.
  */
 
-package ${jClass.as3Type.packageName};
+package ${jClass.clientType.packageName};
 
-import org.granite.messaging.amf.RemoteClass;
+import org.granite.client.messaging.RemoteAlias;
 
-@RemoteClass("${jClass.qualifiedName}")
-public enum ${jClass.as3Type.name} {
+@RemoteAlias("${jClass.qualifiedName}")
+public enum ${jClass.clientType.name} {
 <%
 	int i = 0;
     for (jEnumValue in jClass.enumValues) {%>

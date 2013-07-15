@@ -34,7 +34,7 @@ package ${jClass.clientType.packageName};<%
 	
 	javaImports.add("javax.inject.Inject");
 	javaImports.add("javax.inject.Named");
-	javaImports.add("org.granite.messaging.amf.RemoteClass");
+	javaImports.add("org.granite.client.messaging.RemoteAlias");
 	javaImports.add("org.granite.client.tide.server.ServerSession");
 	
 	if (javaImports.size() > 0) {%>
@@ -46,7 +46,7 @@ import ${javaImport};<%
 	%>
 
 @Named
-@RemoteClass("${jClass.qualifiedName}")
+@RemoteAlias("${jClass.qualifiedName}")
 public class ${jClass.clientType.name} extends ${jClass.clientType.name}Base {
 	
 	@Inject

@@ -51,13 +51,22 @@ public class JavaFXType implements ClientType {
     public static final JavaFXType FLOAT_PROPERTY = new JavaFXType(null, "float", "javafx.beans.property.FloatProperty", "javafx.beans.property.SimpleFloatProperty", Float.valueOf(0.0f));
     public static final JavaFXType DOUBLE_PROPERTY = new JavaFXType(null, "double", "javafx.beans.property.DoubleProperty", "javafx.beans.property.SimpleDoubleProperty", Double.valueOf(0.0));
     public static final JavaFXType STRING_PROPERTY = new JavaFXType(null, "String", "javafx.beans.property.StringProperty", "javafx.beans.property.SimpleStringProperty", null);
-
+    
+    public static final JavaFXType BOOLEAN_READONLY_PROPERTY = new JavaFXType(null, "boolean", "javafx.beans.property.ReadOnlyBooleanProperty", "javafx.beans.property.ReadOnlyBooleanWrapper", null, Boolean.FALSE, true);
+    public static final JavaFXType INT_READONLY_PROPERTY = new JavaFXType(null, "int", "javafx.beans.property.ReadOnlyIntegerProperty", "javafx.beans.property.ReadOnlyIntegerWrapper", null, Integer.valueOf(0), true);
+    public static final JavaFXType LONG_READONLY_PROPERTY = new JavaFXType(null, "long", "javafx.beans.property.ReadOnlyLongProperty", "javafx.beans.property.ReadOnlyLongWrapper", null, Long.valueOf(0), true);
+    public static final JavaFXType FLOAT_READONLY_PROPERTY = new JavaFXType(null, "float", "javafx.beans.property.ReadOnlyFloatProperty", "javafx.beans.property.ReadOnlyFloatWrapper", null, Float.valueOf(0.0f), true);
+    public static final JavaFXType DOUBLE_READONLY_PROPERTY = new JavaFXType(null, "double", "javafx.beans.property.ReadOnlyDoubleProperty", "javafx.beans.property.ReadOnlyDoubleWrapper", null, Double.valueOf(0.0), true);
+    public static final JavaFXType STRING_READONLY_PROPERTY = new JavaFXType(null, "String", "javafx.beans.property.ReadOnlyStringProperty", "javafx.beans.property.ReadOnlyStringWrapper", null, null, true);
+    
     private final String packageName;
     private final String name;
     private final String qualifiedName;
     private final String propertyTypeName;
     private final String propertyImplTypeName;
+    private final String propertyFactoryName;
     private final Object nullValue;
+    private final boolean readOnly;
     private final Set<String> imports = new HashSet<String>(); 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -70,12 +79,17 @@ public class JavaFXType implements ClientType {
         this(packageName, name, null, null, nullValue);
     }
     public JavaFXType(String packageName, String name, String propertyTypeName, String propertyImplTypeName, Object nullValue) {
+    	this(packageName, name, propertyTypeName, propertyImplTypeName, null, nullValue, false);
+    }
+    public JavaFXType(String packageName, String name, String propertyTypeName, String propertyImplTypeName, String propertyFactoryName, Object nullValue, boolean readOnly) {
         this.packageName = (packageName != null ? packageName : "");
         this.name = name;
         this.qualifiedName = (hasPackage() ? (packageName + '.' + name) : name);
         this.nullValue = nullValue;
         this.propertyTypeName = propertyTypeName;
         this.propertyImplTypeName = propertyImplTypeName;
+        this.propertyFactoryName = propertyFactoryName;
+        this.readOnly = readOnly;
     	if (hasPackage())
     		imports.add(ungenerify(qualifiedName));
     	if (propertyTypeName != null)
@@ -124,10 +138,18 @@ public class JavaFXType implements ClientType {
     	return propertyImplTypeName != null && propertyImplTypeName.indexOf(".") >= 0 
     		? propertyImplTypeName.substring(propertyImplTypeName.lastIndexOf(".")+1) : propertyImplTypeName;
     }
+    
+    public String getPropertyFactoryName() {
+    	return propertyFactoryName != null ? propertyFactoryName : "new " + getSimplePropertyImplTypeName();
+    }
 
     @Override
 	public Object getNullValue() {
         return nullValue;
+    }
+    
+    public boolean isReadOnly() {
+    	return readOnly;
     }
 
     public boolean isNumber() {
@@ -164,7 +186,7 @@ public class JavaFXType implements ClientType {
     
     @Override
 	public JavaFXType translatePackage(PackageTranslator translator) {
-    	return new JavaFXType(translator.translate(packageName), getName(), getPropertyTypeName(), getPropertyImplTypeName(), getNullValue());
+    	return new JavaFXType(translator.translate(packageName), getName(), getPropertyTypeName(), getPropertyImplTypeName(), getPropertyFactoryName(), getNullValue(), isReadOnly());
     }
     
     @Override
@@ -192,7 +214,7 @@ public class JavaFXType implements ClientType {
     	if (!translate)
     		return this;
     	
-    	JavaFXType translatedType = new JavaFXType(translatedPackageName, getName(), getPropertyTypeName(), getPropertyImplTypeName(), getNullValue());
+    	JavaFXType translatedType = new JavaFXType(translatedPackageName, getName(), getPropertyTypeName(), getPropertyImplTypeName(), getPropertyFactoryName(), getNullValue(), isReadOnly());
 		translatedType.addImports(translatedImports);
     	return translatedType;
     }

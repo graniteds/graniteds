@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.granite.generator.as3.ClientType;
+import org.granite.generator.as3.PropertyType;
 import org.granite.util.ClassUtil;
 import org.granite.util.PropertyDescriptor;
 import org.granite.util.URIUtil;
@@ -62,17 +63,17 @@ public abstract class JavaAbstractType implements JavaType {
     // Constructor.
 
     protected JavaAbstractType(JavaTypeFactory provider, Class<?> type, URL url) {
-    	this(provider, type, url, false);
+    	this(provider, type, url, PropertyType.SIMPLE);
     }
     
-    protected JavaAbstractType(JavaTypeFactory provider, Class<?> type, URL url, boolean property) {
+    protected JavaAbstractType(JavaTypeFactory provider, Class<?> type, URL url, PropertyType propertyType) {
         if (provider == null || type == null)
             throw new IllegalArgumentException("Parameter provider and type cannot be null");
 
         this.provider = provider;
         this.type = type;
         this.url = url;
-        this.clientType = provider.getClientType(type, null, null, property);
+        this.clientType = provider.getClientType(type, null, null, propertyType);
         this.kind = provider.getKind(type);
         this.generationType = provider.getGenerationType(kind, type);
     }

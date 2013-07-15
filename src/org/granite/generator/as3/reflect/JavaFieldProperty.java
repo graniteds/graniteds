@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.granite.generator.as3.ClientType;
+import org.granite.generator.as3.PropertyType;
 
 
 /**
@@ -195,7 +196,7 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
     }
 
     public ClientType getAs3Type() {
-    	ClientType clientType = provider.getClientType(getGenericType(), null, null, true);
+    	ClientType clientType = provider.getClientType(getGenericType(), null, null, isWritable() ? PropertyType.PROPERTY : PropertyType.READONLY_PROPERTY);
     	if (clientType == null)
     		return provider.getAs3Type(getType());
     	return clientType;
@@ -203,7 +204,7 @@ public class JavaFieldProperty extends JavaMember<Field> implements JavaProperty
 
     @Override
 	public ClientType getClientType() {
-        return provider.getClientType(getGenericType(), null, null, true);
+        return provider.getClientType(getGenericType(), null, null, isWritable() ? PropertyType.PROPERTY : PropertyType.READONLY_PROPERTY);
     }
 
     @Override

@@ -33,7 +33,7 @@ package ${jClass.clientType.packageName};<%
 	Set javaImports = new TreeSet();
 	
 	javaImports.add("org.granite.client.javafx.JavaFXObject");
-	javaImports.add("org.granite.messaging.amf.RemoteClass");
+	javaImports.add("org.granite.client.messaging.RemoteAlias");
 	
     if (jClass.hasInterfaces()) {
         for (jProperty in jClass.interfacesProperties) {
@@ -51,8 +51,10 @@ import ${javaImport};<%
     %>
 
 @JavaFXObject
-@RemoteClass("${jClass.qualifiedName}")
-public class ${jClass.as3Type.name} extends ${jClass.as3Type.name}Base {<%
+@RemoteAlias("${jClass.qualifiedName}")
+public class ${jClass.clientType.name} extends ${jClass.clientType.name}Base {
+
+    private static final long serialVersionUID = 1L;<%
 
     ///////////////////////////////////////////////////////////////////////////
     // (Re)Write Public Getters/Setters for Implemented Interfaces.
@@ -63,15 +65,15 @@ public class ${jClass.as3Type.name} extends ${jClass.as3Type.name}Base {<%
 <%
                 if (jProperty.writable) {%>
     @Override
-    public void set${jProperty.capitalizedName}(${jProperty.as3Type.name} value):void {
+    public void set${jProperty.capitalizedName}(${jProperty.clientType.name} value):void {
         // TODO: Gas3 empty generated setter.
     }<%
                 }
                 if (jProperty.readable) {%>
     @Override
-    public ${jProperty.as3Type.name} get${jProperty.capitalizedName}() {
+    public ${jProperty.clientType.name} get${jProperty.capitalizedName}() {
         // TODO: Gas3 default generated getter.
-        return ${jProperty.as3Type.nullValue};
+        return ${jProperty.clientType.nullValue};
     }<%
                 }
             }

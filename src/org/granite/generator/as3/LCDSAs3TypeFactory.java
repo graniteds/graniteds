@@ -71,7 +71,7 @@ public class LCDSAs3TypeFactory implements As3TypeFactory {
 	}
     
     @Override
-	public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
+	public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, PropertyType propertyType) {
     	return null;
     }
 

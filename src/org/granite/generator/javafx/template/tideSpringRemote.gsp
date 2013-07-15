@@ -33,7 +33,7 @@ package ${jClass.clientType.packageName};<%
 	Set javaImports = new TreeSet();
 	
 	javaImports.add("javax.inject.Inject");
-	javaImports.add("org.granite.messaging.amf.RemoteClass");
+	javaImports.add("org.granite.client.messaging.RemoteAlias");
 	javaImports.add("org.granite.client.tide.server.ServerSession");
 	javaImports.add("org.springframework.stereotype.Component");
 	
@@ -46,7 +46,7 @@ import ${javaImport};<%
 	%>
 
 @Component
-@RemoteClass("${jClass.qualifiedName}")
+@RemoteAlias("${jClass.qualifiedName}")
 public class ${jClass.clientType.name} extends ${jClass.clientType.name}Base {
 	
 	@Inject

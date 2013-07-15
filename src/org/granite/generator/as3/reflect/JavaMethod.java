@@ -27,6 +27,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 import org.granite.generator.as3.ClientType;
+import org.granite.generator.as3.PropertyType;
 import org.granite.generator.util.GenericTypeUtil;
 import org.granite.messaging.service.annotations.Param;
 import org.granite.tide.data.Lazy;
@@ -119,14 +120,14 @@ public class JavaMethod extends JavaMember<Method> {
 		if (type == MethodType.OTHER && provider != null) {
 			if (method.getReturnType() == void.class) {
 				this.returnType = Void.class;
-				this.clientReturnType = provider.getClientType(Void.class, null, null, false);
+				this.clientReturnType = provider.getClientType(Void.class, null, null, PropertyType.SIMPLE);
 			}
 			else {
 				Type genericType = GenericTypeUtil.resolveTypeVariable(method.getGenericReturnType(), method.getDeclaringClass(), declaringTypes);
 				genericType = GenericTypeUtil.primitiveToWrapperType(genericType);
 		    	this.returnType = ClassUtil.classOfType(genericType);
 		    	
-				ClientType returnType = provider.getClientType(genericType, method.getDeclaringClass(), declaringTypes, false);
+				ClientType returnType = provider.getClientType(genericType, method.getDeclaringClass(), declaringTypes, PropertyType.SIMPLE);
 				if (returnType == null)
 					returnType = provider.getAs3Type(this.returnType);
 				clientReturnType = returnType;
@@ -139,12 +140,12 @@ public class JavaMethod extends JavaMember<Method> {
 			for (int i = 0; i < this.parameterTypes.length; i++) {
 				clientParameterNames[i] = getParamName(method, i);
 				if (Map.class.isAssignableFrom(parameterTypes[i]))
-					clientParameterTypes[i] = provider.getClientType(Object.class, null, null, false);
+					clientParameterTypes[i] = provider.getClientType(Object.class, null, null, PropertyType.SIMPLE);
 				else {
 					Type genericType = GenericTypeUtil.resolveTypeVariable(method.getGenericParameterTypes()[i], method.getDeclaringClass(), declaringTypes);
 			    	parameterTypes[i] = ClassUtil.classOfType(genericType);
 			    	
-					ClientType paramType = provider.getClientType(genericType, method.getDeclaringClass(), declaringTypes, false);
+					ClientType paramType = provider.getClientType(genericType, method.getDeclaringClass(), declaringTypes, PropertyType.SIMPLE);
 					if (paramType == null)
 						paramType = provider.getAs3Type(parameterTypes[i]);
 					clientParameterTypes[i] = paramType;

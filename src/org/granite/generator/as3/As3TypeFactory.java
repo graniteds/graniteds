@@ -31,7 +31,7 @@ public interface As3TypeFactory {
 
 	public void configure(boolean externalizeLong, boolean externalizeBigInteger, boolean externalizeBigDecimal);
 	
-	public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property);
+	public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, PropertyType propertyType);
 
 	public ClientType getAs3Type(Class<?> jType);
 }

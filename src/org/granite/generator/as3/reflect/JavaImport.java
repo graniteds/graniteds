@@ -22,6 +22,8 @@ package org.granite.generator.as3.reflect;
 
 import java.net.URL;
 
+import org.granite.generator.as3.PropertyType;
+
 /**
  * @author Franck WOLFF
  */
@@ -31,8 +33,8 @@ public class JavaImport extends JavaAbstractType {
         super(provider, type, url);
     }
     
-    public JavaImport(JavaTypeFactory provider, Class<?> type, URL url, boolean property) {
-        super(provider, type, url, property);
+    public JavaImport(JavaTypeFactory provider, Class<?> type, URL url, PropertyType propertyType) {
+        super(provider, type, url, propertyType);
     }
     
     public boolean hasImportPackage() {

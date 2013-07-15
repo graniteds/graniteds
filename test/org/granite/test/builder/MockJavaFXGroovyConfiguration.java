@@ -93,13 +93,13 @@ public class MockJavaFXGroovyConfiguration implements JavaAs3GroovyConfiguration
 	public TemplateUri[] getTemplateUris(Kind kind, Class<?> clazz) {
 		switch (kind) {
 		case ENTITY:
-			return new TemplateUri[] { new TemplateUri(tide ? JavaFXTemplateUris.TIDE_ENTITY_BASE : JavaFXTemplateUris.ENTITY_BASE, true), new TemplateUri(JavaFXTemplateUris.ENTITY, false) };
+			return new TemplateUri[] { new TemplateUri(JavaFXTemplateUris.ENTITY_BASE, true), new TemplateUri(JavaFXTemplateUris.ENTITY, false) };
 		case INTERFACE:
         	return new TemplateUri[] { new TemplateUri(JavaFXTemplateUris.INTERFACE, false) };
 		case ENUM:
         	return new TemplateUri[] { new TemplateUri(JavaFXTemplateUris.ENUM, false) };
 		case BEAN:
-        	return new TemplateUri[] { new TemplateUri(tide ? JavaFXTemplateUris.TIDE_BEAN_BASE : JavaFXTemplateUris.BEAN_BASE, true), new TemplateUri(JavaFXTemplateUris.BEAN, false) };
+        	return new TemplateUri[] { new TemplateUri(JavaFXTemplateUris.BEAN_BASE, true), new TemplateUri(JavaFXTemplateUris.BEAN, false) };
 		case REMOTE_DESTINATION:
         	return new TemplateUri[] { new TemplateUri(tide ? JavaFXTemplateUris.TIDE_REMOTE_BASE : JavaFXTemplateUris.REMOTE_BASE, true), new TemplateUri(JavaFXTemplateUris.REMOTE, false) };
 		default:

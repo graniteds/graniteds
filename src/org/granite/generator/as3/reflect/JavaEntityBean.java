@@ -35,24 +35,19 @@ public class JavaEntityBean extends JavaBean {
     protected final List<JavaFieldProperty> identifiers;
     protected final JavaType idClass;
     protected JavaProperty version;
-    protected final List<JavaProperty> lazyProperties;
     
     public JavaEntityBean(JavaTypeFactory provider, Class<?> type, URL url) {
         super(provider, type, url);
 
         // Find identifiers.
         List<JavaFieldProperty> tmpIdentifiers = new ArrayList<JavaFieldProperty>();
-        List<JavaProperty> tmpLazyProperties = new ArrayList<JavaProperty>();
         for (JavaProperty property : properties.values()) {
             if (property instanceof JavaFieldProperty && provider.isId((JavaFieldProperty)property))
                 tmpIdentifiers.add((JavaFieldProperty)property);
             else if (provider.isVersion(property))
             	version = property;
-            else if (provider.isLazy(property))
-            	tmpLazyProperties.add(property);
         }
         this.identifiers = (tmpIdentifiers.isEmpty() ? null : Collections.unmodifiableList(tmpIdentifiers));
-        this.lazyProperties = (tmpLazyProperties.isEmpty() ? null : Collections.unmodifiableList(tmpLazyProperties));
 
         // Find IdClass (if any).
         this.idClass = (
@@ -88,9 +83,5 @@ public class JavaEntityBean extends JavaBean {
     }
     public JavaProperty getVersion() {
     	return version;
-    }
-    
-    public boolean isLazy(JavaProperty property) {
-    	return lazyProperties != null && lazyProperties.contains(property);
     }
 }

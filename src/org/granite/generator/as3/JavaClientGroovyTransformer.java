@@ -180,10 +180,10 @@ public abstract class JavaClientGroovyTransformer
     }
 
 	@Override
-	public ClientType getClientType(Type type, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property) {
+	public ClientType getClientType(Type type, Class<?> declaringClass, ParameterizedType[] declaringTypes, PropertyType propertyType) {
         Class<?> clazz = ClassUtil.classOfType(type);
         
-        ClientType clientType = getConfig().getAs3TypeFactory().getClientType(type, declaringClass, declaringTypes, property);
+        ClientType clientType = getConfig().getAs3TypeFactory().getClientType(type, declaringClass, declaringTypes, propertyType);
         if (clientType == null)
         	clientType = getConfig().getAs3TypeFactory().getAs3Type(clazz);
         
@@ -212,7 +212,7 @@ public abstract class JavaClientGroovyTransformer
         JavaImport javaImport = javaImports.get(clazz.getName());
         if (javaImport == null) {
             URL url = ClassUtil.findResource(clazz);
-            javaImport = new JavaImport(this, clazz, url, false);
+            javaImport = new JavaImport(this, clazz, url, PropertyType.SIMPLE);
         	javaImports.put(clazz.getName(), javaImport);
         }
         return javaImport;

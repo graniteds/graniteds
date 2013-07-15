@@ -67,6 +67,7 @@ public class JavaBean extends JavaAbstractType {
 
     protected final Map<String, JavaProperty> properties;
     protected final JavaProperty uid;
+    protected final List<JavaProperty> lazyProperties;
 
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
@@ -106,6 +107,13 @@ public class JavaBean extends JavaAbstractType {
         properties.putAll(initProperties());
 
         this.properties = Collections.unmodifiableMap(properties);
+
+        List<JavaProperty> tmpLazyProperties = new ArrayList<JavaProperty>();
+        for (JavaProperty property : properties.values()) {
+            if (provider.isLazy(property))
+            	tmpLazyProperties.add(property);
+        }
+        this.lazyProperties = (tmpLazyProperties.isEmpty() ? null : Collections.unmodifiableList(tmpLazyProperties));
 
         // Collect properties from superclasses.
         Map<String, JavaProperty> allProperties = new HashMap<String, JavaProperty>(this.properties);
@@ -202,6 +210,10 @@ public class JavaBean extends JavaAbstractType {
     }
     public JavaProperty getUid() {
         return uid;
+    }
+    
+    public boolean isLazy(JavaProperty property) {
+    	return lazyProperties != null && lazyProperties.contains(property);
     }
     
     public boolean hasEnumProperty() {

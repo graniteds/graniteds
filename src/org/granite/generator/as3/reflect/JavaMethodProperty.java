@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.granite.generator.as3.ClientType;
+import org.granite.generator.as3.PropertyType;
 import org.granite.messaging.annotations.Include;
 import org.granite.util.ClassUtil;
 
@@ -74,7 +75,7 @@ public class JavaMethodProperty implements JavaProperty {
     	}
         this.type = ClassUtil.classOfType(genericType);
         this.genericType = genericType;
-        ClientType clientType = provider.getClientType(genericType, null, null, true);
+        ClientType clientType = provider.getClientType(genericType, null, null, isWritable() ? PropertyType.PROPERTY : PropertyType.READONLY_PROPERTY);
         if (clientType == null)
         	clientType = provider.getAs3Type(type);
         this.clientType = clientType;

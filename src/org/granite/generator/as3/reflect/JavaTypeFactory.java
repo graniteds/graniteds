@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.granite.generator.as3.ClientType;
+import org.granite.generator.as3.PropertyType;
 import org.granite.generator.as3.reflect.JavaAbstractType.GenerationType;
 import org.granite.generator.as3.reflect.JavaType.Kind;
 
@@ -45,6 +46,6 @@ public interface JavaTypeFactory {
 	public boolean isUid(JavaProperty property);
 	public boolean isVersion(JavaProperty property);
 	public boolean isLazy(JavaProperty property);
-	public ClientType getClientType(Type type, Class<?> declaringClass, ParameterizedType[] declaringTypes, boolean property);
+	public ClientType getClientType(Type type, Class<?> declaringClass, ParameterizedType[] declaringTypes, PropertyType propertyType);
 	public ClientType getAs3Type(Class<?> clazz);
 }
