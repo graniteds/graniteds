@@ -53,6 +53,8 @@ import org.granite.config.flex.ServletServicesConfig;
 import org.granite.config.servlet3.ServerFilter;
 import org.granite.jmx.GraniteMBeanInitializer;
 import org.granite.logging.Logger;
+import org.granite.messaging.AliasRegistry;
+import org.granite.messaging.DefaultAliasRegistry;
 import org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
@@ -475,11 +477,13 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
 		Reflection reflection = graniteConfig.getJmfReflection();
 		
 		log.debug("Using JMF reflection: %s", reflection.getClass().getName());
+		
+		AliasRegistry aliasRegistry = new DefaultAliasRegistry();
         
-		SharedContext sharedContext = new DefaultSharedContext(new DefaultCodecRegistry(extendedObjectCodecs), defaultStoredStrings, reflection);
+		SharedContext sharedContext = new DefaultSharedContext(new DefaultCodecRegistry(extendedObjectCodecs), defaultStoredStrings, reflection, aliasRegistry);
         servletContext.setAttribute(SHARED_CONTEXT_KEY, sharedContext);
         
-        SharedContext dumpSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), defaultStoredStrings, reflection);
+        SharedContext dumpSharedContext = new DefaultSharedContext(new DefaultCodecRegistry(), defaultStoredStrings, reflection, aliasRegistry);
         servletContext.setAttribute(DUMP_SHARED_CONTEXT_KEY, dumpSharedContext);
 		
         log.info("JMF shared context loaded");
