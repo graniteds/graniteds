@@ -81,7 +81,7 @@ public class PageableCodec implements ExtendedObjectCodec {
 		out.writeObject(Integer.valueOf(offset));
 		out.writeObject(Integer.valueOf(springPage.getSize()));
 		out.writeObject(Integer.valueOf((int)springPage.getTotalElements()));
-		out.writeObject(springPage.getContent());
+		out.writeObject(new ArrayList<Object>(springPage.getContent()));
 	}
 
 	public boolean canDecode(ExtendedObjectInput in, String className) throws ClassNotFoundException {
