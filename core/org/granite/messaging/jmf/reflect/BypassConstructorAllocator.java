@@ -20,24 +20,14 @@
 
 package org.granite.messaging.jmf.reflect;
 
-import java.lang.reflect.Constructor;
-
-import sun.reflect.ReflectionFactory;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author Franck WOLFF
  */
-public class SunConstructorFactory implements ConstructorFactory {
-    
-    public Constructor<?> newConstructorForSerialization(Class<?> cls)
-    	throws NoSuchMethodException, SecurityException {
-
-    	ReflectionFactory factory = ReflectionFactory.getReflectionFactory();
-    	Constructor<?> constructor = Object.class.getDeclaredConstructor();
-    	
-    	constructor = factory.newConstructorForSerialization(cls, constructor);
-        constructor.setAccessible(true);
-        
-        return constructor;
-    }
+public interface BypassConstructorAllocator {
+	
+	<T> T newInstance(Class<T> cls)
+		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
+		InvocationTargetException, SecurityException, NoSuchMethodException;
 }

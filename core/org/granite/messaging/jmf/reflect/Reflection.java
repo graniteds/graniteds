@@ -23,7 +23,6 @@ package org.granite.messaging.jmf.reflect;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -49,16 +48,20 @@ public class Reflection {
 	protected static final Property NULL_PROPERTY = new NullProperty();
 
 	protected final ClassLoader classLoader;
-	protected final ConstructorFactory constructorFactory;
+	protected final BypassConstructorAllocator instanceFactory;
 	protected final Comparator<Property> lexicalPropertyComparator;
 	
 	protected final ConcurrentMap<Class<?>, List<Property>> serializablePropertiesCache;
 	protected final ConcurrentMap<SinglePropertyKey, Property> singlePropertyCache;
 	
 	public Reflection(ClassLoader classLoader) {
+		this(classLoader, null);
+	}
+	
+	public Reflection(ClassLoader classLoader, BypassConstructorAllocator instanceFactory) {
 		this.classLoader = classLoader;
 		
-		this.constructorFactory = new SunConstructorFactory();
+		this.instanceFactory = (instanceFactory != null ? instanceFactory : new SunBypassConstructorAllocator());
 		
 		this.lexicalPropertyComparator = new Comparator<Property>() {
 			public int compare(Property p1, Property p2) {
@@ -82,7 +85,7 @@ public class Reflection {
 		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 		InvocationTargetException, SecurityException, NoSuchMethodException {
 		
-		return findDefaultContructor(cls).newInstance();
+		return instanceFactory.newInstance(cls);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -91,18 +94,6 @@ public class Reflection {
 		InvocationTargetException, SecurityException, NoSuchMethodException {
 		
 		return newInstance((Class<T>)loadClass(className));
-	}
-	
-
-	@SuppressWarnings("unchecked")
-	public <T> Constructor<T> findDefaultContructor(Class<T> cls) throws SecurityException, NoSuchMethodException {
-		
-		try {
-			return cls.getConstructor();
-		}
-		catch (NoSuchMethodException e) {
-			return (Constructor<T>)constructorFactory.newConstructorForSerialization(cls);
-		}
 	}
 	
 	public Property findSerializableProperty(Class<?> cls, String name) throws SecurityException {

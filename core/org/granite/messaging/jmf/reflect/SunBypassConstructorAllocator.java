@@ -21,12 +21,26 @@
 package org.granite.messaging.jmf.reflect;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import sun.reflect.ReflectionFactory;
 
 /**
  * @author Franck WOLFF
  */
-public interface ConstructorFactory {
-	
-	public Constructor<?> newConstructorForSerialization(Class<?> cls)
-	    throws NoSuchMethodException, SecurityException;
+public class SunBypassConstructorAllocator implements BypassConstructorAllocator {
+    
+    @SuppressWarnings("unchecked")
+	public <T> T newInstance(Class<T> cls)
+		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
+		InvocationTargetException, SecurityException, NoSuchMethodException {
+
+    	ReflectionFactory factory = ReflectionFactory.getReflectionFactory();
+    	Constructor<?> constructor = Object.class.getDeclaredConstructor();
+    	
+    	constructor = factory.newConstructorForSerialization(cls, constructor);
+        constructor.setAccessible(true);
+        
+        return (T)constructor.newInstance();
+    }
 }
