@@ -21,53 +21,49 @@
 package org.granite.scan;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 /**
  * @author Franck WOLFF
  */
-public class ServiceLoader {
+public class ServiceLoader<S> implements Iterable<S> {
+	
+	private final ClassLoader loader;
+	private final List<String> serviceClassNames;
+	
+	private ServiceLoader(ClassLoader loader, List<String> servicesNames) {
+		this.loader = loader;
+		this.serviceClassNames = servicesNames;
+	}
 
-	private static final Method serviceLoaderLoad;
-	static {
-		Method serviceLoaderLoadTmp;
-		try {
-			Class<?> serviceLoaderClass = Thread.currentThread().getContextClassLoader().loadClass("java.util.ServiceLoader");
-			serviceLoaderLoadTmp = serviceLoaderClass.getDeclaredMethod("load", Class.class, ClassLoader.class);
-		}
-		catch (Throwable t) {
-			serviceLoaderLoadTmp = null;
-		}
-		serviceLoaderLoad = serviceLoaderLoadTmp;
+	public Iterator<S> iterator() {
+		return new ServicesIterator<S>(loader, serviceClassNames.iterator());
+	}
+
+	public void remove() {
+		throw new UnsupportedOperationException();
 	}
 	
-	public static <S> Iterable<S> load(Class<S> service) {
+	public static <S> ServiceLoader<S> load(Class<S> service) {
 		return load(service, Thread.currentThread().getContextClassLoader());
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <S> Iterable<S> load(final Class<S> service, final ClassLoader loader) {
-		
-		if (serviceLoaderLoad != null) {
-			try {
-				return (Iterable<S>)serviceLoaderLoad.invoke(null, service, loader);
-			}
-			catch (InvocationTargetException e) {
-				throw new RuntimeException(e.getTargetException());
-			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
-		
+	public static <S> ServiceLoader<S> load(final Class<S> service, final ClassLoader loader) {
 		try {
 			Enumeration<URL> e = loader.getResources("META-INF/services/" + service.getName());
 			
@@ -95,15 +91,50 @@ public class ServiceLoader {
 			    }
 			}
 			
-			return new Iterable<S>() {
-				public Iterator<S> iterator() {
-					return new ServicesIterator<S>(loader, serviceClassNames.iterator());
-				}
-			};
+			e = loader.getResources("META_INF/services/" + service.getName() + ".xml");
+			if (e.hasMoreElements()) {
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				factory.setCoalescing(true);
+				factory.setIgnoringComments(true);
+
+				while (e.hasMoreElements())
+				    serviceClassNames.addAll(getServiceClassNames(factory, e.nextElement()));
+			}
+			
+			return new ServiceLoader<S>(loader, serviceClassNames);
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	private static List<String> getServiceClassNames(DocumentBuilderFactory factory, URL xmlServices)
+		throws IOException, SAXException, ParserConfigurationException {
+		
+		List<String> serviceClassNames = new ArrayList<String>();
+		InputStream is = xmlServices.openStream();
+		try {
+			Document document = factory.newDocumentBuilder().parse(is);
+			Node root = document.getFirstChild();
+			if (!"services".equals(root.getNodeName()))
+				throw new RuntimeException("Illegal root node in: " + xmlServices + " (should be <services>)");
+			NodeList children = root.getChildNodes();
+			for (int i = 0; i < children.getLength(); i++) {
+				Node child = children.item(i);
+				if ("service".equals(child.getNodeName())) {
+					String serviceClassName = child.getTextContent();
+					if (serviceClassName != null) {
+						serviceClassName = serviceClassName.trim();
+						if (serviceClassName.length() > 0)
+							serviceClassNames.add(serviceClassName.trim());
+					}
+				}
+			}
+		}
+		finally {
+	    	is.close();
+	    }
+		return serviceClassNames;
 	}
 	
 	static class ServicesIterator<S> implements Iterator<S> {
