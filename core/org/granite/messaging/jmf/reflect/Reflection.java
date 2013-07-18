@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.granite.messaging.annotations.Exclude;
 import org.granite.messaging.annotations.Include;
-import org.granite.messaging.annotations.PropertiesOrder;
+import org.granite.messaging.annotations.Serialized;
 
 /**
  * @author Franck WOLFF
@@ -186,12 +186,12 @@ public class Reflection {
 			}
 		}
 		
-		PropertiesOrder propertiesOrder = cls.getAnnotation(PropertiesOrder.class);
-		if (propertiesOrder != null) {
-			String[] value = propertiesOrder.value();
-
+		Serialized serialized = cls.getAnnotation(Serialized.class);
+		if (serialized != null && serialized.propertiesOrder().length > 0) {
+			String[] value = serialized.propertiesOrder();
+			
 			if (value.length != serializableProperties.size())
-				throw new ReflectionException("Illegal @PropertiesOrder value: " + propertiesOrder + " on: " + cls.getName() + " (bad length)");
+				throw new ReflectionException("Illegal @Serialized(propertiesOrder) value: " + serialized + " on: " + cls.getName() + " (bad length)");
 			
 			for (int i = 0; i < value.length; i++) {
 				String propertyName = value[i];
@@ -209,7 +209,7 @@ public class Reflection {
 					}
 				}
 				if (!found)
-					throw new ReflectionException("Illegal @PropertiesOrder value: " + propertiesOrder + " on: " + cls.getName() + " (\"" + propertyName + "\" isn't a property name)");
+					throw new ReflectionException("Illegal @Serialized(propertiesOrder) value: " + serialized + " on: " + cls.getName() + " (\"" + propertyName + "\" isn't a property name)");
 			}
 		}
 		else

@@ -1,8 +1,8 @@
 package org.granite.test.jmf.model;
 
-import org.granite.messaging.annotations.PropertiesOrder;
+import org.granite.messaging.annotations.Serialized;
 
-@PropertiesOrder
+@Serialized(propertiesOrder={ "name", "test" })
 public class IllegalEmptyPropertiesOrderBean {
 
 	private String name;
