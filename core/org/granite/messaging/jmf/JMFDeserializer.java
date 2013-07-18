@@ -278,8 +278,8 @@ public class JMFDeserializer implements InputContext {
 		return context.getReflection();
 	}
 
-	public String getAlias(String className) {
-		return context.getAlias(className);
+	public String getAlias(String remoteAlias) {
+		return context.getClassName(remoteAlias);
 	}
 
 	public void readAndSetProperty(Object obj, Property property) throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException {

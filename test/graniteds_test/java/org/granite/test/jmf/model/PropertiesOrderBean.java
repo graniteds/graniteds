@@ -1,8 +1,8 @@
 package org.granite.test.jmf.model;
 
-import org.granite.messaging.annotations.PropertiesOrder;
+import org.granite.messaging.annotations.Serialized;
 
-@PropertiesOrder({"d", "b", "c", "a", "e"})
+@Serialized(propertiesOrder={"d", "b", "c", "a", "e"})
 @SuppressWarnings("unused")
 public class PropertiesOrderBean {
 

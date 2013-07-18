@@ -2,7 +2,7 @@ package org.granite.test.jmf;
 
 import java.util.List;
 
-import org.granite.messaging.annotations.PropertiesOrder;
+import org.granite.messaging.annotations.Serialized;
 import org.granite.messaging.jmf.reflect.Property;
 import org.granite.messaging.jmf.reflect.Reflection;
 import org.granite.messaging.jmf.reflect.ReflectionException;
@@ -25,7 +25,7 @@ public class TestJMFPropertiesOrder {
 
 	@Test
 	public void testPropertiesOrder() {
-		String[] names = PropertiesOrderBean.class.getAnnotation(PropertiesOrder.class).value();
+		String[] names = PropertiesOrderBean.class.getAnnotation(Serialized.class).propertiesOrder();
 		
 		Reflection reflection = new Reflection(null);
 		List<Property> properties = reflection.findSerializableProperties(PropertiesOrderBean.class);

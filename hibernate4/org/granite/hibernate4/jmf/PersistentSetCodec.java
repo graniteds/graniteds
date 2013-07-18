@@ -43,7 +43,7 @@ public class PersistentSetCodec extends AbstractPersistentCollectionCodec<Persis
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {
 		
-		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot();
+		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(null);
 		snapshot.readInitializationData(in);
 		return (snapshot.isInitialized() ? new PersistentSet(null, new HashSet<Object>()) : new PersistentSet(null));
 	}

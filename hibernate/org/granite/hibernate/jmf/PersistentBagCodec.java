@@ -43,7 +43,7 @@ public class PersistentBagCodec extends AbstractPersistentCollectionCodec<Persis
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {
 		
-		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot();
+		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(null);
 		snapshot.readInitializationData(in);
 		return (snapshot.isInitialized() ? new PersistentBag(null, new ArrayList<Object>()) : new PersistentBag(null));
 	}

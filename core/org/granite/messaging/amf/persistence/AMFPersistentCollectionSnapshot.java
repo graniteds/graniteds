@@ -18,12 +18,11 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.persistence;
+package org.granite.messaging.amf.persistence;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -32,67 +31,49 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
 
-import org.granite.messaging.jmf.ExtendedObjectInput;
 import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 
 /**
  * @author Franck WOLFF
  */
-public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnapshot {
+public class AMFPersistentCollectionSnapshot implements PersistentCollectionSnapshot {
 	
 	protected boolean initialized = false;
+	protected String detachedState = null;
 	protected boolean dirty = false;
 	protected Object[] elements = null;
-	protected boolean sorted = false;
-	protected String comparatorClassName = null;
 	
-	public JMFPersistentCollectionSnapshot(String detachedState) {
+	public AMFPersistentCollectionSnapshot(String detachedState) {
+		this.detachedState = detachedState;
 	}
 	
-	public JMFPersistentCollectionSnapshot(boolean sorted, String detachedState) {
-		this.sorted = sorted;
+	public AMFPersistentCollectionSnapshot(boolean sorted, String detachedState) {
+		this.detachedState = detachedState;
 	}
 
-	public JMFPersistentCollectionSnapshot(boolean initialized, String detachedState, boolean dirty, Collection<?> collection) {
+	public AMFPersistentCollectionSnapshot(boolean initialized, String detachedState, boolean dirty, Collection<?> collection) {
 		this.initialized = initialized;
+		this.detachedState = detachedState;
 		if (initialized) {
 			this.dirty = dirty;
 			this.elements = collection.toArray();
-			
-			if (collection instanceof SortedSet) {
-				this.sorted = true;
-				
-				Comparator<?> comparator = ((SortedSet<?>)collection).comparator();
-				if (comparator != null)
-					this.comparatorClassName = comparator.getClass().getName();
-			}
 		}
 	}
 
-	public JMFPersistentCollectionSnapshot(boolean initialized, String detachedState, boolean dirty, Map<?, ?> collection) {
+	public AMFPersistentCollectionSnapshot(boolean initialized, String detachedState, boolean dirty, Map<?, ?> collection) {
 		this.initialized = initialized;
+		this.detachedState = detachedState;
 		if (initialized) {
 			this.dirty = dirty;
 			
 			Object[] entries = collection.entrySet().toArray();
-			this.elements = new Object[entries.length * 2];
+			this.elements = new Object[entries.length];
 			
 			int elementIndex = 0;
 			for (int entryIndex = 0; entryIndex < entries.length; entryIndex++) {
 				Map.Entry<?, ?> entry = (Map.Entry<?, ?>)entries[entryIndex];
-				this.elements[elementIndex++] = entry.getKey();
-				this.elements[elementIndex++] = entry.getValue();
-			}
-			
-			if (collection instanceof SortedMap) {
-				this.sorted = true;
-				
-				Comparator<?> comparator = ((SortedMap<?, ?>)collection).comparator();
-				if (comparator != null)
-					this.comparatorClassName = comparator.getClass().getName();
+				this.elements[elementIndex++] = new Object[] { entry.getKey(), entry.getValue() };
 			}
 		}
 	}
@@ -102,31 +83,21 @@ public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnap
 	}
 	
 	public String getDetachedState() {
-		return null;
+		return detachedState;
 	}
 
 	public boolean isDirty() {
 		return dirty;
 	}
-
+	
 	public boolean isSorted() {
-		return sorted;
-	}
-
-	public String getComparatorClassName() {
-		return comparatorClassName;
+		return false;
 	}
 	
-	public <T> Comparator<T> newComparator(ObjectInput in)
-		throws ClassNotFoundException, InstantiationException, IllegalAccessException,
-		InvocationTargetException, SecurityException, NoSuchMethodException {
-		
-		if (comparatorClassName == null)
-			return null;
-		
-		return ((ExtendedObjectInput)in).getReflection().newInstance(comparatorClassName);
+	public <T> Comparator<T> newComparator(ObjectInput in) {
+		return null;
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	public <T> Collection<T> getElementsAsCollection() {
 		return (Collection<T>)Arrays.asList(elements);
@@ -137,11 +108,10 @@ public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnap
 	}
 	
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeBoolean(initialized);
+		out.writeObject(initialized);
+		out.writeObject(detachedState);
 		if (initialized) {
-			if (sorted)
-				out.writeUTF(comparatorClassName);
-			out.writeBoolean(dirty);
+			out.writeObject(dirty);
 			out.writeObject(elements);
 		}
 	}
@@ -152,15 +122,13 @@ public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnap
 			readCoreData(in);
 	}
 	
-	public void readInitializationData(ObjectInput in) throws IOException {
-		initialized = in.readBoolean();
-		
-		if (initialized && sorted)
-			comparatorClassName = in.readUTF();
+	public void readInitializationData(ObjectInput in) throws IOException, ClassNotFoundException {
+		initialized = ((Boolean)in.readObject()).booleanValue();
+		detachedState = (String)in.readObject();
 	}
 	
 	public void readCoreData(ObjectInput in) throws IOException, ClassNotFoundException {
-		this.dirty = in.readBoolean();
+		this.dirty = ((Boolean)in.readObject()).booleanValue();
 		this.elements = (Object[])in.readObject();
 	}
 	
@@ -169,13 +137,11 @@ public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnap
 		private final Object[] elements;
 		
 		public SnapshotMap(Object[] elements) {
-			if ((elements.length % 2) != 0)
-				throw new IllegalArgumentException("Elements must have an even length: " + elements.length);
 			this.elements = elements;
 		}
 		
 		public int size() {
-			return elements.length / 2;
+			return elements.length;
 		}
 
 		public boolean isEmpty() {
@@ -186,7 +152,7 @@ public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnap
 			return new Set<Entry<K, V>>() {
 
 				public int size() {
-					return elements.length / 2;
+					return elements.length;
 				}
 
 				public boolean isEmpty() {
@@ -208,8 +174,9 @@ public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnap
 							if (cursor >= elements.length)
 								throw new NoSuchElementException();
 							
-							K key = (K)elements[cursor++];
-							V value = (V)elements[cursor++];
+							Object[] element = (Object[])elements[cursor++];
+							K key = (K)element[0];
+							V value = (V)element[1];
 							return new SnapshotMapEntry<K, V>(key, value);
 						}
 

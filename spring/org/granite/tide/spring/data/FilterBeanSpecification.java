@@ -59,13 +59,13 @@ public class FilterBeanSpecification<T> implements Specification<T> {
 		}
 		
 		for (PropertyDescriptor pd : pds) {
-			if (!pd.getReadMethod().isAnnotationPresent(FilterMapping.class))
+			if (pd.getWriteMethod() == null || !pd.getReadMethod().isAnnotationPresent(FilterMapping.class) || pd.getReadMethod().getAnnotation(FilterMapping.class).mode() == FilterMode.EXCLUDE)
 				continue;
 			
 			FilterMapping mapping = pd.getReadMethod().getAnnotation(FilterMapping.class);
 			if (root.get(mapping.value()) == null)
 				throw new RuntimeException("Invalid filter mapping, path: " + mapping.value());
-			
+					
 			Object value = null;
 			try {
 				value = pd.getReadMethod().invoke(filter);

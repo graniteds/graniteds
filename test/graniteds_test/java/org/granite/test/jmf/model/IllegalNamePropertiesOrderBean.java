@@ -1,8 +1,8 @@
 package org.granite.test.jmf.model;
 
-import org.granite.messaging.annotations.PropertiesOrder;
+import org.granite.messaging.annotations.Serialized;
 
-@PropertiesOrder("foo")
+@Serialized(propertiesOrder="foo")
 public class IllegalNamePropertiesOrderBean {
 
 	private String name;

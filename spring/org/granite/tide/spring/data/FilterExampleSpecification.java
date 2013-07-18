@@ -75,6 +75,9 @@ public class FilterExampleSpecification<T> implements Specification<T> {
 		}
 		
 		for (PropertyDescriptor pd : pds) {
+			if (pd.getReadMethod().isAnnotationPresent(FilterMapping.class) && pd.getReadMethod().getAnnotation(FilterMapping.class).mode() == FilterMode.EXCLUDE)
+				continue;
+			
 			Attribute<?, ?> attribute = filterType.getAttribute(pd.getName());
 			if (attribute == null)
 				continue;
@@ -95,7 +98,7 @@ public class FilterExampleSpecification<T> implements Specification<T> {
 				continue;
 			}
 			
-			if (attribute.getPersistentAttributeType() != Attribute.PersistentAttributeType.BASIC)
+			if (pd.getWriteMethod() == null || attribute.getPersistentAttributeType() != Attribute.PersistentAttributeType.BASIC)
 				continue;
 			
 			Object value = null;

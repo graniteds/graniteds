@@ -204,7 +204,7 @@ public class JMFSerializer implements OutputContext {
 	}
 
 	public String getAlias(String className) {
-		return context.getAlias(className);
+		return context.getRemoteAlias(className);
 	}
 
 	public void getAndWriteProperty(Object obj, Property property) throws IOException, IllegalAccessException, InvocationTargetException {

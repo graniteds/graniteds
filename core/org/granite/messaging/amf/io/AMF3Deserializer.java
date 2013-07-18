@@ -421,7 +421,7 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
                 if (debug) log.debug("readAMF3Object() - encoding=%d", encoding);
 
                 String alias = readAMF3String();
-                String className = context.getGraniteConfig().getTypeForAlias(alias);
+                String className = context.getGraniteConfig().getAliasRegistry().getTypeForAlias(alias);
                 if (debug) log.debug("readAMF3Object() - alias=%, className=%s", alias, className);
                 
                 // Check if the class is allowed to be instantiated.

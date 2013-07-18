@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface PropertiesOrder {
+public @interface Serialized {
 	
-	String[] value() default {};
+	String[] propertiesOrder() default {};
 }

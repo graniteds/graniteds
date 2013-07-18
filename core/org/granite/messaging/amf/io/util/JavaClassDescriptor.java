@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
-import org.granite.messaging.amf.RemoteClass;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 
@@ -68,8 +67,7 @@ public abstract class JavaClassDescriptor {
             if (externalizer == null)
             	return "";
         }
-        RemoteClass alias = clazz.getAnnotation(RemoteClass.class);
-        return alias != null ? alias.value() : clazz.getName();
+        return GraniteContext.getCurrentInstance().getGraniteConfig().getAliasRegistry().getAliasForType(clazz.getName());
     }
     
     public Class<?> getType() {

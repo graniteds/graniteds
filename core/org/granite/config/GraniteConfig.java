@@ -44,7 +44,8 @@ import org.granite.clustering.DistributedDataFactory;
 import org.granite.config.api.Configuration;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
-import org.granite.messaging.amf.RemoteClass;
+import org.granite.messaging.AliasRegistry;
+import org.granite.messaging.DefaultAliasRegistry;
 import org.granite.messaging.amf.io.AMF3Deserializer;
 import org.granite.messaging.amf.io.AMF3DeserializerSecurizer;
 import org.granite.messaging.amf.io.AMF3Serializer;
@@ -114,6 +115,8 @@ public class GraniteConfig implements ScannedItemHandler {
     // Should we scan classpath for auto-configured services/externalizers?
     private boolean scan = false;
     
+    private AliasRegistry aliasRegistry = new DefaultAliasRegistry();
+    
     private String MBeanContextName = null;
 
     // Custom AMF3 (De)Serializer configuration.
@@ -170,9 +173,6 @@ public class GraniteConfig implements ScannedItemHandler {
     private final ConcurrentHashMap<String, Class<? extends ActionScriptClassDescriptor>> as3DescriptorsByType
         = new ConcurrentHashMap<String, Class<? extends ActionScriptClassDescriptor>>();
     private final Map<String, String> as3DescriptorsByInstanceOf = new HashMap<String, String>();
-    
-    // Client class aliases
-    private final ConcurrentHashMap<String, String> aliases = new ConcurrentHashMap<String, String>();
     
     // Exception converters
     private final List<ExceptionConverter> exceptionConverters = new ArrayList<ExceptionConverter>();
@@ -924,16 +924,14 @@ public class GraniteConfig implements ScannedItemHandler {
         }
     }
     
-    public String getTypeForAlias(String alias) {
-    	return aliases.containsKey(alias) ? aliases.get(alias) : alias;
+    public void setAliasRegistry(AliasRegistry aliasRegistry) {
+    	this.aliasRegistry = aliasRegistry;
     }
     
-    public void registerClassAlias(Class<?> clazz) {
-    	RemoteClass remoteClass = clazz.getAnnotation(RemoteClass.class);
-    	if (remoteClass != null)
-    		aliases.put(remoteClass.value(), clazz.getName());
+    public AliasRegistry getAliasRegistry() {
+    	return aliasRegistry;
     }
-
+    
     /**
      * Read custom class exception converters
      * Converter must have 'type' attribute

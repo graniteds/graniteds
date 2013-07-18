@@ -18,23 +18,22 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.tide.spring.data;
+package org.granite.messaging;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Set;
 
 
-@Documented
-@Inherited
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD})
-public @interface FilterMapping {
-
-	String value() default "";
+public class DefaultAliasRegistry implements AliasRegistry {
+    
+	public void scan(Set<String> packageNames) {		
+	}
 	
-	FilterMode mode() default FilterMode.WHEN_NOT_NULL;
+    public String getTypeForAlias(String alias) {
+    	return alias;
+    }
+    
+    public String getAliasForType(String className) {
+    	return className;
+    }
+	
 }

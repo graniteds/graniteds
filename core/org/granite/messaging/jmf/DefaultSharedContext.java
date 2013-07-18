@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.granite.messaging.AliasRegistry;
+import org.granite.messaging.DefaultAliasRegistry;
 import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
@@ -72,20 +74,21 @@ public class DefaultSharedContext implements SharedContext {
 	protected final CodecRegistry codecRegistry;
 	protected final Reflection reflection;
 	protected final List<String> defaultStoredStrings;
+	protected final AliasRegistry aliasRegistry;
 	
 	public DefaultSharedContext() {
-		this(null, null, null);
+		this(null, null, null, null);
 	}
 	
 	public DefaultSharedContext(CodecRegistry codecRegistry) {
-		this(codecRegistry, null, null);
+		this(codecRegistry, null, null, null);
 	}
 
 	public DefaultSharedContext(CodecRegistry codecRegistry, List<String> defaultStoredStrings) {
-		this(codecRegistry, defaultStoredStrings, null);
+		this(codecRegistry, defaultStoredStrings, null, null);
 	}
 	
-	public DefaultSharedContext(CodecRegistry codecRegistry, List<String> defaultStoredStrings, Reflection reflection) {
+	public DefaultSharedContext(CodecRegistry codecRegistry, List<String> defaultStoredStrings, Reflection reflection, AliasRegistry aliasRegistry) {
 		this.codecRegistry = (codecRegistry != null ? codecRegistry : new DefaultCodecRegistry());
 		
 		List<String> defaultStoredStringsTmp = new ArrayList<String>(JAVA_DEFAULT_STORED_STRINGS);
@@ -94,6 +97,8 @@ public class DefaultSharedContext implements SharedContext {
 		this.defaultStoredStrings = Collections.unmodifiableList(defaultStoredStringsTmp);
 		
 		this.reflection = (reflection != null ? reflection : new Reflection(null));
+		
+		this.aliasRegistry = aliasRegistry != null ? aliasRegistry : new DefaultAliasRegistry();
 	}
 
 	public CodecRegistry getCodecRegistry() {
@@ -107,8 +112,12 @@ public class DefaultSharedContext implements SharedContext {
 	public List<String> getDefaultStoredStrings() {
 		return defaultStoredStrings;
 	}
-
-	public String getAlias(String className) {
-		return className;
+	
+	public String getRemoteAlias(String className) {
+		return aliasRegistry.getAliasForType(className);
+	}
+	
+	public String getClassName(String remoteAlias) {
+		return aliasRegistry.getTypeForAlias(remoteAlias);
 	}
 }

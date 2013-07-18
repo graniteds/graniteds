@@ -44,7 +44,7 @@ public class PersistentSortedSetCodec extends AbstractPersistentCollectionCodec<
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {
 		
-		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(true);
+		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(true, null);
 		snapshot.readInitializationData(in);
 		
 		if (!snapshot.isInitialized())

@@ -43,7 +43,7 @@ public class PersistentListCodec extends AbstractPersistentCollectionCodec<Persi
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {
 		
-		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot();
+		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(null);
 		snapshot.readInitializationData(in);
 		return (snapshot.isInitialized() ? new PersistentList(null, new ArrayList<Object>()) : new PersistentList(null));
 	}

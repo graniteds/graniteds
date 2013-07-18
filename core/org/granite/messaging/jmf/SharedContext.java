@@ -35,5 +35,7 @@ public interface SharedContext {
 	
 	List<String> getDefaultStoredStrings();
 	
-	String getAlias(String className);
+	String getRemoteAlias(String className);
+	
+	String getClassName(String remoteAlias);
 }
