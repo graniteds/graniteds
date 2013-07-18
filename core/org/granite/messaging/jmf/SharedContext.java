@@ -22,6 +22,7 @@ package org.granite.messaging.jmf;
 
 import java.util.List;
 
+import org.granite.messaging.AliasRegistry;
 import org.granite.messaging.jmf.reflect.Reflection;
 
 /**
@@ -34,6 +35,8 @@ public interface SharedContext {
 	Reflection getReflection();
 	
 	List<String> getDefaultStoredStrings();
+	
+	AliasRegistry getAliasRegistry();
 	
 	String getRemoteAlias(String className);
 	

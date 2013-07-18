@@ -22,6 +22,9 @@ package org.granite.messaging;
 
 import java.util.Set;
 
+/**
+ * @author William DRAI
+ */
 public interface AliasRegistry {
 	
 	public void scan(Set<String> packageNames);

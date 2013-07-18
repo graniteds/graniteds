@@ -113,10 +113,14 @@ public class DefaultSharedContext implements SharedContext {
 		return defaultStoredStrings;
 	}
 	
+	public AliasRegistry getAliasRegistry() {
+		return aliasRegistry;
+	}
+	
 	public String getRemoteAlias(String className) {
 		return aliasRegistry.getAliasForType(className);
 	}
-	
+
 	public String getClassName(String remoteAlias) {
 		return aliasRegistry.getTypeForAlias(remoteAlias);
 	}
