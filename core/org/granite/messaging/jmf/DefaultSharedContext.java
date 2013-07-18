@@ -74,7 +74,7 @@ public class DefaultSharedContext implements SharedContext {
 	protected final CodecRegistry codecRegistry;
 	protected final Reflection reflection;
 	protected final List<String> defaultStoredStrings;
-	protected AliasRegistry aliasRegistry = new DefaultAliasRegistry();
+	protected final AliasRegistry aliasRegistry;
 	
 	public DefaultSharedContext() {
 		this(null, null, null, null);
@@ -98,7 +98,7 @@ public class DefaultSharedContext implements SharedContext {
 		
 		this.reflection = (reflection != null ? reflection : new Reflection(null));
 		
-		this.aliasRegistry = aliasRegistry;
+		this.aliasRegistry = aliasRegistry != null ? aliasRegistry : new DefaultAliasRegistry();
 	}
 
 	public CodecRegistry getCodecRegistry() {

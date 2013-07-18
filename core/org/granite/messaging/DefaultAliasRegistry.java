@@ -20,10 +20,12 @@
 
 package org.granite.messaging;
 
+import java.util.Set;
+
 
 public class DefaultAliasRegistry implements AliasRegistry {
     
-	public void scan() {		
+	public void scan(Set<String> packageNames) {		
 	}
 	
     public String getTypeForAlias(String alias) {
