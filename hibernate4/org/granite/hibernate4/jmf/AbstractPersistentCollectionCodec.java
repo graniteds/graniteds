@@ -60,11 +60,11 @@ public abstract class AbstractPersistentCollectionCodec<H extends PersistentColl
 
 		PersistentCollection collection = (PersistentCollection)v;
 		if (!collection.wasInitialized())
-			snapshot = new JMFPersistentCollectionSnapshot(collection instanceof SortedSet || collection instanceof SortedMap);
+			snapshot = new JMFPersistentCollectionSnapshot(collection instanceof SortedSet || collection instanceof SortedMap, null);
 		else if (collection instanceof Map)
-			snapshot = new JMFPersistentCollectionSnapshot(true, collection.isDirty(), (Map<?, ?>)collection);
+			snapshot = new JMFPersistentCollectionSnapshot(true, null, collection.isDirty(), (Map<?, ?>)collection);
 		else
-			snapshot = new JMFPersistentCollectionSnapshot(true, collection.isDirty(), (Collection<?>)collection);
+			snapshot = new JMFPersistentCollectionSnapshot(true, null, collection.isDirty(), (Collection<?>)collection);
 
 		snapshot.writeExternal(out);
 	}
@@ -82,7 +82,7 @@ public abstract class AbstractPersistentCollectionCodec<H extends PersistentColl
 		PersistentCollection collection = (PersistentCollection)v;
 		if (collection.wasInitialized()) {
 			boolean sorted = (collection instanceof SortedSet || collection instanceof SortedMap);
-			PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(sorted);
+			PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(sorted, null);
 			snapshot.readCoreData(in);
 			
 			if (collection instanceof Map)

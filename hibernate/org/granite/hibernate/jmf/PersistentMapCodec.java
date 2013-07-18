@@ -43,7 +43,7 @@ public class PersistentMapCodec extends AbstractPersistentCollectionCodec<Persis
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {
 		
-		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot();
+		PersistentCollectionSnapshot snapshot = new JMFPersistentCollectionSnapshot(null);
 		snapshot.readInitializationData(in);
 		return (snapshot.isInitialized() ? new PersistentMap(null, new HashMap<Object, Object>()) : new PersistentMap(null));
 	}

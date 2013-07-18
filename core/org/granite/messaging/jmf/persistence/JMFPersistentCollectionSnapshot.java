@@ -49,14 +49,14 @@ public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnap
 	protected boolean sorted = false;
 	protected String comparatorClassName = null;
 	
-	public JMFPersistentCollectionSnapshot() {
+	public JMFPersistentCollectionSnapshot(String detachedState) {
 	}
 	
-	public JMFPersistentCollectionSnapshot(boolean sorted) {
+	public JMFPersistentCollectionSnapshot(boolean sorted, String detachedState) {
 		this.sorted = sorted;
 	}
 
-	public JMFPersistentCollectionSnapshot(boolean initialized, boolean dirty, Collection<?> collection) {
+	public JMFPersistentCollectionSnapshot(boolean initialized, String detachedState, boolean dirty, Collection<?> collection) {
 		this.initialized = initialized;
 		if (initialized) {
 			this.dirty = dirty;
@@ -72,7 +72,7 @@ public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnap
 		}
 	}
 
-	public JMFPersistentCollectionSnapshot(boolean initialized, boolean dirty, Map<?, ?> collection) {
+	public JMFPersistentCollectionSnapshot(boolean initialized, String detachedState, boolean dirty, Map<?, ?> collection) {
 		this.initialized = initialized;
 		if (initialized) {
 			this.dirty = dirty;
@@ -99,6 +99,10 @@ public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnap
 	
 	public boolean isInitialized() {
 		return initialized;
+	}
+	
+	public String getDetachedState() {
+		return null;
 	}
 
 	public boolean isDirty() {

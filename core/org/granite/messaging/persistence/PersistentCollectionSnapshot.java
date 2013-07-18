@@ -34,12 +34,14 @@ import java.util.Map;
 public interface PersistentCollectionSnapshot extends Externalizable {
 
 	boolean isInitialized();
+	
+	String getDetachedState();
 
 	boolean isDirty();
 
 	boolean isSorted();
 
-	String getComparatorClassName();
+	// String getComparatorClassName();
 
 	<T> Comparator<T> newComparator(ObjectInput in)
 		throws ClassNotFoundException, InstantiationException, IllegalAccessException,
@@ -49,7 +51,7 @@ public interface PersistentCollectionSnapshot extends Externalizable {
 
 	<K, V> Map<K, V> getElementsAsMap();
 
-	void readInitializationData(ObjectInput in) throws IOException;
+	void readInitializationData(ObjectInput in) throws IOException, ClassNotFoundException;
 
 	void readCoreData(ObjectInput in) throws IOException, ClassNotFoundException;
 }
