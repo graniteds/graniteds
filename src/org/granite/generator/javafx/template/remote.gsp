@@ -32,7 +32,7 @@ package ${jClass.clientType.packageName};<%
 	
 	Set javaImports = new TreeSet();
 	
-	javaImports.add("org.granite.messaging.amf.RemoteClass");
+	javaImports.add("org.granite.client.messaging.RemoteAlias");
 	javaImports.add("org.granite.client.messaging.channel.Channel");
 	
 	if (javaImports.size() > 0) {%>
@@ -43,7 +43,7 @@ import ${javaImport};<%
 	}
 	%>
 
-@RemoteClass("${jClass.qualifiedName}")
+@RemoteAlias("${jClass.qualifiedName}")
 public class ${jClass.clientType.name} extends ${jClass.clientType.name}Base {
 	
 	public ${jClass.clientType.name}(Channel channel, String id) {

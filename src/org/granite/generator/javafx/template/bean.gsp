@@ -32,7 +32,7 @@ package ${jClass.clientType.packageName};<%
 
 	Set javaImports = new TreeSet();
 	
-	javaImports.add("org.granite.client.javafx.JavaFXObject");
+	javaImports.add("org.granite.messaging.annotations.Serialized");
 	javaImports.add("org.granite.client.messaging.RemoteAlias");
 	
     if (jClass.hasInterfaces()) {
@@ -50,7 +50,7 @@ import ${javaImport};<%
     }
     %>
 
-@JavaFXObject
+@Serialized
 @RemoteAlias("${jClass.qualifiedName}")
 public class ${jClass.clientType.name} extends ${jClass.clientType.name}Base {
 

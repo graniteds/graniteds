@@ -57,9 +57,8 @@
 
     Set javaImports = new TreeSet();
 
-	javaImports.add("org.granite.client.javafx.JavaFXObject");
 	javaImports.add("org.granite.client.persistence.Entity");
-	javaImports.add("org.granite.messaging.annotations.PropertiesOrder");
+	javaImports.add("org.granite.messaging.annotations.Serialized");
 
     if (!jClass.hasSuperclass()) {
     	javaImports.add("java.io.Serializable");
@@ -112,9 +111,8 @@ import ${javaImport};<%
 ///////////////////////////////////////////////////////////////////////////////
 // Write Class Declaration.%>
 
-@JavaFXObject
 @Entity
-@PropertiesOrder({ <% if (jClass.hasIdentifiers()) { %>"__initialized__", "__detachedState__", <% };
+@Serialized(propertiesOrder={ <% if (jClass.hasIdentifiers()) { %>"__initialized__", "__detachedState__", <% };
 	jClass.properties.eachWithIndex { jProperty, idx -> if (idx > 0) { %>, <% } %>"${jProperty.name}"<% }
 %> })
 public class ${jClass.as3Type.name}Base<%

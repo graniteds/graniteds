@@ -21,8 +21,7 @@
 --%><%
     Set javaImports = new TreeSet();
 
-	javaImports.add("org.granite.client.javafx.JavaFXObject");
-	javaImports.add("org.granite.messaging.annotations.PropertiesOrder");
+	javaImports.add("org.granite.messaging.annotations.Serialized");
 	
     if (!jClass.hasSuperclass()) {
     	javaImports.add("java.io.Serializable");
@@ -69,8 +68,7 @@ import ${jClass.clientSuperclass.qualifiedName};<%
 ///////////////////////////////////////////////////////////////////////////////
 // Write Class Declaration.%>
 
-@JavaFXObject
-@PropertiesOrder({ <%
+@Serialized(propertiesOrder={ <%
 jClass.properties.eachWithIndex { jProperty, idx -> if (idx > 0) { %>, <% } %>"${jProperty.name}"<% }
 %> })
 public class ${jClass.clientType.name}Base<%
