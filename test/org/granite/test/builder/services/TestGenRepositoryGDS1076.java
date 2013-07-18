@@ -6,7 +6,7 @@ import org.granite.generator.as3.JavaAs3GroovyConfiguration;
 import org.granite.generator.as3.reflect.JavaImport;
 import org.granite.generator.as3.reflect.JavaMethod;
 import org.granite.generator.as3.reflect.JavaRemoteDestination;
-import org.granite.generator.javafx.JavaFXGroovyTransformer;
+import org.granite.generator.java.JavaGroovyTransformer;
 import org.granite.test.builder.MockJavaFXGroovyConfiguration;
 import org.granite.test.builder.Util;
 import org.granite.test.builder.entities.Entity1;
@@ -18,7 +18,7 @@ public class TestGenRepositoryGDS1076 {
 	@Test
 	public void testGenRepository() {
 		JavaAs3GroovyConfiguration config = new MockJavaFXGroovyConfiguration();
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, null);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, null);
 		
 		JavaRemoteDestination jrd = new JavaRemoteDestination(provider, SecureEntity1Repository.class, null);
 		JavaMethod jm = Util.findMethod(jrd, "save", Entity1.class);
@@ -28,7 +28,7 @@ public class TestGenRepositoryGDS1076 {
 	@Test
 	public void testGenRepository2() {
 		JavaAs3GroovyConfiguration config = new MockJavaFXGroovyConfiguration();
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, null);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, null);
 		
 		JavaRemoteDestination jrd = new JavaRemoteDestination(provider, SecureEntity2Repository.class, null);
 		JavaMethod jm = Util.findMethod(jrd, "save", Entity1.class);
@@ -42,7 +42,7 @@ public class TestGenRepositoryGDS1076 {
 	@Test
 	public void testGenRepository2b() {
 		JavaAs3GroovyConfiguration config = new MockJavaFXGroovyConfiguration();
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, null);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, null);
 		
 		JavaRemoteDestination jrd = new JavaRemoteDestination(provider, CustomRepository1.class, null);
 		JavaMethod jm = Util.findMethod(jrd, "save", Entity1.class);
@@ -58,7 +58,7 @@ public class TestGenRepositoryGDS1076 {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
 		config.addFileSetClasses(Entity1.class);
 		config.addTranslator(Entity1.class.getPackage().getName(), Entity1.class.getPackage().getName() + ".client");
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, null);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, null);
 		
 		JavaRemoteDestination jrd = new JavaRemoteDestination(provider, Entity1Repository.class, null);
 		JavaMethod jm = Util.findMethod(jrd, "getEntities", int.class);
@@ -72,7 +72,7 @@ public class TestGenRepositoryGDS1076 {
 	public void testGenRepository4() {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
 		config.addFileSetClasses(Entity2.class);
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, null);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, null);
 		
 		JavaRemoteDestination jrd = new JavaRemoteDestination(provider, Entity2Repository.class, null);
 		JavaMethod jm = Util.findMethod(jrd, "deleteEntities", Iterable.class);
@@ -86,7 +86,7 @@ public class TestGenRepositoryGDS1076 {
 	public void testGenRepository5() {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
 		config.addFileSetClasses(Entity2.class);
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, null);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, null);
 		
 		JavaRemoteDestination jrd = new JavaRemoteDestination(provider, SimpleRepository.class, null);
 		JavaMethod jm = Util.findMethod(jrd, "doSomething", int.class);

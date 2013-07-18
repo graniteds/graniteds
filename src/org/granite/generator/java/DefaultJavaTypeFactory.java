@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.generator.javafx;
+package org.granite.generator.java;
 
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
@@ -42,40 +42,32 @@ import org.granite.util.ClassUtil;
 /**
  * @author Franck WOLFF
  */
-public class DefaultJavaFXTypeFactory implements As3TypeFactory {
+public class DefaultJavaTypeFactory implements As3TypeFactory {
 
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
 
-    private final Map<String, ClientType> simpleJava2JavaFXType = new HashMap<String, ClientType>();
-    private final Map<String, ClientType> propertyJava2JavaFXType = new HashMap<String, ClientType>();
-    private final Map<String, ClientType> readOnlyPropertyJava2JavaFXType = new HashMap<String, ClientType>();
+    private final Map<String, ClientType> simpleJava2JavaType = new HashMap<String, ClientType>();
+    private final Map<String, ClientType> propertyJava2JavaType = new HashMap<String, ClientType>();
     
     
     ///////////////////////////////////////////////////////////////////////////
     // Constructors.
 
-    public DefaultJavaFXTypeFactory() {
-    	simpleJava2JavaFXType.put(buildCacheKey(Boolean.TYPE), JavaFXType.BOOLEAN);
-    	simpleJava2JavaFXType.put(buildCacheKey(Integer.TYPE), JavaFXType.INT);
-    	simpleJava2JavaFXType.put(buildCacheKey(Long.TYPE), JavaFXType.LONG);
-    	simpleJava2JavaFXType.put(buildCacheKey(Float.TYPE), JavaFXType.FLOAT);
-    	simpleJava2JavaFXType.put(buildCacheKey(Double.TYPE), JavaFXType.DOUBLE);
-    	simpleJava2JavaFXType.put(buildCacheKey(String.class), JavaFXType.STRING);
+    public DefaultJavaTypeFactory() {
+    	simpleJava2JavaType.put(buildCacheKey(Boolean.TYPE), JavaType.BOOLEAN);
+    	simpleJava2JavaType.put(buildCacheKey(Integer.TYPE), JavaType.INT);
+    	simpleJava2JavaType.put(buildCacheKey(Long.TYPE), JavaType.LONG);
+    	simpleJava2JavaType.put(buildCacheKey(Float.TYPE), JavaType.FLOAT);
+    	simpleJava2JavaType.put(buildCacheKey(Double.TYPE), JavaType.DOUBLE);
+    	simpleJava2JavaType.put(buildCacheKey(String.class), JavaType.STRING);
     	
-    	propertyJava2JavaFXType.put(buildCacheKey(Boolean.TYPE), JavaFXType.BOOLEAN_PROPERTY);
-    	propertyJava2JavaFXType.put(buildCacheKey(Double.TYPE), JavaFXType.DOUBLE_PROPERTY);
-    	propertyJava2JavaFXType.put(buildCacheKey(Float.TYPE), JavaFXType.FLOAT_PROPERTY);
-    	propertyJava2JavaFXType.put(buildCacheKey(Long.TYPE), JavaFXType.LONG_PROPERTY);
-    	propertyJava2JavaFXType.put(buildCacheKey(Integer.TYPE), JavaFXType.INT_PROPERTY);
-    	propertyJava2JavaFXType.put(buildCacheKey(String.class), JavaFXType.STRING_PROPERTY);
-    	
-    	readOnlyPropertyJava2JavaFXType.put(buildCacheKey(Boolean.TYPE), JavaFXType.BOOLEAN_READONLY_PROPERTY);
-    	readOnlyPropertyJava2JavaFXType.put(buildCacheKey(Double.TYPE), JavaFXType.DOUBLE_READONLY_PROPERTY);
-    	readOnlyPropertyJava2JavaFXType.put(buildCacheKey(Float.TYPE), JavaFXType.FLOAT_READONLY_PROPERTY);
-    	readOnlyPropertyJava2JavaFXType.put(buildCacheKey(Long.TYPE), JavaFXType.LONG_READONLY_PROPERTY);
-    	readOnlyPropertyJava2JavaFXType.put(buildCacheKey(Integer.TYPE), JavaFXType.INT_READONLY_PROPERTY);
-    	readOnlyPropertyJava2JavaFXType.put(buildCacheKey(String.class), JavaFXType.STRING_READONLY_PROPERTY);
+    	propertyJava2JavaType.put(buildCacheKey(Boolean.TYPE), JavaType.BOOLEAN);
+    	propertyJava2JavaType.put(buildCacheKey(Integer.TYPE), JavaType.INT);
+    	propertyJava2JavaType.put(buildCacheKey(Long.TYPE), JavaType.LONG);
+    	propertyJava2JavaType.put(buildCacheKey(Float.TYPE), JavaType.FLOAT);
+    	propertyJava2JavaType.put(buildCacheKey(Double.TYPE), JavaType.DOUBLE);
+        propertyJava2JavaType.put(buildCacheKey(String.class), JavaType.STRING);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -103,15 +95,15 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 	public ClientType getClientType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, PropertyType propertyType) {
 		String key = buildCacheKey(jType, declaringClass, declaringTypes);
 		
-		ClientType javafxType = getFromCache(key, propertyType);
+		ClientType javaType = getFromCache(key, propertyType);
 		
-        if (javafxType == null) {
+        if (javaType == null) {
         	if (jType instanceof GenericArrayType) {
         		Type componentType = ((GenericArrayType)jType).getGenericComponentType();
-        		javafxType = getClientType(componentType, declaringClass, declaringTypes, PropertyType.SIMPLE).toArrayType();
+        		javaType = getClientType(componentType, declaringClass, declaringTypes, PropertyType.SIMPLE).toArrayType();
         	}
         	else if (jType instanceof Class<?> && ((Class<?>)jType).isArray()) {
-        		javafxType = getClientType(((Class<?>)jType).getComponentType(), declaringClass, declaringTypes, PropertyType.SIMPLE).toArrayType();
+        		javaType = getClientType(((Class<?>)jType).getComponentType(), declaringClass, declaringTypes, PropertyType.SIMPLE).toArrayType();
         	}
         	else {
         		Set<String> imports = new HashSet<String>();
@@ -120,49 +112,44 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 	        	if (jType instanceof ParameterizedType)
 	        		genericType = buildGenericTypeName((ParameterizedType)jType, declaringClass, declaringTypes, propertyType, imports);
 	        	
-	            if (propertyType.isProperty() && List.class.isAssignableFrom(jClass)) {
-	            	imports.add("org.granite.client.persistence.collection.javafx.FXPersistentCollections");
-	                javafxType = new JavaFXType("javafx.collections", "ObservableList" + genericType, "javafx.beans.property.ReadOnlyListProperty" + genericType, "javafx.beans.property.ReadOnlyListWrapper" + genericType, "FXPersistentCollections.readOnlyObservablePersistentList", null, true);
-	            }
+                if (propertyType.isProperty() && List.class.isAssignableFrom(jClass)) {
+                    javaType = createJavaType(jType, declaringClass, declaringTypes, "org.granite.client.persistence.collection.PersistentList" + genericType, propertyType);
+                }
                 else if (propertyType.isProperty() && SortedSet.class.isAssignableFrom(jClass)) {
-                    imports.add("org.granite.client.persistence.collection.javafx.FXPersistentCollections");
-                    javafxType = new JavaFXType("javafx.collections", "ObservableSet" + genericType, "javafx.beans.property.ReadOnlySetProperty" + genericType, "javafx.beans.property.ReadOnlySetWrapper" + genericType, "FXPersistentCollections.readOnlyObservablePersistentSortedSet", null, true);
+                    javaType = createJavaType(jType, declaringClass, declaringTypes, "org.granite.client.persistence.collection.PersistentSortedSet" + genericType, propertyType);
                 }
-	            else if (propertyType.isProperty() && Set.class.isAssignableFrom(jClass)) {
-	            	imports.add("org.granite.client.persistence.collection.javafx.FXPersistentCollections");
-	                javafxType = new JavaFXType("javafx.collections", "ObservableSet" + genericType, "javafx.beans.property.ReadOnlySetProperty" + genericType, "javafx.beans.property.ReadOnlySetWrapper" + genericType, "FXPersistentCollections.readOnlyObservablePersistentSet", null, true);
-	            }
+                else if (propertyType.isProperty() && Set.class.isAssignableFrom(jClass)) {
+                    javaType = createJavaType(jType, declaringClass, declaringTypes, "org.granite.client.persistence.collection.PersistentSet" + genericType, propertyType);
+                }
                 else if (propertyType.isProperty() && SortedMap.class.isAssignableFrom(jClass)) {
-                    imports.add("org.granite.client.persistence.collection.javafx.FXPersistentCollections");
-                    javafxType = new JavaFXType("javafx.collections", "ObservableMap" + genericType, "javafx.beans.property.ReadOnlyMapProperty" + genericType, "javafx.beans.property.ReadOnlyMapWrapper" + genericType, "FXPersistentCollections.readOnlyObservablePersistentSortedMap", null, true);
+                    javaType = createJavaType(jType, declaringClass, declaringTypes, "org.granite.client.persistence.collection.PersistentSortedMap" + genericType, propertyType);
                 }
-	            else if (propertyType.isProperty() && Map.class.isAssignableFrom(jClass)) {
-	            	imports.add("org.granite.client.persistence.collection.javafx.FXPersistentCollections");
-	                javafxType = new JavaFXType("javafx.collections", "ObservableMap" + genericType, "javafx.beans.property.ReadOnlyMapProperty" + genericType, "javafx.beans.property.ReadOnlyMapWrapper" + genericType, "FXPersistentCollections.readOnlyObservablePersistentMap", null, true);
-	            }
-	            else if (jClass.getName().equals("com.google.appengine.api.datastore.Key")) {
-	            	javafxType = JavaFXType.STRING;
+                else if (propertyType.isProperty() && Map.class.isAssignableFrom(jClass)) {
+                    javaType = createJavaType(jType, declaringClass, declaringTypes, "org.granite.client.persistence.collection.PersistentMap" + genericType, propertyType);
+                }
+                else if (jClass.getName().equals("com.google.appengine.api.datastore.Key")) {
+	            	javaType = JavaType.STRING;
 	            }
 	            else if (jClass.getName().equals("org.springframework.data.domain.Page")) {
-	            	javafxType = new JavaFXType("org.granite.tide.data.model", "Page" + genericType, null);
+	            	javaType = new JavaType("org.granite.tide.data.model", "Page" + genericType, null);
 	            }
 	            else if (jClass.getName().equals("org.springframework.data.domain.Pageable")) {
-	            	javafxType = JavaFXType.PAGE_INFO;
+	            	javaType = JavaType.PAGE_INFO;
 	            }
 	            else if (jClass.getName().equals("org.springframework.data.domain.Sort")) {
-	            	javafxType = JavaFXType.SORT_INFO;
+	            	javaType = JavaType.SORT_INFO;
 	            }
 	            else {
-	            	javafxType = createJavaFXType(jType, declaringClass, declaringTypes, propertyType);
+	            	javaType = createJavaType(jType, declaringClass, declaringTypes, null, propertyType);
 	            }
 	            if (!imports.isEmpty())
-	            	javafxType.addImports(imports);
+	            	javaType.addImports(imports);
         	}
         	
-            putInCache(key, propertyType, javafxType);
+            putInCache(key, propertyType, javaType);
         }
         
-        return javafxType;
+        return javaType;
     }
 
 	@Override
@@ -170,7 +157,7 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 		return getClientType(jType, null, null, PropertyType.SIMPLE);
 	}
 
-    protected JavaFXType createJavaFXType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, PropertyType propertyType) {
+    protected JavaType createJavaType(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes, String propertyImplTypeName, PropertyType propertyType) {
     	Set<String> imports = new HashSet<String>();
     	
     	Class<?> jClass = ClassUtil.classOfType(jType);
@@ -182,40 +169,26 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
     		name += buildGenericTypeName(type, declaringClass, declaringTypes, propertyType, imports);
     	}
     	
-    	JavaFXType javaFXType = null;
-    	if (propertyType == PropertyType.PROPERTY) {
-    		javaFXType = new JavaFXType(ClassUtil.getPackageName(jClass), name, 
-    				"javafx.beans.property.ObjectProperty<" + name + ">", "javafx.beans.property.SimpleObjectProperty<" + name + ">", null);
-    	}
-    	else if (propertyType == PropertyType.READONLY_PROPERTY) {
-    		javaFXType = new JavaFXType(ClassUtil.getPackageName(jClass), name, 
-    				"javafx.beans.property.ReadOnlyObjectProperty<" + name + ">", "javafx.beans.property.ReadOnlyObjectWrapper<" + name + ">", null, null, true);
-    	}
-    	else
-    		javaFXType = new JavaFXType(ClassUtil.getPackageName(jClass), name, null);
-    	javaFXType.addImports(imports);
-    	return javaFXType;
+    	JavaType javaType = new JavaType(ClassUtil.getPackageName(jClass), name, propertyImplTypeName, null);
+    	javaType.addImports(imports);
+    	return javaType;
     }
 
     protected ClientType getFromCache(String key, PropertyType propertyType) {
         if (key == null)
             throw new NullPointerException("jType must be non null");
         if (propertyType == PropertyType.PROPERTY)
-        	return propertyJava2JavaFXType.get(key);
-        else if (propertyType == PropertyType.READONLY_PROPERTY)
-        	return readOnlyPropertyJava2JavaFXType.get(key);
-        return simpleJava2JavaFXType.get(key);
+            return propertyJava2JavaType.get(key);
+        return simpleJava2JavaType.get(key);
     }
 
-    protected void putInCache(String key, PropertyType propertyType, ClientType javafxType) {
-        if (key == null || javafxType == null)
-            throw new NullPointerException("jType and JavaFXType must be non null");
+    protected void putInCache(String key, PropertyType propertyType, ClientType javaType) {
+        if (key == null || javaType == null)
+            throw new NullPointerException("jType and JavaType must be non null");
         if (propertyType == PropertyType.PROPERTY)
-        	propertyJava2JavaFXType.put(key, javafxType);
-        else if (propertyType == PropertyType.READONLY_PROPERTY)
-        	readOnlyPropertyJava2JavaFXType.put(key, javafxType);
+            propertyJava2JavaType.put(key, javaType);
         else
-        	simpleJava2JavaFXType.put(key, javafxType);
+            simpleJava2JavaType.put(key, javaType);
     }
     
     private String buildGenericTypeName(ParameterizedType type, Class<?> declaringClass, ParameterizedType[] declaringTypes, PropertyType propertyType, Set<String> imports) {

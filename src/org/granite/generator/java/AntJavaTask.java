@@ -18,27 +18,26 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.generator.javafx;
+package org.granite.generator.java;
 
 import java.lang.reflect.Field;
 
 import org.granite.generator.Transformer;
 import org.granite.generator.ant.AbstractAntJavaGenTask;
 import org.granite.generator.as3.As3TypeFactory;
-import org.granite.generator.java.JavaGroovyTransformer;
-import org.granite.generator.javafx.template.JavaFXTemplateUris;
+import org.granite.generator.java.template.JavaTemplateUris;
 
 /**
  * @author Franck WOLFF
  */
-public class AntJavaFXTask extends AbstractAntJavaGenTask {
+public class AntJavaTask extends AbstractAntJavaGenTask {
 
     ///////////////////////////////////////////////////////////////////////////
     // Task execution.
 
     @Override
 	protected As3TypeFactory initDefaultClientTypeFactory() {
-    	As3TypeFactory clientTypeFactoryImpl = new DefaultJavaFXTypeFactory();
+    	As3TypeFactory clientTypeFactoryImpl = new DefaultJavaTypeFactory();
     	return clientTypeFactoryImpl;
     }
     
@@ -50,7 +49,7 @@ public class AntJavaFXTask extends AbstractAntJavaGenTask {
     @Override
     protected String defaultTemplateUri(String type) {
     	try {
-	    	Field field = JavaFXTemplateUris.class.getField(type);
+	    	Field field = JavaTemplateUris.class.getField(type);
 	    	return (String)field.get(null);
     	}
     	catch (Exception e) {

@@ -17,7 +17,7 @@ import org.granite.generator.as3.JavaAs3GroovyTransformer;
 import org.granite.generator.as3.JavaAs3Input;
 import org.granite.generator.as3.JavaAs3Output;
 import org.granite.generator.gsp.GroovyTemplate;
-import org.granite.generator.javafx.JavaFXGroovyTransformer;
+import org.granite.generator.java.JavaGroovyTransformer;
 import org.granite.test.builder.MockJavaAs3GroovyConfiguration;
 import org.granite.test.builder.MockJavaFXGroovyConfiguration;
 import org.granite.test.builder.MockListener;
@@ -129,7 +129,7 @@ public class TestGenEntity {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
 		config.setTide(true);
 		config.addFileSetClasses(AbstractEntity1.class);
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, new MockListener()) {
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, new MockListener()) {
 			@Override
 			public boolean isOutdated(JavaAs3Input input, GroovyTemplate template, File outputFile, boolean hasBaseTemplate) {
 				return true;
@@ -156,7 +156,7 @@ public class TestGenEntity {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
 		config.setTide(true);
 		config.addFileSetClasses(Bean1.class);
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, new MockListener()) {
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, new MockListener()) {
 			@Override
 			public boolean isOutdated(JavaAs3Input input, GroovyTemplate template, File outputFile, boolean hasBaseTemplate) {
 				return true;
@@ -180,7 +180,7 @@ public class TestGenEntity {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
 		config.setTide(true);
 		config.addFileSetClasses(Entity1NoUid.class);
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, new MockListener()) {
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, new MockListener()) {
 			@Override
 			public boolean isOutdated(JavaAs3Input input, GroovyTemplate template, File outputFile, boolean hasBaseTemplate) {
 				return true;
@@ -209,7 +209,7 @@ public class TestGenEntity {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
 		config.setTide(true);
 		config.addFileSetClasses(Entity1Id.class, Entity1NoUidCompId.class);
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, new MockListener()) {
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, new MockListener()) {
 			@Override
 			public boolean isOutdated(JavaAs3Input input, GroovyTemplate template, File outputFile, boolean hasBaseTemplate) {
 				return true;

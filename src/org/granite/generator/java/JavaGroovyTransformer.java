@@ -18,7 +18,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.generator.javafx;
+package org.granite.generator.java;
 
 import java.io.File;
 
@@ -32,14 +32,14 @@ import org.granite.generator.gsp.GroovyTemplate;
 /**
  * @author Franck WOLFF
  */
-public class JavaFXGroovyTransformer extends JavaClientGroovyTransformer {
+public class JavaGroovyTransformer extends JavaClientGroovyTransformer {
 
 	private static final String GENERATED_FILE_EXTENSION = "java";
 	
-	public JavaFXGroovyTransformer() {
+	public JavaGroovyTransformer() {
 	}
 
-	public JavaFXGroovyTransformer(JavaAs3GroovyConfiguration config, Listener listener) {
+	public JavaGroovyTransformer(JavaAs3GroovyConfiguration config, Listener listener) {
 		super(config, listener);
 	}
 

@@ -4,7 +4,7 @@ import junit.framework.Assert;
 
 import org.granite.generator.as3.reflect.JavaMethod;
 import org.granite.generator.as3.reflect.JavaRemoteDestination;
-import org.granite.generator.javafx.JavaFXGroovyTransformer;
+import org.granite.generator.java.JavaGroovyTransformer;
 import org.granite.test.builder.MockJavaFXGroovyConfiguration;
 import org.granite.test.builder.Util;
 import org.granite.test.builder.entities.Entity1;
@@ -17,7 +17,7 @@ public class TestGenRepositoryGDS1057 {
 	public void testGenRepository() {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
 		config.addFileSetClasses(Entity1.class, Entity2.class);
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, null);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, null);
 		
 		JavaRemoteDestination jrd1 = new JavaRemoteDestination(provider, Repository1.class, null);
 		JavaMethod jm = Util.findMethod(jrd1, "findAll", Iterable.class);
@@ -39,7 +39,7 @@ public class TestGenRepositoryGDS1057 {
 	@Test
 	public void testGenRepositoryB() {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, null);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, null);
 		
 		JavaRemoteDestination jrd1 = new JavaRemoteDestination(provider, Repository1.class, null);
 		JavaMethod jm = Util.findMethod(jrd1, "findAll", Iterable.class);
@@ -62,7 +62,7 @@ public class TestGenRepositoryGDS1057 {
 	public void testGenRepository2() {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
 		config.addFileSetClasses(Entity1.class, Entity2.class);
-		JavaFXGroovyTransformer provider = new JavaFXGroovyTransformer(config, null);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, null);
 		
 		JavaRemoteDestination jrd1 = new JavaRemoteDestination(provider, SecureEntity2Repository.class, null);
 		JavaMethod jm1 = Util.findMethod(jrd1, "findAll");
