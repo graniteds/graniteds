@@ -40,20 +40,41 @@ public class ServiceLoader<S> implements Iterable<S> {
 	// logger implementation (stack overflow...)
 	private static final Logger jdkLog = Logger.getLogger(ServiceLoader.class.getName());
 	
+	private final Class<S> service;
 	private final ClassLoader loader;
-	private final List<String> serviceClassNames;
 	
-	private ServiceLoader(ClassLoader loader, List<String> servicesNames) {
+	private List<String> serviceClassNames;
+	
+	private Class<?>[] constructorParameterTypes = new Class<?>[0];
+	private Object[] constructorParameters = new Object[0];
+	
+	private ServiceLoader(Class<S> service, ClassLoader loader, List<String> servicesNames) {
+		this.service = service;
 		this.loader = loader;
 		this.serviceClassNames = servicesNames;
 	}
+	
+	public void setConstructorParameters(Class<?>[] constructorParameterTypes, Object[] constructorParameters) {		
+		
+		if (constructorParameterTypes == null)
+			constructorParameterTypes = new Class<?>[0];
+		if (constructorParameters == null)
+			constructorParameters = new Object[0];
+		
+		if (constructorParameterTypes.length != constructorParameters.length)
+			throw new IllegalArgumentException("constructor types and argurments must have the same size");
 
-	public ServicesIterator<S> iterator() {
-		return new ServicesIterator<S>(loader, serviceClassNames.iterator());
+		this.constructorParameterTypes = constructorParameterTypes;
+		this.constructorParameters = constructorParameters;
 	}
 
-	public void remove() {
-		throw new UnsupportedOperationException();
+	public ServicesIterator<S> iterator() {
+		return new ServicesIterator<S>(loader, serviceClassNames.iterator(), constructorParameterTypes, constructorParameters);
+	}
+	
+	public void reload() {
+		ServiceLoader<S> serviceLoaderTmp = load(service, loader);
+		this.serviceClassNames = serviceLoaderTmp.serviceClassNames;
 	}
 	
 	public static <S> ServiceLoader<S> load(Class<S> service) {
@@ -64,19 +85,20 @@ public class ServiceLoader<S> implements Iterable<S> {
 		List<String> serviceClassNames = new ArrayList<String>();
 		
 		try {
-			// Standard.
+			// Standard Java platforms.
 			Enumeration<URL> en = loader.getResources("META-INF/services/" + service.getName());
 			while (en.hasMoreElements())
 				parse(en.nextElement(), serviceClassNames);
 			
-			// Android support (META-INF/** are not included in APK files).
+			// Android support (META-INF/** files are not included in APK files).
 			en = loader.getResources("meta_inf/services/" + service.getName());
 			while (en.hasMoreElements())
 				parse(en.nextElement(), serviceClassNames);
 			
-			return new ServiceLoader<S>(loader, serviceClassNames);
+			return new ServiceLoader<S>(service, loader, serviceClassNames);
 		}
 		catch (Exception e) {
+			jdkLog.log(Level.SEVERE, "Could not load services of type " + service, e);
 			throw new RuntimeException(e);
 		}
 	}
@@ -112,25 +134,21 @@ public class ServiceLoader<S> implements Iterable<S> {
 		
 		private final ClassLoader loader;
 		private final Iterator<String> serviceClassNames;
+		private final Class<?>[] constructorParameterTypes;
+		private final Object[] constructorParameters;
 
-		public ServicesIterator(ClassLoader loader, Iterator<String> servicesNames) {
+		private ServicesIterator(ClassLoader loader, Iterator<String> servicesNames, Class<?>[] constructorParameterTypes, Object[] constructorParameters) {
 			this.loader = loader;
 			this.serviceClassNames = servicesNames;
+			this.constructorParameterTypes = constructorParameterTypes;
+			this.constructorParameters = constructorParameters;
 		}
 
 		public boolean hasNext() {
 			return serviceClassNames.hasNext();
 		}
 
-		public S next(Class<?>[] constructorParameterTypes, Object[] constructorParameters) {
-			if (constructorParameterTypes == null)
-				constructorParameterTypes = new Class<?>[0];
-			if (constructorParameters == null)
-				constructorParameters = new Object[0];
-			
-			if (constructorParameterTypes.length != constructorParameters.length)
-				throw new IllegalArgumentException("constructor types and argurments must have the same size");
-			
+		public S next() {
 			String serviceClassName = serviceClassNames.next();
 			jdkLog.log(Level.FINE, "Loading service " + serviceClassName);
 			try {
@@ -142,10 +160,6 @@ public class ServiceLoader<S> implements Iterable<S> {
 				jdkLog.log(Level.SEVERE, "Could not load service " + serviceClassName, t);
 				throw new RuntimeException(t);
 			}
-		}
-
-		public S next() {
-			return next(null, null);
 		}
 
 		public void remove() {
