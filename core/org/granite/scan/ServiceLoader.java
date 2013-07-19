@@ -21,7 +21,6 @@
 package org.granite.scan;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -30,18 +29,14 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+import org.granite.logging.Logger;
 
 /**
  * @author Franck WOLFF
  */
 public class ServiceLoader<S> implements Iterable<S> {
+	
+	private static final Logger log = Logger.getLogger(ServiceLoader.class);
 	
 	private final ClassLoader loader;
 	private final List<String> serviceClassNames;
@@ -64,42 +59,18 @@ public class ServiceLoader<S> implements Iterable<S> {
 	}
 
 	public static <S> ServiceLoader<S> load(final Class<S> service, final ClassLoader loader) {
+		List<String> serviceClassNames = new ArrayList<String>();
+		
 		try {
-			Enumeration<URL> e = loader.getResources("META-INF/services/" + service.getName());
+			// Standard.
+			Enumeration<URL> en = loader.getResources("META-INF/services/" + service.getName());
+			while (en.hasMoreElements())
+				parse(en.nextElement(), serviceClassNames);
 			
-			final List<String> serviceClassNames = new ArrayList<String>();
-			
-			while (e.hasMoreElements()) {
-			    URL url = e.nextElement();
-			    
-			    InputStream is = url.openStream();
-			    try {
-			    	BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-
-			    	String name = null;
-			    	while ((name = reader.readLine()) != null) {
-			    		int comment = name.indexOf('#');
-			    		if (comment >= 0)
-			    			name = name.substring(0, comment);
-				        name = name.trim();
-				        if (name.length() > 0)
-				        	serviceClassNames.add(name);
-			    	}
-			    }
-			    finally {
-			    	is.close();
-			    }
-			}
-			
-			e = loader.getResources("META_INF/services/" + service.getName() + ".xml");
-			if (e.hasMoreElements()) {
-				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-				factory.setCoalescing(true);
-				factory.setIgnoringComments(true);
-
-				while (e.hasMoreElements())
-				    serviceClassNames.addAll(getServiceClassNames(factory, e.nextElement()));
-			}
+			// Android support (META-INF/** are not included in APK files).
+			en = loader.getResources("meta_inf/services/" + service.getName());
+			while (en.hasMoreElements())
+				parse(en.nextElement(), serviceClassNames);
 			
 			return new ServiceLoader<S>(loader, serviceClassNames);
 		}
@@ -108,33 +79,31 @@ public class ServiceLoader<S> implements Iterable<S> {
 		}
 	}
 	
-	private static List<String> getServiceClassNames(DocumentBuilderFactory factory, URL xmlServices)
-		throws IOException, SAXException, ParserConfigurationException {
-		
-		List<String> serviceClassNames = new ArrayList<String>();
-		InputStream is = xmlServices.openStream();
+	private static void parse(URL serviceFile, List<String> serviceClassNames) {
 		try {
-			Document document = factory.newDocumentBuilder().parse(is);
-			Node root = document.getFirstChild();
-			if (!"services".equals(root.getNodeName()))
-				throw new RuntimeException("Illegal root node in: " + xmlServices + " (should be <services>)");
-			NodeList children = root.getChildNodes();
-			for (int i = 0; i < children.getLength(); i++) {
-				Node child = children.item(i);
-				if ("service".equals(child.getNodeName())) {
-					String serviceClassName = child.getTextContent();
-					if (serviceClassName != null) {
-						serviceClassName = serviceClassName.trim();
-						if (serviceClassName.length() > 0)
-							serviceClassNames.add(serviceClassName.trim());
-					}
-				}
-			}
+		    InputStream is = serviceFile.openStream();
+		    try {
+		    	BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+	
+		    	String serviceClassName = null;
+		    	while ((serviceClassName = reader.readLine()) != null) {
+		    		int comment = serviceClassName.indexOf('#');
+		    		if (comment >= 0)
+		    			serviceClassName = serviceClassName.substring(0, comment);
+			        serviceClassName = serviceClassName.trim();
+			        if (serviceClassName.length() > 0) {
+			        	log.debug("Adding service %s from %s", serviceClassName, serviceFile);
+			        	serviceClassNames.add(serviceClassName);
+			        }
+		    	}
+		    }
+		    finally {
+		    	is.close();
+		    }
 		}
-		finally {
-	    	is.close();
-	    }
-		return serviceClassNames;
+		catch (Exception e) {
+			log.error(e, "Could not parse service file %s", serviceFile);
+		}
 	}
 	
 	static class ServicesIterator<S> implements Iterator<S> {
@@ -153,12 +122,14 @@ public class ServiceLoader<S> implements Iterable<S> {
 
 		public S next() {
 			String serviceClassName = serviceClassNames.next();
+			log.debug("Loading service %s", serviceClassName);
 			try {
 				@SuppressWarnings("unchecked")
 				Class<? extends S> serviceClass = (Class<? extends S>)loader.loadClass(serviceClassName);
 				return serviceClass.getConstructor().newInstance();
 			}
 			catch (Exception e) {
+	        	log.error(e, "Could not load service %s", serviceClassName);
 				throw new RuntimeException(e);
 			}
 		}
