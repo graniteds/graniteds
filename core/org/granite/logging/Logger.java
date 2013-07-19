@@ -22,6 +22,8 @@ package org.granite.logging;
 
 import java.lang.reflect.Constructor;
 
+import org.granite.scan.ServiceLoader;
+import org.granite.scan.ServiceLoader.ServicesIterator;
 import org.granite.util.TypeUtil;
 
 /**
@@ -107,6 +109,12 @@ public abstract class Logger {
 					" (" + LOGGER_IMPL_SYSTEM_PROPERTY + " system property)", e);
 			}
     	}
+    	
+    	ServiceLoader<Logger> loader = ServiceLoader.load(Logger.class);
+    	ServicesIterator<Logger> loggers = loader.iterator();
+    	if (loggers.hasNext())
+    		return loggers.next(new Class<?>[]{String.class, LoggingFormatter.class}, new Object[]{name, formatter});
+    	
         return log4jAvailable ? new Log4jLogger(name, formatter) : new JdkLogger(name, formatter);
     }
 

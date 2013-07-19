@@ -28,15 +28,17 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-
-import org.granite.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Franck WOLFF
  */
 public class ServiceLoader<S> implements Iterable<S> {
 	
-	private static final Logger log = Logger.getLogger(ServiceLoader.class);
+	// Can't use granite logger here, because service loader can be used to load a specific
+	// logger implementation (stack overflow...)
+	private static final Logger jdkLog = Logger.getLogger(ServiceLoader.class.getName());
 	
 	private final ClassLoader loader;
 	private final List<String> serviceClassNames;
@@ -46,7 +48,7 @@ public class ServiceLoader<S> implements Iterable<S> {
 		this.serviceClassNames = servicesNames;
 	}
 
-	public Iterator<S> iterator() {
+	public ServicesIterator<S> iterator() {
 		return new ServicesIterator<S>(loader, serviceClassNames.iterator());
 	}
 
@@ -92,7 +94,7 @@ public class ServiceLoader<S> implements Iterable<S> {
 		    			serviceClassName = serviceClassName.substring(0, comment);
 			        serviceClassName = serviceClassName.trim();
 			        if (serviceClassName.length() > 0) {
-			        	log.debug("Adding service %s from %s", serviceClassName, serviceFile);
+			        	jdkLog.log(Level.FINE, "Adding service " + serviceClassName + " from " + serviceFile);
 			        	serviceClassNames.add(serviceClassName);
 			        }
 		    	}
@@ -102,11 +104,11 @@ public class ServiceLoader<S> implements Iterable<S> {
 		    }
 		}
 		catch (Exception e) {
-			log.error(e, "Could not parse service file %s", serviceFile);
+			jdkLog.log(Level.SEVERE, "Could not parse service file " + serviceFile, e);
 		}
 	}
 	
-	static class ServicesIterator<S> implements Iterator<S> {
+	public static class ServicesIterator<S> implements Iterator<S> {
 		
 		private final ClassLoader loader;
 		private final Iterator<String> serviceClassNames;
@@ -120,18 +122,30 @@ public class ServiceLoader<S> implements Iterable<S> {
 			return serviceClassNames.hasNext();
 		}
 
-		public S next() {
+		public S next(Class<?>[] constructorParameterTypes, Object[] constructorParameters) {
+			if (constructorParameterTypes == null)
+				constructorParameterTypes = new Class<?>[0];
+			if (constructorParameters == null)
+				constructorParameters = new Object[0];
+			
+			if (constructorParameterTypes.length != constructorParameters.length)
+				throw new IllegalArgumentException("constructor types and argurments must have the same size");
+			
 			String serviceClassName = serviceClassNames.next();
-			log.debug("Loading service %s", serviceClassName);
+			jdkLog.log(Level.FINE, "Loading service " + serviceClassName);
 			try {
 				@SuppressWarnings("unchecked")
 				Class<? extends S> serviceClass = (Class<? extends S>)loader.loadClass(serviceClassName);
-				return serviceClass.getConstructor().newInstance();
+				return serviceClass.getConstructor(constructorParameterTypes).newInstance(constructorParameters);
 			}
-			catch (Exception e) {
-	        	log.error(e, "Could not load service %s", serviceClassName);
-				throw new RuntimeException(e);
+			catch (Throwable t) {
+				jdkLog.log(Level.SEVERE, "Could not load service " + serviceClassName, t);
+				throw new RuntimeException(t);
 			}
+		}
+
+		public S next() {
+			return next(null, null);
 		}
 
 		public void remove() {
