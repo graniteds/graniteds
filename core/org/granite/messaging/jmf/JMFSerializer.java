@@ -28,8 +28,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.granite.messaging.jmf.codec.StandardCodec;
-import org.granite.messaging.jmf.reflect.Property;
-import org.granite.messaging.jmf.reflect.Reflection;
+import org.granite.messaging.reflect.Property;
+import org.granite.messaging.reflect.Reflection;
 
 /**
  * @author Franck WOLFF

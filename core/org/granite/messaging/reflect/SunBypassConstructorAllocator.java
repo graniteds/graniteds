@@ -18,15 +18,29 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.reflect;
+package org.granite.messaging.reflect;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import sun.reflect.ReflectionFactory;
 
 /**
  * @author Franck WOLFF
  */
-public interface MethodProperty extends Property {
+public class SunBypassConstructorAllocator implements BypassConstructorAllocator {
+    
+    @SuppressWarnings("unchecked")
+	public <T> T newInstance(Class<T> cls)
+		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
+		InvocationTargetException, SecurityException, NoSuchMethodException {
 
-	Method getGetter();
-	Method getSetter();
+    	ReflectionFactory factory = ReflectionFactory.getReflectionFactory();
+    	Constructor<?> constructor = Object.class.getDeclaredConstructor();
+    	
+    	constructor = factory.newConstructorForSerialization(cls, constructor);
+        constructor.setAccessible(true);
+        
+        return (T)constructor.newInstance();
+    }
 }

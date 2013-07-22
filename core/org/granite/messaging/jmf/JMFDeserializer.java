@@ -29,9 +29,9 @@ import java.util.List;
 
 import org.granite.messaging.annotations.Include;
 import org.granite.messaging.jmf.codec.StandardCodec;
-import org.granite.messaging.jmf.reflect.NoopWritableProperty;
-import org.granite.messaging.jmf.reflect.Property;
-import org.granite.messaging.jmf.reflect.Reflection;
+import org.granite.messaging.reflect.NoopWritableProperty;
+import org.granite.messaging.reflect.Property;
+import org.granite.messaging.reflect.Reflection;
 
 /**
  * @author Franck WOLFF

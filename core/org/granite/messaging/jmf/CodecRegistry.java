@@ -35,7 +35,7 @@ import org.granite.messaging.jmf.codec.std.LongCodec;
 import org.granite.messaging.jmf.codec.std.NullCodec;
 import org.granite.messaging.jmf.codec.std.ShortCodec;
 import org.granite.messaging.jmf.codec.std.StringCodec;
-import org.granite.messaging.jmf.reflect.Property;
+import org.granite.messaging.reflect.Property;
 
 /**
  * @author Franck WOLFF

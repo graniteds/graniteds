@@ -18,14 +18,32 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.reflect;
-
-import java.lang.reflect.Field;
+package org.granite.messaging.reflect;
 
 /**
  * @author Franck WOLFF
  */
-public interface FieldProperty extends Property {
+public class PropertyAccessException extends ReflectionException {
 
-	Field getField();
+	private static final long serialVersionUID = 1L;
+
+	public PropertyAccessException() {
+	}
+
+	public PropertyAccessException(String message) {
+		super(message);
+	}
+
+	public PropertyAccessException(Throwable cause) {
+		super(cause);
+	}
+
+	public PropertyAccessException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public PropertyAccessException(String message, Throwable cause,
+			boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
 }

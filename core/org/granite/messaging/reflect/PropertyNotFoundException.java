@@ -18,31 +18,31 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.reflect;
+package org.granite.messaging.reflect;
 
 /**
  * @author Franck WOLFF
  */
-public class ReflectionException extends RuntimeException {
+public class PropertyNotFoundException extends ReflectionException {
 
 	private static final long serialVersionUID = 1L;
 
-	public ReflectionException() {
+	public PropertyNotFoundException() {
 	}
 
-	public ReflectionException(String message) {
+	public PropertyNotFoundException(String message) {
 		super(message);
 	}
 
-	public ReflectionException(Throwable cause) {
+	public PropertyNotFoundException(Throwable cause) {
 		super(cause);
 	}
 
-	public ReflectionException(String message, Throwable cause) {
+	public PropertyNotFoundException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public ReflectionException(String message, Throwable cause,
+	public PropertyNotFoundException(String message, Throwable cause,
 			boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}

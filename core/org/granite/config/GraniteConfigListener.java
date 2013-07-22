@@ -64,7 +64,7 @@ import org.granite.messaging.jmf.DefaultSharedContext;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodecService;
-import org.granite.messaging.jmf.reflect.Reflection;
+import org.granite.messaging.reflect.Reflection;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.ServiceFactory;
 import org.granite.messaging.service.SimpleServiceFactory;

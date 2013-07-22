@@ -32,7 +32,7 @@ import java.util.Set;
 
 import org.granite.messaging.AliasRegistry;
 import org.granite.messaging.DefaultAliasRegistry;
-import org.granite.messaging.jmf.reflect.Reflection;
+import org.granite.messaging.reflect.Reflection;
 
 /**
  * @author Franck WOLFF

@@ -18,11 +18,12 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.reflect;
+package org.granite.messaging.reflect;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -85,7 +86,13 @@ public class Reflection {
 		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 		InvocationTargetException, SecurityException, NoSuchMethodException {
 		
-		return instanceFactory.newInstance(cls);
+	    try {
+	        Constructor<T> constructor = cls.getConstructor();
+	        return constructor.newInstance();
+	    }
+	    catch (NoSuchMethodException e) {
+	        return instanceFactory.newInstance(cls);
+	    }
 	}
 	
 	@SuppressWarnings("unchecked")

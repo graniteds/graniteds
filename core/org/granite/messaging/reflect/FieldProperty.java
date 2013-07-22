@@ -18,32 +18,14 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.reflect;
+package org.granite.messaging.reflect;
+
+import java.lang.reflect.Field;
 
 /**
  * @author Franck WOLFF
  */
-public class PropertyNotFoundException extends ReflectionException {
+public interface FieldProperty extends Property {
 
-	private static final long serialVersionUID = 1L;
-
-	public PropertyNotFoundException() {
-	}
-
-	public PropertyNotFoundException(String message) {
-		super(message);
-	}
-
-	public PropertyNotFoundException(Throwable cause) {
-		super(cause);
-	}
-
-	public PropertyNotFoundException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public PropertyNotFoundException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
+	Field getField();
 }

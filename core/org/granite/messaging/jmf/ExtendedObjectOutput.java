@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.lang.reflect.InvocationTargetException;
 
-import org.granite.messaging.jmf.reflect.Property;
-import org.granite.messaging.jmf.reflect.Reflection;
+import org.granite.messaging.reflect.Property;
+import org.granite.messaging.reflect.Reflection;
 
 /**
  * @author Franck WOLFF

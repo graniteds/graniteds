@@ -18,16 +18,15 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.reflect;
+package org.granite.messaging.reflect;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * @author Franck WOLFF
  */
-public interface BypassConstructorAllocator {
-	
-	<T> T newInstance(Class<T> cls)
-		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
-		InvocationTargetException, SecurityException, NoSuchMethodException;
+public interface MethodProperty extends Property {
+
+	Method getGetter();
+	Method getSetter();
 }

@@ -1,4 +1,4 @@
-package org.granite.messaging.jmf.reflect;
+package org.granite.messaging.reflect;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;

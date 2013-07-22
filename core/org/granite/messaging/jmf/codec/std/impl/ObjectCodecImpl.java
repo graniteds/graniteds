@@ -37,7 +37,7 @@ import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.codec.StandardCodec;
 import org.granite.messaging.jmf.codec.std.ObjectCodec;
-import org.granite.messaging.jmf.reflect.Property;
+import org.granite.messaging.reflect.Property;
 
 /**
  * @author Franck WOLFF

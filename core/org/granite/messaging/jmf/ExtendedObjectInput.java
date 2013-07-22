@@ -26,8 +26,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
-import org.granite.messaging.jmf.reflect.Property;
-import org.granite.messaging.jmf.reflect.Reflection;
+import org.granite.messaging.reflect.Property;
+import org.granite.messaging.reflect.Reflection;
 
 /**
  * The <tt>ExtendedObjectInput</tt> interface extends <tt>ObjectInput</tt> and add two methods that

@@ -18,29 +18,32 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.granite.messaging.jmf.reflect;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
-import sun.reflect.ReflectionFactory;
+package org.granite.messaging.reflect;
 
 /**
  * @author Franck WOLFF
  */
-public class SunBypassConstructorAllocator implements BypassConstructorAllocator {
-    
-    @SuppressWarnings("unchecked")
-	public <T> T newInstance(Class<T> cls)
-		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
-		InvocationTargetException, SecurityException, NoSuchMethodException {
+public class ReflectionException extends RuntimeException {
 
-    	ReflectionFactory factory = ReflectionFactory.getReflectionFactory();
-    	Constructor<?> constructor = Object.class.getDeclaredConstructor();
-    	
-    	constructor = factory.newConstructorForSerialization(cls, constructor);
-        constructor.setAccessible(true);
-        
-        return (T)constructor.newInstance();
-    }
+	private static final long serialVersionUID = 1L;
+
+	public ReflectionException() {
+	}
+
+	public ReflectionException(String message) {
+		super(message);
+	}
+
+	public ReflectionException(Throwable cause) {
+		super(cause);
+	}
+
+	public ReflectionException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public ReflectionException(String message, Throwable cause,
+			boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+	}
 }

@@ -62,7 +62,7 @@ import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.MapExternalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
-import org.granite.messaging.jmf.reflect.Reflection;
+import org.granite.messaging.reflect.Reflection;
 import org.granite.messaging.service.DefaultMethodMatcher;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.MethodMatcher;
