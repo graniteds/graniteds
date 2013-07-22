@@ -3,9 +3,9 @@ package org.granite.test.jmf;
 import java.util.List;
 
 import org.granite.messaging.annotations.Serialized;
-import org.granite.messaging.jmf.reflect.Property;
-import org.granite.messaging.jmf.reflect.Reflection;
-import org.granite.messaging.jmf.reflect.ReflectionException;
+import org.granite.messaging.reflect.Property;
+import org.granite.messaging.reflect.Reflection;
+import org.granite.messaging.reflect.ReflectionException;
 import org.granite.test.jmf.model.EmptyPropertiesOrderBean;
 import org.granite.test.jmf.model.IllegalEmptyPropertiesOrderBean;
 import org.granite.test.jmf.model.IllegalNamePropertiesOrderBean;
