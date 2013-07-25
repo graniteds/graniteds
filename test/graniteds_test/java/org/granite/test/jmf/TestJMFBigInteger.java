@@ -70,6 +70,12 @@ public class TestJMFBigInteger implements JMFConstants {
 		bigInteger = new BigInteger("123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
 		Assert.assertEquals(bigInteger, serializeDeserialize(bigInteger));
 		
+		bigInteger = new BigInteger("2").pow(2048);
+		Assert.assertEquals(bigInteger, serializeDeserialize(bigInteger));
+		
+		bigInteger = new BigInteger("7").pow(4096);
+		Assert.assertEquals(bigInteger, serializeDeserialize(bigInteger));
+		
 //		byte[] bytes = Util.serializeJava(bigInteger);
 //		System.out.println("Serialization Java: " + bytes.length + "B.");
 	}

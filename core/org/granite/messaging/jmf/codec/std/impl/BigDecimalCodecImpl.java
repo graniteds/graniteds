@@ -46,25 +46,15 @@ public class BigDecimalCodecImpl extends AbstractIntegerStringCodec<BigDecimal> 
 	public void encode(OutputContext ctx, BigDecimal v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		int indexOfStoredObject = ctx.indexOfStoredObjects(v);
-		if (indexOfStoredObject >= 0) {
-			IntegerComponents ics = intComponents(indexOfStoredObject);
-			os.write(0x80 | (ics.length << 5) | JMF_BIG_DECIMAL);
-			writeIntData(ctx, ics);
-		}
-		else {
-			ctx.addToStoredObjects(v);
-			
-			int scale = v.scale();
-			byte[] magnitude = v.unscaledValue().toByteArray();
+		int scale = v.scale();
+		byte[] magnitude = v.unscaledValue().toByteArray();
 
-			IntegerComponents ics = intComponents(magnitude.length);
-			os.write((ics.length << 5) | JMF_BIG_DECIMAL);
-			writeIntData(ctx, ics);
-			
-			os.write(scale);
-			os.write(magnitude);
-		}
+		IntegerComponents ics = intComponents(magnitude.length);
+		os.write((ics.length << 6) | JMF_BIG_DECIMAL);
+		writeIntData(ctx, ics);
+		
+		os.write(scale);
+		os.write(magnitude);
 	}
 
 	public BigDecimal decode(InputContext ctx, int parameterizedJmfType) throws IOException {
@@ -73,13 +63,10 @@ public class BigDecimalCodecImpl extends AbstractIntegerStringCodec<BigDecimal> 
 		if (jmfType != JMF_BIG_DECIMAL)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
-		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
-		if ((parameterizedJmfType & 0x80) != 0)
-			return (BigDecimal)ctx.getSharedObject(indexOrLength);
-
+		int magnitudeLength = readIntData(ctx, (parameterizedJmfType >> 6) & 0x03, false);
 		int scale = ctx.safeRead();
-		
-		byte[] magnitude = new byte[indexOrLength];
+
+		byte[] magnitude = new byte[magnitudeLength];
 		ctx.safeReadFully(magnitude);
 		
 		BigDecimal v = new BigDecimal(new BigInteger(magnitude), scale);
@@ -90,8 +77,6 @@ public class BigDecimalCodecImpl extends AbstractIntegerStringCodec<BigDecimal> 
 			v = BigDecimal.ONE;
 		else if (BigDecimal.TEN.equals(v))
 			v = BigDecimal.TEN;
-		
-		ctx.addSharedObject(v);
 		
 		return v;
 	}
