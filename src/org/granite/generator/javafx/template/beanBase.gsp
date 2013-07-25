@@ -25,14 +25,6 @@
 	
     if (!jClass.hasSuperclass()) {
     	javaImports.add("java.io.Serializable");
-    	
-    	javaImports.add("javafx.event.Event");
-    	javaImports.add("javafx.event.EventDispatchChain");
-    	javaImports.add("javafx.event.EventHandler");
-    	javaImports.add("javafx.event.EventType");
-    	javaImports.add("com.sun.javafx.event.EventHandlerManager");
-
-    	javaImports.add("org.granite.client.util.javafx.DataNotifier");
     }
 	
     for (jProperty in jClass.properties) {
@@ -80,7 +72,7 @@ public class ${jClass.clientType.name}Base<%
         	if (jClass.clientSuperclass != null) {
         	%> extends ${jClass.clientSuperclass.name}<%
         	}
-            %> implements Serializable, DataNotifier<%
+            %> implements Serializable<%
 
             implementsWritten = true;
         }
@@ -98,20 +90,6 @@ public class ${jClass.clientType.name}Base<%
     %> {
 
 	private static final long serialVersionUID = 1L;
-	
-	private transient EventHandlerManager __handlerManager = new EventHandlerManager(this); 
-
-	@Override
-	public EventDispatchChain buildEventDispatchChain(EventDispatchChain tail) {
-		return tail.prepend(__handlerManager);
-	}
-	
-	public <T extends Event> void addEventHandler(EventType<T> type, EventHandler<? super T> handler) {
-		__handlerManager.addEventHandler(type, handler);
-	}
-	public <T extends Event> void removeEventHandler(EventType<T> type, EventHandler<? super T> handler) {
-		__handlerManager.removeEventHandler(type, handler);
-	}
 	
 <%
 

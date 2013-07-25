@@ -63,14 +63,6 @@
     if (!jClass.hasSuperclass()) {
     	javaImports.add("java.io.Serializable");
     	
-    	javaImports.add("javafx.event.Event");
-    	javaImports.add("javafx.event.EventDispatchChain");
-    	javaImports.add("javafx.event.EventHandler");
-    	javaImports.add("javafx.event.EventType");
-    	javaImports.add("com.sun.javafx.event.EventHandlerManager");
-
-    	javaImports.add("org.granite.client.util.javafx.DataNotifier");
-    	
     	javaImports.add("org.granite.client.persistence.Id");
     	javaImports.add("org.granite.client.persistence.Uid");
     	javaImports.add("org.granite.client.persistence.Version");
@@ -121,7 +113,7 @@ public class ${jClass.as3Type.name}Base<%
         if (jClass.hasSuperclass()) {
             %> extends ${jClass.superclass.as3Type.name}<%
         } else {
-            %> implements Serializable, DataNotifier<%
+            %> implements Serializable<%
 
             implementsWritten = true;
         }
@@ -149,20 +141,6 @@ public class ${jClass.as3Type.name}Base<%
     private boolean __initialized__ = true;
     @SuppressWarnings("unused")
 	private String __detachedState__ = null;
-	
-	private transient EventHandlerManager __handlerManager = new EventHandlerManager(this); 
-
-	@Override
-	public EventDispatchChain buildEventDispatchChain(EventDispatchChain tail) {
-		return tail.prepend(__handlerManager);
-	}
-	
-	public <T extends Event> void addEventHandler(EventType<T> type, EventHandler<? super T> handler) {
-		__handlerManager.addEventHandler(type, handler);
-	}
-	public <T extends Event> void removeEventHandler(EventType<T> type, EventHandler<? super T> handler) {
-		__handlerManager.removeEventHandler(type, handler);
-	}
     
 <%
     }

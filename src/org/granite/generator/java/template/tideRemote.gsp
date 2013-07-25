@@ -32,8 +32,6 @@ package ${jClass.clientType.packageName};<%
 	
 	Set javaImports = new TreeSet();
 	
-	javaImports.add("javax.inject.Inject");
-	javaImports.add("javax.inject.Named");
 	javaImports.add("org.granite.client.messaging.RemoteAlias");
 	javaImports.add("org.granite.client.tide.server.ServerSession");
 	
@@ -45,11 +43,9 @@ import ${javaImport};<%
 	}
 	%>
 
-@Named
 @RemoteAlias("${jClass.qualifiedName}")
 public class ${jClass.clientType.name} extends ${jClass.clientType.name}Base {
 	
-	@Inject
 	public ${jClass.clientType.name}(ServerSession serverSession) {
     	super(serverSession);
     }
