@@ -91,6 +91,8 @@ public class BigDecimalCodecImpl extends AbstractIntegerStringCodec<BigDecimal> 
 		else if (BigDecimal.TEN.equals(v))
 			v = BigDecimal.TEN;
 		
+		ctx.addSharedObject(v);
+		
 		return v;
 	}
 

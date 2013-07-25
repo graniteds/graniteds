@@ -85,6 +85,8 @@ public class BigIntegerCodecImpl extends AbstractIntegerStringCodec<BigInteger> 
 		else if (BigInteger.TEN.equals(v))
 			v = BigInteger.TEN;
 		
+		ctx.addSharedObject(v);
+		
 		return v;
 	}
 
