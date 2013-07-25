@@ -63,6 +63,12 @@ public class TestJMFBigDecimal implements JMFConstants {
 		bigDecimal = new BigDecimal("10000000000000000000000000000000000000000000.00000000000000000000000000000000000000000000001");
 		Assert.assertEquals(bigDecimal, serializeDeserialize(bigDecimal));
 		
+		bigDecimal = new BigDecimal(2).pow(2048);
+		Assert.assertEquals(bigDecimal, serializeDeserialize(bigDecimal));
+		
+		bigDecimal = new BigDecimal(7).pow(4096);
+		Assert.assertEquals(bigDecimal, serializeDeserialize(bigDecimal));
+		
 //		byte[] bytes = Util.serializeJava(bigDecimal);
 //		System.out.println("Serialization Java: " + bytes.length + "B.");
 	}

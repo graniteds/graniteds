@@ -22,20 +22,20 @@ package org.granite.messaging.jmf.codec.std.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Date;
+import java.sql.Date;
 
 import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
-import org.granite.messaging.jmf.codec.std.DateCodec;
+import org.granite.messaging.jmf.codec.std.SqlDateCodec;
 
 /**
  * @author Franck WOLFF
  */
-public class DateCodecImpl extends AbstractStandardCodec<Date> implements DateCodec {
+public class SqlDateCodecImpl extends AbstractStandardCodec<Date> implements SqlDateCodec {
 
 	public int getObjectType() {
-		return JMF_DATE;
+		return JMF_SQL_DATE;
 	}
 
 	public Class<?> getObjectClass() {
@@ -45,7 +45,7 @@ public class DateCodecImpl extends AbstractStandardCodec<Date> implements DateCo
 	public void encode(OutputContext ctx, Date v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		os.write(JMF_DATE);
+		os.write(JMF_SQL_DATE);
 		
 		long t = v.getTime();
 		
@@ -62,7 +62,7 @@ public class DateCodecImpl extends AbstractStandardCodec<Date> implements DateCo
 	public Date decode(InputContext ctx, int parameterizedJmfType) throws IOException {
 		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
 		
-		if (jmfType != JMF_DATE)
+		if (jmfType != JMF_SQL_DATE)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
 		long t = ((long)ctx.safeRead()) << 56;
@@ -80,7 +80,7 @@ public class DateCodecImpl extends AbstractStandardCodec<Date> implements DateCo
 		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
 		
 		switch (jmfType) {
-		case JMF_DATE:
+		case JMF_SQL_DATE:
 			ctx.indentPrintLn(Date.class.getName() + ": " + decode(ctx, parameterizedJmfType));
 			break;
 		default:

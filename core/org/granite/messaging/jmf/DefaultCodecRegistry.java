@@ -62,6 +62,9 @@ import org.granite.messaging.jmf.codec.std.impl.LongCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.NullCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.ObjectCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.ShortCodecImpl;
+import org.granite.messaging.jmf.codec.std.impl.SqlDateCodecImpl;
+import org.granite.messaging.jmf.codec.std.impl.SqlTimeCodecImpl;
+import org.granite.messaging.jmf.codec.std.impl.SqlTimestampCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.StringCodecImpl;
 import org.granite.messaging.reflect.Property;
 
@@ -274,6 +277,9 @@ public class DefaultCodecRegistry implements CodecRegistry {
 			new StringCodecImpl(),
 
 			new DateCodecImpl(),
+			new SqlDateCodecImpl(),
+			new SqlTimeCodecImpl(),
+			new SqlTimestampCodecImpl(),
 
 			new ArrayListCodecImpl(),
 			new HashSetCodecImpl(),

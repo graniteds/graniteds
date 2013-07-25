@@ -45,23 +45,15 @@ public class BigIntegerCodecImpl extends AbstractIntegerStringCodec<BigInteger> 
 	public void encode(OutputContext ctx, BigInteger v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		int indexOfStoredObject = ctx.indexOfStoredObjects(v);
-		if (indexOfStoredObject >= 0) {
-			IntegerComponents ics = intComponents(indexOfStoredObject);
-			os.write(0x80 | (ics.length << 5) | JMF_BIG_INTEGER);
-			writeIntData(ctx, ics);
-		}
-		else {
-			ctx.addToStoredObjects(v);
-			
-			byte[] magnitude = v.toByteArray();
+		ctx.addToStoredObjects(v);
+		
+		byte[] magnitude = v.toByteArray();
 
-			IntegerComponents ics = intComponents(magnitude.length);
-			os.write((ics.length << 5) | JMF_BIG_INTEGER);
-			writeIntData(ctx, ics);
-			
-			os.write(magnitude);
-		}
+		IntegerComponents ics = intComponents(magnitude.length);
+		os.write((ics.length << 6) | JMF_BIG_INTEGER);
+		writeIntData(ctx, ics);
+		
+		os.write(magnitude);
 	}
 
 	public BigInteger decode(InputContext ctx, int parameterizedJmfType) throws IOException {
@@ -70,12 +62,11 @@ public class BigIntegerCodecImpl extends AbstractIntegerStringCodec<BigInteger> 
 		if (jmfType != JMF_BIG_INTEGER)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
-		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
-		if ((parameterizedJmfType & 0x80) != 0)
-			return (BigInteger)ctx.getSharedObject(indexOrLength);
+		int magnitudeLength = readIntData(ctx, (parameterizedJmfType >> 6) & 0x03, false);
 
-		byte[] magnitude = new byte[indexOrLength];
+		byte[] magnitude = new byte[magnitudeLength];
 		ctx.safeReadFully(magnitude);
+		
 		BigInteger v = new BigInteger(magnitude);
 		
 		if (BigInteger.ZERO.equals(v))

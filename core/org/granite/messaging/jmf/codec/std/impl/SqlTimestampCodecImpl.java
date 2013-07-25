@@ -22,30 +22,30 @@ package org.granite.messaging.jmf.codec.std.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Date;
+import java.sql.Timestamp;
 
 import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
-import org.granite.messaging.jmf.codec.std.DateCodec;
+import org.granite.messaging.jmf.codec.std.SqlTimestampCodec;
 
 /**
  * @author Franck WOLFF
  */
-public class DateCodecImpl extends AbstractStandardCodec<Date> implements DateCodec {
+public class SqlTimestampCodecImpl extends AbstractStandardCodec<Timestamp> implements SqlTimestampCodec {
 
 	public int getObjectType() {
-		return JMF_DATE;
+		return JMF_SQL_TIMESTAMP;
 	}
 
 	public Class<?> getObjectClass() {
-		return Date.class;
+		return Timestamp.class;
 	}
 
-	public void encode(OutputContext ctx, Date v) throws IOException {
+	public void encode(OutputContext ctx, Timestamp v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		os.write(JMF_DATE);
+		os.write(JMF_SQL_TIMESTAMP);
 		
 		long t = v.getTime();
 		
@@ -59,10 +59,10 @@ public class DateCodecImpl extends AbstractStandardCodec<Date> implements DateCo
 		os.write((int)t);
 	}
 
-	public Date decode(InputContext ctx, int parameterizedJmfType) throws IOException {
+	public Timestamp decode(InputContext ctx, int parameterizedJmfType) throws IOException {
 		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
 		
-		if (jmfType != JMF_DATE)
+		if (jmfType != JMF_SQL_TIMESTAMP)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
 		long t = ((long)ctx.safeRead()) << 56;
@@ -73,15 +73,15 @@ public class DateCodecImpl extends AbstractStandardCodec<Date> implements DateCo
 		t |= ((long)ctx.safeRead()) << 16;
 		t |= ((long)ctx.safeRead()) << 8;
 		t |= ctx.safeRead();
-		return new Date(t);
+		return new Timestamp(t);
 	}
 	
 	public void dump(DumpContext ctx, int parameterizedJmfType) throws IOException {
 		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
 		
 		switch (jmfType) {
-		case JMF_DATE:
-			ctx.indentPrintLn(Date.class.getName() + ": " + decode(ctx, parameterizedJmfType));
+		case JMF_SQL_TIMESTAMP:
+			ctx.indentPrintLn(Timestamp.class.getName() + ": " + decode(ctx, parameterizedJmfType));
 			break;
 		default:
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
