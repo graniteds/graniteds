@@ -677,6 +677,9 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		        
 		        DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 		        if (gdd != null) {
+		            if (!gdd.hasChannelId(channel.getId()))
+		                gdd.addChannelId(channel.getId(), channel.getFactory().getClass().getName());
+		            
 		        	if (Boolean.TRUE.toString().equals(destination.getProperties().get("session-selector"))) {
 		        		String selector = gdd.getDestinationSelector(destination.getId());
 		        		log.debug("Session selector found: %s", selector);
