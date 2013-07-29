@@ -41,9 +41,4 @@ public class PropertyAccessException extends ReflectionException {
 	public PropertyAccessException(String message, Throwable cause) {
 		super(message, cause);
 	}
-
-	public PropertyAccessException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
 }
