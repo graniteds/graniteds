@@ -36,12 +36,14 @@ public class TestJMFDouble implements JMFConstants {
 	@Test
 	public void testSomeDouble() throws IOException {
 
-		checkDouble(Double.NaN, 				bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0xC0, 0x7F ));
+		checkDouble(Double.NaN, 				bytes( 0xC0 | JMF_DOUBLE ));
 		checkDouble(Double.MAX_VALUE, 			bytes( JMF_DOUBLE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x7F ));
 		checkDouble(Double.MIN_VALUE, 			bytes( JMF_DOUBLE, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ));
 		checkDouble(Double.MIN_NORMAL, 			bytes( JMF_DOUBLE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00 ));
-		checkDouble(Double.NEGATIVE_INFINITY, 	bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0xFF ));
-		checkDouble(Double.POSITIVE_INFINITY, 	bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0x7F ));
+		checkDouble(Double.NEGATIVE_INFINITY, 	bytes( 0x40 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0xFF ));
+		checkDouble(Double.POSITIVE_INFINITY, 	bytes( 0x40 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0x7F ));
+
+		checkDouble(Long.MIN_VALUE, 			bytes( 0x80 | JMF_DOUBLE, 0x80 ));
 
 		checkDouble(Math.PI, 					bytes( JMF_DOUBLE, 0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0x40 ));
 		checkDouble(-Math.PI, 					bytes( JMF_DOUBLE, 0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0xC0 ));
@@ -53,17 +55,23 @@ public class TestJMFDouble implements JMFConstants {
 		checkDouble(-1.0000000000000004, 		bytes( JMF_DOUBLE, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
 		checkDouble(-1.0000000000000003, 		bytes( JMF_DOUBLE, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
 		checkDouble(-1.0000000000000002, 		bytes( JMF_DOUBLE, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
-		checkDouble(-1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0xBF ));
-		checkDouble(-1.0, 						bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0xBF ));
+		checkDouble(-1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE, 0x81 ));
+		checkDouble(-1.0, 						bytes( 0x80 | JMF_DOUBLE, 0x81 ));
 		
-		checkDouble(-0.0,						bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x00, 0x80 ));
-		checkDouble(0.0,						bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x00, 0x00 ));
+		checkDouble(-0.0,						bytes( 0x40 | JMF_DOUBLE, 0x00, 0x00, 0x00, 0x80 ));
+		checkDouble(0.0,						bytes( 0x80 | JMF_DOUBLE, 0x00 ));
 		
-		checkDouble(1.0, 						bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0x3F ));
-		checkDouble(1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE, 0x00, 0x00, 0x80, 0x3F ));
+		checkDouble(1.0, 						bytes( 0x80 | JMF_DOUBLE, 0x01 ));
+		checkDouble(1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE, 0x01 ));
 		checkDouble(1.0000000000000002, 		bytes( JMF_DOUBLE, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
 		checkDouble(1.0000000000000003, 		bytes( JMF_DOUBLE, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
 		checkDouble(1.0000000000000004, 		bytes( JMF_DOUBLE, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
+		
+		for (double d = -0x3F; d < 0; d++)
+			checkDouble(d, bytes( 0x80 | JMF_DOUBLE, (byte)-d | 0x80 ));
+		
+		for (double d = 0; d <= 0x3F; d++)
+			checkDouble(d, bytes( 0x80 | JMF_DOUBLE, (byte)d ));
 		
 		for (double d = -1000.0; d < 1000.0; d++)
 			checkDouble(d);
@@ -77,12 +85,14 @@ public class TestJMFDouble implements JMFConstants {
 		
 		checkDoubleObject(null,						bytes( JMF_NULL ));
 
-		checkDoubleObject(Double.NaN, 				bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0xC0, 0x7F ));
+		checkDoubleObject(Double.NaN, 				bytes( 0xC0 | JMF_DOUBLE_OBJECT ));
 		checkDoubleObject(Double.MAX_VALUE, 		bytes( JMF_DOUBLE_OBJECT, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x7F ));
 		checkDoubleObject(Double.MIN_VALUE, 		bytes( JMF_DOUBLE_OBJECT, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ));
 		checkDoubleObject(Double.MIN_NORMAL, 		bytes( JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00 ));
-		checkDoubleObject(Double.NEGATIVE_INFINITY, bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0xFF ));
-		checkDoubleObject(Double.POSITIVE_INFINITY, bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0x7F ));
+		checkDoubleObject(Double.NEGATIVE_INFINITY, bytes( 0x40 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0xFF ));
+		checkDoubleObject(Double.POSITIVE_INFINITY, bytes( 0x40 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0x7F ));
+
+		checkDoubleObject((double)Long.MIN_VALUE, 	bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x80 ));
 
 		checkDoubleObject(Math.PI, 					bytes( JMF_DOUBLE_OBJECT, 0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0x40 ));
 		checkDoubleObject(-Math.PI, 				bytes( JMF_DOUBLE_OBJECT, 0x18, 0x2D, 0x44, 0x54, 0xFB, 0x21, 0x09, 0xC0 ));
@@ -94,17 +104,23 @@ public class TestJMFDouble implements JMFConstants {
 		checkDoubleObject(-1.0000000000000004, 		bytes( JMF_DOUBLE_OBJECT, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
 		checkDoubleObject(-1.0000000000000003, 		bytes( JMF_DOUBLE_OBJECT, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
 		checkDoubleObject(-1.0000000000000002, 		bytes( JMF_DOUBLE_OBJECT, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF ));
-		checkDoubleObject(-1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0xBF ));
-		checkDoubleObject(-1.0, 					bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0xBF ));
+		checkDoubleObject(-1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x81 ));
+		checkDoubleObject(-1.0, 					bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x81 ));
 		
-		checkDoubleObject(-0.0,						bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x00, 0x80 ));
-		checkDoubleObject(0.0,						bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x00, 0x00 ));
+		checkDoubleObject(-0.0,						bytes( 0x40 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x00, 0x80 ));
+		checkDoubleObject(0.0,						bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00 ));
 		
-		checkDoubleObject(1.0, 						bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0x3F ));
-		checkDoubleObject(1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x00, 0x00, 0x80, 0x3F ));
+		checkDoubleObject(1.0, 						bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x01 ));
+		checkDoubleObject(1.0000000000000001, 		bytes( 0x80 | JMF_DOUBLE_OBJECT, 0x01 ));
 		checkDoubleObject(1.0000000000000002, 		bytes( JMF_DOUBLE_OBJECT, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
 		checkDoubleObject(1.0000000000000003, 		bytes( JMF_DOUBLE_OBJECT, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
 		checkDoubleObject(1.0000000000000004, 		bytes( JMF_DOUBLE_OBJECT, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F ));
+		
+		for (double d = -0x3F; d < 0; d++)
+			checkDoubleObject(d, bytes( 0x80 | JMF_DOUBLE_OBJECT, (byte)-d | 0x80 ));
+		
+		for (double d = 0; d <= 0x3F; d++)
+			checkDoubleObject(d, bytes( 0x80 | JMF_DOUBLE_OBJECT, (byte)d ));
 		
 		for (double d = -1000.0; d < 1000.0; d++)
 			checkDoubleObject(d);

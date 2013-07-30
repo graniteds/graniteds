@@ -248,7 +248,7 @@ public class LongCodecImpl extends AbstractStandardCodec<Long> implements LongCo
 			VARIABLE_LONG_DELTAS[i] = (VARIABLE_LONG_DELTAS[i-1] << 7) | 0x40L;
 	}
 	
-	protected static int lengthOfVariableAbsoluteLong(long abs) {
+	public int lengthOfVariableAbsoluteLong(long abs) {
 		for (int i = 1; i < VARIABLE_LONG_DELTAS.length; i++) {
 			if (abs < VARIABLE_LONG_DELTAS[i])
 				return (i - 1);
