@@ -146,7 +146,7 @@ public class TestGenEntity {
 		String base = Util.readFile(outputs[0].getFile());
 		Assert.assertTrue("AbstractEntityBase1 contains @Id", base.indexOf("@Id") >= 0);
 		Assert.assertTrue("AbstractEntityBase1 contains id", base.indexOf("private ObjectProperty<Long> id") >= 0);
-		Assert.assertTrue("AbstractEntityBase1 contains _extProp", base.indexOf("__externalizedProperties = { \"id\", \"createdBy\", \"uid\", \"version\" }") > 0);
+		Assert.assertTrue("AbstractEntityBase1 contains @Serialized", base.indexOf("@Serialized(propertiesOrder={ \"__initialized__\", \"__detachedState__\", \"id\", \"createdBy\", \"uid\", \"version\" })") > 0);
 		Assert.assertTrue("AbstractEntityBase1 contains uid", base.indexOf("private StringProperty uid") >= 0);
 		Assert.assertTrue("AbstractEntityBase1 contains get uid", base.indexOf("public String getUid() {") >= 0);
 	}
@@ -172,7 +172,9 @@ public class TestGenEntity {
 		
 		String base = Util.readFile(outputs[0].getFile());
 		Assert.assertTrue("Bean1Base contains name", base.indexOf("private StringProperty name = new SimpleStringProperty(this, \"name\");") >= 0);
-		Assert.assertTrue("Bean1Base contains list", base.indexOf("private ObservableList<String> list = new PersistentList<String>()") >= 0);
+		Assert.assertTrue("Bean1Base contains list", base.indexOf("private ReadOnlyListWrapper<String> list = FXPersistentCollections.readOnlyObservablePersistentList(this, \"list\")") >= 0);
+        Assert.assertTrue("Bean1Base contains list property", base.indexOf("public ReadOnlyListProperty<String> listProperty()") >= 0);
+        Assert.assertTrue("Bean1Base contains list property", base.indexOf("return list.getReadOnlyProperty()") >= 0);
 	}
 	
 	@Test
@@ -196,9 +198,6 @@ public class TestGenEntity {
 		
 		String sourceBase = Util.readFile(outputs[0].getFile());
 		String source = Util.readFile(outputs[1].getFile());
-		Assert.assertTrue("Entity1NoUidBase contains setUid()", sourceBase.indexOf("public void setUid(String value)") >= 0);
-		Assert.assertTrue("Entity1NoUidBase contains getUid()", sourceBase.indexOf("public String getUid(") >= 0);
-		Assert.assertTrue("Entity1NoUidBase contains getUid()", sourceBase.indexOf("if (id.get() == null)") >= 0);
 		
 		checkCompile(new JavaSourceCodeObject("org.granite.test.builder.entities.Entity1NoUidBase", sourceBase),
 				new JavaSourceCodeObject("org.granite.test.builder.entities.Entity1NoUid", source));
@@ -228,9 +227,6 @@ public class TestGenEntity {
 		
 		String sourceBase = Util.readFile(outputs1[0].getFile());
 		String source = Util.readFile(outputs1[1].getFile());
-		Assert.assertTrue("Entity1NoUidCompIdBase contains setUid()", sourceBase.indexOf("public void setUid(String value)") >= 0);
-		Assert.assertTrue("Entity1NoUidCompIdBase contains getUid()", sourceBase.indexOf("public String getUid(") >= 0);
-		Assert.assertTrue("Entity1NoUidCompIdBase contains getUid()", sourceBase.indexOf("if (id.get() == null)") >= 0);
 		
 		checkCompile(
 			new JavaSourceCodeObject("org.granite.test.builder.entities.Entity1NoUidCompIdBase", sourceBase),
