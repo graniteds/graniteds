@@ -18,7 +18,6 @@ package	org.granite.tide.service
 	import org.granite.gravity.Producer;
 	import org.granite.gravity.channels.GravityChannel;
 	import org.granite.gravity.channels.SecureGravityChannel;
-	import org.granite.gravity.channels.WebSocketChannel;
 	import org.granite.tide.service.DefaultServiceInitializer;
 	import org.granite.tide.service.IServiceInitializer;
 	
