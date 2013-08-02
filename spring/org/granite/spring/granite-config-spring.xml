@@ -26,7 +26,6 @@
 <granite-config scan="true">
     
     <tide-components>
-    	<tide-component instance-of="org.granite.tide.spring.security.Identity"/>
         <tide-component annotated-with="org.granite.messaging.service.annotations.RemoteDestination"/>
         <tide-component annotated-with="org.granite.tide.annotations.TideEnabled"/>
     </tide-components>

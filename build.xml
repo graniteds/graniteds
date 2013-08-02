@@ -154,6 +154,7 @@
         <copy todir="classes/hibernate">
             <fileset dir="hibernate">
                 <include name="**/*.properties"/>
+            	<include name="META-INF/services/**"/>
             </fileset>
         </copy>
 
@@ -170,6 +171,7 @@
         <copy todir="classes/hibernate4">
             <fileset dir="hibernate4">
                 <include name="**/*.properties"/>
+                <include name="META-INF/services/**"/>
             </fileset>
         </copy>
 
@@ -290,7 +292,7 @@
                 <include name="**/*.properties"/>
             	<include name="META-INF/spring.handlers"/>
     			<include name="META-INF/spring.schemas"/>
-            	<include name="META-INF/**"/>
+            	<include name="META-INF/services/**"/>
             </fileset>
         </copy>
 
