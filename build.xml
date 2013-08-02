@@ -290,6 +290,7 @@
                 <include name="**/*.properties"/>
             	<include name="META-INF/spring.handlers"/>
     			<include name="META-INF/spring.schemas"/>
+            	<include name="META-INF/**"/>
             </fileset>
         </copy>
 
