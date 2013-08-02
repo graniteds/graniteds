@@ -27,6 +27,7 @@ import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.std.DoubleCodec;
+import org.granite.messaging.jmf.codec.std.LongCodec;
 
 /**
  * @author Franck WOLFF
@@ -94,41 +95,71 @@ public class DoubleCodecImpl extends AbstractStandardCodec<Double> implements Do
 	public static void writeDoubleData(OutputContext ctx, int jmfType, double v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		if (v == (float)v || Double.isNaN(v)) {
-			os.write(0x80 | jmfType);
-			
-			int bits = Float.floatToIntBits((float)v);
-			os.write(bits);
-			os.write(bits >> 8);
-			os.write(bits >> 16);
-			os.write(bits >> 24);
-		}
+		if (Double.isNaN(v))
+			os.write(0xC0 | jmfType);
 		else {
-			os.write(jmfType);
-
-			long bits = Double.doubleToLongBits(v);
-			os.write((int)bits);
-			os.write((int)(bits >> 8));
-			os.write((int)(bits >> 16));
-			os.write((int)(bits >> 24));
-			os.write((int)(bits >> 32));
-			os.write((int)(bits >> 40));
-			os.write((int)(bits >> 48));
-			os.write((int)(bits >> 56));
+			long asLong = (long)v;
+			LongCodec longCodec = ctx.getSharedContext().getCodecRegistry().getLongCodec();
+			
+			int lengthAsLong = Integer.MAX_VALUE;
+			if (v == asLong) {
+				if (v == Long.MIN_VALUE)
+					lengthAsLong = 1;
+				else if (Double.doubleToRawLongBits(v) != Long.MIN_VALUE)
+					lengthAsLong = longCodec.lengthOfVariableAbsoluteLong(Math.abs(asLong)) + 1;
+			}
+			
+			if (lengthAsLong < 4) {
+				os.write(0x80 | jmfType);
+				longCodec.writeVariableLong(ctx, asLong);
+			}
+			else if (v == (float)v) {
+				os.write(0x40 | jmfType);
+				
+				int bits = Float.floatToIntBits((float)v);
+				os.write(bits);
+				os.write(bits >> 8);
+				os.write(bits >> 16);
+				os.write(bits >> 24);
+			}
+			else if (lengthAsLong < 8) {
+				os.write(0x80 | jmfType);
+				longCodec.writeVariableLong(ctx, asLong);
+			}
+			else {
+				os.write(jmfType);
+				
+				long bits = Double.doubleToLongBits(v);
+				os.write((int)bits);
+				os.write((int)(bits >> 8));
+				os.write((int)(bits >> 16));
+				os.write((int)(bits >> 24));
+				os.write((int)(bits >> 32));
+				os.write((int)(bits >> 40));
+				os.write((int)(bits >> 48));
+				os.write((int)(bits >> 56));
+			}
 		}
 	}
 	
 	public static double readDoubleData(InputContext ctx, int type) throws IOException {
-		double v = 0.0;
+		double v;
 		
-		if ((type & 0x80) != 0) {
+		switch ((type >> 6) & 0x03) {
+		case 3:
+			v = Double.NaN;
+			break;
+		case 2:
+			v = ctx.getSharedContext().getCodecRegistry().getLongCodec().readVariableLong(ctx);
+			break;
+		case 1:
 			int i = ctx.safeRead();
 			i |= ctx.safeRead() << 8;
 			i |= ctx.safeRead() << 16;
 			i |= ctx.safeRead() << 24;
 			v = Float.intBitsToFloat(i);
-		}
-		else {
+			break;
+		default: // case 0:
 			long l = ctx.safeRead();
 			l |= ((long)ctx.safeRead()) << 8;
 			l |= ((long)ctx.safeRead()) << 16;
@@ -138,8 +169,9 @@ public class DoubleCodecImpl extends AbstractStandardCodec<Double> implements Do
 			l |= ((long)ctx.safeRead()) << 48;
 			l |= ((long)ctx.safeRead()) << 56;
 			v = Double.longBitsToDouble(l);
+			break;
 		}
-		
+
 		return v;
 	}
 }

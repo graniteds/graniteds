@@ -40,8 +40,8 @@ public interface JMFConstants {
 	static final int JMF_LONG				= 0x04; // JMF_XXXX_0100
 	static final int JMF_LONG_OBJECT		= 0x05; // JMF_XXXX_0101
 
-	static final int JMF_XXXX_0110			= 0x06;
-	static final int JMF_XXXX_0111			= 0x07;
+	static final int JMF_XXXX_0110			= 0x06; // JMF_XXXX_0110
+	static final int JMF_XXXX_0111			= 0x07; // JMF_XXXX_0111
 	
 	// Types with 3 bits of parameters (bit 5 always 0, bit 4 always 1)
 
@@ -60,11 +60,11 @@ public interface JMFConstants {
 	static final int JMF_SHORT_OBJECT		= 0x19; // JMF_XX01_1001
 	static final int JMF_BIG_INTEGER		= 0x1A; // JMF_XX01_1010
 	static final int JMF_BIG_DECIMAL		= 0x1B; // JMF_XX01_1011
+	static final int JMF_DOUBLE				= 0x1C; // JMF_XX01_1100
+	static final int JMF_DOUBLE_OBJECT		= 0x1D; // JMF_XX01_1101
 
-	static final int JMF_XX01_1100			= 0x1C;
-	static final int JMF_XX01_1101			= 0x1D;
-	static final int JMF_XX01_1110			= 0x1E;
-	static final int JMF_XX01_1111			= 0x1F;
+	static final int JMF_XX01_1110			= 0x1E; // JMF_XX01_1110
+	static final int JMF_XX01_1111			= 0x1F; // JMF_XX01_1111
 	
 	// Types with 1 bit of parameters (bit 7 always 0, bit 6, 5 and 4 always 1)
 
@@ -72,11 +72,11 @@ public interface JMFConstants {
 	static final int JMF_BOOLEAN_OBJECT		= 0x39; // JMF_X011_1001
 	static final int JMF_CHARACTER			= 0x3A; // JMF_X011_1010
 	static final int JMF_CHARACTER_OBJECT	= 0x3B; // JMF_X011_1011
-	static final int JMF_DOUBLE				= 0x3C; // JMF_X011_1100
-	static final int JMF_DOUBLE_OBJECT		= 0x3D; // JMF_X011_1101
 
-	static final int JMF_X011_1110			= 0x3E;
-	static final int JMF_X011_1111			= 0x3F;
+	static final int JMF_X011_1100			= 0x3C; // JMF_X011_1100
+	static final int JMF_X011_1101			= 0x3D; // JMF_X011_1101
+	static final int JMF_X011_1110			= 0x3E; // JMF_X011_1110
+	static final int JMF_X011_1111			= 0x3F; // JMF_X011_1111
 	
 	// Types with 0 bit of parameters (bit 7, 6, 5 and 4 always 1)
 
@@ -92,10 +92,10 @@ public interface JMFConstants {
 	static final int JMF_SQL_TIME			= 0xF8; // JMF_1111_1000
 	static final int JMF_SQL_TIMESTAMP		= 0xF9; // JMF_1111_1001
 
-	static final int JMF_1111_1010			= 0xFA;
-	static final int JMF_1111_1011			= 0xFB;
-	static final int JMF_1111_1100			= 0xFC;
-	static final int JMF_1111_1101			= 0xFD;
-	static final int JMF_1111_1110			= 0xFE;
-	static final int JMF_1111_1111			= 0xFF;
+	static final int JMF_1111_1010			= 0xFA; // JMF_1111_1010
+	static final int JMF_1111_1011			= 0xFB; // JMF_1111_1011
+	static final int JMF_1111_1100			= 0xFC; // JMF_1111_1100
+	static final int JMF_1111_1101			= 0xFD; // JMF_1111_1101
+	static final int JMF_1111_1110			= 0xFE; // JMF_1111_1110
+	static final int JMF_1111_1111			= 0xFF; // JMF_1111_1111
 }

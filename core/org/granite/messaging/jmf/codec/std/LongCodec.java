@@ -39,4 +39,6 @@ public interface LongCodec extends PrimitiveCodec<Long> {
 	
 	void writeVariableLong(OutputContext ctx, long v) throws IOException;
 	long readVariableLong(InputContext ctx) throws IOException;
+	
+	int lengthOfVariableAbsoluteLong(long abs);
 }

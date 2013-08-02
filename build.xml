@@ -998,10 +998,6 @@
             </section>
         </manifest>
     	
-    	<copyfile dest="build/flex-websocket-client.swc" src="lib/flex-websocket-client.swc"/>
-        <zip basedir="build" update="true" keepcompression="true"
-            destfile="build/flex-websocket-client.swc" includes="META-INF/MANIFEST.MF"/>
-        
         <!-- Build Swcs and add Manifest -->
         <compc output="build/granite-essentials.swc" use-network="false" warn-missing-namespace-decl="false">
             <source-path path-element="as3/essentials"/>
