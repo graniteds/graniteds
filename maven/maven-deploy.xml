@@ -98,8 +98,7 @@
   </target>
 
   <target name="install.to.repo" depends="load.poms">
-    <artifact:install pomRefId="granite-root" file="${build.pom.dir}/root.pom.xml">
-    </artifact:install>
+    <artifact:install pomRefId="granite-root" file="${build.pom.dir}/root.pom.xml"/>
     <artifact:install pomRefId="granite-core" file="../build/granite.jar">
       <attach file="../build/sources/java/granite-sources.jar" classifier="sources"/>
       <attach file="../build/docs/javadoc/granite-javadoc.jar" classifier="javadoc"/>
@@ -157,7 +156,7 @@
       <attach file="../build/docs/javadoc/granite-guice-javadoc.jar" classifier="javadoc"/>
     </artifact:install>
 
-    <artifact:install pomRefId="granite-root-swc"/>
+    <artifact:install pomRefId="granite-root-swc" file="${build.pom.dir}/root-swc.pom.xml"/>
     <artifact:install pomRefId="granite-essentials-swc" file="../build/granite-essentials.swc">
       <attach file="../build/sources/as3/granite-essentials-sources.jar" classifier="sources"/>
     </artifact:install>
