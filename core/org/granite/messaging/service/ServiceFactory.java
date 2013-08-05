@@ -79,8 +79,9 @@ public abstract class ServiceFactory {
                     Class<? extends ServiceFactory> clazz = TypeUtil.forName(config.getClassName(), ServiceFactory.class);
                     factory = clazz.newInstance();
                     factory.configure(config.getProperties());
-                } catch (Exception e) {
-                    throw new ServiceException("Could not instantiate factory: " + factory, e);
+                } 
+                catch (Exception e) {
+                    throw new ServiceException("Could not instantiate factory: " + factoryId + " of type " + config.getClassName(), e);
                 }
                 cache.put(key, factory);
             }
@@ -113,7 +114,8 @@ public abstract class ServiceFactory {
                     		new Class<?>[] { boolean.class }, new Object[] { Boolean.valueOf(enableLogging) });
             	else
             		this.serviceExceptionHandler = (ServiceExceptionHandler)TypeUtil.newInstance(sServiceExceptionHandler.trim());
-            } catch (Exception e) {
+            } 
+            catch (Exception e) {
                 throw new ServiceException("Could not instantiate service exception handler: " + sServiceExceptionHandler, e);
             }
         }
