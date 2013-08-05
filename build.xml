@@ -388,6 +388,7 @@
      !-->
   	<target name="build.maven.source.jar"> 
 	    <mkdir dir="build/sources/java"/> 
+        <mkdir dir="build/sources/java-client"/> 
 
 	    <jar destfile="build/sources/java/granite-sources.jar"> 
 	      <fileset dir="core"> 
@@ -401,7 +402,7 @@
 	        <include name="**"/> 
 	      </fileset> 
 	    </jar>
-        <jar destfile="build/sources/java/granite-client-sources.jar">
+        <jar destfile="build/sources/java-client/granite-client-sources.jar">
             <fileset dir="core">
                 <include name="**"/>
             	<exclude name="org/granite/clustering/*Session*.java"/>
