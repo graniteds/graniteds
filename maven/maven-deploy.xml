@@ -65,7 +65,7 @@
 
     <artifact:pom id="granite-root" file="${build.pom.dir}/root.pom.xml"/>
     <artifact:pom id="granite-core" file="${build.pom.dir}/core.pom.xml"/>
-    <artifact:pom id="granite-client" file="${build.pom.dir}/client.pom.xml"/>
+    <artifact:pom id="granite-client-base" file="${build.pom.dir}/client.pom.xml"/>
     <artifact:pom id="granite-hibernate" file="${build.pom.dir}/hibernate.pom.xml"/>
     <artifact:pom id="granite-hibernate4" file="${build.pom.dir}/hibernate4.pom.xml"/>
     <artifact:pom id="granite-toplink" file="${build.pom.dir}/toplink.pom.xml"/>
@@ -103,9 +103,9 @@
       <attach file="../build/sources/java/granite-sources.jar" classifier="sources"/>
       <attach file="../build/docs/javadoc/granite-javadoc.jar" classifier="javadoc"/>
     </artifact:install>
-    <artifact:install pomRefId="granite-client" file="../build/granite-client.jar">
-      <attach file="../build/sources/java-client/granite-client-sources.jar" classifier="sources"/>
-      <attach file="../build/docs/javadoc/granite-client-javadoc.jar" classifier="javadoc"/>
+    <artifact:install pomRefId="granite-client-base" file="../build/granite-client-base.jar">
+      <attach file="../build/sources/java-client/granite-client-base-sources.jar" classifier="sources"/>
+      <attach file="../build/docs/javadoc/granite-client-base-javadoc.jar" classifier="javadoc"/>
     </artifact:install>
     <artifact:install pomRefId="granite-hibernate" file="../build/granite-hibernate.jar">
       <attach file="../build/sources/java/granite-hibernate-sources.jar" classifier="sources"/>
@@ -195,16 +195,16 @@
       <attach file="../build/docs/javadoc/granite-javadoc.jar.asc" classifier="javadoc" type="jar.asc"/>
     </artifact:deploy>
 
-    <!--artifact:deploy pomRefId="granite-client" file="../build/granite-client.jar">
+    <!--artifact:deploy pomRefId="granite-client-base" file="../build/granite-client-base.jar">
       <remoterepository id="${remote.repo.id}" url="${remote.repo.url}">
         <authentication username="${remote.repo.user}" password="${remote.repo.password}"/>
       </remoterepository>
-      <attach file="../build/granite-client.jar.asc" type="jar.asc"/>
+      <attach file="../build/granite-client-base.jar.asc" type="jar.asc"/>
       <attach file="../build/poms/client.pom.xml.asc" type="pom.asc"/>
-      <attach file="../build/sources/java/granite-client-sources.jar" classifier="sources"/>
-      <attach file="../build/sources/java/granite-client-sources.jar.asc" classifier="sources" type="jar.asc"/>
-      <attach file="../build/docs/javadoc/granite-client-javadoc.jar" classifier="javadoc"/>
-      <attach file="../build/docs/javadoc/granite-client-javadoc.jar.asc" classifier="javadoc" type="jar.asc"/>
+      <attach file="../build/sources/java/granite-client-base-sources.jar" classifier="sources"/>
+      <attach file="../build/sources/java/granite-client-base-sources.jar.asc" classifier="sources" type="jar.asc"/>
+      <attach file="../build/docs/javadoc/granite-client-base-javadoc.jar" classifier="javadoc"/>
+      <attach file="../build/docs/javadoc/granite-client-base-javadoc.jar.asc" classifier="javadoc" type="jar.asc"/>
     </artifact:deploy-->
 
     <artifact:deploy pomRefId="granite-hibernate" file="../build/granite-hibernate.jar">

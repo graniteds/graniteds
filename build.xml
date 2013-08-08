@@ -402,7 +402,7 @@
 	        <include name="**"/> 
 	      </fileset> 
 	    </jar>
-        <jar destfile="build/sources/java-client/granite-client-sources.jar">
+        <jar destfile="build/sources/java-client/granite-client-base-sources.jar">
             <fileset dir="core">
                 <include name="**"/>
             	<exclude name="org/granite/clustering/*Session*.java"/>
@@ -589,11 +589,11 @@
 	      </fileset> 
 	    </jar>
 		
-        <mkdir dir="build/docs/javadoc/granite-client-javadoc"/>
+        <mkdir dir="build/docs/javadoc/granite-client-base-javadoc"/>
         <javadoc
         	useexternalfile="true"
             source="1.5"
-            destdir="build/docs/javadoc/granite-client-javadoc"
+            destdir="build/docs/javadoc/granite-client-base-javadoc"
             version="true"
             author="true"
             use="true"
@@ -658,8 +658,8 @@
             <link href="http://jetty.codehaus.org/jetty/jetty-6/apidocs/"/>
 
         </javadoc>
-	    <jar destfile="build/docs/javadoc/granite-client-javadoc.jar"> 
-	      <fileset dir="build/docs/javadoc/granite-client-javadoc"> 
+	    <jar destfile="build/docs/javadoc/granite-client-base-javadoc.jar"> 
+	      <fileset dir="build/docs/javadoc/granite-client-base-javadoc"> 
 	        <include name="**"/> 
 	      </fileset> 
 	    </jar>
@@ -867,7 +867,7 @@
                 <include name="**"/>
             </fileset>
         </jar>
-        <jar destfile="build/granite-client.jar">
+        <jar destfile="build/granite-client-base.jar">
             <fileset dir="classes/core">
                 <include name="**"/>
             	<exclude name="org/granite/clustering/*Session*.class"/>
