@@ -46,8 +46,8 @@ public class ASObject extends HashMap<String, Object> {
     /**
      * Gets object type
      *
-     * @return @see #setType(String)
-     *
+     * @return type 
+     * @see #setType(String)
      */
     public String getType() {
         return type;
@@ -137,7 +137,7 @@ public class ASObject extends HashMap<String, Object> {
      * Gets lower case object if object was instance of String
      *
      * @param key
-     * @return
+     * @return lower case
      */
     private Object toLowerCase(Object key) {
         /*if (key != null
