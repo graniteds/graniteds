@@ -1,0 +1,180 @@
+[[graniteds.validation]]
+
+== Client-Side Validation API (JSR 303)
+
+The "Bean Validation" link:$$http://jcp.org/en/jsr/detail?id=303$$[specification] (aka JSR-303) standardizes an annotation-based validation framework for Java. 
+It provides an easy and powerful way of processing bean validations, with a pre-defined set of constraint annotations, allowing to  arbitrarily extend the 
+framework with user specific constraints. 
+
+It's of course possible to use it in a Java client application, and Bean Validation constraint annotations can be put on any bean with property accessors. 
+JavaFX however doesn't provide any simple way to integrate data binding and validation. GraniteDS provide a simple client component named +FormValidator+ 
+that helps bridging Bean Validation and JavaFX data binding. 
+
+[[validation.gfx]]
+=== Integration with code generation tools (Gfx)
+
+The Bean Validation specification was primarily intended to be used with Java entity beans. GraniteDS code generation tools replicate your Java model 
+into a JavaFX-bindable model and may be configured in order to copy validation annotations. 
+All you have to do is to change the default +org.granite.generator.as3.DefaultEntityFactory+ to +org.granite.generator.as3.BVEntityFactory+. 
+
+With the Ant task, use the +entityfactory+ attribute as follow in your ++build.xml++: 
+
+[source,xml]
+----
+<gfx entityfactory="org.granite.generator.as3.BVEntityFactory" ...>
+    ...
+</gfx>
+----
+
+Then, provided that you have a Java entity bean like this one: 
+
+[source,java]
+----
+@Entity
+public class Person {
+
+    @Id @GeneratedValue
+    private Integer id;
+    
+    @Basic
+    @Size(min=1, max=50)
+    private String firstname;
+    
+    @Basic
+    @NotNull(message="You must provide a lastname")
+    @Size(min=1, max=255)
+    private String lastname;
+
+    // getters and setters...
+}
+----
+
+... you will get this generated JavaFX code: 
+
+[source,java]
+----
+@Serialized
+public class PersonBase implements Serializable {
+
+    ...
+
+	private StringProperty firstnameProperty = new SimpleStringProperty(this, "firstname");
+	private StringProperty lastnameProperty = new SimpleStringProperty(this, "lastname");
+	
+    public void setFirstname(String value) {
+        this.firstname = value;
+    }
+    @Size(min=1, max=50, message="{javax.validation.constraints.Size.message}")
+    public String getFirstname() {
+        return this.firstname;
+    }
+
+    public void setLastname(String value) {
+        this.lastname = value;
+    }
+    @NotNull(message="You must provide a last name")
+    @Size(min=1, max=255, message="{javax.validation.constraints.Size.message}")
+    public function get lastname():String {
+        return this.lastname;
+    }
+
+    ....
+}
+----
+
+You may then use the standard Bean Validation mechanism to validate your client JavaFX bean. 
+
+This works for plain Java beans and entity beans. 
+
+[[validation.form]]
+=== Using the FormValidator class
+
+With the +FormValidator+ component, you can easily add validation to any part of a UI form: the +FormValidator+ performs validation on the fly whenever 
+the user enters data into user inputs and automatically displays error messages when these data are incorrect, based on constraint annotations placed 
+on the bean properties. This however requires that the form uses JavaFX data binding to propagate updates between UI components and data beans. 
+
+Example (using the Person bean introduced above and bidirectional bindings): 
+
+[source,java]
+----
+private Person person = new Person();
+private VBox personForm;
+private FormValidator personFormValidator;
+
+public void buildForm() {
+	person = new Person();
+	
+	personForm = new VBox();
+	TextField textFirstname = new TextField();
+	TextField textLastname = new TextField();
+	
+	personForm.getChildren().add(textFirstname);
+	personForm.getChildren().add(textLastname);
+	
+	texteFirstname.textProperty().bindBidirectional(person.firstnameProperty());
+	texteLastname.textProperty().bindBidirectional(person.lastnameProperty());
+	
+	personFormValidator = new FormValidator(validatorFactory);
+	personFormValidator.setForm(formPerson);
+}
+
+public void validate() {
+	if (!personFormValidator.validate(person)) {
+		// Data is invalid
+		return;
+	}
+		
+	// Data is valid, do something useful...
+}
+----
+
+In the above sample, the +personForm+ form uses two bidirectional bindings between the text inputs and the person bean. Each time the user enter some text 
+in an input, the value of the input is copied into the bean and triggers a validation. 
+
+Note that JavaFX does not provide any standard way of displaying the error messages, so you are basically on your own to choose whatever look & feel you prefer 
+(tooltip, basic text...). 
+
+To allow displaying these messages at the right time, the form validator dispatches two particular events on the target form: 
++ValidationResultEvent.VALID+ and +ValidationResultEvent.INVALID+. The event also contains a list of more detailed error messages of type +ValidationResult+.         
+
+Here a very basic example that simply changes the border color of the inputs to red when the input data in invalid, and display a tooltip with the error message. 
+
+[source,java]
+----
+personForm.addEventHandler(ValidationResultEvent.INVALID, new EventHandler<ValidationResultEvent>() {
+    @Override
+    public void handle(ValidationResultEvent event) {
+        ((Node)event.getTarget()).setStyle("-fx-border-color: red");
+        if (event.getTarget() instanceof TextInputControl && event.getErrorResults() != null && event.getErrorResults().size() > 0) {
+            Tooltip tooltip = new Tooltip(event.getErrorResults().get(0).getMessage());
+            tooltip.setStyle("-fx-text-fill: white, -fx-background-color: red, -fx-background-radius: 5 5 5 5");
+            tooltip.setAutoHide(true);
+            ((TextInputControl)event.getTarget()).setTooltip(tooltip);
+        }
+    }
+});
+personForm.addEventHandler(ValidationResultEvent.VALID, new EventHandler<ValidationResultEvent>() {
+    @Override
+    public void handle(ValidationResultEvent event) {
+        ((Node)event.getTarget()).setStyle("-fx-border-color: null");
+        if (event.getTarget() instanceof TextInputControl) {
+            Tooltip tooltip = ((TextInputControl)event.getTarget()).getTooltip();
+            if (tooltip != null && tooltip.isActivated())
+                tooltip.hide();
+            ((TextInputControl)event.getTarget()).setTooltip(null);
+        }
+    }
+});		
+----
+
+The global validation of the person bean will be performed when +FormValidator.validateEntity()+ is called. However, class-level constraint violations 
+cannot be automatically associated to an input, and these violations prevent the +fValidator.validateEntity()+ call to succeed while nothing cannot be 
+automatically displayed to the user. 
+
+To solve this problem, two options are available:
+ 
+. Get unhandled violations with the +FormValidator.unhandledViolations+ property 
+. Listen to validation events of type +ValidationResultEvent.UNHANDLED+ 
+
+The second option let you do whatever you want with these unhandled violations. You can display the error messages anywhere and get any useful 
+information from the +ConstraintViolation+ objects. 

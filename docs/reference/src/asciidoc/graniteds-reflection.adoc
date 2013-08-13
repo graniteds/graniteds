@@ -1,0 +1,391 @@
+[[graniteds.reflection]]
+== ActionScript 3 Reflection API
+
+The built-in ActionScript 3 reflection API is basically limited to a single method: 
+link:$$http://livedocs.adobe.com/flex/3/langref/flash/utils/package.html#describeType%28%29$$[+describeType+]. 
+This method returns XML data describing its parameter object and is therefore not type-safe and its use is subject to many syntax errors. 
+
+GraniteDS provides a Java-like reflection API that encapsulates +describeType+ calls and offers a type-safe, object-oriented, set of reflection classes and methods. 
+This API caches its results for better performances and supports advanced features such as +ApplicationDomain+ and namespaces. 
+
+[[reflection.properties]]
+=== Getting the Properties of a Class
+
+The +Type+ class is the entry point of the reflection API. In order to get the properties of a given object, class or class name, you may use one of the following methods: 
+
+From a Class Name: 
+
+[source,actionscript]
+----
+import org.granite.reflect.Type;
+
+var type:Type = Type.forName("path.to.MyClass");
+// or: var type:Type = Type.forName("path.to::MyClass");
+From an Instance
+import org.granite.reflect.Type;
+import path.to.MyClass;
+
+var type:Type = Type.forInstance(new MyClass());
+----
+
+From a Class: 
+
+[source,actionscript]
+----
+import org.granite.reflect.Type;
+import path.to.MyClass;
+
+var type:Type =  Type.forClass(MyClass);
+----
+
+Whatever method you use, you will get a unique +Type+ instance for each ActionScript 3 class (see below, however, 
+the <<reflection.appdomain,ApplicationDomain Support>> section for very rare exceptions). This +Type+ instance will give  you access to all informations 
+about the underlying class, such as superclasses and implemented interfaces, fields, methods, constructor and annotations  (see API documentation 
+link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/reflect/Type.html$$[here]). 
+
+[[reflection.class]]
+=== Exploring Class Members
+
+Class members are fields (constants, variables or accessors), constructor and methods. Unlike Java, the ActionScript 3 language does not give access to
+protected or private members: only those declared in the public namespace or in a specific namespace are accessible. 
+
+You may get all public members of a given +Type+ via its members property. It will return an array of 
+link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/reflect/Member.html$$[+Member+] subclasses such as 
+link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/reflect/Field.html$$[+Field+], 
+link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/reflect/Method.html$$[+Method+] 
+and link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/reflect/Constructor.html$$[+Constructor+]: 
+
+[source,actionscript]
+----
+import org.granite.reflect.Type;
+import org.granite.reflect.Member;
+import org.granite.reflect.Field;
+import org.granite.reflect.Method;
+import org.granite.reflect.Constructor;
+
+var type:Type = Type.forName("path.to.MyClass");
+var members:Array = type.members;
+
+trace("Members of type: " + type.name);
+for each (var member:Member in members) {
+    if (member is Field)
+        trace("Field " + Field(member).name + ":" + Field(member).type.name);
+    else if (member is Method)
+        trace("Method " + Method(member).name + ":" + Method(member).returnType.name);
+    else if (member is Constructor)
+        trace("Constructor " + Constructor(member).name);
+}
+----
+
+Instead of using the general members property, you may use specialized properties such as +fields+, +methods+,  +constructor+ or even ++properties++:  
+_properties_ are all not-static, public, read-write properties of a bean, either variables or accessors (get/set methods). 
+
+You may also retrieve a method (or field) by its name: 
+
+[source,actionscript]
+----
+var type:Type = Type.forName("path.to.MyClass");
+
+var field:Field = type.getInstanceField("myPropertyName");
+if (field == null)
+    trace("Could not find 'myPropertyName' field in: " + type.name);
+
+var method:Method = type.getInstanceMethod("myMethodName");
+if (method == null)
+    trace("Could not find 'myMethodName' method in: " + type.name);
+----
+
+[NOTE]
+====
+Unlike Java, the API distinguishes +getInstanceField+ and +getStaticField+, as well as +getInstanceMethod+ and ++getStaticMethod++: 
+the reason is that the ActionScript 3 language allows a class to declare a static and a instance variable  (or method) with the same name in the same class. 
+====
+
+Furthermore, the API allows to filter returned members. For example, if you are interested in instance methods that have at least two parameters, you might write: 
+
+[source,actionscript]
+----
+var type:Type = Type.forName("path.to.MyClass");
+var methods:Array = type.getMethods(function (m:Method):Boolean {
+    return !m.isStatic() && m.parameters.length >= 2;
+});
+----
+
+You may of course use the same kind of code for filtering fields or properties. 
+
+[[reflection.annotations]]
+=== Looking for Annotations
+
+An interesting feature of ActionScript 3 language is its support for annotations (aka metadatada). Annotations may be placed on classes or interfaces, 
+variables, accessors and methods (there is no support for constructor annotations at this time). Unlike Java however, AS3 annotations aren't typed. 
+
+Four main methods are available to play with annotations (see the 
+link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/reflect/IAnnotatedElement.html$$[+IAnnotatedElement+] interface) for classes, 
+fields and methods. 
+
+[source,actionscript]
+----
+var type:Type = Type.forName("path.to.MyClass");
+var annotations:Array = type.annotations;
+
+for each (var annotation:Annotation in annotations) {
+    var args:Array = annotation.args;
+    trace(annotation.name + " with " + args.length + "args {");
+    for each (var arg:Arg in args)
+        trace(arg.key + "=" + arg.value);
+    trace("}");
+}
+----
+
+Looking for a specific annotation: 
+
+[source,actionscript]
+----
+var type:Type = Type.forName("path.to.MyClass");
+
+if (type.isAnnotationPresent("MyAnnotationName")) {
+    trace("Found annotation" + type.getAnnotation("MyAnnotationName").name);
+}
+----
+
+Filtering annotations based on a name pattern: 
+
+[source,actionscript]
+----
+var type:Type = Type.forName("path.to.MyClass");
+var annotations:Array = type.getAnnotations(false, "MyPrefix.*");
+----
+
+In the latter case, the annotation name pattern is a regular expression that matches all annotations that have a name starting with "MyPrefix". 
+
+Note also that all these methods allow to look recursively for annotations: 
+
+[source,actionscript]
+----
+public class MyClass implements MyInterface {
+
+    public function doSomething():void {}
+}
+
+...
+
+[MyAnnotation1]
+public interface MyInterface {
+
+    [MyAnnotation2]
+    function doSomething():void;
+}
+
+...
+
+var type:Type = Type.forName("path.to.MyClass");
+var method:Method = type.getInstanceMethod("doSomething");
+
+if (type.isAnnotationPresent("MyAnnotation1", true))
+    trace("Found annotation" + type.getAnnotation("MyAnnotation1", true).name);
+
+if (method.isAnnotationPresent("MyAnnotation2", true))
+    trace("Found annotation" + method.getAnnotation("MyAnnotation2", true).name);
+----
+
+The boolean parameter set to +true+ in +isAnnotationPresent+ and +getAnnotation+ calls tells the API  to look recursively for the annotation, and 
+this code will actually print that the two annotations were found. 
+
+Beside these +IAnnotatedElement+ methods, the Type class allows to quickly retieve methods or field annotated specific annotations: 
+
+[source,actionscript]
+----
+var type:Type = Type.forName("path.to.MyClass");
+var annotations:Array = type.getAnnotatedFields(false, "Bindable", "MyAnnotation");
+----
+
+This code will return all fields annotated by at least one of the +\[Bindable\]+ or +\[MyAnnotation\]+ annotations. 
+
+[[reflection.call]]
+=== Calling Constructors or Methods, and Getting or Setting Properties
+
+The reflection API let you create new instances of a given class the following manner: 
+
+Creating new instances of a class: 
+
+[source,actionscript]
+----
+var type:Type = type.forName("path.to.MyClass");
+var instance:Object = type.constructor.newInstance(param1, param2);
+// or type.constructor.newInstanceWithArray([param1, param2]);
+----
+
+This way of creating new instances of a class is however limited to constructors that have at most ten mandatory parameters. You may bypass this 
+limitation by using directly the +Class+ object, ie: +new type.getClass()(arg1, arg2, ..., arg10, arg11, ...)+. 
+The main interests of the +Constructor+ methods is that it let you use arrays of parameters and also that it will distinguish between an error thrown by 
+the constructor body (rethrown as an ++InvocationTargetError++) and an error thrown because of a wrong number of parameters or a wrong type of 
+one of them (++ArgumentError++). 
+
+You may also call methods in a similar manner: 
+
+[source,actionscript]
+----
+var type:Type = type.forName("path.to.MyClass");
+
+var myInstanceMethod:Method= type.getInstanceMethod("myInstanceMethod");
+myInstanceMethod.invoke(myClassInstance, param1, param2);
+// or myInstanceMethod.invokeWithArray(myClassInstance, [param1, param2]);
+
+var myStaticMethod:Method= type.getStaticMethod("myStaticMethod");
+myStaticMethod.invoke(null, param1, param2);
+// or myStaticMethod.invokeWithArray(null, [param1, param2]);
+----
+
+There is no limitation about the number of parameters this time, and the API still distinguish between an error thrown by the method body 
+(rethrown  as an ++InvocationTargetError++) and an error thrown because of a wrong number of parameters or a wrong type of one of them  (++ArgumentError++). 
+
+If you want to get or set the value of a given object property, you will use the following kind of code: 
+
+[source,actionscript]
+----
+var type:Type = type.forName("path.to.MyClass");
+
+var myInstanceField:Field= type.getInstanceField("myInstanceField");
+var value:* = myInstanceField.getValue(myClassInstance);
+myInstanceField.setValue(myClassInstance, "newValue");
+
+var myStaticField:Field= type.getStaticField("myStaticField");
+var value:* = myStaticField.getValue(null);
+myStaticField.setValue(null, "newValue");
+----
+
+[NOTE]
+====
+If you try to set the value of a constant, the +setValue+ method will throw a +IllegalAccessError+. 
+====
+
+[[reflection.appdomain]]
+=== Working with Application Domains
+
+Like the link:$$http://download-llnw.oracle.com/javase/1.5.0/docs/api/java/lang/ClassLoader.html$$[+ClassLoader+] class in Java, the ActionScript 3 language 
+has support for class loading in different contexts called 
+link:$$http://livedocs.adobe.com/flex/3/html/help.html?content=18_Client_System_Environment_5.html$$[++ApplicationDomain++s]. 
+This is an advanced feature that is mostly useful if you work with multiple Flex modules: SWF modules are loaded at runtime with their own set of classes 
+and these classes may be owned and declared by a specific application domain. 
+
+Loading a module in a child ++ApplicationDomain++: 
+
+[source,actionscript]
+----
+var childDomain:ApplicationDomain = new ApplicationDomain(ApplicationDomain.currentDomain);
+
+var context:LoaderContext = new LoaderContext(false, childDomain);
+var loader:Loader = new Loader();
+loader.load(new URLRequest("module.swf"), context);
+----
+
+If a class is declared only in the above module (but not in the main application), it will be only available in the new child application domain. 
+As such, the following code will fail with a +ClassNotFoundError+ exception: 
+
+[source,actionscript]
+----
+try {
+    var type:Type = Type.forName("path.to.MyModuleClass");
+}
+catch (e:ClassNotFoundError) {
+    // Cannot be found in the main ApplicationDomain.
+}
+----
+
+The first solution is to pass the child domain as a parameter: 
+
+[source,actionscript]
+----
+var type:Type = Type.forName("path.to.MyModuleClass", childDomain);
+----
+
+This will work, but a better solution would be to register the child domain when loading the new module, so that the reflection API will look for classes 
+in this child domain if it can't find it in the main domain: 
+
+[source,actionscript]
+----
+var childDomain:ApplicationDomain = new ApplicationDomain(ApplicationDomain.currentDomain);
+
+// register the child domain.
+Type.registerDomain(childDomain);
+
+var context:LoaderContext = new LoaderContext(false, childDomain);
+var loader:Loader = new Loader();
+loader.load(new URLRequest("module.swf"), context);
+
+// the type is found in the child domain without explicit reference.
+var type:Type = Type.forName("path.to.MyModuleClass");
+----
+
+[NOTE]
+====
+If you use an unknown domain parameter in a +Type.forName+ call, it is automatically registered. Thus, the sample call to 
++Type.forName("path.to.MyModuleClass", childDomain)+ above will register the +childDomain+ domain because this domain isn't already known by the API. 
+====
+
+When you unload a module, you should always unregister any specific application domain by calling: 
+
+[source,actionscript]
+----
+Type.unregisterDomain(childDomain);
+----
+
+This will cleanup the API cache with all classes previously loaded in this domain. 
+
+[NOTE]
+====
+The +ApplicationDomain+ concept in the Flash VM allows you to load multiple versions of a class (same qualified name) into different domains. 
+If you have loaded two modules with two versions of the same class and if you have registered their respective two domains with the +registerDomain+ method, 
+you must nonetheless explicitly refer to each domain when loading the class by its name. 
+Otherwise, the +Type.forName("path.to.MyClassIn2Domains")+ call will throw a +AmbiguousClassNameError+ exception. 
+====
+
+[[reflection.namespaces]]
+=== Working with Specific Namespaces
+
+The ActionScript 3 language lets you declare link:$$http://livedocs.adobe.com/flex/3/html/help.html?content=03_Language_and_Syntax_06.html$$[specific namespaces] 
+that may be used instead  of the usual public namespace. The reflection API may be used in order to find a method or a field in a specific namespace: 
+
+[source,actionscript]
+----
+package my.namespaces {
+    public namespace my_namespace = "http://www.my.org/ns/my_namespace";
+}
+
+...
+
+public class MyClass {
+
+    import my.namespaces.my_namespace;
+
+    my_namespace var myField:String;
+}
+
+...
+
+import my.namespaces.my_namespace;
+
+var type:Type = Type.forName("path.to.MyClass");
+var field:Field = type.getInstanceField("myField", my_namespace);
+----
+
+Because the +myField+ variable is declared in a specific namespace, a call to +getInstanceField+ without the +$$my_namespace$$+ parameter will return +null+. 
+Adding this optional parameter will fix the problem. 
+
+[NOTE]
+====
+When you use the +type.fields+ property, all accessible fields are returned, including those declared in specific namespaces. 
+====
+
+[[reflection.visitor]]
+=== Visitor Pattern Support
+
+The reflection API comes with a _visitor_ pattern implementation that let you introspect class instances without looping recursively on all their properties. 
+The entry point of this visitor API is the link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/reflect/visitor/Guide.html$$[+Guide+] class: 
+it implements an advanced two-phases visitor mechanism 
+(see the link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/reflect/visitor/IVisitor.html$$[+IVisitor+] interface) that let you first 
+review which property you're interested in and then actually visit the selected ones. 
+
+This is a feature for advanced uses only, please refer to the API documentation 
+link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/reflect/visitor/package-detail.html$$[here] and 
+link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/reflect/visitor/handlers/package-detail.html$$[here]. 

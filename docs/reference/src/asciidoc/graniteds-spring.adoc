@@ -1,0 +1,1213 @@
+[[graniteds.spring]]
+
+== Integration with Spring
+
+The link:$$http://www.springframework.org$$[Spring framework] is one if not the most popular Java enterprise frameworks. It integrates on a common 
+platform all the necessary services for building enterprise applications: persistence, transactions, security...  
+
+ifdef::flex[]
+GraniteDS provides out-of-the-box integration with Spring 2.5+ and 3.0+ via either the +RemoteObject+ API or the Tide API to remotely call Spring services, 
+and fully supports serialization of JPA entities from and to your Flex application, taking care of lazily loaded associations. 
+The support for JPA entity beans is covered in the section <<remoting.jpa,JPA and lazy initialization>>, so this section will only describe how to call 
+Spring beans from a Flex application. GraniteDS also fully supports Acegi Security / Spring Security 2.x / Spring Security 3.x.
+endif::flex[] 
+
+ifdef::java[]
+GraniteDS provides out-of-the-box integration with Spring 2.5+ and 3.0+ via either the +RemoteService+ API or the Tide API to remotely call Spring services, 
+and fully supports serialization of JPA entities from and to your Java client application, taking care of lazily loaded associations.
+The support for JPA entity beans is covered in the section <<remoting.jpa,JPA and lazy initialization>>, so this section will only  describe how to call 
+Spring beans from a Java application. GraniteDS also fully supports Acegi Security / Spring Security 2.x / Spring Security 3.x.
+endif::java[] 
+
+The support for Spring is included in the library +granite-spring.jar+, so you always have to include this library in either +WEB-INF/lib+ 
+(or +lib+ for an ear packaging). 
+
+Note that to provide a more native experience for Spring developers, the Spring support in GraniteDS can be configured directly in the Spring configuration 
+files (++applicationContext.xml++). Most features of GraniteDS can be configured this way, and it is still possible to fall back to the default 
+GraniteDS configuration files ++services-config.xml++ and ++granite-config.xml++ for unsupported features.  
+
+[[spring.mvcsetup]]
+=== Spring MVC setup
+
+It is perfectly possible to use the default setup for the GraniteDS servlet in +web.xml+, but the recommended way when using Spring is to configure a 
+Spring MVC dispatcher servlet and handle incoming AMF requests. This will in particular allow configuring GraniteDS in the Spring application context. 
+You also need to setup the Spring request and application listeners but this is standard Spring configuration. Note that this works only for the 
+remoting servlet, but you still have to configure the Gravity servlet in the default way because the Spring MVC dispatcher servlets cannot support 
+non blocking I/O. 
+
+.+web.xml+
+[source,xml]
+----
+<!-- Path to Spring config file -->
+<context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>
+        /WEB-INF/conf/application-context.xml
+    </param-value>
+</context-param>
+
+<!-- Spring application listener -->
+<listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+</listener>
+
+<!-- Spring listener for web-scopes (request, session) -->
+<listener>
+    <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+</listener>
+
+<!-- Spring MVC dispatcher servlet for AMF remoting requests -->
+<servlet>
+    <servlet-name>dispatcher</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+</servlet>
+<servlet-mapping>
+    <servlet-name>dispatcher</servlet-name>
+    <url-pattern>/graniteamf/*</url-pattern>
+</servlet-mapping>  
+----
+
+You also have to add an empty file ++WEB-INF/dispatcher-servlet.xml++: 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+  xmlns="http://www.springframework.org/schema/beans"
+  xsi:schemaLocation="
+       http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd>       
+</beans>
+----
+
+[[spring.remoteobject]]
+=== Using the RemoteObject APIUsing the RemoteService API
+
+ifdef::flex[]
+The Flex-side usage of the +RemoteObject+ API is completely independent of the server technology, so everything described in 
+the <<remoting.remoteobject,Remoting>> chapter applies for Spring beans. This section will only describe the particular configuration required in various 
+use cases of Spring services.
+endif::flex[] 
+
+ifdef::java[]
+The client-side usage of the +RemoteService+ API is completely independent of the server technology, so everything described in 
+the <<remoting.remoteservice,Remoting>> chapter applies for Spring beans. This section will only describe the particular configuration required in various 
+use cases of Spring services.
+endif::java[] 
+
+ifdef::flex[]
+[[spring.roexample]]
+==== Basic remoting example
+
+All remoting examples from the <<remoting.remoteobject,Remoting>> chapter apply for Spring beans, here is a basic example with an annotated Spring service: 
+
+[source,java]
+----
+public interface HelloService {
+
+    public String hello(String name);
+}
+
+@Service("helloService")
+@RemoteDestination(id="helloService", source="helloService")
+public class HelloServiceImpl implement HelloService {
+
+    public String hello(String name) {
+        return "Hello " + name;
+    }
+}
+----
+
+[source,xml]
+----
+<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml">
+
+    <mx:Script>
+        import mx.rpc.events.ResultEvent;
+        import mx.rpc.events.FaultEvent;
+        import mx.controls.Alert;
+        
+        public function resultHandler(event:ResultEvent):void {
+            // Display received message
+            outputMessage.text = event.result as String;
+        }                       
+        
+        public function faultHandler(event:FaultEvent):void {
+            // Show error alert
+            Alert.show(event.fault.faultString);               
+        }
+    </mx:Script>
+    
+    <!-- Connect to a service destination.--> 
+    <mx:RemoteObject id="helloService" 
+        destination="helloService"
+        source="helloService"
+        result="handleResult(event);"
+        fault="handleFault(event);"/>
+    
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+    
+    <!-- Call the Spring service, use the text in a TextInput control as input data.--> 
+    <mx:Button click="helloService.hello(inputName.text)"/>
+    
+    <!-- Display results data in the user interface. --> 
+    <mx:Label id="outputMessage"/>
+</mx:Application>
+----
+
+The main thing to note is the use of the +source+ property in both the +RemoteObject+ definition and in the +@RemoteDestination+ annotation that should 
+match the name of the Spring bean (here in ++@Service++).
+endif::flex[] 
+
+ifdef::java[]
+[[spring.rsexample]]
+==== Basic remoting example
+
+All remoting examples from the <<remoting.remoteobject,Remoting>> chapter apply for Spring beans, here is a basic example with an annotated Spring service: 
+
+[source,java]
+----
+public interface HelloService {
+
+    public String hello(String name);
+}
+
+@Service("helloService")
+@RemoteDestination(id="helloService", source="helloService")
+public class HelloServiceImpl implement HelloService {
+
+    public String hello(String name) {
+        return "Hello " + name;
+    }
+}
+----
+
+[source,java]
+----
+AMFChannelFactory channelFactory = new AMFChannelFactory();
+channelFactory.start();
+RemotingChannel channel = channelFactory.newRemotingChannel("graniteamf", 
+	new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"), 2);
+RemoteService srv = new RemoteService(channel, "helloService");
+
+srv.newInvocation("hello", "Barack").setTimeToLive(5, TimeUnit.SECONDS)
+	.addListener(new ResultFaultIssuesResponseListener() {
+    
+	@Override
+	public void onResult(ResultEvent event) {
+		System.out.println("Result: " + event.getResult());
+	}
+
+	@Override
+	public void onFault(FaultEvent event) {
+		System.err.println("Fault: " + event.toString());
+	}
+
+	@Override
+	public void onIssue(IssueEvent event) {
+		System.err.println("Issue: " + event.toString());
+	}
+}).invoke();
+----
+endif::java[]
+
+[[spring.romvcconfig]]
+==== Configuration with a MVC setup
+
+Besides configuring the dispatcher servlet (see <<spring.mvcsetup,here>>), configuring GraniteDS in the Spring context just requires adding the +graniteds+ 
+namespace and adding a +server-filter+ element: 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:graniteds="http://www.graniteds.org/config"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.graniteds.org/config http://www.graniteds.org/public/dtd/3.0.0/granite-config-3.0.xsd">
+
+    ...
+    
+    <graniteds:server-filter url-pattern="/*"/>
+
+</beans>        
+----
+
+The actual url that will be listened to by the AMF processor is the combination of the +url-pattern+ in the Spring context and the +servlet-mapping+ 
+of the dispatcher servlet in +web.xml+. The configuration described here maps GraniteDS on +/graniteamf/\*+ and is suitable in almost all cases. 
+
+When necessary, this configuration can be overriden or completed by the default configuration in +services-config.xml+ described in 
+the <<spring.rostdconfig,next section>>. In this case, the implicit configuration created by the MVC setup contains the following elements : 
+
+* a remoting service named +granite-service+ 
+* a remoting service factory named +spring-factory+ 
+* a remoting channel named +graniteamf+ 
+
+The MVC setup automatically enables component scanning, so you can just annotate your Spring services with +@RemoteDestination+ and put an empty 
++META-INF/services-config.properties+ file in your services jar or folder to tell GraniteDS where to look for services. 
+See last paragraph <<spring.roscan,Automatic Configuration of Destinations>>. 
+
+Alternatively you can also declare the remote destinations manually in the Spring context: 
+
+[source,xml]
+----
+<graniteds:remote-destination id="personService" source="personService"/> 
+----
+
+You can also specify a secure destination by adding the list of roles required to access the destination: 
+
+[source,xml]
+----
+<graniteds:remote-destination id="personService" source="personService">
+    <graniteds:roles>
+        <graniteds:role>ROLE_ADMIN</graniteds:role>
+    </graniteds:roles>
+</graniteds:remote-destination>             
+----
+
+The support for Spring Security is automatically enabled when Spring Security is installed in the application and the version of Spring Security 
+is automatically detected. However if you have configured more than one ++AuthenticationManager++s, it will be necessary to instruct GraniteDS which 
+one should be used for authentication by adding the following line to your Spring configuration : 
+
+[source,xml]
+----
+<graniteds:security-service authentication-manager="myAuthenticationManager"/>            
+----
+
+With this declaration you can also provide various configuration elements for the Spring 3 security service implementation 
+(have a look at the Spring Security documentation for explanations on these various elements):  
+
+[source,xml]
+----
+<graniteds:security-service 
+		authentication-manager="myAuthenticationManager"
+    	allow-anonymous-access="true"
+    	authentication-trust-resolver="com.myapp.MyAuthenticationTrustResolver"
+    	session-authentication-strategy="com.myapp.MySessionAuthenticationStrategy"
+        security-context-repository="com.myapp.MySecurityContextRepository"
+        security-interceptor="com.myapp.MySecurityInterceptor"
+        password-encoder="com.myapp.MyPasswordEncoder"
+/>            
+----
+
+ifdef::flex[]
+Finally remember that as there is no +services-config.xml+, you will have to manually initialize the endpoints for your client ++RemoteObject++s 
+(also see <<remoting.manualremoteobject,here>>) : 
+
+[source,actionscript]
+----
+srv.destination = "personService";
+srv.source = "personService";
+srv.channelSet = new ChannelSet();
+srv.channelSet.addChannel(new AMFChannel("graniteamf", 
+    "http://{server.name}:{server.port}/{context.root}/graniteamf/amf"));            
+----
+endif::flex[]
+
+[[spring.rostdconfig]]
+==== Default configuration
+
+Configuring remoting for Spring services simply requires using the +org.granite.spring.SpringServiceFactory+ service factory in ++services-config.xml++: 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<services-config>
+    <services>
+        <service
+            id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <destination id="testBean">
+                <channels>
+                    <channel ref="graniteamf"/>
+                </channels>
+                <properties>
+                    <factory>springFactory</factory>
+                    <source>springBean</source>
+                </properties>
+                <security>
+                    <security-constraint>
+                        <auth-method>Custom</auth-method>
+                        <roles>
+                            <role>ROLE_USER</role>
+                            <role>ROLE_ADMIN</role>
+                        </roles>
+                    </security-constraint>
+                </security>
+            </destination>
+        </service>
+    </services>
+
+    <factories>
+        <factory id="springFactory" class="org.granite.spring.SpringServiceFactory" />
+    </factories>
+
+    <channels>
+        <channel-definition id="graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+
+</services-config>
+----
+
+The only thing that should be noted for Spring destinations is that you have to specify a +source+ property specifying the name of the remote Spring bean. 
+
+[[spring.roscan]]
+==== Automatic configuration of destinations
+
+It is possible to instruct GraniteDS to automatically search for Spring destinations in the classpath by:
+ 
+* Enabling scanning in +granite-config.xml+ (scanning is always enabled with a MVC setup). 
++
+[source,xml]
+----
+<granite-config scan="true"/>
+----
+
+* Adding an empty +META-INF/services-config.properties+ marker file in all jars containing Spring services 
+
+* Annotating the Spring service (or preferably its interface) with +org.granite.messaging.service.annotations.RemoteDestination+ 
++
+[source,java]
+----
+@RemoteDestination(id="personService", source="personService", securityRoles={"user","admin"})
+public interface PersonService {
+}
+
+@Service("personService")
+public class PersonServiceBean implements PersonService {
+  ...
+}
+----
+
+The annotation supports the following attributes:
+ 
+* +id+ is mandatory and is the name of the destination as used from Flex 
+* +source+ is mandatory and should be the name of the Spring bean 
+* +service+ is optional when there is only one service for +RemotingMessage+ defined in +services-config.xml+.  Otherwise this should be the name of the service. 
+* +channel+ is optional if there is only one channel defined in +services-config.xml+.  Otherwise this should be the id of the target channel. 
+* +channels+ may be used instead of +channel+ to define a failover channel. 
+* +factory+ is optional if there is only one factory in +services-config.xml+. Otherwise this should be the factory id. 
+* +securityRoles+ is an array of role names for securing the destination. 
+
+Using scanning allows simplifying your +services-config.xml+ file, however it is recommended to use the MVC setup, so you don't even need one ! 
+
+[[spring.rosecurity]]
+==== Integration with Spring Security
+
+When not using the Spring MVC setup, you have to manually configure the integration of Spring Security in +granite-config.xml+. 
+Depending on the version of Spring Security you are using, you can use one of the 3 available security services: 
+
+.Spring Security 3.x 
+[source,xml]
+----
+<granite-config>
+   ...
+   <!--
+    ! Use Spring based security service.
+    !-->
+    <security type="org.granite.spring.security.SpringSecurity3Service"/>
+
+</granite-config>
+----
+
+.Spring Security 2.x 
+[source,xml]
+----
+<granite-config>
+   ...
+   <!--
+    ! Use Spring based security service.
+    !-->
+    <security type="org.granite.messaging.service.security.SpringSecurityService"/>
+
+</granite-config>           
+----
+
+.Acegi Security 
+[source,xml]
+----
+<granite-config>
+   ...
+   <!--
+    ! Use Spring based security service.
+    !-->
+    <security type="org.granite.messaging.service.security.AcegiSecurityService"/>
+
+</granite-config>
+----
+
+You may then secure your GraniteDS destinations as shown earlier. Please refer to link:$$http://www.springframework.org/$$[Acegi] 
+or link:$$http://static.springframework.org/spring-security/site/$$[Spring Security] documentation for specific configuration details. 
+
+Note however that there are two main ways of securing the GraniteDS AMF endpoint:
+ 
+* Apply the Spring Security Web filter on the dispatcher servlet. This is the most secure and can be necessary if you share the same web application 
+between a rich client and an HTML client or if you want to use a HTML login form to protect access to the swf resource, but note that as 
+the request credentials are encoded in the AMF request and decoded by the servlet, the request will have to be authenticated as anonymous between 
+the Spring Security filter and the AMF service processor. That means that you have to enable the anonymous support in Spring Security, and that other 
+Web filters will not have access to the authenticated user. 
+
+* Let GraniteDS handle security and simply configure a secure remoting destination. This is the recommended way if your application only has a rich client. 
+
+[[spring.tide]]
+=== Using the Tide API
+
+Most of what is described in the <<remoting.tideremoting,Tide Remoting>> section applies for Spring, however GraniteDS also provides an improved 
+integration with Spring services. 
+
+[[spring.tidemvcconfig]]
+==== Configuration with a MVC setup
+
+This is by far the easiest way to use Tide with Spring, it just consists in declaring the GraniteDS flex filter in the Spring context: 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:graniteds="http://www.graniteds.org/config"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.graniteds.org/config http://www.graniteds.org/public/dtd/3.0.0/granite-config-3.0.xsd">
+
+        ...
+    
+    <graniteds:server-filter url-pattern="/*" tide="true"/>
+</beans>
+----
+
+The +server-filter+ declaration will setup an AMF processor for the specified url pattern, and the +tide+ attribute specifies that you want a 
+Tide-enabled service factory. Note that the actual url that will be listened to by GraniteDS is the combination of this +url-pattern+ 
+with the +servlet-mapping+ defined in +web.xml+ for the dispatcher servlet. 
+
+Other configurations can be done with ++server-filter++:
+ 
+* +tide-annotations+ is equivalent to +tide-component annotated-with=""+ in +granite-config.xml+. It allows to define the list of annotation names 
+    that enable remote access to Spring beans. +@RemoteDestination+ is always declared by default, but you can use any other one if you don't want 
+    a compilation dependency on the GraniteDS libraries. 
+* +tide-roles+ allows to define a list of security roles that are required to access the Tide remote destination. In general it is not necessary 
+    to define this destination-wide security and only rely on Spring security for fine-grained access to individual beans. 
+* +security-service+ allows to specify the security service implementation. 
+* +exception-converters+ allows to define a list of server-side exception converters. 
+    It's the equivalent to +exception-converters+ in +granite-config.xml+. 
+* +amf3-message-interceptor+ allows to define a message interceptor that will be called before and after the processing of each incoming message. 
+    You have to define the bean name of an existing bean implementing +AMFMessageInterceptor+. 
+
+Additional elements can also be configured in the Spring beans file:
+ 
+* +tide-identity+ allows to declare the identity bean. When using Spring Security ACL you can define here the necessary attributes +acl-service+, 
+    +sid-retrieval-strategy+ and +object-identity-retrieval-strategy+. 
+* +tide-persistence+ allows to declare the persistence implementation for your application.  It is not necessary when you have only one Spring 
+    +transactionManager+, otherwise just specify the name of  the transaction manager to use. Tide/Spring will automatically determine the type 
+    of transaction management it should use (JTA, JPA or Hibernate API). 
+
+Note that in addition to these manual elements, any Spring bean implementing one of the GraniteDS interfaces +SecurityService+, +ExceptionConverter+, 
++AMFMessageInterceptor+ or +TidePersistenceManager+ will be automatically picked up and registered in the GraniteDS configuration. 
+
+[[spring.tidestdconfig]]
+==== Default configuration
+
+If you don't use the MVC setup, you will have to use the standard GraniteDS configuration files instead of the Spring context, and setup these 
+elements manually. You can safely skip this section if you chose the recommended MVC setup.
+ 
+* You can define in the +tide-annotations+ section of +granite-config.xml+ the conditions  used to enable remote access to Spring destinations 
+(for example all beans annotated with a particular annotation).  
+
+* You have to configure the specific Tide/Spring +org.granite.tide.spring.SpringServiceFactory+ service factory in +services-config.xml+. 
+
+* You have to configure a unique Tide/Spring destination named +server+ in +services-config.xml+ 
+
+* You have to retrieve the Tide context in Flex with +Spring.getInstance().getSpringContext()+ instead of +Tide.getInstance().getContext()+. 
+
+* You must use the destination named +server+ when creating the +ServerSession+. 
+
+Here is a default configuration suitable for most cases: 
+
+[source,xml]
+----
+<granite-config scan="true">
+    ...
+    
+    <tide-components>
+        <tide-component annotated-with="org.granite.messaging.service.annotations.RemoteDestination"/>
+    </tide-components>
+    
+</granite-config>    
+----
+
+[source,xml]
+----
+<services-config>
+
+    <services>
+        <service id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <!--
+             ! Use "tideSpringFactory" and "graniteamf" for "server" destination (see below).
+             ! The destination must be "server" when using Tide with default configuration.
+             !-->
+            <destination id="server">
+                <channels>
+                    <channel ref="graniteamf"/>
+                </channels>
+                <properties>
+                    <factory>tideSpringFactory</factory>
+                </properties>
+            </destination>
+        </service>
+    </services>
+
+    <!--
+     ! Declare tideSpringFactory service factory.
+     !-->
+    <factories>
+        <factory id="tideSpringFactory" class="org.granite.tide.spring.SpringServiceFactory"/>
+    </factories>
+
+    <!--
+     ! Declare graniteamf channel.
+     !-->
+    <channels>
+        <channel-definition id="graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+
+</services-config>    
+----
+
+The destination named +server+ will be the one and only destination required for all Spring remoting destinations.  
+
+You should also define the correct Spring security service in +granite-config.xml+, see <<spring.rosecurity,here>> for details. 
+
+You can use the property +entity-manager-factory-bean-name+ to specify an +EntityManagerFactory+ bean that will be used for transparent remote 
+lazy loading of collections. 
+
+Here is an example with a Spring JPA/Hibernate configuration:  
+
+[source,xml]
+----
+<persistence-unit name="spring-pu">
+    ...
+</persistence-unit>
+----
+
+[source,xml]
+----
+<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <property name="driverClassName">
+        <value>org.hsqldb.jdbcDriver</value>
+    </property>
+    <property name="url">
+        <value>jdbc:hsqldb:mem:springds</value>
+    </property>
+    <property name="username">
+        <value>sa</value>
+    </property>
+    <property name="password">
+        <value></value>
+    </property>
+</bean>
+
+<bean id="entityManagerFactory"
+    class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="persistenceUnitName" value="spring-pu" />
+    <property name="jpaVendorAdapter">
+        <bean
+            class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+            <property name="showSql" value="false" />
+            <property name="generateDdl" value="true" /> 
+            <property name="databasePlatform" value="org.hibernate.dialect.HSQLDialect" />
+        </bean>
+    </property>      
+</bean>
+
+<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+    <property name="entityManagerFactory" ref="entityManagerFactory" />
+    <property name="dataSource" ref="dataSource" />
+</bean>
+----
+
+If you use a plain Hibernate session instead of JPA, you cannot use +entity-manager-factory-bean-name+, you have to configure a specific Tide 
+persistence manager in the Spring context (assuming the bean name of the Hibernate session factory is ++sessionFactory++): 
+
+[source,xml]
+----
+<!-- All this AOP stuff is to ensure the Tide persistence manager will be transactional -->
+  <aop:config>
+    <aop:pointcut id="tidePersistenceManagerMethods" 
+        expression="execution(* org.granite.tide.ITidePersistenceManager.*(..))"/>
+    <aop:advisor advice-ref="tidePersistenceManagerMethodsTxAdvice" 
+        pointcut-ref="tidePersistenceManagerMethods"/>
+  </aop:config>
+
+  <tx:advice id="tidePersistenceManagerMethodsTxAdvice" 
+    transaction-manager="transactionManager">
+    <tx:attributes>
+      <tx:method name="*" propagation="REQUIRED" read-only="true"/>
+    </tx:attributes>
+  </tx:advice>
+
+  <bean id="tidePersistenceManager"
+    class="org.granite.tide.hibernate.HibernateSessionManager" scope="request">
+    <constructor-arg>
+      <ref bean="sessionFactory"/>
+    </constructor-arg>
+  </bean>            
+----
+
+ifdef::flex[]
+[[spring.tideremotingdi.flex]]
+==== Basic remoting with dependency injection
+
+When using Spring, the only difference on the client is that you have to use the +Spring+ singleton. Here is a simple example of remoting with an injected 
+client proxy for a Spring service: 
+
+[source,xml]
+----
+<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Spring.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.spring.Spring;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        
+        [In]
+        public var helloService:Component;
+        
+        private function hello(name:String):void {
+            helloService.hello(name, resultHandler, faultHandler);
+        }
+        
+        private function resultHandler(event:TideResultEvent):void {
+            outputMessage.text = event.result as String;
+        }                       
+        
+        private function faultHandler(event:TideFaultEvent):void {
+            // Handle fault
+        }
+    </mx:Script>
+    
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+    
+    <!-- Call the web service, use the text in a TextInput control as input data.--> 
+    <mx:Button click="hello(inputName.text)"/>
+    
+    <!-- Result message. --> 
+    <mx:Label id="outputMessage"/>
+</mx:Application>
+----
+
+This is almost identical to the standard Tide API described in the <<remoting.tideremoting,Tide remoting>> section, and all other methods apply for Spring.
+endif::flex[]  
+
+ifdef::java[]
+[[spring.tideremotingdi.java]]
+==== Basic remoting with dependency injection
+
+Here is a simple example of remoting with an injected client proxy for a Spring service: 
+
+[source,java]
+----
+public class HelloController {
+
+	@Inject @Qualifier("helloService")
+	private Component helloService;
+	
+    public void hello(String to) {
+    	// Asynchronous call using handlers
+    	helloService.call("hello", to, new TideResponder<String>() {
+    		@Override
+    		public void result(TideResultEvent<String> result) {
+    			System.out.println("Async result: " + result.getResult());
+    		}
+    		
+    		@Override
+    		public void fault(TideFaultEvent fault) {
+    			System.err.println("Fault: " + fault.getFault());
+    		}
+    	};
+    }
+    
+    public String helloSync(String to) {	
+    	// Synchronous wait of Future result
+    	Future<String> futureResult = helloService.call("hello", to);
+    	String result = futureResult.get();
+    	System.out.println("Sync result: " + result);
+    	return result;
+    }
+}	        
+----
+
+This is almost identical to the standard Tide API described in the <<remoting.tideremoting,Tide remoting>> section, and all other methods apply for Spring.  
+
+ifdef::flex[]
+[[spring.tideremotingtypesafe.flex]]
+==== Typesafe remoting with dependency injection
+
+You can benefit from the capability of the Gas3 code generator (see <<graniteds.gas3,here>>) to generate a strongly typed ActionScript 3 client proxy 
+from the Spring interface when it is annotated with +@RemoteDestination+. In this case, you can inject a typesafe reference to your service and get 
+better compile time error checking and auto completion in your IDE: 
+
+[source,xml]
+----
+<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Spring.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.spring.Spring;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        import com.myapp.service.HelloService;
+        
+        [In]
+        public var helloService:HelloService;
+        
+        private function hello(name:String):void {
+            helloService.hello(name, resultHandler, faultHandler);
+        }
+        ...
+    </mx:Script>
+    
+    ...
+</mx:Application>
+----
+
+It is possible to benefit from even more type safety by using the annotation +\[Inject\]+ instead of +In+. When using this annotation, the full class name 
+is used to find the target bean in the Spring context instead of the bean name. 
+
+[source,xml]
+----
+<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Spring.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.spring.Spring;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        import com.myapp.service.HelloService;
+        
+        [Inject]
+        public var myService:HelloService;
+        
+        private function hello(name:String):void {
+            myService.hello(name, resultHandler, faultHandler);
+        }
+        ...
+    </mx:Script>
+    
+    ...
+</mx:Application>
+----
+endif::flex[]
+
+ifdef::java[]
+[[spring.tideremotingtypesafe.java]]
+==== Typesafe remoting with dependency injection
+
+You can benefit from the capability of the Gfx code generator (see <<graniteds.gfx,here>>) to generate a strongly typed Java client proxy from the 
+Spring interface when it is annotated with +@RemoteDestination+. In this case, you can inject a typesafe reference to your service and get better compile 
+time error checking and auto completion in your IDE: 
+
+[source,java]
+----
+public class HelloController {
+
+	@Inject @Qualifier("helloService")
+	private HelloService helloService;
+	
+   	// Asynchronous call using handlers
+   	helloService.hello("Barack", new TideResponder<String>() {
+   		@Override
+   		public void result(TideResultEvent<String> result) {
+   			System.out.println("Async result: " + result.getResult());
+   		}
+   		
+   		@Override
+   		public void fault(TideFaultEvent fault) {
+   			System.err.println("Fault: " + fault.getFault());
+   		}
+   	};
+   	
+   	// Synchronous wait of Future result
+   	Future<String> futureResult = helloService.hello("Barack");
+   	String result = futureResult.get();
+   	System.out.println("Sync result: " + result);
+}
+----
+
+Note that as there is only one instance of +HelloService+, you may also omit the +Qualifier+ annotation and use typesafe injection with +@Inject+ only. 
+endif::java[]
+
+ifdef::flex[]
+[[spring.tidesecurity.flex]]
+==== Integration with Spring Security
+
+GraniteDS provides a client-side component named +identity+ that ensures the integration between the client +Channel+ credentials and the server-side 
+container security. It additionally includes an easy-to-use API to define runtime authorization checks on the UI.  
+
+Enabling support for the client +identity+ component requires to configure the corresponding server-side component in the Spring context:             
+
+[source,xml]
+----
+<graniteds:tide-identity/>            
+----
+
+If you want to integrate with Spring Security ACL authorizations, you will have to specify the name of the ACL service and optionally the 
+Object ID retrieval strategy and SID retrieval strategy (see details on Spring Security ACL  
+link:$$http://static.springsource.org/spring-security/site/docs/3.0.x/reference/domain-acls.html$$[here]): 
+
+[source,xml]
+----
+<graniteds:tide-identity acl-service="myAclService"
+     object-identity-retrieval-strategy="myObjectIdentityRetrievalStrategory" 
+     sid-retrieval-strategy="mySIDRetrievalStrategy"/>            
+----
+
+The Flex +identity+ component for Spring (of class ++org.granite.tide.spring.Identity++) predictably provides two methods +login()+ and +logout()+ 
+that can be used as any Tide remote call: 
+
+[source,actionscript]
+----
+private var tideContext:Context = Spring.getInstance().getSpringContext();
+
+public function login(username:String, password:String):void {
+    tideContext.identity.login(username, password, loginResult, loginFault);
+}
+
+private function loginResult(event:TideResultEvent):void {
+    Alert.show(event.context.identity.loggedIn);
+}
+
+private function loginFault(event:TideFaultEvent):void {
+    Alert.show(event.fault);
+}
+
+public function logout():void {
+    tideContext.identity.logout();
+}
+----
+
+Or with dependency injection: 
+
+[source,actionscript]
+----
+[Inject]
+public var identity:Identity;
+            
+public function login(username:String, password:String):void {
+    identity.login(username, password, loginResult, loginFault);
+}
+
+private function loginResult(event:TideResultEvent):void {
+    Alert.show(event.context.identity.loggedIn);
+}
+
+private function loginFault(event:TideFaultEvent):void {
+    Alert.show(event.fault);
+}
+
+public function logout():void {
+    identity.logout();
+}
+----
+
+The +identity+ component also exposes the bindable property +loggedIn+ that represents the current authentication state. As it is bindable, it can be 
+used to choose between different views, for example to switch between a login form and the application view with a Flex +ViewStack+ component: 
+
+[source,xml]
+----
+<mx:ViewStack id="main" selectedIndex="{identity.loggedIn ? 1 : 0}">
+    <views:LoginView id="loginView"/>
+    <views:MainView id="mainView"/>
+</mx:ViewStack>
+----
+
+Finally the +identity+ component is integrated with server-side role-based security and can be used to get information or show/hide UI depending on the 
+user access rights. It provides methods similar to the Spring Security jsp tags +sec:ifAllGranted+, +sec:ifAnyGranted+, +sec:ifNotGranted+ and +sec:hasPermission+. 
+
+[source,xml]
+----
+<mx:Button id="deleteCategoryButton" 
+    label="Delete Category"
+    enabled="{identity.ifAllGranted('ROLE_ADMIN')}"
+    click="productService.deleteCategory(category)"/>
+    
+<mx:Button id="deleteProductButton" label="Delete Product"
+    enabled="{productGrid.selectedItem}"
+    visible="{identity.hasPermission(productGrid.selectedItem, '8,16')}"
+    click="productService.deleteProduct(productGrid.selectedItem)"/>
+----
+
+With these declaration, the button labeled _Delete Category_ will be enabled only if the user has the role +$$ROLE_ADMIN$$+ and the button _Delete Product_ 
+only if the user has the ACL permissions DELETE (code 8) or ADMINISTER (code 16) for the selected product. 
+Another possibility is to completely hide the button with the properties +visible+ and +includeInLayout+, or any other property relevant for the display 
+of the UI component. 
+
+The three methods are:
+ 
+* ++ifAllGranted++/++ifAnyGranted++: the user should have the specified role 
+* ++ifNotGranted++: the user should not have the specified role 
+* ++hasPermission++: the user should have the specified permission for the specified entity  
+
+This can also be used as any remote class with result and fault handlers:  
+
+[source,actionscript]
+----
+ public function checkRole(role:String):void {
+    identity.ifAllGranted(role, checkRoleResult, checkRoleFault);
+ }
+ 
+ private function checkRoleResult(event:TideResultEvent, role:String):void {
+    if (role == 'ROLE_ADMIN') {
+        if (event.result)
+            trace("User has admin role");
+        else
+            trace("User does not have admin role");
+    }
+ }
+----
+
+You can notice that the result and fault handlers have a second argument so you can use the same handler for many access check calls.             
+
+[WARNING]
+====
++identity.ifAllGranted()+ will issue a remote call when it is called the first time, thus its return value cannot be used reliably to determine 
+if the use has the required role. It will always return +false+ until the remote call result is received. 
+====
+
+It is important to note that +identity+ caches the user access rights so only the first call to +ifAllGranted()+  will be remote. If the user rights 
+have changed on the server, or if you want to enforce security more than once per user session, you can clear the security cache manually with 
++identity.clearSecurityCache()+, for example periodically with a +Timer+.
+endif::flex[] 
+
+ifdef::java[]
+[[spring.tidesecurity.java]]
+==== Integration with Spring Security
+
+GraniteDS provides a client-side JavaFX component named +identity+ which ensures the integration between the client +Channel+ credentials and the server-side 
+container security. It additionally includes an easy-to-use API to define runtime authorization checks on the UI.  
+
+Enabling support for the client +identity+ component requires to configure the corresponding server-side component in the Spring context:             
+
+[source,xml]
+----
+<graniteds:tide-identity/>            
+----
+
+If you want to integrate with Spring Security ACL authorizations, you will have to specify the name of the ACL service and optionally the Object ID 
+retrieval strategy and SID retrieval strategy (see details on Spring Security ACL 
+link:$$http://static.springsource.org/spring-security/site/docs/3.0.x/reference/domain-acls.html$$[here]): 
+
+[source,xml]
+----
+<graniteds:tide-identity acl-service="myAclService"
+     object-identity-retrieval-strategy="myObjectIdentityRetrievalStrategory" 
+     sid-retrieval-strategy="mySIDRetrievalStrategy"/>
+----
+
+The client +Identity+ component for Spring (of class ++org.granite.client.tide.javafx.spring.Identity++) predictably provides two methods 
++login()+ and +logout()+ that can be used as any Tide remote call: 
+
+[source,java]
+----
+@Inject
+private Identity identity;
+
+public function login(String username, String password) {
+	identity.login(username, password, new TideResponder<String>() {
+		@Override
+		public void result(TideResultEvent<String> event) {
+			System.out.println("Logged in as " + event.getResult());
+		}
+		
+		@Override
+		public void fault(TideFaultEvent event) {
+			System.out.println("Could not log in");
+		}
+	});
+}
+
+public function logout() {
+	identity.logout(new TideResponder<Void>() {
+		@Override
+		public void result(TideResultEvent<Void> event) {
+			System.out.println("Logged out");
+		}
+		
+		@Override
+		public void fault(TideFaultEvent event) {
+			System.out.println("Could not log out");
+		}
+	});
+}
+----
+
+The +identity+ component for JavaFX also exposes the bindable property +loggedIn+ that represents the current authentication state. As it is bindable, it can 
+be used to choose between different views, for example to switch between a login form and the application: 
+
+[source,java]
+----
+identity.loggedInProperty().addListener(new ChangeListener<Boolean>() {
+	@Override
+	public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
+		if (newValue)
+			showView("applicationView");
+		else
+			showView("loginForm");
+    }
+});
+----
+
+Finally the +identity+ component is integrated with server-side role-based security and can be used to get information or show/hide UI depending on 
+the user access rights. It provides methods similar to the Spring Security jsp tags +sec:ifAllGranted+, +sec:ifAnyGranted+, +sec:ifNotGranted+ and +sec:hasPermission+. 
+
+[source,java]
+----
+Button deleteCategoryButton = new Button();
+deleteCategoryButton.setText("Delete Category");
+deleteCategoryButton.disableProperty().bind(Bindings.not(identity.ifAllGranted("ROLE_ADMIN")));
+
+Button deleteProductButton = new Button();
+deleteProductButton.setText("Delete Product");
+deleteProductButton.visibleProperty().bind(identity.hasPermission(productTable.getSelectionModel().getSelectedItem(), "8,16"));
+----
+
+With these declarations, the button labeled _Delete Category_ will be enabled only if the user has the role +$$ROLE_ADMIN$$+ and the button 
+_Delete Product_ visible only if the user has the ACL permissions DELETE (code 8) or ADMINISTER (code 16) for the selected product. 
+Of course any other property can be bound to these observable elements. 
+
+The available elements are:
+ 
+* ++ifAllGranted++/++ifAnyGranted++: the user should have the specified role 
+* ++ifNotGranted++: the user should not have the specified role 
+* ++hasPermission++: the user should have the specified permission for the specified entity  
+
+This can also be used as any remote class with result and fault handlers:  
+
+[source,java]
+----
+ public void checkRole(final String role) {
+    identity.ifAllGranted(role).get(new TideResponder<Boolean>() {
+    	@Override
+ 		public void result(TideResultEvent<Boolean> event) {
+    		if (role.equals("ROLE_ADMIN")) {
+        		if (event.getResult())
+            		System.out.println("User has admin role");
+        		else
+            		System.out.println("User does not have admin role");
+    		}
+		}
+		
+		@Override
+		public void fault(TideFaultEvent event) {
+			System.err.println("Error getting role access for role " + role);
+		}
+    });
+ }
+----
+
+[WARNING]
+====
++identity.ifAllGranted()+ will issue a remote call when it is called the first time, thus its return value cannot be used reliably to determine 
+if the use has the required role. It will always return +false+ until the remote call result is received. 
+====
+
+It is important to note that +identity+ caches the user access rights so only the first call to +ifAllGranted()+ will be remote. If the user rights 
+have changed on the server, or if you want to enforce security more than once per user session, you can clear the security cache manually with 
++identity.clearSecurityCache()+, for example periodically with a +Timer+. 
+endif::java[]
+
+[[spring.messaging]]
+=== Messaging with Spring (Gravity)
+
+It is possible to configure the three kinds of Gravity topics directly in the Spring context instead of ++services-config.xml++:  
+
+.Simple Topic 
+[source,xml]
+----
+<graniteds:messaging-destination id="myTopic"/>
+----
+
+This declaration supports the properties +no-local+ and +session-selector+ (see the <<messaging.configuration,Messaging Configuration section>>). 
+
+You can also define a secure destination by specifying a list of roles required to access the topic: 
+
+[source,xml]
+----
+<graniteds:messaging-destination id="myTopic">
+    <graniteds:roles>
+        <graniteds:role>ROLE_ADMIN</graniteds:role>
+    </graniteds:roles>
+<graniteds:messaging-destination/>       
+----
+
+.JMS Topic 
+[source,xml]
+----
+<graniteds:jms-messaging-destination id="myTopic"
+    connection-factory="ConnectionFactory"
+    destination-jndi-name="topic/MyTopic"
+    transacted-sessions="true"
+    acknowledge-mode="AUTO_ACKNOWLEDGE"/>
+----
+
+This declaration supports all properties of the default JMS declaration in +services-config.xml+ except for non local initial context environments 
+(see the <<messaging.jms,JMS Integration>> section). 
+
+.ActiveMQ Topic 
+[source,xml]
+----
+<graniteds:activemq-messaging-destination id="myTopic"
+    connection-factory="ConnectionFactory"
+    destination-jndi-name="topic/MyTopic"
+    transacted-sessions="true"
+    acknowledge-mode="AUTO_ACKNOWLEDGE"
+    broker-url="vm://localhost"
+    create-broker="true"
+    wait-for-start="true"
+    durable="true"
+    file-store-root="/opt/activemq/data"/>
+----
+
+This declaration supports all properties of the default ActiveMQ declaration in +services-config.xml+ except for non local initial context environments 
+(see the <<messaging.activemq,ActiveMQ Integration>> section). 
+
+Finally note that the +Gravity+ singleton that is needed to push messages from the server (see <<messaging.servertoclient,here>>) is available as a bean 
+in the Spring context and can be autowired by type with +@Inject+ or +@Autowired+ : 
+
+[source,java]
+----
+@Inject
+private Gravity gravity;
+----
