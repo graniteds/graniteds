@@ -72,15 +72,15 @@
   </target>
 
   <target name="install.to.repo" depends="load.poms">
-    <artifact:install pomRefId="granite-gen-root"/>
+    <artifact:install pomRefId="granite-gen-root" file="root-gen.pom.xml"/>
     <artifact:install pomRefId="granite-generator-share" file="../lib/granite-generator-share.jar">
         <attach file="../../graniteds/build/sources/java/granite-generator-share-sources.jar" classifier="sources"/>
-        <attach file="../../graniteds/build/docs/javadocs/granite-generator-share-javadoc.jar" classifier="javadoc"/>
+        <attach file="../../graniteds/build/docs/javadoc/granite-generator-share-javadoc.jar" classifier="javadoc"/>
     </artifact:install>
 	
     <artifact:install pomRefId="granite-generator" file="../lib/granite-generator.jar">
         <attach file="../build/sources/java/granite-generator-sources.jar" classifier="sources"/>
-        <attach file="../build/docs/javadocs/granite-generator-javadoc.jar" classifier="javadoc"/>
+        <attach file="../build/docs/javadoc/granite-generator-javadoc.jar" classifier="javadoc"/>
     </artifact:install>
   </target>
 
