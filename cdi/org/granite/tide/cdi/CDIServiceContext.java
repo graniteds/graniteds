@@ -211,6 +211,8 @@ public class CDIServiceContext extends TideServiceContext {
     @Override
     public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass) {
     	Bean<?> bean = findBean(componentName, componentClass);
+    	if (bean == null)
+    	    return null;
     	return beanClasses(bean);
     }
     
