@@ -56,6 +56,9 @@ public class PageableCodec implements ExtendedObjectCodec {
 	}
 
 	public PageableCodec() {
+	    // Ensure Spring Data is present in constructor
+	    @SuppressWarnings("unused")
+        Page<?> page = null;
 	}
 
 	public boolean canEncode(ExtendedObjectOutput out, Object v) {
