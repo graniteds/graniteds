@@ -241,7 +241,7 @@ public class TestGenEntity {
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		String jfxJar = System.getenv("JAVA_HOME") + "/jre/lib/jfxrt.jar";
 		String[] options = new String[] { 
-			"-classpath", jfxJar + File.pathSeparator + "lib-test/granite-java-client.jar" + File.pathSeparator + "lib-test/granite-javafx-client.jar",
+			"-classpath", jfxJar + File.pathSeparator + "lib-test/granite-client.jar" + File.pathSeparator + "lib-test/granite-client-javafx.jar",
 			"-d", "test-classes"
 		};
 		Boolean compileOk = compiler.getTask(null, null, null, Arrays.asList(options), null, Arrays.asList(sources)).call();
