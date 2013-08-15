@@ -41,16 +41,17 @@ import org.springframework.data.domain.Sort.Order;
  * @author Franck WOLFF
  */
 public class PageableCodec implements ExtendedObjectCodec {
-	
+    
 	private static final Field pageableField;
 	static {
 		Field pageableFieldTmp = null;
 		try {
-			pageableFieldTmp = org.springframework.data.domain.Page.class.getDeclaredField("pageable");
+			pageableFieldTmp = Page.class.getDeclaredField("pageable");
 			pageableFieldTmp.setAccessible(true);
 		}
-		catch (Throwable t) {
-			pageableFieldTmp = null;
+		catch (NoSuchFieldException e) {
+			// Other exception mean that Spring Data is not present
+		    // Don't catch so codec is not installed
 		}
 		pageableField = pageableFieldTmp;
 	}

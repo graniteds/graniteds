@@ -1,0 +1,1107 @@
+:imagesDir: ./images
+
+[[graniteds.gettingstarted]]
+
+== Getting Started
+
+This section introduces:
+ 
+* GraniteDS software requirements. 
+ifdef::flex[]
+* Various example projects using the different kind of services (POJO, EJB 3, Seam, Spring, and Guice) that may help you in choosing the right technology 
+    and starting a Flex/GDS project. 
+* The complete setup of a basic "Hello, world" GDS project using Flex 3 SDK, Eclipse, and Tomcat.
+endif::flex[]
+ifdef::java[] 
+* The complete setup of a basic "Hello, world" GDS project using Java, Eclipse, and Tomcat.
+endif::java[] 
+* A modification of the sample "Hello, world" project in order to demonstrate basic GDS support of Hibernate with the help of Eclipse plugins. 
+
+[[gettingstarted.requirements]]
+=== Requirements (Free Tools)
+
+You need at least the following four free development tools:
+ 
+* _Java 6+_ (5+ supported): link:$$http://java.sun.com/javase/downloads/index.jsp$$[Download Sun JDK] and install it. 
+* __Eclipse 3.2+__: link:$$http://www.eclipse.org/downloads/$$[Download Eclipse] and unzip it somewhere (NOTE: It is always a good idea to avoid paths with whitespace). 
+    You may, of course, use another IDE, but you will not be able to use Eclipse specific plugins and example projects.
+ifdef::flex[] 
+* _Flex 4.5 SDK_ (3+ supported): Download link:$$http://www.adobe.com/devnet/flex/flex-sdk-download.html$$[Flex SDK] and unzip it somewhere (NOTE: idem), 
+    say +$$/flex_sdk_4$$+.
+
+You may also read and follow the recommendations in this 
+link:$$http://blog.brokenfunction.com/2007/01/29/how-to-develop-for-flash-on-any-os-for-free/$$[excellent article] in order to customize your development environment. 
+endif::flex[] 
+
+ifdef::flex[]
+[[gettingstarted.helloworld.flex]]
+=== Hello World, POJO
+
+This section will guide you through the setting up of a very basic GraniteDS project deployed in Tomcat. Expected result is a typical "Hello, world" application 
+as shown below:  
+
+When you type a name in the text field and click _Say Hello_, a request is sent to a POJO service that replies with a string made by this concatenation: 
+
+[source,java]
+----
+"Hello " + <typed name> + "!"    
+----
+
+The result is then displayed in white under the "Hello World Sample" panel. 
+
+You may download this example project 
+link:$$http://www.graniteds.org/confluence/download/attachments/16875661/helloworld.zip?version=1&amp;modificationDate=1245921645000$$[here] 
+if you don't want to copy-paste the code in the following sections below. 
+
+In order to create, build, and deploy this sample application you need these free tools:
+ 
+* _Java 6+_ (5+ working): Download link:$$http://java.sun.com/javase/downloads/index.jsp$$[Sun JDK] and install it. 
+* __Eclipse 3.5+__: Download link:$$http://www.eclipse.org/downloads/$$[Eclipse] and unzip it somewhere.             
+* __Flex 4.6 SDK__: Download link:$$http://www.adobe.com/devnet/flex/flex-sdk-download.html$$[Flex 4.6 SDK] and unzip it somewhere. 
+    For example, +$$/flex_4_6_sdk$$+ (for Windows users: ++$$C:\Dev\flex_4_6_sdk$$++).             
+* __Tomcat 7+__: Download link:$$http://tomcat.apache.org/download-70.cgi$$[Tomcat] and unzip it somewhere. For example, +/apache-tomcat-7.0.29+ 
+    (for Windows users: ++C:\Dev\apache-tomcat-7.0.29++). 
+* __granite.jar__: You may take it from any of the GraniteDS sample applications or from GraniteDS source distribution in the +libraries/server+ folder. 
+    Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
+
+Creation of the project in Eclipse: 
+
+Start Eclipse and create a new Java project named +helloworld+. You may just type in +helloworld+ for +Project name+ and accept all other default settings.  
+
+Because we are going to have two types of sources, Java and Flex MXML, it is better to rename the default Java source folder +src+ to +java+. 
+You can do this by right-clicking on the +src+ source folder and selecting _Refactor / Rename_. 
+
+We are now going to create a new POJO service named +HelloWorldService+. Right-click on the +java+ source folder and select _New / Class_, 
+enter +org.test+ for +Package+ and +HelloWorldService+ for +Name+ in the following dialog, and then click on the _Finish_ button. In the Java source file editor, 
+modify the code so it is just as follows: 
+
+[source,java]
+----
+package org.test;
+
+public class HelloWorldService {
+
+    public String sayHello(String name) {
+        return "Hello " + name + "!";
+    }
+}
+----
+
+You should now see something like the following picture under Eclipse: 
+
+image:hwservice.jpg 
+
+Now let create the Flex client code. Create a new folder named +flex+ by right-clicking on the +helloworld+ project  and selecting _New / Folder_. 
+Create a new file directly in this new folder and name it +HelloWorld.mxml+ by right-clicking on the +flex+ folder and selecting _New / File_. 
+In the file editor, which may be Flah Builder or a simple text editor depending on your Eclipse installation, type in the following code: 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application
+    xmlns:mx="http://www.adobe.com/2006/mxml"
+    backgroundGradientColors="[#0e2e7d, #6479ab]"
+    layout="vertical"
+    verticalAlign="middle">
+
+    <mx:Style>
+        .Panel {
+            padding-left: 8px; padding-top: 8px;
+            padding-right: 8px; padding-bottom: 8px;
+        }
+        .Result { font-size: 26px; color: white; }
+    </mx:Style>
+
+    <mx:RemoteObject id="srv" destination="helloWorldService" />
+
+    <mx:Panel styleName="Panel" title="Hello World Sample">
+        <mx:Label text="Enter your name:"/>
+        <mx:TextInput id="nameInput" />
+        <mx:Button label="Say Hello" click="srv.sayHello(nameInput.text)"/>
+    </mx:Panel>
+        
+    <mx:Label styleName="Result" text="{srv.sayHello.lastResult}"/>
+
+</mx:Application>
+----
+
+You should now see something like the following picture under Eclipse:  
+
+image:hwclient.jpg
+
+Now we have to create the two main GraniteDS configuration files +services-config.xml+ and +web.xml+ at the root of the project. You should now see:   
+
+image:config.jpg
+
+Copy and paste the following code into these files: 
+
+.+services-config.xml+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<services-config>
+
+    <services>
+        <service
+            id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <destination id="helloWorldService">
+                <channels>
+                    <channel ref="my-graniteamf"/>
+                </channels>
+                <properties>
+                    <scope>application</scope>
+                    <source>org.test.HelloWorldService</source>
+                </properties>
+            </destination>
+        </service>
+    </services>
+
+    <channels>
+        <channel-definition id="my-graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+</services-config>
+----
+
+.+web.xml+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+                        http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+    <!-- general information about this web application -->
+    <display-name>Hello World</display-name>
+    <description>Hello World Sample Application</description>
+
+    <!-- read services-config.xml file at web application startup -->
+    <listener>
+        <listener-class>org.granite.config.GraniteConfigListener</listener-class>
+    </listener>
+
+    <!-- handle AMF requests ([de]serialization) -->
+    <filter>
+        <filter-name>AMFMessageFilter</filter-name>
+        <filter-class>org.granite.messaging.webapp.AMFMessageFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AMFMessageFilter</filter-name>
+        <url-pattern>/graniteamf/*</url-pattern>
+    </filter-mapping>
+
+    <!-- handle AMF requests (execution) -->
+    <servlet>
+        <servlet-name>AMFMessageServlet</servlet-name>
+        <servlet-class>org.granite.messaging.webapp.AMFMessageServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AMFMessageServlet</servlet-name>
+        <url-pattern>/graniteamf/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- default content for helloworld application -->
+    <welcome-file-list>
+        <welcome-file>HelloWorld.swf</welcome-file>
+    </welcome-file-list>
+
+</web-app>
+----
+
+Put together, those four files (++HelloWorldService.java++, ++HelloWorld.mxml++, ++services-config.xml++, and ++web.xml++), define an entire 
+Flex/GraniteDS application. Here are some highlights (partial/pseudo code): 
+
+[source,java]
+----
+public String HelloWorldService.sayHello(String name)
+----
+
+[source,xml]
+----
+<mx:RemoteObject id="srv" destination="helloWorldService" />
+<mx:Button label="Say Hello" click="srv.sayHello(nameInput.text)"/>
+<mx:Label ... text="{srv.sayHello.lastResult}"/>
+----
+
+[source,xml]
+----
+<destination id="helloWorldService">
+    <channel ref="graniteamf"/>
+    <scope>application</scope>
+    <source>org.test.HelloWorldService</source>
+</destination>
+<channel-definition id="my-graniteamf" ...>
+    <endpoint uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf" .../>
+</channel-definition>
+<url-pattern>/graniteamf/*</url-pattern>
+----
+
+From top to bottom:
+ 
+* The +HelloWorldService+ Java class declares a method +sayHello()+ that takes a +String+ argument  and returns another +String+. 
+
+* The +HelloWorld.mxml+ Flex application declares a +RemoteObject+ named +srv+ and maps it to a destination named +helloWorldService+. 
+
+* When you click on the _Say Hello_ button, the +RemoteObject+ triggers a server request that will call a +sayHello()+ method with the text typed 
+    in the +TextInput+ named +nameInput+ as argument: +srv.sayHello(nameInput.text)+. 
+
+* The result of this call will be displayed, when available, in a +Label+ by binding the text of this component to the  property +srv.sayHello.lastResult+ 
+    that contains the last received value for this method call. 
+
+* The +helloWorldService+ destination is declared in +services-config.xml+ and uses a channel named +graniteamf+. The Java class (source) used as a service for 
+    this destination call is +org.test.HelloWorldService+ and its scope is +application+. The Java class will be created when the service is first accessed, 
+    and this same and unique instance will be used for all subsequent calls; other possible values are +request+ and +session+. 
+
+* The channel named +graniteamf+, used by the +helloWorldService+ destination, declares an endpoint whose URL will be resolved to 
+    +http://localhost:8080/helloworld/graniteamf/amf+ for a local call; an actual remote production server url would be for example, 
+    to +http://www.helloworld.com:80/helloworld/graniteamf/amf+. 
+
+* +AMFMessageFilter+ and +AMFMessageServlet+ are both mapped in +web.xml+ to the same URL-pattern  +/graniteamf/\*+. 
+    Inside the +helloworld+ web application, all requests that match this pattern will be go through this filter and this servlet such as 
+    +http://localhost:8080/helloworld/graniteamf/amf+. 
+
+Here is basic flow chart that summarizes the expected communication between the Flex client application and the Java server:  
+
+image:flow.jpg
+
+The last thing to do is to build and deploy the application. 
+
+First we have to add the +granite.jar+ library and create a build file, here using Ant. 
+
+Create a new folder named +lib+ at the root of the project and put +granite.jar+ into this new folder. Create a new file named +build.xml+ at the root of the project. 
+Copy and paste the following content into it; you may have to modify the properties +$$FLEX_HOME$$+ and +$$TOMCAT_HOME$$+ to reflect your environment: 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="hello-world" default="deploy">
+
+    <!-- Modify FLEX_HOME/TOMCAT_HOME properties to reflect your environment -->
+    <property name="FLEX_HOME" value="/flex_sdk_3"/>
+    <property name="TOMCAT_HOME" value="/apache-tomcat-6.0.18"/>
+    
+    <!-- Declare Flex Ant tasks (such as mxmlc used below) -->
+    <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
+
+    <!-- Compile MXML source code to SWF -->
+    <target name="mxmlc">
+        <mxmlc
+            file="flex/HelloWorld.mxml"
+            output="build/HelloWorld.swf"
+            services="services-config.xml"
+            context-root="helloworld">
+        </mxmlc>
+    </target>
+
+    <!-- Build a war suitable for Tomcat (and other) -->
+    <target name="war" depends="mxmlc">
+        <mkdir dir="build"/>
+        <war destfile="build/helloworld.war" webxml="web.xml">
+            <zipfileset file="services-config.xml" prefix="WEB-INF/flex" />
+            <fileset dir="build" includes="*.swf"/>
+            <lib dir="lib"/>
+            <classes dir="bin"/>
+        </war>
+    </target>
+
+    <!-- Deploy the war in Tomcat -->
+    <target name="deploy" depends="war">
+        <copy todir="${TOMCAT_HOME}/webapps" file="build/helloworld.war"/>
+    </target>
+
+</project>
+----
+
+You should see something like the following picture:  
+
+image:build.jpg
+
+You may now right-click on the +build.xml+ file and select _Run As / Ant Build_. This will launch the build process,  compile the MXML code to an SWF, 
+create a WAR (Web Archive), and copy it into your Tomcat +webapps+ directory. 
+
+Finally start Tomcat and test the application. To start Tomcat, go to the directory +bin+ just under your Tomcat installation directory, +/apache-tomcat-7.0.29/bin+  
+for example, and double-click on +startup.bat+, or +startup.sh+ for Unix/Mac users. After a short while, you should  see in the console that Tomcat has started. 
+You may now point your Web browser to link:$$http://localhost:8080/helloworld/$$[+http://localhost:8080/helloworld/+]. 
+
+The Flex example application should appear and you may start playing with "Hello, world" ... a fascinating game. 
+endif::flex[]
+
+ifdef::java[]
+[[gettingstarted.helloworld.java]]
+===Hello World, POJO
+
+This section will guide you through the setting up of a very basic GraniteDS project deployed in Tomcat and a Java command line client. 
+Expected result is a typical "Hello, world" application. 
+
+The client program will pass its argument to the remote service and display the result which should be a string: 
+
+[source,java]
+----
+"Hello " + <argument> + "!"        
+----
+
+In order to create, build, and deploy this sample application you need these free tools:
+ 
+* _Java 6+_ (6+ working): Download link:$$http://java.sun.com/javase/downloads/index.jsp$$[Sun JDK] and install it. 
+* __Eclipse 3.5+__: Download link:$$http://www.eclipse.org/downloads/$$[Eclipse] and unzip it somewhere.             
+* __Tomcat 7+__: Download link:$$http://tomcat.apache.org/download-70.cgi/$$[Tomcat] and unzip it somewhere. 
+    For example, +/apache-tomcat-7.0.29+ (for Windows users: ++C:\apache-tomcat-7.0.29++). 
+* __granite.jar__: You may take it from the GraniteDS distribution in the +libraries/server+ folder. 
+    Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
+* _granite-client.jar_: You may take it from any of the GraniteDS sample applications or from GraniteDS source distribution in the +libraries/java-client+ folder. 
+    Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
+
+Creation of the project in Eclipse: 
+
+Start Eclipse and create a new Java project named +helloworld+. You may just type in +helloworld+ for +Project name+ and accept all other default settings.  
+
+We are now going to create a new POJO service named +HelloWorldService+. Right-click on the +java+ source folder and select _New / Class_, 
+enter +org.test+ for +Package+ and +HelloWorldService+ for +Name+ in the following dialog, and then click on the _Finish_ button. In the Java source file editor, 
+modify the code so it is just as follows: 
+
+[source,java]
+----
+package org.test;
+
+public class HelloWorldService {
+
+    public String sayHello(String name) {
+        return "Hello " + name + "!";
+    }
+}
+----
+
+Next we have to create the GraniteDS configuration file +services-config.xml+ and the web application +web.xml+ at the root of the project.  
+
+Copy and paste the following code into these files: 
+
+.+services-config.xml+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<services-config>
+    <services>
+        <service
+            id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <destination id="helloWorldService">
+                <properties>
+                    <scope>application</scope>
+                    <source>org.test.HelloWorldService</source>
+                </properties>
+            </destination>
+        </service>
+    </services>
+</services-config>
+----
+
+.+web.xml+
+[source,xml]
+----
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+                        http://java.sun.com/xml/ns/j2ee/web-app_2_5.xsd">
+
+    <!-- general information about this web application -->
+    <display-name>Hello World</display-name>
+    <description>Hello World Sample Application</description>
+
+    <!-- read services-config.xml file at web application startup -->
+    <listener>
+        <listener-class>org.granite.config.GraniteConfigListener</listener-class>
+    </listener>
+
+    <!-- handle AMF requests ([de]serialization) -->
+    <filter>
+        <filter-name>AMFMessageFilter</filter-name>
+        <filter-class>org.granite.messaging.webapp.AMFMessageFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AMFMessageFilter</filter-name>
+        <url-pattern>/graniteamf/*</url-pattern>
+    </filter-mapping>
+
+    <!-- handle AMF requests (execution) -->
+    <servlet>
+        <servlet-name>AMFMessageServlet</servlet-name>
+        <servlet-class>org.granite.messaging.webapp.AMFMessageServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AMFMessageServlet</servlet-name>
+        <url-pattern>/graniteamf/*</url-pattern>
+    </servlet-mapping>
+
+</web-app>
+----
+
+Next we have to build and deploy the server application: 
+
+Create a folder named +lib+ at the root of the project and put +granite.jar+ in this folder. Create a new file named +build.xml+ at the root of the 
+project and copy/paste the following content into it; you may have to modify +$$TOMCAT_HOME$$+ to reflect your environment: 
+
+.+build.xml+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="hello-world" default="deploy">
+
+    <!-- Modify TOMCAT_HOME properties to reflect your environment -->
+    <property name="TOMCAT_HOME" value="/apache-tomcat-7.0.29"/>
+    
+    <!-- Build a war suitable for Tomcat (and other) -->
+    <target name="war">
+        <mkdir dir="build"/>
+        <war destfile="build/helloworld.war" webxml="web.xml">
+            <zipfileset file="services-config.xml" prefix="WEB-INF/flex" />
+            <lib dir="lib"/>
+            <classes dir="bin"/>
+        </war>
+    </target>
+
+    <!-- Deploy the war in Tomcat -->
+    <target name="deploy" depends="war">
+        <copy todir="${TOMCAT_HOME}/webapps" file="build/helloworld.war"/>
+    </target>
+
+</project>
+----
+
+You may now right-click on the +build.xml+ file and select _Run As / Ant Build_. This will launch the build process, create a WAR (Web Archive), 
+and copy it into your Tomcat +webapps+ directory. 
+
+Then start Tomcat. Go to the directory +bin+ just under your Tomcat installation directory, +/apache-tomcat-7.0.29/bin+ for example, and double-click 
+on +startup.bat+, or +startup.sh+ for Unix/Mac users. After a short while, you should see in the console that Tomcat has started. 
+
+You should now see something like the following picture under Eclipse:  
+
+image:hwservicej.jpg
+
+Now let create the Java client code, for this example we are simply going to create a command line application but we could use any Java view technology, 
+such as Swing, JavaFX, SWT or Android.  
+
+Create a new Java project named +helloworld-client+. Create a new class directly in this new folder and name it +HelloWorldClient+ in the package 
++org.test.client+ by right-clicking on the +src+ folder and selecting _New / Class_. In the editor, type in the following code: 
+
+[source,java]
+----
+package org.test.client;
+
+import java.net.URI;
+import java.util.concurrent.TimeUnit;
+
+import org.granite.client.messaging.RemoteService;
+import org.granite.client.messaging.ResultFaultIssuesResponseListener;
+import org.granite.client.messaging.channel.amf.AMFRemotingChannel;
+import org.granite.client.messaging.events.FaultEvent;
+import org.granite.client.messaging.events.IssueEvent;
+import org.granite.client.messaging.events.ResultEvent;
+import org.granite.client.messaging.transport.apache.ApacheAsyncTransport;
+
+public class HelloWorldClient {
+    
+	public static void main(String[] args) throws Exception {
+        AMFChannelFactory channelFactory = new AMFChannelFactory();
+        channelFactory.start();
+		RemotingChannel channel = channelFactory.newRemotingChannel("graniteamf", new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"), 2);		
+		RemoteService service = new RemoteService(channel, "helloWorldService");
+		service.newInvocation("sayHello", args[0]).setTimeToLive(5, TimeUnit.SECONDS)
+			.addListener(new ResultFaultIssuesResponseListener() {
+			
+			@Override
+			public void onResult(ResultEvent event) {
+				System.out.println("Result: " + event.getResult());
+			}
+			
+			@Override
+			public void onFault(FaultEvent event) {
+				System.err.println("Fault: " + event.toString());
+			}
+			
+			@Override
+			public void onIssue(IssueEvent event) {
+				System.err.println("Issue: " + event.toString());
+			}
+		}).invoke();
+	}
+}
+----
+
+You will also need to add a few libraries in a +lib+ folder and add them to the build path of the project with __Right Click/Build Path/Add to Builder Path__: 
+
+* +granite-client.jar+
+* +httpclient-4.3-beta1.jar+
+* +httpcore-4.2-beta2.jar+
+* +httpcore-nio-4.3-beta2.jar+
+* +httpasyncclient-4.0-beta4.jar+
+* +commons-logging-1.1.1.jar+
+* +commons-codec-1.6.jar+
+
+You may now run the Java application in Eclipse by right-clicking the class +HelloWorldClient+ and _Run As.../Java Application_.
+The result should appear in the Eclipse console. You can test different results by changing the run arguments in the Eclipse Run configuration for the application. 
+
+Here are some highlights on some parts of the code and configuration: 
+
+[source,java]
+----
+public String HelloWorldService.sayHello(String name)        
+----
+
+The +HelloWorldService+ is a simple Java service which declares a method +sayHello()+ that takes a +String+ argument  and returns another +String+. 
+
+[source,xml]
+----
+<destination id="helloWorldService">
+    <channel ref="graniteamf"/>
+    <scope>application</scope>
+    <source>org.test.HelloWorldService</source>
+</destination>
+----
+
+This part of the +services-config.xml+ defines a mapping between a destination name and the service class and its scope. This is a basic declaration 
+for an application scoped bean that will be created and managed by GraniteDS itself but there are other kinds of configurations that give access to beans 
+managed by an existing container such as Spring, or that use annotations to declare the remote enabled classes.  
+
+[source,xml]
+----
+<url-pattern>/graniteamf/*</url-pattern>		
+----
+
+This part of +web.xml+ defines the mapping between the target url and the GraniteDS servlet. Other kinds of configuration are also possible which use 
+a Spring MVC dispatcher servlet or use Servlet 3 features to automatically initialize the GraniteDS servlet. +/graniteamf/\*+ is the default and recommended 
+url mapping for GraniteDS, but any other can work. 
+
+[source,java]
+----
+ApacheAsyncTransport transport = new ApacheAsyncTransport();
+transport.start();
+AMFRemotingChannel channel = new AMFRemotingChannel(transport, "graniteamf", 
+	new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"));
+RemoteService srv = new RemoteService(channel, "helloWorldService");        
+----
+
+This is the initialization part of the GraniteDS Java client. It requires creating a transport (here the default transport based on the Apache 
+asynchronous HTTP client), a remoting channel and a +RemoteService+ whose target destination matches the destination we declared earlier in the server configuration. 
+
+[source,java]
+----
+srv.newInvocation("sayHello", args[0]).setTimeToLive(5, TimeUnit.SECONDS)
+	.addListener(new ResultFaultIssuesResponseListener() {
+				
+	@Override
+	public void onResult(ResultEvent event) {
+		System.out.println("Result: " + event.getResult());
+	}
+	
+	@Override
+	public void onFault(FaultEvent event) {
+		System.err.println("Fault: " + event.toString());
+	}
+	
+	@Override
+	public void onIssue(IssueEvent event) {
+		System.err.println("Issue: " + event.toString());
+	}
+}).invoke();
+----
+
+This is the main client part where the +RemoteService+ triggers a server request that will call the +sayHello()+ method with the first argument 
+of the +main+ method:  +srv.sayHello(args\[0\])+. 
+
+The result of this call will be displayed, when available, in the console output in the asynchronous result handler of the remote call.
+endif::java[] 
+
+ifdef::flex[]
+[[gettingstarted.helloworldrev]]
+=== Hello World, revisited with EJB3
+
+This tutorial shows an evolution of the basic "Hello, world" example application with some Hibernate persistence operations (JPA). When finished and 
+deployed it should look like this picture:  
+
+image:hw1.jpg
+
+In this picture, you see a small data grid that displays the history of all previous say hello operations. This history is persisted in the database
+by means of a JPA entity bean and those objects are serialized back to the Flex client each time you enter a new name. 
+
+This example also shows basic usage of the Granite Eclipse Builder and externalization configuration. 
+
+If you don't want to follow this tutorial step by step you may download it as a zip archive 
+link:$$http://www.graniteds.org/confluence/download/attachments/16875663/helloworld2.zip?version=1&amp;modificationDate=1245777729000$$[here]. 
+
+In order to create, build, and deploy this sample application you need these free tools:
+ 
+* _Java 5+_ (6+ working): Download link:$$http://java.sun.com/javase/downloads/index.jsp$$[Sun JDK] and install it. 
+* __Eclipse 3.3+__: Download link:$$http://www.eclipse.org/downloads/$$[Eclipse] and unzip it somewhere.             
+* __Flex 4.6 SDK__: Download link:$$http://www.adobe.com/devnet/flex/flex-sdk-download.html$$[Flex 4.6 SDK] and unzip it somewhere. 
+    For example, +$$/flex_4_6_sdk$$+ (for Windows users: ++$$C:\Dev\flex_4_6_sdk$$++).             
+* __JBoss 4.2.3.GA__: Download link:$$http://www.jboss.org/jbossas/downloads/$$[JBoss] and unzip it somewhere. For example, +/jboss-4.2.3.GA+ 
+    (for Windows users: ++C:\Dev\jboss-4.2.3.GA++). 
+* _granite.jar_, _granite-hibernate.jar_: You may take it from GraniteDS distribution in the +libraries/server+ folder. 
+    Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
+* _granite-flex45.swc_, _granite-essentials.swc_: You may take it from GraniteDS distribution in the +libraries/flex-client+ folder. 
+    Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
+* __GraniteDS Eclipse Builder__: You may download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here] 
+    (follow these installation instructions <<graniteds.gas3,here>>). 
+
+
+Creation of the project in Eclipse: 
+
+Start Eclipse and create a new Java project named +helloworld2+. You may just type in +helloworld2+ for +Project name+ and accept all other default settings. 
+Because we are going to have two types of sources, Java and Flex MXML, it is better to rename the default Java source folder +src+ to +java+. 
+You can do this by right-clicking on the +src+ source folder and selecting _Refactor / Rename_. 
+
+Create a new directory named +lib+ at the root of this project and put +granite.jar+, +granite-hibernate.jar+, +granite-flex45.swc+ and +granite-essentials.swc+ 
+into it. Also add these two JBoss jars: +ejb3-persistence.jar+ and +jboss-ejb3x.jar+, which you will find in the +/jboss-4.2.3.GA/server/default/lib+ directory. 
+Right-click on those JBoss jars and select _Build Path / Add to Build Path_. 
+
+You should now see something like the following picture under Eclipse:  
+ 
+image:hw2.jpg 
+
+Right-click on the +java+ source folder, select _New / Class_ and fill the New Java Class dialog as follows: 
+
+image:hw3.jpg 
+
+Copy and paste the following code in the Java editor: 
+
+[source,java]
+----
+package org.test;
+
+import java.io.Serializable;
+
+import javax.persistence.Basic;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity
+public class Welcome implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id @GeneratedValue
+    private Integer id;
+
+    @Basic
+    private String name;
+
+    public Welcome() {
+    }
+
+    public Welcome(String name) {
+        this.name = name;
+    }
+    
+    public Integer getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+----
+
+This basic JPA entity bean declares a read-only +id+ field, auto incremented primary key in the database, and a +name+ field, the name of the person 
+that was entered in the Flex application when saying hello. 
+
+We are now going to create an EJB 3 session bean that will handle the say hello and persistence operations. 
+
+Create a new Java interface named +HelloWorldService+ by right-clicking on the +org.test+ package and choosing  _New / Interface_. Then copy and paste 
+the following code: 
+
+[source,java]
+----
+package org.test;
+
+import java.util.List;
+
+public interface HelloWorldService {
+
+    public String sayHello(String name);
+    public List<Welcome> findWelcomeHistory();
+}
+----
+
+Create a new Java class named +HelloWorldServiceBean+ that implements the +HelloWorldService+ interface by  right-clicking on the +org.test+ package 
+and choosing _New / Class_. Then copy and paste the following code: 
+
+[source,java]
+----
+package org.test;
+
+import java.util.List;
+
+import javax.ejb.Local;
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+@Stateless
+@Local(HelloWorldService.class)
+public class HelloWorldServiceBean implements HelloWorldService {
+
+    @PersistenceContext
+    protected EntityManager manager;
+
+    @Override
+    public String sayHello(String name) {
+        manager.persist(new Welcome(name));
+        return "Hello " + name + "!";
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Welcome> findWelcomeHistory() {
+        Query query = manager.createQuery("from " + Welcome.class.getName());
+        return query.getResultList();
+    }
+}
+----
+
+We now have a complete EJB 3 stateless session bean that will persist each name passed to the +sayHello()+ method and return the list of all previous welcome 
+operations with the +findWelcomeHistory()+ method. 
+
+Your Java project should look like that after this step:  
+
+image:hw5.jpg
+
+Now let create the Flex client code. Create a new folder named +flex+ by right-clicking on the +helloworld2+ project and selecting _New / Folder_. 
+Create a new file directly in this new folder and name it +HelloWorld.mxml+  by right-clicking on the +flex+ folder and selecting _New / File_. 
+In the file editor, which may be Flah Builder  or a simple text editor depending on your Eclipse installation, type in the following code: 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application
+    xmlns:mx="http://www.adobe.com/2006/mxml"
+    backgroundGradientColors="[#0e2e7d, #6479ab]"
+    layout="vertical"
+    verticalAlign="middle"
+    creationComplete="srv.findWelcomeHistory()">
+
+    <mx:Style>
+        .Panel {
+            padding-left: 8px; padding-top: 8px;
+            padding-right: 8px; padding-bottom: 8px;
+        }
+        .Result { font-size: 26px; color: white; }
+    </mx:Style>
+
+    <mx:RemoteObject id="srv" destination="helloWorldService" />
+
+    <mx:Panel styleName="Panel" title="Hello World Sample">
+        <mx:Label text="Enter your name:"/>
+        <mx:TextInput id="nameInput" width="200" />
+        <mx:Button label="Say Hello"
+           click="srv.sayHello(nameInput.text);srv.findWelcomeHistory()"/>
+        
+        <mx:Label text="History:"/>
+        <mx:DataGrid dataProvider="{srv.findWelcomeHistory.lastResult}"
+          width="200" height="200"/>
+    </mx:Panel>
+        
+    <mx:Label styleName="Result" text="{srv.sayHello.lastResult}"/>
+    
+</mx:Application>
+----
+
+Some explanations:
+ 
+* This Flex application uses a +RemoteObject+ named +srv+ that will be bound to the stateless session bean  we have created earlier. The actual binding 
+    between the destination named +helloWorldService+ and the Java service is specified in the +services-config.xml+ that we will create later. 
+* When the Flex application is completely created, see the +creationComplete+ event handler, it first calls the  +findWelcomeHistory()+ method of the 
+    Java service. The result of this call is displayed in the +DataGrid+, see the +dataProvider="{srv.findWelcomeHistory.lastResult}"+ attribute. 
+* When you click on the _Say Hello_ button after entering a name in the +TextInput+ field, it calls the +sayHello()+ method on the server with the 
+    supplied name and then the +findWelcomeHistory()+ method whose result  is used to update the +DataGrid+ content. 
+    See the +click="srv.sayHello(nameInput.text);srv.findWelcomeHistory()"+  attribute.  
+* The returned +String+ of the +sayHello()+ method, +$$"Hello " + name + "!"$$+ in the Java service, is displayed in a +Label+ just below the +Panel+. 
+    See the  +text="{srv.sayHello.lastResult}"+ attribute. 
+
+We are now going to configure the Granite Eclipse Builder that will generate the +Welcome+ entity bean ActionScript3 equivalent. 
+You can install it directly from the Eclipse marketplace, and restart. In your package explorer, right-click on the +helloworld2+ project and 
+select __Add GraniteDS Nature__:  
+
+image:hw6.jpg
+
+In the configuration wizard, click on the _Add Folder_ button and select the +java+ source folder:  
+
+image:hw7.jpg
+
+Select the _Excluded_ subnode and click on the _Edit_ button. In the following dialog, change the _Output Directory_ to +flex+, instead of the default +as3+, 
+and add the  +\*\*/\*Service\*.java+ exclusion pattern, as we don't want code generation for services, just for entities:  
+
+image:hw8.jpg
+
+After those short configuration steps, you may accept all other default options and click directly on the _Finish_ button in the wizard. 
+The generation process starts and produces two files as shown in the following picture:  
+
+image:hw9.jpg
+
+There is no need to modify those files for our short example but, if you want to add specific methods to your ActionScript 3 bean, you must put it in 
+the +Welcome.as+ class and not in the +WelcomeBase.as+ class that may be overwritten by subsequent generation processes. 
+If you look at the +WelcomeBase.as+ class, you will see that the generated code reproduces the +Welcome.java+ fields and accesses 
+(read-only +id+ and read-write ++name++). It also implements the code required for externalization mechanisms with lazy loading support. 
+See <<remoting.externalization,Externalizers>> documentation for details. 
+
+The rest is only a matter of configuration files. First, create a new file named +granite-config.xml+ at the root of the +helloworld2+ project 
+directory with this content:         
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE granite-config PUBLIC "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/3.0.0/granite-config.dtd">
+
+<granite-config>
+
+    <class-getter type="org.granite.hibernate.HibernateClassGetter"/>
+
+    <externalizers>
+        <externalizer type="org.granite.hibernate.HibernateExternalizer">
+            <include annotated-with="javax.persistence.Entity"/>
+        </externalizer>
+    </externalizers>
+
+</granite-config>
+----
+
+This configuration instructs GDS to externalize all Java classes annotated with the +@Entity+ annotation (such as our  +Welcome.java+ entity bean). 
+
+Next we need a Flex +services-config.xml+ as follows. Create it in at root of the project, as for ++granite-config.xml++: 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<services-config>
+
+    <services>
+        <service
+            id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <destination id="helloWorldService">
+                <channels>
+                    <channel ref="my-graniteamf"/>
+                </channels>
+                <properties>
+                    <factory>ejbFactory</factory>
+                </properties>
+            </destination>
+        </service>
+    </services>
+    
+    <factories>
+        <factory id="ejbFactory" class="org.granite.messaging.service.EjbServiceFactory">
+            <properties>
+                <lookup>helloworld/{capitalized.destination.id}Bean/local</lookup>
+            </properties>
+        </factory>
+    </factories>
+
+    <channels>
+        <channel-definition id="my-graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+
+</services-config>
+----
+
+This is where the destination id +HelloWorldService+ is bound to our stateless EJB 3 session bean service. When the +RemoteObject+ in +HelloWorld.mxml+ is called, 
+the destination id is used in the +EjbServiceFactory+ to lookup the EJB; +helloworld/{capitalized.destination.id}Bean/local+ is resolved to 
++helloworld/HelloWorldServiceBean/local+, that is the JNDI name used in JBoss to access the EJB. 
+
+We then need three additional configuration files: +application.xml+, +persistence.xml+ and +web.xml+. All are standard J2EE configuration files and you will 
+find detailed documentation on them on the Internet. Here is their contents.  Again, create them at the root of the project: 
+
+.+application.xml+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<application>
+    <display-name>GraniteDS HelloWorld</display-name>
+    <module>
+        <web>
+            <web-uri>helloworld.war</web-uri>
+            <context-root>/helloworld</context-root>
+        </web>
+    </module>
+    <module>
+        <ejb>helloworld.jar</ejb>
+    </module>
+</application>
+----
+
+.+persistence.xml+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<persistence>
+    <persistence-unit name="ejb3">
+        <jta-data-source>java:/DefaultDS</jta-data-source>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+        </properties>
+    </persistence-unit>
+</persistence>
+----
+
+.+web.xml+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+                        http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+    <!-- general information about this web application -->
+    <display-name>Hello World</display-name>
+    <description>Hello World Sample Application</description>
+
+    <!-- read services-config.xml file at web application startup -->
+    <listener>
+        <listener-class>org.granite.config.GraniteConfigListener</listener-class>
+    </listener>
+
+    <!-- handle AMF requests ([de]serialization) -->
+    <filter>
+        <filter-name>AMFMessageFilter</filter-name>
+        <filter-class>org.granite.messaging.webapp.AMFMessageFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AMFMessageFilter</filter-name>
+        <url-pattern>/graniteamf/*</url-pattern>
+    </filter-mapping>
+
+    <!-- handle AMF requests (execution) -->
+    <servlet>
+        <servlet-name>AMFMessageServlet</servlet-name>
+        <servlet-class>org.granite.messaging.webapp.AMFMessageServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AMFMessageServlet</servlet-name>
+        <url-pattern>/graniteamf/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- default content for helloworld application -->
+    <welcome-file-list>
+        <welcome-file>HelloWorld.swf</welcome-file>
+    </welcome-file-list>
+
+</web-app>
+----
+
+You should now see something like this in your package explorer:  
+
+image:hw10.jpg
+
+The last thing to do is to build and deploy the application. 
+
+Create a new file named +build.xml+ at the root of the project. Copy and paste the following content into it; you may have to modify 
+the properties +$$FLEX_HOME$$+ and +$$TOMCAT_HOME$$+ to reflect your environment: 
+
+.+build.xml+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="hello-world" default="deploy">
+
+    <!-- Modify FLEX_HOME/JBOSS_HOME properties to reflect your environment -->
+    <property name="FLEX_HOME" value="/flex_4_6_sdk"/>
+    <property name="JBOSS_HOME" value="/jboss-4.2.3.GA"/>
+    
+    <!-- Declare Flex Ant tasks (such as mxmlc used below) -->
+    <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
+
+    <!-- Compile MXML source code to SWF -->
+    <target name="mxmlc">
+        <mxmlc
+            file="flex/HelloWorld.mxml"
+            output="build/HelloWorld.swf"
+            services="services-config.xml"
+            context-root="helloworld">
+            
+            <source-path path-element="flex" />
+
+            <!-- Make sure that the Welcome.as class is compiled into
+                 our HelloWorld.swf (otherwise mxmlc doesn't include it
+                 because there are no explicit reference to this class
+                 in HelloWorld.mxml -->
+            <includes symbol="org.test.Welcome" />
+            
+            <!-- Make sure that all "essentials" GDS classes are included into
+                 our HelloWorld.swf (otherwise mxmlc doesn't include them
+                 because there is no explicit reference to these classes
+                 in HelloWorld.mxml and Welcome.as -->
+            <compiler.include-libraries dir="lib" append="true">
+                <include name="granite-essentials.swc" />
+            </compiler.include-libraries>
+        </mxmlc>
+    </target>
+
+    <!-- Build an ear suitable for JBoss -->
+    <target name="ear" depends="mxmlc">
+        <mkdir dir="build"/>
+        <jar destfile="build/helloworld.jar">
+            <fileset dir="bin" includes="**/*.class"/>
+            <zipfileset file="persistence.xml" prefix="META-INF" />
+        </jar>
+        <war destfile="build/helloworld.war" webxml="web.xml">
+            <zipfileset file="services-config.xml" prefix="WEB-INF/flex" />
+            <zipfileset file="granite-config.xml" prefix="WEB-INF/granite" />
+            <fileset dir="build" includes="*.swf"/>
+        </war>
+        <ear destfile="build/helloworld.ear" appxml="application.xml">
+            <fileset dir="build" includes="*.jar,*.war"/>
+            <zipfileset dir="lib" includes="granite*.jar" prefix="lib" />
+        </ear>
+    </target>
+
+    <!-- Deploy the ear in JBoss -->
+    <target name="deploy" depends="ear">
+        <copy todir="${JBOSS_HOME}/server/default/deploy" file="build/helloworld.ear"/>
+    </target>
+
+</project>
+----
+
+Basically, this Ant build compiles our Flex code in a swf and package everything in an ear suitable for JBoss deployment. 
+
+[WARNING]
+====
+Read the comments in the above +build.xml+_ about including AS3 classes/SWC libraries into the compiled SWF!
+Missing this point leads to a very common _Flex runtime error_ because of unexpected mxmlc compiler optimizations! 
+====
+
+You may now right-click on the +build.xml+ file and select _Run As / Ant Build_. This will launch the build process, compile the MXML code to an SWF, 
+create an ear (Enterprise ARchive) and copy it into your JBoss +deploy+ directory. 
+
+Finally start JBoss and test the application. To start JBoss, go to the directory +bin+ just under your JBoss installation directory, 
++/jboss-4.2.3.GA/bin+ for example, and double-click on +run.bat+, or +run.sh+ for Unix/Mac users. After a short while, you should see in the console 
+that JBoss has started. You may now point your Web browser to link:$$http://localhost:8080/helloworld/$$[+http://localhost:8080/helloworld/+]. 

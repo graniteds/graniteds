@@ -1,0 +1,959 @@
+[[graniteds.datamanagement]]
+== Data Management
+
+GraniteDS provides various features that simplify the handling of data between the client and Java EE, in particular when using JPA or Hibernate as a 
+persistence mechanism. 
+
+[[data.jpamanaged]]
+=== JPA and Managed Entities
+
+Tide provides an integration between the concept of a client persistence context and the server persistence context (JPA or Hibernate). 
+
+In particular, Tide maintains a client-side cache of entity instances and ensures that every instance is unique in the Java client context. 
+To achieve this, it requires a unique identifier on each entity class. This is why GraniteDS supports the concept of managed entities. 
+
+All entities annotated with +@Entity+ (note: it's not the JPA annotation but a GDS annotation) are considered as corresponding to Hibernate/JPA managed 
+entities on the server. The managed entities should always use JavaFX bindable properties so the client entity manager can track changes on their values. 
+
+It is highly recommended to use JPA optimistic locking in a multi-tier environment (++@Version++ annotation). 
+Note that Tide currently only supports ++Integer++ or ++Long++ version fields, not timestamps and that the field must be nullable (entity 
+instances with a ++null++/++NaN++ version field will be considered as unsaved). 
+It is also __highly__ recommended to add a persistent ++uid++ field (generally typed as a 36 bytes ++String++) to serve as a consistent identifier 
+through all application layers, see the explication below. 
+
+Below is a +AbstractEntity+ class that can be used as a JPA mapped superclass for your application entities. 
+The entity listener ensures that the entity always has an initialized +uid+ field, but in general this identifier will be initialized from the client. 
+
+[source,java]
+----
+@MappedSuperclass
+@EntityListeners({AbstractEntity.AbstractEntityListener.class})
+public abstract class AbstractEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    
+
+    @Id @GeneratedValue
+    private Long id;
+
+    /* "UUID" and "UID" are Oracle reserved keywords -> "ENTITY_UID" */
+    @Column(name="ENTITY_UID", unique=true, nullable=false, updatable=false, length=36)
+    private String uid;
+
+    @Version
+    private Integer version;
+
+    public Long getId() {
+        return id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return (o == this || (o instanceof AbstractEntity && uid().equals(((AbstractEntity)o).uid())));
+    }
+
+    @Override
+    public int hashCode() {
+        return uid().hashCode();
+    }
+
+    public static class AbstractEntityListener {
+        @PrePersist
+        public void onPrePersist(AbstractEntity abstractEntity) {
+            abstractEntity.uid();
+        }
+    }
+
+    private String uid() {
+        if (uid == null)
+            uid = UUID.randomUUID().toString();
+        return uid;
+    }
+}
+----
+
+[TIP]
+====
+The easiest and recommended way for getting Tide enabled managed entities is to generate them from JPA/Java classes with Gfx using the +tide="true"+ option. 
+====
+
+Example build file for ant: 
+
+[source,xml]
+----
+<gfx outputdir="java" tide="true">
+    <classpath>
+        <pathelement location="classes"/>
+    </classpath>
+    <fileset dir="classes">
+        <include name="com/myapp/entity/**/*.class"/>
+    </fileset>
+</gfx>
+----
+
+*Important things on ID/UID*
+
+In a typical client/app server/database application, an entity lives in three layers:
+ 
+* the Java client 
+* the Hibernate/JPA persistence context 
+* the database 
+
+During the entity lifecycle, the only invariant is the id. The id reliably links the different existing versions of the entity in the three layers. 
+When updating existing entities coming from the database, there are, in general, no problems because the id is defined and is maintained in the three layers 
+during the different serialization/persistence operations. 
+
+A problem arises when a new entity is being created in any of the two upper layers (client/JPA). The new entity has no id until it has been persisted 
+to the database. This means that between the initial creation and the final stored entity, the id has changed from null to a real value. 
+
+It is thus impossible to have a reliable link between the original entity that has been created and the entity that has been stored. This is even more complex 
+if you try to add two or more new entities to a collection because, in this case, there will be absolutely no way to determine which one has been persisted 
+with which id because they all had null ids at the beginning. 
+
+The problem already exists outside of a rich client when you use a database generated id with Hibernate/JPA. The most common solution is to have a second 
+persisted id, the uid, which is created by the client and persisted along with the entity (but is NOT the database key). 
+
+On the client, we have the same problem because the entities are often serialized/deserialized between client and the server, so we cannot check object
+instances equality. 
+
+When there is a +uid+ field in the Java entity, the Gfx Tide template will generate a +uid+ property on the JavaFX object. In other cases, Tide will try 
+to build a +uid+ value at runtime from the entity +id+. This second mode is, of course, vulnerable to the initial null id problem. 
+
+In conclusion, the recommended approach to avoid any kind of subtle problems is to have a real +uid+ property which will be persisted in the database but 
+is NOT a primary key for efficiency concerns. If it is not possible to add a +uid+ property due to a legacy database schema or Java classes, it will work most 
+of the time but you will then have to be very careful when creating new entities from the client application. 
+
+You will then have to take care that +hashCode()+ and +equals()+ are implemented based on this property +uid+.  
+
+[[data.lazyloading]]
+=== Transparent lazy loading
+
+All uninitialized lazy collections coming from the server are deserialized on the client side as observable +PersistentCollection+. 
+These are actual observable collections that can be used as a data provider for any JavaFX UI component that is able to handle ++ObservableList++/++ObservableMap++ 
+(all JavaFX components, such as ++TableView++ and ++ListView++ do). When data is requested by the UI component, the collection asks the server for 
+the real collection content. This lazy loading functionality is completely transparent but will happen only when something requests the length or an element of 
+the collection (and thus when the collection is bound to a UI component). 
+
+On the server Tide will try different means to determine the correct JPA entity manager/Hibernate session to use. The whole collection and owning entity 
+are then retrieved from a newly created persistence context. If you have a deep object graph, it will then be possible to get entities from different 
+persistence contexts in the same client context, and it can lead to inconsistencies  in the client data and issues with optimistic locking/versioning. 
+
+Depending on the server framework of the application (Spring, EJB 3, CDI...), Tide will lookup an +EntityManager+ or an Hibernate session in JNDI, in 
+the Spring context or any other relevant way, and will try to determine the correct transaction management (JTA, JPA...). 
+With Spring, it is possible to override the default persistence manager if you have particular requirements: with Spring you just have to configure a bean 
+implementing +TidePersistenceManager+ in the application context. Using a custom persistence manager can be useful for example if you have multiple 
++EntityManagerFactories+ and want to be able to select one of them depending on the entity whose collection has to be fetched. 
+
+*Manual fetching of lazy collections*
+
+In some cases you may need to trigger manually the loading of a lazy loaded collection. As told earlier, all collections are wrapped in a 
++PersistentCollection+. These two classes expose a method +withInitialized+ that can take a function callback that can do something once the collection is populated: 
+
+[source,java]
+----
+((PersistentCollection)myEntity.getMyCollection()).withInitialized(new InitializationCallback() {
+	@Override
+	public void call(PersistentCollection collection) {	
+	   // Do something with the content of the list
+	   Object obj = ((List<Object>)collection).get(0);
+	}
+});
+----
+
+[[data.dirtycheck]]
+=== Dirty checking and conflict handling
+
+The Tide framework includes a client-side entity cache where each managed entity exists only once for each Tide context. Besides maintaining this cache, 
+Tide tracks all changes made on managed entities and on their associations and saves these changes for each modification. This flag is always reset 
+to +false+ when the same instance is received from the server, so this flag is indeed an indication that the  user has changed something since the last remote call. 
+
+ A particular entity instance can be in two states :
+  
+* Stable: the instance has not been modified until it was received from the server 
+* Dirty : the instance has been modified since last received from the server 
+
+The current state of an entity can be accessed with : 
+
+[source,java]
+----
+dataManager.dirtyEntity(entity).get()
+----
+
+This property +dirtyEntity()+ is observable, so it could be used for example to enable/disable a _Save_ button. 
+
+Note that this dirty flag only indicates if a direct property or collection of the entity has been changed, to check if anything has been changed
+deeper in the object graph, you can use this: 
+
+[source,java]
+----
+dataManager.deepDirtyEntity(entity).get()
+----
+
+You can also get the dirty state of the full entity manager with:
+
+[source,java]
+----
+dataManager.dirtyProperty().get()
+----
+
+or 
+
+[source,java]
+----
+dataManager.isDirty()
+----
+
+.Full example of binding the dirty state to a button
+[source,java]
+----
+@Inject
+private JavaFXDataManager dataManager;
+
+public void createButton() {
+	Button saveButton = new Button();
+	saveButton.setText("Save");
+	saveButton.disableProperty().bind(Bindings.not(dataManager.dirtyProperty()));
+----
+
+[WARNING]
+====
+This +dirty+ flag is a lot more reliable when using optimistic locking. The best way for Tide to know that an entity instance has actually been changed 
+on the server is to check that its +@Version+ field has been incremented. 
++
+In a typical client/server interaction, here is what happens :
+ 
+. The client application retrieves an entity instance from the server, for example with a version number 0. This instance is considered stable. 
+. The user modifies data on the client, possibly with bidirectional data binding. The version number stays 0, other properties are modified and the 
+    client state becomes dirty. 
+. The user clicks on a _Save_ button. The client application calls a service and retrieves the result. The server has incremented the version number to 1, 
+    so Tide overwrites the cached instance on the client and it is considered as stable again. 
+====
+
+Note that if you retrieve the same instance without version increment, the local changes won't be overwritten. In the previous example, if the server returns 
+the same instance with an unchanged version number of 0, the local instance will still be dirty. That means that you can still issue queries that return a 
+locally changed entity without losing the user changes. 
+
+One nice possibility with this programming model is that you can easily implement a cancel button after step 2. If you use bidirectional data binding, 
+the client view of the entity instance has already become dirty. As Tide always saves the local changes, it also provides a simple way of restoring the 
+last stable state : 
+
+[source,java]
+----
+@Inject
+private EntityManager entityManager;
+
+private void restore() {
+    entityManager.resetEntity(entity);
+}
+----
+
+You can also reset all entities in the context to their last stable state with : 
+
+[source,java]
+----
+@Inject
+private EntityManager entityManager;
+
+private void restoreAll() {
+    entityManager.resetAllEntities();
+}
+----
+
+If you look at the previous process in 3 steps, we assume that nobody else has changed the data the user has been working on between 1 and 3. 
+In concurrent environments with read-write data, there are possibilities that someone else has modified the entity on the server between step 1 and step 3. 
+
+There are two ways of managing this: either you just rely on optimistic locking and intercept the corresponding server exceptions to display a message to 
+the user, or you use data push (see section <<data.push,Data Push>>) so all clients are updated in near real-time. Note however that even with data push, 
+there can still be conflicts between changes made by a user and updates received from the server. 
+
+With normal optimistic locking, the remote service call at step 3 will trigger a +OptimisticLockException+. Tide provides a built-in exception handler 
+to handle this case: it will extract the +entity+ argument of the exception, compare its state with the client state  and dispatch a conflict event 
++TideDataConflictEvent+ on the Tide context when it's not identical. The exception handler can be enabled with : 
+
+[source,java]
+----
+ContextManager.getContext().set(new OptimisticLockExceptionHandler());   	   
+----
+
+Or when using Spring on the client, by simply declaring a Spring bean of type +OptimisticLockExceptionHandler+. 
+
+When data push is used, an entity instance can be updated with data received from the server at any time. If the current user was working on this instance, 
+it is obviously not desirable that his work is overwritten without notice. Similarly to the previous case, Tide will determine that an incoming data from 
+another user session is in conflict with the local data and call +DataConflictListener+ from the Tide entity manager. 
+
+What can you do with this event ? Basically there are two possibilities : accept the server-side state or keep the client state. 
+Here is an example of a conflict listener defined in a client application, generally in the main application class : 
+
+----
+@Inject
+private EntityManager entityManager;
+
+public void init() {
+	entityManager.addListener(new DataConflictListener() {
+		@Override
+		public void onConflict(EntityManager entityManager, Conflicts conflicts) {
+			conflicts.acceptAllClient();
+		}
+	});
+}	
+----
+
+The +Conflicts+ class exposes a few properties that give more details about the conflicts and make possible to present a better alert message to the user. 
+
+When using the Hibernate native API (++Session++), the optimistick lock exception ++StaleObjectStateException++ is unfortunately missing a critical 
+information that is present in the JPA ++OptimistickLockException++ to allow for correct conflict handling. In this case, you should use the provided 
+Hibernate event listener wrappers that add the missing data to the Hibernate exception. 
+Here is what is will look like when configuring the ++SessionFactory++ with Spring : 
+
+[source,xml]
+----
+<bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="hibernateProperties">
+        <props>
+            <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+            <prop key="hibernate.show_sql">false</prop>
+            <prop key="hibernate.hbm2ddl.auto">update</prop>
+        </props>
+    </property>
+    <property name="eventListeners">
+        <map>
+            <entry key="merge">
+                <bean class="org.granite.tide.hibernate.HibernateMergeListener"/>
+            </entry>
+            <entry key="create">
+                <bean class="org.granite.tide.hibernate.HibernatePersistListener"/>
+            </entry>
+            <entry key="create-onflush">
+                <bean class="org.granite.tide.hibernate.HibernatePersistOnFlushListener"/>
+            </entry>
+            <entry key="delete">
+                <bean class="org.granite.tide.hibernate.HibernateDeleteListener"/>
+            </entry>
+            <entry key="update">
+                <bean class="org.granite.tide.hibernate.HibernateSaveOrUpdateListener"/>
+            </entry>
+            <entry key="save-update">
+                <bean class="org.granite.tide.hibernate.HibernateSaveOrUpdateListener"/>
+            </entry>
+            <entry key="save">
+                <bean class="org.granite.tide.hibernate.HibernateSaveOrUpdateListener"/>
+            </entry>
+            <entry key="lock">
+                <bean class="org.granite.tide.hibernate.HibernateLockListener"/>
+            </entry>
+            <entry key="flush">
+                <bean class="org.granite.tide.hibernate.HibernateFlushListener"/>
+            </entry>
+            <entry key="auto-flush">
+                <bean class="org.granite.tide.hibernate.HibernateAutoFlushListener"/>
+            </entry>
+        </map>
+    </property>
+    ...
+</bean>   	   
+----
+
+[[data.validation]]
+=== Data validation
+
+Tide integrates with Hibernate Validator 3.x and the Bean Validation API (JSR 303) implementations, and can propagate the server validation errors to the 
+client UI components. 
+
+The server support for Hibernate Validator 3 is available in +granite-hibernate.jar+, and the support for Bean Validation is available 
+in +granite-beanvalidation.jar+. You will have to add one of these jars in your application +lib+ folder. 
+
+The validator integration is based on the GraniteDS exception handling framework. A server exception converter is registered to handle the +InvalidStateException+, 
+and a client exception handler can be registered with: 
+
+[source,java]
+----
+ContextManager.getContext().set(new ValidationExceptionHandler());   
+----
+
+Or when using Spring on the client, by simply declaring a Spring bean of type +ValidationExceptionHandler+.
+
+This exception handler intercepts all server validation faults and dispatches a validation event on the context. 
+The +ValidationExceptionHandler+ also integrates with the GraniteDS +FormValidator+ so both client and server-detected constraint violations can be 
+handled transparently and propagated to the UI. 
+
+[[data.paging]]
+=== Data paging
+
+GraniteDS provides the +PagedQuery+ component which is an implementation of +ObservableList+ and can be used as a data provider for most UI components 
+such a tables or lists. 
+
+This component supports paging and can be mapped to a server component which execute queries. The collection is completely paged and keeps in memory only 
+the data needed for the current display. In fact, it keeps in memory two complete pages to avoid too many server calls. 
+
++PagedQuery+ also supports automatic remote sorting and filtering. The server-side part of the paging depends on the server technology and is described 
+in the next paragraphs. 
+
+On the client-side, you first need to register the client component with: 
+
+[source,java]
+----
+PagedQuery people = new PagedQuery(serverSession);
+people.setMethodName("list");
+people.setRemoteComponentClass(PeopleService.class);
+people.setElementClass(Person.class);
+ContextManager.getContext().set("people", people);            
+----
+
+This registers a client component with a page size defined by the server. It's also possible and recommended to define the page size on the client with : 
+
+[source,java]
+----
+people.setMaxResults(25);              
+----
+
+When using Spring on the client, you can simply declare a +PagedQuery+ bean in your Spring context, and configure its properties. 
+
+That's all. Then just bind the component as a data provider for any component and it should work as expected (here in a FXML): 
+
+[source,xml]
+----
+<TableView fx:id="peopleView" id="peopleList" layoutX="10" layoutY="40" items="$people">
+	<columns>
+		<TableColumn fx:id="firstnameColumn" id="firstnameColumn" text="First name" sortable="true"/> 
+		<TableColumn fx:id="lastnameColumn" id="lastnameColumn" text="Last name" sortable="true"/> 
+	</columns>
+</TableView>
+----
+
+To handle sorting automatically when the user click on a column header, you can attach a sorting adapter: 
+
+[source,java]
+----
+people.setSort(new TableViewSort<Person>(peopleView, new Person()));        
+----
+
+The +TableViewSort+ adapter requires an instance of the element type of the table view/paged query. 
+
+*Server-side implementation*
+
+The +PagedQuery+ components expects that the corresponding server component implements a specific method to fetch elements. 
+There are two ways of handling filtering, either with an untyped map or with a typesafe filter object: 
+
+For untyped filters, the server component shoud implement the following method: 
+
+[source,java]
+----
+public Map<String, Object> find(Map<?, ?> filter, int first, int max, String order, boolean desc);        
+----
+
++first+, +max+, +order+ and +desc+ are straightforward. 
++filter+ is a map containing the parameter values of the query. These values can be set on the client by: 
+
+[source,java]
+----
+pagedQuery.getFilterMap().put("param1", "value1");
+pagedQuery.getFilterMap().put("param2", "value2");
+...        
+----
+
+Alternatively you can use a typesafe filter object by setting the property +filterClass+ on +PagedQuery+. Usually the filter class can be the same as 
+the element class, so any property of the elements can be used to filter the results. In more complex cases, you may use any other specific filter class. 
+
+[source,java]
+----
+pagedQuery.setFilterClass(Person.class);
+pagedQuery.getFilter().setLastname("Bar");
+...        
+----
+
+The return object must be a map containing four properties:
+ 
+* ++firstResult++: Should be exactly the same as the argument passed in (int first). 
+* ++maxResults++: Should be exactly the same as the argument passed in (int max), except when its value is 0, meaning that the client 
+    component is initializing and needs a max value. In this case, you have to set the page value, which must absolutely be greater than the maximum 
+    expected number of elements displayed simultaneously in a table. 
+* ++resultCount++: Count of results. 
+* ++resultList++: List of results. 
+
+Alternatively you can also return a result of type +org.granite.tide.data.model.Page+. That implies a compile dependency of your services on a GraniteDS API, 
+which may not be suitable. If necessary you can define your own page class and use a converter to translate from your server class to the client +Page+ class. 
+
+If you are using Spring Data, you can simply return an instance of the +Page+ class of Spring Data and let GraniteDS do the conversation 
+between GraniteDS +Page+ and Spring Data +Page+. You can also use +PageRequest+ as an argument instead of +firstResult+, +maxResults+...
+
+The following code snippet is a quick and dirty implementation and can be used as a base for other implementations (here this is a Spring service but 
+the equivalent implementations for EJB3 or CDI would be extremely similar): 
+
+[source,java]
+----
+@Service("people")
+@Transactional(readOnly=true)
+public class PeopleServiceImpl implements PeopleService {
+
+    @PersistenceContext
+    protected EntityManager manager;
+
+    public Map<String, Object> find(Map<String, Object> filter, int first, int max, String order, boolean desc) {
+        Map<String, Object> result = new HashMap<String, Object>(4);
+
+        String from = "from Person e ";
+        String where = "where lower(e.lastName) like '%' || lower(:lastName) || '%' ";
+        String orderBy = (
+            order != null ? "order by e." + order + (desc ? " desc" : "") : ""
+        );
+        String lastName = (
+            filter.containsKey("lastName") ? (String)filter.get("lastName") : ""
+        );
+
+        Query qc = manager.createQuery("select count(e) " + from + where);
+        qc.setParameter("lastName", lastName);
+        long resultCount = (Long)qc.getSingleResult();
+
+        if (max == 0)
+            max = 36;
+
+        Query ql = manager.createQuery("select e " + from + where + orderBy);
+        ql.setFirstResult(first);
+        ql.setMaxResults(max);
+        ql.setParameter("lastName", lastName);
+        List resultList = ql.getResultList();
+
+        result.put("firstResult", first);
+        result.put("maxResults", max);
+        result.put("resultCount", resultCount);
+        result.put("resultList", resultList);
+
+        return result;
+    }
+}
+----
+
+Or with typesafe arguments: 
+
+[source,java]
+----
+@Service("people")
+@Transactional(readOnly=true)
+public class PeopleServiceImpl implements PeopleService {
+
+    @PersistenceContext
+    protected EntityManager manager;
+
+    public Page find(Person filter, PageInfo pageInfo) {
+        Page result = new Page();
+
+        String from = "from Person e ";
+        String where = "where lower(e.lastName) like '%' || lower(:lastName) || '%' ";
+        String orderBy = (
+            pageInfo.getSortInfo().getOrder() != null ? "order by e." + pageInfo.getSortInfo().getOrder()[0] + (pageInfo.getSortInfo().getDesc()[0] ? " desc" : "") : ""
+        );
+        String lastName = (
+            filter.getLastname() != null ? filter.getLastname() : ""
+        );
+
+        Query qc = manager.createQuery("select count(e) " + from + where);
+        qc.setParameter("lastName", lastName);
+        long resultCount = (Long)qc.getSingleResult();
+
+        if (max == 0)
+            max = 36;
+
+        Query ql = manager.createQuery("select e " + from + where + orderBy);
+        ql.setFirstResult(first);
+        ql.setMaxResults(max);
+        ql.setParameter("lastName", lastName);
+        List resultList = ql.getResultList();
+
+        result.setFirstResult(first);
+        result.setMaxResults(max);
+        result.setResultCount(resultCount);
+        result.setResultList(resultList);
+
+        return result;
+    }
+}
+----
+
+It is also possible to define on the client side an alternative remote component name and method name that will implement the querying : 
+
+[source,java]
+----
+pagedQuery.setRemoteComponentName("peopleService");
+pagedQuery.setMethodName("list");        
+----
+
+[[data.push]]
+=== Data push
+
+In classic client applications using remoting, data is updated only when the user does an action that triggers a call to the server. As it is possible 
+to do many things purely on the client without involving the server at all, that can lead to stale client state if someone else has modified something 
+between updates. 
+
+Optimistic locking ensures that the data will keep consistent on the server and in the database, but it would be better if data updates were pushed 
+in real-time to all connected clients. 
+
+Tide makes this possible by integrating with the JPA provider and the Gravity messaging broker to dispatch data updates to subscribed clients. 
+
+This requires a bit of configuration :
+ 
+. Define a Gravity topic 
+. Add the Tide JPA listener DataPublishListener on entities that should be tracked 
+. Add the Tide annotation DataEnabled on all server components involved in modifications of these data 
+. Subscribe to the topic on the client with the DataObserver component 
+
+Let's see all this in details : 
+
+Define a Gravity topic: in the standard case, it can be done in ++services-config.xml++: 
+
+[source,xml]
+----
+<service id="gravity-service"
+    class="flex.messaging.services.MessagingService"
+    messageTypes="flex.messaging.messages.AsyncMessage">
+    <adapters>
+        <adapter-definition id="simple" 
+            class="org.granite.gravity.adapters.SimpleServiceAdapter"/>
+    </adapters>
+
+    <destination id="dataTopic">
+        <properties>
+            <no-local>true</no-local>
+            <session-selector>true</session-selector>
+        </properties>
+        <channels>
+            <channel ref="gravityamf"/>
+        </channels>
+        <adapter ref="simple"/>
+    </destination>
+</service>
+...
+<channel-definition id="gravityamf" class="org.granite.gravity.channels.GravityChannel">
+    <endpoint
+        uri="http://{server.name}:{server.port}/{context.root}/gravityamf/amf"
+        class="flex.messaging.endpoints.AMFEndpoint"/>
+</channel-definition>
+----
+
+With Spring, this can be done more easily in the respective configuration files +application-context.xml+ or ++components.xml++: 
+
+Spring context: 
+
+[source,xml]
+----
+<graniteds:messaging-destination id="dataTopic" no-local="true" session-selector="true"/>        
+----
+
+This example configuration defines a simple Gravity destination but it's also possible to use the JMS, ActiveMQ or any custom adapter if you need 
+transactional behaviour or better scalabilty. 
+
+The two important parameters for the topic definition are :
+
+* +no-local+ should be set to +true+. That means that the client that triggers the modification will not receive  the result of the update twice : 
+    first by the remoting call, then by the messaging update. 
+* +session-selector+ must be set to +true+. Tide uses JMS-style selectors to determine which data will be sent  to which clients and thus needs to store 
+    the current messaging selector state in the user session. 
+
+Add the Tide JPA publishing listener on the entities that should be tracked: 
+
+[source,java]
+----
+@Entity
+@EntityListeners({DataPublishListener.class})
+public abstract class MyEntity {
+    ... 
+}
+----
+
+When using the Hibernate native API instead of JPA, you can use the following listener configuration:         
+
+[source,java]
+----
+Configuration configuration = new Configuration();
+...
+configuration.setListener("post-insert", new HibernateDataPublishListener());
+configuration.setListener("post-update", new HibernateDataPublishListener());
+configuration.setListener("post-delete", new HibernateDataPublishListener()); 
+----
+
+With Hibernate XML config: 
+
+[source,xml]
+----
+<hibernate-configuration>    
+    <session-factory>
+       ... 
+        <event type="post-insert">
+            <listener class="org.granite.tide.hibernate.HibernateDataPublishListener"/>
+        </event>
+        <event type="post-update">
+            <listener class="org.granite.tide.hibernate.HibernateDataPublishListener"/>
+        </event>
+        <event type="post-delete">
+            <listener class="org.granite.tide.hibernate.HibernateDataPublishListener"/>
+        </event>
+    </session-factory>
+</hibernate-configuration>
+----
+
+And with Spring: 
+
+[source,xml]
+----
+<bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="hibernateProperties">
+        <props>
+            <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+            <prop key="hibernate.show_sql">false</prop>
+            <prop key="hibernate.hbm2ddl.auto">update</prop>
+        </props>
+    </property>
+    <property name="eventListeners">
+        <map>
+            <entry key="post-insert">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></list>
+            </entry>
+            <entry key="post-update">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></list>
+            </entry>
+            <entry key="post-delete">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataPublishListener"/></list>
+            </entry>
+        </map>
+    </property>
+    ...
+</bean>       
+----
+
+Then add the Tide data annotation on all services, example here with a Spring service: 
+
+[source,java]
+----
+@DataEnabled(topic="dataTopic", publish=PublishMode.ON_SUCCESS)
+public interface MyService {
+    ...
+}
+----
+
+It's generally recommended to put the annotation on the service interface but it can also work when defined on the service implementation. 
+Note that even services that only read data should be annotated this +@DataEnabled+ because they also participate in the construction  of the message selector. 
+
+The attributes of this annotations are:
+ 
+* ++topic++: the name of the messaging topic that will be used to dispatch updates. Obviously this is the one we declared just before in +services-config.xml+. 
+* ++publish++: the publishing mode. +PublishMode.MANUAL+ means that you will have to trigger the dispatch manually, for example in an interceptor. 
+    +$$PublishMode.ON_SUCCESS$$+ means that Tide will automatically dispatch the updates on any successful call. 
+    +$$PublishMode.ON_COMMIT$$+ is not yet implemented. 
+* ++params++: a filter class that will define to which updates are sent to which clients. By default there is no filtering, otherwise see below 
+    for a more detailed explanation. 
+
+*Publishing filters*
+
+It is possible to tell the Tide engine how it should dispatch each update (i.e. to which clients). 
+
+It works in two phases : at each remote call from a client, Tide calls the observes method of the params class and builds the current message selector. 
+Next at each update it calls publishes to set the message headers that will be filtered by the selector. Let's see it on an example to be more clear : 
+
+[source,java]
+----
+public class AddressBookParams implements DataTopicParams {
+    
+    public void observes(DataObserveParams params) {
+        params.addValue("user", Identity.instance().getCredentials().getUsername());
+        params.addValue("user", "__public__");
+    }
+    
+    public void publishes(DataPublishParams params, Object entity) {
+        if (((AbstractEntity)entity).isRestricted())
+            params.setValue("user", ((AbstractEntity)entity).getCreatedBy());
+        else
+            params.setValue("user", "__public__");
+    }
+}
+----
+
+The method +observes+ here adds two values to the current selector: the current user name (here retrieved by Seam Identity but could be any other means) 
+and the value +$$__public__$$+. From these values Tide will define a message selector +$$(user = 'username' OR user = '__public__')$$+ meaning that we 
+only want to be notified of updates concerning public data or data that we own. 
+
+During the publishing phase, Tide will call the method +publishes+ for each updated entity and build the message headers with the provided values.
+In the example, an update message will have a user header with either +$$__public__$$+ or the entity owner for restricted data. 
+These headers are then matched with the current message selector for each subscribed client. 
+
+Here we have used only one header parameter but it's possible to define as many as you want. Just take care that the match between observed and published 
+values can become very complex and difficult to predict with too many criteria. When having many header values, the resulting selector is an +AND+ of all criteria: 
+
+[source,java]
+----
+public void observes(DataObserveParams params) {
+    params.addValue("user", Identity.instance().getCredentials().getUsername());
+    params.addValue("user", "__public__");
+    params.addValue("group", "admin");
+    params.addValue("group", "superadmin");
+}
+----
+
+Will generate the following selector : 
+
+[source,sql]
+----
+(user = 'username' OR user = '__public__') AND (group = 'admin' OR group = 'superadmin')
+----
+
+*Publishing Modes*
+
+There are three publishing modes :
+ 
+* +$$PublishMode.ON_SUCCESS$$+ is the easiest to use, and dispatch updates after each successful remote call, regardless of the actual result 
+    of the transaction (if there is one).  
+* +$$PublishMode.ON_COMMIT$$+ allows for a transactional behaviour, and does the dispatch only on transaction commit. 
+* +PublishMode.MANUAL+ lets you do the dispatch manually in your services when you want, giving the most control. 
+
+By default only GraniteDS remoting calls are able to dispatch update messages with +$$ON_SUCCESS$$+ or +MANUAL+ modes. If you need the +$$ON_COMMIT$$+ mode, 
+or need that services that are not called from a client also trigger the dispatch, then you will have to enable the Tide data dispatcher interceptor that 
+will handle to updates in threads that are not managed by GraniteDS. 
+
+To enable the interceptor, it is necessary to indicate on the +@DataEnabled+ annotation that there is one with the +useInterceptor+ attribute: 
+
+[source,java]
+----
+@DataEnabled(topic="dataTopic", publishMode=PublishMode.ON_COMMIT, useInterceptor=true)
+public class MyService {
+}
+----
+
+There are versions of the interceptor available for each supported framework : EJB3, Spring, CDI. 
+
+For Spring, add the advice to your context (take care that you need to reference the latest GraniteDS XSD version 2.3 to allow this) : 
+
+[source,xml]
+----
+<beans
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:graniteds="http://www.graniteds.org/config"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.graniteds.org/config http://www.graniteds.org/public/dtd/3.0.0/granite-config-3.0.xsd">
+    ...
+<graniteds:tide-data-publishing-advice/>            
+----
+
+For CDI, enable the interceptor in +beans.xml+ : 
+
+[source,xml]
+----
+<beans
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">  
+    <interceptors>
+        <class>org.granite.tide.cdi.TideDataPublishingInterceptor</class>
+    </interceptors>
+</beans>            
+----
+
+For EJB 3, you can define a global interceptor in +ejb-jar.xml+ : 
+
+[source,xml]
+----
+<assembly-descriptor>
+      <interceptor-binding>
+         <ejb-name>*</ejb-name>
+         <interceptor-class>org.granite.tide.ejb.TideDataPublishingInterceptor</interceptor-class>
+      </interceptor-binding>
+      ...
+</assembly-descriptor>
+----
+
+Or alternatively configure the interceptor on each EJB 3 : 
+
+[source,java]
+----
+@Stateless
+@Local(MyService.class)
+@Interceptors(TideDataPublishingInterceptor.class)
+@DataEnabled(topic="myTopic", publish=PublishMode.ON_COMMIT, useInterceptor=true)
+public class MyServiceBean {
+    ...
+}
+----
+
+*Manual publishing* 
+
+If you need full control on the publishing process, you can create your own interceptor or use the following API in your services : 
+
+[source,java]
+----
+@DataEnabled(topic="dataTopic", params=DefaultDataTopicParams.class, publishMode=PublishMode.MANUAL, useInterceptor=true)
+public class MyService {
+
+    @Inject
+    private Gravity gravity;
+
+    public void doSomething() {
+        DataContext.init(gravity, "dataTopic", DefaultDataTopicParams.class, PublishMode.MANUAL);
+        try {
+            Object result = invocation.proceed();
+            DataContext.publish(PublishMode.MANUAL);
+            return result;
+        }
+        finally {
+            DataContext.remove();
+        }
+    }
+}        
+----
+
+[source,java]
+----
+@Interceptor
+public class CustomPublishInterceptor {
+
+    @Inject
+    private Gravity gravity;
+
+    @AroundInvoke
+    public Object aroundInvoke(InvocationContext invocation) throws Exception {
+        DataContext.init(gravity, "dataTopic", DefaultDataTopicParams.class, PublishMode.MANUAL);
+        try {
+            Object result = invocation.proceed();
+            DataContext.publish(PublishMode.MANUAL);
+            return result;
+        }
+        finally {
+            DataContext.remove();
+        }
+    }
+}
+----
+
+*Transactional publishing*
+
+You can setup a fully transactional dispatch by using the +$$ON_COMMIT$$+ mode with a JMS transport. When using JMS transacted sessions with the 
++$$ON_COMMIT$$+ mode, you will ensure that only successful database updates will be dispatched.  
+
+[source,xml]
+----
+<destination id="dataTopic">
+    <properties>
+        <jms>
+            <destination-type>Topic</destination-type>
+            <connection-factory>ConnectionFactory</connection-factory>
+            <destination-jndi-name>topic/dataTopic</destination-jndi-name>
+            <destination-name>dataTopic</destination-name>
+            <acknowledge-mode>AUTO_ACKNOWLEDGE</acknowledge-mode>
+            <transacted-sessions>true</transacted-sessions>
+            <no-local>true</no-local>
+        </jms>
+        <no-local>true</no-local>
+        <session-selector>true</session-selector>
+    </properties>
+    <channels>
+        <channel ref="gravityamf"/>
+    </channels>
+    <adapter ref="jms"/>
+</destination>
+----

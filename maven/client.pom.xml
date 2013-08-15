@@ -11,11 +11,11 @@
   </parent>
 
   <groupId>org.graniteds</groupId>
-  <artifactId>granite-client</artifactId>
+  <artifactId>granite-client-base</artifactId>
   <version>${ganiteds.version}</version>
   <packaging>jar</packaging>
 
-  <name>GraniteDS Client</name>
+  <name>GraniteDS Client Base</name>
   <url>http://www.graniteds.org</url>
   <licenses>
     <license>

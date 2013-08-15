@@ -442,7 +442,6 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		}
         
         TimeChannel<?> timeChannel = channels.get(channelId);
-        
         Channel channel = null;
         if (timeChannel != null) {
         	try {

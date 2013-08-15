@@ -33,9 +33,6 @@ import java.lang.annotation.Target;
  * with the session map returned by an <tt>ServletGraniteContext</tt> instance. 
  * 
  * @author Franck WOLFF
- * 
- * @see org.granite.messaging.webapp.ServletGraniteContext
- * @see TransientReferenceHolder
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

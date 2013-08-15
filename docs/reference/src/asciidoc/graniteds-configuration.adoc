@@ -1,0 +1,236 @@
+:imagedir: ./images
+
+[[graniteds.configuration]]
+== Configuration Reference
+
+The two main files used to configure GraniteDS are +granite-config.xml+ and +services-config.xml+. 
+By default these files should be present in the web archive at the locations +WEB-INF/granite/granite-config.xml+ and +WEB-INF/flex/services-config.xml+. 
+
+If absolutely needed, they can be placed in another location, but then you will have to specify two servlet parameters in +web.xml+ to indicate GraniteDS 
+where to look for them: 
+
+.+web.xml+
+[source,xml]
+----
+<context-param>
+    <param-name>servicesConfigPath</param-name>
+    <param-value>/WEB-INF/flex/services-config.xml</param-value>
+</context-param>
+<context-param>
+    <param-name>graniteConfigPath</param-name>
+    <param-value>/WEB-INF/granite/granite-config.xml</param-value>
+</context-param>
+----
+
+[[config.graniteconfig]]
+=== Framework Configuration
+
++granite-config.xml+ contains all the internal configuration of the framework. It can contain the following sections:
+ 
+* ++<granite scan="true">++: instructs GraniteDS to scan application archives and to automatically register the configuration elements it discovers.
+* ++<amf3-deserializer type="com.myapp.custom.CustomAMF3Deserializer">++: registers a custom deserializer that should implement
+		  the interface +java.io.ObjectInput+. The default is +org.granite.messaging.amf.io.AMF3Deserializer+.
+		  
+* ++<amf3-serializer type="com.myapp.custom.CustomAMF3Serializer">++: registers a custom serializer that should implement
+          the interface +java.io.ObjectOutput+. The default is +org.granite.messaging.amf.io.AMF3Serializer+.
+          
+* ++<amf3-message-interceptor type="">++: registers an optional message interceptor that will be called for each received/sent message. 
+          The interceptor must implement +org.granite.messaging.amf.process.AMF3MessageInterceptor+.
+          
+* ++<class-getter type="">++: registers a class getter that should implement +org.granite.messaging.amf.io.util.ClassGetter+.
+          
+* ++<converters>++: registers a list of data converters that should implement +org.granite.messaging.amf.io.convert.Converter+.
+          
+* ++<descriptors>++: registers a list of type descriptors that should extend either 
+          +org.granite.messaging.amf.io.util.ActionScriptClassDescriptor+ or 
+          +org.granite.messaging.amf.io.util.JavaClassDescriptor+.
+          
+* ++<exception-converters>++: registers a list of exception converters that should implement
+          +org.granite.messaging.service.ExceptionConverter+.
+          
+* ++<externalizers>++: registers custom externalizers that should implement
+          +org.granite.messaging.amf.io.util.externalizer.Externalizer+. See also <<remoting.extconfig,here>>.
++
+[source,xml]          
+----
+<externalizers>
+    <configuration>
+    </configuration>
+    <externalizer type=""/>
+</externalizers>      
+----
+
+* ++<gravity>++: configures the Gravity internal parameters. See <<messaging.configadvanced,here>>.
+          
+* ++<instantiators>++: registers custom instantiators that should implement 
+          +org.granite.messaging.amf.io.util.instantiator.AbstractInstantiator+.
+          
+* ++<invocation-listener type="">++: registers an invocation listener that will be called at each invocation and should 
+          implement +org.granite.messaging.service.ServiceInvocationListener+.
+          
+* ++<message-selector>++: registers a custom message selector implementation that should implement
+          +org.granite.gravity.selector.MessageSelector+. 3 implementations are available, the default is +GravityMessageSelector+.
+          
+* ++<method-matcher type="">++: registers a custom method matcher that should implement
+          +org.granite.messaging.service.MethodMatcher+.
+          
+* ++<security>++: registers a custom security service that should implement
+          +org.granite.messaging.service.security.SecurityService+.
+          
+* ++<tide-components>++: registers a list of component matchers to enable remote access for Tide service factories. There are 4 
+          ways or enabling or diabling access to Tide components:
++
+[source,xml]
+----
+<tide-components>
+    <tide-component annotated-with=""/>
+    <tide-component instance-of=""/>
+    <tide-component name=""/>
+    <tide-component type="" disabled="true"/>
+</tide-components>
+----
+* ++annotated-with++: component class is annotated with the specified annotation class. 
+* ++instance-of++: component class extends or implements the specified interface or class.
+* ++name++: component name matches the specified name regular expression.
+* ++type++: component class matches the specified class name regular expression. 
+           
+
+[[config.servicesconfig]]
+=== Application Configuration
+
++services-config.xml+ contains all the remoting and messaging configuration of the application. 
+There are three main sections: channels, factories and services. 
+
+[[config.configchannels]]
+==== Channels
+
+A channel definition mostly contains the endpoint url and the client channel implementation: 
+
+[source,xml]
+----
+<channels>
+    <channel-definition id="my-graniteamf" class="mx.messaging.channels.AMFChannel">
+        <endpoint
+            uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+            class="flex.messaging.endpoints.AMFEndpoint"/>
+    </channel-definition>
+</channels>
+----
+
+GraniteDS supports 4 implementations of the Flex ++Channel++:
+  
+*  ++mx.messaging.channels.AMFChannel++: standard HTTP remoting channel. 
+
+*  ++mx.messaging.channels.SecureAMFChannel++: standard HTTPS remoting channel. 
+
+*  ++org.granite.gravity.channels.GravityChannel++: standard HTTP messaging channel. 
+
+*  ++org.granite.gravity.channels.SecureGravityChannel++: standard HTTPS messaging channel. 
+
+
+[[config.configfactories]]
+==== Factories
+
+A factory defines a way to tell GraniteDS how to route incoming remoting calls to a server component. A factory should implement +org.granite.messaging.service.ServiceFactory+. The +factory+ definition can also have configuration options in the section ++properties++: 
+
+[source,xml]
+----
+<factory id="myFactory" class="com.myapp.custom.MyServiceFactory">
+    <properties>
+        <service-exception-handler>com.myapp.custom.MyServiceExceptionHandler</service-exception-handler>
+        <enable-exception-logging>true<enable-exception-logging>
+    </properties>
+</factory>
+----
+
+++service-exception-handler++: an exception handler should implement +org.granite.messaging.service.ServiceExceptionHandler+ and will be called 
+when an exception is thrown by the remote service. The default is +DefaultServiceExceptionHandler+ for standard factories and +ExtendedServiceExceptionHandler+ 
+for Tide factories. 
+
+++enable-exception-logging++: enables (++true++) or disable (++false++) the logging of exceptions thrown  by remote services. 
+This can avoid double logging if the server application already logs everything. Default is ++true++. 
+
+Other properties exist for the built-in service factories. You will get more details in the corresponding sections. 
+For example EJB3 factories have a +lookup+ and +initial-context-environment+ properties. 
+
+[[config.remotingservices]]
+==== Remoting destinations
+
+Remoting destinations can be defined in a +service+ definition with the +class+ property value +flex.messaging.services.RemotingService+ 
+and the +messageTypes+ value  +flex.messaging.messages.RemotingMessage+. Destinations can also have a +properties+ section and in general 
+they will define at least the +factory+ and the +channels+ they are attached to. 
+
+[source,xml]
+----
+<services>
+  <service
+    id="granite-service"
+    class="flex.messaging.services.RemotingService"
+    messageTypes="flex.messaging.messages.RemotingMessage">
+    <destination id="cars">
+      <channels>
+        <channel ref="my-graniteamf"/>
+      </channels>
+      <properties>
+        <factory>guiceFactory</factory>
+        <source>test.granite.guice.services.Cars</source>
+      </properties>
+    </destination>
+  </service>
+</services>    		
+----
+
+You can define multiple channels for the same destination to handle failover. When the first channel cannot be accessed, the remote object will try 
+the next one in the list. 
+
+The property +source+ is often used to determine the target component and its value depend on the server framework. 
+In this example with Guice this is the class name of the target bean. 
+
+A destination can also define a list of security roles that are allowed to access the remote component. See <<remoting.security,Remoting security>>. 
+
+[[config.messagingservices]]
+==== Messaging destinations
+
+Messaging destinations can be defined in a +service+ definition with the +class+ property value +flex.messaging.services.MessagingService+ and 
+the +messageTypes+ value +flex.messaging.messages.AsyncMessage+. Destinations can also have a +properties+ section that is used for example with the JMS adapter. 
+
+A messaging service can also define a list of service adapters that define how messages are routed and each destination can reference one of the configured adapters. 
+
+[source,xml]
+----
+<service id="gravity-service"
+    class="flex.messaging.services.MessagingService"
+    messageTypes="flex.messaging.messages.AsyncMessage">
+    <adapters>
+        <adapter-definition id="simple" class="org.granite.gravity.adapters.SimpleServiceAdapter"/>
+        <!--adapter-definition id="jms" class="org.granite.gravity.adapters.JMSServiceAdapter"/-->
+    </adapters>
+
+    <destination id="addressBookTopic">
+        <properties>
+          <!--jms>
+            <destination-type>Topic</destination-type>
+            <connection-factory>ConnectionFactory</connection-factory>
+            <destination-jndi-name>topic/testTopic</destination-jndi-name>
+            <destination-name>dataTopic</destination-name>
+            <acknowledge-mode>AUTO_ACKNOWLEDGE</acknowledge-mode>
+            <transacted-sessions>true</transacted-sessions>
+            <no-local>true</no-local>
+          </jms-->
+          <no-local>true</no-local>
+          <session-selector>true</session-selector>
+        </properties>
+        <channels>
+            <channel ref="gravityamf"/>
+        </channels>
+        <adapter ref="simple"/>
+        <!--adapter ref="jms"/-->
+    </destination>
+</service>
+----
+
+You can define multiple channels for the same destination to handle failover. When the first channel cannot be accessed, the remote object will 
+try the next one in the list. 
+
+A destination can also define a list of security roles that are allowed to access the remote component. See <<messaging.security,Messaging Security>>. 
+

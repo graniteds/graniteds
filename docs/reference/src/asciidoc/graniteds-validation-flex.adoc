@@ -1,0 +1,630 @@
+[[graniteds.validation]]
+== Client-Side Validation API (JSR 303)
+
+The "Bean Validation" link:$$http://jcp.org/en/jsr/detail?id=303$$[specification] (aka JSR-303) standardizes an annotation-based validation 
+framework for Java. It provides an easy and powerful way of processing bean validations, with a pre-defined set of constraint annotations, allowing to
+arbitrarily extend the framework with user specific constraints. 
+
+Flex doesn't provide by itself such a framework. The standard way of processing validation is to use 
+link:$$http://livedocs.adobe.com/flex/3/langref/mx/validators/Validator.html$$[+Validator+] subclasses and to bind a validator to each user input 
+(see link:$$http://livedocs.adobe.com/flex/3/html/help.html?content=validators_2.html$$[Validating data]). This method is at least time consuming for the developer, 
+source of inconsistencies between the client-side and the server-side validation processes, and source of redundancies in your MXML code. 
+
+GraniteDS provides an implementation of the Bean Validation specification and provides code generation tools integration so that your Java constraint annotations 
+are reproduced in your AS3 beans. 
+
+[[validation.gettingstarted]]
+=== Getting started with the GraniteDS validation framework
+
+As its Java equivalent, the GraniteDS validation framework provides a set of standard constraints. Here is an overview of these constraints 
+(see link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/validation/constraints/package-detail.html$$[API documentation] for details): 
+
+[options="header"]
+|===============
+|Constraint|Description
+|+AssertFalse+|The annotated element must be +false+
+|+AssertTrue+|The annotated element must be +true+
+|+DecimalMax+|The annotated element must be a number whose value must be lower or equal to the specified +maximum+
+|+DecimalMin+|The annotated element must be a number whose value must be greater or equal to the specified +minimum+
+|+Digits+|The annotated element must be a number within accepted range
+|+Future+|The annotated element must be a date in the future
+|+Max+|The annotated element must be a number whose value must be lower or equal to the specified +maximum+
+|+Min+|The annotated element must be a number whose value must be greater or equal to the specified +minimum+
+|+NotNull+|The annotated element must not be +null+
+|+Null+|The annotated element must be +null+
+|+Past+|The annotated element must be a date in the past
+|+Pattern+|The annotated String must match the specified regular expression
+|+Size+|The annotated element size must be between the specified boundaries (included)
+|===============
+
+Each of these contraint annotation may be applied on a bean property, depending on its type and its expected value: 
+
+.Annotated AS3 Bean Properties: 
+[source,actionscript]
+----
+public class MyAnnotatedBean {
+
+    [NotNull] [Size(min="2", max="8")]
+    public var name:String;
+
+    private var _description:String;
+
+    [Size(max="255")]
+    public function get description():String {
+        return _description;
+    }
+    public function set description(value:String) {
+        _description = value;
+    }
+}
+----
+
+In the above code sample, the +name+ value must not be +null+ and its length must be between 2 and 8 characters, and the +description+ value may be +null+ 
+or may have a length of maximum 255 characters. Constraint annotations must be placed on public properties, either public variables or public accessors 
+(and they may also be placed on the class itself). 
+
+In order to validate an instance of the above class, you may use the +ValidatorFactory+ class. 
+
+[source,actionscript]
+----
+import org.granite.validation.ValidatorFactory;
+import org.granite.validation.ConstraintViolation;
+
+var bean:MyAnnotatedBean = new MyAnnotatedBean();
+
+var violations:Array = ValidatorFactory.getInstance().validate(bean);
+trace((violations[0] as ConstraintViolation).message); // "may not be null"
+
+bean.name = "123456789";
+violations = ValidatorFactory.getInstance().validate(bean);
+trace((violations[0] as ConstraintViolation).message); // "size must be between 2 and 8"
+
+bean.name = "1234";
+violations = ValidatorFactory.getInstance().validate(bean);
+trace(violations.length); // none...        
+----
+
+Validation may be much more complex than the above basic sample. GraniteDS validation framework supports all advanced concepts of the specification, such as groups, 
+group sequences, default group redefinition, traversable resolver, message interpolator, etc. Please refer to the specification and the various tutorials you may 
+find on the Net. 
+
+[TIP]
+====
+Compilation Tip: You must use the compiler option 
++$$-keep-as3-metadata+=AssertFalse,AssertTrue,DecimalMax,DecimalMin,Digits,Future,Max,Min,NotNull,Null,Past,Pattern,Size$$+
+or the corresponding configuration for your build system (see <<graniteds.projectsetup,Project Setup>> for Ant and Maven) 
+in order to tell the Flex compiler to keep the constraint annotations in your compiled code (Flash Builder 4 appears to keep all metadata by default, 
+but the +mxmlc+ command line compiler doesn't)! 
+If you write your own constraints, you will also have to tell the compiler about them in the same way. 
+====
+
+[[validation.localization]]
+=== Working with error messages and localization
+
+Default error messages for built-in constraints are provided in four languages: english, french, german (as in the javax API distribution) and chinese. 
+Depending on the current locales specified in the +ResourceManager.getInstance().localeChain+ array, error messages will be localized in one of these languages 
+(defaulted to english if you use other locales). 
+
+The easiest way to customize error messages is to use the message attribute of the constraint annotation: 
+
+[source,actionscript]
+----
+public class MyBean {
+
+    [NotNull(message="Name is mandatory"]
+    [Size(min="2", message="Name must have a length of at least {min} characters")]
+    public var name;
+
+    ...
+}
+----
+
+As you can see, you may use parameters (the min attribute) in such customized messages. These error messages are much more accurate than the default ones 
+("may not be null", "size must be between..."), but you must specify them for each constraint and you cannot localize the literals used for multiple languages. 
+
+In order to add support for different locales, you will have to define variables (eg. +name.notnull+ and ++name.minsize++) and use the built-in 
+link:$$http://livedocs.adobe.com/flex/3/html/help.html?content=l10n_2.html$$[ResourceBundle] support offered by Flex: 
+
+[source,actionscript]
+----
+public class MyBean {
+
+    [NotNull(message="{name.notnull}"]
+    [Size(min="2", message="{name.minsize}")]
+    public var name;
+
+    ...
+}    
+----
+
+.+locale/en_US/ValidationMessages.properties+ 
+----
+name.notnull=Name is mandatory
+name.minsize=Name must have a length of at least {min} characters    
+----
+
+.+locale/fr_FR/ValidationMessages.properties+ 
+----
+name.notnull=Le nom est obligatoire
+name.minsize=Le nom doit avoir une taille d'au moins {min} caractères
+----
+
+Register your Bundles: 
+
+[source,actionscript]
+----
+[ResourceBundle("ValidationMessages")]
+----
+
+If you compile your Flex application with support for these two locales (see Flex 
+link:$$http://livedocs.adobe.com/flex/3/html/help.html?content=l10n_2.html$$[documentation]), the error messages will be localized in english or french, 
+depending on the current selected locale, with the values set in your property files. You may also redefine standard messages for a given locale in the same way: 
+
+.+locale/en_US/ValidationMessages.properties+ 
+----
+name.notnull=Name is mandatory
+name.minsize=Name must have a length of at least {min} characters
+javax.validation.constraints.NotNull.message=This value is mandatory
+----
+
+With the above bundle, the default error message for the +NotNull+ constraint and the locale +$$en_US$$+ will be redefined to "This value is mandatory" 
+(instead of "may not be null"). 
+
+Adding support for one or more locales other than the default ones will follow the same principle: create a +ValidationMessages.properties+ for the new locale, 
+translate all default error messages and add new ones for your customized message keys. Note that the bundle name must always be set to +"ValidationMessages"+. 
+
+[[validation.groups]]
+=== Working with groups
+
+As stated by the specification (section 3.4):
+  
+A group defines a subset of constraints. Instead of validating all constraints for a given object graph, only a subset
+is validated. This subset is defined by the the group or groups targeted. Each constraint declaration defines the list
+of groups it belongs to. If no group is explicitly declared, a constraint belongs to the +Default+ group.
+         
+The GraniteDS validation framework fully supports the concepts of group, group inheritance, group sequence, default group redefinition and implicit grouping. 
+Like in Java, groups are represented by interfaces. For example, suppose that you want to define and use a +path.to.MyGroup+ group. 
+You will have to write the interface, to reference it in some of your constraints and to call the +ValidatorFactory.validate+ method with one extra parameter: 
+
+[source,actionscript]
+----
+package path.to {
+    public interface MyGroup {}
+}
+...
+
+public class MyBean {
+
+    [NotNull]
+    [Size(min="2", max="10", groups="path.to.MyGroup")]
+    public var name;
+
+    ...
+}
+...
+
+var bean:MyBean = new MyBean();
+
+// Default group: NotNull fails.
+ValidatorFactory.getInstance().validate(bean);
+
+// MyGroup group: no failure.
+ValidatorFactory.getInstance().validate(bean, [MyGroup]);
+
+// Default & MyGroup groups: NotNull fails.
+ValidatorFactory.getInstance().validate(bean, [Default, MyGroup]);
+
+bean.name = "a";
+
+// Default group: no failure.
+ValidatorFactory.validate(bean);
+
+// MyGroup group: Size fails.
+ValidatorFactory.getInstance().validate(bean, [MyGroup]);
+
+// Default & MyGroup groups: Size fails.
+ValidatorFactory.getInstance().validate(bean, [Default, MyGroup]);
+----
+
+You may of course specify mutliple groups in the constraint annotation, for example +\[Size(min="2", max="10", goups="path.to.MyGroup, path.to.MyOtherGroup")\]+. 
+Because the group interface references in the annotations  must be fully qualified, it may be annoying to always specify the complete path to each group interface, 
+and you may use the namespace resolver available in the +ValidatorFactory+ instance: 
+
+[source,actionscript]
+----
+ValidatorFactory.getInstance().namespaceResolver.registerNamespace("g", "path.to.*");
+...
+
+[Size(min="2", max="10", goups="g:MyGroup, g:MyOtherGroup")]
+public var name;
+----
+
+Note that the link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/validation/groups/Default.html$$[+Default+] group interface is always 
+registered in the default namespace and may be use without any prefix specification: +groups="Default"+ is legal and strictly equivalent 
+to +groups="org.granite.validation.groups.Default"+ (or even +groups="javax.validation.groups.Default"+ - as the +javax+ package is handled as an alias 
+of the ++granite++'s one). 
+
+[[validation.gas3]]
+=== Integration with code generation tools (Gas3)
+
+The Bean Validation specification is primarily intended to be used with Java entity beans. GraniteDS code generation tools replicate your Java model 
+into an ActionScript 3 model and may be configured in order to copy validation annotations. All you have to do is to change the default 
++org.granite.generator.as3.DefaultEntityFactory+ to +org.granite.generator.as3.BVEntityFactory+. 
+
+With the Eclipse builder, go to the _"Options"_ panel and change the entity factory as shown is the picture below:  
+
+image:bventityfactory.jpg
+
+With the Ant task, use the +entityfactory+ attribute as follow in your ++build.xml++: 
+
+[source,xml]
+----
+<gas3 entityfactory="org.granite.generator.as3.BVEntityFactory" ...>
+    ...
+</gas3>
+----
+
+Then, provided that you have a Java entity bean like this one: 
+
+[source,java]
+----
+@Entity
+public class Person {
+
+    @Id @GeneratedValue
+    private Integer id;
+    
+    @Basic
+    @Size(min=1, max=50)
+    private String firstname;
+    
+    @Basic
+    @NotNull(message="You must provide a lastname")
+    @Size(min=1, max=255)
+    private String lastname;
+
+    // getters and setters...
+}
+----
+
+... you will get this generated ActionScript 3 code: 
+
+[source,actionscript]
+----
+[Bindable]
+public class PersonBase implements IExternalizable {
+
+    ...
+
+    public function set firstname(value:String):void {
+        _firstname = value;
+    }
+    [Size(min="1", max="50", message="{javax.validation.constraints.Size.message}")]
+    public function get firstname():String {
+        return _firstname;
+    }
+
+    public function set lastname(value:String):void {
+        _lastname = value;
+    }
+    [NotNull(message="You must provide a lastname")]
+    [Size(min="1", max="255", message="{javax.validation.constraints.Size.message}")]
+    public function get lastname():String {
+        return _lastname;
+    }
+
+    ....
+}
+----
+
+You may then use the +ValidationFactory+ in order to validate your ActionScript 3 bean, and the same constraints will be applied  on the Flex and the Java sides. 
+
+This works for plain Java beans and entity beans. 
+
+[[validation.customconstraints]]
+=== Writing your own Constraints
+
+Suppose you want to make sure that a +Person+ bean has at least one of its +firstname+ or +lastname+  properties +not null+. There is no default constraint 
+that will let you check this. In order to implement a constraint that will do this validation, you will have to write a new +IConstraint+ implementation, 
+register it with the +ValidatorFactory+  and use the corresponding annotation on top of the +Person+ class. 
+
+.+PersonChecker.as+
+[source,actionscript] 
+----
+public class PersonChecker extends BaseConstraint {
+
+    override public function initialize(annotation:Annotation, factory:ValidatorFactory):void {
+        // initialize the BaseContraint with the default message (a bundle key).
+        internalInitialize(factory, annotation, "{personChecker.message}");
+    }
+
+    override public function validate(value:*):String {
+        // don't validate null Person beans.
+        if (Null.isNull(value))
+            return null;
+
+        // check value type (use helper class).
+        ConstraintHelper.checkValueType(this, value, [Person]);
+
+        // validate the Person bean: at least one of the firstname or lastname property
+        // must be not null.
+        if (Person(value).firstname == null && Person(value).lastname == null)
+            return message;
+
+        // return null if validation is successful.
+        return null;
+    }
+}
+----
+
+The +PersonChecker+ class actually extends the +BaseContraint+ class that simplifies +IConstraint+ implementations. It defines a default message 
+(++"{personChecker.message}"++) with a message key that could be used in your validation  messages bundles 
+(see above <<graniteds.localization,Working with Error Messages and Localization>>). 
+
+You should then register this new constraint in the validation framework: 
+
+[source,actionscript]
+----
+ValidatorFactory.getInstance().registerConstraintClass(PersonChecker);
+----
+
+Because Flex annotations have no specific implementation, you may then directly use the constraint annotation in the +Person+ class: 
+
+[source,actionscript]
+----
+[Bindable]
+[PersonChecker]
+public class Person {
+
+    [Size(min="1", max="50")]
+    public var firstname;
+
+    [Size(min="1", max="255")]
+    public var lastname;
+}
+----
+
+Note that the annotation isn't qualified with any package name: registering two constraint class with the same name but in different packages 
+will result in using the last registered one only. This behavior may additionaly be used in order to override default constraint implementations: 
+if you write your own +Size+ constraint implementation and register it with the +ValidatorFactory+ class, it will be used instead of the built-in one. 
+
+If the constraint exists in Java and if you use the code generation tools, the unqualified class name of the Java constraint will be generated on top 
+of the +Person+ class, just as above. 
+
+[TIP]
+====
+Don't forget the +$$-keep-as3-metadata+=AssertFalse,...,Size,PersonChecker$$+ compiler option! 
+====
+
+See standard constraint implementations in the GraniteDS distribution to know more about specific attributes support and other customization options. 
+
+[[validation.form]]
+=== Using the FormValidator class
+
+By default, in addition to returning an array of +ConstraintViolations+, the validation framework will dispatch events for each failed constraint, 
+provided that the bean that holds the property is an +IEventDispatcher+. These events are instances of the +ConstraintViolationEvent+ class and are 
+dispatched between two ++ValidationEvent++s events (start and end). 
+
+Because ActionScript 3 beans annotated with the +\[Bindable\]+ annotation are automatically compiled as +IEventDispatcher+ implementations, generated 
+beans (or other bindable beans written manually) will dispatch constraint events. You may then listen validation events dispatched by a bean if you 
+register your event listeners as follow: 
+
+[source,actionscript]
+----
+private function startValidationHandler(event:ValidationEvent):void {
+    // reset all error messages...
+}
+
+private function constraintViolationHandler(event:ConstraintViolationEvent):void {
+    // display the error message on the corresponding input...
+}
+
+private function endValidationHandler(event:ValidationEvent):void {
+    // done...
+}
+
+...
+bean.addEventListener(
+    ValidationEvent.START_VALIDATION,
+    startValidationHandler, false, 0, true
+);
+bean.addEventListener(
+    ConstraintValidatedEvent.CONSTRAINT_VALIDATED,
+    constraintValidatedHandler, false, 0, true
+);
+bean.addEventListener(
+    ValidationEvent.END_VALIDATION,
+    andValidationHandler, false, 0, true
+);
+
+...
+ValidatorFactory.getInstance().validate(bean);
+----
+
+It may be however very tedious to add such listeners to all your beans and to write the code for displaying or reseting error messages for all inputs. 
+
+With the +FormValidator+ component, you get an easy way to use implicitly these events: the +FormValidator+ performs validation on the fly whenever the user 
+enters data into user inputs and automatically displays error messages when these data are incorrect, based on constraint annotations placed on the bean properties. 
+
+A sample usage with Flex 4 (using the Person bean introduced above and bidirectional bindings): 
+
+[source,xml]
+----
+<fx:Declarations>
+    <v:FormValidator id="fValidator" form="{personForm}" entity="{person}"/>
+</fx:Declarations>
+
+<fx:Script>
+
+    [Bindable]
+    protected var person:Person = new Person();
+
+    protected function savePerson():void {
+        if (fValidator.validateEntity()) {
+            // actually save the validated person entity...
+        }
+    }
+
+    protected function resetPerson():void {
+        person = new Person();
+    }
+</fx:Script>
+
+<mx:Form id="personForm">
+    <mx:FormItem label="Firstname">
+        <s:TextInput id="iFirstname" text="@{person.firstname}"/>
+    </mx:FormItem>
+    <mx:FormItem label="Lastname" required="true">
+        <s:TextInput id="iLastname" text="@{person.lastname}"/>
+    </mx:FormItem>
+</mx:Form>
+  
+<s:Button label="Save" click="savePerson()"/>
+<s:Button label="Cancel" click="resetPerson()"/>
+----
+
+In the above sample, the +personForm+ form uses two bidirectional bindings between the text inputs and the person bean. Each time the user enter some 
+text in an input, the value of the input is copied into the bean and triggers a validation. Error messages are then automatically displayed or cleared 
+depending on the validation result. 
+
+Note that the binding with the target entity should be direct (e.g. not +entity="{model.entity}"+ but +entity="{entity}"+. If not possible or too complex, 
+you can specify a property +entityPath+ to indicate the validator that it should bind to a deeper element in the object graph.  
+
+[source,xml]
+----
+<fx:Declarations>
+    <v:FormValidator id="fValidator" form="{personForm}" entity="{model.person}" entityPath="model"/>
+</fx:Declarations>
+----
+
+The global validation of the person bean will be performed when the user click on the _"Save"_ button. However, class-level  constraint violations 
+(such as the +PersonChecker+ constraint) cannot be automatically associated to an input, and these violations prevent the +fValidator.validateEntity()+ 
+call to succeed while nothing cannot be automatically displayed to the user. 
+
+To solve this problem, three options are available: 
+
+(1) Unhandled Violations with the +properties+ Argument: 
+
+[source,actionscript]
+----
+[Bindable]
+[PersonChecker(properties="firstname,lastname"]
+public class Person {
+    ...
+}
+----
+
+This tell the +FormValidator+ to display the +PersonChecker+ error message on both +firstname+ and +lastname+ inputs. You may of course use only 
+the +firstname+ property or add another property at your convenience. 
+
+(2) Unhandled Violations with the +unhandledViolationsMessage+ Property: 
+
+[source,xml]
+----
+<mx:Form id="personForm">
+    <mx:FormItem label="Firstname">
+        <s:TextInput id="iFirstname" text="@{person.firstname}"/>
+    </mx:FormItem>
+    <mx:FormItem label="Lastname" required="true">
+        <s:TextInput id="iLastname" text="@{person.lastname}"/>
+    </mx:FormItem>
+    <s:Label text="{fValidator.unhandledViolationsMessage}"/>
+</mx:Form>
+----
+
+All violation messages that cannot be associated with any input will be diplayed in the label at the bottom of the form (separated by new lines). 
+
+(3) Unhandled Violations with the +unhandledViolations+ Event: 
+
+[source,xml]
+----
+<fx:Declarations>
+    <v:FormValidator id="fValidator" form="{personForm}" entity="{person}"
+        unhandledViolations="showUnhandledViolations(event)"/>
+</fx:Declarations>
+
+<fx:Script>
+
+    protected function showUnhandledViolations(event:ValidationResultEvent ):void {
+        // display unhandled messages...
+    }
+
+</fx:Script>
+----
+
+The third option let you do whatever you want with these unhandled violations. You can display the +event.message+ somewhere 
+(it has the same format as the +unhandledViolationsMessage+ property), you may loop over the +event.results+ (array of ++ValidationResult++'s) 
+or you may even call the +fValidator.getUnhandledViolations+ method that will give you the last unhandled +ConstraintViolation instances+. 
+
+With Flex 3, because bidirectional bindings are not natively supported, you would have to use +mx:Binding+ for each input. 
+With the above sample, you will add: 
+
+[source,xml]
+----
+<mx:TextInput id="iFirstname" text="{person.firstname}"/>
+...
+<mx:TextInput id="iLastname" text="{person.lastname}"/>
+...
+<mx:Binding destination="person.firstname" source="iFirstname.text"/>
+<mx:Binding destination="person.lastname" source="iLastname.text"/>
+----
+
+Note also that with Tide, to simplify the cancel operations, you may reset the entity state with +Managed.resetEntity(entity)+ 
+(see <<data.dirtycheck,Data Management>>. This may be particularly useful if you are not creating a new person but modifying an existing one. 
+
+If you don't want or if you can't use bidirectional bindings, you may still use the +FormValidator+ component but will need to  specify the 
+property +validationSubField+ for each input: 
+
+[source,xml]
+----
+<fx:Declarations>
+    <v:FormValidator id="fValidator" form="{personForm}" entity="{person}"/>
+</fx:Declarations>
+
+<fx:Script>
+
+    [Bindable]
+    protected var person:Person = new Person();
+
+    protected function savePerson():void {
+
+        person.firstname = iFirstname.text == "" ? null : iFirstname.text;
+        person.lastname = iLastname.text == "" ? null : iLastname.text;
+
+        if (fValidator.validateEntity()) {
+            // actually save the validated person entity...
+        }
+    }
+
+    protected function resetPerson():void {
+        person = new Person();
+    }
+</fx:Script>
+
+<mx:Form id="personForm">
+    <mx:FormItem label="Firstname">
+        <s:TextInput id="iFirstname" text="{person.firstname}"
+            validationSubField="firstname"/>
+    </mx:FormItem>
+    <mx:FormItem label="Lastname" required="true">
+        <s:TextInput id="iLastname" text="{person.lastname}"
+            validationSubField="lastname"/>
+    </mx:FormItem>
+</mx:Form>
+----
+
+This time, you have to set manually input values into your bean, but this will work with Flex 3 as well and these subfields may contain a path 
+to a subproperty: for example, if you have an +Address+ bean in your +Person+ bean, you could write +validationSubField="address.address1"+. 
+
+A last option to help the +FormValidator+ detect the data bindings is to define a global list of properties which will be considered as UI component 
+targets for bindings. By default, +text+, +selected+, +selectedDate+, +selectedItem+ and +selectedIndex+ are prioritarily considered for binding detection 
+so most standard controls work correctly (for example +TextInput+, +TextArea+, +CheckBox+ or ++DatePicker++). 
+
+[[validation.compatibility]]
+=== Notes on compatibility
+
+All standard constraints should behave exactly in the same way as they behave in Java, except for some advanced Pattern usages: because the regular 
+expression support in ActionScript 3 may differ from the Java one (especially with supported 
+link:$$http://www.graniteds.org/public/docs/3.0.0/docs/flex/api/org/granite/validation/constraints/Pattern.html#flags$$[flags]), you should be aware 
+of few possible inconstancies between Pattern constraints written in Java and in ActionScript 3. 
+

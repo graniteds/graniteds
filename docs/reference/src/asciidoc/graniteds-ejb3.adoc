@@ -1,0 +1,990 @@
+[[graniteds.ejb3]]
+== Integration with EJB3
+
+EJB 3 are an important part of the link:$$http://www.oracle.com/technetwork/java/javaee/tech/javaee5-jsp-135162.html$$[Java EE 5 platform]. 
+They provide a powerful framework for managing and securing enterprise services in an application server (session beans) as well as an powerful 
+persistence and query language system (JPA). 
+
+GraniteDS provides access to EJB 3 services via either the +RemoteObject+ API or the Tide API for Session Beans methods calls, and fully supports 
+serialization of JPA entities from and to your Flex application, taking care of lazily loaded associations; both collections and proxies. 
+This support for JPA entity beans is covered in the section <<remoting.jpa,JPA and lazy initialization>>, so this section will only describe how to call remotely 
+stateless and stateful session beans from a Flex application. GraniteDS also integrates with container security for authentication and role-based authorization. 
+
+GraniteDS provides access to EJB 3 services via either the +RemoteService+ API or the Tide API for Session Beans methods calls, and fully supports serialization 
+of JPA entities from and to your Java client application, taking care of lazily loaded associations; both collections and proxies. 
+This support for JPA entity beans is covered in the section <<remoting.jpa,JPA and lazy initialization>>, so this section will only describe how to call remotely 
+stateless and stateful session beans from a Java client application. 
+GraniteDS also integrates with container security for  authentication and role-based authorization. 
+
+For a basic example with GraniteDS and EJB 3 (stateless and stateful session beans, and entity beans) working together, have a look to the +$$graniteds_ejb3$$+ 
+example project in the +examples+ folder of the GraniteDS distribution +graniteds-\*\*\*.zip+ and import it as a new Eclipse project. 
+
+You may also have a look at the _"Hello, world" Revisited_ tutorial for another basic example application using EJB 3 technologies together with Granite Eclipse Builder. 
+
+[[ejb3.remoteobject]]
+=== Using the RemoteObject APIUsing the RemoteService API
+
+ifdef::flex[]
+The Flex-side usage of the +RemoteObject+ API is completely independent of the server technology, so everything described in the <<remoting.remoteobject,Remoting>> 
+chapter applies for EJBs. This section will only describe the particular configuration required in various use cases of EJB services. 
+endif::flex[]
+ifdef::java[]
+The client-side usage of the +RemoteService+ API is completely independent of the server technology, so everything described in 
+the <<remoting.remoteservice,Remoting>> chapter applies for EJBs. This section will only describe the particular configuration required in various 
+use cases of EJB services. 
+endif::java[]
+
+Configuring remoting for EJB 3 services simply requires adding the +org.granite.messaging.service.EjbServiceFactory+ service factory in +services-config.xml+ 
+and specifying its JNDI lookup string property. 
+
+[[ejb3.roexample]]
+==== Basic Remoting Example
+
+All remoting examples from the <<remoting.remoteobject,Remoting>> chapter apply for EJBs, here is a basic example: 
+
+[source,java]
+----
+public interface HelloService {
+
+    public String hello(String name);
+}
+
+@Stateless
+@Local(HelloService.class)
+@RemoteDestination(id="helloService")
+public class HelloServiceBean implement HelloService {
+
+    public String hello(String name) {
+        return "Hello " + name;
+    }
+}
+----
+
+ifdef::java[]
+[source,java]
+----
+AMFRemotingChannel channel = new AMFRemotingChannel(transport, "graniteamf", 
+	new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"));
+RemoteService srv = new RemoteService(channel, "hello");
+		
+srv.newInvocation("hello", "Barack").setTimeToLive(5, TimeUnit.SECONDS)
+	.addListener(new ResultFaultIssuesResponseListener() {
+    
+	@Override
+	public void onResult(ResultEvent event) {
+		System.out.println("Result: " + event.getResult());
+	}
+
+	@Override
+	public void onFault(FaultEvent event) {
+		System.err.println("Fault: " + event.toString());
+	}
+
+	@Override
+	public void onIssue(IssueEvent event) {
+		System.err.println("Issue: " + event.toString());
+	}
+}).invoke();
+----
+endif::java[]
+
+[[ejb3.roconfig]]
+==== Common configuration
+
+The main part of the configuration is the +factory+ declaration in the file +services-config.xml+ : 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<services-config>
+
+    <services>
+        <service
+            id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <destination id="personService">
+                <channels>
+                    <channel ref="my-graniteamf"/>
+                </channels>
+                <properties>
+                    <factory>ejbFactory</factory>
+                </properties>
+            </destination>
+        </service>
+    </services>
+
+    <factories>
+        <factory id="ejbFactory" class="org.granite.messaging.service.EjbServiceFactory">
+            <properties>
+                <lookup>myapp.ear/{capitalized.destination.id}Bean/local</lookup>
+            </properties>
+        </factory>
+    </factories>
+
+    <channels>
+        <channel-definition id="my-graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+
+</services-config>
+----
+
+Two elements are important in this configuration : 
+
+* The EJB service factory declaration and the reference to in in our destination 
+* The JNDI lookup string defined in the +lookup+ property of the factory 
+
+[NOTE]
+====
+In Java EE 6 compliant application servers such as JBoss 6 and GlassFish 3, you can use the standard global naming specification : 
++java:global/{context.root}/{capitalized.destination.id}Bean+. 
+====
+
+The JNDI lookup string is common for all EJB 3 destinations, and thus contains placeholders that will be replaced at runtime depending on the destination 
+that is called. +{capitalized.destination.id}+ will be replaced by the destination id with the first letter in capital, 
+for example +personService+ will become +myApp/PersonServiceBean/local+.
++{destination.id}+ can alternatively be used. Note that some Java EE servers do not expose EJB local interfaces in the global JNDI context, so you will have 
+to use a local JNDI reference and add an +ejb-local-ref+ section in +web.xml+ for each EJB exposed to JNDI.  
+
+[source,xml]
+----
+<ejb-local-ref>
+    <ejb-ref-name>myapp.ear/PeopleServiceBean</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home/>
+    <local>com.myapp.service.PeopleService</local>
+</ejb-local-ref>
+----
+
+[source,xml]
+----
+<factory id="ejbFactory" class="org.granite.messaging.service.EjbServiceFactory">
+    <properties>
+        <lookup>java:comp/env/myapp.ear/{capitalized.destination.id}Bean</lookup>
+    </properties>
+</factory>
+----
+
+Of course you can share the same factory with many EJB destinations. 
+
+[source,xml]
+----
+<destination id="person">
+    <channels>
+        <channel ref="my-graniteamf"/>
+    </channels>
+    <properties>
+        <factory>ejbFactory</factory>
+    </properties>
+</destination>
+
+<destination id="product">
+    <channels>
+        <channel ref="my-graniteamf"/>
+    </channels>
+    <properties>
+        <factory>ejbFactory</factory>
+    </properties>
+</destination>
+----
+
+[[ejb3.roremoteejb]]
+==== Configuration for Remote EJBs
+
+By default GraniteDS will lookup the bean in JNDI with the default +InitialContext+. To access remote EJB services you have to specify the JNDI context 
+environment that will be used for remote lookup in the +factory+ definition of +services-config.xml+.  
+
+The parameters generally depend on the remote application server. Please refer to the standard 
+link:$$http://java.sun.com/j2se/1.5.0/docs/api/javax/naming/Context.html$$[JNDI Context API documention] and to the documentation of your application server 
+for more details. 
+
+[source,xml]
+----
+...
+<factory id="ejbFactory" class="org.granite.messaging.service.EjbServiceFactory">
+    <properties>
+        <lookup>myApp/{capitalized.destination.id}Bean/local</lookup>
+
+        <!-- InitialContext parameters -->
+        <initial-context-environment>
+            <property>
+                <name>Context.PROVIDER_URL</name>
+                <value>...</value>
+            </property>
+            <property>
+                <name>Context.INITIAL_CONTEXT_FACTORY</name>
+                <value>...</value>
+            </property>
+            <property>
+                <name>Context.URL_PKG_PREFIXES</name>
+                <value>...</value>
+            </property>
+            <property>
+                <name>Context.SECURITY_PRINCIPAL</name>
+                <value>...</value>
+            </property>
+            <property>
+                <name>Context.SECURITY_CREDENTIALS</name>
+                <value>...</value>
+            </property>
+        </initial-context-environment>
+    </properties>
+</factory>
+...
+----
+
+For JBoss Application Server for example this declaration looks like this:
+
+[source,xml]
+----
+...
+<factory id="ejbFactory" class="org.granite.messaging.service.EjbServiceFactory">
+    <properties>
+        <lookup>myApp/{capitalized.destination.id}Bean/local</lookup>
+
+        <!-- InitialContext parameters -->
+        <initial-context-environment>
+            <property>
+                <name>Context.PROVIDER_URL</name>
+                <value>jnp://remotehostname:1099</value>
+            </property>
+            <property>
+                <name>Context.INITIAL_CONTEXT_FACTORY</name>
+                <value>org.jnp.interfaces.NamingContextFactory</value>
+            </property>
+            <property>
+                <name>Context.URL_PKG_PREFIXES</name>
+                <value>org.jboss.naming:org.jnp.interfaces</value>
+            </property>
+        </initial-context-environment>
+    </properties>
+</factory>
+...
+----
+
+[[ejb3.roscan]]
+==== Automatic Configuration of EJB Destinations
+
+This is annoying to have to declare each and every EJB exposed to Flex remoting in +services-config.xml+. To avoid this step, it is possible to 
+instruct GraniteDS to search EJB services in the application classpath.  
+
+Note however that this cannot work with remote EJBs as GraniteDS will obviously not have access to the remote classpath. 
+
+To enable automatic destination discovery, you simply have to enable the +scan+ property in ++granite-config.xml++: 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE granite-config PUBLIC
+    "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/3.0.0/granite-config.dtd">
+
+<granite-config scan="true">
+   ...
+</granite-config>
+----
+
+Then you have to add a simple marker file (even empty) +META-INF/services-config.properties+ in every EJB jar (or in +WEB-INF/classes+ if you are using EJB 3.1 
+packaged in a ++war++). Then GraniteDS will scan these jars at startup and look for EJB classes annotated with +@RemoteDestination+. 
+The annotation can be put either on the EJB interface or on the EJB implementation, but it's recommended to put it on the EJB interface. 
+
+[source,java]
+----
+@Stateless
+@Local(PersonService.class)
+@RemoteDestination(id="person", securityRoles={"user","admin"})
+public class PersonServiceBean implements PersonService {
+    ...
+}
+----
+
+The +@RemoteDestination+ annotation additionally supports the following attributes:
+ 
+* +id+ is mandatory and is the destination name 
+* +service+ is optional if there is only one service for +RemotingMessage+ defined in +services-config.xml+. Otherwise this should be the name of the service. 
+* +channel+ is optional if there is only one channel defined in +services-config.xml+. Otherwise this should be the id of the target channel. 
+* +channels+ may be used instead of channel to define a failover channel. 
+* +factory+ is optional if there is only one factory in +services-config.xml+. Otherwise this should be the factory id. 
+* +securityRoles+ is an array of role names for securing the destination. 
+
+As shown below, the +service+, +factory+ and +channel+ sections are still required in your +services-config.xml+ file, but the +service+ part will not contain 
+any destination. So, with any number of EJBs annotated this way, the +services-config.xml+ file may be defined as follows: 
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<services-config>
+    <services>
+        <service
+            id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <!-- no need to declare destinations here -->
+        </service>
+    </services>
+
+    <factories>
+        <factory id="ejbFactory" class="org.granite.messaging.service.EjbServiceFactory">
+            <properties>
+                <lookup>myApp/{capitalized.destination.id}Bean/local</lookup>
+            </properties>
+        </factory>
+    </factories>
+
+    <channels>
+        <channel-definition id="my-graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+</services-config>
+----
+
+As the destinations are not defined in +services-config.xml+ any more, you will have to setup the +RemoteObject+ endpoint manually in ActionScript 
+(see <<remoting.manualremoteobject,here>> for details). 
+
+[[ejb3.rostatefulejb]]
+==== Configuration for Stateful EJBs
+
+Most of what has been described for stateless beans also applies for stateful beans, however stateful beans have a different lifecycle. 
+
+GraniteDS stores the reference of stateful EJBs retrieved from JNDI in the HTTP session so it can keep the correct instance between remote calls. 
+Take care that the timeout for HTTP session expiration should be consistent with the timeout for EJB3 stateful beans expiration. 
+
+GraniteDS has to know a bit more information about stateful beans than for stateless beans, here is an example of +services-config.xml+ for the following EJB: 
+
+[source,java]
+----
+package com.myapp.services;
+
+import javax.ejb.Local;
+import javax.ejb.Remove;
+import javax.ejb.Stateful;
+
+@Stateful
+@Local(PositionService.class)
+public class PositionServiceBean implements PositionService {
+
+    int x = 300;
+    
+    public int getX() {
+        return x;
+    }
+
+    public void saveX(int x) {
+        this.x = x;
+    }
+
+    @Remove
+    public void remove() {
+    }
+}
+----
+
+[source,xml]
+----
+<destination id="position">
+    <channels>
+        <channel ref="my-graniteamf"/>
+    </channels>
+    <properties>
+        <factory>ejbFactory</factory>
+
+        <!-- Specific for stateful beans -->
+        <ejb-stateful>
+            <remove-method>
+            <signature>remove</signature>
+            <retain-if-exception>false</retain-if-exception>
+            </remove-method>
+        </ejb-stateful>
+    </properties>
+</destination>
+----
+
+The configuration of the destination is similar to the one used for stateless beans, except for the additional +ejb-stateful+ subsection. 
+The presence of this +ejb-stateful+ node, even empty, informs GDS that this EJB 3 is stateful and should be managed as such. 
+Otherwise, the bean will be considered stateless and only one instance will be shared between all users. 
+
+The inner +remove-method+ node contains information about the +remove()+ methods of your stateful bean:
+ 
+* ++signature++: This is the name of the method, optionally followed by a parameter list. If your +remove()+ method has arguments, the signature 
+    should follow the conventions used in +java.lang.reflect.Method.toString()+. For example, with the following +remove()+ method: 
++
+[source,java]
+----
+	@Remove
+	public int remove(boolean arg1, Integer arg2, String[] arg3) {...}
+----
+ ... you should write this signature: 
++
+[source,xml]
+----
+	<signature>remove(boolean,java.lang.Integer,java.lang.String[])</signature>
+----
+
+* +retain-if-exception+ (optional): This is the equivalent of the +@Remove+ annotation attribute; the default is +false+. 
+
+You may of course add multiple +remove-method+ nodes in the same +ejb-stateful+ node if necessary. 
+
+When using automatic configuration with classpath scanning, stateful EJBs are automatically detected with the +@Stateful+ annotation and properly configured. 
+
+[[ejb3.rosecurity]]
+==== Security
+
+You can easily protect access to your EJB destinations with destination-based security. Please refer to the <<remoting.security,security chapter>>. 
+
+GraniteDS will then pass the user credentials from the Flex +RemoteObject+ to the EJB security context, making possible to use role-based authorization 
+with the EJB destination.  
+
+GraniteDS will then pass the user credentials from the client +RemotingChannel+ to the EJB security context, making possible to use role-based authorization 
+with the EJB destination.  
+
+Here is an example configuration in ++services-config.xml++: 
+
+[source,xml]
+----
+<destination id="personService">
+    <channels>
+        <channel ref="my-graniteamf"/>
+    </channels>
+    <properties>
+        <factory>ejbFactory</factory>
+    </properties>
+    <security>
+        <security-constraint>
+            <auth-method>Custom</auth-method>
+            <roles>
+                <role>user</role>
+                <role>admin</role>
+            </roles>
+        </security-constraint>
+    </security>
+</destination>
+----
+
+[source,java]
+----
+@Stateless
+@Local(PersonService.class)
+public class PersonServiceBean implements PersonService {
+    
+    @PersistenceContext
+    protected EntityManager manager;
+
+    public List<Person> findAllPersons() {
+        return manager.createQuery("select distinct p from Person p").getResultList();
+    }
+
+    @RolesAllowed({"admin"})
+    public Person createPerson(Person person) {
+        return manager.merge(person);
+    }
+
+    @RolesAllowed({"admin"})
+    public Person modifyPerson(Person person) {
+        return manager.merge(person);
+    }
+
+    @RolesAllowed({"admin"})
+    public void deletePerson(Person person) {
+        person = manager.find(Person.class, person.getId());
+        manager.remove(person);
+    }
+}
+----
+
+With this configuration, only authenticated users having either the +user+ or +admin+ roles will be able to call the EJB remotely from the client. 
+Then the EJB container will enforce the particular access on each method due to the +@RolesAllowed+ annotation and may throw a +EJBAccessException+. 
+
+[[ejb3.tide]]
+=== Using the Tide API
+
+Most of what is described in the <<remoting.tideremoting,Tide Remoting>> section applies for EJB 3, however GraniteDS also provides an improved integration 
+with EJB 3 services. 
+
+[[ejb3.tideconfig]]
+==== Configuration
+
+There are a few noticeable differences in the configuration in this case.
+  
+* It is _mandatory_ to use automatic classpath scanning as Tide needs to have access to the actual implementation of the EJB and not only to its interface. 
+    Consequently this is currently not possible to use remote EJBs as Tide-enabled destinations. 
+* You can define in the +tide-annotations+ section of +granite-config.xml+ the conditions used to enable remote access to EJB destinations 
+    (for example all EJBs annotated with a particular annotation).  
+* You have to configure the specific Tide/EJB3 +org.granite.tide.ejb.EjbServiceFactory+ service factory in +services-config.xml+. 
+* You have to configure a unique Tide/EJB3 destination named +ejb+ in +services-config.xml+ 
+* You have to retrieve the Tide context in Flex with +Ejb.getInstance().getEjbContext()+ instead of +Tide.getInstance().getContext()+. 
+
+Here is a default configuration suitable for most cases: 
+
+[source,xml]
+----
+<granite-config scan="true">
+    ...
+    
+    <tide-components>
+        <tide-component annotated-with="org.granite.messaging.service.annotations.RemoteDestination"/>
+    </tide-components>
+    
+</granite-config>	
+----
+
+[source,xml]
+----
+<services-config>
+    <services>
+        <service id="granite-service"
+            class="flex.messaging.services.RemotingService"
+            messageTypes="flex.messaging.messages.RemotingMessage">
+            <!--
+             ! Use "tideEjbFactory" and "my-graniteamf" for "server" destination (see below).
+             ! The destination must be "server" when using Tide with default configuration.
+             !-->
+            <destination id="server">
+                <channels>
+                    <channel ref="my-graniteamf"/>
+                </channels>
+                <properties>
+                    <factory>tideEjbFactory</factory>
+                    <entity-manager-factory-jndi-name>java:/DefaultEMF</entity-manager-factory-jndi-name>
+                </properties>
+            </destination>
+        </service>
+    </services>
+
+    <!--
+     ! Declare tideEjbFactory service factory.
+     !-->
+    <factories>
+        <factory id="tideEjbFactory" class="org.granite.tide.ejb.EjbServiceFactory">
+            <properties>
+                <lookup>myapp.ear/{capitalized.component.name}Bean/local</lookup>
+            </properties>
+        </factory>
+    </factories>
+
+    <!--
+     ! Declare my-graniteamf channel.
+     !-->
+    <channels>
+        <channel-definition id="my-graniteamf" class="mx.messaging.channels.AMFChannel">
+            <endpoint
+                uri="http://{server.name}:{server.port}/{context.root}/graniteamf/amf"
+                class="flex.messaging.endpoints.AMFEndpoint"/>
+        </channel-definition>
+    </channels>
+</services-config>    
+----
+
+The destination named +ejb+ will be the one and only destination required for all EJB destinations.  
+
+The property +lookup+ of the factory defines the lookup string used by Tide to lookup the EJBs in JNDI. The example above is suitable for JBoss, 
+please refer to your application server documentation for other servers. Placeholders can be defined in this lookup string that will be replaced at runtime 
+for each EJB: +{capitalized.component.name}+ is the name used on the client. 
+
+[NOTE]
+====
+In Java EE 6 compliant application servers such as JBoss 6 and GlassFish 3, you can use the standard global naming specification: 
++java:global/{context.root}/{capitalized.component.name}Bean+. 
+====
+
+[NOTE]
+====
+In many JEE servers (GlassFish v2 for example, but not JBoss), EJB local interfaces are not published in the global JNDI. To be able to call them through Tide, 
+you will have to specify +ejb-local-ref+ definitions for each EJB in +web.xml+ and use a +java:comp/env+ local JNDI name. 
+====
+
+[source,xml]
+----
+<ejb-local-ref>
+    <ejb-ref-name>myapp/PeopleServiceBean</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home/>
+    <local>com.myapp.service.PeopleService</local>
+</ejb-local-ref>
+----
+
+[source,xml]
+----
+<factory id="tideEjbFactory" class="org.granite.tide.ejb.EjbServiceFactory">
+    <properties>
+        <lookup>java:comp/env/myapp/{capitalized.component.name}Bean</lookup>
+    </properties>
+</factory>
+----
+
+The property +entity-manager-factory-name+ is necessary only when using transparent remote lazy loading of collections. It should be the JNDI name that GraniteDS 
+can use to lookup the +EntityManagerFactory+ in JNDI. Alternatively you can instead specify +entity-manager-name+, then GraniteDS will lookup for an +EntityManager+. 
+JBoss server can expose these two elements in the global JNDI by adding these lines in ++persistence.xml++: 
+
+[source,xml]
+----
+<persistence-unit name="ejb-pu">
+    ...
+    <properties>
+        ...
+        <property name="jboss.entity.manager.factory.jndi.name" value="java:/DefaultEMF"/>
+        <property name="jboss.entity.manager.jndi.name" value="java:/DefaultEM"/>
+    </properties>
+</persistence-unit>
+----
+
+For other application servers that does not expose the persistence unit in JNDI, you will have to use a local name and add +persistence-unit-ref+ in +web.xml+. 
+
+[source,xml]
+----
+<persistence-unit-ref>
+    <persistence-unit-ref-name>ejb-pu</persistence-unit-ref-name>
+</persistence-unit-ref>
+----
+
+[source,xml]
+----
+<destination id="server">
+    <channels>
+        <channel ref="graniteamf"/>
+    </channels>
+    <properties>
+        <factory>tideEjbFactory</factory>
+        <entity-manager-factory-jndi-name>java:comp/env/ejb-pu</entity-manager-factory-jndi-name>
+    </properties>
+</destination>
+----
+
+ifdef::flex[]
+[[ejb3.tideremotingdi.flex]]
+==== Basic remoting with dependency injection
+
+When using EJB3, the only difference on the client is that you have to use the +Ejb+ singleton. Here is a simple example of remoting with an injected client proxy 
+for an EJB service: 
+
+[source,xml]
+----
+<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Ejb.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.ejb.Ejb;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        
+        [In]
+        public var helloService:Component;
+        
+        private function hello(name:String):void {
+            helloService.hello(name, resultHandler, faultHandler);
+        }
+        
+        private function resultHandler(event:TideResultEvent):void {
+            outputMessage.text = event.result as String;
+        }                       
+        
+        private function faultHandler(event:TideFaultEvent):void {
+            // Handle fault
+        }
+    </mx:Script>
+    
+    <!-- Provide input data for calling the service. --> 
+    <mx:TextInput id="inputName"/>
+    
+    <!-- Call the web service, use the text in a TextInput control as input data.--> 
+    <mx:Button click="hello(inputName.text)"/>
+    
+    <!-- Result message. --> 
+    <mx:Label id="outputMessage"/>
+</mx:Application>
+----
+
+This is almost identical to the standard Tide API described in the <<remoting.tideremoting,Tide remoting>> section, and all other methods apply for EJB.
+endif::flex[]  
+
+ifdef::java[]
+[[ejb3.tideremotingdi.java]]
+====Basic remoting with dependency injection
+
+ When using EJB3, the only difference on the client is that you have to use the destination named +server+ to build the +ServerSession+.  
+ Here is a simple example of remoting with an Spring-injected client proxy for an EJB service: 
+
+[source,java]
+----
+public class HelloController {
+
+	@Inject @Qualifier("helloService")
+	private Component helloService;
+	
+    public void hello(String to) {
+    	// Asynchronous call using handlers
+    	helloService.call("hello", to, new TideResponder<String>() {
+    		@Override
+    		public void result(TideResultEvent<String> result) {
+    			System.out.println("Async result: " + result.getResult());
+    		}
+    		
+    		@Override
+    		public void fault(TideFaultEvent fault) {
+    			System.err.println("Fault: " + fault.getFault());
+    		}
+    	};
+    }
+    
+    public String helloSync(String to) {	
+    	// Synchronous wait of Future result
+    	Future<String> futureResult = helloService.call("hello", to);
+    	String result = futureResult.get();
+    	System.out.println("Sync result: " + result);
+    	return result;
+    }
+}
+----
+
+If you have generated typed client proxies, it can be further simplified to something like this: 
+
+[source,java]
+----
+public class HelloController {
+
+	@Inject
+	private HelloService helloService;
+	
+    public void hello(String to) {
+    	// Asynchronous call using handlers
+    	helloService.hello(to, new TideResponder<String>() {
+    		@Override
+    		public void result(TideResultEvent<String> result) {
+    			System.out.println("Async result: " + result.getResult());
+    		}
+    		
+    		@Override
+    		public void fault(TideFaultEvent fault) {
+    			System.err.println("Fault: " + fault.getFault());
+    		}
+    	};
+    }
+    
+    public String helloSync(String to) {	
+    	// Synchronous wait of Future result
+    	Future<String> futureResult = helloService.hello(to);
+    	String result = futureResult.get();
+    	System.out.println("Sync result: " + result);
+    	return result;
+    }
+}
+----
+
+This is almost identical to the standard Tide API described in the <<remoting.tideremoting,Tide remoting>> section, and all other methods apply for EJB.
+endif::java[]
+
+ifdef::flex[]  
+[[ejb3.tideremotingtypesafe.flex]]
+==== Typesafe remoting with dependency injection
+
+You can benefit from the capability of the Gas3 code generator (see <<graniteds.gas3,here>>) to generate a strongly typed ActionScript 3 client proxy 
+from the Spring interface when it is annotated with +@RemoteDestination+. In this case, you can inject a typesafe reference to your service and get better 
+compile time error checking and auto completion in your IDE: 
+
+[source,xml]
+----
+<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Spring.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.spring.Spring;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        import com.myapp.service.HelloService;
+        
+        [In]
+        public var helloService:HelloService;
+        
+        private function hello(name:String):void {
+            helloService.hello(name, resultHandler, faultHandler);
+        }
+        ...
+    </mx:Script>
+    
+    ...
+</mx:Application>
+----
+
+It is possible to benefit from even more type safety by using the annotation +\[Inject\]+ instead of +In+. When using this annotation, the full class name 
+is used to find the target bean in the Spring context instead of the bean name. 
+
+[source,xml]
+----
+<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="Spring.getInstance().initApplication()">
+    <mx:Script>
+        import org.granite.tide.spring.Spring;
+        import org.granite.tide.events.TideResultEvent;
+        import org.granite.tide.events.TideFaultEvent;
+        import com.myapp.service.HelloService;
+        
+        [Inject]
+        public var myService:HelloService;
+        
+        private function hello(name:String):void {
+            myService.hello(name, resultHandler, faultHandler);
+        }
+        ...
+    </mx:Script>
+    
+    ...
+</mx:Application>
+----
+endif::flex[]
+
+ifdef::java[]
+[[ejb3.tideremotingtypesafe.java]]
+==== Typesafe remoting with dependency injection
+
+You can benefit from the capability of the Gfx code generator (see <<graniteds.gfx,here>>) to generate a strongly typed  Java client proxy from the EJB3 interface 
+when it is annotated with +@RemoteDestination+. In this case, you can inject a typesafe reference to your service and get better compile time error checking and 
+auto completion in your IDE: 
+
+[source,java]
+----
+public class HelloController {
+
+	@Inject @Qualifier("helloService")
+	private HelloService helloService;
+	
+   	// Asynchronous call using handlers
+   	helloService.hello("Barack", new TideResponder<String>() {
+   		@Override
+   		public void result(TideResultEvent<String> result) {
+   			System.out.println("Async result: " + result.getResult());
+   		}
+   		
+   		@Override
+   		public void fault(TideFaultEvent fault) {
+   			System.err.println("Fault: " + fault.getFault());
+   		}
+   	};
+   	
+   	// Synchronous wait of Future result
+   	Future<String> futureResult = helloService.hello("Barack");
+   	String result = futureResult.get();
+   	System.out.println("Sync result: " + result);
+}
+----
+
+Note that as there is only one instance of +HelloService+, you may also omit the +Qualifier+ annotation and use typesafe injection with +@Inject+ only.
+endif::java[] 
+
+ifdef::flex[]
+[[ejb3.tidesecurity]]
+==== Security
+
+GraniteDS provides a client-side component named +identity+ that ensures the integration between the client +RemoteObject+ credentials and the server-side 
+container security. It additionally includes an easy-to-use API to define runtime authorization checks on the Flex UI.  
+
+The EJB +identity+ component (of class ++org.granite.tide.ejb.Identity++) predictably provides two methods +login()+ and +logout()+ that can be used as 
+any Tide remote call: 
+
+[source,actionscript]
+----
+private var tideContext:Context = Ejb.getInstance().getEjbContext();
+
+public function login(username:String, password:String):void {
+    tideContext.identity.login(username, password, loginResult, loginFault);
+}
+
+private function loginResult(event:TideResultEvent):void {
+    Alert.show(event.context.identity.loggedIn);
+}
+
+private function loginFault(event:TideFaultEvent):void {
+    Alert.show(event.fault);
+}
+
+public function logout():void {
+    tideContext.identity.logout();
+}
+----
+
+Or with dependency injection: 
+
+[source,actionscript]
+----
+[In]
+public var identity:Identity;
+            
+public function login(username:String, password:String):void {
+    identity.login(username, password, loginResult, loginFault);
+}
+
+private function loginResult(event:TideResultEvent):void {
+    Alert.show(event.context.identity.loggedIn);
+}
+
+private function loginFault(event:TideFaultEvent):void {
+    Alert.show(event.fault);
+}
+
+public function logout():void {
+    identity.logout();
+}
+----
+
+The +identity+ component also exposes the bindable property +loggedIn+ that represents the current authentication state. As it is bindable, it can be used 
+to choose between different views, for example to switch between a login form and the application view with a Flex +ViewStack+ component: 
+
+[source,xml]
+----
+<mx:ViewStack id="main" selectedIndex="{identity.loggedIn ? 1 : 0}">
+    <views:LoginView id="loginView"/>
+    <views:MainView id="mainView"/>
+</mx:ViewStack>
+----
+
+Finally the +identity+ component is integrated with server-side role-based security and can be used to get information or show/hide UI depending on
+the user access rights: 
+
+[source,xml]
+----
+<mx:Button id="deleteButton" 
+    label="Delete"
+    enabled="{identity.hasRole('admin')}"
+    click="myService.deleteEntity(myEntity)"/>
+----
+
+With this declaration, this button labeled _Delete_ will be enabled only if the user has the role +admin+. Another possibility is to completely hide the 
+button with the properties +visible+ and +includeInLayout+, or any other property relevant for the UI component. 
+
+This can also be used as any remote class with result and fault handlers:  
+
+[source,actionscript]
+----
+public function checkRole(role:String):void {
+   identity.hasRole(role, checkRoleResult, checkRoleFault);
+}
+ 
+private function checkRoleResult(event:TideResultEvent, role:String):void {
+   if (role == 'admin') {
+       if (event.result)
+           trace("User has admin role");
+       else
+           trace("User does not have admin role");
+   }
+}
+----
+
+You can notice that the result and fault handlers have a second argument so you can use the same handler for many access check calls.             
+
+[WARNING]
+====
++identity.hasRole()+ will issue a remote call when it is called the first time, thus its return value cannot be used reliably to determine if the use has 
+the required role. It will always return +false+ until the remote call result is received. 
+====
+
+It is important to note that +identity+ caches the user access rights so only the first call to +hasRole()+ will be remote. If the user rights have changed 
+on the server, or if you want to enforce security more than once per user session, you can clear the security cache manually with +identity.clearSecurityCache()+, 
+for example periodically in a +Timer+. 

@@ -31,8 +31,8 @@ import org.granite.messaging.reflect.Reflection;
 
 /**
  * The <tt>ExtendedObjectInput</tt> interface extends <tt>ObjectInput</tt> and add two methods that
- * help dealing with class loading ({@link #getClassLoader()}) and field assignments
- * ({@link #readAndSetProperty(Object, Field)}).
+ * help dealing with reflection ({@link #getReflection()}) and field assignments
+ * ({@link #readAndSetProperty(Object, Property)}).
  * 
  * <p>
  * Implementation instances of this interface are passed as parameter to
