@@ -196,7 +196,8 @@
 
 <!ELEMENT gravity (
 	configuration?,
-	thread-pool?
+	thread-pool?,
+	udp?
 )>
 <!ATTLIST gravity
     factory CDATA "org.granite.gravity.DefaultGravityFactory"
@@ -213,6 +214,13 @@
     maximum-pool-size CDATA "20"
     keep-alive-time-millis CDATA "10000"
     queue-capacity CDATA "2147483647"
+>
+<!ELEMENT udp EMPTY>
+<!ATTLIST udp
+    port CDATA "0"
+    nio (true|false) "true"
+    connected (true|false) "true"
+    send-buffer-size CDATA "65536"
 >
 <!ELEMENT hibernate-collection-metadata (#PCDATA)>
 <!ELEMENT dynamic-class (#PCDATA)>

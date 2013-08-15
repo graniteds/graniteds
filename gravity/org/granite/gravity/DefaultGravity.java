@@ -23,6 +23,7 @@ package org.granite.gravity;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,6 +41,7 @@ import org.granite.gravity.adapters.AdapterFactory;
 import org.granite.gravity.adapters.ServiceAdapter;
 import org.granite.gravity.security.GravityDestinationSecurizer;
 import org.granite.gravity.security.GravityInvocationContext;
+import org.granite.gravity.udp.UdpReceiverFactory;
 import org.granite.jmx.MBeanServerLocator;
 import org.granite.jmx.OpenMBean;
 import org.granite.logging.Logger;
@@ -47,6 +49,7 @@ import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.security.SecurityServiceException;
 import org.granite.messaging.webapp.ServletGraniteContext;
+import org.granite.scan.ServiceLoader;
 import org.granite.util.TypeUtil;
 import org.granite.util.UUIDUtil;
 
@@ -77,6 +80,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     private Channel serverChannel = null;
     private AdapterFactory adapterFactory = null;
     private GravityPool gravityPool = null;
+    
+    private UdpReceiverFactory udpReceiverFactory = null;
 
     private Timer channelsTimer;
     private boolean started;
@@ -100,7 +105,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		return gravityConfig;
 	}
 
-    public ServicesConfig getServicesConfig() {
+	public ServicesConfig getServicesConfig() {
         return servicesConfig;
     }
 
@@ -126,6 +131,22 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	            adapterFactory = new AdapterFactory(this);
 	            internalStart();
 	            serverChannel = new ServerChannel(this, ServerChannel.class.getName(), null, null);
+	            
+	            if (gravityConfig.isUseUdp()) {
+	            	ServiceLoader<UdpReceiverFactory> loader = ServiceLoader.load(UdpReceiverFactory.class);
+	            	Iterator<UdpReceiverFactory> factories = loader.iterator();
+	            	if (factories.hasNext()) {
+	            		udpReceiverFactory = factories.next();
+	            		udpReceiverFactory.setPort(gravityConfig.getUdpPort());
+	            		udpReceiverFactory.setNio(gravityConfig.isUdpNio());
+	            		udpReceiverFactory.setConnected(gravityConfig.isUdpConnected());
+	            		udpReceiverFactory.setSendBufferSize(gravityConfig.getUdpSendBufferSize());
+	            		udpReceiverFactory.start();
+	            	}
+	            	else
+	            		log.warn("UDP receiver factory not found");
+	            }
+	            
 	            started = true;
         	}
         }
@@ -181,7 +202,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
         	if (serverChannel != null) {
 	            try {
-					removeChannel(serverChannel.getId());
+					removeChannel(serverChannel.getId(), false);
 				} catch (Exception e) {
         			log.error(e, "Error while removing server channel: %s", serverChannel);
 				}
@@ -208,6 +229,16 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         			log.error(e, "Error while stopping thread pool");
         		}
         		gravityPool = null;
+        	}
+        	
+        	if (udpReceiverFactory != null) {
+        		try {
+        			udpReceiverFactory.stop();
+        		}
+        		catch (Exception e) {
+        			log.error(e, "Error while stopping udp receiver factory");
+        		}
+        		udpReceiverFactory = null;
         	}
             
             started = false;
@@ -309,11 +340,19 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     		return gravityPool.getQueueSize();
     	return 0;
 	}
+	
+	public boolean hasUdpReceiverFactory() {
+		return udpReceiverFactory != null;
+	}
+
+    public UdpReceiverFactory getUdpReceiverFactory() {
+		return udpReceiverFactory;
+	}
 
     ///////////////////////////////////////////////////////////////////////////
     // Channel's operations.
-    
-    protected <C extends Channel> C createChannel(ChannelFactory<C> channelFactory, String clientId) {
+
+	protected <C extends Channel> C createChannel(ChannelFactory<C> channelFactory, String clientId) {
     	C channel = null;
     	if (clientId != null) {
     		channel = getChannel(channelFactory, clientId);
@@ -327,7 +366,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         for (int i = 0; channels.putIfAbsent(channel.getId(), timeChannel) != null; i++) {
             if (i >= 10)
                 throw new RuntimeException("Could not find random new clientId after 10 iterations");
-            channel.destroy();
+            channel.destroy(false);
             channel = channelFactory.newChannel(UUIDUtil.randomUUID(), clientType);
             timeChannel = new TimeChannel<C>(channel);
         }
@@ -386,7 +425,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         return (timeChannel != null ? timeChannel.getChannel() : null);
     }
 
-    public Channel removeChannel(String channelId) {
+    public Channel removeChannel(String channelId, boolean timeout) {
         if (channelId == null)
             return null;
 
@@ -402,7 +441,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 			log.error(e, "Could not remove channel id from distributed data: %s", channelId);
 		}
         
-        TimeChannel<?> timeChannel = channels.remove(channelId);
+        TimeChannel<?> timeChannel = channels.get(channelId);
+        
         Channel channel = null;
         if (timeChannel != null) {
         	try {
@@ -427,10 +467,10 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	            }
         	}
         	finally {
-    			channel.destroy();
+        		channels.remove(channelId);
+    			channel.destroy(timeout);
         	}
         }
-
         return channel;
     }
     
@@ -635,7 +675,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         if (client == null)
             return handleUnknownClientMessage(message);
 
-        removeChannel(client.getId());
+        removeChannel(client.getId(), false);
 
         AcknowledgeMessage reply = new AcknowledgeMessage(message);
         reply.setDestination(message.getDestination());

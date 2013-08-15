@@ -25,6 +25,7 @@ import org.granite.config.ShutdownListener;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.adapters.ServiceAdapter;
+import org.granite.gravity.udp.UdpReceiverFactory;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
@@ -50,6 +51,12 @@ public interface Gravity extends ShutdownListener {
     public GraniteConfig getGraniteConfig();
 
     ///////////////////////////////////////////////////////////////////////////
+    // UDP support.
+    
+    public boolean hasUdpReceiverFactory();
+    public UdpReceiverFactory getUdpReceiverFactory();
+
+    ///////////////////////////////////////////////////////////////////////////
     // Properties.
 
 	public boolean isStarted();
@@ -68,7 +75,7 @@ public interface Gravity extends ShutdownListener {
     public void stop(boolean now) throws Exception;
 
     public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String clientId);
-    public Channel removeChannel(String clientId);
+    public Channel removeChannel(String clientId, boolean timeout);
     public boolean access(String clientId);
     public void execute(AsyncChannelRunner runnable);
     public boolean cancel(AsyncChannelRunner runnable);

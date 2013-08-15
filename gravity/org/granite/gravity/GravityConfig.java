@@ -43,6 +43,8 @@ public class GravityConfig implements GraniteConfigReloadListener {
 	public static final long DEFAULT_KEEP_ALIVE_TIME_MILLIS = 10000L;
 	public static final int DEFAULT_QUEUE_CAPACITY = Integer.MAX_VALUE;
 	
+	public static final int DEFAULT_UDP_SEND_BUFFER_SIZE = 64 * 1024; // 64K.
+	
     // General Gravity configuration.
 	private String gravityFactory = DEFAULT_GRAVITY_FACTORY;
 
@@ -65,8 +67,14 @@ public class GravityConfig implements GraniteConfigReloadListener {
     private long keepAliveTimeMillis = DEFAULT_KEEP_ALIVE_TIME_MILLIS;
     private int queueCapacity = DEFAULT_QUEUE_CAPACITY;
 
+    // UDP configuration.
+    private boolean useUdp = false;
+    private int udpPort = 0;
+    private boolean udpNio = true;
+    private boolean udpConnected = true;
+    private int udpSendBufferSize = DEFAULT_UDP_SEND_BUFFER_SIZE;
+
 	public GravityConfig(GraniteConfig graniteConfig) {
-		
 		parseConfig(graniteConfig.getGravityConfig());
 	}
 	
@@ -92,6 +100,15 @@ public class GravityConfig implements GraniteConfigReloadListener {
 			maximumPoolSize = config.get("thread-pool/@maximum-pool-size", Integer.TYPE, DEFAULT_MAXIMUM_POOL_SIZE);
 			keepAliveTimeMillis = config.get("thread-pool/@keep-alive-time-millis", Long.TYPE, DEFAULT_KEEP_ALIVE_TIME_MILLIS);
 			queueCapacity = config.get("thread-pool/@queue-capacity", Integer.TYPE, DEFAULT_QUEUE_CAPACITY);
+			
+			// UDP configuration.
+			useUdp = config.containsKey("udp");
+			if (useUdp) {
+				udpPort = config.get("udp/@port", Integer.TYPE, 0);
+				udpNio = config.get("udp/@nio", Boolean.TYPE, true);
+				udpConnected = config.get("udp/@connected", Boolean.TYPE, true);
+				udpSendBufferSize = config.get("udp/@send-buffer-size", Integer.TYPE, DEFAULT_UDP_SEND_BUFFER_SIZE);
+			}
 		}
 	}
 
@@ -176,5 +193,40 @@ public class GravityConfig implements GraniteConfigReloadListener {
 	}
 	public void setQueueCapacity(int queueCapacity) {
 		this.queueCapacity = queueCapacity;
+	}
+
+	public boolean isUseUdp() {
+		return useUdp;
+	}
+	public void setUseUdp(boolean useUdp) {
+		this.useUdp = useUdp;
+	}
+
+	public int getUdpPort() {
+		return udpPort;
+	}
+	public void setUdpPort(int udpPort) {
+		this.udpPort = udpPort;
+	}
+
+	public boolean isUdpNio() {
+		return udpNio;
+	}
+	public void setUdpNio(boolean udpNio) {
+		this.udpNio = udpNio;
+	}
+
+	public boolean isUdpConnected() {
+		return udpConnected;
+	}
+	public void setUdpConnected(boolean udpConnected) {
+		this.udpConnected = udpConnected;
+	}
+
+	public int getUdpSendBufferSize() {
+		return udpSendBufferSize;
+	}
+	public void setUdpSendBufferSize(int udpBufferSize) {
+		this.udpSendBufferSize = udpBufferSize;
 	}
 }

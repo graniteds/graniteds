@@ -86,7 +86,7 @@ public class GAEGravity extends DefaultGravity {
 
 
     @Override
-    public Channel removeChannel(String channelId) {
+    public Channel removeChannel(String channelId, boolean timeout) {
         if (channelId == null)
             return null;
 
@@ -97,7 +97,7 @@ public class GAEGravity extends DefaultGravity {
             	handleMessage(channel.getFactory(), message, true);
             }
 
-            channel.destroy();
+            channel.destroy(timeout);
             gaeCache.delete(CHANNEL_PREFIX + channelId);
         	gaeCache.delete(GAEChannel.MSG_COUNT_PREFIX + channelId);
         }

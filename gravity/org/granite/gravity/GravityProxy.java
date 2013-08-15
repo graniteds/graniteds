@@ -26,6 +26,7 @@ import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.adapters.ServiceAdapter;
+import org.granite.gravity.udp.UdpReceiverFactory;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
@@ -48,7 +49,7 @@ public class GravityProxy implements Gravity {
     ///////////////////////////////////////////////////////////////////////////
     // Granite/Services configs access.
 
-    public GravityConfig getGravityConfig() {
+	public GravityConfig getGravityConfig() {
     	return getGravity().getGravityConfig();
     }
     public ServicesConfig getServicesConfig() {
@@ -78,6 +79,13 @@ public class GravityProxy implements Gravity {
 	public ServiceAdapter getServiceAdapter(String messageType, String destinationId) {
 		return getGravity().getServiceAdapter(messageType, destinationId);
 	}
+
+	public boolean hasUdpReceiverFactory() {
+		return getGravity().hasUdpReceiverFactory();
+	}
+    public UdpReceiverFactory getUdpReceiverFactory() {
+		return getGravity().getUdpReceiverFactory();
+	}
 	
     public void start() throws Exception {
     	getGravity().start();
@@ -95,8 +103,8 @@ public class GravityProxy implements Gravity {
     public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
     	return getGravity().getChannel(channelFactory, channelId);
     }
-    public Channel removeChannel(String channelId) {
-    	return getGravity().removeChannel(channelId);
+    public Channel removeChannel(String channelId, boolean timeout) {
+    	return getGravity().removeChannel(channelId, timeout);
     }
     public boolean access(String channelId) {
     	return getGravity().access(channelId);

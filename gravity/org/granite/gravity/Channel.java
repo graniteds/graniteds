@@ -52,5 +52,5 @@ public interface Channel {
 	public boolean runReceived(AsyncHttpContext asyncHttpContext);
     
 	public void close();
-    public void destroy();
+    public void destroy(boolean timeout);
 }

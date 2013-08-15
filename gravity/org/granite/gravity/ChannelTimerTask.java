@@ -44,7 +44,7 @@ public class ChannelTimerTask extends TimerTask {
 		log.debug("Removing channel: %s...", channelId);
 		try {
 			gravity.initThread(null, null);
-			gravity.removeChannel(channelId);
+			gravity.removeChannel(channelId, true);
 		}
 		finally {
 			gravity.releaseThread();

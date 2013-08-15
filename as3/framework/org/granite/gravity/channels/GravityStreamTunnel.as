@@ -20,21 +20,20 @@
 
 package org.granite.gravity.channels {
 
-    import flash.utils.Timer;
-    import flash.events.TimerEvent;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.ProgressEvent;
+    import flash.events.TimerEvent;
     import flash.utils.ByteArray;
+    import flash.utils.Timer;
     
-    import mx.logging.Log;
     import mx.logging.ILogger;
-
+    import mx.logging.Log;
     import mx.messaging.MessageResponder;
-    import mx.messaging.messages.IMessage;
+    import mx.messaging.messages.AsyncMessage;
     import mx.messaging.messages.CommandMessage;
     import mx.messaging.messages.ErrorMessage;
-    import mx.messaging.messages.AsyncMessage;
+    import mx.messaging.messages.IMessage;
     import mx.utils.ObjectUtil;
 
 	[ExcludeClass]
@@ -48,7 +47,7 @@ package org.granite.gravity.channels {
 
         private static var log:ILogger = Log.getLogger("org.granite.gravity.channels.GravityStreamTunnel");
 
-        private static const CONNECT_OPERATION:uint = 20;
+        protected static const CONNECT_OPERATION:uint = 20;
 
 		private var _reconnectCount:Number = 0;
 		private var _reconnectTimer:Timer = null;
@@ -69,7 +68,7 @@ package org.granite.gravity.channels {
 			internalConnect();
         }
 
-        private function reconnect(onError:Boolean = false):void {
+        protected function reconnect(onError:Boolean = false):void {
         	if (!onError) {
         		cancelReconnectTimer();
         		internalConnect();
@@ -82,7 +81,7 @@ package org.granite.gravity.channels {
         		if (_reconnectTimer == null) {
 	        		_reconnectCount++;
 	        		_reconnectTimer = new Timer(channel.reconnectIntervalMs, 1);
-	        		_reconnectTimer.addEventListener(TimerEvent.TIMER_COMPLETE, timerCompleteHandler);
+	        		_reconnectTimer.addEventListener(TimerEvent.TIMER_COMPLETE, timerCompleteHandler, false, 0, true);
 	        		_reconnectTimer.start();
         		}
             }
@@ -109,6 +108,10 @@ package org.granite.gravity.channels {
         	_reconnectTimer = null;
 			internalConnect();
         }
+		
+		protected function createConnectMessageResponder(connectMessage:CommandMessage):StreamMessageResponder {
+			return new StreamMessageResponder(connectMessage, this);
+		}
         
         private function internalConnect():void {
         	if (!_connecting) {
@@ -119,8 +122,11 @@ package org.granite.gravity.channels {
 	        	_pending = new Array();
 
 	            var message:CommandMessage = createCommandMessage(CONNECT_OPERATION);
-	            internalQueue(new StreamMessageResponder(message, this));
-        		_connecting = false;
+				var responder:StreamMessageResponder = createConnectMessageResponder(message);
+				if (responder)
+	            	internalQueue(responder);
+        		
+				_connecting = false;
             }
         }
         
@@ -167,6 +173,10 @@ package org.granite.gravity.channels {
             super.streamProgressListener(event);
         }
         */
+		
+		protected function reconnectOnStreamResult():Boolean {
+			return true;
+		}
 
         override protected function streamCompleteListener(event:Event):void {
             var error:Boolean = false;
@@ -200,7 +210,7 @@ package org.granite.gravity.channels {
 
             super.streamCompleteListener(event);
             
-            if (!error)
+            if (!error && reconnectOnStreamResult())
             	reconnect();
         }
 

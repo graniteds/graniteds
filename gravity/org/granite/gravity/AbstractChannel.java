@@ -23,6 +23,7 @@ package org.granite.gravity;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
+import java.net.SocketException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,11 +36,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
+import org.granite.gravity.udp.UdpReceiver;
+import org.granite.gravity.udp.UdpReceiverFactory;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.util.ContentType;
 
 import flex.messaging.messages.AsyncMessage;
+import flex.messaging.messages.Message;
 
 /**
  * @author Franck WOLFF
@@ -67,7 +71,9 @@ public abstract class AbstractChannel implements Channel {
     protected final Lock receivedQueueLock = new ReentrantLock();
     
     protected final AsyncPublisher publisher;
-    protected final AsyncReceiver receiver;
+    protected final AsyncReceiver httpReceiver;
+    
+    protected UdpReceiver udpReceiver = null;
     
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
@@ -84,7 +90,7 @@ public abstract class AbstractChannel implements Channel {
         this.factory = factory;
         
         this.publisher = new AsyncPublisher(this);
-        this.receiver = new AsyncReceiver(this);
+        this.httpReceiver = new AsyncReceiver(this);
     }
     
     ///////////////////////////////////////////////////////////////////////////
@@ -183,6 +189,24 @@ public abstract class AbstractChannel implements Channel {
 			throw new NullPointerException("message cannot be null");
 		
 		Gravity gravity = getGravity();
+
+		if (udpReceiver != null) {
+			if (udpReceiver.isClosed())
+				return;
+
+			try {
+				udpReceiver.receive(message);
+			}
+			catch (MessageReceivingException e) {
+				if (e.getCause() instanceof SocketException) {
+					log.debug(e, "Closing unreachable UDP channel %s", getId());
+					udpReceiver.close(false);
+				}
+				else
+					log.error(e, "Cannot access UDP channel %s", getId());
+			}
+			return;
+		}
 		
 		receivedQueueLock.lock();
 		try {
@@ -196,7 +220,7 @@ public abstract class AbstractChannel implements Channel {
 		}
 
 		if (hasAsyncHttpContext())
-			receiver.queue(gravity);
+			httpReceiver.queue(gravity);
 	}
 	
 	public boolean hasReceivedMessage() {
@@ -213,17 +237,95 @@ public abstract class AbstractChannel implements Channel {
 		return runReceived(null);
 	}
 	
-	protected ObjectOutput newSerializer(GraniteContext context, OutputStream os) {
+	public ObjectOutput newSerializer(GraniteContext context, OutputStream os) {
 		return context.getGraniteConfig().newAMF3Serializer(os);
 	}
 	
-	protected String getSerializerContentType() {
+	public String getSerializerContentType() {
 		return ContentType.AMF.mimeType();
+	}
+	
+	protected void createUdpReceiver(UdpReceiverFactory factory, AsyncHttpContext asyncHttpContext) {
+		OutputStream os = null;
+		try {
+			Message connectMessage = asyncHttpContext.getConnectMessage();
+
+			if (udpReceiver == null || udpReceiver.isClosed())
+				udpReceiver = factory.newReceiver(this, asyncHttpContext.getRequest(), connectMessage);
+			
+	        AsyncMessage reply = udpReceiver.acknowledge(connectMessage);
+	
+	        HttpServletRequest request = asyncHttpContext.getRequest();
+			HttpServletResponse response = asyncHttpContext.getResponse();
+			
+	        GraniteContext context = HttpGraniteContext.createThreadIntance(
+	            gravity.getGraniteConfig(), gravity.getServicesConfig(),
+	            null, request, response
+	        );
+	        ((AMFContextImpl)context.getAMFContext()).setCurrentAmf3Message(asyncHttpContext.getConnectMessage());
+	
+	        response.setStatus(HttpServletResponse.SC_OK);
+	        response.setContentType(getSerializerContentType());
+	        response.setDateHeader("Expire", 0L);
+	        response.setHeader("Cache-Control", "no-store");
+	        
+	        os = response.getOutputStream();
+	        
+	        ObjectOutput serializer = newSerializer(context, os);
+	        
+	        serializer.writeObject(new AsyncMessage[] { reply });
+	        
+	        os.flush();
+	        response.flushBuffer();
+		}
+		catch (IOException e) {
+			log.error(e, "Could not send UDP connect acknowledgement to channel: %s", this);
+		}
+		finally {
+			try {
+				GraniteContext.release();
+			}
+			catch (Exception e) {
+				// should never happen...
+			}
+			
+			// Close output stream.
+			try {
+				if (os != null) {
+					try {
+						os.close();
+					}
+					catch (IOException e) {
+						log.warn(e, "Could not close output stream (ignored)");
+					}
+				}
+			}
+			finally {
+				releaseAsyncHttpContext(asyncHttpContext);
+			}
+		}
 	}
 	
 	public boolean runReceived(AsyncHttpContext asyncHttpContext) {
 		
-		boolean httpAsParam = (asyncHttpContext != null); 
+		Gravity gravity = getGravity();
+		
+		if (asyncHttpContext != null && gravity.hasUdpReceiverFactory()) {
+			UdpReceiverFactory factory = gravity.getUdpReceiverFactory();
+			
+			if (factory.isUdpConnectRequest(asyncHttpContext.getConnectMessage())) {
+				createUdpReceiver(factory, asyncHttpContext);
+				return true;
+			}
+			
+			if (udpReceiver != null) {
+				if (!udpReceiver.isClosed())
+					udpReceiver.close(false);
+				udpReceiver = null;
+			}
+		}
+
+		boolean httpAsParam = (asyncHttpContext != null);
 		LinkedList<AsyncMessage> messages = null;
 		OutputStream os = null;
 
@@ -262,7 +364,6 @@ public abstract class AbstractChannel implements Channel {
 			}
 			
 			// Setup serialization context (thread local)
-			Gravity gravity = getGravity();
 	        GraniteContext context = HttpGraniteContext.createThreadIntance(
 	            gravity.getGraniteConfig(), gravity.getServicesConfig(),
 	            null, request, response
@@ -343,11 +444,24 @@ public abstract class AbstractChannel implements Channel {
 	}
 
     public void destroy() {
-    	Gravity gravity = getGravity();
-		gravity.cancel(publisher);
-		gravity.cancel(receiver);
-
-    	subscriptions.clear();
+    	destroy(false);
+    }
+    
+    public void destroy(boolean timeout) {
+    	try {
+	    	Gravity gravity = getGravity();
+			gravity.cancel(publisher);
+			gravity.cancel(httpReceiver);
+	
+	    	subscriptions.clear();
+    	}
+    	finally {
+			if (udpReceiver != null) {
+				if (!udpReceiver.isClosed())
+					udpReceiver.close(timeout);
+				udpReceiver = null;
+			}
+    	}
 	}
     
     ///////////////////////////////////////////////////////////////////////////
@@ -355,7 +469,7 @@ public abstract class AbstractChannel implements Channel {
 	
 	protected boolean queueReceiver() {
 		if (hasReceivedMessage()) {
-			receiver.queue(getGravity());
+			httpReceiver.queue(getGravity());
 			return true;
 		}
 		return false;

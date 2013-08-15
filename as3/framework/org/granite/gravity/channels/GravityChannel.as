@@ -20,28 +20,27 @@
 
 package org.granite.gravity.channels {
 
-    import flash.utils.ByteArray;
-    import flash.utils.Timer;
-    import flash.utils.Dictionary;
     import flash.events.*;
     import flash.net.*;
+    import flash.utils.ByteArray;
+    import flash.utils.Dictionary;
+    import flash.utils.Timer;
     
-    import mx.logging.Log;
     import mx.logging.ILogger;
-
+    import mx.logging.Log;
     import mx.messaging.Channel;
     import mx.messaging.MessageAgent;
     import mx.messaging.MessageResponder;
+    import mx.messaging.events.ChannelFaultEvent;
     import mx.messaging.events.MessageEvent;
-    import mx.messaging.messages.IMessage;
     import mx.messaging.messages.AbstractMessage;
     import mx.messaging.messages.AcknowledgeMessage;
     import mx.messaging.messages.CommandMessage;
     import mx.messaging.messages.ErrorMessage;
-    import mx.messaging.events.ChannelFaultEvent;
+    import mx.messaging.messages.IMessage;
     import mx.utils.ObjectUtil;
     import mx.utils.URLUtil;
-
+    
     import org.granite.gravity.Consumer;
 
 	
@@ -104,6 +103,14 @@ package org.granite.gravity.channels {
 		}
 		public function get reconnectMaxAttempts():Number {
 			return _reconnectMaxAttempts;
+		}
+		
+		public function get commandUri():String {
+			return (_command != null ? _command.uri : null);
+		}
+		
+		public function get tunnelUri():String {
+			return (_tunnel != null ? _tunnel.uri : null);
 		}
 
         ///////////////////////////////////////////////////////////////////////
@@ -199,7 +206,7 @@ package org.granite.gravity.channels {
                         var command:CommandMessage = (responder.message as CommandMessage);
                         if (command.operation == CommandMessage.SUBSCRIBE_OPERATION) {
                             if (!_tunnel)
-                                _tunnel = new GravityStreamTunnel(this);
+                                _tunnel = newTunnel();
                             if (!_tunnel.connected)
                                 _tunnel.connect(resolveUri());
 
@@ -232,6 +239,14 @@ package org.granite.gravity.channels {
 
         ///////////////////////////////////////////////////////////////////////
         // Protected operations.
+		
+		protected function internalCallResponder(responder:MessageResponder, response:IMessage):void {
+			callResponder(responder, response);
+		}
+
+		protected function newTunnel():GravityStreamTunnel {
+			return new GravityStreamTunnel(this);
+		}
 
         override protected function getMessageResponder(agent:MessageAgent, message:IMessage):MessageResponder {
             return new GravityMessageResponder(agent, message, this);

@@ -100,7 +100,7 @@ public class GAEChannel implements Channel, Serializable {
     public void close() {
     }
     
-	public void destroy() {
+	public void destroy(boolean timeout) {
     	Long msgCount = msgCount();
     	if (msgCount != null) {
 	    	List<Object> list = new ArrayList<Object>();

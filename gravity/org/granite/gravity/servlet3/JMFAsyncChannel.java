@@ -48,7 +48,7 @@ public class JMFAsyncChannel extends AsyncChannel {
 	}
 
 	@Override
-	protected String getSerializerContentType() {
+	public String getSerializerContentType() {
 		return ContentType.JMF_AMF.mimeType();
 	}
 }

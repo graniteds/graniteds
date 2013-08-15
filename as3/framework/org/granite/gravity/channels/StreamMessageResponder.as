@@ -37,11 +37,11 @@ package org.granite.gravity.channels {
             _stream = stream;
         }
 
-        internal function internalResult(ack:IMessage):void {
+        public function internalResult(ack:IMessage):void {
             _stream.internalResult(message, ack);
         }
 
-        internal function internalStatus(err:IMessage):void {
+		public function internalStatus(err:IMessage):void {
             _stream.internalStatus(message, err);
         }
     }
