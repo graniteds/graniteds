@@ -12,6 +12,7 @@ import org.granite.gravity.ChannelFactory;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityConfig;
 import org.granite.gravity.adapters.ServiceAdapter;
+import org.granite.gravity.udp.UdpReceiverFactory;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
@@ -103,4 +104,19 @@ public class MockGravity implements Gravity {
 
 	public void stop(boolean arg0) throws Exception {
 	}
+
+    @Override
+    public boolean hasUdpReceiverFactory() {
+        return false;
+    }
+
+    @Override
+    public UdpReceiverFactory getUdpReceiverFactory() {
+        return null;
+    }
+
+    @Override
+    public Channel removeChannel(String clientId, boolean timeout) {
+        return null;
+    }
 }
