@@ -98,6 +98,12 @@ public abstract class JavaClassDescriptor {
         return (properties != null ? properties.size() : 0);
     }
 
+    public Property getProperty(int index) {
+        if (properties == null)
+            throw new ArrayIndexOutOfBoundsException(index);
+        return properties.get(index);
+    }
+    
     public String getPropertyName(int index) {
         if (properties == null)
             throw new ArrayIndexOutOfBoundsException(index);

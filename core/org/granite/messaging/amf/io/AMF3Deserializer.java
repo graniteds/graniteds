@@ -30,6 +30,7 @@ import java.io.UTFDataFormatException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -132,15 +133,16 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
             return readAMF3XmlString();
         case AMF3_BYTEARRAY: // 0x0C;
             return readAMF3ByteArray();
-
         case AMF3_VECTOR_INT: // 0x0D;
         	return readAMF3VectorInt();
         case AMF3_VECTOR_UINT: // 0x0E;
-        	return readAMF3VectorUInt();
+        	return readAMF3VectorUint();
         case AMF3_VECTOR_NUMBER: // 0x0F;
         	return readAMF3VectorNumber();
         case AMF3_VECTOR_OBJECT: // 0x10;
         	return readAMF3VectorObject();
+        case AMF3_DICTIONARY: // 0x11;
+        	return readAMF3Dictionary();
 
         default:
             throw new IllegalArgumentException("Unknown type: " + type);
@@ -296,105 +298,134 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
         return result;
     }
 
-    protected Object readAMF3VectorInt() throws IOException {
-        Object result = null;
+	protected int[] readAMF3VectorInt() throws IOException {
+    	int[] vector = null;
 
         int type = readAMF3Integer();
         if ((type & 0x01) == 0) // stored vector.
-        	result = getFromStoredObjects(type >> 1);
+        	vector = (int[])getFromStoredObjects(type >> 1);
         else {
         	final int length = type >> 1;
-            List<Integer> vector = new ArrayList<Integer>(length);
+            vector = new int[length];
             
-            addToStoredObjects(result);
+            addToStoredObjects(vector);
             
-            readAMF3Integer(); // always 0x00?
+            @SuppressWarnings("unused")
+			boolean fixedLength = readAMF3Integer() == 1;
             
             for (int i = 0; i < length; i++)
-            	vector.add(readInt());
-            
-            result = vector;
+            	vector[i] = readInt();
         }
         
-        if (debugMore) logMore.debug("readAMF3VectorInt() -> %s", result);
+        if (debugMore) logMore.debug("readAMF3VectorInt() -> %s", vector);
 
-        return result;
+        return vector;
     }
 
-    protected Object readAMF3VectorUInt() throws IOException {
-        Object result = null;
+	protected long[] readAMF3VectorUint() throws IOException {
+		long[] vector = null;
 
         int type = readAMF3Integer();
         if ((type & 0x01) == 0) // stored vector.
-        	result = getFromStoredObjects(type >> 1);
+        	vector = (long[])getFromStoredObjects(type >> 1);
         else {
         	final int length = type >> 1;
-            List<Long> vector = new ArrayList<Long>(length);
+            vector = new long[length];
             
-            addToStoredObjects(result);
+            addToStoredObjects(vector);
             
-            readAMF3Integer(); // always 0x00?
+            @SuppressWarnings("unused")
+			boolean fixedLength = readAMF3Integer() == 1;
             
             for (int i = 0; i < length; i++)
-            	vector.add(readInt() & 0xffffffffL);
-            
-            result = vector;
+            	vector[i] = (readInt() & 0xffffffffL);
         }
         
-        if (debugMore) logMore.debug("readAMF3VectorUInt() -> %s", result);
+        if (debugMore) logMore.debug("readAMF3VectorUInt() -> %s", vector);
 
-        return result;
+        return vector;
     }
 
-    protected Object readAMF3VectorNumber() throws IOException {
-        Object result = null;
+	protected double[] readAMF3VectorNumber() throws IOException {
+		double[] vector = null;
 
         int type = readAMF3Integer();
         if ((type & 0x01) == 0) // stored vector.
-        	result = getFromStoredObjects(type >> 1);
+        	vector = (double[])getFromStoredObjects(type >> 1);
         else {
         	final int length = type >> 1;
-            List<Double> vector = new ArrayList<Double>(length);
+            vector = new double[length];
             
-            addToStoredObjects(result);
-            
-            readAMF3Integer(); // always 0x00?
+            addToStoredObjects(vector);
+
+            @SuppressWarnings("unused")
+			boolean fixedLength = readAMF3Integer() == 1;
             
             for (int i = 0; i < length; i++)
-            	vector.add(readDouble());
-            
-            result = vector;
+            	vector[i] = readDouble();
         }
         
-        if (debugMore) logMore.debug("readAMF3VectorDouble() -> %s", result);
+        if (debugMore) logMore.debug("readAMF3VectorDouble() -> %s", vector);
 
-        return result;
+        return vector;
     }
 
-    protected Object readAMF3VectorObject() throws IOException {
-        Object result = null;
+	protected Object[] readAMF3VectorObject() throws IOException {
+    	Object[] vector = null;
 
         int type = readAMF3Integer();
         if ((type & 0x01) == 0) // stored vector.
-        	result = getFromStoredObjects(type >> 1);
+        	vector = (Object[])getFromStoredObjects(type >> 1);
         else {
         	final int length = type >> 1;
-            List<Object> vector = new ArrayList<Object>(length);
+            vector = new Object[length];
             
-            addToStoredObjects(result);
+            addToStoredObjects(vector);
             
-            readAMF3Integer(); // always 0x00?
-            readAMF3Integer(); // always 0x01?
+            @SuppressWarnings("unused")
+			boolean fixedLength = readAMF3Integer() == 1;
+            @SuppressWarnings("unused")
+			String componentClassName = readAMF3String();
             
             for (int i = 0; i < length; i++)
-            	vector.add(readObject());
-            
-            result = vector;
+            	vector[i] = readObject();
         }
         
-        if (debugMore) logMore.debug("readAMF3VectorObject() -> %s", result);
+        if (debugMore) logMore.debug("readAMF3VectorObject() -> %s", vector);
 
-        return result;
+        return vector;
+    }
+    
+    @SuppressWarnings("unchecked")
+	protected Map<Object, Object> readAMF3Dictionary() throws IOException {
+    	Map<Object, Object> dictionary = null;
+
+        int type = readAMF3Integer();
+        if ((type & 0x01) == 0) // stored dictionary.
+        	dictionary = (Map<Object, Object>)getFromStoredObjects(type >> 1);
+        else {
+        	final int length = type >> 1;
+        	
+        	// AS3 Dictionary doesn't have a strict Java equivalent: use IdentityHashMap, which
+        	// should preserve everything at deserialization time, but can be converted later as
+        	// another Map instance which can (unlikely though) remove some duplicated keys...
+        	dictionary = new IdentityHashMap<Object, Object>(length);
+            
+            addToStoredObjects(dictionary);
+            
+            @SuppressWarnings("unused")
+			boolean weakKeys = readAMF3Integer() == 1;
+            
+            for (int i = 0; i < length; i++) {
+            	Object key = readObject();
+            	Object value = readObject();
+            	dictionary.put(key, value);
+            }
+        }
+        
+        if (debugMore) logMore.debug("readAMF3Dictionary() -> %s", dictionary);
+
+        return dictionary;
     }
 
     protected Object readAMF3Object() throws IOException {

@@ -45,6 +45,12 @@ import org.granite.messaging.amf.io.util.DefaultJavaClassDescriptor;
 import org.granite.messaging.amf.io.util.IndexedJavaClassDescriptor;
 import org.granite.messaging.amf.io.util.JavaClassDescriptor;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
+import org.granite.messaging.amf.types.AMFDictionaryValue;
+import org.granite.messaging.amf.types.AMFSpecialValue;
+import org.granite.messaging.amf.types.AMFVectorIntValue;
+import org.granite.messaging.amf.types.AMFVectorNumberValue;
+import org.granite.messaging.amf.types.AMFVectorObjectValue;
+import org.granite.messaging.amf.types.AMFVectorUintValue;
 import org.granite.util.TypeUtil;
 import org.granite.util.XMLUtil;
 import org.granite.util.XMLUtilFactory;
@@ -103,6 +109,8 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
         try {
 	        if (o == null)
 	            write(AMF3_NULL);
+	        else if (o instanceof AMFSpecialValue)
+	        	writeAMF3SpecialValue((AMFSpecialValue<?>)o);
 	        else if (!(o instanceof Externalizable)) {
 	
 	            if (converters.hasReverters())
@@ -142,7 +150,8 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
 	            }
 	            else
 	                writeAMF3Object(o);
-	        } else
+	        }
+	        else
 	            writeAMF3Object(o);
         }
         catch (IOException e) {
@@ -156,13 +165,181 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     ///////////////////////////////////////////////////////////////////////////
     // AMF3 serialization.
 
+    protected void writeAMF3SpecialValue(AMFSpecialValue<?> value) throws IOException {
+        if (debugMore) logMore.debug("writeAMF3SpecialValue(value=%s)", value);
+
+        switch (value.type) {
+        case AMF3_DICTIONARY:
+			writeAMF3Dictionary((AMFDictionaryValue)value);
+			break;
+        case AMF3_VECTOR_INT:
+			writeAMF3VectorInt((AMFVectorIntValue)value);
+        	break;
+        case AMF3_VECTOR_NUMBER:
+			writeAMF3VectorNumber((AMFVectorNumberValue)value);
+        	break;
+        case AMF3_VECTOR_UINT:
+			writeAMF3VectorUint((AMFVectorUintValue)value);
+        	break;
+        case AMF3_VECTOR_OBJECT:
+			writeAMF3VectorObject((AMFVectorObjectValue)value);
+        	break;
+        default:
+			throw new RuntimeException("Unsupported AMF special value: " + value);
+        }
+    }
+    
+    protected void writeAMF3VectorObject(AMFVectorObjectValue value) throws IOException {
+        if (debugMore) logMore.debug("writeAMF3VectorObject(value=%s)", value);
+
+        write(AMF3_VECTOR_OBJECT);
+
+        Object o = value.value;
+        
+        int index = indexOfStoredObjects(o);
+        if (index >= 0)
+            writeAMF3IntegerData(index << 1);
+        else {
+            addToStoredObjects(o);
+
+            int length = getArrayOrCollectionLength(o);
+            writeAMF3IntegerData(length << 1 | 0x01);
+            write(value.fixed ? 0x01 : 0x00);
+            writeAMF3StringData(value.type);
+
+            if (o.getClass().isArray()) {
+                for (int i = 0; i < length; i++)
+                    writeObject(Array.get(o, i));
+            }
+            else {
+            	for (Object item : (Collection<?>)o)
+            		writeObject(item);
+            }
+        }
+    }
+    
+    protected void writeAMF3VectorInt(AMFVectorIntValue value) throws IOException {
+        if (debugMore) logMore.debug("writeAMF3VectorInt(value=%s)", value);
+
+        write(AMF3_VECTOR_INT);
+
+        Object o = value.value;
+
+        int index = indexOfStoredObjects(o);
+        if (index >= 0)
+            writeAMF3IntegerData(index << 1);
+        else {
+            addToStoredObjects(o);
+
+            int length = getArrayOrCollectionLength(o);
+            writeAMF3IntegerData(length << 1 | 0x01);
+            write(value.fixed ? 0x01 : 0x00);
+
+            if (o.getClass().isArray()) {
+                for (int i = 0; i < length; i++)
+                	writeInt(((Number)Array.get(o, i)).intValue());
+            }
+            else {
+            	for (Object item : (Collection<?>)o)
+            		writeInt(((Number)item).intValue());
+            }
+        }
+    }
+    
+    protected void writeAMF3VectorNumber(AMFVectorNumberValue value) throws IOException {
+        if (debugMore) logMore.debug("writeAMF3VectorNumber(value=%s)", value);
+
+        write(AMF3_VECTOR_NUMBER);
+
+        Object o = value.value;
+
+        int index = indexOfStoredObjects(o);
+        if (index >= 0)
+            writeAMF3IntegerData(index << 1);
+        else {
+            addToStoredObjects(o);
+
+            int length = getArrayOrCollectionLength(o);
+            writeAMF3IntegerData(length << 1 | 0x01);
+            write(value.fixed ? 0x01 : 0x00);
+
+            if (o.getClass().isArray()) {
+                for (int i = 0; i < length; i++)
+                	writeDouble(((Number)Array.get(o, i)).doubleValue());
+            }
+            else {
+            	for (Object item : (Collection<?>)o)
+            		writeDouble(((Number)item).doubleValue());
+            }
+        }
+    }
+    
+    protected void writeAMF3VectorUint(AMFVectorUintValue value) throws IOException {
+        if (debugMore) logMore.debug("writeAMF3VectorUint(value=%s)", value);
+
+        write(AMF3_VECTOR_UINT);
+
+        Object o = value.value;
+
+        int index = indexOfStoredObjects(o);
+        if (index >= 0)
+            writeAMF3IntegerData(index << 1);
+        else {
+            addToStoredObjects(o);
+
+            int length = getArrayOrCollectionLength(o);
+            writeAMF3IntegerData(length << 1 | 0x01);
+            write(value.fixed ? 0x01 : 0x00);
+
+            if (o.getClass().isArray()) {
+                for (int i = 0; i < length; i++)
+                	writeInt(((Number)Array.get(o, i)).intValue());
+            }
+            else {
+            	for (Object item : (Collection<?>)o)
+            		writeInt(((Number)item).intValue());
+            }
+        }
+    }
+
+    protected void writeAMF3Dictionary(AMFDictionaryValue value) throws IOException {
+        if (debugMore) logMore.debug("writeAMFDictionary(value=%s)", value);
+
+        write(AMF3_DICTIONARY);
+
+        Map<?, ?> o = value.value;
+
+        int index = indexOfStoredObjects(o);
+        if (index >= 0)
+            writeAMF3IntegerData(index << 1);
+        else {
+            addToStoredObjects(o);
+
+            int length = o.size();
+            writeAMF3IntegerData(length << 1 | 0x01);
+            write(value.weakKeys ? 0x01 : 0x00);
+
+            for (Map.Entry<?, ?> entry : o.entrySet()) {
+            	writeObject(entry.getKey());
+            	writeObject(entry.getValue());
+            }
+        }
+    }
+    
+    protected int getArrayOrCollectionLength(Object o) {
+    	if (o.getClass().isArray())
+    		return Array.getLength(o);
+    	return ((Collection<?>)o).size();
+    }
+
     protected void writeAMF3Integer(int i) throws IOException {
         if (debugMore) logMore.debug("writeAMF3Integer(i=%d)", i);
 
         if (i < AMF3_INTEGER_MIN || i > AMF3_INTEGER_MAX) {
             if (debugMore) logMore.debug("writeAMF3Integer() - %d is out of AMF3 int range, writing it as a Number", i);
             writeAMF3Number(i);
-        } else {
+        }
+        else {
             write(AMF3_INTEGER);
             writeAMF3IntegerData(i);
         }
@@ -179,7 +356,8 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
             write(((i >> 15) & 0x7F) | 0x80);
             write(((i >> 8) & 0x7F) | 0x80);
             write(i & 0xFF);
-        } else {
+        }
+        else {
             if (i >= 0x4000)
                 write(((i >> 14) & 0x7F) | 0x80);
             if (i >= 0x80)
@@ -237,11 +415,13 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
                 int c = s.charAt(i);
                 if ((c >= 0x0001) && (c <= 0x007F)) {
                     write(c);
-                } else if (c > 0x07FF) {
+                }
+                else if (c > 0x07FF) {
                     write(0xE0 | ((c >> 12) & 0x0F));
                     write(0x80 | ((c >>  6) & 0x3F));
                     write(0x80 | ((c >>  0) & 0x3F));
-                } else {
+                }
+                else {
                     write(0xC0 | ((c >>  6) & 0x1F));
                     write(0x80 | ((c >>  0) & 0x3F));
                 }
@@ -380,9 +560,11 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
                     if (debug) log.debug("writeAMF3Object() - using externalizer=%s", externalizer);
                     try {
                         externalizer.writeExternal(o, this);
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         throw e;
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         throw new RuntimeException("Could not externalize object: " + o, e);
                     }
                 }
@@ -396,7 +578,7 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
                 for (int i = 0; i < desc.getPropertiesCount(); i++) {
                     Object obj = desc.getPropertyValue(i, o);
                     if (debug) log.debug("writeAMF3Object() - writing defined property: %s=%s", desc.getPropertyName(i), obj);
-                    writeObject(obj);
+                    writeObject(AMFSpecialValue.getSpecialValue(desc.getProperty(i), obj));
                 }
 
                 if (desc.isDynamic()) {
@@ -476,7 +658,8 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
             Object[] argsVal = new Object[]{clazz};
             try {
                 desc = TypeUtil.newInstance(descriptorType, argsDef, argsVal);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw new RuntimeException("Could not instantiate Java descriptor: " + descriptorType);
             }
         }

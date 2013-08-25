@@ -24,6 +24,29 @@ package org.granite.messaging.amf;
  * @author Franck WOLFF
  */
 public interface AMF3Constants {
+	
+	/*
+	Adobe Systems Incorporated AMF 3 Specification (January 2013) 
+	
+	undefined-marker = 0x00 
+	null-marker = 0x01 
+	false-marker = 0x02 
+	true-marker = 0x03 
+	integer-marker = 0x04 
+	double-marker = 0x05 
+	string-marker = 0x06 
+	xml-doc-marker = 0x07 
+	date-marker = 0x08 
+	array-marker = 0x09 
+	object-marker = 0x0A 
+	xml-marker = 0x0B 
+	byte-array-marker = 0x0C
+	vector-int-marker = 0x0D
+	vector-uint-marker = 0x0E
+	vector-double-marker = 0x0F
+	vector-object-marker = 0x10
+	dictionary-marker = 0x11
+	 */
 
     public static final byte AMF3_UNDEFINED = 0x00;
     public static final byte AMF3_NULL = 0x01;
@@ -38,11 +61,11 @@ public interface AMF3Constants {
     public static final byte AMF3_OBJECT = 0x0A;
     public static final byte AMF3_XMLSTRING = 0x0B;
     public static final byte AMF3_BYTEARRAY = 0x0C;
-
     public static final byte AMF3_VECTOR_INT = 0x0D;
     public static final byte AMF3_VECTOR_UINT = 0x0E;
     public static final byte AMF3_VECTOR_NUMBER = 0x0F;
     public static final byte AMF3_VECTOR_OBJECT = 0x10;
+    public static final byte AMF3_DICTIONARY = 0x11;
     
     public static final int AMF3_INTEGER_MAX = Integer.MAX_VALUE >> 3;
     public static final int AMF3_INTEGER_MIN = Integer.MIN_VALUE >> 3;
