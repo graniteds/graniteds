@@ -47,6 +47,7 @@ import org.granite.messaging.amf.io.util.JavaClassDescriptor;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.types.AMFDictionaryValue;
 import org.granite.messaging.amf.types.AMFSpecialValue;
+import org.granite.messaging.amf.types.AMFSpecialValueFactory;
 import org.granite.messaging.amf.types.AMFVectorIntValue;
 import org.granite.messaging.amf.types.AMFVectorNumberValue;
 import org.granite.messaging.amf.types.AMFVectorObjectValue;
@@ -85,6 +86,9 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     	= (context.getGraniteConfig().getExternalizer(BigDecimal.class.getName()) != null);
 
     protected final XMLUtil xmlUtil = XMLUtilFactory.getXMLUtil();
+    
+    // TODO: allow aliaser configuration in granite-config.xml
+    protected final AMFSpecialValueFactory specialValueFactory = new AMFSpecialValueFactory();
     
     protected final boolean debug = log.isDebugEnabled();
     protected final boolean debugMore = logMore.isDebugEnabled();
@@ -578,7 +582,7 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
                 for (int i = 0; i < desc.getPropertiesCount(); i++) {
                     Object obj = desc.getPropertyValue(i, o);
                     if (debug) log.debug("writeAMF3Object() - writing defined property: %s=%s", desc.getPropertyName(i), obj);
-                    writeObject(AMFSpecialValue.getSpecialValue(desc.getProperty(i), obj));
+                    writeObject(specialValueFactory.createSpecialValue(desc.getProperty(i), obj));
                 }
 
                 if (desc.isDynamic()) {

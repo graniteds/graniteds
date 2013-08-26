@@ -20,30 +20,25 @@
 
 package org.granite.messaging.amf.types;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Calendar;
+import java.util.Date;
+
+import org.w3c.dom.Document;
 
 /**
- * The <tt>AMFVectorObject</tt> annotation can be used to force the serialization of
- * a collection or array as an AMF Vector of objects.
- * <p>
- * Typical usage:
- * <pre>
- * @AMFVectorObject(type="String")
- * public String[] stringArray;
- * </pre>
- * </p>
- * 
  * @author Franck WOLFF
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD})
-public @interface AMFVectorObject {
+public class AMFBasicVectorObjectAliaser implements AMFVectorObjectAliaser {
 
-	String type() default "";
-	boolean fixed() default false;
+	public String aliasFor(Class<?> cls) {
+		if (cls == String.class || cls == Character.class)
+			return "String";
+		if (Date.class.isAssignableFrom(cls) || Calendar.class.isAssignableFrom(cls))
+			return "Date";
+		if (Document.class.isAssignableFrom(cls))
+			return "XML";
+		if (cls == Object.class)
+			return "Object";
+		return cls.getName();
+	}
 }

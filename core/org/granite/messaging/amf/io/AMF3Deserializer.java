@@ -370,15 +370,16 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
         return vector;
     }
 
-	protected Object[] readAMF3VectorObject() throws IOException {
-    	Object[] vector = null;
+	@SuppressWarnings("unchecked")
+	protected List<Object> readAMF3VectorObject() throws IOException {
+    	List<Object> vector = null;
 
         int type = readAMF3Integer();
         if ((type & 0x01) == 0) // stored vector.
-        	vector = (Object[])getFromStoredObjects(type >> 1);
+        	vector = (List<Object>)getFromStoredObjects(type >> 1);
         else {
         	final int length = type >> 1;
-            vector = new Object[length];
+            vector = new ArrayList<Object>(length);
             
             addToStoredObjects(vector);
             
@@ -388,7 +389,7 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
 			String componentClassName = readAMF3String();
             
             for (int i = 0; i < length; i++)
-            	vector[i] = readObject();
+            	vector.add(readObject());
         }
         
         if (debugMore) logMore.debug("readAMF3VectorObject() -> %s", vector);

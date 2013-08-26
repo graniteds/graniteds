@@ -20,12 +20,7 @@
 
 package org.granite.messaging.amf.types;
 
-import java.io.Externalizable;
-import java.util.Collection;
-import java.util.Map;
-
 import org.granite.messaging.amf.AMF3Constants;
-import org.granite.messaging.amf.io.util.Property;
 
 /**
  * @author Franck WOLFF
@@ -46,26 +41,5 @@ public abstract class AMFSpecialValue<T> implements AMF3Constants {
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + " {type=" + type + ", value=" + value + "}";
-	}
-
-	public static Object getSpecialValue(Property property, Object o) {
-    	if (o != null && !(o instanceof Externalizable)) {
-    		if (o instanceof Collection || (o.getClass().isArray() && o.getClass().getComponentType() != Byte.TYPE)) {
-	    		if (property.isAnnotationPresent(AMFVectorObject.class)) {
-	    			AMFVectorObject annotation = property.getAnnotation(AMFVectorObject.class);
-	    			return new AMFVectorObjectValue(o, annotation.type(), annotation.fixed());
-	    		}
-	    		if (property.isAnnotationPresent(AMFVectorInt.class))
-	    			return new AMFVectorIntValue(o, property.getAnnotation(AMFVectorInt.class).fixed());
-	    		if (property.isAnnotationPresent(AMFVectorNumber.class))
-	    			return new AMFVectorNumberValue(o, property.getAnnotation(AMFVectorNumber.class).fixed());
-	    		if (property.isAnnotationPresent(AMFVectorUint.class))
-	    			return new AMFVectorUintValue(o, property.getAnnotation(AMFVectorUint.class).fixed());
-    		}
-    		else if (o instanceof Map && property.isAnnotationPresent(AMFDictionary.class))
-    			return new AMFDictionaryValue((Map<?, ?>)o, property.getAnnotation(AMFDictionary.class).weakKeys());
-    	}
-    	
-    	return o;
 	}
 }

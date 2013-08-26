@@ -20,30 +20,10 @@
 
 package org.granite.messaging.amf.types;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * The <tt>AMFVectorObject</tt> annotation can be used to force the serialization of
- * a collection or array as an AMF Vector of objects.
- * <p>
- * Typical usage:
- * <pre>
- * @AMFVectorObject(type="String")
- * public String[] stringArray;
- * </pre>
- * </p>
- * 
  * @author Franck WOLFF
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD})
-public @interface AMFVectorObject {
+public interface AMFVectorObjectAliaser {
 
-	String type() default "";
-	boolean fixed() default false;
+	String aliasFor(Class<?> cls);
 }

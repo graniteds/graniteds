@@ -37,6 +37,7 @@ import java.lang.reflect.WildcardType;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -130,6 +131,44 @@ public abstract class TypeUtil {
     public static boolean isPrimitive(Type type) {
         return type instanceof Class<?> && ((Class<?>)type).isPrimitive();
     }
+    
+	public static Class<?> componentClassOfType(Type arrayOrCollectionType) {
+		Class<?> arrayOrCollectionClass = classOfType(arrayOrCollectionType);
+		if (!arrayOrCollectionClass.isArray() && !Collection.class.isAssignableFrom(arrayOrCollectionClass))
+			throw new IllegalArgumentException("Not an array or Collection: " + arrayOrCollectionType);
+		
+		if (arrayOrCollectionType instanceof Class) {
+			Class<?> cls = (Class<?>)arrayOrCollectionType;
+			
+			if (cls.isArray())
+				return cls.getComponentType();
+			
+			Type genericSuperclass = cls.getGenericSuperclass();
+			if (genericSuperclass != null && Collection.class.isAssignableFrom(classOfType(genericSuperclass)))
+				return componentClassOfType(genericSuperclass);
+			
+			Type[] genericInterfaces = cls.getGenericInterfaces();
+			for (Type genericInterface : genericInterfaces) {
+				if (Collection.class.isAssignableFrom(classOfType(genericInterface)))
+					return componentClassOfType(genericInterface);
+			}
+			
+			return Object.class;
+		}
+		if (arrayOrCollectionType instanceof ParameterizedType) {
+			ParameterizedType pType = (ParameterizedType)arrayOrCollectionType;
+			Type[] args = pType.getActualTypeArguments();
+			
+			if (args.length > 0)
+				return classOfType(args[0]);
+			
+			return Object.class; 
+		}
+		if (arrayOrCollectionType instanceof GenericArrayType)
+			return classOfType(((GenericArrayType)arrayOrCollectionType).getGenericComponentType());
+		
+		return Object.class;
+	}
 
     public static Class<?> classOfType(Type type) {
         if (type instanceof Class<?>)
