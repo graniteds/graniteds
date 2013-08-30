@@ -31,7 +31,7 @@ import org.granite.messaging.jmf.ExtendedObjectInput;
 import org.granite.messaging.jmf.ExtendedObjectOutput;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -46,7 +46,7 @@ public class PageableCodec implements ExtendedObjectCodec {
 	static {
 		Field pageableFieldTmp = null;
 		try {
-			pageableFieldTmp = Page.class.getDeclaredField("pageable");
+			pageableFieldTmp = PageImpl.class.getDeclaredField("pageable");
 			pageableFieldTmp.setAccessible(true);
 		}
 		catch (NoSuchFieldException e) {
@@ -72,12 +72,12 @@ public class PageableCodec implements ExtendedObjectCodec {
 		Page<Object> springPage = (Page<Object>)v;
 		
 		int offset;
-		if (pageableField == null)
+		if (springPage instanceof PageImpl && pageableField != null) {
+            Pageable springPageable = (Pageable)pageableField.get(springPage);
+            offset = springPageable.getOffset();
+        }
+		else
 			offset = springPage.getNumber() * springPage.getSize();
-		else {
-			Pageable springPageable = (Pageable)pageableField.get(springPage);
-			offset = springPageable.getOffset();
-		}
 		
 		out.writeObject(Integer.valueOf(offset));
 		out.writeObject(Integer.valueOf(springPage.getSize()));
@@ -90,7 +90,7 @@ public class PageableCodec implements ExtendedObjectCodec {
 	}
 
 	public String getDecodedClassName(ExtendedObjectInput in, String className) {
-		return PageRequest.class.getName();
+		return OffsetPageRequest.class.getName();
 	}
 
 	public Object newInstance(ExtendedObjectInput in, String className)
@@ -111,7 +111,7 @@ public class PageableCodec implements ExtendedObjectCodec {
 			sort = new Sort(orders);
 		}
 		
-		return new PageRequest(maxResults > 0 ? firstResult / maxResults : 0, maxResults, sort);
+		return new OffsetPageRequest(firstResult, maxResults, sort);
 	}
 
 	public void decode(ExtendedObjectInput in, Object v) throws IOException,

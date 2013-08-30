@@ -60,7 +60,7 @@ public class PageableConverter extends Converter implements Reverter {
 					orders.add(new Order(pageInfo.getSortInfo().getDesc()[i] ? Direction.DESC : Direction.ASC, pageInfo.getSortInfo().getOrder()[i]));			
 				sort = new Sort(orders);			
 			}
-			return new PageRequest(pageInfo.getFirstResult(), pageInfo.getMaxResults(), sort);
+			return new OffsetPageRequest(pageInfo.getFirstResult(), pageInfo.getMaxResults(), sort);
 		}
 		return null;
 	}
@@ -82,35 +82,5 @@ public class PageableConverter extends Converter implements Reverter {
 		catch (Exception e) {
 		}
 		return new org.granite.tide.data.model.Page<Object>(offset, page.getSize(), Long.valueOf(page.getTotalElements()).intValue(), page.getContent());
-	}
-	
-	
-	public static class PageRequest implements Pageable {
-		
-		private int offset;
-		private int pageSize;
-		private Sort sort;
-		
-		public PageRequest(int offset, int pageSize, Sort sort) {
-			this.offset = offset;
-			this.pageSize = pageSize;
-			this.sort = sort;
-		}
-
-		public int getOffset() {
-			return offset;
-		}
-
-		public int getPageNumber() {
-			return pageSize > 0 ? offset / pageSize : 0;
-		}
-
-		public int getPageSize() {
-			return pageSize;
-		}
-
-		public Sort getSort() {
-			return sort;
-		}
 	}
 }
