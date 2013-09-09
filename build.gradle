@@ -1,0 +1,210 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.5.0',
+			'net.saliman:gradle-cobertura-plugin:1.1.2'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'eclipse'
+apply plugin: 'license'
+apply plugin: 'cobertura'
+	
+group = 'org.graniteds'
+version = granitedsVersion
+	
+repositories {
+	mavenLocal()
+	mavenCentral()
+}
+
+sourceCompatibility = 1.6
+
+configurations {
+	deployerJars
+	create('sources')
+}
+
+task sourcesJar(type: Jar, dependsOn: 'classes') {
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+	
+task javadocJar(type: Jar, dependsOn: 'javadoc') {
+	classifier = 'javadoc'
+	from javadoc.destinationDir
+}
+
+dependencies {
+	
+	compile 'javax.enterprise:cdi-api:1.0-SP4',
+		'javax.inject:javax.inject:1',
+		'javax.validation:validation-api:1.0.0.GA',
+		'org.springframework:spring-beans:3.1.4.RELEASE',
+		'org.springframework:spring-context:3.1.4.RELEASE'
+	
+	compile 'org.graniteds:granite-client:' + granitedsVersion,
+		'org.graniteds:granite-client-tide:' + granitedsVersion
+
+	compile files(System.properties.'java.home' + '/lib/jfxrt.jar')
+	
+	testCompile group: 'org.graniteds', name: 'granite-client', version: granitedsVersion, classifier: 'tests'
+	
+	testCompile 'junit:junit:4.+',
+		'org.hibernate:hibernate-core:3.6.10.Final',
+		'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
+		'antlr:antlr:2.7.7'
+	
+	testCompile 'org.graniteds:granite-core:' + granitedsVersion,
+		'org.graniteds:granite-hibernate:' + granitedsVersion
+
+	deployerJars 'org.apache.maven.wagon:wagon-http:2.2'		
+	
+	sources group: 'org.graniteds', name: 'granite-client-tide', version: granitedsVersion, classifier: 'sources'
+}
+	
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+jar {
+	baseName 'granite-client-javafx'
+	
+	metaInf {
+		from 'LICENSE.txt'
+	}
+	
+	def graniteClientJar = (configurations['compile'].files { it.name == 'granite-client-tide' }).iterator().next()
+	from zipTree(graniteClientJar)
+}
+sourcesJar {
+	baseName 'granite-client-javafx'
+	
+	def graniteClientSourceJar = (configurations['sources'].files { it.name == 'granite-client-tide' }).iterator().next()
+	from zipTree(graniteClientSourceJar)
+}
+javadocJar {
+	baseName 'granite-client-javafx'
+}
+
+javadoc {
+	title 'GraniteDS JavaFX Client Documentation'
+	
+	def graniteClientSourceJar = (configurations['sources'].files { it.name == 'granite-client-tide' }).iterator().next()
+	source(files(zipTree(graniteClientSourceJar).matching { include '**/*.java' }))
+	
+	configure(options) {
+		version = true
+		author = true
+		use = true
+		linkSource = true
+		// stylesheetFile = new File(projectDir, 'jdstyle.css')
+		windowTitle = 'GraniteDS JavaFX client API Documentation'
+		docTitle = 'GraniteDS JavaFX client API Documentation - ' + granitedsVersion
+		links = [
+			"http://download.oracle.com/javase/1.5.0/docs/api/",
+			"http://download.oracle.com/javaee/6/api/",
+			"http://java.sun.com/products/servlet/2.3/javadoc/",
+			"http://logging.apache.org/log4j/1.2/apidocs/",
+			"http://tomcat.apache.org/tomcat-6.0-doc/api/",
+			"http://docs.jboss.org/hibernate/orm/3.5/javadocs/",
+			"http://docs.jboss.com/seam/2.2.0.GA/api/",
+			"http://static.springsource.org/spring/docs/3.0.x/api/",
+			"http://jetty.codehaus.org/jetty/jetty-6/apidocs/"
+		]
+	}
+}
+
+signing {
+	required { gradle.taskGraph.hasTask("uploadArchives") }
+	sign configurations.archives
+}
+
+license {
+	header rootProject.file('HEADER.txt')
+	strictCheck true
+	ext.year = Calendar.getInstance().get(Calendar.YEAR)
+}
+
+eclipse {
+	project {
+		name = 'graniteds-java-client-javafx'
+	}
+}
+
+cobertura {
+	def graniteClientJar = (configurations['compile'].files { it.name == 'granite-client-tide' }).iterator().next()	
+	copy {
+		from zipTree(graniteClientJar)
+		into buildDir.name + '/tmp/expandedArchives/granite-client-tide'
+	}
+	coverageDirs << new File(buildDir.name + '/tmp/expandedArchives/', 'granite-client-tide')
+	
+	def graniteClientSourceJar = (configurations['sources'].files { it.name == 'granite-client-tide' }).iterator().next()
+	copy {
+		from zipTree(graniteClientSourceJar)
+		into buildDir.name + '/tmp/expandedArchives/granite-client-tide-sources'
+	}
+	coverageSourceDirs << new File(buildDir, '/tmp/expandedArchives/granite-client-tide-sources')
+}
+
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			beforeDeployment { 
+				MavenDeployment deployment -> signing.signPom(deployment)
+			}
+			
+			repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+				authentication(userName: sonatypeOssUserName, password: sonatypeOssPassword)
+			}
+				
+			pom.project {
+				name 'GraniteDS JavaFX client'
+				packaging 'jar'
+				description 'GraniteDS JavaFX client'
+				url 'http://www.graniteds.org'
+				
+				scm {
+					url 'scm:git@github.com:graniteds/graniteds-client-javafx.git'
+					connection 'scm:git@github.com:graniteds/graniteds-client-javafx.git'
+					developerConnection 'scm:git@github.com:graniteds/graniteds-client-javafx.git'
+				}
+				
+				licenses {
+					license {
+						name 'GNU General Public License, Version 3, 29 June 2007'
+						url 'http://www.gnu.org/licenses/gpl-3.0.en.html'
+						distribution 'repo'
+					}
+				}
+	  
+				developers {
+					developer {
+						id 'fwolff'
+						name 'Franck Wolff'
+					}
+					developer {
+						id 'wdrai'
+						name 'William Drai'
+					}
+				}
+			}
+			
+			pom.whenConfigured { pom ->
+				pom.dependencies.remove (
+					pom.dependencies.find { dep -> dep.groupId == 'org.graniteds' && dep.artifactId == 'granite-client-tide' }
+				)
+			}
+		}
+	}
+
+}
+
