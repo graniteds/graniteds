@@ -46,7 +46,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
-import org.granite.client.tide.collections.AbstractPagedCollection;
+import org.granite.client.tide.collection.AbstractPagedCollection;
 import org.granite.client.tide.server.TideRpcEvent;
 import org.granite.client.util.javafx.ListListenerHelper;
 import org.granite.client.util.javafx.ListenerHelper;
