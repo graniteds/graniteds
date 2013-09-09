@@ -1,0 +1,8 @@
+/build
+/bin
+/bin-test
+/libs/test
+/test-reports
+junit*.properties
+/.settings
+/.gradle
