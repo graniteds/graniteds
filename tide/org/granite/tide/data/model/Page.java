@@ -18,6 +18,10 @@ public class Page<E> implements Externalizable {
 	public Page() {		
 	}
 	
+	public Page(List<E> list) {
+		this.resultList = list;
+	}
+	
 	public Page(int firstResult, int maxResults, int resultCount, List<E> list) {
 		this.firstResult = firstResult;
 		this.maxResults = maxResults;
