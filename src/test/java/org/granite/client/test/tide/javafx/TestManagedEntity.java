@@ -53,7 +53,7 @@ import javafx.collections.ObservableMap;
 import org.granite.client.persistence.Loader;
 import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.test.tide.javafx.PersonEmbedColl.ContactList;
-import org.granite.client.tide.collections.CollectionLoader;
+import org.granite.client.tide.collection.CollectionLoader;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.impl.EntityManagerImpl;
 import org.granite.client.tide.data.spi.DataManager;
