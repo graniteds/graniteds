@@ -11,7 +11,7 @@
   </parent>
 
   <groupId>org.graniteds</groupId>
-  <artifactId>granite-client-base</artifactId>
+  <artifactId>granite-client-java-base</artifactId>
   <version>${ganiteds.version}</version>
   <packaging>jar</packaging>
 

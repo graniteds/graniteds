@@ -65,7 +65,7 @@
 
     <artifact:pom id="granite-root" file="${build.pom.dir}/root.pom.xml"/>
     <artifact:pom id="granite-core" file="${build.pom.dir}/core.pom.xml"/>
-    <artifact:pom id="granite-client-base" file="${build.pom.dir}/client.pom.xml"/>
+    <artifact:pom id="granite-client-java-base" file="${build.pom.dir}/client.pom.xml"/>
     <artifact:pom id="granite-hibernate" file="${build.pom.dir}/hibernate.pom.xml"/>
     <artifact:pom id="granite-hibernate4" file="${build.pom.dir}/hibernate4.pom.xml"/>
     <artifact:pom id="granite-toplink" file="${build.pom.dir}/toplink.pom.xml"/>
@@ -103,7 +103,7 @@
       <attach file="../build/sources/java/granite-sources.jar" classifier="sources"/>
       <attach file="../build/docs/javadoc/granite-javadoc.jar" classifier="javadoc"/>
     </artifact:install>
-    <artifact:install pomRefId="granite-client-base" file="../build/granite-client-base.jar">
+    <artifact:install pomRefId="granite-client-java-base" file="../build/granite-client-base.jar">
       <attach file="../build/sources/java-client/granite-client-base-sources.jar" classifier="sources"/>
       <attach file="../build/docs/javadoc/granite-client-base-javadoc.jar" classifier="javadoc"/>
     </artifact:install>
