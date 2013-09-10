@@ -3,6 +3,7 @@
 build
 bin-debug
 /build
+/.gradle
 classes
 classes*
 /graniteds-*.zip
