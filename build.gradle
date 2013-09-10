@@ -1,0 +1,176 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+	
+    dependencies {
+		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.5.0'
+		classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
+        classpath group: 'org.gradlefx', name: 'gradlefx', version: '0.6.4'
+    }
+}
+
+group = 'org.graniteds'
+version = granitedsVersion
+
+// Common configuration for all subprojects
+// signing + maven deployment
+configure(subprojects) { subproject ->
+
+	apply plugin: 'maven'
+	apply plugin: 'signing'
+	
+	configurations {
+		deployerJars
+	}
+
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+
+	dependencies {
+		deployerJars 'org.apache.maven.wagon:wagon-http:2.2'
+
+		//merged 'org.graniteds:flex-websocket-client:1.0',
+		//	'org.graniteds:granite-swc:' + granitedsVersion
+	}
+
+	signing {
+		sign configurations.archives
+	}
+	
+	uploadArchives {
+		repositories {
+			mavenDeployer {
+				beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+				repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+					authentication(userName: sonatypeOssUserName, password: sonatypeOssPassword)
+				}
+
+				pom.project {
+					name subproject.description
+					packaging 'swc'
+					description subproject.description
+					url 'http://www.graniteds.org'
+					
+					scm {
+						url 'scm:git@github.com:graniteds/graniteds.git'
+						connection 'scm:git@github.com:graniteds/graniteds.git'
+						developerConnection 'scm:git@github.com:graniteds/graniteds.git'
+					}
+					
+					licenses {
+							if (subproject.moduleLicense == 'lgpl') {
+								license {
+									name 'GNU LIBRARY GENERAL PUBLIC LICENSE, Version 2, June 1991'
+									url 'http://www.gnu.org/licenses/old-licenses/lgpl-2.0-standalone.html'
+									distribution 'repo'
+								}
+							}
+							if (subproject.moduleLicense == 'gpl') {
+								license {
+									name 'GNU General Public License, Version 3, 29 June 2007'
+									url 'http://www.gnu.org/licenses/gpl-3.0.en.html'
+									distribution 'repo'
+								}
+							}
+					}
+
+					developers {
+						developer {
+							id 'fwolff'
+							name 'Franck Wolff'
+						}
+						developer {
+							id 'wdrai'
+							name 'William Drai'
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// Add license plugin for all non-Flex subprojects
+// license plugin is not compatible with GradleFX
+configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') }) { subproject ->
+
+	apply plugin: 'license'
+	
+	license {
+		header rootProject.file('HEADER-' + subproject.moduleLicense + '.txt')
+		strictCheck true
+		ext.year = Calendar.getInstance().get(Calendar.YEAR)
+	}
+}
+
+// Add GradleFX plugin for all Flex subprojects
+configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { subproject ->
+	
+	apply plugin: 'gradlefx'
+	apply plugin: 'flashbuilder'
+
+	type = 'swc'
+	output = subproject.name + '-' + granitedsVersion
+	
+	task sourcesJar(type: Jar) {
+		classifier = 'sources'
+		from files(srcDirs)
+	}
+
+	artifacts {
+		archives sourcesJar
+	}
+}
+
+project('granite-client-flex') {
+	
+	description = "GraniteDS Flex client library"
+	
+	srcDirs = [ 'src/main/flex' ]
+	
+	dependencies {
+		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
+	}
+}
+
+project('granite-client-flex-advanced') {
+	
+	description = "GraniteDS Advanced Flex client library"
+	
+	srcDirs = [ 'src/main/flex' ]
+
+	dependencies {
+		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
+		
+		external project(':granite-client-flex')
+	}
+	
+	additionalCompilerOptions = [
+		'-define=CONFIG::debugging,false',
+		'-define=CONFIG::flex40,true',
+		'-define=CONFIG::flex45,false'
+	]
+}
+
+project('granite-client-flex45-advanced') {
+	
+	description = "GraniteDS Advanced Flex 4.5+ client library"
+	
+	srcDirs = [ '../granite-client-flex-advanced/src/main/flex' ]
+	
+	dependencies {
+		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
+		
+		external project(':granite-client-flex')
+	}
+	
+	additionalCompilerOptions = [
+		'-define=CONFIG::debugging,false',
+		'-define=CONFIG::flex40,false',
+		'-define=CONFIG::flex45,true'
+	]
+}
