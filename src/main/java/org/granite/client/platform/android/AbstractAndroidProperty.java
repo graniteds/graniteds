@@ -32,25 +32,6 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-/*
-  GRANITE DATA SERVICES
-  Copyright (C) 2013 GRANITE DATA SERVICES S.A.S.
-
-  This file is part of Granite Data Services.
-
-  Granite Data Services is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version.
-
-  Granite Data Services is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, see <http://www.gnu.org/licenses/>.
-*/
 
 package org.granite.client.platform.android;
 
@@ -118,68 +99,68 @@ public abstract class AbstractAndroidProperty implements AndroidProperty {
 		property.setObject(holder, value);
 	}
 
-	public boolean getBoolean(Object arg0) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return property.getBoolean(arg0);
+	public boolean getBoolean(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		return property.getBoolean(holder);
 	}
 
-	public byte getByte(Object arg0) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return property.getByte(arg0);
+	public byte getByte(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		return property.getByte(holder);
 	}
 
-	public char getChar(Object arg0) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return property.getChar(arg0);
+	public char getChar(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		return property.getChar(holder);
 	}
 
-	public double getDouble(Object arg0) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return property.getDouble(arg0);
+	public double getDouble(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		return property.getDouble(holder);
 	}
 
-	public float getFloat(Object arg0) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return property.getFloat(arg0);
+	public float getFloat(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		return property.getFloat(holder);
 	}
 
-	public int getInt(Object arg0) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return property.getInt(arg0);
+	public int getInt(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		return property.getInt(holder);
 	}
 
-	public long getLong(Object arg0) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return property.getLong(arg0);
+	public long getLong(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		return property.getLong(holder);
 	}
 
-	public short getShort(Object arg0) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return property.getShort(arg0);
+	public short getShort(Object holder) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		return property.getShort(holder);
 	}
 
-	public void setBoolean(Object arg0, boolean arg1) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		property.setBoolean(arg0, arg1);
+	public void setBoolean(Object holder, boolean value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		property.setBoolean(holder, value);
 	}
 
-	public void setByte(Object arg0, byte arg1) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		property.setByte(arg0, arg1);
+	public void setByte(Object holder, byte value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		property.setByte(holder, value);
 	}
 
-	public void setChar(Object arg0, char arg1) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		property.setChar(arg0, arg1);
+	public void setChar(Object holder, char value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		property.setChar(holder, value);
 	}
 
-	public void setDouble(Object arg0, double arg1) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		property.setDouble(arg0, arg1);
+	public void setDouble(Object holder, double value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		property.setDouble(holder, value);
 	}
 
-	public void setFloat(Object arg0, float arg1) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		property.setFloat(arg0, arg1);
+	public void setFloat(Object holder, float value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		property.setFloat(holder, value);
 	}
 
-	public void setInt(Object arg0, int arg1) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		property.setInt(arg0, arg1);
+	public void setInt(Object holder, int value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		property.setInt(holder, value);
 	}
 
-	public void setLong(Object arg0, long arg1) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		property.setLong(arg0, arg1);
+	public void setLong(Object holder, long value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		property.setLong(holder, value);
 	}
 
-	public void setShort(Object arg0, short arg1) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		property.setShort(arg0, arg1);
+	public void setShort(Object holder, short value) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		property.setShort(holder, value);
 	}
 
 	@Override
