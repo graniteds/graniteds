@@ -83,9 +83,9 @@ public class AndroidBypassConstructorAllocator implements BypassConstructorAlloc
             Method getConstructorId = ObjectStreamClass.class.getDeclaredMethod("getConstructorId", Class.class);
             getConstructorId.setAccessible(true);
             
-            final int constructorId = (Integer)getConstructorId.invoke(null, Object.class);
+            final Number constructorId = (Number)getConstructorId.invoke(null, Object.class);
             
-            final Method newInstance = ObjectStreamClass.class.getDeclaredMethod("newInstance", Class.class, int.class);
+            final Method newInstance = ObjectStreamClass.class.getDeclaredMethod("newInstance", Class.class, getConstructorId.getReturnType());
             newInstance.setAccessible(true);
             
             return new BypassConstructorAllocator() {
