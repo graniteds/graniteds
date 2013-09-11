@@ -42,6 +42,7 @@ public class GlassFishWebSocketServlet extends HttpServlet {
 	
 	private WebSocketApplication app;
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);

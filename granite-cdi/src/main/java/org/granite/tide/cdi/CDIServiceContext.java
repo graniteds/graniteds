@@ -731,7 +731,6 @@ public class CDIServiceContext extends TideServiceContext {
     }
 	
 	
-	@SuppressWarnings("unchecked")
 	private static final Set<Class<?>> KNOWN_IMMUTABLES = new HashSet<Class<?>>(Arrays.asList(
 			String.class, Byte.class, Short.class, Integer.class, Long.class,
 	        Float.class, Double.class, Boolean.class, BigInteger.class, BigDecimal.class

@@ -52,7 +52,8 @@ public class Seam21SecurityService extends AbstractSecurityService {
     public void configure(Map<String, String> params) {
     }
 
-    public void login(Object credentials, String charset) throws SecurityServiceException {
+    @SuppressWarnings("deprecation")
+	public void login(Object credentials, String charset) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials, charset);
         
         Contexts.getSessionContext().set("org.granite.seam.login", Boolean.TRUE);

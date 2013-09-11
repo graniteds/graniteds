@@ -55,6 +55,7 @@ import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.Message;
 
 
+@SuppressWarnings("deprecation")
 public class TomcatWebSocketServlet extends WebSocketServlet {
 	
 	private static final long serialVersionUID = 1L;
@@ -237,7 +238,7 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
         return result;
     }
     
-    private String getWebSocketAccept(String key) throws ServletException {
+	private String getWebSocketAccept(String key) throws ServletException {
 
         MessageDigest sha1Helper = sha1Helpers.poll();
         if (sha1Helper == null) {

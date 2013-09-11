@@ -300,6 +300,7 @@ public class OpenMBean implements DynamicMBean {
 						case ACTION: impact = MBeanOperationInfo.ACTION; break;
 						case ACTION_INFO: impact = MBeanOperationInfo.ACTION_INFO; break;
 						case INFO: impact = MBeanOperationInfo.INFO; break;
+						default: impact = MBeanOperationInfo.UNKNOWN;
 					}
 				}
 				
