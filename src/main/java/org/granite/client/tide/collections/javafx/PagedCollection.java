@@ -298,8 +298,9 @@ public abstract class PagedCollection<E> extends AbstractPagedCollection<E> impl
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public boolean addAll(E... arg0) {
+	public boolean addAll(E... elements) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -319,22 +320,25 @@ public abstract class PagedCollection<E> extends AbstractPagedCollection<E> impl
 	}
 
 	@Override
-	public void remove(int arg0, int arg1) {
+	public void remove(int from, int to) {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public boolean removeAll(E... arg0) {
+	public boolean removeAll(E... elements) {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public boolean retainAll(E... arg0) {
+	public boolean retainAll(E... elements) {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public boolean setAll(E... arg0) {
+	public boolean setAll(E... elements) {
 		throw new UnsupportedOperationException();
 	}
 
