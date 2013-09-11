@@ -38,6 +38,9 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.TextView;
 
+/**
+ * @author William DRAI
+ */
 public class TextViewWatcher extends ViewWatcher<TextView> {
 	
 	private TextWatcher textWatcher;

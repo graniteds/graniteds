@@ -36,7 +36,9 @@ package org.granite.client.android.adapter;
 
 import android.view.View;
 
-
+/**
+ * @author William DRAI
+ */
 public interface DataBinder<E> {
 	
 	public void bind(View view, E item);

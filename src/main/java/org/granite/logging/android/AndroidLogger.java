@@ -40,6 +40,9 @@ import org.granite.logging.LoggingFormatter;
 
 import android.util.Log;
 
+/**
+ * @author Franck WOLFF
+ */
 public class AndroidLogger extends Logger {
 
 	private final String tag;

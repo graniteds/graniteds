@@ -46,6 +46,9 @@ import java.util.Map.Entry;
 import android.text.GetChars;
 import android.view.View;
 
+/**
+ * @author William DRAI
+ */
 public class ViewWatcher<V extends View> {
 	
 	private final WeakReference<V> view;

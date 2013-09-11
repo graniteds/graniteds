@@ -46,6 +46,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+/**
+ * @author William DRAI
+ */
 public class ObservableListAdapter<E> extends BaseAdapter {
 	
 	private Persistence persistence = Platform.persistence();

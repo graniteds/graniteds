@@ -42,6 +42,9 @@ import org.granite.util.TypeUtil;
 import android.view.View;
 import android.widget.TextView;
 
+/**
+ * @author William DRAI
+ */
 public class ViewWatcherFactory {
 	
 	private static Map<Class<? extends View>, Class<? extends ViewWatcher<?>>> viewWatcherClassesMap = new HashMap<Class<? extends View>, Class<? extends ViewWatcher<?>>>();

@@ -47,6 +47,9 @@ import dalvik.system.DexFile;
 
 import android.content.Context;
 
+/**
+ * @author Franck WOLFF
+ */
 public class DexRemoteAliasScanner implements RemoteAliasScanner {
 
 	private static final Logger log = Logger.getLogger(DexRemoteAliasScanner.class);

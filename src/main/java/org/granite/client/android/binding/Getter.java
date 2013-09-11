@@ -34,6 +34,9 @@
  */
 package org.granite.client.android.binding;
 
+/**
+ * @author William DRAI
+ */
 public interface Getter<T, V> {
 	
 	public V getValue(T instance) throws Exception;

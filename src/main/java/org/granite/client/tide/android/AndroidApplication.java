@@ -39,7 +39,9 @@ import org.granite.client.tide.server.ServerSession;
 
 import android.app.Activity;
 
-
+/**
+ * @author William DRAI
+ */
 public class AndroidApplication extends DefaultApplication {
 	
 	private Activity activity;

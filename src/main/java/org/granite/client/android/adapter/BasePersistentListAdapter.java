@@ -41,6 +41,9 @@ import org.granite.client.persistence.collection.PersistentCollection.ChangeList
 
 import android.widget.BaseAdapter;
 
+/**
+ * @author William DRAI
+ */
 public abstract class BasePersistentListAdapter<E> extends BaseAdapter {
 
     private ChangeListener listChangeListener = new ChangeListener() {

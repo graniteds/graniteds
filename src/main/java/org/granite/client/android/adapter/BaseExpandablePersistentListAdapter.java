@@ -42,6 +42,9 @@ import org.granite.client.persistence.collection.PersistentCollection.ChangeList
 
 import android.widget.BaseExpandableListAdapter;
 
+/**
+ * @author William DRAI
+ */
 public abstract class BaseExpandablePersistentListAdapter<E> extends BaseExpandableListAdapter {
 
     private final List<E> list;

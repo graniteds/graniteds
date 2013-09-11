@@ -40,6 +40,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
+/**
+ * @author William DRAI
+ */
 public class TideLayoutInflater extends LayoutInflater {
 	
 	private final org.granite.client.tide.Context context;

@@ -52,7 +52,9 @@ import org.granite.client.tide.impl.BindingUtil;
 import android.app.Activity;
 import android.view.View;
 
-
+/**
+ * @author William DRAI
+ */
 public class Binder {
 	
 	private final Map<View, ViewWatcher<? extends View>> viewWatchers = new WeakHashMap<View, ViewWatcher<? extends View>>();

@@ -43,6 +43,9 @@ import org.granite.messaging.reflect.Reflection;
 
 import android.content.Context;
 
+/**
+ * @author Franck WOLFF
+ */
 public class AndroidPlatform extends Platform {
 
 	public AndroidPlatform() {
