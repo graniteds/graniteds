@@ -1,3 +1,5 @@
+import java.nio.file.Files;
+
 buildscript {
     repositories {
         mavenCentral()
@@ -12,6 +14,128 @@ buildscript {
 
 group = 'org.graniteds'
 version = granitedsVersion
+
+ext.javadocLinks = [
+	"http://download.oracle.com/javase/1.5.0/docs/api/",
+	"http://docs.oracle.com/javaee/6/api",
+	"http://logging.apache.org/log4j/1.2/apidocs/",
+	"http://tomcat.apache.org/tomcat-6.0-doc/api/",
+	"http://tomcat.apache.org/tomcat-7.0-doc/api/",
+	"http://download.eclipse.org/jetty/stable-8/apidocs/",
+	"http://download.eclipse.org/jetty/stable-9/apidocs/",
+	"http://docs.jboss.org/hibernate/orm/3.5/javadocs/",
+	"http://docs.jboss.com/seam/2.2.0.GA/api/",
+	"http://docs.spring.io/spring/docs/3.1.x/javadoc-api/"
+]
+
+// Add Java plugin for all non-Flex subprojects
+configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') }) { subproject ->
+
+	apply plugin: 'java'
+	apply plugin: 'eclipse'
+	
+	compileJava {
+		sourceCompatibility=1.6
+		targetCompatibility=1.6
+	}
+	compileTestJava {
+		sourceCompatibility=1.6
+		targetCompatibility=1.6
+	}
+	
+	configurations {
+		create('sources')
+		create('javadoc')
+	}
+
+	task sourcesJar(type: Jar, dependsOn: 'classes') {
+		classifier = 'sources'
+		from sourceSets.main.allSource
+	}
+	
+	task javadocJar(type: Jar, dependsOn: 'javadoc') {
+		classifier = 'javadoc'
+		from javadoc.destinationDir
+	}
+	
+	jar {
+		metaInf {
+			from 'LICENSE.txt'
+		}
+	}
+	
+	artifacts {
+		archives sourcesJar
+		archives javadocJar
+	}
+	
+	dependencies {
+		javadoc 'log4j:log4j:1.2.17'
+		
+		testCompile 'junit:junit:4.+'
+	}
+
+	javadoc {
+		title 'GraniteDS API Documentation'
+		
+		classpath.add(configurations.javadoc)
+		
+		configure(options) {
+			version = true
+			author = true
+			use = true
+			linkSource = true
+			// stylesheetFile = 'jdstyle.css'
+			windowTitle = 'GraniteDS API Documentation'
+			docTitle = 'GraniteDS API Documentation - ' + granitedsVersion
+			links = rootProject.ext.javadocLinks
+		}
+	}	
+}
+
+// Add GradleFX plugin for all Flex subprojects
+configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { subproject ->
+	
+	apply plugin: 'gradlefx'
+	apply plugin: 'flashbuilder'
+
+	type = 'swc'
+	output = subproject.name + '-' + granitedsVersion
+	
+	task sourcesJar(type: Jar) {
+		classifier = 'sources'
+		from files(srcDirs)
+	}
+
+	artifacts {
+		archives sourcesJar
+	}
+}
+
+// Add license plugin for all non-Flex subprojects
+// license plugin is not compatible with GradleFX
+configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') }) { subproject ->
+
+	apply plugin: JavaOnlyLicensePlugin
+	
+	license {
+		header rootProject.file('HEADER-' + subproject.moduleLicense + '.txt')
+		strictCheck true
+		ext.year = Calendar.getInstance().get(Calendar.YEAR)
+	}
+}
+
+class JavaOnlyLicensePlugin extends nl.javadude.gradle.plugins.license.LicensePlugin {
+	
+	private static Logger logger = Logging.getLogger(JavaOnlyLicensePlugin);
+	
+	protected void configureForSourceSet(SourceSet sourceSet, nl.javadude.gradle.plugins.license.License task) {
+		super.configureForSourceSet(sourceSet, task)
+		
+		// Override default allSource and apply only to all Java source files from SourceSet
+		task.source = sourceSet.allJava
+	}	
+}
 
 // Common configuration for all subprojects
 // signing + maven deployment
@@ -31,20 +155,20 @@ configure(subprojects) { subproject ->
 
 	dependencies {
 		deployerJars 'org.apache.maven.wagon:wagon-http:2.2'
-
-		//merged 'org.graniteds:flex-websocket-client:1.0',
-		//	'org.graniteds:granite-swc:' + granitedsVersion
 	}
 
 	signing {
+		required { gradle.taskGraph.hasTask("uploadArchives") }
 		sign configurations.archives
 	}
 	
 	uploadArchives {
 		repositories {
 			mavenDeployer {
-				beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
+				beforeDeployment { 
+					MavenDeployment deployment -> signing.signPom(deployment)
+				}
+				
 				repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
 					authentication(userName: sonatypeOssUserName, password: sonatypeOssPassword)
 				}
@@ -94,37 +218,344 @@ configure(subprojects) { subproject ->
 	}
 }
 
-// Add license plugin for all non-Flex subprojects
-// license plugin is not compatible with GradleFX
-configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') }) { subproject ->
-
-	apply plugin: 'license'
+// Core project
+// AMF/JMF Serialization + Remoting + Gravity + Tide server-side data management
+project('granite-core') {
 	
-	license {
-		header rootProject.file('HEADER-' + subproject.moduleLicense + '.txt')
-		strictCheck true
-		ext.year = Calendar.getInstance().get(Calendar.YEAR)
+	description = 'GraniteDS Core server library'
+	
+	dependencies {
+		compile 'javax.servlet:javax.servlet-api:3.0.1'				// Should use 2.5 but 3.0 required by ServletGraniteContext.BasicRequest
+		compile 'javax.interceptor:javax.interceptor-api:1.2'
+		compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+		compile 'javax.jdo:jdo2-api:2.3-eb'
+		compile 'javax.jms:jms-api:1.1-rev-1'
+		compile 'javax.transaction:transaction-api:1.1-rev-1'
+		compile 'javax.enterprise:cdi-api:1.0-SP4'					// Required for @NonBinding annotation on @DataEnabled
+		compile 'log4j:log4j:1.2.17'
+		
+		compile files('../lib/jboss-vfs.jar')						// Used conditionally by VFSScanner impl
+		compile files('../lib/jboss-vfs3.jar')						// Used conditionally by VFS3Scanner impl
+		compile files('../lib/jbossmq.jar')							// Used by JBossMQSelector impl
+		
+		compile files('../lib/jboss-seam.jar')						// Required @Scope annotation for Seam
 	}
 }
 
-// Add GradleFX plugin for all Flex subprojects
-configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { subproject ->
+// Servlet 3 Integration for Gravity async I/O and auto configuration
+project('granite-servlet3') {
 	
-	apply plugin: 'gradlefx'
-	apply plugin: 'flashbuilder'
-
-	type = 'swc'
-	output = subproject.name + '-' + granitedsVersion
+	description = 'GraniteDS Servlet 3 support server library'
 	
-	task sourcesJar(type: Jar) {
-		classifier = 'sources'
-		from files(srcDirs)
-	}
-
-	artifacts {
-		archives sourcesJar
+	dependencies {
+		compile 'javax.servlet:javax.servlet-api:3.0.1'
+		
+		compile project(':granite-core')
 	}
 }
+
+project('granite-tomcat6') {
+	
+	description = 'GraniteDS Tomcat 6 support server library'
+	
+	dependencies {
+		compile 'org.apache.tomcat:catalina:6.0.32'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-tomcat7') {
+	
+	description = 'GraniteDS Tomcat 7 support server library'
+	
+	dependencies {
+		compile 'org.apache.tomcat:tomcat-catalina:7.0.42'
+		compile 'org.apache.tomcat:tomcat-coyote:7.0.42'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-jetty6') {
+	
+	description = 'GraniteDS Jetty 6 support server library'
+	
+	dependencies {
+		compile 'org.mortbay.jetty:jetty:6.1.26'
+		compile 'org.mortbay.jetty:jetty-util:6.1.26'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-jetty8') {
+	
+	description = 'GraniteDS Jetty 8 support server library'
+	
+	dependencies {
+		compile 'org.eclipse.jetty:jetty-server:8.1.12.v20130726'
+		compile 'org.eclipse.jetty:jetty-util:8.1.12.v20130726'
+		compile 'org.eclipse.jetty:jetty-websocket:8.1.12.v20130726'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-jbossweb') {
+	
+	description = 'GraniteDS JBossWeb (JBoss 5.1) support server library'
+	
+	dependencies {
+		compile files('../lib/jbossweb.jar')
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-glassfishv2') {
+	
+	description = 'GraniteDS GlassFish v2 support server library'
+	
+	dependencies {
+		compile files('../lib/appserv-rt.jar')
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-glassfishv3') {
+	
+	description = 'GraniteDS GlassFish v3+ support server library'
+	
+	dependencies {
+		compile 'javax.servlet:javax.servlet-api:3.0.1'			// Must add because catalina comes with 2.5
+		compile 'org.apache.tomcat:catalina:6.0.32'
+		compile 'com.sun.grizzly:grizzly-utils:1.9.59'
+		compile 'com.sun.grizzly:grizzly-websockets:1.9.59'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-weblogic') {
+	
+	description = 'GraniteDS WebLogic 10+ support server library'
+	
+	dependencies {
+		compile files('../lib/weblogic10-compat.jar')
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-appengine') {
+	
+	description = 'GraniteDS Google AppEngine support server library'
+	
+	dependencies {
+		compile 'javax.servlet:javax.servlet-api:3.0.1'
+		compile 'com.google.appengine:appengine-api-1.0-sdk:1.6.4'	// KeyConverter
+		
+		compile project(':granite-core')
+	}
+}
+
+
+project('granite-activemq') {
+	
+	description = 'GraniteDS ActiveMQ integration server library'
+	
+	dependencies {
+		compile 'org.apache.activemq:activemq-core:5.7.0'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-ejb') {
+	
+	description = 'GraniteDS EJB integration server library'
+	
+	dependencies {
+		compile 'javax.ejb:javax.ejb-api:3.2'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-cdi') {
+	
+	description = 'GraniteDS CDI integration server library'
+	
+	dependencies {
+		compile 'javax.enterprise:cdi-api:1.0-SP4'
+		compile 'javax.el:javax.el-api:3.0.0'
+		compile 'javax.inject:javax.inject:1'
+		compile 'org.jboss.weld:weld-api:1.1.Final'
+		compile 'org.jboss.weld:weld-spi:1.1.Final'
+		compile 'org.jboss.weld:weld-core:1.1.14.Final'
+		compile 'org.jboss.weld.servlet:weld-servlet:1.1.14.Final'
+		compile 'org.jboss.interceptor:jboss-interceptor-core:2.0.0.Final'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-spring') {
+	
+	description = 'GraniteDS Spring 3+ integration server library'
+	
+	dependencies {
+		compile 'javax.inject:javax.inject:1'
+		compile 'org.springframework:spring-core:3.1.4.RELEASE'
+		compile 'org.springframework:spring-context:3.1.4.RELEASE'
+		compile 'org.springframework:spring-beans:3.1.4.RELEASE'
+		compile 'org.springframework:spring-tx:3.1.4.RELEASE'
+		compile 'org.springframework:spring-orm:3.1.4.RELEASE'
+		compile 'org.springframework:spring-web:3.1.4.RELEASE'
+		compile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
+		compile 'org.springframework.security:spring-security-core:3.1.4.RELEASE'
+		compile 'org.springframework.security:spring-security-web:3.1.4.RELEASE'
+		compile 'org.springframework.security:spring-security-acl:3.1.4.RELEASE'
+		compile 'org.springframework.data:spring-data-jpa:1.4.1.RELEASE'
+		compile 'org.hibernate:hibernate-core:4.0.1.Final'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-spring2') {
+	
+	apply plugin: 'java'
+	
+	description = 'GraniteDS Spring 2 integration server library'
+	
+	dependencies {
+		compile 'org.springframework:spring-core:3.1.4.RELEASE'								// Use Spring 3 to compile because of generics
+		compile 'org.springframework:spring-context:3.1.4.RELEASE'
+		compile 'org.springframework:spring-beans:3.1.4.RELEASE'
+		compile 'org.springframework:spring-tx:3.1.4.RELEASE'
+		compile 'org.springframework:spring-orm:3.1.4.RELEASE'
+		compile 'org.springframework:spring-web:3.1.4.RELEASE'
+		compile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
+		compile 'org.springframework.security:spring-security-core:2.0.7.RELEASE'			// 2.0.8 broken in maven central
+		compile 'org.springframework.security:spring-security-core-tiger:2.0.7.RELEASE'
+		compile 'org.springframework.security:spring-security-acl:2.0.7.RELEASE'
+		compile 'org.acegisecurity:acegi-security:1.0.7'
+		compile 'org.aspectj:aspectjrt:1.5.4'
+		compile 'org.hibernate:hibernate-core:3.6.10.Final'
+		
+		compile project(':granite-core')
+	}
+	
+	sourceSets {
+		main {
+			java {
+				srcDir '../granite-spring/src/main/java'
+				exclude 'org/granite/spring/data/*', 'org/granite/spring/security/*', 
+					'org/granite/tide/spring/data/*', 'org/granite/tide/spring/security/*',
+					'org/granite/tide/spring/Hibernate4*'
+			}
+		}
+	}
+}
+
+project('granite-seam') {
+	
+	description = 'GraniteDS Seam 2.1+ integration server library'
+	
+	dependencies {
+		compile files('../lib/jboss-seam.jar')
+		compile 'javax.faces:jsf-api:1.2_15'
+		
+		compile project(':granite-core')
+		compile project(':granite-hibernate')
+	}
+}
+
+
+project('granite-hibernate') {
+	
+	description = 'GraniteDS Hibernate 3.x support library'
+	
+	dependencies {
+		compile 'org.hibernate:hibernate-core:3.6.10.Final'
+		compile files('../lib/hibernate-validator.jar')
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-hibernate4') {
+	
+	description = 'GraniteDS Hibernate 4.x support library'
+	
+	dependencies {
+		compile 'org.hibernate:hibernate-core:4.2.5.Final'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-eclipselink') {
+	
+	description = 'GraniteDS EclipseLink support library'
+	
+	dependencies {
+		compile 'org.eclipse.persistence:eclipselink:2.5.0'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-toplink') {
+	
+	description = 'GraniteDS TopLink Essentials support library'
+	
+	dependencies {
+		compile files('../lib/toplink-essentials.jar')
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-datanucleus') {
+	
+	description = 'GraniteDS DataNucleus support library'
+	
+	dependencies {
+		compile 'org.datanucleus:datanucleus-core:3.2.4'
+		compile 'org.datanucleus:datanucleus-api-jpa:3.2.4'
+		compile 'org.datanucleus:datanucleus-api-jdo:3.2.4'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-openjpa') {
+	
+	description = 'GraniteDS OpenJPA support library'
+	
+	dependencies {
+		compile 'org.apache.openjpa:openjpa:2.2.2'
+		
+		compile project(':granite-core')
+	}
+}
+
+project('granite-beanvalidation') {
+	
+	description = 'GraniteDS Bean Validation support library'
+
+	dependencies {
+		compile 'javax.validation:validation-api:1.0.0.GA'
+		
+		compile project(':granite-core')
+	}
+}
+
+
 
 project('granite-client-flex') {
 	

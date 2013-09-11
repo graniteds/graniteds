@@ -1,22 +1,22 @@
-/*
-  GRANITE DATA SERVICES
-  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
-
-  This file is part of Granite Data Services.
-
-  Granite Data Services is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version.
-
-  Granite Data Services is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, see <http://www.gnu.org/licenses/>.
-*/
+/**
+ *   GRANITE DATA SERVICES
+ *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+ *
+ *   This file is part of Granite Data Services.
+ *
+ *   Granite Data Services is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU Library General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or (at your
+ *   option) any later version.
+ *
+ *   Granite Data Services is distributed in the hope that it will be useful, but
+ *   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *   FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+ *   for more details.
+ *
+ *   You should have received a copy of the GNU Library General Public License
+ *   along with this library; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.granite.tide.spring.security;
 
@@ -39,6 +39,7 @@ import org.springframework.util.StringUtils;
  * 
  * 	Adapted from the Spring security JSP taglib
  */
+@SuppressWarnings("deprecation")
 @TideEnabled
 public class Identity3 {
         
@@ -55,23 +56,23 @@ public class Identity3 {
     
     
     public boolean ifNotGranted(String authorities) {
-        final Collection<GrantedAuthority> granted = getPrincipalAuthorities();
+        final Collection<? extends GrantedAuthority> granted = getPrincipalAuthorities();
         Set<GrantedAuthority> grantedCopy = retainAll(granted, parseAuthoritiesString(authorities));
         return grantedCopy.isEmpty();
     }
     
     public boolean ifAllGranted(String authorities) {
-        final Collection<GrantedAuthority> granted = getPrincipalAuthorities();
+        final Collection<? extends GrantedAuthority> granted = getPrincipalAuthorities();
         return granted.containsAll(parseAuthoritiesString(authorities));
     }
     
     public boolean ifAnyGranted(String authorities) {
-        final Collection<GrantedAuthority> granted = getPrincipalAuthorities();
+        final Collection<? extends GrantedAuthority> granted = getPrincipalAuthorities();
         Set<GrantedAuthority> grantedCopy = retainAll(granted, parseAuthoritiesString(authorities));
         return !grantedCopy.isEmpty();
     }
 
-    private Collection<GrantedAuthority> getPrincipalAuthorities() {
+    private Collection<? extends GrantedAuthority> getPrincipalAuthorities() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication.getAuthorities() == null)
@@ -80,7 +81,7 @@ public class Identity3 {
         return authentication.getAuthorities();
     }
 
-    private Set<GrantedAuthority> parseAuthoritiesString(String authorizationsString) {
+	private Set<GrantedAuthority> parseAuthoritiesString(String authorizationsString) {
         final Set<GrantedAuthority> requiredAuthorities = new HashSet<GrantedAuthority>();
         final String[] authorities = StringUtils.commaDelimitedListToStringArray(authorizationsString);
 
@@ -95,7 +96,7 @@ public class Identity3 {
         return requiredAuthorities;
     }
 
-    private Set<GrantedAuthority> retainAll(final Collection<GrantedAuthority> granted, final Set<GrantedAuthority> required) {
+    private Set<GrantedAuthority> retainAll(final Collection<? extends GrantedAuthority> granted, final Set<GrantedAuthority> required) {
         Set<String> grantedRoles = authoritiesToRoles(granted);
         Set<String> requiredRoles = authoritiesToRoles(required);
         grantedRoles.retainAll(requiredRoles);
@@ -103,7 +104,7 @@ public class Identity3 {
         return rolesToAuthorities(grantedRoles, granted);
     }
 
-    private Set<String> authoritiesToRoles(Collection<GrantedAuthority> c) {
+    private Set<String> authoritiesToRoles(Collection<? extends GrantedAuthority> c) {
         Set<String> roles = new HashSet<String>();
         for (GrantedAuthority authority : c) {
             if (authority.getAuthority() != null)
@@ -112,7 +113,7 @@ public class Identity3 {
         return roles;
     }
 
-    private Set<GrantedAuthority> rolesToAuthorities(Set<String> grantedRoles, Collection<GrantedAuthority> granted) {
+    private Set<GrantedAuthority> rolesToAuthorities(Set<String> grantedRoles, Collection<? extends GrantedAuthority> granted) {
         Set<GrantedAuthority> target = new HashSet<GrantedAuthority>();
         for (String role : grantedRoles) {
             for (GrantedAuthority authority : granted) {

@@ -1,22 +1,22 @@
-/*
-  GRANITE DATA SERVICES
-  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
-
-  This file is part of Granite Data Services.
-
-  Granite Data Services is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version.
-
-  Granite Data Services is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, see <http://www.gnu.org/licenses/>.
-*/
+/**
+ *   GRANITE DATA SERVICES
+ *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+ *
+ *   This file is part of Granite Data Services.
+ *
+ *   Granite Data Services is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU Library General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or (at your
+ *   option) any later version.
+ *
+ *   Granite Data Services is distributed in the hope that it will be useful, but
+ *   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *   FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+ *   for more details.
+ *
+ *   You should have received a copy of the GNU Library General Public License
+ *   along with this library; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.granite.messaging.webapp;
 
@@ -375,11 +375,11 @@ public class ServletGraniteContext extends GraniteContext {
     		return null;
     	}
 
-    	public AsyncContext startAsync(ServletRequest arg0, ServletResponse arg1) throws IllegalStateException {
+    	public AsyncContext startAsync(ServletRequest request, ServletResponse response) throws IllegalStateException {
     		return null;
     	}
 
-    	public boolean authenticate(HttpServletResponse arg0) throws IOException, ServletException {
+    	public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
     		return false;
     	}
 
@@ -395,11 +395,11 @@ public class ServletGraniteContext extends GraniteContext {
     		return null;
     	}
 
-    	public long getDateHeader(String arg0) {
+    	public long getDateHeader(String name) {
     		return 0;
     	}
 
-    	public String getHeader(String arg0) {
+    	public String getHeader(String name) {
     		return null;
     	}
 
@@ -407,11 +407,11 @@ public class ServletGraniteContext extends GraniteContext {
     		return null;
     	}
 
-    	public Enumeration<String> getHeaders(String arg0) {
+    	public Enumeration<String> getHeaders(String name) {
     		return null;
     	}
 
-    	public int getIntHeader(String arg0) {
+    	public int getIntHeader(String name) {
     		return 0;
     	}
 
@@ -419,7 +419,7 @@ public class ServletGraniteContext extends GraniteContext {
     		return null;
     	}
 
-    	public Part getPart(String arg0) throws IOException, ServletException {
+    	public Part getPart(String name) throws IOException, ServletException {
     		return null;
     	}
 
@@ -495,54 +495,54 @@ public class ServletGraniteContext extends GraniteContext {
 		public void resetBuffer() {
 		}
 
-		public void setBufferSize(int arg0) {
+		public void setBufferSize(int size) {
 		}
 
-		public void setCharacterEncoding(String arg0) {
+		public void setCharacterEncoding(String charset) {
 		}
 
-		public void setContentLength(int arg0) {
+		public void setContentLength(int length) {
 		}
 
-		public void setContentType(String arg0) {
+		public void setContentType(String contentType) {
 		}
 
-		public void setLocale(Locale arg0) {
+		public void setLocale(Locale locale) {
 		}
 
-		public void addCookie(Cookie arg0) {
+		public void addCookie(Cookie cookie) {
 		}
 
-		public void addDateHeader(String arg0, long arg1) {
+		public void addDateHeader(String name, long value) {
 		}
 
-		public void addHeader(String arg0, String arg1) {
+		public void addHeader(String name, String value) {
 		}
 
-		public void addIntHeader(String arg0, int arg1) {
+		public void addIntHeader(String name, int value) {
 		}
 
-		public boolean containsHeader(String arg0) {
+		public boolean containsHeader(String name) {
 			return false;
 		}
 
-		public String encodeRedirectURL(String arg0) {
+		public String encodeRedirectURL(String url) {
 			return null;
 		}
 
-		public String encodeRedirectUrl(String arg0) {
+		public String encodeRedirectUrl(String url) {
 			return null;
 		}
 
-		public String encodeURL(String arg0) {
+		public String encodeURL(String url) {
 			return null;
 		}
 
-		public String encodeUrl(String arg0) {
+		public String encodeUrl(String url) {
 			return null;
 		}
 
-		public String getHeader(String arg0) {
+		public String getHeader(String name) {
 			return null;
 		}
 
@@ -550,7 +550,7 @@ public class ServletGraniteContext extends GraniteContext {
 			return null;
 		}
 
-		public Collection<String> getHeaders(String arg0) {
+		public Collection<String> getHeaders(String name) {
 			return null;
 		}
 
@@ -558,28 +558,28 @@ public class ServletGraniteContext extends GraniteContext {
 			return 0;
 		}
 
-		public void sendError(int arg0) throws IOException {
+		public void sendError(int code) throws IOException {
 		}
 
-		public void sendError(int arg0, String arg1) throws IOException {
+		public void sendError(int code, String msg) throws IOException {
 		}
 
-		public void sendRedirect(String arg0) throws IOException {
+		public void sendRedirect(String url) throws IOException {
 		}
 
-		public void setDateHeader(String arg0, long arg1) {
+		public void setDateHeader(String name, long value) {
 		}
 
-		public void setHeader(String arg0, String arg1) {
+		public void setHeader(String name, String value) {
 		}
 
-		public void setIntHeader(String arg0, int arg1) {
+		public void setIntHeader(String name, int value) {
 		}
 
-		public void setStatus(int arg0) {
+		public void setStatus(int code) {
 		}
 
-		public void setStatus(int arg0, String arg1) {
+		public void setStatus(int code, String msg) {
 		}
     	
     }

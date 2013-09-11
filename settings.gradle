@@ -1,3 +1,33 @@
+include 'granite-core'
+include 'granite-servlet3'
+
+include 'granite-jetty6'
+include 'granite-jetty8'
+include 'granite-tomcat6'
+include 'granite-tomcat7'
+include 'granite-jbossweb'
+include 'granite-glassfishv2'
+include 'granite-glassfishv3'
+include 'granite-weblogic'
+include 'granite-appengine'
+
+include 'granite-activemq'
+
+include 'granite-ejb'
+include 'granite-cdi'
+include 'granite-spring'
+include 'granite-spring2'
+include 'granite-seam'
+
+include 'granite-hibernate'
+include 'granite-hibernate4'
+include 'granite-eclipselink'
+include 'granite-datanucleus'
+include 'granite-toplink'
+include 'granite-openjpa'
+
+include 'granite-beanvalidation'
+
 include 'granite-client-flex'
 include 'granite-client-flex-advanced'
 include 'granite-client-flex45-advanced'

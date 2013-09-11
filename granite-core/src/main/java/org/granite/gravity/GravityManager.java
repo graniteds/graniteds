@@ -1,45 +1,35 @@
-/*
-  GRANITE DATA SERVICES
-  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
-
-  This file is part of Granite Data Services.
-
-  Granite Data Services is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Library General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or (at your
-  option) any later version.
-
-  Granite Data Services is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
-  for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; if not, see <http://www.gnu.org/licenses/>.
-*/
+/**
+ *   GRANITE DATA SERVICES
+ *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+ *
+ *   This file is part of Granite Data Services.
+ *
+ *   Granite Data Services is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU Library General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or (at your
+ *   option) any later version.
+ *
+ *   Granite Data Services is distributed in the hope that it will be useful, but
+ *   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *   FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+ *   for more details.
+ *
+ *   You should have received a copy of the GNU Library General Public License
+ *   along with this library; if not, see <http://www.gnu.org/licenses/>.
+ */
 
 package org.granite.gravity;
-
-import java.lang.reflect.Field;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
-import org.granite.config.ConfigProvider;
 import org.granite.config.GraniteConfig;
 import org.granite.config.GraniteConfigListener;
 import org.granite.config.ServletGraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
-import org.granite.gravity.config.AbstractActiveMQTopicDestination;
-import org.granite.gravity.config.AbstractJmsTopicDestination;
-import org.granite.gravity.config.AbstractMessagingDestination;
-import org.granite.gravity.config.servlet3.ActiveMQTopicDestination;
-import org.granite.gravity.config.servlet3.JmsTopicDestination;
-import org.granite.gravity.config.servlet3.MessagingDestination;
-import org.granite.gravity.security.GravityDestinationSecurizer;
 import org.granite.util.TypeUtil;
 
 /**
@@ -57,7 +47,6 @@ public class GravityManager {
 	 * synchronizes on the current ServletContext instance.
 	 * 
 	 * @param servletConfig the servlet config passed in HttpServlet.init(ServletConfig config) method.
-	 * @param channelFactory an implementation specific ChannelFactory instance.
 	 * @return a newly created and started Gravity instance or previously started one.
 	 * @throws ServletException if something goes wrong (GravityFactory not found, Gravity.start() error, etc.)
 	 */
@@ -76,9 +65,9 @@ public class GravityManager {
 		        GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(context);
 	    		ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(context);
 	            
-	            Class<?> serverFilterClass = (Class<?>)context.getAttribute(GraniteConfigListener.GRANITE_CONFIG_ATTRIBUTE);
-	            if (serverFilterClass != null)
-	            	configureServices(context, serverFilterClass);
+	    		GravityServiceConfigurator serviceConfigurator = (GravityServiceConfigurator)context.getAttribute(GraniteConfigListener.GRANITE_CONFIG_ATTRIBUTE);
+	    		if (serviceConfigurator != null)
+	    			serviceConfigurator.configureGravityServices(context);
 	            
 		        GravityConfig gravityConfig = new GravityConfig(graniteConfig);
 		        
@@ -104,6 +93,13 @@ public class GravityManager {
 
         return gravity;
     }
+    
+    
+    public static interface GravityServiceConfigurator {
+    	
+    	public void configureGravityServices(ServletContext context) throws ServletException;
+    }
+    
     
     /**
      * Reconfigure gravity with the new supplied configuration (after reloading granite-config.xml).
@@ -134,75 +130,11 @@ public class GravityManager {
      * HttpServlet.doPost(...) methods only.
      * 
      * @param context the ServletContext from which to retrieve the Gravity instance. 
-     * @return the unique and started Gravity instance (or null if {@link #start(ServletConfig, ChannelFactory)}
+     * @return the unique and started Gravity instance (or null if {@link #start(ServletConfig)}
      * 		has never been called).
      */
     public static Gravity getGravity(ServletContext context) {
     	return (Gravity)context.getAttribute(GRAVITY_KEY);
     }
     
-    
-    private static void configureServices(ServletContext servletContext, Class<?> serverFilterClass) throws ServletException {
-        ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(servletContext);
-        
-        ConfigProvider configProvider = (ConfigProvider)servletContext.getAttribute(GraniteConfigListener.GRANITE_CONFIG_PROVIDER_ATTRIBUTE);
-        
-        for (Field field : serverFilterClass.getDeclaredFields()) {
-        	if (field.isAnnotationPresent(MessagingDestination.class)) {
-        		MessagingDestination md = field.getAnnotation(MessagingDestination.class);
-        		AbstractMessagingDestination messagingDestination = new AbstractMessagingDestination();
-        		messagingDestination.setId(field.getName());
-        		messagingDestination.setNoLocal(md.noLocal());
-        		messagingDestination.setSessionSelector(md.sessionSelector());
-        		initSecurizer(messagingDestination, md.securizer(), configProvider);
-        		messagingDestination.initServices(servicesConfig);
-        	}
-        	else if (field.isAnnotationPresent(JmsTopicDestination.class)) {
-        		JmsTopicDestination md = field.getAnnotation(JmsTopicDestination.class);
-        		AbstractJmsTopicDestination messagingDestination = new AbstractJmsTopicDestination();
-        		messagingDestination.setId(field.getName());
-        		messagingDestination.setNoLocal(md.noLocal());
-        		messagingDestination.setSessionSelector(md.sessionSelector());
-        		initSecurizer(messagingDestination, md.securizer(), configProvider);
-        		messagingDestination.initServices(servicesConfig);
-        		messagingDestination.setName(md.name());
-        		messagingDestination.setTextMessages(md.textMessages());
-        		messagingDestination.setAcknowledgeMode(md.acknowledgeMode());
-        		messagingDestination.setConnectionFactory(md.connectionFactory());
-        		messagingDestination.setTransactedSessions(md.transactedSessions());
-        		messagingDestination.setJndiName(md.topicJndiName());
-        		messagingDestination.initServices(servicesConfig);
-        	}
-        	else if (field.isAnnotationPresent(ActiveMQTopicDestination.class)) {
-        		ActiveMQTopicDestination md = field.getAnnotation(ActiveMQTopicDestination.class);
-        		AbstractActiveMQTopicDestination messagingDestination = new AbstractActiveMQTopicDestination();
-        		messagingDestination.setId(field.getName());
-        		messagingDestination.setNoLocal(md.noLocal());
-        		messagingDestination.setSessionSelector(md.sessionSelector());
-        		initSecurizer(messagingDestination, md.securizer(), configProvider);
-        		messagingDestination.initServices(servicesConfig);
-        		messagingDestination.setName(md.name());
-        		messagingDestination.setTextMessages(md.textMessages());
-        		messagingDestination.setAcknowledgeMode(md.acknowledgeMode());
-        		messagingDestination.setConnectionFactory(md.connectionFactory());
-        		messagingDestination.setTransactedSessions(md.transactedSessions());
-        		messagingDestination.setJndiName(md.topicJndiName());
-        		messagingDestination.setBrokerUrl(md.brokerUrl());
-        		messagingDestination.setCreateBroker(md.createBroker());
-        		messagingDestination.setDurable(md.durable());
-        		messagingDestination.setWaitForStart(md.waitForStart());
-        		messagingDestination.setFileStoreRoot(md.fileStoreRoot());
-        		messagingDestination.initServices(servicesConfig);
-        	}
-        }
-    }
-    
-    private static void initSecurizer(AbstractMessagingDestination messagingDestination, Class<? extends GravityDestinationSecurizer> securizerClass, ConfigProvider configProvider) {
-		if (securizerClass != GravityDestinationSecurizer.class) {
-			if (configProvider != null)
-				messagingDestination.setSecurizer(configProvider.findInstance(securizerClass));
-			if (messagingDestination.getSecurizer() == null)
-				messagingDestination.setSecurizerClassName(securizerClass.getName());
-		}
-    }
 }
