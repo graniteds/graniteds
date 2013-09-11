@@ -32,7 +32,6 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.client.tide.collections.javafx;
 
 import org.granite.tide.data.model.SortInfo;

@@ -51,7 +51,6 @@
   You should have received a copy of the GNU Library General Public License
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
-
 package org.granite.client.platform.javafx;
 
 import org.granite.messaging.reflect.Property;

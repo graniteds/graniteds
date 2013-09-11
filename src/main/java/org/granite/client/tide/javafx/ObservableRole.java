@@ -43,7 +43,9 @@ import org.granite.client.tide.server.TideFaultEvent;
 import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
 
-
+/**
+ * @author William DRAI
+ */
 public class ObservableRole extends ReadOnlyBooleanPropertyBase {
 	
 	private final BaseIdentity identity;

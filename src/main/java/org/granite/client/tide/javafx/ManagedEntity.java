@@ -32,7 +32,6 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.client.tide.javafx;
 
 import java.lang.reflect.Method;
@@ -50,7 +49,9 @@ import javax.inject.Named;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.PersistenceManager;
 
-
+/**
+ * @author William DRAI
+ */
 @Named
 public class ManagedEntity<T> {
     

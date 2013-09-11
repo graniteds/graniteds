@@ -32,12 +32,13 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.client.tide.collections.javafx;
 
 import org.granite.client.tide.server.TideRpcEvent;
 
-
+/**
+ * @author William DRAI
+ */
 public interface PageChangeListener<E> {
 
 	public void pageChanged(PagedCollection<E> collection, TideRpcEvent event);

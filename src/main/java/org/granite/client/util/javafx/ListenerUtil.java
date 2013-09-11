@@ -32,7 +32,6 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.client.util.javafx;
 
 import java.lang.reflect.Array;
@@ -40,7 +39,9 @@ import java.util.Arrays;
 
 import javafx.beans.WeakListener;
 
-
+/**
+ * @author William DRAI
+ */
 public class ListenerUtil {
 
     public static <T> T[] add(Class<?> listenerInterface, T[] listeners, T listener) {
