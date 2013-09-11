@@ -34,7 +34,9 @@
  */
 package org.granite.client.collection;
 
-
+/**
+ * @author William DRAI
+ */
 public interface ObservableCollection {
 	
 	public void addCollectionChangeListener(CollectionChangeListener listener);

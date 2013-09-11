@@ -42,6 +42,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.granite.client.util.WeakIdentityHashMap;
 import org.granite.logging.Logger;
 
+/**
+ * @author William DRAI
+ */
 public class BindingUtil {
 	
     private static final Logger log = Logger.getLogger(BindingUtil.class);

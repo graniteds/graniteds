@@ -32,11 +32,9 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.client.tide;
 
 import org.granite.client.tide.impl.DefaultViewScope;
-
 
 /**
  * @author William DRAI

@@ -44,6 +44,9 @@ import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.persistence.collection.PersistentSet;
 import org.granite.client.persistence.collection.UnsafePersistentCollection;
 
+/**
+ * @author William DRAI
+ */
 public class ObservablePersistentSet<E> extends ObservableSet<E> implements UnsafePersistentCollection<PersistentSet<E>> {
 	
 	public ObservablePersistentSet(PersistentSet<E> persistentSet) {

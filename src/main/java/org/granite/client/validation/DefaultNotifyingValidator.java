@@ -32,7 +32,6 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.client.validation;
 
 import java.util.HashMap;

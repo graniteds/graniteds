@@ -32,9 +32,7 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.client.tide.spring;
-
 
 import javax.inject.Named;
 
@@ -45,7 +43,9 @@ import org.granite.client.tide.security.TideRoleCache;
 import org.granite.client.tide.server.ServerSession;
 import org.granite.client.tide.server.TideResponder;
 
-
+/**
+ * @author William DRAI
+ */
 @RemoteAlias("org.granite.tide.spring.security.Identity")
 @Named
 public class Identity extends BaseIdentity {

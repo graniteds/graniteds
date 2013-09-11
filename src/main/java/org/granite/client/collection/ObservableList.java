@@ -48,6 +48,9 @@ import org.granite.client.collection.CollectionChangeSupport;
 import org.granite.client.collection.ObservableCollection;
 import org.granite.client.collection.CollectionChangeEvent.Kind;
 
+/**
+ * @author William DRAI
+ */
 public class ObservableList<E> implements List<E>, ObservableCollection {
 	
 	protected CollectionChangeSupport ccs = new CollectionChangeSupport(this);

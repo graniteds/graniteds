@@ -32,7 +32,6 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.client.tide.security;
 
 import java.util.ArrayList;
@@ -46,6 +45,9 @@ import org.granite.client.tide.server.TideFaultEvent;
 import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
 
+/**
+ * @author William DRAI
+ */
 public class TideRoleCache {
 	
 	private final BaseIdentity identity;

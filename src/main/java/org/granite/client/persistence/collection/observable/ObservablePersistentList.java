@@ -44,6 +44,9 @@ import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.persistence.collection.PersistentList;
 import org.granite.client.persistence.collection.UnsafePersistentCollection;
 
+/**
+ * @author William DRAI
+ */
 public class ObservablePersistentList<E> extends ObservableList<E> implements UnsafePersistentCollection<PersistentList<E>> {
 	
 	public ObservablePersistentList(PersistentList<E> persistentList) {

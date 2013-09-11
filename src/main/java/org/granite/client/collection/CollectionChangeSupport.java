@@ -36,6 +36,9 @@ package org.granite.client.collection;
 
 import org.granite.client.collection.CollectionChangeEvent.Kind;
 
+/**
+ * @author William DRAI
+ */
 public class CollectionChangeSupport {
 
 	private final Object collection;

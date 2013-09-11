@@ -32,7 +32,6 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.client.tide.data;
 
 import org.granite.client.messaging.messages.responses.FaultMessage;
@@ -43,8 +42,8 @@ import org.granite.client.tide.server.TideFaultEvent;
 import org.granite.logging.Logger;
 
 /**
-   * @author William DRAI
-   */
+ * @author William DRAI
+ */
 public class OptimisticLockExceptionHandler implements ExceptionHandler {
       
 	private static Logger log = Logger.getLogger("org.granite.tide.data.OptimisticLockExceptionHandler");

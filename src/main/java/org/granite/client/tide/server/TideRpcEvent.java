@@ -32,7 +32,6 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.client.tide.server;
 
 import org.granite.client.tide.Context;

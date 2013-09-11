@@ -34,6 +34,9 @@
  */
 package org.granite.client.collection;
 
+/**
+ * @author William DRAI
+ */
 public class CollectionChangeEvent {
 
 	private Object collection;

@@ -42,6 +42,9 @@ import org.granite.client.collection.CollectionChangeListener;
 import org.granite.client.collection.CollectionChangeSupport;
 import org.granite.client.collection.CollectionChangeEvent.Kind;
 
+/**
+ * @author William DRAI
+ */
 public class ObservableSet<E> implements Set<E> {
 	
 	protected CollectionChangeSupport ccs = new CollectionChangeSupport(this);
