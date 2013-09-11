@@ -55,6 +55,7 @@ public class JMFAMF3MessagingCodec implements MessagingCodec<Message[]> {
 
 	@Override
 	public void encode(Message[] messages, OutputStream output) throws IOException {
+		@SuppressWarnings("all")
 		JMFSerializer serializer = new JMFSerializer(output, sharedContext);
 		serializer.writeObject(messages);
 	}

@@ -52,12 +52,14 @@ public class JMFAMF0MessagingCodec implements MessagingCodec<AMF0Message> {
 
 	@Override
 	public void encode(AMF0Message message, OutputStream output) throws IOException {
+		@SuppressWarnings("all")
 		JMFSerializer serializer = new JMFSerializer(output, sharedContext);
 		serializer.writeObject(message);
 	}
 
 	@Override
 	public AMF0Message decode(InputStream input) throws IOException {
+		@SuppressWarnings("all")
 		JMFDeserializer deserializer = new JMFDeserializer(input, sharedContext);
 		try {
 			return (AMF0Message)deserializer.readObject();
