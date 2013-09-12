@@ -1,0 +1,93 @@
+/**
+ *   GRANITE DATA SERVICES
+ *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+ *
+ *   This file is part of Granite Data Services.
+ *
+ *   Granite Data Services is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU Library General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or (at your
+ *   option) any later version.
+ *
+ *   Granite Data Services is distributed in the hope that it will be useful, but
+ *   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *   FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+ *   for more details.
+ *
+ *   You should have received a copy of the GNU Library General Public License
+ *   along with this library; if not, see <http://www.gnu.org/licenses/>.
+ */
+package org.granite.test.jmf;
+
+import static org.granite.test.jmf.Util.toHexString;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Date;
+
+import org.granite.messaging.jmf.CodecRegistry;
+import org.granite.messaging.jmf.DefaultCodecRegistry;
+import org.granite.messaging.jmf.JMFConstants;
+import org.granite.messaging.jmf.JMFDumper;
+import org.granite.test.jmf.Util.ByteArrayJMFDeserializer;
+import org.granite.test.jmf.Util.ByteArrayJMFDumper;
+import org.granite.test.jmf.Util.ByteArrayJMFSerializer;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+public class TestJMFDate implements JMFConstants {
+	
+	private CodecRegistry codecRegistry;
+	
+	@Before
+	public void before() {
+		codecRegistry = new DefaultCodecRegistry();
+	}
+	
+	@After
+	public void after() {
+		codecRegistry = null;
+	}
+	
+	@Test
+	public void testSomeDate() throws ClassNotFoundException, IOException {
+		checkDate(null);
+		
+		Date d = new Date();
+		checkDate(d);
+		
+		d = new Date(0L);
+		checkDate(d);
+		
+		d = new Date(Long.MAX_VALUE);
+		checkDate(d);
+	}
+	
+	private void checkDate(Date v) throws ClassNotFoundException, IOException {
+		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
+		serializer.writeObject(v);
+		serializer.close();
+		byte[] bytes = serializer.toByteArray();
+		
+		PrintStream ps = Util.newNullPrintStream();
+		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
+		dumper.dump();
+		dumper.close();
+		
+		ByteArrayJMFDeserializer deserializer = new ByteArrayJMFDeserializer(bytes, codecRegistry);
+		Object u = deserializer.readObject();
+		deserializer.close();
+		
+		if (!(u instanceof Date || u == null))
+			fail("u isn't a Date or null: " + u);
+		
+		if ((v != null && !v.equals(u)) || (v == null && u != null)) {
+			StringBuilder sb = new StringBuilder(String.format("%s != %s ", v, u))
+				.append(toHexString(bytes));
+			
+			fail(sb.toString());
+		}
+	}
+}

@@ -147,16 +147,16 @@ configure(subprojects) { subproject ->
 	configurations {
 		deployerJars
 	}
-
+	
 	repositories {
 		mavenLocal()
 		mavenCentral()
 	}
-
+	
 	dependencies {
 		deployerJars 'org.apache.maven.wagon:wagon-http:2.2'
 	}
-
+	
 	signing {
 		required { gradle.taskGraph.hasTask("uploadArchives") }
 		sign configurations.archives
@@ -240,6 +240,8 @@ project('granite-core') {
 		
 		compile files('../lib/jboss-seam.jar')						// Required @Scope annotation for Seam
 	}
+	
+	sourceSets.test.output.resourcesDir = sourceSets.test.output.classesDir
 }
 
 // Servlet 3 Integration for Gravity async I/O and auto configuration
@@ -381,6 +383,17 @@ project('granite-ejb') {
 		compile 'javax.ejb:javax.ejb-api:3.2'
 		
 		compile project(':granite-core')
+		
+		testCompile 'org.apache.openejb:openejb-lite:4.5.0'
+		testCompile 'org.glassfish.main.extras:glassfish-embedded-all:3.1.2'
+		testCompile 'org.apache.geronimo.specs:geronimo-jms_1.1_spec:1.1.1'
+		testCompile 'org.apache.geronimo.specs:geronimo-j2ee-management_1.1_spec:1.0.1'
+		testCompile 'org.apache.geronimo.specs:geronimo-jta_1.0.1B_spec:1.0.1'
+		testCompile 'org.jboss.shrinkwrap:shrinkwrap-api:1.1.3'
+		testCompile 'org.jboss.shrinkwrap:shrinkwrap-spi:1.1.3'
+		testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3'
+		testCompile 'org.jboss.shrinkwrap:shrinkwrap-extension-openejb:1.0.0-alpha-13'
+		testCompile 'org.jboss.shrinkwrap:shrinkwrap-extension-glassfish:1.0.0-alpha-13'		
 	}
 }
 
@@ -399,6 +412,32 @@ project('granite-cdi') {
 		compile 'org.jboss.interceptor:jboss-interceptor-core:2.0.0.Final'
 		
 		compile project(':granite-core')
+		
+		testCompile 'org.jboss.weld.se:weld-se-core:1.1.14.Final'
+		
+		testRuntime 'org.hibernate:hibernate-core:3.6.10.Final'
+		testRuntime 'org.hibernate:hibernate-entitymanager:3.6.10.Final'
+		testRuntime 'org.hsqldb:hsqldb:2.3.0'
+	}
+	
+	sourceSets.main.output.resourcesDir = sourceSets.main.output.classesDir
+	
+	// Include core sources for tests
+	sourceSets {
+		test {
+			java {
+				source project(':granite-core').sourceSets.test.java
+			}
+			resources {
+				source project(':granite-core').sourceSets.test.resources
+			}
+			
+			output.resourcesDir = output.classesDir
+		}
+	}
+	
+	test {
+		includes = [ 'org/granite/test/tide/cdi/Test*' ]
 	}
 }
 
@@ -419,9 +458,24 @@ project('granite-spring') {
 		compile 'org.springframework.security:spring-security-web:3.1.4.RELEASE'
 		compile 'org.springframework.security:spring-security-acl:3.1.4.RELEASE'
 		compile 'org.springframework.data:spring-data-jpa:1.4.1.RELEASE'
+		
 		compile 'org.hibernate:hibernate-core:4.0.1.Final'
 		
 		compile project(':granite-core')
+		
+		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
+		testCompile project(':granite-core').sourceSets.test.output
+		
+		testRuntime 'cglib:cglib:3.0'
+		testRuntime 'org.ow2.asm:asm-util:4.0'
+		testRuntime 'com.h2database:h2:1.3.173'
+		testRuntime project(':granite-activemq')
+	}
+	
+	sourceSets.test.output.resourcesDir = sourceSets.test.output.classesDir
+
+	test {
+		includes = [ 'org/granite/test/tide/spring/Test*' ]
 	}
 }
 
@@ -432,12 +486,7 @@ project('granite-spring2') {
 	description = 'GraniteDS Spring 2 integration server library'
 	
 	dependencies {
-		compile 'org.springframework:spring-core:3.1.4.RELEASE'								// Use Spring 3 to compile because of generics
-		compile 'org.springframework:spring-context:3.1.4.RELEASE'
-		compile 'org.springframework:spring-beans:3.1.4.RELEASE'
-		compile 'org.springframework:spring-tx:3.1.4.RELEASE'
-		compile 'org.springframework:spring-orm:3.1.4.RELEASE'
-		compile 'org.springframework:spring-web:3.1.4.RELEASE'
+		compile 'org.springframework:spring-orm:3.1.4.RELEASE'								// Use Spring 3 to compile because of generics
 		compile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
 		compile 'org.springframework.security:spring-security-core:2.0.7.RELEASE'			// 2.0.8 broken in maven central
 		compile 'org.springframework.security:spring-security-core-tiger:2.0.7.RELEASE'
@@ -452,7 +501,7 @@ project('granite-spring2') {
 	sourceSets {
 		main {
 			java {
-				srcDir '../granite-spring/src/main/java'
+				source project(':granite-spring').sourceSets.main.java
 				exclude 'org/granite/spring/data/*', 'org/granite/spring/security/*', 
 					'org/granite/tide/spring/data/*', 'org/granite/tide/spring/security/*',
 					'org/granite/tide/spring/Hibernate4*'
@@ -484,6 +533,37 @@ project('granite-hibernate') {
 		compile files('../lib/hibernate-validator.jar')
 		
 		compile project(':granite-core')
+		
+		testCompile project(':granite-core').sourceSets.test.output
+		testCompile 'org.hibernate:hibernate-entitymanager:3.6.10.Final'
+		
+		testCompile project(':granite-spring').sourceSets.main.output
+		testCompile 'org.springframework:spring-orm:3.1.4.RELEASE'
+		testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
+		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
+		
+		testRuntime 'cglib:cglib:3.0'
+		testRuntime 'org.ow2.asm:asm-util:4.0'
+		testRuntime 'com.h2database:h2:1.3.173'
+		testRuntime 'org.springframework.security:spring-security-web:3.1.4.RELEASE'
+	}
+	
+	// Recompile abstract test classes from Spring module with Hibernate 3
+	sourceSets {
+		test {
+			java {
+				source project(':granite-spring').sourceSets.test.java
+			}
+			resources {
+				source project(':granite-spring').sourceSets.test.resources
+			}
+			
+			output.resourcesDir = output.classesDir
+		}
+	}
+	
+	test {
+		includes = [ 'org/granite/test/hibernate/**/Test*', 'org/granite/test/tide/hibernate/**/Test*' ]
 	}
 }
 
@@ -492,9 +572,42 @@ project('granite-hibernate4') {
 	description = 'GraniteDS Hibernate 4.x support library'
 	
 	dependencies {
-		compile 'org.hibernate:hibernate-core:4.2.5.Final'
+		compile 'org.hibernate:hibernate-core:4.0.1.Final'
 		
 		compile project(':granite-core')
+		
+		testCompile project(':granite-core').sourceSets.test.output
+		testCompile 'org.hibernate:hibernate-entitymanager:4.0.1.Final'
+		
+		testCompile project(':granite-spring').sourceSets.main.output
+		testCompile 'org.springframework:spring-orm:3.1.4.RELEASE'
+		testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
+		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
+		
+		testRuntime 'cglib:cglib:3.0'
+		testRuntime 'org.ow2.asm:asm-util:4.0'
+		testRuntime 'com.h2database:h2:1.3.173'
+		testRuntime 'org.springframework.security:spring-security-web:3.1.4.RELEASE'
+	}
+	
+	// Recompile abstract test classes from Spring module with Hibernate 3
+	sourceSets {
+		test {
+			java {
+				source project(':granite-spring').sourceSets.test.java
+			}
+			resources {
+				source project(':granite-spring').sourceSets.test.resources
+			}
+			
+			output.resourcesDir = output.classesDir
+		}
+	}
+	
+	sourceSets.test.output.resourcesDir = sourceSets.test.output.classesDir
+	
+	test {
+		includes = [ 'org/granite/test/hibernate4/**/Test*', 'org/granite/test/tide/hibernate4/**/Test*' ]
 	}
 }
 
@@ -506,6 +619,20 @@ project('granite-eclipselink') {
 		compile 'org.eclipse.persistence:eclipselink:2.5.0'
 		
 		compile project(':granite-core')
+		
+		testCompile project(':granite-core').sourceSets.test.output
+		
+		testRuntime 'com.h2database:h2:1.3.173'
+	}
+	
+	sourceSets.test.output.resourcesDir = sourceSets.test.output.classesDir
+	
+	File eclipselink = configurations.compile.find { it.name.startsWith('eclipselink') }
+	
+	test {
+		jvmArgs = [ '-javaagent:' + eclipselink.path ]
+		
+		includes = [ 'org/granite/test/eclipselink/**/Test*' ]
 	}
 }
 
@@ -525,11 +652,38 @@ project('granite-datanucleus') {
 	description = 'GraniteDS DataNucleus support library'
 	
 	dependencies {
-		compile 'org.datanucleus:datanucleus-core:3.2.4'
-		compile 'org.datanucleus:datanucleus-api-jpa:3.2.4'
+		compile 'org.datanucleus:datanucleus-core:3.2.7'
+		compile 'org.datanucleus:datanucleus-api-jpa:3.2.5'
 		compile 'org.datanucleus:datanucleus-api-jdo:3.2.4'
 		
 		compile project(':granite-core')
+		
+		testCompile project(':granite-core').sourceSets.test.output
+		
+		testRuntime 'com.h2database:h2:1.3.173'
+		testRuntime 'org.datanucleus:datanucleus-rdbms:3.2.6'
+	}
+	
+	sourceSets.test.output.resourcesDir = sourceSets.test.output.classesDir
+	
+	File datanucleusCore = configurations.compile.find { it.name.startsWith('datanucleus-core') }
+	
+	task testJpa(type: Test) {
+		jvmArgs = [ '-javaagent:' + datanucleusCore.path + '=-api=JPA,org.granite.test.externalizers' ]
+		
+		includes = [ 'org/granite/test/datanucleus/**/TestDataNucleus*' ]
+	}
+	
+	task testJdo(type: Test) {
+		jvmArgs = [ '-javaagent:' + datanucleusCore.path + '=-api=JDO,org.granite.test.externalizers' ]
+		
+		includes = [ 'org/granite/test/datanucleus/**/TestJDODataNucleus*' ]
+	}
+	
+	test {
+		it.dependsOn 'testJpa', 'testJdo'
+		
+		excludes = [ '**' ]
 	}
 }
 
@@ -541,6 +695,19 @@ project('granite-openjpa') {
 		compile 'org.apache.openjpa:openjpa:2.2.2'
 		
 		compile project(':granite-core')
+		testCompile project(':granite-core').sourceSets.test.output
+		
+		testRuntime 'org.hsqldb:hsqldb:1.8.0.10'
+	}
+	
+	sourceSets.test.output.resourcesDir = sourceSets.test.output.classesDir
+	
+	File openjpa = configurations.compile.find { it.name.startsWith('openjpa') }
+	
+	test {
+		jvmArgs = [ '-javaagent:' + openjpa ]
+		
+		includes = [ 'org/granite/test/openjpa/**/Test*' ]
 	}
 }
 
