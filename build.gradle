@@ -97,7 +97,6 @@ configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { s
 	apply plugin: 'gradlefx'
 	apply plugin: 'flashbuilder'
 
-	type = 'swc'
 	output = subproject.name + '-' + granitedsVersion
 	
 	task sourcesJar(type: Jar) {
@@ -787,6 +786,7 @@ project('granite-client-flex') {
 	
 	description = "GraniteDS Flex client library"
 	
+	type = 'swc'
 	srcDirs = [ 'src/main/flex' ]
 	
 	dependencies {
@@ -799,52 +799,125 @@ project('granite-client-flex-advanced') {
 	
 	description = "GraniteDS Advanced Flex client library"
 	
+	type = 'swc'
 	srcDirs = [ 'src/main/flex' ]
-
-	dependencies {
-		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
-		
-		external project(':granite-client-flex')
-	}
 	
 	additionalCompilerOptions = [
 		'-define=CONFIG::debugging,false',
 		'-define=CONFIG::flex40,true',
 		'-define=CONFIG::flex45,false'
 	]
+	
+	dependencies {
+		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
+		
+		external project(':granite-client-flex')
+	}
 }
 
 // Flex 4.5+ advanced client library (tide, math, validation)
-// Tests are ran only on Flex 4.5
 project('granite-client-flex45-advanced') {
 	
 	description = "GraniteDS Advanced Flex 4.5+ client library"
 	
+	type = 'swc'
 	// Use the same source dir than Flex 3.5-4.1
 	srcDirs = [ project(':granite-client-flex-advanced').file('src/main/flex').path ]
-	testDirs = [ 'src/test/flex' ]
 	
 	additionalCompilerOptions = [
 		'-define=CONFIG::debugging,false',
 		'-define=CONFIG::flex40,false',
 		'-define=CONFIG::flex45,true'
 	]
-
+	
 	dependencies {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
 		
 		external project(':granite-client-flex')
+	}
+}
+
+// Flex 4.5+ tests: must be compiled as main project because gradlefx does not support additional compiler options
+// when running flexunit
+project('granite-client-flex45-tests') {
+	
+	description = "GraniteDS Advanced Flex 4.5+ client library"
+	
+	type = 'swf'
+	srcDirs = [ 'src/main/flex' ]
+	mainClass = 'TestRunner'
+	
+	additionalCompilerOptions = [
+		'-keep-as3-metadata=Managed,ChangeEvent,NonCommittingChangeEvent,Transient,'
+			+ 'Id,Version,Lazy,Name,In,Inject,Out,Produces,ManagedEvent,Observer,PostConstruct,Destroy,'
+			+ 'Valid,Size,Test,Ignore,Suite,RunWith'
+	]
+	
+	dependencies {
+		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
 		
-		test files('lib/flexunit-core-flex-4.1.0.swc')
-		test files('lib/flexunit-cilistener-4.1.0.swc')
-		test files('lib/flexunit-uilistener-4.1.0.swc')
+		internal project(':granite-client-flex')
+		merged project(':granite-client-flex45-advanced')
+		
+		merged files('lib/flexunit-core-flex-4.1.0.swc')
+		merged files('lib/flexunit-cilistener-4.1.0.swc')
+		merged files('lib/flexunit-uilistener-4.1.0.swc')
+		
 		test files('lib/flexUnitTasks-4.1.0.jar')
 	}
 	
 	flexUnit {
-		includes = [ '**/Test*' ]
-		
 		command = 'C:/Dev/flex-sdk-4.5/runtimes/player/10.2/win/FlashPlayerDebugger.exe'
+		
+		excludes = [ '**' ]			// Disable default GradleFX task
+	}
+	
+	// Use FlexUnit ant task directly, GradleFX built-in test task tries to compile the tests 
+	task testFlex << {
+		ant.taskdef(resource: 'flexUnitTasks.tasks', classpath: configurations.test.asPath)
+		
+		File reportDir = file(flexUnit.toDir)
+		
+		// you can't write to a directory that doesn't exist
+		if (!reportDir.exists()) reportDir.mkdirs()
+		
+		Set<File> libraries = configurations.internal.files +
+				configurations.external.files +
+				configurations.merged.files +
+				configurations.test.files
+		
+		ant.flexunit (
+			swf:			 buildDir.name + '/' + output + '.swf',
+			player:          flexUnit.player,
+			command:         flexUnit.command,
+			toDir:           flexUnit.toDir,
+			workingDir:      buildDir.name,
+			haltonfailure:   flexUnit.haltOnFailure,
+			verbose:         flexUnit.verbose,
+			localTrusted:    flexUnit.localTrusted,
+			port:            flexUnit.port,
+			buffer:          flexUnit.buffer,
+			timeout:         flexUnit.timeout,
+			failureproperty: flexUnit.failureProperty,
+			headless:        flexUnit.headless,
+			display:         flexUnit.display) {
+			
+			libraries.each { File libraryFile ->
+				println 'Library: ' + libraryFile.path
+				library(dir: libraryFile.parent) {
+					include(name: libraryFile.name)
+				}
+			}
+		}
+
+		if (ant.properties[flexUnit.failureProperty] == "true") {
+			throw new Exception("Tests failed");
+		}
+
+	}
+	
+	test {
+		it.dependsOn 'copytestresources', 'testFlex'
 	}
 }
 
