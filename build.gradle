@@ -1,10 +1,3 @@
-import org.gradlefx.conventions.GradleFxConvention;
-import org.gradlefx.tasks.DefaultTask;
-import org.gradlefx.tasks.Logger;
-import org.gradlefx.tasks.TaskAction;
-
-import java.nio.file.Files;
-
 buildscript {
     repositories {
         mavenCentral()
@@ -137,7 +130,7 @@ class JavaOnlyLicensePlugin extends nl.javadude.gradle.plugins.license.LicensePl
 	protected void configureForSourceSet(SourceSet sourceSet, nl.javadude.gradle.plugins.license.License task) {
 		super.configureForSourceSet(sourceSet, task)
 		
-		// Override default allSource and apply only to all Java source files from SourceSet
+		// Override default allSource and apply only to all Java source files from SourceSet (excluding resources)
 		task.source = sourceSet.allJava
 	}	
 }
@@ -853,123 +846,80 @@ project('granite-client-flex45-advanced') {
 		
 		command = 'C:/Dev/flex-sdk-4.5/runtimes/player/10.2/win/FlashPlayerDebugger.exe'
 	}
+}
+
+
+// Java client library
+project('granite-client-java') {
+    description = 'GraniteDS Java client'
+
+    dependencies {
+
+		// Dependencies from granite-core
+		compile 'javax.servlet:javax.servlet-api:3.0.1'				// Should use 2.5 but 3.0 required by ServletGraniteContext.BasicRequest
+		compile 'log4j:log4j:1.2.17'
+		
+        compile 'org.apache.httpcomponents:httpasyncclient:4.0-beta4',
+                'javax.enterprise:cdi-api:1.0-SP4',
+                'javax.inject:javax.inject:1',
+                'net.sf.extcos:extcos:0.3b',
+                'org.eclipse.jetty:jetty-client:8.1.+',
+                'org.eclipse.jetty:jetty-websocket:8.1.+',
+                'javax.validation:validation-api:1.0.0.GA',
+                'org.springframework:spring-beans:3.1.4.RELEASE',
+                'org.springframework:spring-context:3.1.4.RELEASE'
+    }
 	
-	task test(type: Test)
-	
-	task test(overwrite: true) << {
-		
-		GradleFxConvention flexConvention
-		
-		public Test() {
-			description = "Compile and Run the FlexUnit tests."
-			
-			flexConvention = project.convention.plugins.flex
-			
-			dependsOn Tasks.COPY_TEST_RESOURCES_TASK_NAME
-		}
-		
-		@TaskAction
-		def runFlexUnit() {
-			if(hasTests()) {
-				configureAntWithFlexUnit()
-				compileTests()
-				runTests()
-			} else {
-				LOG.info "Skipping tests since no tests exist"
+	sourceSets {
+		main {
+			java {
+				source project(':granite-core').sourceSets.main.java
+			}			
+			resources {
+				source project(':granite-core').sourceSets.main.resources
 			}
 		}
-	
-		private boolean hasTests() {
-			String nonEmptyTestDir = flexConvention.testDirs.find { String testDir ->
-				if(project.file(testDir).exists()) {
-					FileTree fileTree = project.fileTree(testDir)
-					fileTree.includes = flexConvention.flexUnit.includes
-					fileTree.excludes = flexConvention.flexUnit.excludes
-	
-					return !fileTree.empty
-				} else {
-					return false
-				}
-			}
-	
-			return nonEmptyTestDir != null
-		}
-		
-		private void compileTests() {
-			CommandLinkInstruction cli = new ApplicationCommandLineInstruction(this)
-			
-			
-		}
-	
-		private void runTests() {
-			FlexUnitConvention flexUnit = flexConvention.flexUnit
-			File reportDir = project.file flexUnit.toDir
-	
-			// you can't write to a directory that doesn't exist
-			if (!reportDir.exists()) reportDir.mkdirs()
-	
-			Set<File> libraries = project.configurations.internal.files +
-					project.configurations.external.files +
-					project.configurations.merged.files +
-					project.configurations.test.files
-	
-			ant.flexunit (
-				player:          flexUnit.player,
-				command:         flexUnit.command,
-				toDir:           flexUnit.toDir,
-				workingDir:      flexUnit.workingDir,
-				haltonfailure:   flexUnit.haltOnFailure,
-				verbose:         flexUnit.verbose,
-				localTrusted:    flexUnit.localTrusted,
-				port:            flexUnit.port,
-				buffer:          flexUnit.buffer,
-				timeout:         flexUnit.timeout,
-				failureproperty: flexUnit.failureProperty,
-				headless:        flexUnit.headless,
-				display:         flexUnit.display) {
-	
-				flexConvention.srcDirs.each { String srcDir ->
-					source(dir: project.file(srcDir).path)
-				}
-	
-				flexConvention.testResourceDirs.each { String testResourceDir ->
-					if(project.file(testResourceDir).exists()) {
-						source(dir: project.file(testResourceDir).path)
-					}
-				}
-	
-				if (flexConvention.locales?.size()) {
-					source(dir: project.file(flexConvention.localeDir).path + '/{locale}')
-				}
-	
-				flexConvention.testDirs.each { String testDir ->
-					FileTree fileTree = project.fileTree(testDir)
-					fileTree.includes = flexUnit.includes
-					fileTree.excludes = flexUnit.excludes
-	
-					testSource(dir: project.file(testDir).path) {
-						fileTree.visit { FileTreeElement includedFile ->
-							include(name: includedFile.relativePath)
-						}
-					}
-				}
-	
-				libraries.each { File libraryFile ->
-					library(dir: libraryFile.parent) {
-						include(name: libraryFile.name)
-					}
-				}
-	
-			}
-	
-			if (ant.properties[flexUnit.failureProperty] == "true") {
-				throw new Exception("Tests failed");
-			}
-		}
-	
-		private void configureAntWithFlexUnit() {
-			new FlexUnitAntTasksConfigurator(project).configure()
-		}
-			
 	}
+	
+	// For some reaons excludes must be applied on filter after the sourceSets definitions 
+	sourceSets.main.java.filter.exclude 'org/granite/clustering/*Session*',
+		'org/granite/clustering/TransientReferenceHolder*',
+		'org/granite/config/Abstract*',
+		'org/granite/config/Servlet*',
+		'org/granite/config/ConfigProvider*',
+		'org/granite/config/*Listener*',
+		'org/granite/config/flex/Servlet*',
+		'org/granite/gravity/**',
+		'org/granite/tide/**',
+		'org/granite/messaging/amf/process/*Processor.java',
+		'org/granite/messaging/amf/io/convert/impl/GAE*.java',
+		'org/granite/messaging/persistence/*Externalizable*.java',
+		'org/granite/messaging/service/security/AbstractSecurityService.java',
+		'org/granite/messaging/service/security/GlassFish*.java',
+		'org/granite/messaging/service/security/Jetty*.java',
+		'org/granite/messaging/service/security/Tomcat*.java',
+		'org/granite/messaging/service/security/WebLogic*.java',
+		'org/granite/messaging/service/Abstract*.java',
+		'org/granite/messaging/service/ServiceFactory*.java',
+		'org/granite/messaging/service/ServiceInvoker*.java',
+		'org/granite/messaging/service/Simple*.java',
+		'org/granite/messaging/service/DefaultServiceExceptionHandler*.java',
+		'org/granite/messaging/service/ExtendedServiceExceptionHandler*.java',
+		'org/granite/messaging/webapp',
+		'org/granite/messaging/webapp/**/*.java',
+		'org/granite/util/Entity.java',
+		'org/granite/util/Servlet*.java',
+		'org/granite/jmx',
+		'org/granite/jmx/*.java',
+		'org/granite/scan/VFS*.java'
+		
+	sourceSets.main.resources.filter.exclude 'org/granite/config/granite-config.xml' 
+	
+	javadoc {
+		source = sourceSets.main.java		// Redefine here so filter is applied
+	}
+	
+    test {
+        exclude 'org/granite/client/test/websocket/**'
+    }
 }

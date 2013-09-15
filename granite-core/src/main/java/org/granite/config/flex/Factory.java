@@ -20,7 +20,6 @@
 
 package org.granite.config.flex;
 
-import org.granite.messaging.service.SimpleServiceFactory;
 import org.granite.util.XMap;
 
 /**
@@ -30,7 +29,7 @@ public class Factory {
 
     public static final Factory DEFAULT_FACTORY = new Factory(
         null,
-        SimpleServiceFactory.class.getName(),
+        "org.granite.messaging.service.SimpleServiceFactory",	// Hardcoded name to avoid dependency on factory class in client
         XMap.EMPTY_XMAP
     );
 
