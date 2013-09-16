@@ -230,7 +230,6 @@ public class TestSimpleCall {
         
         // (Set<Person>)res[0];
         System.out.println("findAllPersons get(): " + persons);
-        Assert.assertTrue("Persons set", persons instanceof Set);
         Assert.assertEquals("Persons result", 2, persons.size());
         Assert.assertSame("get() == TideResultEvent", persons, persons2);
         

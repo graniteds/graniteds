@@ -41,6 +41,27 @@ configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') }) { 
 		targetCompatibility=1.6
 	}
 	
+	[compileJava, compileTestJava]*.options*.compilerArgs = [
+		"-Xlint:varargs",
+		"-Xlint:cast",
+		"-Xlint:classfile",
+		"-Xlint:dep-ann",
+		"-Xlint:divzero",
+		"-Xlint:empty",
+		"-Xlint:finally",
+		"-Xlint:overrides",
+		"-Xlint:path",
+		"-Xlint:processing",
+		"-Xlint:static",
+		"-Xlint:try",
+		"-Xlint:serial",
+		"-Xlint:-options",
+		"-Xlint:-fallthrough",
+		"-Xlint:-rawtypes",
+		"-Xlint:-deprecation",
+		"-Xlint:-unchecked"
+	]
+	
 	configurations {
 		create('sources')
 		create('javadoc')
@@ -546,11 +567,19 @@ project('granite-spring2') {
 		main {
 			java {
 				source project(':granite-spring').sourceSets.main.java
-				exclude 'org/granite/spring/data/*', 'org/granite/spring/security/*', 
-					'org/granite/tide/spring/data/*', 'org/granite/tide/spring/security/*',
-					'org/granite/tide/spring/Hibernate4*'
 			}
 		}
+	}
+	
+	// For some reaons excludes must be applied on filter after the sourceSets definitions
+	sourceSets.main.java.filter.exclude 'org/granite/spring/data/*', 
+		'org/granite/spring/security/*',
+		'org/granite/tide/spring/data/*',
+		'org/granite/tide/spring/security/*',
+		'org/granite/tide/spring/Hibernate4*'
+
+	javadoc {
+		source = sourceSets.main.java		// Redefine here so filter is applied
 	}
 }
 
@@ -562,6 +591,7 @@ project('granite-seam') {
 	dependencies {
 		compile files('lib/jboss-seam.jar')
 		compile 'javax.faces:jsf-api:1.2_15'
+		compile 'javax.ejb:ejb-api:3.0'
 		
 		compile project(':granite-core')
 		compile project(':granite-hibernate')
@@ -814,6 +844,8 @@ project('granite-client-flex-advanced') {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
 		
 		external project(':granite-client-flex')
+		
+		external 'org.graniteds:flex-websocket-client:1.0'
 	}
 }
 
@@ -836,6 +868,8 @@ project('granite-client-flex45-advanced') {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
 		
 		external project(':granite-client-flex')
+		
+		external 'org.graniteds:flex-websocket-client:1.0'
 	}
 }
 
@@ -945,19 +979,8 @@ project('granite-client-java') {
                 'org.springframework:spring-context:3.1.4.RELEASE'
     }
 	
-	sourceSets {
-		main {
-			java {
-				source project(':granite-core').sourceSets.main.java
-			}			
-			resources {
-				source project(':granite-core').sourceSets.main.resources
-			}
-		}
-	}
-	
-	// For some reaons excludes must be applied on filter after the sourceSets definitions 
-	sourceSets.main.java.filter.exclude 'org/granite/clustering/*Session*.java',
+	List<String> javaExcludes = [ 
+		'org/granite/clustering/*Session*.java',
 		'org/granite/clustering/TransientReferenceHolder*.java',
 		'org/granite/config/Abstract*.java',
 		'org/granite/config/Servlet*.java',
@@ -994,9 +1017,34 @@ project('granite-client-java') {
 		'org/granite/util/Servlet*.java',
 		'org/granite/jmx',
 		'org/granite/jmx/*.java',
-		'org/granite/scan/VFS*.java'
-		
-	sourceSets.main.resources.filter.exclude 'org/granite/config/granite-config.xml' 
+		'org/granite/scan/VFS*.java' 
+	]
+	
+	List<String> resourceExcludes = [
+		'org/granite/config/granite-config.xml'
+	]
+	
+	sourceSets {
+		main {
+			java {
+				source project(':granite-core').sourceSets.main.java
+				
+				// Exclude for eclipse
+				exclude javaExcludes
+			}			
+			resources {
+				source project(':granite-core').sourceSets.main.resources
+				
+				// Exclude for eclipse
+				exclude resourceExcludes
+			}
+		}
+	}
+	
+	// For some reaons excludes must be applied on filter after the sourceSets definitions 
+	sourceSets.main.java.filter.exclude javaExcludes
+	
+	sourceSets.main.resources.filter.exclude resourceExcludes
 	
 	javadoc {
 		source = sourceSets.main.java		// Redefine here so filter is applied
@@ -1072,6 +1120,8 @@ project('granite-client-android') {
 
 		compile files('lib/android-async-http-1.4.3.jar')
 		
+		compile project(':granite-client-java')
+
 		testCompile project(':granite-client-java').sourceSets.test.output
 		
 		testCompile 'org.hibernate:hibernate-core:3.6.10.Final',
@@ -1094,3 +1144,7 @@ project('granite-client-android') {
 		}
 	}
 }
+
+
+// Docs
+apply from: 'references-docs/docs.gradle' 

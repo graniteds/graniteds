@@ -73,7 +73,7 @@ public class TestJMFPropertiesOrder {
 	@Before
 	public void before() {
 		
-		List<ExtendedObjectCodec> serverExtendedObjectCodecs = Arrays.asList((ExtendedObjectCodec)
+		List<ExtendedObjectCodec> serverExtendedObjectCodecs = Arrays.asList(
 			new EntityCodec(),
 			new PersistentListCodec(),
 			new PersistentSetCodec(),

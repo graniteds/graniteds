@@ -278,8 +278,8 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	 */
 	@SuppressWarnings("unchecked")
 	protected void handleResult(Page<E> page, TideResultEvent<?> event, int first, int max) {
-		List<E> list = (List<E>)page.getResultList();
-
+		List<E> list = page.getResultList();
+		
 		for (Iterator<Integer[]> ipr = pendingRanges.iterator(); ipr.hasNext(); ) {
 			Integer[] pr = ipr.next();
 			if (pr[0] == first && pr[1] == first+max) {
@@ -294,8 +294,8 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 		    initialize(event);
 		}
 		
-		int nextFirst = (Integer)page.getFirstResult();
-		int nextLast = nextFirst + (Integer)page.getMaxResults();
+		int nextFirst = page.getFirstResult();
+		int nextLast = nextFirst + page.getMaxResults();
 		
 		int pageNum = max > 0 ? nextFirst / max : 0;
 		log.debug("handle result page %d (%d - %d)", pageNum, nextFirst, nextLast);

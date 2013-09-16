@@ -1023,8 +1023,8 @@ public class EntityManagerImpl implements EntityManager {
             }
         }
         else
-            list = (List<Object>)coll;
-                        
+            list = coll;
+             
         mergeContext.pushMerge(coll, list);
 
         List<Object> prevColl = list != coll ? list : null;
@@ -1191,7 +1191,7 @@ public class EntityManagerImpl implements EntityManager {
             }
         }
         else
-            set = (Set<Object>)coll;
+            set = coll;
                         
         mergeContext.pushMerge(coll, set);
 
@@ -1344,7 +1344,7 @@ public class EntityManagerImpl implements EntityManager {
             m = (Map<Object, Object>)previous;
         else if (mergeContext.getSourceEntityManager() != null) {
             try {
-                m = (Map<Object, Object>)TypeUtil.newInstance(map.getClass(), Map.class);
+                m = TypeUtil.newInstance(map.getClass(), Map.class);
             }
             catch (Exception e) {
                 throw new RuntimeException("Could not create class " + map.getClass());
@@ -1458,10 +1458,10 @@ public class EntityManagerImpl implements EntityManager {
             return previous;
         }
         
-		PersistentCollection pcoll = (PersistentCollection)coll;
+		PersistentCollection pcoll = coll;
 		if (previous instanceof PersistentCollection)
 			pcoll = (PersistentCollection)previous;
-		if (coll instanceof PersistentCollection && ((PersistentCollection)coll).getLoader() instanceof CollectionLoader)
+		if (coll.getLoader() instanceof CollectionLoader)
 			pcoll = duplicatePersistentCollection(mergeContext, coll, parent, propertyName);
 		else if (mergeContext.getSourceEntityManager() != null)
 			pcoll = duplicatePersistentCollection(mergeContext, pcoll, parent, propertyName);
@@ -1497,9 +1497,9 @@ public class EntityManagerImpl implements EntityManager {
         else if (isEntity(parent) && propertyName != null)
             dataManager.setLazyProperty(parent, propertyName);
         
-        if (!(((PersistentCollection)pcoll).getLoader() instanceof CollectionLoader)) {
+        if (!(coll.getLoader() instanceof CollectionLoader)) {
             log.debug("instrument persistent collection from %s", ObjectUtil.toString(pcoll));
-            ((PersistentCollection)pcoll).setLoader(new CollectionLoader(mergeContext.getServerSession(), parent, propertyName));
+            pcoll.setLoader(new CollectionLoader(mergeContext.getServerSession(), parent, propertyName));
         }
         return pcoll;
     }

@@ -38,3 +38,4 @@ include 'granite-client-java-advanced'
 include 'granite-client-javafx'
 include 'granite-client-android'
 
+include 'reference-docs'

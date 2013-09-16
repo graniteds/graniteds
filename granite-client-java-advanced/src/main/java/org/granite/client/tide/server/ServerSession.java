@@ -481,8 +481,8 @@ public class ServerSession implements ContextAware {
 	public void restoreSessionId(String sessionId) {
 		this.sessionId = sessionId;
 		
-		if (messagingChannel != null && messagingChannel instanceof SessionAwareChannel)
-			((SessionAwareChannel)messagingChannel).setSessionId(sessionId);
+		if (messagingChannel != null)
+			messagingChannel.setSessionId(sessionId);
 	}
 	
 	public boolean isLogoutInProgress() {
@@ -534,7 +534,7 @@ public class ServerSession implements ContextAware {
 		if (sessionId == null || !sessionId.equals(oldSessionId))
 		    log.info("Received new sessionId %s", sessionId);
 		
-		if (messagingChannel != null && (oldSessionId != null || sessionId != null) && messagingChannel instanceof SessionAwareChannel)
+		if (messagingChannel != null && (oldSessionId != null || sessionId != null))
 			((SessionAwareChannel)messagingChannel).setSessionId(sessionId);
 		
 		isFirstCall = false;
@@ -557,7 +557,7 @@ public class ServerSession implements ContextAware {
         if (sessionId == null || !sessionId.equals(oldSessionId))
             log.info("Received new sessionId %s", sessionId);
         
-		if (messagingChannel != null && (oldSessionId != null || sessionId != null) && messagingChannel instanceof SessionAwareChannel)
+		if (messagingChannel != null && (oldSessionId != null || sessionId != null))
 			((SessionAwareChannel)messagingChannel).setSessionId(sessionId);
 		
         if (emsg != null && emsg.getCode().equals(Code.SERVER_CALL_FAILED))
@@ -633,7 +633,7 @@ public class ServerSession implements ContextAware {
 		sessionId = null;
 		if (remotingChannel instanceof SessionAwareChannel)
 		    ((SessionAwareChannel)remotingChannel).setSessionId(null);
-        if (messagingChannel != remotingChannel && messagingChannel instanceof SessionAwareChannel)
+        if (messagingChannel != remotingChannel)
             ((SessionAwareChannel)messagingChannel).setSessionId(null);
 		
 		logoutState.sessionExpired();
@@ -648,7 +648,7 @@ public class ServerSession implements ContextAware {
         sessionId = null;
         if (remotingChannel instanceof SessionAwareChannel)
             ((SessionAwareChannel)remotingChannel).setSessionId(null);
-        if (messagingChannel != remotingChannel && messagingChannel instanceof SessionAwareChannel)
+        if (messagingChannel != remotingChannel)
             ((SessionAwareChannel)messagingChannel).setSessionId(null);
     	
     	logoutState.loggedOut(event);

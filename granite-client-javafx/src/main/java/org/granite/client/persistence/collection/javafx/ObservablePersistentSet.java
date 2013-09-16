@@ -62,7 +62,7 @@ public class ObservablePersistentSet<E> extends ObservableSetWrapper<E> implemen
 	@SuppressWarnings("unchecked")
 	@Override
 	public Iterator<E> iterator() {
-		return (Iterator<E>)super.iterator();
+		return super.iterator();
 	}
 
 	@Override

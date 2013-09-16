@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><actionScriptProperties analytics="false" mainApplicationPath="TestRunner.mxml" projectUUID="1f5082ec-6b82-43b7-bfbe-003fa38a419e" version="10">
+  <compiler additionalCompilerArguments="-keep-as3-metadata=Managed,ChangeEvent,NonCommittingChangeEvent,Transient,Id,Version,Lazy,Name,In,Inject,Out,Produces,ManagedEvent,Observer,PostConstruct,Destroy,Test,Ignore,Suite,RunWith" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="true" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="src/main/flex" strict="true" targetPlayerVersion="10.0" useApolloConfig="false" useDebugRSLSwfs="false" verifyDigests="true" warn="true">
+    <compilerSourcePath>
+      <compilerSourcePathEntry kind="1" linkType="1" path="src/main/flex"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="src/main/resources"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="src/test/actionscript"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="src/test/resources"/>
+    </compilerSourcePath>
+    <libraryPath defaultLinkType="0">
+      <libraryPathEntry kind="4" path="">
+        <excludedEntries>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flex.swc" useDefaultLinkType="false"/>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/core.swc" useDefaultLinkType="false"/>
+        </excludedEntries>
+      </libraryPathEntry>
+      <libraryPathEntry kind="3" linkType="1" path="/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/granite-client-flex45-advanced/bin/granite-client-flex45-advanced.swc" useDefaultLinkType="false"/>
+    </libraryPath>
+    <sourceAttachmentPath/>
+  </compiler>
+  <applications>
+    <application path="TestRunner.mxml"/>
+  </applications>
+  <modules/>
+  <buildCSSFiles/>
+  <flashCatalyst validateFlashCatalystCompatibility="false"/>
+</actionScriptProperties>

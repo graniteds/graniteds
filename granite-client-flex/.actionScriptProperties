@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><actionScriptProperties analytics="false" mainApplicationPath="dummy.as" projectUUID="7afb3220-9b18-4eb6-94c0-2bd8ee2ce14b" version="10">
+  <compiler additionalCompilerArguments="" autoRSLOrdering="true" copyDependentFiles="false" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="src/main/flex" strict="true" targetPlayerVersion="10.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
+    <compilerSourcePath>
+      <compilerSourcePathEntry kind="1" linkType="1" path="src/main/flex"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="src/main/resources"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="src/test/actionscript"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="src/test/resources"/>
+    </compilerSourcePath>
+    <libraryPath defaultLinkType="0">
+      <libraryPathEntry kind="4" path="">
+        <excludedEntries>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flex.swc" useDefaultLinkType="false"/>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/core.swc" useDefaultLinkType="false"/>
+        </excludedEntries>
+      </libraryPathEntry>
+    </libraryPath>
+    <sourceAttachmentPath/>
+  </compiler>
+  <applications>
+    <application path="dummy.as"/>
+  </applications>
+  <modules/>
+  <buildCSSFiles/>
+  <flashCatalyst validateFlashCatalystCompatibility="false"/>
+</actionScriptProperties>

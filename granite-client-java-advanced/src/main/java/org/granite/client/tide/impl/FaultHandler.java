@@ -176,9 +176,9 @@ public class FaultHandler<T> implements Runnable {
                 if (!handled)
                     log.error("Unhandled fault: " + emsg.getCode() + ": " + emsg.getDescription());
             }
-            else if (exceptionHandlers != null && exceptionHandlers.length > 0 && event instanceof FaultEvent && ((FaultEvent)event).getMessage() instanceof FaultMessage) {
+            else if (exceptionHandlers != null && exceptionHandlers.length > 0 && event instanceof FaultEvent) {
                 // Handle fault with default exception handler
-                exceptionHandlers[0].handle(context, (FaultMessage)((FaultEvent)event).getMessage(), faultEvent);
+                exceptionHandlers[0].handle(context, ((FaultEvent)event).getMessage(), faultEvent);
             }
             else {
                 log.error("Unknown fault: " + event.toString());

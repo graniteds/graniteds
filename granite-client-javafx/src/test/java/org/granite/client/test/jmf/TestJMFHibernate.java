@@ -95,7 +95,7 @@ public class TestJMFHibernate {
 	@Before
 	public void before() {
 		
-		List<ExtendedObjectCodec> serverExtendedObjectCodecs = Arrays.asList((ExtendedObjectCodec)
+		List<ExtendedObjectCodec> serverExtendedObjectCodecs = Arrays.asList(
 			new EntityCodec(),
 			new PersistentListCodec(),
 			new PersistentSetCodec(),
@@ -826,6 +826,7 @@ public class TestJMFHibernate {
 		Assert.assertTrue(((PersistentSortedMap)collection).size() == 3);
 	}
 
+	@SuppressWarnings("cast")
 	@Test
 	public void testEntity() throws ClassNotFoundException, IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		clientAliasRegistry.registerAlias(ClientEntity.class);
@@ -865,6 +866,7 @@ public class TestJMFHibernate {
 		Assert.assertTrue(((ServerEntity)serverEntityCopy).getList().get(0) instanceof ServerCollectionEntity);
 	}
 
+	@SuppressWarnings("cast")
 	@Test
 	public void testFXEntity() throws ClassNotFoundException, IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		clientAliasRegistry.registerAlias(ClientFXEntity.class);
