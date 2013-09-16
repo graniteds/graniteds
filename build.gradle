@@ -791,6 +791,8 @@ project('granite-client-flex') {
 	
 	dependencies {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
+		
+		external 'org.graniteds:flex-websocket-client:1.0'
 	}
 }
 
