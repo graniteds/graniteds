@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="Flex" version="4">
+  <component name="FlexBuildConfigurationManager" active="TestRunner">
+    <configurations>
+      <configuration name="TestRunner" main-class="TestRunner" output-file="TestRunner.swf" output-folder="$MODULE_DIR$/bin-debug">
+        <dependencies target-player="10.2">
+          <entries>
+            <entry library-id="d73056c2-a8a4-44ec-8337-19d1c01dcb4c">
+              <dependency linkage="Merged" />
+            </entry>
+            <entry library-id="ac3773e9-c042-4359-8bf5-2aeed33a2f03">
+              <dependency linkage="Merged" />
+            </entry>
+          </entries>
+          <sdk name="flex-sdk-4.5" />
+        </dependencies>
+        <compiler-options>
+          <map>
+            <entry key="compiler.locale" value="" />
+          </map>
+          <option name="additionalOptions" value="-keep-as3-metadata=Managed,ChangeEvent,NonCommittingChangeEvent,Transient,Id,Version,Lazy,Name,In,Inject,Out,Produces,ManagedEvent,Observer,PostConstruct,Destroy,Test,Ignore,Suite,RunWith" />
+        </compiler-options>
+        <packaging-air-desktop />
+        <packaging-android />
+        <packaging-ios />
+      </configuration>
+    </configurations>
+    <compiler-options />
+  </component>
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/flex" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/flex" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" isTestSource="true" />
+    </content>
+    <orderEntry type="jdk" jdkName="flex-sdk-4.5" jdkType="Flex SDK Type (new)" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" exported="">
+      <library type="flex">
+        <properties id="d73056c2-a8a4-44ec-8337-19d1c01dcb4c" />
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/granite-client-flex/bin/granite-client-flex.swc!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library type="flex">
+        <properties id="ac3773e9-c042-4359-8bf5-2aeed33a2f03" />
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/granite-client-flex45-advanced/bin/granite-client-flex45-advanced.swc!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+  </component>
+</module>
+

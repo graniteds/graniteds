@@ -30,7 +30,7 @@ ext.javadocLinks = [
 ]
 
 // Add Java plugin for all non-Flex subprojects
-configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it.name != 'granite-server' && it.name != 'reference-docs' }) { subproject ->
+configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it.name != 'granite-server' && it.name != 'granite-generator-share' && it.name != 'reference-docs' }) { subproject ->
 
 	apply plugin: 'java'
 	apply plugin: 'eclipse'
@@ -135,7 +135,7 @@ configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { s
 
 // Add license plugin for all non-Flex subprojects
 // license plugin is not compatible with GradleFX
-configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it.name != 'granite-server' && it.name != 'reference-docs' }) { subproject ->
+configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it.name != 'granite-server' && it.name != 'granite-generator-share' && it.name != 'reference-docs' }) { subproject ->
 
 	apply plugin: JavaOnlyLicensePlugin
 	
@@ -494,6 +494,104 @@ project('granite-server') {
 			links = rootProject.ext.javadocLinks
 		}
 	}	
+}
+
+// Lib shared with generator
+project('granite-generator-share') {
+
+    description = 'GraniteDS generator shared'
+
+    apply plugin: 'java'
+
+    dependencies {
+        compile project(':granite-core')
+    }
+
+    configurations {
+        create('sources')
+        create('javadoc')
+    }
+
+    task sourcesJar(type: Jar, dependsOn: 'classes') {
+        classifier = 'sources'
+
+        from project(':granite-core').sourceSets.main.allSource
+        include 'org/granite/util/ClassUtil.java',
+                'org/granite/util/ClassUtil$*.java',
+                'org/granite/util/URIUtil.java',
+                'org/granite/messaging/amf/io/util/Property.java',
+                'org/granite/messaging/amf/io/util/externalizer/Externalizer.java',
+                'org/granite/messaging/amf/io/util/externalizer/annotation/**',
+                'org/granite/messaging/service/annotations/**',
+                'org/granite/messaging/annotations/**',
+                'org/granite/messaging/service/security/*DestinationSecurizer.java',
+                'org/granite/tide/annotations/**',
+                'org/granite/tide/data/Lazy.java'
+    }
+
+    task javadocJar(type: Jar, dependsOn: 'javadoc') {
+        classifier = 'javadoc'
+
+        from project(':granite-core').javadoc.destinationDir
+        include 'org/granite/util/ClassUtil.html',
+            'org/granite/util/ClassUtil$*.html',
+            'org/granite/util/URIUtil.html',
+            'org/granite/messaging/amf/io/util/Property.html',
+            'org/granite/messaging/amf/io/util/externalizer/Externalizer.html',
+            'org/granite/messaging/amf/io/util/externalizer/annotation/**',
+            'org/granite/messaging/service/annotations/**',
+            'org/granite/messaging/annotations/**',
+            'org/granite/messaging/service/security/*DestinationSecurizer.html',
+            'org/granite/tide/annotations/**',
+            'org/granite/tide/data/Lazy.html'
+    }
+
+    jar {
+        from project(':granite-core').sourceSets.main.output.classesDir
+        include 'org/granite/util/ClassUtil.class',
+            'org/granite/util/ClassUtil$*.class',
+            'org/granite/util/URIUtil.class',
+            'org/granite/messaging/amf/io/util/Property.class',
+            'org/granite/messaging/amf/io/util/externalizer/Externalizer.class',
+            'org/granite/messaging/amf/io/util/externalizer/annotation/**',
+            'org/granite/messaging/service/annotations/**',
+            'org/granite/messaging/annotations/**',
+            'org/granite/messaging/service/security/*DestinationSecurizer.class',
+            'org/granite/tide/annotations/**',
+            'org/granite/tide/data/Lazy.class'
+
+        metaInf {
+            from 'LICENSE.txt'
+        }
+    }
+
+    artifacts {
+        archives sourcesJar
+        archives javadocJar
+    }
+
+    dependencies {
+        javadoc 'log4j:log4j:1.2.17'
+
+        testCompile 'junit:junit:4.+'
+    }
+
+    javadoc {
+        title 'GraniteDS API Documentation'
+
+        classpath.add(configurations.javadoc)
+
+        configure(options) {
+            version = true
+            author = true
+            use = true
+            linkSource = true
+            // stylesheetFile = 'jdstyle.css'
+            windowTitle = 'GraniteDS API Documentation'
+            docTitle = 'GraniteDS API Documentation - ' + granitedsVersion
+            links = rootProject.ext.javadocLinks
+        }
+    }
 }
 
 

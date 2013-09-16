@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="Flex" version="4">
+  <component name="FlexBuildConfigurationManager" active="granite-client-flex45-advanced">
+    <configurations>
+      <configuration name="granite-client-flex45-advanced" output-type="Library" output-file="granite-client-flex45-advanced.swc" output-folder="$MODULE_DIR$/bin">
+        <dependencies target-player="10.2">
+          <entries>
+            <entry library-id="300f1097-9eff-412d-9242-f5f210e68c7a">
+              <dependency linkage="Merged" />
+            </entry>
+          </entries>
+          <sdk name="flex-sdk-4.5" />
+        </dependencies>
+        <compiler-options>
+          <map>
+            <entry key="compiler.locale" value="" />
+          </map>
+          <option name="additionalOptions" value="-define=CONFIG::debugging,false  -define=CONFIG::flex40,false  -define=CONFIG::flex45,true" />
+        </compiler-options>
+        <packaging-air-desktop />
+        <packaging-android />
+        <packaging-ios />
+      </configuration>
+    </configurations>
+    <compiler-options />
+  </component>
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../granite-client-flex-advanced/src/main/flex" />
+    <orderEntry type="jdk" jdkName="flex-sdk-4.5" jdkType="Flex SDK Type (new)" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" exported="">
+      <library type="flex">
+        <properties id="300f1097-9eff-412d-9242-f5f210e68c7a" />
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/granite-client-flex/bin/granite-client-flex.swc!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+  </component>
+</module>
+
