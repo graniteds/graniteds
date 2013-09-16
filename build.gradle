@@ -451,9 +451,7 @@ project('granite-server') {
 	task javadocJar(type: Jar, dependsOn: 'javadoc') {
 		classifier = 'javadoc'
 
-		projects.each {
-			from project(it).javadoc.destinationDir			
-		}
+        from javadoc.destinationDir
 	}
 	
 	jar {
@@ -480,9 +478,17 @@ project('granite-server') {
 
 	javadoc {
 		title 'GraniteDS API Documentation'
+
+        projects.each {
+            source project(it).sourceSets.main.allJava
+        }
 		
 		classpath.add(configurations.javadoc)
-		
+
+        projects.each {
+            classpath.add(project(it).sourceSets.main.compileClasspath)
+        }
+
 		configure(options) {
 			version = true
 			author = true
