@@ -955,15 +955,23 @@ project('granite-client-java') {
 	}
 	
 	// For some reaons excludes must be applied on filter after the sourceSets definitions 
-	sourceSets.main.java.filter.exclude 'org/granite/clustering/*Session*',
-		'org/granite/clustering/TransientReferenceHolder*',
-		'org/granite/config/Abstract*',
-		'org/granite/config/Servlet*',
-		'org/granite/config/ConfigProvider*',
-		'org/granite/config/*Listener*',
-		'org/granite/config/flex/Servlet*',
+	sourceSets.main.java.filter.exclude 'org/granite/clustering/*Session*.java',
+		'org/granite/clustering/TransientReferenceHolder*.java',
+		'org/granite/config/Abstract*.java',
+		'org/granite/config/Servlet*.java',
+		'org/granite/config/ConfigProvider*.java',
+		'org/granite/config/*Listener*.java',
+		'org/granite/config/flex/Servlet*.java',
 		'org/granite/gravity/**',
-		'org/granite/tide/**',
+		'org/granite/tide/IUID*.java',
+		'org/granite/tide/TidePersistence*.java',
+		'org/granite/tide/TideService*.java',
+		'org/granite/tide/TideTransaction*.java',
+		'org/granite/tide/annotations/*.java',
+		'org/granite/tide/async/*.java',
+		'org/granite/tide/data/*.java',
+		'org/granite/tide/util/*.java',
+		'org/granite/tide/validators/*.java',
 		'org/granite/messaging/amf/process/*Processor.java',
 		'org/granite/messaging/amf/io/convert/impl/GAE*.java',
 		'org/granite/messaging/persistence/*Externalizable*.java',
@@ -995,4 +1003,15 @@ project('granite-client-java') {
     test {
         exclude 'org/granite/client/test/websocket/**'
     }
+}
+
+// Java Advanced client library
+project('granite-client-java-advanced') {
+	description = 'GraniteDS Advanced Java client'
+	
+	dependencies {
+		compile project(':granite-client-java')
+		
+		testCompile project(':granite-client-java').sourceSets.test.output
+	}
 }

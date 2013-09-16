@@ -34,4 +34,5 @@ include 'granite-client-flex45-advanced'
 include 'granite-client-flex45-tests'
 
 include 'granite-client-java'
+include 'granite-client-java-advanced'
 
