@@ -1043,6 +1043,7 @@ project('granite-client-javafx') {
 			'org.graniteds:granite-hibernate:' + granitedsVersion
 	}
 	
+	// Include sources of advanced java client
 	sourceSets {
 		main {
 			java {
@@ -1053,10 +1054,41 @@ project('granite-client-javafx') {
 			}
 		}
 	}
+}
+
+// Android client library
+project('granite-client-android') {
+
+	dependencies {
+
+		compile 'javax.enterprise:cdi-api:1.0-SP4',
+			'javax.inject:javax.inject:1',
+			'javax.validation:validation-api:1.0.0.GA',
+			'org.springframework:spring-beans:3.1.4.RELEASE',
+			'org.springframework:spring-context:3.1.4.RELEASE',
+			'com.google.android:android:4.0.1.2'
+
+		compile files('lib/android-async-http-1.4.3.jar')
+		
+		testCompile project(':granite-client-java').sourceSets.test.output
+		
+		testCompile 'org.hibernate:hibernate-core:3.6.10.Final',
+			'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
+			'antlr:antlr:2.7.7'
+			
+		testCompile 'org.graniteds:granite-core:' + granitedsVersion,
+			'org.graniteds:granite-hibernate:' + granitedsVersion
+	}
 	
-	jar {
-		metaInf {
-			from 'LICENSE.txt'
+	// Include sources of advanced java client
+	sourceSets {
+		main {
+			java {
+				source project(':granite-client-java-advanced').sourceSets.main.java
+			}
+			resources {
+				source project(':granite-client-java-advanced').sourceSets.main.resources
+			}
 		}
 	}
 }
