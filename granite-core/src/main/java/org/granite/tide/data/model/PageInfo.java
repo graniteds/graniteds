@@ -37,6 +37,12 @@ public class PageInfo implements Externalizable {
 	public PageInfo() {		
 	}
 	
+    public PageInfo(int firstResult, int maxResults) {
+    	this.firstResult = firstResult;
+    	this.maxResults = maxResults;
+    	this.sortInfo = null;
+    }
+    
 	public PageInfo(int firstResult, int maxResults, String[] order, boolean[] desc) {
 		this.firstResult = firstResult;
 		this.maxResults = maxResults;
