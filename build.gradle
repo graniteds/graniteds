@@ -1,12 +1,15 @@
 buildscript {
     repositories {
         mavenCentral()
+		mavenRepo name: 'Bintray Asciidoctor repo', url: 'http://dl.bintray.com/content/aalmiray/asciidoctor'
+		mavenRepo name: 'Bintray JCenter', url: 'http://jcenter.bintray.com'
     }
 	
     dependencies {
 		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.5.0'
 		classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
         classpath group: 'org.gradlefx', name: 'gradlefx', version: '0.6.4'
+		classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.4.1'
     }
 }
 
@@ -27,7 +30,7 @@ ext.javadocLinks = [
 ]
 
 // Add Java plugin for all non-Flex subprojects
-configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') }) { subproject ->
+configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it.name != 'granite-server' && it.name != 'reference-docs' }) { subproject ->
 
 	apply plugin: 'java'
 	apply plugin: 'eclipse'
@@ -132,7 +135,7 @@ configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { s
 
 // Add license plugin for all non-Flex subprojects
 // license plugin is not compatible with GradleFX
-configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') }) { subproject ->
+configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it.name != 'granite-server' && it.name != 'reference-docs' }) { subproject ->
 
 	apply plugin: JavaOnlyLicensePlugin
 	
@@ -157,7 +160,7 @@ class JavaOnlyLicensePlugin extends nl.javadude.gradle.plugins.license.LicensePl
 
 // Common configuration for all subprojects
 // signing + maven deployment
-configure(subprojects) { subproject ->
+configure(subprojects.findAll { it.name != 'reference-docs' }) { subproject ->
 
 	apply plugin: 'maven'
 	apply plugin: 'signing'
@@ -206,8 +209,8 @@ configure(subprojects) { subproject ->
 					licenses {
 							if (subproject.moduleLicense == 'lgpl') {
 								license {
-									name 'GNU LIBRARY GENERAL PUBLIC LICENSE, Version 2, June 1991'
-									url 'http://www.gnu.org/licenses/old-licenses/lgpl-2.0-standalone.html'
+									name 'GNU LIBRARY GENERAL PUBLIC LICENSE, Version 2.1, February 1999'
+									url 'http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt'
 									distribution 'repo'
 								}
 							}
@@ -401,6 +404,96 @@ project('granite-activemq') {
 		
 		compile project(':granite-core')
 	}
+}
+
+
+// All server libs
+project('granite-server') {
+
+	description = 'GraniteDS Server all libs'
+	
+	apply plugin: 'java'
+	
+	def projects = [
+		':granite-core',
+		':granite-servlet3',
+		':granite-tomcat6',
+		':granite-tomcat7',
+		':granite-jetty6',
+		':granite-jetty8',
+		':granite-jbossweb',
+		':granite-glassfishv2',
+		':granite-glassfishv3',
+		':granite-weblogic',
+		':granite-appengine',
+		':granite-activemq'
+	]
+	
+	dependencies {
+		projects.each {
+			compile project(it)
+		}
+	}
+	
+	configurations {
+		create('sources')
+		create('javadoc')
+	}
+	
+	task sourcesJar(type: Jar, dependsOn: 'classes') {
+		classifier = 'sources'
+		
+		projects.each { 
+			from project(it).sourceSets.main.allSource 
+		}
+	}
+	
+	task javadocJar(type: Jar, dependsOn: 'javadoc') {
+		classifier = 'javadoc'
+
+		projects.each {
+			from project(it).javadoc.destinationDir			
+		}
+	}
+	
+	jar {
+		projects.each {
+			from project(it).sourceSets.main.output.classesDir
+			from project(it).sourceSets.main.output.resourcesDir
+		}
+		
+		metaInf {
+			from 'LICENSE.txt'
+		}
+	}
+	
+	artifacts {
+		archives sourcesJar
+		archives javadocJar
+	}
+	
+	dependencies {
+		javadoc 'log4j:log4j:1.2.17'
+		
+		testCompile 'junit:junit:4.+'
+	}
+
+	javadoc {
+		title 'GraniteDS API Documentation'
+		
+		classpath.add(configurations.javadoc)
+		
+		configure(options) {
+			version = true
+			author = true
+			use = true
+			linkSource = true
+			// stylesheetFile = 'jdstyle.css'
+			windowTitle = 'GraniteDS API Documentation'
+			docTitle = 'GraniteDS API Documentation - ' + granitedsVersion
+			links = rootProject.ext.javadocLinks
+		}
+	}	
 }
 
 
@@ -1146,5 +1239,22 @@ project('granite-client-android') {
 }
 
 
-// Docs
-apply from: 'references-docs/docs.gradle' 
+// Reference docs
+project('reference-docs') {
+	
+	apply plugin: 'asciidoctor'
+	
+	asciidoctor {
+	    outputDir = new File("$buildDir/docs")
+	    options = [
+	        doctype: 'book',
+	        attributes: [
+	            flex: '',
+	            copycss: '',
+	            'source-highlighter': 'highlightjs',
+	            idprefix: '',
+	            idseparator: '-'
+	        ]
+	    ]
+	}
+}

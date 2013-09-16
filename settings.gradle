@@ -13,6 +13,8 @@ include 'granite-appengine'
 
 include 'granite-activemq'
 
+include 'granite-server'
+
 include 'granite-ejb'
 include 'granite-cdi'
 include 'granite-spring'
