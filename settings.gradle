@@ -33,6 +33,7 @@ include 'granite-beanvalidation'
 
 include 'granite-client-flex'
 include 'granite-client-flex-advanced'
+include 'granite-client-flex-doc'
 include 'granite-client-flex45-advanced'
 include 'granite-client-flex45-tests'
 

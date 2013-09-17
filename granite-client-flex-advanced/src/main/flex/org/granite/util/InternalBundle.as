@@ -94,7 +94,7 @@ package org.granite.util {
 		 * </p>
 		 * 
 		 * <p>
-		 * If a <code>parameters<code> array is passed to this method, the parameters in it
+		 * If a <code>parameters</code> array is passed to this method, the parameters in it
 		 * are converted to Strings and then substituted, in order, for the placeholders
 		 * "{0}", "{1}", and so on, in the string before it is returned.
 		 * </p>

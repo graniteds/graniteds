@@ -70,21 +70,21 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border>
-		 * <tr valign=top>
+		 * <table border="1">
+		 * <tr valign="top">
 		 * <th>Input Number</th>
-		 * <th>Input rounded to one digit<br> with <code>CEILING</code> rounding
+		 * <th>Input rounded to one digit<br> with <code>CEILING</code> rounding</th>
 		 * </tr>
-		 * <tr align=right><td>5.5</td><td>6</td></tr>
-		 * <tr align=right><td>2.5</td><td>3</td></tr>
-		 * <tr align=right><td>1.6</td><td>2</td></tr>
-		 * <tr align=right><td>1.1</td><td>2</td></tr>
-		 * <tr align=right><td>1.0</td><td>1</td></tr>
-		 * <tr align=right><td>-1.0</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.1</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.6</td><td>-1</td></tr>
-		 * <tr align=right><td>-2.5</td><td>-2</td></tr>
-		 * <tr align=right><td>-5.5</td><td>-5</td></tr>
+		 * <tr align="right"><td>5.5</td><td>6</td></tr>
+		 * <tr align="right"><td>2.5</td><td>3</td></tr>
+		 * <tr align="right"><td>1.6</td><td>2</td></tr>
+		 * <tr align="right"><td>1.1</td><td>2</td></tr>
+		 * <tr align="right"><td>1.0</td><td>1</td></tr>
+		 * <tr align="right"><td>-1.0</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.1</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.6</td><td>-1</td></tr>
+		 * <tr align="right"><td>-2.5</td><td>-2</td></tr>
+		 * <tr align="right"><td>-5.5</td><td>-5</td></tr>
 		 * </table>
 		 */
 		public static const CEILING:RoundingMode = new RoundingMode("CEILING", _);
@@ -96,21 +96,21 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border>
-		 * <tr valign=top>
+		 * <table border="1">
+		 * <tr valign="top">
 		 * <th>Input Number</th>
-		 * <th>Input rounded to one digit<br> with <code>DOWN</code> rounding
+		 * <th>Input rounded to one digit<br> with <code>DOWN</code> rounding</th>
 		 * </tr>
-		 * <tr align=right><td>5.5</td><td>5</td></tr>
-		 * <tr align=right><td>2.5</td><td>2</td></tr>
-		 * <tr align=right><td>1.6</td><td>1</td></tr>
-		 * <tr align=right><td>1.1</td><td>1</td></tr>
-		 * <tr align=right><td>1.0</td><td>1</td></tr>
-		 * <tr align=right><td>-1.0</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.1</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.6</td><td>-1</td></tr>
-		 * <tr align=right><td>-2.5</td><td>-2</td></tr>
-		 * <tr align=right><td>-5.5</td><td>-5</td></tr>
+		 * <tr align="right"><td>5.5</td><td>5</td></tr>
+		 * <tr align="right"><td>2.5</td><td>2</td></tr>
+		 * <tr align="right"><td>1.6</td><td>1</td></tr>
+		 * <tr align="right"><td>1.1</td><td>1</td></tr>
+		 * <tr align="right"><td>1.0</td><td>1</td></tr>
+		 * <tr align="right"><td>-1.0</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.1</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.6</td><td>-1</td></tr>
+		 * <tr align="right"><td>-2.5</td><td>-2</td></tr>
+		 * <tr align="right"><td>-5.5</td><td>-5</td></tr>
 		 * </table>
 		 */
 		public static const DOWN:RoundingMode = new RoundingMode("DOWN", _);
@@ -123,21 +123,21 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border>
-		 * <tr valign=top>
+		 * <table border="1">
+		 * <tr valign="top">
 		 * <th>Input Number</th>
-		 * <th>Input rounded to one digit<br> with <code>FLOOR</code> rounding
+		 * <th>Input rounded to one digit<br> with <code>FLOOR</code> rounding</th>
 		 * </tr>
-		 * <tr align=right><td>5.5</td><td>5</td></tr>
-		 * <tr align=right><td>2.5</td><td>2</td></tr>
-		 * <tr align=right><td>1.6</td><td>1</td></tr>
-		 * <tr align=right><td>1.1</td><td>1</td></tr>
-		 * <tr align=right><td>1.0</td><td>1</td></tr>
-		 * <tr align=right><td>-1.0</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.1</td><td>-2</td></tr>
-		 * <tr align=right><td>-1.6</td><td>-2</td></tr>
-		 * <tr align=right><td>-2.5</td><td>-3</td></tr>
-		 * <tr align=right><td>-5.5</td><td>-6</td></tr>
+		 * <tr align="right"><td>5.5</td><td>5</td></tr>
+		 * <tr align="right"><td>2.5</td><td>2</td></tr>
+		 * <tr align="right"><td>1.6</td><td>1</td></tr>
+		 * <tr align="right"><td>1.1</td><td>1</td></tr>
+		 * <tr align="right"><td>1.0</td><td>1</td></tr>
+		 * <tr align="right"><td>-1.0</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.1</td><td>-2</td></tr>
+		 * <tr align="right"><td>-1.6</td><td>-2</td></tr>
+		 * <tr align="right"><td>-2.5</td><td>-3</td></tr>
+		 * <tr align="right"><td>-5.5</td><td>-6</td></tr>
 		 * </table>
 		 */
 		public static const FLOOR:RoundingMode = new RoundingMode("FLOOR", _);
@@ -150,21 +150,21 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border>
-		 * <tr valign=top>
+		 * <table border="1">
+		 * <tr valign="top">
 		 * <th>Input Number</th>
-		 * <th>Input rounded to one digit<br> with <code>HALF_DOWN</code> rounding
+		 * <th>Input rounded to one digit<br> with <code>HALF_DOWN</code> rounding</th>
 		 * </tr>
-		 * <tr align=right><td>5.5</td><td>5</td></tr>
-		 * <tr align=right><td>2.5</td><td>2</td></tr>
-		 * <tr align=right><td>1.6</td><td>2</td></tr>
-		 * <tr align=right><td>1.1</td><td>1</td></tr>
-		 * <tr align=right><td>1.0</td><td>1</td></tr>
-		 * <tr align=right><td>-1.0</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.1</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.6</td><td>-2</td></tr>
-		 * <tr align=right><td>-2.5</td><td>-2</td></tr>
-		 * <tr align=right><td>-5.5</td><td>-5</td></tr>
+		 * <tr align="right"><td>5.5</td><td>5</td></tr>
+		 * <tr align="right"><td>2.5</td><td>2</td></tr>
+		 * <tr align="right"><td>1.6</td><td>2</td></tr>
+		 * <tr align="right"><td>1.1</td><td>1</td></tr>
+		 * <tr align="right"><td>1.0</td><td>1</td></tr>
+		 * <tr align="right"><td>-1.0</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.1</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.6</td><td>-2</td></tr>
+		 * <tr align="right"><td>-2.5</td><td>-2</td></tr>
+		 * <tr align="right"><td>-5.5</td><td>-5</td></tr>
 		 * </table>
 		 */
 		public static const HALF_DOWN:RoundingMode = new RoundingMode("HALF_DOWN", _);
@@ -184,21 +184,21 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border>
-		 * <tr valign=top>
+		 * <table border="1">
+		 * <tr valign="top">
 		 * <th>Input Number</th>
-		 * <th>Input rounded to one digit<br> with <code>HALF_EVEN</code> rounding
+		 * <th>Input rounded to one digit<br> with <code>HALF_EVEN</code> rounding</th>
 		 * </tr>
-		 * <tr align=right><td>5.5</td><td>6</td></tr>
-		 * <tr align=right><td>2.5</td><td>2</td></tr>
-		 * <tr align=right><td>1.6</td><td>2</td></tr>
-		 * <tr align=right><td>1.1</td><td>1</td></tr>
-		 * <tr align=right><td>1.0</td><td>1</td></tr>
-		 * <tr align=right><td>-1.0</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.1</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.6</td><td>-2</td></tr>
-		 * <tr align=right><td>-2.5</td><td>-2</td></tr>
-		 * <tr align=right><td>-5.5</td><td>-6</td></tr>
+		 * <tr align="right"><td>5.5</td><td>6</td></tr>
+		 * <tr align="right"><td>2.5</td><td>2</td></tr>
+		 * <tr align="right"><td>1.6</td><td>2</td></tr>
+		 * <tr align="right"><td>1.1</td><td>1</td></tr>
+		 * <tr align="right"><td>1.0</td><td>1</td></tr>
+		 * <tr align="right"><td>-1.0</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.1</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.6</td><td>-2</td></tr>
+		 * <tr align="right"><td>-2.5</td><td>-2</td></tr>
+		 * <tr align="right"><td>-5.5</td><td>-6</td></tr>
 		 * </table>
 		 */
 		public static const HALF_EVEN:RoundingMode = new RoundingMode("HALF_EVEN", _);
@@ -212,21 +212,21 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border>
-		 * <tr valign=top>
+		 * <table border="1">
+		 * <tr valign="top">
 		 * <th>Input Number</th>
-		 * <th>Input rounded to one digit<br> with <code>HALF_UP</code> rounding
+		 * <th>Input rounded to one digit<br> with <code>HALF_UP</code> rounding</th>
 		 * </tr>
-		 * <tr align=right><td>5.5</td><td>6</td></tr>
-		 * <tr align=right><td>2.5</td><td>3</td></tr>
-		 * <tr align=right><td>1.6</td><td>2</td></tr>
-		 * <tr align=right><td>1.1</td><td>1</td></tr>
-		 * <tr align=right><td>1.0</td><td>1</td></tr>
-		 * <tr align=right><td>-1.0</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.1</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.6</td><td>-2</td></tr>
-		 * <tr align=right><td>-2.5</td><td>-3</td></tr>
-		 * <tr align=right><td>-5.5</td><td>-6</td></tr>
+		 * <tr align="right"><td>5.5</td><td>6</td></tr>
+		 * <tr align="right"><td>2.5</td><td>3</td></tr>
+		 * <tr align="right"><td>1.6</td><td>2</td></tr>
+		 * <tr align="right"><td>1.1</td><td>1</td></tr>
+		 * <tr align="right"><td>1.0</td><td>1</td></tr>
+		 * <tr align="right"><td>-1.0</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.1</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.6</td><td>-2</td></tr>
+		 * <tr align="right"><td>-2.5</td><td>-3</td></tr>
+		 * <tr align="right"><td>-5.5</td><td>-6</td></tr>
 		 * </table>
 		 */
 		public static const HALF_UP:RoundingMode = new RoundingMode("HALF_UP", _);
@@ -239,21 +239,21 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border>
-		 * <tr valign=top>
+		 * <table border="1">
+		 * <tr valign="top">
 		 * <th>Input Number</th>
-		 * <th>Input rounded to one digit<br> with <code>UNNECESSARY</code> rounding
+		 * <th>Input rounded to one digit<br> with <code>UNNECESSARY</code> rounding</th>
 		 * </tr>
-		 * <tr align=right><td>5.5</td><td>throw <code>BigNumberError</code></td></tr>
-		 * <tr align=right><td>2.5</td><td>throw <code>BigNumberError</code></td></tr>
-		 * <tr align=right><td>1.6</td><td>throw <code>BigNumberError</code></td></tr>
-		 * <tr align=right><td>1.1</td><td>throw <code>BigNumberError</code></td></tr>
-		 * <tr align=right><td>1.0</td><td>1</td></tr>
-		 * <tr align=right><td>-1.0</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.1</td><td>throw <code>BigNumberError</code></td></tr>
-		 * <tr align=right><td>-1.6</td><td>throw <code>BigNumberError</code></td></tr>
-		 * <tr align=right><td>-2.5</td><td>throw <code>BigNumberError</code></td></tr>
-		 * <tr align=right><td>-5.5</td><td>throw <code>BigNumberError</code></td></tr>
+		 * <tr align="right"><td>5.5</td><td>throw <code>BigNumberError</code></td></tr>
+		 * <tr align="right"><td>2.5</td><td>throw <code>BigNumberError</code></td></tr>
+		 * <tr align="right"><td>1.6</td><td>throw <code>BigNumberError</code></td></tr>
+		 * <tr align="right"><td>1.1</td><td>throw <code>BigNumberError</code></td></tr>
+		 * <tr align="right"><td>1.0</td><td>1</td></tr>
+		 * <tr align="right"><td>-1.0</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.1</td><td>throw <code>BigNumberError</code></td></tr>
+		 * <tr align="right"><td>-1.6</td><td>throw <code>BigNumberError</code></td></tr>
+		 * <tr align="right"><td>-2.5</td><td>throw <code>BigNumberError</code></td></tr>
+		 * <tr align="right"><td>-5.5</td><td>throw <code>BigNumberError</code></td></tr>
 		 * </table>
 		 */
 		public static const UNNECESSARY:RoundingMode = new RoundingMode("UNNECESSARY", _);
@@ -266,21 +266,21 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border>
-		 * <tr valign=top>
+		 * <table border="1">
+		 * <tr valign="top">
 		 * <th>Input Number</th>
-		 * <th>Input rounded to one digit<br> with <code>UP</code> rounding
+		 * <th>Input rounded to one digit<br> with <code>UP</code> rounding</th>
 		 * </tr>
-		 * <tr align=right><td>5.5</td><td>6</td></tr>
-		 * <tr align=right><td>2.5</td><td>3</td></tr>
-		 * <tr align=right><td>1.6</td><td>2</td></tr>
-		 * <tr align=right><td>1.1</td><td>2</td></tr>
-		 * <tr align=right><td>1.0</td><td>1</td></tr>
-		 * <tr align=right><td>-1.0</td><td>-1</td></tr>
-		 * <tr align=right><td>-1.1</td><td>-2</td></tr>
-		 * <tr align=right><td>-1.6</td><td>-2</td></tr>
-		 * <tr align=right><td>-2.5</td><td>-3</td></tr>
-		 * <tr align=right><td>-5.5</td><td>-6</td></tr>
+		 * <tr align="right"><td>5.5</td><td>6</td></tr>
+		 * <tr align="right"><td>2.5</td><td>3</td></tr>
+		 * <tr align="right"><td>1.6</td><td>2</td></tr>
+		 * <tr align="right"><td>1.1</td><td>2</td></tr>
+		 * <tr align="right"><td>1.0</td><td>1</td></tr>
+		 * <tr align="right"><td>-1.0</td><td>-1</td></tr>
+		 * <tr align="right"><td>-1.1</td><td>-2</td></tr>
+		 * <tr align="right"><td>-1.6</td><td>-2</td></tr>
+		 * <tr align="right"><td>-2.5</td><td>-3</td></tr>
+		 * <tr align="right"><td>-5.5</td><td>-6</td></tr>
 		 * </table>
 		 */
 		public static const UP:RoundingMode = new RoundingMode("UP", _);

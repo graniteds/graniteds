@@ -32,7 +32,7 @@ package org.granite.validation.constraints {
 	 * 
 	 * The annotated element must be a date in the past. Now is
 	 * defined as the current time according to the Flash virtual
-	 * machine (ie: <codse>new Date()</code> on the client computer).<p />
+	 * machine (ie: <code>new Date()</code> on the client computer).<p />
 	 * 
 	 * Accepted arguments are:
 	 * <ul>

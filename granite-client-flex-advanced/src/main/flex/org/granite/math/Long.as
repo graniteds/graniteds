@@ -85,7 +85,7 @@ package org.granite.math {
 		 * <ul>
 		 * <li><code>String</code>: it must be a not empty String in the form of
 		 * 		<i>-?[0-9a-zA-Z]+</i> (ie: an optional '-' character followed by
-		 * 		a not empty sequence of digits (with radix >= 2 and <= 36)). When
+		 * 		a not empty sequence of digits (with radix &gt;= 2 and &lt;= 36)). When
 		 * 		a String value is used, the second parameter <code>radix</code>
 		 * 		is also used, and the supplied digits must be in accordance with
 		 * 		the specified radix.</li>

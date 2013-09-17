@@ -32,7 +32,7 @@ package org.granite.math {
 	 * decimal point.  If negative, the unscaled value of the number is
 	 * multiplied by ten to the power of the negation of the scale.  The
 	 * value of the number represented by the <code>BigDecimal</code> is
-	 * therefore <code>(unscaledValue &times; 10<sup>-scale</sup>)</code>.
+	 * therefore <code>(unscaledValue &#215; 10<sup>-scale</sup>)</code>.
 	 * <br>
 	 * <br>
 	 * The <code>BigDecimal</code> class provides operations for

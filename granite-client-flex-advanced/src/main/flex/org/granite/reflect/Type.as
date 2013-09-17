@@ -500,7 +500,7 @@ package org.granite.reflect {
 		 * <code>Type</code>.
 		 * 
 		 * @return the <code>Class</code> instance (<code>null</code> for <code>void</code>
-		 * 		or <code~~</code> types).
+		 * 		or <code>~~</code> types).
 		 */
 		public function getClass():Class {
 			return _class;

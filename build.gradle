@@ -29,6 +29,14 @@ ext.javadocLinks = [
 	"http://docs.spring.io/spring/docs/3.1.x/javadoc-api/"
 ]
 
+configure(subprojects) {
+	
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+}
+
 // Add Java plugin for all non-Flex subprojects
 configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it.name != 'granite-server' && it.name != 'granite-generator-share' && it.name != 'reference-docs' }) { subproject ->
 
@@ -66,7 +74,6 @@ configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it
 	]
 	
 	configurations {
-		create('sources')
 		create('javadoc')
 	}
 
@@ -121,16 +128,7 @@ configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { s
 	apply plugin: 'gradlefx'
 	apply plugin: 'flashbuilder'
 
-	output = subproject.name + '-' + granitedsVersion
-	
-	task sourcesJar(type: Jar) {
-		classifier = 'sources'
-		from files(srcDirs)
-	}
-	
-	artifacts {
-		archives sourcesJar
-	}
+	output = 'libs/' + subproject.name
 }
 
 // Add license plugin for all non-Flex subprojects
@@ -160,18 +158,13 @@ class JavaOnlyLicensePlugin extends nl.javadude.gradle.plugins.license.LicensePl
 
 // Common configuration for all subprojects
 // signing + maven deployment
-configure(subprojects.findAll { it.name != 'reference-docs' }) { subproject ->
-
+configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith('-doc') && !it.name.endsWith('-tests') }) { subproject ->
+	
 	apply plugin: 'maven'
 	apply plugin: 'signing'
 	
 	configurations {
 		deployerJars
-	}
-	
-	repositories {
-		mavenLocal()
-		mavenCentral()
 	}
 	
 	dependencies {
@@ -414,7 +407,7 @@ project('granite-server') {
 	
 	apply plugin: 'java'
 	
-	def projects = [
+	def coreProjects = [
 		':granite-core',
 		':granite-servlet3',
 		':granite-tomcat6',
@@ -429,8 +422,23 @@ project('granite-server') {
 		':granite-activemq'
 	]
 	
+	def allProjects = coreProjects + [
+		':granite-cdi',
+		':granite-ejb',
+		':granite-spring',
+		':granite-spring2',
+		':granite-seam',
+		':granite-hibernate',
+		':granite-hibernate4',		
+		':granite-datanucleus',
+		':granite-eclipselink',
+		':granite-openjpa',
+		':granite-toplink',
+		':granite-beanvalidation'
+	]
+	
 	dependencies {
-		projects.each {
+		coreProjects.each {
 			compile project(it)
 		}
 	}
@@ -443,7 +451,7 @@ project('granite-server') {
 	task sourcesJar(type: Jar, dependsOn: 'classes') {
 		classifier = 'sources'
 		
-		projects.each { 
+		coreProjects.each { 
 			from project(it).sourceSets.main.allSource 
 		}
 	}
@@ -455,7 +463,7 @@ project('granite-server') {
 	}
 	
 	jar {
-		projects.each {
+		coreProjects.each {
 			from project(it).sourceSets.main.output.classesDir
 			from project(it).sourceSets.main.output.resourcesDir
 		}
@@ -479,16 +487,16 @@ project('granite-server') {
 	javadoc {
 		title 'GraniteDS API Documentation'
 
-        projects.each {
+        allProjects.each {
             source project(it).sourceSets.main.allJava
         }
 		
 		classpath.add(configurations.javadoc)
 
-        projects.each {
+        allProjects.each {
             classpath.add(project(it).sourceSets.main.compileClasspath)
         }
-
+		
 		configure(options) {
 			version = true
 			author = true
@@ -1015,12 +1023,74 @@ project('granite-client-flex') {
 	
 	type = 'swc'
 	srcDirs = [ 'src/main/flex' ]
+
+	dependencies {
+		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
+		
+		external 'org.graniteds:flex-websocket-client:1.0'
+	}
+	
+	task sourcesJar(type: Jar) {
+		classifier = 'sources'
+		from srcDirs
+	}
+	
+	artifacts {
+		archives sourcesJar
+	}
+	
+	build {
+		it.dependsOn 'sourcesJar'
+	}
+}
+
+// ASDoc for all Flex libs
+project('granite-client-flex-doc') {
+	
+	description = 'GraniteDS Flex ASDoc'
+	
+	type = 'swc'
+	srcDirs = [
+		project(':granite-client-flex').file('src/main/flex').path,
+		project(':granite-client-flex-advanced').file('src/main/flex').path
+	]
+	
+	additionalCompilerOptions = [
+		'-define=CONFIG::debugging,false',
+		'-define=CONFIG::flex40,true',
+		'-define=CONFIG::flex45,false'
+	]
 	
 	dependencies {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
 		
 		external 'org.graniteds:flex-websocket-client:1.0'
 	}
+	
+	configurations {
+		create('asdoc')
+	}
+	
+	asdoc {
+		outputDir 'build/docs/asdoc'
+		
+//		additionalASDocOptions = [
+//			"-window-title='GraniteDS Flex API Documentation'",
+//			"-main-title='GraniteDS Flex API Documentation - ${granitedsVersion}'"
+//		]
+	}
+	
+	task asdocJar(type: Jar, dependsOn: 'asdoc') {
+		classifier = 'javadoc'
+		from asdoc.outputDir
+	}
+	
+	artifacts {
+		asdoc asdocJar
+	}
+	
+	task build(overwrite: true, dependsOn: [ 'asdoc', 'asdocJar' ]) {
+	}	
 }
 
 // Flex advanced client library (tide, math, validation)
@@ -1037,12 +1107,38 @@ project('granite-client-flex-advanced') {
 		'-define=CONFIG::flex45,false'
 	]
 	
+	configurations {
+		create('asdoc')
+	}
+	
 	dependencies {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
 		
 		external project(':granite-client-flex')
 		
 		external 'org.graniteds:flex-websocket-client:1.0'
+		
+		asdoc project(path: ':granite-client-flex-doc', configuration: 'asdoc')
+	}
+		
+	task sourcesJar(type: Jar) {
+		classifier = 'sources'
+		from srcDirs
+	}
+	
+	task javadocJar(type: Jar) {
+		classifier = 'javadoc'
+		from configurations.asdoc.collect { zipTree(it) }
+	}
+	
+	artifacts {
+		archives sourcesJar
+		archives javadocJar
+	}
+	
+	build {
+		it.dependsOn 'sourcesJar'
+		it.dependsOn 'javadocJar'
 	}
 }
 
@@ -1061,12 +1157,38 @@ project('granite-client-flex45-advanced') {
 		'-define=CONFIG::flex45,true'
 	]
 	
+	configurations {
+		create('asdoc')
+	}
+	
 	dependencies {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
 		
 		external project(':granite-client-flex')
-		
+
 		external 'org.graniteds:flex-websocket-client:1.0'
+		
+		asdoc project(path: ':granite-client-flex-doc', configuration: 'asdoc')
+	}
+	
+	task sourcesJar(type: Jar) {
+		classifier = 'sources'
+		from srcDirs
+	}
+	
+	task javadocJar(type: Jar) {
+		classifier = 'javadoc'
+		from configurations.asdoc.collect { zipTree(it) }
+	}
+
+	artifacts {
+		archives sourcesJar
+		archives javadocJar
+	}
+	
+	build {
+		it.dependsOn 'sourcesJar'
+		it.dependsOn 'javadocJar'
 	}
 }
 
@@ -1100,9 +1222,6 @@ project('granite-client-flex45-tests') {
 	}
 	
 	flexUnit {
-		command = flexUnitCommand		
-		headless = flexUnitHeadless
-		
 		excludes = [ '**' ]			// Disable default GradleFX task
 	}
 	
@@ -1123,7 +1242,7 @@ project('granite-client-flex45-tests') {
 		ant.flexunit (
 			swf:			 buildDir.name + '/' + output + '.swf',
 			player:          flexUnit.player,
-			command:         flexUnit.command,
+			command:         flexUnitCommand,
 			toDir:           flexUnit.toDir,
 			workingDir:      buildDir.name,
 			haltonfailure:   flexUnit.haltOnFailure,
@@ -1133,7 +1252,7 @@ project('granite-client-flex45-tests') {
 			buffer:          flexUnit.buffer,
 			timeout:         flexUnit.timeout,
 			failureproperty: flexUnit.failureProperty,
-			headless:        flexUnit.headless,
+			headless:        flexUnitHeadless,
 			display:         flexUnit.display) {
 			
 			libraries.each { File libraryFile ->

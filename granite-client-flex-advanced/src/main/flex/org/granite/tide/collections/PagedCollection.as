@@ -184,7 +184,7 @@ package org.granite.tide.collections {
 		}
 		
 		/**
-		 *  Set whether or not the collection will subscribe to org.granite.tide.data.refresh.<Entity Name> 
+		 *  Set whether or not the collection will subscribe to org.granite.tide.data.refresh.&lt;Entity Name&gt;
 		 *  events and automatically refresh when they are dispatched
 		 */
 		public function set autoRefresh(autoRefresh:Boolean):void {
