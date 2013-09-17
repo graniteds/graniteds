@@ -662,7 +662,7 @@ project('granite-cdi') {
 	
 	dependencies {
 		compile 'javax.enterprise:cdi-api:1.0-SP4'
-		compile 'javax.el:javax.el-api:3.0.0'
+		compile 'javax.el:el-api:2.2.1-b04'
 		compile 'javax.inject:javax.inject:1'
 		compile 'org.jboss.weld:weld-api:1.1.Final'
 		compile 'org.jboss.weld:weld-spi:1.1.Final'
