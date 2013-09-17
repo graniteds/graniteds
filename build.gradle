@@ -1484,17 +1484,34 @@ project('reference-docs') {
 	
 	apply plugin: 'asciidoctor'
 	
-	asciidoctor {
-	    outputDir = new File("$buildDir/docs")
-	    options = [
-	        doctype: 'book',
-	        attributes: [
-	            flex: '',
-	            copycss: '',
-	            'source-highlighter': 'highlightjs',
-	            idprefix: '',
-	            idseparator: '-'
-	        ]
-	    ]
+	task docFlex(type: org.asciidoctor.gradle.AsciidoctorTask) {
+		outputDir = new File("$buildDir/docs/flex")
+		options = [
+			doctype: 'book',
+			attributes: [
+				flex: '',
+				copycss: '',
+				'source-highlighter': 'highlightjs',
+				idprefix: '',
+				idseparator: '-'
+			]
+		]
+	}
+	
+	task docJava(type: org.asciidoctor.gradle.AsciidoctorTask) {
+		outputDir = new File("$buildDir/docs/java")
+		options = [
+			doctype: 'book',
+			attributes: [
+				java: '',
+				copycss: '',
+				'source-highlighter': 'highlightjs',
+				idprefix: '',
+				idseparator: '-'
+			]
+		]
+	}
+	
+	task asciidoctor(overwrite: true, dependsOn: [ 'docFlex', 'docJava' ]) {		
 	}
 }
