@@ -1030,17 +1030,33 @@ project('granite-client-flex') {
 		external 'org.graniteds:flex-websocket-client:1.0'
 	}
 	
+	asdoc {
+		outputDir 'build/docs/asdoc'
+		
+//		additionalASDocOptions = [
+//			"-window-title='GraniteDS Flex API Documentation'",
+//			"-main-title='GraniteDS Flex API Documentation - ${granitedsVersion}'"
+//		]
+	}
+
 	task sourcesJar(type: Jar) {
 		classifier = 'sources'
 		from srcDirs
 	}
 	
+	task javadocJar(type: Jar, dependsOn: 'asdoc') {
+		classifier = 'javadoc'
+		from asdoc.outputDir
+	}
+
 	artifacts {
 		archives sourcesJar
+		archives javadocJar
 	}
 	
 	build {
 		it.dependsOn 'sourcesJar'
+		it.dependsOn 'javadocJar'
 	}
 }
 
@@ -1126,7 +1142,7 @@ project('granite-client-flex-advanced') {
 		from srcDirs
 	}
 	
-	task javadocJar(type: Jar) {
+	task javadocJar(type: Jar, dependsOn: ':granite-client-flex-doc:asdocJar') {
 		classifier = 'javadoc'
 		from configurations.asdoc.collect { zipTree(it) }
 	}
@@ -1176,7 +1192,7 @@ project('granite-client-flex45-advanced') {
 		from srcDirs
 	}
 	
-	task javadocJar(type: Jar) {
+	task javadocJar(type: Jar, dependsOn: ':granite-client-flex-doc:asdocJar') {
 		classifier = 'javadoc'
 		from configurations.asdoc.collect { zipTree(it) }
 	}
