@@ -246,19 +246,14 @@ project('granite-core') {
 	description = 'GraniteDS Core server library'
 	
 	dependencies {
-		compile 'javax.servlet:javax.servlet-api:3.0.1'				// Should use 2.5 but 3.0 required by ServletGraniteContext.BasicRequest
+		compile 'javax:javaee-api:6.0'								// Should use Servlet 2.5 but 3.0 required by ServletGraniteContext.BasicRequest
 		
 		compile files('lib/jboss-vfs.jar')							// Used conditionally by VFSScanner impl
 		compile files('lib/jboss-vfs3.jar')							// Used conditionally by VFS3Scanner impl
 		compile files('lib/jbossmq.jar')							// Used by JBossMQSelector impl
 		
 		// Tide dependencies
-		compile 'javax.interceptor:javax.interceptor-api:1.2'
-		compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
 		compile 'javax.jdo:jdo2-api:2.3-eb'
-		compile 'javax.jms:jms-api:1.1-rev-1'
-		compile 'javax.transaction:transaction-api:1.1-rev-1'
-		compile 'javax.enterprise:cdi-api:1.0-SP4'					// Required for @NonBinding annotation on @DataEnabled
 		compile 'log4j:log4j:1.2.17'
 		
 		compile project(':granite-seam').files('lib/jboss-seam.jar')		// Required @Scope annotation for Seam
