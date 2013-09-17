@@ -612,7 +612,7 @@ project('granite-ejb') {
 	}
 	
 	dependencies {
-		compile 'javax.ejb:javax.ejb-api:3.2'
+		compile 'org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:1.0.2.Final'
 		
 		compile project(':granite-core')
 		
@@ -1100,7 +1100,8 @@ project('granite-client-flex45-tests') {
 	}
 	
 	flexUnit {
-		command = 'C:/Dev/flex-sdk-4.5/runtimes/player/10.2/win/FlashPlayerDebugger.exe'
+		command = flexUnitCommand		
+		headless = flexUnitHeadless
 		
 		excludes = [ '**' ]			// Disable default GradleFX task
 	}
