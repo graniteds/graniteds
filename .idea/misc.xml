@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="EntryPointsManager">
+    <entry_points version="2.0" />
+  </component>
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <type id="jpa" />
+    <type id="Spring" />
+    <type id="web" />
+  </component>
+  <component name="IdProvider" IDEtalkID="B4782127EA45B7D7DC359F89AF495672" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.7" project-jdk-type="JavaSDK">
+    <output url="file://bin" />
+  </component>
+</project>
+

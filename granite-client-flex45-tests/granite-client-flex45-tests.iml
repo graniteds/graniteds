@@ -5,10 +5,22 @@
       <configuration name="TestRunner" main-class="TestRunner" output-file="TestRunner.swf" output-folder="$MODULE_DIR$/bin-debug">
         <dependencies target-player="10.2">
           <entries>
-            <entry library-id="d73056c2-a8a4-44ec-8337-19d1c01dcb4c">
+            <entry module-name="granite-client-flex" build-configuration-name="granite-client-flex">
               <dependency linkage="Merged" />
             </entry>
-            <entry library-id="ac3773e9-c042-4359-8bf5-2aeed33a2f03">
+            <entry module-name="granite-client-flex45-advanced" build-configuration-name="granite-client-flex45-advanced">
+              <dependency linkage="Merged" />
+            </entry>
+            <entry library-id="0c26c6ff-2e33-46e0-9c28-132fc2c3ec3b">
+              <dependency linkage="Merged" />
+            </entry>
+            <entry library-id="0ae11cfb-c0c9-4760-b82c-05f10619376c">
+              <dependency linkage="Merged" />
+            </entry>
+            <entry library-id="20c0735b-695b-4c81-acc6-09afddbf8fc0">
+              <dependency linkage="Merged" />
+            </entry>
+            <entry library-id="820a9942-987c-46d4-b53f-aad88a8c7eec">
               <dependency linkage="Merged" />
             </entry>
           </entries>
@@ -37,11 +49,13 @@
     </content>
     <orderEntry type="jdk" jdkName="flex-sdk-4.5" jdkType="Flex SDK Type (new)" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="granite-client-flex45-advanced" exported="" />
+    <orderEntry type="module" module-name="granite-client-flex" exported="" />
     <orderEntry type="module-library" exported="">
       <library type="flex">
-        <properties id="d73056c2-a8a4-44ec-8337-19d1c01dcb4c" />
+        <properties id="0c26c6ff-2e33-46e0-9c28-132fc2c3ec3b" />
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/granite-client-flex/bin/granite-client-flex.swc!/" />
+          <root url="jar://$MODULE_DIR$/lib/flexunit-aircilistener-4.1.0.swc!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -49,9 +63,29 @@
     </orderEntry>
     <orderEntry type="module-library" exported="">
       <library type="flex">
-        <properties id="ac3773e9-c042-4359-8bf5-2aeed33a2f03" />
+        <properties id="0ae11cfb-c0c9-4760-b82c-05f10619376c" />
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/granite-client-flex45-advanced/bin/granite-client-flex45-advanced.swc!/" />
+          <root url="jar://$MODULE_DIR$/lib/flexunit-cilistener-4.1.0.swc!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library type="flex">
+        <properties id="20c0735b-695b-4c81-acc6-09afddbf8fc0" />
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/flexunit-core-flex-4.1.0.swc!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library type="flex">
+        <properties id="820a9942-987c-46d4-b53f-aad88a8c7eec" />
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/flexunit-uilistener-4.1.0.swc!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
