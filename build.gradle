@@ -1030,7 +1030,16 @@ project('granite-client-flex') {
 		
 		external 'org.graniteds:flex-websocket-client:1.0'
 	}
-	
+
+    beforeEvaluate {
+        if (configurations.flexSDK.resolvedConfiguration.hasError()) {
+            println 'Flex SDK 3.6 not found, ignore Flex libraries'
+            configurations.remove(configurations.flexSDK)
+            configurations.create('flexSDK')
+            tasks.each { it.enabled = false }
+        }
+    }
+
 	asdoc {
 		outputDir 'build/docs/asdoc'
 		
@@ -1077,17 +1086,26 @@ project('granite-client-flex-doc') {
 		'-define=CONFIG::flex40,true',
 		'-define=CONFIG::flex45,false'
 	]
-	
+
+    configurations {
+        create('asdoc')
+    }
+
 	dependencies {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
 		
 		external 'org.graniteds:flex-websocket-client:1.0'
 	}
-	
-	configurations {
-		create('asdoc')
-	}
-	
+
+    beforeEvaluate {
+        if (configurations.flexSDK.resolvedConfiguration.hasError()) {
+            println 'Flex SDK 3.6 not found, ignore Flex libraries'
+            configurations.remove(configurations.flexSDK)
+            configurations.create('flexSDK')
+            tasks.each { it.enabled = false }
+        }
+    }
+
 	asdoc {
 		outputDir 'build/docs/asdoc'
 		
@@ -1137,7 +1155,16 @@ project('granite-client-flex-advanced') {
 		
 		asdoc project(path: ':granite-client-flex-doc', configuration: 'asdoc')
 	}
-		
+
+    beforeEvaluate {
+        if (configurations.flexSDK.resolvedConfiguration.hasError()) {
+            println 'Flex SDK 3.6 not found, ignore Flex libraries'
+            configurations.remove(configurations.flexSDK)
+            configurations.create('flexSDK')
+            tasks.each { it.enabled = false }
+        }
+    }
+
 	task sourcesJar(type: Jar) {
 		classifier = 'sources'
 		from srcDirs
@@ -1187,7 +1214,16 @@ project('granite-client-flex45-advanced') {
 		
 		asdoc project(path: ':granite-client-flex-doc', configuration: 'asdoc')
 	}
-	
+
+    beforeEvaluate {
+        if (configurations.flexSDK.resolvedConfiguration.hasError()) {
+            println 'Flex SDK 4.5 not found, ignore Flex libraries'
+            configurations.remove(configurations.flexSDK)
+            configurations.create('flexSDK')
+            tasks.each { it.enabled = false }
+        }
+    }
+
 	task sourcesJar(type: Jar) {
 		classifier = 'sources'
 		from srcDirs
@@ -1237,7 +1273,22 @@ project('granite-client-flex45-tests') {
 		
 		test files('lib/flexUnitTasks-4.1.0.jar')
 	}
-	
+
+    beforeEvaluate {
+        if (configurations.flexSDK.resolvedConfiguration.hasError()) {
+            println 'Flex SDK 4.5 not found, ignore Flex libraries'
+            configurations.remove(configurations.flexSDK)
+            configurations.create('flexSDK')
+            tasks.each { it.enabled = false }
+        }
+
+        File cmd = new File(flexUnitCommand)
+        if (!cmd.exists()) {
+            println 'Flash Player location not defined correctly, skip FlexUnit tests'
+            tasks.getByName('test').enabled = false
+        }
+    }
+
 	flexUnit {
 		excludes = [ '**' ]			// Disable default GradleFX task
 		
