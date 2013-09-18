@@ -112,35 +112,8 @@ public class Log4jLogger extends Logger {
             getLoggerImpl().log(FQCN, Level.ERROR, getFormatter().format(message, args), t);
     }
 
-    @Override
-    public void fatal(String message, Object... args) {
-        if (isFatalEnabled())
-            getLoggerImpl().log(FQCN, Level.FATAL, getFormatter().format(message, args), null);
-    }
-
-    @Override
-    public void fatal(Throwable t, String message, Object... args) {
-        if (isFatalEnabled())
-            getLoggerImpl().log(FQCN, Level.FATAL, getFormatter().format(message, args), t);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // Configuration.
-
-    @Override
-    public void setLevel(org.granite.logging.Level level) {
-    	Level log4jLevel = null;
-    	switch (level) {
-	    	case FATAL: log4jLevel = Level.FATAL; break;
-	    	case ERROR: log4jLevel = Level.ERROR; break;
-	    	case INFO: log4jLevel = Level.INFO; break;
-	    	case TRACE: log4jLevel = Level.TRACE; break;
-	    	case DEBUG: log4jLevel = Level.DEBUG; break;
-	    	case WARN: log4jLevel = Level.WARN; break;
-	    	default: throw new IllegalArgumentException("Unknown logging level: " + level);
-    	}
-        getLoggerImpl().setLevel(log4jLevel);
-    }
 
     @Override
     public boolean isDebugEnabled() {

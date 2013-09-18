@@ -1,4 +1,4 @@
-== Granite Data Services Java Client
+== Granite Data Services
 
 ==== http://www.graniteds.org
 

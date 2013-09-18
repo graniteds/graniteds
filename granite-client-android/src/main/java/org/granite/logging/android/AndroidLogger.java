@@ -34,7 +34,6 @@
  */
 package org.granite.logging.android;
 
-import org.granite.logging.Level;
 import org.granite.logging.Logger;
 import org.granite.logging.LoggingFormatter;
 
@@ -118,21 +117,6 @@ public class AndroidLogger extends Logger {
 	public void error(Throwable t, String message, Object... args) {
 		if (Log.isLoggable(tag, Log.ERROR))
 			Log.e(tag, getFormatter().format(message, args), t);
-	}
-
-	@Override
-	public void fatal(String message, Object... args) {
-		Log.wtf(tag, getFormatter().format(message, args));
-	}
-
-	@Override
-	public void fatal(Throwable t, String message, Object... args) {
-		Log.wtf(tag, getFormatter().format(message, args), t);
-	}
-
-	@Override
-	public void setLevel(Level level) {
-		Log.e(tag, "Unsupported operation: cannot set level for Android Log");
 	}
 
 	@Override

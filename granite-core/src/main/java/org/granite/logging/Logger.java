@@ -35,16 +35,26 @@ public abstract class Logger {
     // Fields.
 
 	public static final String LOGGER_IMPL_SYSTEM_PROPERTY = "org.granite.logger.impl";
-	
+
+    private static final boolean slf4jAvailable;
 	private static final boolean log4jAvailable;
 	static {
-		boolean available = false;
+		boolean slf4j = false;
+        boolean log4j = false;
 		try {
-			TypeUtil.forName("org.apache.log4j.Logger");
-			available = true;
-		} catch (Exception e) {
+            TypeUtil.forName("org.slf4j.Logger");
+            slf4j = true;
+        }
+        catch (Exception e) {
+            try {
+			    TypeUtil.forName("org.apache.log4j.Logger");
+			    log4j = true;
+		    }
+            catch (Exception f) {
+            }
 		}
-		log4jAvailable = available;
+        slf4jAvailable = slf4j;
+		log4jAvailable = log4j;
 	}
 	
     private final Object loggerImpl;
@@ -115,7 +125,8 @@ public abstract class Logger {
     	for (Logger logger : loader)
     		return logger;
     	
-        return log4jAvailable ? new Log4jLogger(name, formatter) : new JdkLogger(name, formatter);
+        return slf4jAvailable ? new Slf4jLogger(name, formatter) :
+                (log4jAvailable ? new Log4jLogger(name, formatter) : new JdkLogger(name, formatter));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -136,13 +147,8 @@ public abstract class Logger {
     public abstract void error(String message, Object... args);
     public abstract void error(Throwable t, String message, Object... args);
 
-    public abstract void fatal(String message, Object... args);
-    public abstract void fatal(Throwable t, String message, Object... args);
-
     ///////////////////////////////////////////////////////////////////////////
     // Configuration.
-
-    public abstract void setLevel(Level level);
 
     public abstract boolean isDebugEnabled();
 

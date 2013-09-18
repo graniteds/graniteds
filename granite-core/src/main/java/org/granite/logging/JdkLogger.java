@@ -106,36 +106,9 @@ public class JdkLogger extends Logger {
             getLoggerImpl().log(Level.SEVERE, getFormatter().format(message, args), t);
     }
 
-    @Override
-    public void fatal(String message, Object... args) {
-        if (isFatalEnabled())
-            getLoggerImpl().log(Level.SEVERE, getFormatter().format(message, args));
-    }
-
-    @Override
-    public void fatal(Throwable t, String message, Object... args) {
-        if (isFatalEnabled())
-            getLoggerImpl().log(Level.SEVERE, getFormatter().format(message, args), t);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // Configuration.
     
-    @Override
-    public void setLevel(org.granite.logging.Level level) {
-    	Level jdkLevel = null;
-    	switch (level) {
-	    	case FATAL: jdkLevel = Level.SEVERE; break;
-	    	case ERROR: jdkLevel = Level.SEVERE; break;
-	    	case INFO: jdkLevel = Level.INFO; break;
-	    	case TRACE: jdkLevel = Level.FINER; break;
-	    	case DEBUG: jdkLevel = Level.FINE; break;
-	    	case WARN: jdkLevel = Level.WARNING; break;
-	    	default: throw new IllegalArgumentException("Unknown logging level: " + level);
-    	}
-        getLoggerImpl().setLevel(jdkLevel);
-    }
-
     @Override
     public boolean isDebugEnabled() {
         return getLoggerImpl().isLoggable(Level.FINE);
