@@ -28,7 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-public class TideRemotingJPATest extends AbstractTideTestCase {
+public class TestTideRemotingJPA extends AbstractTideTestCase {
 	
 	@Test
     public void testPersistCall() {

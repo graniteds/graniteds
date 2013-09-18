@@ -29,7 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-public class TideEventTest extends AbstractTideTestCase {
+public class TestTideEvent extends AbstractTideTestCase {
     
 	@Test
     public void testSimpleEvent() {

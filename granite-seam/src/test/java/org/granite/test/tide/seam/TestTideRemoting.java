@@ -32,7 +32,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-public class TideRemotingTest extends AbstractTideTestCase {
+public class TestTideRemoting extends AbstractTideTestCase {
     
 	@Test
     public void testSimpleCall() {

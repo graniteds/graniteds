@@ -31,7 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-public class TideHomeTest extends AbstractTideTestCase {
+public class TestTideHome extends AbstractTideTestCase {
 	
 	@Test
     public void testHomeCallGDS566() {

@@ -31,7 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-public class TideRemotingJPADuppTest extends AbstractTideTestCase {
+public class TestTideRemotingJPADupp extends AbstractTideTestCase {
 	
 	@Override
 	protected ServletContext initServletContext() {
