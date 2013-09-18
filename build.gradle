@@ -101,7 +101,7 @@ configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it
 	dependencies {
 		javadoc 'log4j:log4j:1.2.17'
 		
-		testCompile 'junit:junit:4.+'
+		testCompile 'junit:junit:4.11'
 	}
 
 	javadoc {
@@ -482,7 +482,7 @@ project('granite-server') {
 	dependencies {
 		javadoc 'log4j:log4j:1.2.17'
 		
-		testCompile 'junit:junit:4.+'
+		testCompile 'junit:junit:4.11'
 	}
 
 	javadoc {
@@ -588,7 +588,7 @@ project('granite-generator-share') {
     dependencies {
         javadoc 'log4j:log4j:1.2.17'
 
-        testCompile 'junit:junit:4.+'
+        testCompile 'junit:junit:4.11'
     }
 
     javadoc {
@@ -1035,8 +1035,8 @@ project('granite-client-flex') {
 		outputDir 'build/docs/asdoc'
 		
 //		additionalASDocOptions = [
-//			"-window-title='GraniteDS Flex API Documentation'",
-//			"-main-title='GraniteDS Flex API Documentation - ${granitedsVersion}'"
+//			"-window-title 'GraniteDS Flex API Documentation'",
+//			"-main-title 'GraniteDS Flex API Documentation - ${granitedsVersion}'"
 //		]
 	}
 
@@ -1092,8 +1092,8 @@ project('granite-client-flex-doc') {
 		outputDir 'build/docs/asdoc'
 		
 //		additionalASDocOptions = [
-//			"-window-title='GraniteDS Flex API Documentation'",
-//			"-main-title='GraniteDS Flex API Documentation - ${granitedsVersion}'"
+//			"-window-title 'GraniteDS Flex API Documentation'",
+//			"-main-title 'GraniteDS Flex API Documentation - ${granitedsVersion}'"
 //		]
 	}
 	
