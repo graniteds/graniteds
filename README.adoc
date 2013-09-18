@@ -1,0 +1,100 @@
+== Granite Data Services Java Client
+
+==== http://www.graniteds.org
+
+GraniteDS provides server and client libraries that can be used to connect desktop and mobile application
+to a server using the AMF3 or JMF serialization protocols, using RPC (remoting) and different messaging
+technologies (long-polling, websocket, UDP).
+
+It also provides comprehensive data management features for use with Flex, JavaFX and Android applications.
+
+=== Download
+
+Artifacts are available on http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.graniteds%22[Maven central]
+or on http://www.graniteds.org/confluence/display/DOWNLOAD[GraniteDS web site].
+
+=== Licensing
+
+The core GraniteDS libraries and clients (granite-server, granite-client-flex, granite-client-java) are released under the
+http://www.gnu.org/licenses/lgpl-2.1-standalone.html[GNU Lesser General Public License, version 2.1].
+
+Advanced libraries (granite-client-flex-advanced, granite-client-javafx, granite-client-android and granite-client-java-advanced)
+are released under the http://www.gnu.org/licenses/gpl-3.0-standalone.html[GNU General Public License, version 3.0].
+Commercial licenses are also available for these libraries, visit http://www.granitedataservices.com/license
+for more details.
+
+=== Documentation
+
+* Java server http://www.graniteds.org/public/docs/3.0.0/docs/java/api/index.html[javadoc]
+* Flex client http://www.graniteds.org/public/docs/3.0.0/docs/flex-client/api/index.html[javadoc]
+* Java client http://www.graniteds.org/public/docs/3.0.0/docs/java-client/api/index.html[javadoc]
+* JavaFX client http://www.graniteds.org/public/docs/3.0.0/docs/javafx-client/api/index.html[javadoc]
+* Android client http://www.graniteds.org/public/docs/3.0.0/docs/android-client/api/index.html[javadoc]
+
+* Flex Reference documentation is http://www.graniteds.org/public/docs/3.0.0/docs/reference/flex/en-US/html_single/index.html[here].
+* JavaFX Reference documentation is http://www.graniteds.org/public/docs/3.0.0/docs/reference/java/en-US/html_single/index.html[here].
+
+=== Support
+
+You can get community support on the https://groups.google.com/forum/#!forum/graniteds[GraniteDS user forums].
+
+A dedicated http://granitedataservices.com/services/[Commercial support] is also available.
+
+=== Issues
+
+You can report issues via the http://www.graniteds.org/jira/[GraniteDS JIRA].
+
+If you are not sure that what you get is a bug, please ask on the forums before submitting
+an issue.
+
+=== Building from sources
+
+==== Requirements
+
+JDK 6+, JavaFX 2+ (optional if using JDK 7+), Android SDK (optional).
+
+The full build includes Flex libraries and requires installing the Flex SDKs 3.6 and 4.5 in the local maven repository.
+Thus you first need to install maven 3.x.
+
+Unfortunately due to their licensing we can't redistribute them or even push them in a remote repository so
+you have to download them manually:
+* http://www.adobe.com/cfusion/entitlement/index.cfm?e=flex3sdk[Download Flex 3.6]
+* http://sourceforge.net/adobe/flexsdk/wiki/Download%20Flex%204.5/[Download Flex 4.5]
+
+Then zip them and install them like this:
+
+----
+cd /path/to/flex-sdk-3.6
+zip -r flex-sdk-3.6.zip flex-sdk-3.6    // Note: on Windows use any GUI zip tool
+mvn install:install-file -DgroupId=com.adobe -DartifactId=flex-sdk -Dversion=3.6 -Dpackaging=zip -Dfile=flex-sdk-3.6.zip
+
+cd /path/to/flex-sdk-4.5
+zip -r flex-sdk-4.5.zip flex-sdk-4.5    // Note: on Windows use any GUI zip tool
+mvn install:install-file -DgroupId=com.adobe -DartifactId=flex-sdk -Dversion=4.5 -Dpackaging=zip -Dfile=flex-sdk-4.5.zip
+----
+
+==== Clone repo
+
+----
+git clone git://github.com/graniteds/graniteds.git
+----
+
+==== Fast build (just the libraries)
+
+----
+cd graniteds
+./gradlew clean build -x test -x javadoc
+----
+
+==== Full build
+
+----
+cd graniteds
+./gradlew clean build
+----
+
+==== Install to local maven repository
+
+----
+./gradlew install
+----
