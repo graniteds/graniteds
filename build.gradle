@@ -127,8 +127,18 @@ configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { s
 	
 	apply plugin: 'gradlefx'
 	apply plugin: 'flashbuilder'
-
+	
 	output = 'libs/' + subproject.name
+		
+	beforeEvaluate {
+		if (configurations.flexSDK.resolvedConfiguration.hasError()) {
+			println 'Project ' + subproject.name + ': Flex SDK not found, disable build of Flex libraries'
+			subproject.configurations.remove(subproject.configurations.flexSDK)
+			subproject.configurations.create('flexSDK')
+			subproject.flexHome = project(':granite-client-flex-doc').file('flex-sdk')
+			subproject.tasks.each { it.enabled = false }
+		}
+	}
 }
 
 // Add license plugin for all non-Flex subprojects
@@ -253,7 +263,7 @@ project('granite-core') {
 		compile 'javax.transaction:transaction-api:1.1-rev-1'
 		compile 'javax.enterprise:cdi-api:1.0-SP4'					// Required for @NonBinding annotation on @DataEnabled
 		compile 'log4j:log4j:1.2.17'
-        compile 'org.slf4j:slf4j-api:1.7.0'
+        	// compile 'org.slf4j:slf4j-api:1.7.0'
 		
 		compile project(':granite-seam').files('lib/jboss-seam.jar')		// Required @Scope annotation for Seam
 	}
@@ -1024,21 +1034,12 @@ project('granite-client-flex') {
 	
 	type = 'swc'
 	srcDirs = [ 'src/main/flex' ]
-
+	
 	dependencies {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
 		
 		external 'org.graniteds:flex-websocket-client:1.0'
 	}
-
-    beforeEvaluate {
-        if (configurations.flexSDK.resolvedConfiguration.hasError()) {
-            println 'Flex SDK 3.6 not found, ignore Flex libraries'
-            configurations.remove(configurations.flexSDK)
-            configurations.create('flexSDK')
-            tasks.each { it.enabled = false }
-        }
-    }
 
 	asdoc {
 		outputDir 'build/docs/asdoc'
@@ -1097,15 +1098,6 @@ project('granite-client-flex-doc') {
 		external 'org.graniteds:flex-websocket-client:1.0'
 	}
 
-    beforeEvaluate {
-        if (configurations.flexSDK.resolvedConfiguration.hasError()) {
-            println 'Flex SDK 3.6 not found, ignore Flex libraries'
-            configurations.remove(configurations.flexSDK)
-            configurations.create('flexSDK')
-            tasks.each { it.enabled = false }
-        }
-    }
-
 	asdoc {
 		outputDir 'build/docs/asdoc'
 		
@@ -1156,15 +1148,6 @@ project('granite-client-flex-advanced') {
 		asdoc project(path: ':granite-client-flex-doc', configuration: 'asdoc')
 	}
 
-    beforeEvaluate {
-        if (configurations.flexSDK.resolvedConfiguration.hasError()) {
-            println 'Flex SDK 3.6 not found, ignore Flex libraries'
-            configurations.remove(configurations.flexSDK)
-            configurations.create('flexSDK')
-            tasks.each { it.enabled = false }
-        }
-    }
-
 	task sourcesJar(type: Jar) {
 		classifier = 'sources'
 		from srcDirs
@@ -1214,15 +1197,6 @@ project('granite-client-flex45-advanced') {
 		
 		asdoc project(path: ':granite-client-flex-doc', configuration: 'asdoc')
 	}
-
-    beforeEvaluate {
-        if (configurations.flexSDK.resolvedConfiguration.hasError()) {
-            println 'Flex SDK 4.5 not found, ignore Flex libraries'
-            configurations.remove(configurations.flexSDK)
-            configurations.create('flexSDK')
-            tasks.each { it.enabled = false }
-        }
-    }
 
 	task sourcesJar(type: Jar) {
 		classifier = 'sources'
@@ -1275,13 +1249,6 @@ project('granite-client-flex45-tests') {
 	}
 
     beforeEvaluate {
-        if (configurations.flexSDK.resolvedConfiguration.hasError()) {
-            println 'Flex SDK 4.5 not found, ignore Flex libraries'
-            configurations.remove(configurations.flexSDK)
-            configurations.create('flexSDK')
-            tasks.each { it.enabled = false }
-        }
-
         File cmd = new File(flexUnitCommand)
         if (!cmd.exists()) {
             println 'Flash Player location not defined correctly, skip FlexUnit tests'
@@ -1314,7 +1281,7 @@ project('granite-client-flex45-tests') {
 			player:          flexUnit.player,
 			command:         flexUnitCommand,
 			toDir:           flexUnit.toDir,
-			workingDir:      buildDir.name,
+            workingDir:      buildDir.name,
 			haltonfailure:   flexUnit.haltOnFailure,
 			verbose:         flexUnit.verbose,
 			localTrusted:    flexUnit.localTrusted,

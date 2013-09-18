@@ -49,15 +49,21 @@ an issue.
 
 === Building from sources
 
+GraniteDS uses http://www.gradle.org[Gradle] as build system. You can use the gradle wrapper +./gradlew+ at the root
+of the project to run the build.
+
 ==== Requirements
 
-JDK 6+, JavaFX 2+ (optional if using JDK 7+), Android SDK (optional).
+JDK 6+ (JDK 7+ recommended for JavaFX), JavaFX 2+ (optional if using JDK 7+).
+When using JavaFX 2 on a JDK 6, you will have to copy +jfxrt.jar+ in +JAVA_HOME/jre/lib+.
 
-The full build includes Flex libraries and requires installing the Flex SDKs 3.6 and 4.5 in the local maven repository.
-Thus you first need to install maven 3.x.
+==== Adobe/Apache Flex requirements
 
-Unfortunately due to their licensing we can't redistribute them or even push them in a remote repository so
-you have to download them manually:
+The build of the Flex libraries is optional and requires Flex SDKs 3.6 and 4.5.
+Unfortunately due to licensing issues we can't redistribute them or even publish them on a remote repository so
+you will have to download them manually and install them in the local maven repository (thus you need a Maven 3.x
+installation):
+
 * http://www.adobe.com/cfusion/entitlement/index.cfm?e=flex3sdk[Download Flex 3.6]
 * http://sourceforge.net/adobe/flexsdk/wiki/Download%20Flex%204.5/[Download Flex 4.5]
 
@@ -73,13 +79,22 @@ zip -r flex-sdk-4.5.zip flex-sdk-4.5    // Note: on Windows use any GUI zip tool
 mvn install:install-file -DgroupId=com.adobe -DartifactId=flex-sdk -Dversion=4.5 -Dpackaging=zip -Dfile=flex-sdk-4.5.zip
 ----
 
+NOTE: You can install any compatible version the Flex SDKs (for example Apache Flex 4.10 for SDK 4.5) but you must use
+the version numbers 3.6 and 4.5.
+
 ==== Clone repo
 
 ----
 git clone git://github.com/graniteds/graniteds.git
 ----
 
-==== Fast build (just the libraries)
+==== Import projects in a IDE
+
+Projects configuration are provided for Eclipse, you can directly import all subprojects in Eclipse.
+Note that the provided project files use Gradle-managed dependencies build path containers and suppose that you are
+using the Eclipse Gradle IDE plugin.
+
+==== Quick build (just the libraries, skip tests and API docs)
 
 ----
 cd graniteds
@@ -93,7 +108,16 @@ cd graniteds
 ./gradlew clean build
 ----
 
-==== Install to local maven repository
+===== Adobe/Apache Flex build
+
+The unit tests for Flex require a Flash Player and are skipped when the player path is not defined.
+You can define the path to the player with:
+
+----
+./gradlew clean build -PflexUnitCommand=/path/to/flashplayer
+----
+
+==== Install to local repository
 
 ----
 ./gradlew install
