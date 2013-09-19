@@ -64,6 +64,8 @@ import org.granite.messaging.persistence.PersistentCollectionSnapshot;
  */
 public class JMFPersistentCollectionSnapshot implements PersistentCollectionSnapshot {
 	
+	private static final long serialVersionUID = 1L;
+	
 	protected boolean initialized = false;
 	protected boolean dirty = false;
 	protected Object[] elements = null;

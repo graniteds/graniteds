@@ -30,6 +30,8 @@ import flex.messaging.io.ArrayCollection;
  */
 public class UIDSet extends ArrayCollection {
 
+	private static final long serialVersionUID = 1L;
+	
     public UIDSet() {
     }
 

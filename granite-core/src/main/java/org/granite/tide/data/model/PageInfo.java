@@ -29,6 +29,8 @@ import java.io.ObjectOutput;
 
 public class PageInfo implements Externalizable {
 	
+	private static final long serialVersionUID = 1L;
+	
 	private int firstResult;
 	private int maxResults;
 	private SortInfo sortInfo;

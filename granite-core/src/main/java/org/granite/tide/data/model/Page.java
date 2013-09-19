@@ -27,8 +27,12 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.List;
 
-
+/**
+ * @author William DRAI
+ */
 public class Page<E> implements Externalizable {
+	
+	private static final long serialVersionUID = 1L;
 	
 	private int firstResult;
 	private int maxResults;

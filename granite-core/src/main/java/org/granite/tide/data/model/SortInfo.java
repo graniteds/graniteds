@@ -30,6 +30,8 @@ import java.io.ObjectOutput;
 
 public class SortInfo implements Externalizable {
 	
+	private static final long serialVersionUID = 1L;
+	
 	private String[] order;
 	private boolean[] desc;
 	

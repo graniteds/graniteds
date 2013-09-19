@@ -39,6 +39,8 @@ import org.granite.util.TypeUtil;
  */
 public class ExternalizablePersistentMap extends AbstractExternalizablePersistentCollection {
 
+	private static final long serialVersionUID = 1L;
+	
 	public ExternalizablePersistentMap() {
 	}
 

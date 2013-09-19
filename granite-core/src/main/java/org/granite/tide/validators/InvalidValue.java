@@ -31,6 +31,8 @@ import java.io.ObjectOutput;
  */
 public class InvalidValue implements Externalizable {
 
+	private static final long serialVersionUID = 1L;
+	
 	private final Object rootBean;
     private final Object bean;
     private final Class<?> beanClass;

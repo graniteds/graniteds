@@ -60,6 +60,8 @@ import org.granite.messaging.persistence.PersistentCollectionSnapshot;
  */
 public class AMFPersistentCollectionSnapshot implements PersistentCollectionSnapshot {
 	
+	private static final long serialVersionUID = 1L;
+	
 	protected boolean initialized = false;
 	protected String detachedState = null;
 	protected boolean dirty = false;

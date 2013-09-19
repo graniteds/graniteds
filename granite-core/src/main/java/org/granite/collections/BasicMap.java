@@ -32,8 +32,10 @@ import java.util.Map;
 /**
  * @author Franck WOLFF
  */
-public class BasicMap<K, V> extends HashMap<K, V> implements Externalizable, Serializable {
+public class BasicMap<K, V> extends HashMap<K, V> implements Externalizable {
 
+	private static final long serialVersionUID = 1L;
+	
     public BasicMap() {
         super();
     }
