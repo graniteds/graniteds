@@ -12,22 +12,14 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../jdk1.7.0_15/jre/lib/jfxrt.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module" module-name="granite-client-java" exported="" />
-    <orderEntry type="module" module-name="granite-client-java-advanced" />
-    <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
+    <orderEntry type="module" module-name="granite-server-core" exported="" />
+    <orderEntry type="library" name="org.eclipse.persistence:eclipselink:2.5.0" level="project" />
+    <orderEntry type="library" name="com.h2database:h2:1.3.173" level="project" />
+    <orderEntry type="library" name="junit:junit:4.11" level="project" />
     <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/../granite-client-java/build/classes/test" />
+          <root url="file://$MODULE_DIR$/../granite-server-core/build/classes/test" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -36,15 +28,12 @@
     <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/../granite-client-java/build/resources/test" />
+          <root url="file://$MODULE_DIR$/../granite-server-core/build/resources/test" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="granite-server-core" scope="TEST" />
-    <orderEntry type="module" module-name="granite-server-hibernate" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="org.hibernate:hibernate-core:3.6.10.Final" level="project" />
   </component>
 </module>
 

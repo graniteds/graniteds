@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>granite-server-spring2</name>
+	<comment>GraniteDS Spring 2 integration server library</comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>spring-java</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-server-spring/src/main/java</locationURI>
+		</link>
+	</linkedResources>
+</projectDescription>

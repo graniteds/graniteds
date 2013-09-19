@@ -264,17 +264,16 @@ configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith
 
 // Core project
 // AMF/JMF Serialization + Remoting + Gravity + Tide server-side data management
-project('granite-core') {
+project('granite-server-core') {
 	
 	description = 'GraniteDS Core server library'
 	
 	dependencies {
 		compile 'javax.servlet:javax.servlet-api:3.0.1'				// Should use 2.5 but 3.0 required by ServletGraniteContext.BasicRequest
 		
-		compile files('lib/jboss-vfs.jar')							// Used conditionally by VFSScanner impl
-		compile files('lib/jboss-vfs3.jar')							// Used conditionally by VFS3Scanner impl
-		compile files('lib/jbossmq.jar')							// Used by JBossMQSelector impl
-		
+        compile 'log4j:log4j:1.2.17'
+        compile 'org.slf4j:slf4j-api:1.7.0'
+
 		// Tide dependencies
 		compile 'org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.1_spec:1.0.1.Final'
 		compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
@@ -282,39 +281,35 @@ project('granite-core') {
 		compile 'javax.jms:jms-api:1.1-rev-1'
 		compile 'javax.transaction:transaction-api:1.1-rev-1'
 		compile 'javax.enterprise:cdi-api:1.0-SP4'					// Required for @NonBinding annotation on @DataEnabled
-		compile 'log4j:log4j:1.2.17'
-        	compile 'org.slf4j:slf4j-api:1.7.0'
-		
-		compile project(':granite-seam').files('lib/jboss-seam.jar')		// Required @Scope annotation for Seam
 	}
 }
 
 // Servlet 3 Integration for Gravity async I/O and auto configuration
-project('granite-servlet3') {
+project('granite-server-servlet3') {
 	
 	description = 'GraniteDS Servlet 3 support server library'
 	
 	dependencies {
 		compile 'javax.servlet:javax.servlet-api:3.0.1'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
 // Tomcat 6 support (security + gravity)
-project('granite-tomcat6') {
+project('granite-server-tomcat6') {
 	
 	description = 'GraniteDS Tomcat 6 support server library'
 	
 	dependencies {
 		compile 'org.apache.tomcat:catalina:6.0.32'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
 // Tomcat 7+ support (security + gravity + websockets)
-project('granite-tomcat7') {
+project('granite-server-tomcat7') {
 	
 	description = 'GraniteDS Tomcat 7 support server library'
 	
@@ -322,12 +317,12 @@ project('granite-tomcat7') {
 		compile 'org.apache.tomcat:tomcat-catalina:7.0.42'
 		compile 'org.apache.tomcat:tomcat-coyote:7.0.42'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
 // Jetty 6 support (security + gravity)
-project('granite-jetty6') {
+project('granite-server-jetty6') {
 	
 	description = 'GraniteDS Jetty 6 support server library'
 	
@@ -335,12 +330,12 @@ project('granite-jetty6') {
 		compile 'org.mortbay.jetty:jetty:6.1.26'
 		compile 'org.mortbay.jetty:jetty-util:6.1.26'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
 // Jetty 8 support (security + gravity + websockets)
-project('granite-jetty8') {
+project('granite-server-jetty8') {
 	
 	description = 'GraniteDS Jetty 8 support server library'
 	
@@ -349,36 +344,40 @@ project('granite-jetty8') {
 		compile 'org.eclipse.jetty:jetty-util:8.1.12.v20130726'
 		compile 'org.eclipse.jetty:jetty-websocket:8.1.12.v20130726'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
 // JBossWeb support (gravity)
-project('granite-jbossweb') {
+project('granite-server-jboss') {
 	
-	description = 'GraniteDS JBossWeb (JBoss 5.1) support server library'
+	description = 'GraniteDS JBoss support server library'
 	
 	dependencies {
 		compile files('lib/jbossweb.jar')
-		
-		compile project(':granite-core')
+
+        compile files('lib/jboss-vfs.jar')							// Used conditionally by VFSScanner impl
+        compile files('lib/jboss-vfs3.jar')							// Used conditionally by VFS3Scanner impl
+        compile files('lib/jbossmq.jar')							// Used by JBossMQSelector impl
+
+        compile project(':granite-server-core')
 	}
 }
 
 // GlassFish v2 support (security)
-project('granite-glassfishv2') {
+project('granite-server-glassfishv2') {
 	
 	description = 'GraniteDS GlassFish v2 support server library'
 	
 	dependencies {
 		compile files('lib/appserv-rt.jar')
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
 // GlassFish v3 support (security + gravity + websockets)
-project('granite-glassfishv3') {
+project('granite-server-glassfishv3') {
 	
 	description = 'GraniteDS GlassFish v3+ support server library'
 	
@@ -388,24 +387,24 @@ project('granite-glassfishv3') {
 		compile 'com.sun.grizzly:grizzly-utils:1.9.59'
 		compile 'com.sun.grizzly:grizzly-websockets:1.9.59'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
 // WebLogic support (security + gravity)
-project('granite-weblogic') {
+project('granite-server-weblogic') {
 	
 	description = 'GraniteDS WebLogic 10+ support server library'
 	
 	dependencies {
 		compile files('lib/weblogic10-compat.jar')
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
 // Google App Engine support (serialization + gravity)
-project('granite-appengine') {
+project('granite-server-appengine') {
 	
 	description = 'GraniteDS Google AppEngine support server library'
 	
@@ -413,20 +412,20 @@ project('granite-appengine') {
 		compile 'javax.servlet:javax.servlet-api:3.0.1'
 		compile 'com.google.appengine:appengine-api-1.0-sdk:1.6.4'	// KeyConverter
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
 
 // ActiveMQ integration
-project('granite-activemq') {
+project('granite-server-activemq') {
 	
 	description = 'GraniteDS ActiveMQ integration server library'
 	
 	dependencies {
 		compile 'org.apache.activemq:activemq-core:5.7.0'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
@@ -439,33 +438,33 @@ project('granite-server') {
 	apply plugin: 'java'
 	
 	def coreProjects = [
-		':granite-core',
-		':granite-servlet3',
-		':granite-tomcat6',
-		':granite-tomcat7',
-		':granite-jetty6',
-		':granite-jetty8',
-		':granite-jbossweb',
-		':granite-glassfishv2',
-		':granite-glassfishv3',
-		':granite-weblogic',
-		':granite-appengine',
-		':granite-activemq'
+		':granite-server-core',
+		':granite-server-servlet3',
+		':granite-server-tomcat6',
+		':granite-server-tomcat7',
+		':granite-server-jetty6',
+		':granite-server-jetty8',
+		':granite-server-jboss',
+		':granite-server-glassfishv2',
+		':granite-server-glassfishv3',
+		':granite-server-weblogic',
+		':granite-server-appengine',
+		':granite-server-activemq'
 	]
 	
 	def allProjects = coreProjects + [
-		':granite-cdi',
-		':granite-ejb',
-		':granite-spring',
-		':granite-spring2',
-		':granite-seam',
-		':granite-hibernate',
-		':granite-hibernate4',		
-		':granite-datanucleus',
-		':granite-eclipselink',
-		':granite-openjpa',
-		':granite-toplink',
-		':granite-beanvalidation'
+		':granite-server-cdi',
+		':granite-server-ejb',
+		':granite-server-spring',
+		':granite-server-spring2',
+		':granite-server-seam',
+		':granite-server-hibernate',
+		':granite-server-hibernate4',
+		':granite-server-datanucleus',
+		':granite-server-eclipselink',
+		':granite-server-openjpa',
+		':granite-server-toplink',
+		':granite-server-beanvalidation'
 	]
 	
 	dependencies {
@@ -549,7 +548,7 @@ project('granite-generator-share') {
     apply plugin: 'java'
 
     dependencies {
-        compile project(':granite-core')
+        compile project(':granite-server-core')
     }
 
     configurations {
@@ -560,7 +559,7 @@ project('granite-generator-share') {
     task sourcesJar(type: Jar, dependsOn: 'classes') {
         classifier = 'sources'
 
-        from project(':granite-core').sourceSets.main.allSource
+        from project(':granite-server-core').sourceSets.main.allSource
         include 'org/granite/util/ClassUtil.java',
                 'org/granite/util/ClassUtil$*.java',
                 'org/granite/util/URIUtil.java',
@@ -577,7 +576,7 @@ project('granite-generator-share') {
     task javadocJar(type: Jar, dependsOn: 'javadoc') {
         classifier = 'javadoc'
 
-        from project(':granite-core').javadoc.destinationDir
+        from project(':granite-server-core').javadoc.destinationDir
         include 'org/granite/util/ClassUtil.html',
             'org/granite/util/ClassUtil$*.html',
             'org/granite/util/URIUtil.html',
@@ -592,7 +591,7 @@ project('granite-generator-share') {
     }
 
     jar {
-        from project(':granite-core').sourceSets.main.output.classesDir
+        from project(':granite-server-core').sourceSets.main.output.classesDir
         include 'org/granite/util/ClassUtil.class',
             'org/granite/util/ClassUtil$*.class',
             'org/granite/util/URIUtil.class',
@@ -641,7 +640,7 @@ project('granite-generator-share') {
 
 
 // EJB 3 integration
-project('granite-ejb') {
+project('granite-server-ejb') {
 	
 	description = 'GraniteDS EJB integration server library'
 	
@@ -653,7 +652,7 @@ project('granite-ejb') {
 	dependencies {
 		compile 'org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:1.0.2.Final'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 		
 		testCompile 'org.apache.openejb:openejb-lite:4.5.0'
 		testCompile 'org.glassfish.main.extras:glassfish-embedded-all:3.1.2'
@@ -666,7 +665,7 @@ project('granite-ejb') {
 		testCompile 'org.jboss.shrinkwrap:shrinkwrap-extension-openejb:1.0.0-alpha-13'
 		testCompile 'org.jboss.shrinkwrap:shrinkwrap-extension-glassfish:1.0.0-alpha-13'
 		
-		testCompile project(':granite-core').sourceSets.test.output
+		testCompile project(':granite-server-core').sourceSets.test.output
 	}
 	
 	task testGlassFish(type: Test) {
@@ -695,7 +694,7 @@ project('granite-ejb') {
 }
 
 // CDI integration
-project('granite-cdi') {
+project('granite-server-cdi') {
 	
 	description = 'GraniteDS CDI integration server library'
 	
@@ -709,7 +708,7 @@ project('granite-cdi') {
 		compile 'org.jboss.weld.servlet:weld-servlet:1.1.14.Final'
 		compile 'org.jboss.interceptor:jboss-interceptor-core:2.0.0.Final'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 		
 		testCompile 'org.jboss.weld.se:weld-se-core:1.1.14.Final'
 		
@@ -727,10 +726,10 @@ project('granite-cdi') {
 		
 		test {
 			java {
-				source project(':granite-core').sourceSets.test.java
+				source project(':granite-server-core').sourceSets.test.java
 			}
 			resources {
-				source project(':granite-core').sourceSets.test.resources
+				source project(':granite-server-core').sourceSets.test.resources
 			}
 			
 			output.resourcesDir = output.classesDir
@@ -743,7 +742,7 @@ project('granite-cdi') {
 }
 
 // Spring 3+ integration
-project('granite-spring') {
+project('granite-server-spring') {
 	
 	description = 'GraniteDS Spring 3+ integration server library'
 	
@@ -763,15 +762,15 @@ project('granite-spring') {
 		
 		compile 'org.hibernate:hibernate-core:4.0.1.Final'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 		
 		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
-		testCompile project(':granite-core').sourceSets.test.output
+		testCompile project(':granite-server-core').sourceSets.test.output
 		
 		testRuntime 'cglib:cglib:3.0'
 		testRuntime 'org.ow2.asm:asm-util:4.0'
 		testRuntime 'com.h2database:h2:1.3.173'
-		testRuntime project(':granite-activemq')
+		testRuntime project(':granite-server-activemq')
 	}
 
 	test {
@@ -780,7 +779,7 @@ project('granite-spring') {
 }
 
 // Spring 2 integration
-project('granite-spring2') {
+project('granite-server-spring2') {
 	
 	apply plugin: 'java'
 	
@@ -796,13 +795,13 @@ project('granite-spring2') {
 		compile 'org.aspectj:aspectjrt:1.5.4'
 		compile 'org.hibernate:hibernate-core:3.6.10.Final'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 	
 	sourceSets {
 		main {
 			java {
-				source project(':granite-spring').sourceSets.main.java
+				source project(':granite-server-spring').sourceSets.main.java
 			}
 		}
 	}
@@ -820,7 +819,7 @@ project('granite-spring2') {
 }
 
 // Seam 2.1 integration
-project('granite-seam') {
+project('granite-server-seam') {
 	
 	description = 'GraniteDS Seam 2.1+ integration server library'
 	
@@ -829,15 +828,15 @@ project('granite-seam') {
 		compile 'javax.faces:jsf-api:1.2_15'
 		compile 'javax.ejb:ejb-api:3.0'
 		
-		compile project(':granite-core')
-		compile project(':granite-hibernate')
+		compile project(':granite-server-core')
+		compile project(':granite-server-hibernate')
 		
-		testCompile project(':granite-core').sourceSets.test.output
+		testCompile project(':granite-server-core').sourceSets.test.output
 		
 		testRuntime 'javassist:javassist:3.12.0.GA'
 		testRuntime 'javax.el:el-api:1.0'
 		testRuntime 'org.hibernate:hibernate-entitymanager:3.3.2.GA'
-		testRuntime project(':granite-hibernate').files('lib/hibernate-validator.jar')
+		testRuntime project(':granite-server-hibernate').files('lib/hibernate-validator.jar')
 		testRuntime files('lib/jboss-el.jar')
 		testRuntime 'org.hsqldb:hsqldb:2.3.0'
 	}
@@ -849,7 +848,7 @@ project('granite-seam') {
 
 
 // Hibernate 3.x support
-project('granite-hibernate') {
+project('granite-server-hibernate') {
 	
 	description = 'GraniteDS Hibernate 3.x support library'
 	
@@ -857,12 +856,12 @@ project('granite-hibernate') {
 		compile 'org.hibernate:hibernate-core:3.6.10.Final'
 		compile files('lib/hibernate-validator.jar')			// Not in maven central
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 		
-		testCompile project(':granite-core').sourceSets.test.output
+		testCompile project(':granite-server-core').sourceSets.test.output
 		testCompile 'org.hibernate:hibernate-entitymanager:3.6.10.Final'
 		
-		testCompile project(':granite-spring').sourceSets.main.output
+		testCompile project(':granite-server-spring').sourceSets.main.output
 		testCompile 'org.springframework:spring-orm:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
@@ -877,10 +876,10 @@ project('granite-hibernate') {
 	sourceSets {
 		test {
 			java {
-				source project(':granite-spring').sourceSets.test.java
+				source project(':granite-server-spring').sourceSets.test.java
 			}
 			resources {
-				source project(':granite-spring').sourceSets.test.resources
+				source project(':granite-server-spring').sourceSets.test.resources
 			}
 		}
 	}
@@ -891,19 +890,19 @@ project('granite-hibernate') {
 }
 
 // Hibernate 4+ support
-project('granite-hibernate4') {
+project('granite-server-hibernate4') {
 	
 	description = 'GraniteDS Hibernate 4.x support library'
 	
 	dependencies {
 		compile 'org.hibernate:hibernate-core:4.0.1.Final'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 		
-		testCompile project(':granite-core').sourceSets.test.output
+		testCompile project(':granite-server-core').sourceSets.test.output
 		testCompile 'org.hibernate:hibernate-entitymanager:4.0.1.Final'
 		
-		testCompile project(':granite-spring').sourceSets.main.output
+		testCompile project(':granite-server-spring').sourceSets.main.output
 		testCompile 'org.springframework:spring-orm:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
@@ -918,10 +917,10 @@ project('granite-hibernate4') {
 	sourceSets {
 		test {
 			java {
-				source project(':granite-spring').sourceSets.test.java
+				source project(':granite-server-spring').sourceSets.test.java
 			}
 			resources {
-				source project(':granite-spring').sourceSets.test.resources
+				source project(':granite-server-spring').sourceSets.test.resources
 			}
 		}
 	}
@@ -932,16 +931,16 @@ project('granite-hibernate4') {
 }
 
 // EclipseLink support
-project('granite-eclipselink') {
+project('granite-server-eclipselink') {
 	
 	description = 'GraniteDS EclipseLink support library'
 	
 	dependencies {
 		compile 'org.eclipse.persistence:eclipselink:2.5.0'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 		
-		testCompile project(':granite-core').sourceSets.test.output
+		testCompile project(':granite-server-core').sourceSets.test.output
 		
 		testRuntime 'com.h2database:h2:1.3.173'
 	}
@@ -956,19 +955,19 @@ project('granite-eclipselink') {
 }
 
 // TopLink Essentials support
-project('granite-toplink') {
+project('granite-server-toplink') {
 	
 	description = 'GraniteDS TopLink Essentials support library'
 	
 	dependencies {
 		compile files('lib/toplink-essentials.jar')
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
 // DataNucleus support
-project('granite-datanucleus') {
+project('granite-server-datanucleus') {
 	
 	description = 'GraniteDS DataNucleus support library'
 	
@@ -977,9 +976,9 @@ project('granite-datanucleus') {
 		compile 'org.datanucleus:datanucleus-api-jpa:3.2.5'
 		compile 'org.datanucleus:datanucleus-api-jdo:3.2.4'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 		
-		testCompile project(':granite-core').sourceSets.test.output
+		testCompile project(':granite-server-core').sourceSets.test.output
 		
 		testRuntime 'com.h2database:h2:1.3.173'
 		testRuntime 'org.datanucleus:datanucleus-rdbms:3.2.6'
@@ -1012,15 +1011,15 @@ project('granite-datanucleus') {
 }
 
 // OpenJPA support
-project('granite-openjpa') {
+project('granite-server-openjpa') {
 	
 	description = 'GraniteDS OpenJPA support library'
 	
 	dependencies {
 		compile 'org.apache.openjpa:openjpa:2.2.2'
 		
-		compile project(':granite-core')
-		testCompile project(':granite-core').sourceSets.test.output
+		compile project(':granite-server-core')
+		testCompile project(':granite-server-core').sourceSets.test.output
 		
 		testRuntime 'org.hsqldb:hsqldb:2.3.0'
 	}
@@ -1035,14 +1034,14 @@ project('granite-openjpa') {
 }
 
 // Bean Validation support
-project('granite-beanvalidation') {
+project('granite-server-beanvalidation') {
 	
 	description = 'GraniteDS Bean Validation support library'
 
 	dependencies {
 		compile 'javax.validation:validation-api:1.0.0.GA'
 		
-		compile project(':granite-core')
+		compile project(':granite-server-core')
 	}
 }
 
@@ -1273,6 +1272,7 @@ project('granite-client-flex45-tests') {
         if (!cmd.exists()) {
             println 'Flash Player location not defined correctly, skip FlexUnit tests'
             tasks.getByName('test').enabled = false
+            tasks.getByName('testFlex').enabled = false
         }
     }
 
@@ -1401,13 +1401,13 @@ project('granite-client-java') {
 	sourceSets {
 		main {
 			java {
-				source project(':granite-core').sourceSets.main.java
+				source project(':granite-server-core').sourceSets.main.java
 				
 				// Exclude for eclipse
 				exclude javaExcludes
 			}			
 			resources {
-				source project(':granite-core').sourceSets.main.resources
+				source project(':granite-server-core').sourceSets.main.resources
 				
 				// Exclude for eclipse
 				exclude resourceExcludes
@@ -1463,8 +1463,7 @@ project('granite-client-javafx') {
 			'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
 			'antlr:antlr:2.7.7'
 			
-		testCompile 'org.graniteds:granite-core:' + granitedsVersion,
-			'org.graniteds:granite-hibernate:' + granitedsVersion
+		testCompile project(':granite-server-core'), project(':granite-server-hibernate')
 	}
 	
 	// Include sources of advanced java client
@@ -1502,8 +1501,7 @@ project('granite-client-android') {
 			'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
 			'antlr:antlr:2.7.7'
 			
-		testCompile 'org.graniteds:granite-core:' + granitedsVersion,
-			'org.graniteds:granite-hibernate:' + granitedsVersion
+		testCompile project(':granite-server-core'), project(':granite-server-hibernate')
 	}
 	
 	// Include sources of advanced java client

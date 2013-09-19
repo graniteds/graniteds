@@ -12,22 +12,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="granite-server-core" />
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MAVEN_REPOSITORY$/javax/servlet/javax.servlet-api/3.0.1/javax.servlet-api-3.0.1.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="library" exported="" name="org.apache.httpcomponents:httpasyncclient:4.0-beta4" level="project" />
     <orderEntry type="library" exported="" name="javax:javaee-api:6.0" level="project" />
-    <orderEntry type="library" exported="" name="net.sf.extcos:extcos:0.3b" level="project" />
-    <orderEntry type="library" exported="" name="org.eclipse.jetty:jetty-client:8.1.12.v20130726" level="project" />
-    <orderEntry type="library" exported="" name="org.eclipse.jetty:jetty-websocket:8.1.12.v20130726" level="project" />
-    <orderEntry type="library" exported="" name="org.springframework:spring-context:3.1.4.RELEASE" level="project" />
+    <orderEntry type="library" exported="" name="javax.jdo:jdo2-api:2.3-eb" level="project" />
+    <orderEntry type="library" name="log4j:log4j:1.2.17" level="project" />
+    <orderEntry type="library" name="org.slf4j:slf4j-api:1.7.3" level="project" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
   </component>
 </module>
