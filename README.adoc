@@ -61,8 +61,8 @@ When using JavaFX 2 on a JDK 6, you will have to copy +jfxrt.jar+ in +JAVA_HOME/
 
 The build of the Flex libraries is optional and requires Flex SDKs 3.6 and 4.5.
 Unfortunately due to licensing issues we can't redistribute them or even publish them on a remote repository so
-you will have to download them manually and install them in the local maven repository (thus you need a Maven 3.x
-installation):
+you will have to download them manually and install them in the local maven repository (a Maven 3.x installation
+is thus also required):
 
 * http://www.adobe.com/cfusion/entitlement/index.cfm?e=flex3sdk[Download Flex 3.6]
 * http://sourceforge.net/adobe/flexsdk/wiki/Download%20Flex%204.5/[Download Flex 4.5]
@@ -82,7 +82,7 @@ mvn install:install-file -DgroupId=com.adobe -DartifactId=flex-sdk -Dversion=4.5
 NOTE: You can install any compatible version the Flex SDKs (for example Apache Flex 4.10 for SDK 4.5) but you must use
 the version numbers 3.6 and 4.5.
 
-==== Clone repo
+==== Clone GitHub repository
 
 ----
 git clone git://github.com/graniteds/graniteds.git
@@ -98,7 +98,7 @@ using the Eclipse Gradle IDE plugin.
 
 ----
 cd graniteds
-./gradlew clean build -x test -x javadoc
+./gradlew clean build -x test -x javadoc -x asdoc
 ----
 
 ==== Full build
