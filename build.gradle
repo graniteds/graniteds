@@ -29,6 +29,26 @@ ext.javadocLinks = [
 	"http://docs.spring.io/spring/docs/3.1.x/javadoc-api/"
 ]
 
+// Main tasks for eclipse
+task buildServer {
+	dependsOn ':granite-server:buildDependents', ':granite-server:buildNeeded'
+}
+
+task buildJavaClient {
+	dependsOn ':granite-client-java-advanced:buildDependents', ':granite-client-java-advanced:buildNeeded',
+		':granite-client-javafx:buildDependents', ':granite-client-javafx:buildNeeded',
+		':granite-client-android:buildDependents', ':granite-client-android:buildNeeded'
+}
+
+task buildFlexClient {
+	dependsOn ':granite-client-flex:build', 'granite-client-flex-advanced:build', 'granite-client-flex45-advanced:build'
+}
+
+task build {
+	dependsOn 'buildServer', 'buildJavaClient', 'buildFlexClient'
+}
+
+
 configure(subprojects) {
 	
 	repositories {
