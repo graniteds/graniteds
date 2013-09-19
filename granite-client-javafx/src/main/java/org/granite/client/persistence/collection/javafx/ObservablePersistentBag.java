@@ -50,6 +50,8 @@ import com.sun.javafx.collections.ObservableListWrapper;
  */
 public class ObservablePersistentBag<E> extends ObservableListWrapper<E> implements UnsafePersistentCollection<PersistentBag<E>> {
 	
+    private static final long serialVersionUID = 1L;
+	
 	private final PersistentBag<E> persistentBag;
 
 	public ObservablePersistentBag(PersistentBag<E> persistentBag) {

@@ -50,6 +50,8 @@ import com.sun.javafx.collections.ObservableMapWrapper;
  */
 public class ObservablePersistentMap<K, V> extends ObservableMapWrapper<K, V> implements UnsafePersistentCollection<PersistentMap<K, V>> {
 	
+    private static final long serialVersionUID = 1L;
+	
 	private final PersistentMap<K, V> persistentMap;
 
 	public ObservablePersistentMap(PersistentMap<K, V> persistentMap) {

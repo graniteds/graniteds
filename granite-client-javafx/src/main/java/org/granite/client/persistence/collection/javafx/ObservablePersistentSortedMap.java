@@ -50,6 +50,8 @@ import com.sun.javafx.collections.ObservableMapWrapper;
  */
 public class ObservablePersistentSortedMap<K, V> extends ObservableMapWrapper<K, V> implements UnsafePersistentCollection<PersistentSortedMap<K, V>> {
 	
+    private static final long serialVersionUID = 1L;
+	
 	private final PersistentSortedMap<K, V> persistentSortedMap;
 
 	public ObservablePersistentSortedMap(PersistentSortedMap<K, V> persistentSortedMap) {

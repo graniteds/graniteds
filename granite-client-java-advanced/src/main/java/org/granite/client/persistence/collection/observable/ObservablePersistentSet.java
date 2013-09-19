@@ -49,6 +49,8 @@ import org.granite.client.persistence.collection.UnsafePersistentCollection;
  */
 public class ObservablePersistentSet<E> extends ObservableSet<E> implements UnsafePersistentCollection<PersistentSet<E>> {
 	
+    private static final long serialVersionUID = 1L;
+	
 	public ObservablePersistentSet(PersistentSet<E> persistentSet) {
 		super(persistentSet);
 	}

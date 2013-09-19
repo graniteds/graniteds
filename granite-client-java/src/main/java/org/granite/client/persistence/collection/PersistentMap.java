@@ -33,6 +33,8 @@ import org.granite.messaging.persistence.PersistentCollectionSnapshot;
  */
 public class PersistentMap<K, V> extends AbstractPersistentMapCollection<K, V, Map<K, V>> implements Map<K, V> {
 
+    private static final long serialVersionUID = 1L;
+	
 	public PersistentMap() {
 	}
 

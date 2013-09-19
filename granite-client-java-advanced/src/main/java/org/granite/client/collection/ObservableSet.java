@@ -47,6 +47,8 @@ import org.granite.client.collection.CollectionChangeEvent.Kind;
  */
 public class ObservableSet<E> implements Set<E> {
 	
+    private static final long serialVersionUID = 1L;
+	
 	protected CollectionChangeSupport ccs = new CollectionChangeSupport(this);
 	private final Set<E> wrappedSet;
 	

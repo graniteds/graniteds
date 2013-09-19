@@ -31,6 +31,8 @@ import java.util.Map;
  */
 public final class ResultMessage extends AbstractResponseMessage {
 
+    private static final long serialVersionUID = 1L;
+	
 	private Object result;
 	
 	public ResultMessage() {

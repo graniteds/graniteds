@@ -36,6 +36,8 @@ import org.granite.client.messaging.messages.MessageChain;
  */
 public final class InvocationMessage extends AbstractRequestMessage implements MessageChain<InvocationMessage> {
 
+    private static final long serialVersionUID = 1L;
+	
 	private String serviceId = null;
 	private String method = null;
 	private Object[] parameters = null;

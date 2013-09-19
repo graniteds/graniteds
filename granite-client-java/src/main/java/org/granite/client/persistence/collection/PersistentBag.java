@@ -28,6 +28,8 @@ import java.util.List;
  */
 public class PersistentBag<E> extends PersistentList<E> {
 
+    private static final long serialVersionUID = 1L;
+	
 	public PersistentBag() {
 	}
 

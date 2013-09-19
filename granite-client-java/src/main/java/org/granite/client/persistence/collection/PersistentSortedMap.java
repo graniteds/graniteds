@@ -34,6 +34,8 @@ import org.granite.messaging.persistence.PersistentCollectionSnapshot;
  */
 public class PersistentSortedMap<K, V> extends AbstractPersistentMapCollection<K, V, SortedMap<K, V>> implements SortedMap<K, V>, PersistentSortedCollection<K> {
 
+    private static final long serialVersionUID = 1L;
+	
 	public PersistentSortedMap() {
 	}
 

@@ -31,6 +31,8 @@ import org.granite.client.messaging.messages.Message;
  */
 public class TopicMessage extends AbstractMessage {
 
+    private static final long serialVersionUID = 1L;
+	
 	private Object data;
 	
 	public TopicMessage() {

@@ -53,6 +53,8 @@ import org.granite.client.collection.CollectionChangeEvent.Kind;
  */
 public class ObservableList<E> implements List<E>, ObservableCollection {
 	
+    private static final long serialVersionUID = 1L;
+	
 	protected CollectionChangeSupport ccs = new CollectionChangeSupport(this);
 	private final List<E> wrappedList;
 	

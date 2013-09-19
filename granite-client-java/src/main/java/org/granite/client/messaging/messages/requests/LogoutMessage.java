@@ -28,6 +28,8 @@ import java.util.Map;
  */
 public final class LogoutMessage extends AbstractRequestMessage {
 	
+    private static final long serialVersionUID = 1L;
+	
 	public LogoutMessage() {
 	}
 

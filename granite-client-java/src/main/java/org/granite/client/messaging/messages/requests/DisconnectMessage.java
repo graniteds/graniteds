@@ -28,6 +28,8 @@ import java.util.Map;
  */
 public final class DisconnectMessage extends AbstractRequestMessage {
 	
+    private static final long serialVersionUID = 1L;
+	
 	public DisconnectMessage() {
 	}
 

@@ -49,6 +49,8 @@ import org.granite.client.persistence.collection.UnsafePersistentCollection;
  */
 public class ObservablePersistentList<E> extends ObservableList<E> implements UnsafePersistentCollection<PersistentList<E>> {
 	
+    private static final long serialVersionUID = 1L;
+	
 	public ObservablePersistentList(PersistentList<E> persistentList) {
 		super(persistentList);
 	}

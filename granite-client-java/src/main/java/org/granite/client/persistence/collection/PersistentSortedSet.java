@@ -34,6 +34,8 @@ import org.granite.messaging.persistence.PersistentCollectionSnapshot;
  */
 public class PersistentSortedSet<E> extends AbstractPersistentSimpleCollection<E, SortedSet<E>> implements SortedSet<E>, PersistentSortedCollection<E> {
 
+    private static final long serialVersionUID = 1L;
+	
 	public PersistentSortedSet() {
 	}
 

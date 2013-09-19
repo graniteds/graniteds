@@ -33,6 +33,8 @@ import org.granite.client.messaging.channel.Credentials;
  */
 public final class LoginMessage extends AbstractRequestMessage {
 
+    private static final long serialVersionUID = 1L;
+	
 	private Credentials credentials;
 	
 	public LoginMessage() {

@@ -30,6 +30,8 @@ import org.granite.client.messaging.messages.Message;
  */
 public final class PublishMessage extends AbstractTopicRequestMessage {
 
+    private static final long serialVersionUID = 1L;
+	
 	private Object body = null;
 
 	public PublishMessage() {

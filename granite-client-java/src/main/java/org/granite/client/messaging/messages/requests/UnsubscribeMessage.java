@@ -30,6 +30,8 @@ import org.granite.client.messaging.messages.Message;
  */
 public final class UnsubscribeMessage extends AbstractTopicRequestMessage {
 
+    private static final long serialVersionUID = 1L;
+	
 	private String subscriptionId = null;
 	
 	public UnsubscribeMessage() {

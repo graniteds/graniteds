@@ -31,6 +31,8 @@ import java.util.Map;
  */
 public final class FaultMessage extends AbstractResponseMessage {
 
+    private static final long serialVersionUID = 1L;
+	
 	public static enum Code {
 		UNKNOWN,
 		

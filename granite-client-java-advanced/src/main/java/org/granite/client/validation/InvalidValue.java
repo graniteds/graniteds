@@ -47,6 +47,8 @@ import org.granite.client.messaging.RemoteAlias;
 @RemoteAlias("org.granite.tide.validators.InvalidValue")
 public class InvalidValue implements Externalizable {
 
+    private static final long serialVersionUID = 1L;
+	
 	private Object rootBean;
     private Object bean;
     private Class<?> beanClass;

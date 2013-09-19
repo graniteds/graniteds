@@ -51,6 +51,8 @@ import com.sun.javafx.collections.ObservableSetWrapper;
  */
 public class ObservablePersistentSet<E> extends ObservableSetWrapper<E> implements UnsafePersistentCollection<PersistentSet<E>> {
 	
+    private static final long serialVersionUID = 1L;
+	
 	private final PersistentSet<E> persistentSet;
 
 	public ObservablePersistentSet(PersistentSet<E> persistentSet) {
