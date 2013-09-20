@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/granite-client-android/granite-client-android.iml" filepath="$PROJECT_DIR$/granite-client-android/granite-client-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-client-flex/granite-client-flex.iml" filepath="$PROJECT_DIR$/granite-client-flex/granite-client-flex.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-client-flex45-advanced/granite-client-flex45-advanced.iml" filepath="$PROJECT_DIR$/granite-client-flex45-advanced/granite-client-flex45-advanced.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-client-java/granite-client-java.iml" filepath="$PROJECT_DIR$/granite-client-java/granite-client-java.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-client-java-advanced/granite-client-java-advanced.iml" filepath="$PROJECT_DIR$/granite-client-java-advanced/granite-client-java-advanced.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-client-javafx/granite-client-javafx.iml" filepath="$PROJECT_DIR$/granite-client-javafx/granite-client-javafx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server/granite-server.iml" filepath="$PROJECT_DIR$/granite-server/granite-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-activemq/granite-server-activemq.iml" filepath="$PROJECT_DIR$/granite-server-activemq/granite-server-activemq.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-appengine/granite-server-appengine.iml" filepath="$PROJECT_DIR$/granite-server-appengine/granite-server-appengine.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-beanvalidation/granite-server-beanvalidation.iml" filepath="$PROJECT_DIR$/granite-server-beanvalidation/granite-server-beanvalidation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-cdi/granite-server-cdi.iml" filepath="$PROJECT_DIR$/granite-server-cdi/granite-server-cdi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-core/granite-server-core.iml" filepath="$PROJECT_DIR$/granite-server-core/granite-server-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-datanucleus/granite-server-datanucleus.iml" filepath="$PROJECT_DIR$/granite-server-datanucleus/granite-server-datanucleus.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-eclipselink/granite-server-eclipselink.iml" filepath="$PROJECT_DIR$/granite-server-eclipselink/granite-server-eclipselink.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-ejb/granite-server-ejb.iml" filepath="$PROJECT_DIR$/granite-server-ejb/granite-server-ejb.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-glassfishv2/granite-server-glassfishv2.iml" filepath="$PROJECT_DIR$/granite-server-glassfishv2/granite-server-glassfishv2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-glassfishv3/granite-server-glassfishv3.iml" filepath="$PROJECT_DIR$/granite-server-glassfishv3/granite-server-glassfishv3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-hibernate/granite-server-hibernate.iml" filepath="$PROJECT_DIR$/granite-server-hibernate/granite-server-hibernate.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-hibernate4/granite-server-hibernate4.iml" filepath="$PROJECT_DIR$/granite-server-hibernate4/granite-server-hibernate4.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-jboss/granite-server-jboss.iml" filepath="$PROJECT_DIR$/granite-server-jboss/granite-server-jboss.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-jetty6/granite-server-jetty6.iml" filepath="$PROJECT_DIR$/granite-server-jetty6/granite-server-jetty6.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-jetty8/granite-server-jetty8.iml" filepath="$PROJECT_DIR$/granite-server-jetty8/granite-server-jetty8.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-openjpa/granite-server-openjpa.iml" filepath="$PROJECT_DIR$/granite-server-openjpa/granite-server-openjpa.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-seam/granite-server-seam.iml" filepath="$PROJECT_DIR$/granite-server-seam/granite-server-seam.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-servlet3/granite-server-servlet3.iml" filepath="$PROJECT_DIR$/granite-server-servlet3/granite-server-servlet3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-spring/granite-server-spring.iml" filepath="$PROJECT_DIR$/granite-server-spring/granite-server-spring.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-spring2/granite-server-spring2.iml" filepath="$PROJECT_DIR$/granite-server-spring2/granite-server-spring2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-tomcat6/granite-server-tomcat6.iml" filepath="$PROJECT_DIR$/granite-server-tomcat6/granite-server-tomcat6.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-tomcat7/granite-server-tomcat7.iml" filepath="$PROJECT_DIR$/granite-server-tomcat7/granite-server-tomcat7.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-toplink/granite-server-toplink.iml" filepath="$PROJECT_DIR$/granite-server-toplink/granite-server-toplink.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-weblogic/granite-server-weblogic.iml" filepath="$PROJECT_DIR$/granite-server-weblogic/granite-server-weblogic.iml" />
+    </modules>
+  </component>
+</project>
+

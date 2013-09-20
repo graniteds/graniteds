@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="org.apache.tomcat:catalina:6.0.32" type="repository">
+    <properties maven-id="org.apache.tomcat:catalina:6.0.32" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/catalina-6.0.32.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/servlet-api-6.0.32.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/juli-6.0.32.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/annotations-api-6.0.32.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

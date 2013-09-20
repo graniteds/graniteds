@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="javax.jdo:jdo2-api:2.3-eb" type="repository">
+    <properties maven-id="javax.jdo:jdo2-api:2.3-eb" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jdo2-api-2.3-eb.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/transaction-api-1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/geronimo-jpa_3.0_spec-1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

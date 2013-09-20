@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="org.springframework.security:spring-security-core-tiger:2.0.7.RELEASE" type="repository">
+    <properties maven-id="org.springframework.security:spring-security-core-tiger:2.0.7.RELEASE" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/spring-security-core-tiger-2.0.7.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-security-core-2.0.7.RELEASE.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

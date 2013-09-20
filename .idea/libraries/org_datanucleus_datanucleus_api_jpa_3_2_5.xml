@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="org.datanucleus:datanucleus-api-jpa:3.2.5" type="repository">
+    <properties maven-id="org.datanucleus:datanucleus-api-jpa:3.2.5" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/datanucleus-api-jpa-3.2.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jdo-api-3.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/transaction-api-1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/geronimo-jpa_2.0_spec-1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/datanucleus-core-3.2.7.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="org.eclipse.persistence:eclipselink:2.5.0" type="repository">
+    <properties maven-id="org.eclipse.persistence:eclipselink:2.5.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/eclipselink-2.5.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.persistence-2.1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commonj.sdo-2.1.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

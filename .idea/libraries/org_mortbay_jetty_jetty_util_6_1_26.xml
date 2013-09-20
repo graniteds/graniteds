@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="org.mortbay.jetty:jetty-util:6.1.26" type="repository">
+    <properties maven-id="org.mortbay.jetty:jetty-util:6.1.26" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jetty-util-6.1.26.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/servlet-api-2.5-20081211.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

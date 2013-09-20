@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="org.hibernate:hibernate-entitymanager:3.6.10.Final" type="repository">
+    <properties maven-id="org.hibernate:hibernate-entitymanager:3.6.10.Final" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../lib/hibernate-entitymanager-3.6.10.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/hibernate-core-3.6.10.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/antlr-2.7.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/commons-collections-3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/dom4j-1.6.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/hibernate-commons-annotations-3.2.0.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/slf4j-api-1.6.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/hibernate-jpa-2.0-api-1.0.1.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/jta-1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/cglib-2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/asm-3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../lib/javassist-3.12.0.GA.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

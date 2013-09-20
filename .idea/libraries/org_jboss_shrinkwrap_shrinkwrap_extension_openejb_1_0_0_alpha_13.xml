@@ -1,0 +1,46 @@
+<component name="libraryTable">
+  <library name="org.jboss.shrinkwrap:shrinkwrap-extension-openejb:1.0.0-alpha-13" type="repository">
+    <properties maven-id="org.jboss.shrinkwrap:shrinkwrap-extension-openejb:1.0.0-alpha-13" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/shrinkwrap-extension-openejb-1.0.0-alpha-13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/shrinkwrap-api-1.0.0-alpha-13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openejb-core-3.1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javaee-api-5.0-2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/log4j-1.2.12.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ejb31-api-experimental-3.1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openejb-api-3.1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openejb-loader-3.1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openejb-javaagent-3.1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openejb-jee-3.1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/wstx-asl-3.2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/stax-api-1.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jaxb-impl-2.0.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-cli-1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/activemq-ra-4.1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/activemq-core-4.1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/backport-util-concurrent-2.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-logging-1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/activeio-core-3.0.0-incubator.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjpa-1.2.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/serp-1.13.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-lang-2.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections-3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-pool-1.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/geronimo-connector-2.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/geronimo-transaction-2.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/howl-1.0.1-1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/geronimo-javamail_1.4_mail-1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xbean-asm-shaded-3.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xbean-finder-shaded-3.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xbean-reflect-3.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xbean-naming-3.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/hsqldb-1.8.0.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-dbcp-all-1.3-r699049.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/swizzle-stream-1.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/wsdl4j-1.6.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/quartz-1.5.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,25 @@
+<component name="libraryTable">
+  <library name="org.hibernate:hibernate-entitymanager:3.3.1.ga" type="repository">
+    <properties maven-id="org.hibernate:hibernate-entitymanager:3.3.1.ga" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/hibernate-entitymanager-3.3.1.ga.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/persistence-api-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/hibernate-3.2.4.ga.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ehcache-1.2.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-logging-1.0.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections-2.1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-attrs-1.5.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/dom4j-1.6.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/antlr-2.7.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/cglib-2.1_3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-1.5.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/hibernate-annotations-3.3.0.ga.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-3.0.0.ga.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/hibernate-validator-3.0.0.ga.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javassist-3.3.GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-common-core-2.0.4.GA.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

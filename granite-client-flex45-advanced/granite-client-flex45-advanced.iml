@@ -8,6 +8,18 @@
             <entry module-name="granite-client-flex" build-configuration-name="granite-client-flex">
               <dependency linkage="External" />
             </entry>
+            <entry library-id="5c45bfc9-bda8-4418-8760-a8892cacde50">
+              <dependency linkage="Test" />
+            </entry>
+            <entry library-id="0e761b4c-e35d-4771-9fd1-32a066e87fe6">
+              <dependency linkage="Test" />
+            </entry>
+            <entry library-id="63c7a61b-4020-41e0-9762-f3c8f1e5308b">
+              <dependency linkage="Test" />
+            </entry>
+            <entry library-id="47307b95-eb3e-4f49-baa3-d67d9b6f8a45">
+              <dependency linkage="Test" />
+            </entry>
           </entries>
           <sdk name="flex-sdk-4.5" />
         </dependencies>
@@ -30,9 +42,53 @@
       <sourceFolder url="file://$MODULE_DIR$/../granite-client-flex-advanced/src/main/flex" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../granite-client-flex-advanced/src/main/resources" isTestSource="false" />
     </content>
+    <content url="file://$MODULE_DIR$/../granite-client-flex45-tests">
+      <sourceFolder url="file://$MODULE_DIR$/../granite-client-flex45-tests/src/test/flex" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../granite-client-flex45-tests/src/test/resources" isTestSource="true" />
+    </content>
     <orderEntry type="jdk" jdkName="flex-sdk-4.5" jdkType="Flex SDK Type (new)" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="granite-client-flex" exported="" />
+    <orderEntry type="module-library" exported="">
+      <library type="flex">
+        <properties id="5c45bfc9-bda8-4418-8760-a8892cacde50" />
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../granite-client-flex45-tests/lib/flexunit-aircilistener-4.1.0.swc!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library type="flex">
+        <properties id="0e761b4c-e35d-4771-9fd1-32a066e87fe6" />
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../granite-client-flex45-tests/lib/flexunit-cilistener-4.1.0.swc!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library type="flex">
+        <properties id="63c7a61b-4020-41e0-9762-f3c8f1e5308b" />
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../granite-client-flex45-tests/lib/flexunit-core-flex-4.1.0.swc!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library type="flex">
+        <properties id="47307b95-eb3e-4f49-baa3-d67d9b6f8a45" />
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../granite-client-flex45-tests/lib/flexunit-uilistener-4.1.0.swc!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
 

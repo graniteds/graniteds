@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="org.apache.tomcat:tomcat-coyote:7.0.42" type="repository">
+    <properties maven-id="org.apache.tomcat:tomcat-coyote:7.0.42" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-coyote-7.0.42.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-juli-7.0.42.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-util-7.0.42.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-api-7.0.42.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-servlet-api-7.0.42.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

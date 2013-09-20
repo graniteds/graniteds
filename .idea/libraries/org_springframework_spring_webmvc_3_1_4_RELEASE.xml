@@ -1,0 +1,25 @@
+<component name="libraryTable">
+  <library name="org.springframework:spring-webmvc:3.1.4.RELEASE" type="repository">
+    <properties maven-id="org.springframework:spring-webmvc:3.1.4.RELEASE" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/spring-webmvc-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/el-api-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-servlet-api-7.0.8.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jsp-api-2.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jstl-1.1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-asm-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-beans-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-core-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-logging-1.1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-context-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-aop-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/aopalliance-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-expression-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-context-support-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-web-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/validation-api-1.0.0.GA.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

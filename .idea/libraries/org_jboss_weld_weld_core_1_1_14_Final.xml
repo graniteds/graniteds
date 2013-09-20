@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="org.jboss.weld:weld-core:1.1.14.Final" type="repository">
+    <properties maven-id="org.jboss.weld:weld-core:1.1.14.Final" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/weld-core-1.1.14.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/cdi-api-1.0-SP4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-interceptors-api_1.1_spec-1.0.0.Beta1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jsr250-api-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.inject-1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/weld-api-1.1.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/weld-spi-1.1.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javassist-3.14.0-GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/guava-13.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-ext-1.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-api-1.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/cal10n-api-0.7.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

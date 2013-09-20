@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="org.acegisecurity:acegi-security:1.0.7" type="repository">
+    <properties maven-id="org.acegisecurity:acegi-security:1.0.7" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/acegi-security-1.0.7.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

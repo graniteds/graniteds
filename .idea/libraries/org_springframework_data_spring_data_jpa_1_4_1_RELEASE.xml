@@ -1,0 +1,35 @@
+<component name="libraryTable">
+  <library name="org.springframework.data:spring-data-jpa:1.4.1.RELEASE" type="repository">
+    <properties maven-id="org.springframework.data:spring-data-jpa:1.4.1.RELEASE" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/spring-data-jpa-1.4.1.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-data-commons-1.6.1.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-core-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-asm-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-beans-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-api-1.7.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jcl-over-slf4j-1.7.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-orm-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-jdbc-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-tx-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/aopalliance-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-aop-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-context-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-expression-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-instrument-3.1.4.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/aspectjrt-1.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/hibernate-jpamodelgen-1.2.0.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/querydsl-apt-3.2.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/querydsl-codegen-3.2.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/querydsl-core-3.2.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/guava-13.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jsr305-1.3.9.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/mysema-commons-lang-0.2.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/codegen-0.5.9.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ecj-3.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.inject-1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="org.jboss.interceptor:jboss-interceptor-core:2.0.0.Final" type="repository">
+    <properties maven-id="org.jboss.interceptor:jboss-interceptor-core:2.0.0.Final" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jboss-interceptor-core-2.0.0.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-interceptor-spi-2.0.0.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-api-1.5.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/guava-r06.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javassist-3.12.0.GA.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

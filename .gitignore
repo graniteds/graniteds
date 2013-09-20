@@ -11,7 +11,7 @@ lib/
 classes
 classes*
 .FlexUnitSettings
-.idea
+.idea/workspace.xml
 .granite
 .settings
 .FlexUnitSettings

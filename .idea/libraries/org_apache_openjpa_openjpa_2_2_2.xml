@@ -1,0 +1,28 @@
+<component name="libraryTable">
+  <library name="org.apache.openjpa:openjpa:2.2.2" type="repository">
+    <properties maven-id="org.apache.openjpa:openjpa:2.2.2" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/openjpa-2.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjpa-lib-2.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-lang-2.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections-3.2.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/serp-1.14.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/junit-3.8.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjpa-kernel-2.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/geronimo-jms_1.1_spec-1.1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/geronimo-jta_1.1_spec-1.1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-pool-1.5.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjpa-jdbc-2.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/stax-api-1.0-2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjpa-persistence-2.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/geronimo-jpa_2.0_spec-1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjpa-persistence-jdbc-2.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjpa-xmlstore-2.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjpa-slice-2.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjpa-jest-2.2.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

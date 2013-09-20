@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="javax:javaee-api:6.0" type="repository">
+    <properties maven-id="javax:javaee-api:6.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/javaee-api-6.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="org.datanucleus:datanucleus-rdbms:3.2.6" type="repository">
+    <properties maven-id="org.datanucleus:datanucleus-rdbms:3.2.6" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/datanucleus-rdbms-3.2.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/datanucleus-core-3.2.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/time-api-0.6.3.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

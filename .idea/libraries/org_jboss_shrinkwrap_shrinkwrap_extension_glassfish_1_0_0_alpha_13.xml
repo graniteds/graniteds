@@ -1,0 +1,23 @@
+<component name="libraryTable">
+  <library name="org.jboss.shrinkwrap:shrinkwrap-extension-glassfish:1.0.0-alpha-13" type="repository">
+    <properties maven-id="org.jboss.shrinkwrap:shrinkwrap-extension-glassfish:1.0.0-alpha-13" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/shrinkwrap-extension-glassfish-1.0.0-alpha-13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/shrinkwrap-api-1.0.0-alpha-13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/shrinkwrap-impl-base-1.0.0-alpha-13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/shrinkwrap-spi-1.0.0-alpha-13.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/glassfish-api-3.0.1-b02.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/hk2-1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/hk2-core-1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/config-1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/auto-depends-1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tiger-types-osgi-1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/bean-validator-3.0-JBoss-4.0.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/config-types-1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-utils-1.9.18-k.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/management-api-3.0.0-b012.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

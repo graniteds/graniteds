@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="javax.ejb:ejb-api:3.0" type="repository">
+    <properties maven-id="javax.ejb:ejb-api:3.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/ejb-api-3.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

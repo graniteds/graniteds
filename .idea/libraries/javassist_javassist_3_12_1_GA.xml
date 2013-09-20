@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="javassist:javassist:3.12.1.GA" type="repository">
+    <properties maven-id="javassist:javassist:3.12.1.GA" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/javassist-3.12.1.GA.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
