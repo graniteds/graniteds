@@ -36,13 +36,13 @@ public class TestDataNucleusExternalizer extends AbstractTestJPAExternalizer {
 	}
 	
 	@Test
-	@Ignore("DataNucleus does not work with this case, embedded objects detachedState is not serialized")
+//	@Ignore("DataNucleus does not work with this case, embedded objects detachedState is not serialized")
 	@Override
 	public void testSerializationLazyEmbeddedGDS838() throws Exception {		
 	}
 	
 	@Test
-	@Ignore("DataNucleus does not work with this case, cannot even persist the object ???")
+//	@Ignore("DataNucleus does not work with this case, cannot even persist the object ???")
 	@Override
 	public void testSerializationEmbeddedDoubleAssociation() throws Exception {		
 	}

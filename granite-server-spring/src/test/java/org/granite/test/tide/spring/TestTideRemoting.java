@@ -62,11 +62,11 @@ public class TestTideRemoting extends AbstractTideTestCase {
         Assert.assertEquals("Result", "ok", result.getResult());
 	}
 	
-	@Test
-	@Ignore
-	public void testAmbiguousMethod() {
-        InvocationResult result = invokeComponent("testService", null, "create", new Object[] { new Person() },
-                new Object[0], new String[0], null);
-        Assert.assertEquals("Result", "person", result.getResult());
-	}
+//	@Test
+//	@Ignore
+//	public void testAmbiguousMethod() {
+//        InvocationResult result = invokeComponent("testService", null, "create", new Object[] { new Person() },
+//                new Object[0], new String[0], null);
+//        Assert.assertEquals("Result", "person", result.getResult());
+//	}
 }
