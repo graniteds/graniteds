@@ -6,7 +6,7 @@ buildscript {
     }
 	
     dependencies {
-		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.5.0'
+		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.6.0'
 		classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
         classpath group: 'org.gradlefx', name: 'gradlefx', version: '0.6.4'
 		classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.4.1'
@@ -161,23 +161,75 @@ configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { s
 	}
 }
 
-// Add license plugin for all non-Flex subprojects
-// license plugin is not compatible with GradleFX
-configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it.name != 'granite-server' && it.name != 'granite-generator-share' && it.name != 'reference-docs' }) { subproject ->
+// Add license plugin for all subprojects
+// Use a modified version of the license plugin to be compatible with GradleFX
+configure(subprojects.findAll { it.name != 'granite-server' && it.name != 'granite-generator-share' && it.name != 'reference-docs' }) { subproject ->
 
-	apply plugin: JavaOnlyLicensePlugin
+	apply plugin: ExtLicensePlugin
 	
 	license {
 		header rootProject.file('HEADER-' + subproject.moduleLicense + '.txt')
 		strictCheck true
 		ext.year = Calendar.getInstance().get(Calendar.YEAR)
+		mapping('as', 'JAVADOC_STYLE')
 	}
 }
 
-class JavaOnlyLicensePlugin extends nl.javadude.gradle.plugins.license.LicensePlugin {
+import nl.javadude.gradle.plugins.license.License
+import nl.javadude.gradle.plugins.license.LicensePlugin
+
+
+class ExtLicensePlugin extends LicensePlugin {
 	
-	private static Logger logger = Logging.getLogger(JavaOnlyLicensePlugin);
+	private static Logger logger = Logging.getLogger(ExtLicensePlugin);
 	
+	void apply(Project project) {
+        this.project = project
+
+        extension = createExtension()
+        configureExtensionRule()
+		
+        project.plugins.withType(JavaBasePlugin) {
+            extension.sourceSets.all { SourceSet sourceSet ->
+                def sourceSetTaskName = sourceSet.getTaskName(taskBaseName, null)
+                logger.info("Adding license tasks for sourceSet ${sourceSetTaskName}");
+
+                License checkTask = project.tasks.add(sourceSetTaskName, License)
+                checkTask.check = true
+                configureForSourceSet(sourceSet, checkTask)
+
+                // Add license checking into check lifecycle, since its a type of code quality plugin
+                project.tasks[JavaBasePlugin.CHECK_TASK_NAME].dependsOn checkTask
+
+                // Add independent license task, which will perform format
+                def sourceSetFormatTaskName = sourceSet.getTaskName(taskBaseName + 'Format', null)
+                License formatTask = project.tasks.add(sourceSetFormatTaskName, License)
+                formatTask.check = false
+                configureForSourceSet(sourceSet, formatTask)
+            }
+        }
+		
+		project.plugins.withType(org.gradlefx.plugins.GradleFxPlugin) {
+			logger.info("Adding license tasks for Flex");
+			
+			License checkTask = project.tasks.add('licenseFlex', License)
+			checkTask.check = true
+			checkTask.description = 'Scanning license on Flex files'
+			checkTask.source = [ 'src/main/flex', 'src/test/flex' ]
+
+			// Add license checking into check lifecycle, since its a type of code quality plugin
+			project.tasks['compileFlex'].dependsOn checkTask
+			
+			// Add independent license task, which will perform format
+			License formatTask = project.tasks.add('licenseFormatFlex', License)
+			formatTask.check = false
+			formatTask.description = 'Scanning license on Flex files'
+			formatTask.source = [ 'src/main/flex', 'src/test/flex' ]
+        }		
+			
+        configureTaskRule()
+    }
+
 	protected void configureForSourceSet(SourceSet sourceSet, nl.javadude.gradle.plugins.license.License task) {
 		super.configureForSourceSet(sourceSet, task)
 		
