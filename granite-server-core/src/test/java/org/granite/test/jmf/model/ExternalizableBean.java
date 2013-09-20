@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.Date;
 
 public class ExternalizableBean implements Externalizable {
+
+    private static final long serialVersionUID = 1L;
 	
 	private Object nullValue = null;
 

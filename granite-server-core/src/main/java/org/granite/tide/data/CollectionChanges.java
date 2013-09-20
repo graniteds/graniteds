@@ -32,7 +32,7 @@ import java.io.ObjectOutput;
  */
 public class CollectionChanges implements Externalizable {
 
-    private static long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private CollectionChange[] changes;
     

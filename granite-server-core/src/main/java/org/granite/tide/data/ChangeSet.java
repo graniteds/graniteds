@@ -32,7 +32,7 @@ import java.io.ObjectOutput;
  */
 public class ChangeSet implements Externalizable {
 
-    private static long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
 	private Change[] changes = new Change[0];
 	

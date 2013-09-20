@@ -36,7 +36,7 @@ import java.util.Map.Entry;
  */
 public class Change implements Externalizable {
 
-    private static long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
     
     private String className;
     private String uid;

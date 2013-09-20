@@ -33,7 +33,7 @@ import java.io.Serializable;
  */
 public class ChangeRef implements Externalizable {
 
-    private static long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private String className;
     private String uid;
