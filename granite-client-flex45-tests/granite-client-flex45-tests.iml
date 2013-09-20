@@ -2,7 +2,7 @@
 <module type="Flex" version="4">
   <component name="FlexBuildConfigurationManager" active="TestRunner">
     <configurations>
-      <configuration name="TestRunner" main-class="TestRunner" output-file="TestRunner.swf" output-folder="$MODULE_DIR$/bin-debug">
+      <configuration name="TestRunner" main-class="TestRunnerLocal" output-file="TestRunnerLocal.swf" output-folder="$MODULE_DIR$/bin-debug">
         <dependencies target-player="10.2">
           <entries>
             <entry module-name="granite-client-flex" build-configuration-name="granite-client-flex">
@@ -11,26 +11,23 @@
             <entry module-name="granite-client-flex45-advanced" build-configuration-name="granite-client-flex45-advanced">
               <dependency linkage="Merged" />
             </entry>
-            <entry library-id="0c26c6ff-2e33-46e0-9c28-132fc2c3ec3b">
+            <entry library-id="fcd44219-1faa-4876-ab6e-686d77867267">
               <dependency linkage="Merged" />
             </entry>
-            <entry library-id="0ae11cfb-c0c9-4760-b82c-05f10619376c">
+            <entry library-id="cbb909f1-cc4f-4662-8930-4b014f208134">
               <dependency linkage="Merged" />
             </entry>
-            <entry library-id="20c0735b-695b-4c81-acc6-09afddbf8fc0">
+            <entry library-id="1a6345fc-6fc9-4d3f-b265-1039897865a4">
               <dependency linkage="Merged" />
             </entry>
-            <entry library-id="820a9942-987c-46d4-b53f-aad88a8c7eec">
+            <entry library-id="8243afc0-738d-4d6b-b24a-89014e81b927">
               <dependency linkage="Merged" />
             </entry>
           </entries>
           <sdk name="flex-sdk-4.5" />
         </dependencies>
         <compiler-options>
-          <map>
-            <entry key="compiler.locale" value="" />
-          </map>
-          <option name="additionalOptions" value="-keep-as3-metadata=Managed,ChangeEvent,NonCommittingChangeEvent,Transient,Id,Version,Lazy,Name,In,Inject,Out,Produces,ManagedEvent,Observer,PostConstruct,Destroy,Test,Ignore,Suite,RunWith" />
+          <option name="additionalOptions" value="-keep-as3-metadata=Managed,ChangeEvent,NonCommittingChangeEvent,Transient,Id,Version,Lazy,Name,In,Inject,Out,Produces,ManagedEvent,Observer,PostConstruct,Destroy,Valid,Size,Test,Ignore,Suite,RunWith" />
         </compiler-options>
         <packaging-air-desktop />
         <packaging-android />
@@ -42,10 +39,10 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/src/main/flex" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/flex" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/flex" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false" />
     </content>
     <orderEntry type="jdk" jdkName="flex-sdk-4.5" jdkType="Flex SDK Type (new)" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -53,7 +50,7 @@
     <orderEntry type="module" module-name="granite-client-flex" exported="" />
     <orderEntry type="module-library" exported="">
       <library type="flex">
-        <properties id="0c26c6ff-2e33-46e0-9c28-132fc2c3ec3b" />
+        <properties id="fcd44219-1faa-4876-ab6e-686d77867267" />
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/flexunit-aircilistener-4.1.0.swc!/" />
         </CLASSES>
@@ -63,7 +60,7 @@
     </orderEntry>
     <orderEntry type="module-library" exported="">
       <library type="flex">
-        <properties id="0ae11cfb-c0c9-4760-b82c-05f10619376c" />
+        <properties id="cbb909f1-cc4f-4662-8930-4b014f208134" />
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/flexunit-cilistener-4.1.0.swc!/" />
         </CLASSES>
@@ -73,7 +70,7 @@
     </orderEntry>
     <orderEntry type="module-library" exported="">
       <library type="flex">
-        <properties id="20c0735b-695b-4c81-acc6-09afddbf8fc0" />
+        <properties id="1a6345fc-6fc9-4d3f-b265-1039897865a4" />
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/flexunit-core-flex-4.1.0.swc!/" />
         </CLASSES>
@@ -83,7 +80,7 @@
     </orderEntry>
     <orderEntry type="module-library" exported="">
       <library type="flex">
-        <properties id="820a9942-987c-46d4-b53f-aad88a8c7eec" />
+        <properties id="8243afc0-738d-4d6b-b24a-89014e81b927" />
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/flexunit-uilistener-4.1.0.swc!/" />
         </CLASSES>

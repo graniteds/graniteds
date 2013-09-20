@@ -175,13 +175,13 @@ public class TestJMFLong implements JMFConstants {
 		checkVariableLong(Long.MAX_VALUE,		bytes( 0x7F, 0xDF, 0xDF, 0xDF, 0xDF, 0xDF, 0xDF, 0xDF, 0xBF ));
 	}
 	
-	@Test
-	@Ignore
-	public void testAllLong() throws IOException {
-		for (long i = Long.MIN_VALUE; i < Long.MAX_VALUE; i++)
-			checkLong(i);
-		checkLong(Long.MAX_VALUE);
-	}
+//	@Test
+//	@Ignore
+//	public void testAllLong() throws IOException {
+//		for (long i = Long.MIN_VALUE; i < Long.MAX_VALUE; i++)
+//			checkLong(i);
+//		checkLong(Long.MAX_VALUE);
+//	}
 	
 	@Test
 	public void testSomeLongObject() throws ClassNotFoundException, IOException {

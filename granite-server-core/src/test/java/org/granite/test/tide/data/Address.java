@@ -53,7 +53,6 @@ public class Address extends AbstractEntity {
 
     private static final long serialVersionUID = 1L;
 
-
     @Basic
     private String address1;
     @Basic
@@ -66,7 +65,14 @@ public class Address extends AbstractEntity {
     @ManyToOne(cascade=CascadeType.ALL)
     private Country country;
 
-    
+
+    public Address() {
+    }
+
+    public Address(Long id, Long version, String uid) {
+        super(id, version, uid);
+    }
+
     public String getAddress1() {
         return address1;
     }

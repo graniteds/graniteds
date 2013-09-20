@@ -88,14 +88,14 @@ public class TestJMFInteger implements JMFConstants {
 		checkInt(Integer.MAX_VALUE, 	bytes( 0x60 | JMF_INTEGER, 0x7F, 0xFF, 0xFF, 0xFF ));
 	}
 	
-	@Test
-	@Ignore
-	public void testAllInt() throws IOException {
-		for (int i = Integer.MIN_VALUE; i < Integer.MAX_VALUE; i++)
-			checkInt(i);
-		checkInt(Integer.MAX_VALUE);
-	}
-	
+//	@Test
+//	@Ignore
+//	public void testAllInt() throws IOException {
+//		for (int i = Integer.MIN_VALUE; i < Integer.MAX_VALUE; i++)
+//			checkInt(i);
+//		checkInt(Integer.MAX_VALUE);
+//	}
+
 	@Test
 	public void testSomeVariableInt() throws IOException {
 
@@ -135,13 +135,13 @@ public class TestJMFInteger implements JMFConstants {
 		checkVariableInt(Integer.MAX_VALUE, 	bytes( 0x43, 0xDF, 0xDF, 0xDF, 0xBF ));
 	}
 	
-	@Test
-	@Ignore
-	public void testAllVariableInt() throws IOException {
-		for (int i = Integer.MIN_VALUE; i < Integer.MAX_VALUE; i++)
-			checkVariableInt(i);
-		checkVariableInt(Integer.MAX_VALUE);
-	}
+//	@Test
+//	@Ignore
+//	public void testAllVariableInt() throws IOException {
+//		for (int i = Integer.MIN_VALUE; i < Integer.MAX_VALUE; i++)
+//			checkVariableInt(i);
+//		checkVariableInt(Integer.MAX_VALUE);
+//	}
 	
 	@Test
 	public void testSomeIntObject() throws ClassNotFoundException, IOException {

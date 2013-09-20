@@ -93,6 +93,10 @@ public abstract class AbstractEntity implements Serializable {
             uid = "Person:" + id;
         this.uid = uid;
     }
+
+    public String getUid() {
+        return this.uid;
+    }
     
     public Long getVersion() {
         return version;

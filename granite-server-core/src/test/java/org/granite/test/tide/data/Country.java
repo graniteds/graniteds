@@ -51,10 +51,15 @@ public class Country extends AbstractEntity {
 
     private static final long serialVersionUID = 1L;
 
-    
     @Basic
     private String name;
 
+    public Country() {
+    }
+
+    public Country(Long id, Long version, String uid) {
+        super(id, version, uid);
+    }
 
     public String getName() {
         return name;

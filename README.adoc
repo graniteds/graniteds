@@ -108,7 +108,7 @@ cd graniteds
 ./gradlew clean build
 ----
 
-===== Adobe/Apache Flex build
+===== Specifics for the Adobe/Apache Flex build
 
 The unit tests for Flex require a Flash Player and are skipped when the player path is not defined.
 You can define the path to the player with:
