@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -26,8 +26,9 @@ package org.granite.test.tide.seam
     import org.granite.tide.seam.Seam;
     import org.granite.tide.seam.SeamOperation;
     import mx.rpc.remoting.mxml.RemoteObject;
-    
-    
+
+    import org.granite.tide.service.ServerSession;
+
     public class MockSeam extends Seam
     {
         public var token:MockSeamAsyncToken;
@@ -35,10 +36,10 @@ package org.granite.test.tide.seam
         public function MockSeam(destination:String = null) {
             super(destination);
         }
-        
-        public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
-	        return new MockSeamOperation(this, name);
-        } 
+
+        protected override function initServerSession(destination:String):ServerSession {
+            return new MockSeamServerSession(destination);
+        }
         
 		public static function getInstance():MockSeam {
 			var tide:Tide = Tide.getInstance("seam", MockSeam);
@@ -62,15 +63,30 @@ import mx.rpc.AbstractOperation;
 import org.granite.test.tide.seam.MockSeamAsyncToken;
 import org.granite.tide.Tide;
 import org.granite.test.tide.seam.MockSeam;
+import org.granite.tide.rpc.TideOperation;
 import org.granite.tide.seam.SeamOperation;
 import mx.rpc.AsyncToken;
+
+import org.granite.tide.seam.SeamServerSession;
+import org.granite.tide.service.ServerSession;
+
+class MockSeamServerSession extends SeamServerSession {
+
+    public function MockSeamServerSession(destination:String):void {
+        super(destination);
+    }
+
+    public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
+        return new MockSeamOperation(this, name);
+    }
+}
 
 class MockSeamOperation extends SeamOperation {
     
     private var _name:String = null;
     
-    public function MockSeamOperation(tide:Tide, name:String):void {
-        super(tide);
+    public function MockSeamOperation(serverSession:ServerSession, name:String):void {
+        super(serverSession);
         _name = name;
     }
     

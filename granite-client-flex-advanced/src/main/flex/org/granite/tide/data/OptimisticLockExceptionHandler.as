@@ -68,15 +68,18 @@ package org.granite.tide.data {
             log.debug("optimistic lock error received {0}", emsg.toString());
             
             // Save the call context because data has not been requested by the current user 
-            var savedCallContext:Object = context.meta_saveAndResetCallContext();
-            
-            var receivedSessionId:String = serverSession.sessionId + "_error";
-            var entity:Object = emsg.extendedData ? emsg.extendedData.entity as IEntity : null;
-            // Received entity should be the correct version from the database
-            if (entity)
-                context.meta_mergeExternalData(entity, null, receivedSessionId);
-	      	
-	      	context.meta_restoreCallContext(savedCallContext);
+            var savedCallContext:Object = null;
+            try {
+                savedCallContext = context.meta_saveAndResetCallContext();
+
+                var entity:Object = emsg.extendedData ? emsg.extendedData.entity as IEntity : null;
+                // Received entity should be the correct version from the database
+                if (entity)
+                    context.meta_mergeExternalData(entity, null, true);
+            }
+	      	finally {
+	      	    context.meta_restoreCallContext(savedCallContext);
+            }
         }
     }
 }

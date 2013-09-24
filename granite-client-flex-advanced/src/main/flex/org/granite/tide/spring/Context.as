@@ -249,7 +249,7 @@ package org.granite.tide.spring {
                 meta_setTracking(false);
 				
 				if (invocationResult.updates)
-					meta_handleUpdates(null, invocationResult.updates);
+					meta_handleUpdates(false, invocationResult.updates);
                 
                 var rmap:IList = invocationResult.results;
                 if (rmap) {

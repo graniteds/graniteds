@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -75,7 +75,7 @@ package org.granite.test.tide.data
             nc.version = 0;
             nc.person = np;
 
-            _ctx.meta_handleUpdates("SID", [[ 'REMOVE', nc ]]);
+            _ctx.meta_handleUpdates(true, [[ 'REMOVE', nc ]]);
 
             Assert.assertEquals("Person contacts empty", 0, p.contacts.length);
         }
@@ -107,7 +107,7 @@ package org.granite.test.tide.data
 			nc.version = 0;
 			nc.person = np;
 			
-			_ctx.meta_handleUpdates("SID", [[ 'REMOVE', nc ]]);
+			_ctx.meta_handleUpdates(true, [[ 'REMOVE', nc ]]);
 			
 			Assert.assertEquals("Person contacts length", 1, p.contacts.length);
 		}
@@ -151,7 +151,7 @@ package org.granite.test.tide.data
             nc.uid = "C01";
             nc.version = 0;
 
-            _ctx.meta_handleUpdates("SID", [[ 'REMOVE', nc ]]);
+            _ctx.meta_handleUpdates(true, [[ 'REMOVE', nc ]]);
 
             Assert.assertEquals("Person 1 contacts empty", 0, p1.contacts.length);
             Assert.assertEquals("Person 2 one contact left", 1, p2.contacts.length);
@@ -193,7 +193,7 @@ package org.granite.test.tide.data
             _ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, dataConflictsHandler, false, 0, true);
 
             // Receive an external removal event
-            _ctx.meta_handleUpdates("SID", [[ 'REMOVE', nc ]]);
+            _ctx.meta_handleUpdates(true, [[ 'REMOVE', nc ]]);
 
             Assert.assertEquals("Conflict detected", 1, _conflicts.conflicts.length);
 
@@ -235,7 +235,7 @@ package org.granite.test.tide.data
             _ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, dataConflictsHandler, false, 0, true);
 
             // Receive an external removal event
-            _ctx.meta_handleUpdates("SID", [[ 'REMOVE', nc ]]);
+            _ctx.meta_handleUpdates(true, [[ 'REMOVE', nc ]]);
 
             Assert.assertEquals("Conflict detected", 1, _conflicts.conflicts.length);
 

@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -142,7 +142,7 @@ package org.granite.test.tide.data
 			c21.person = person2;
 			c21.email = "toto@toto.com";
 			
-			_ctx.meta_mergeExternalData(person2, null, null, [ c21 ]);
+			_ctx.meta_mergeExternalData(person2, null, false, [ c21 ]);
 			
 			Assert.assertEquals("Removals merged", 1, person.contacts.length);
 		}
@@ -454,7 +454,7 @@ package org.granite.test.tide.data
 			pa.contacts.addItem(c2a);
 			
 			var updates:Array = [ [ "UPDATE", pa ], [ "PERSIST", c1a ], [ "PERSIST", c2a ] ];
-			_ctx.meta_handleUpdates(null, updates);
+			_ctx.meta_handleUpdates(false, updates);
 			
 			var pb:Person5 = new Person5();
 			pb.uid = "P1";
@@ -476,7 +476,7 @@ package org.granite.test.tide.data
 			c2b.email = "toto2@toto.org";
 			
 			updates = [ [ "UPDATE", pb ], [ "REMOVE", c1b, "person" ], [ "REMOVE", c2b, "person" ] ];
-			_ctx.meta_handleUpdates(null, updates);
+			_ctx.meta_handleUpdates(false, updates);
 			
 			Assert.assertNotNull("Person attached", p.meta::entityManager);
 		}
@@ -531,7 +531,7 @@ package org.granite.test.tide.data
 			pa.locations.addItem(l2a);
 			
 			var updates:Array = [ [ "UPDATE", pa ], [ "PERSIST", c1a ], [ "PERSIST", c2a ], [ "PERSIST", l1a ], [ "PERSIST", l2a ] ];
-			_ctx.meta_handleUpdates(null, updates);
+			_ctx.meta_handleUpdates(false, updates);
 			
 			var pb:Person5 = new Person5();
 			pb.uid = "P1";
@@ -554,7 +554,7 @@ package org.granite.test.tide.data
 			c2b.email = "toto2@toto.org";
 			
 			updates = [ [ "UPDATE", pb ], [ "REMOVE", c1b, "person" ], [ "REMOVE", c2b, "person" ] ];
-			_ctx.meta_handleUpdates(null, updates);
+			_ctx.meta_handleUpdates(false, updates);
 			
 			Assert.assertNotNull("Person attached", p.meta::entityManager);
 			Assert.assertNotNull("Location attached", p.locations.getItemAt(0).meta::entityManager);

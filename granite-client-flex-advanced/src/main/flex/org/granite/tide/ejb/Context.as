@@ -137,7 +137,7 @@ package org.granite.tide.ejb {
                 mergeExternal = invocationResult.merge;
 				
 				if (invocationResult.updates)
-					meta_handleUpdates(null, invocationResult.updates);
+					meta_handleUpdates(false, invocationResult.updates);
 				
                 var resultMap:IList = invocationResult.results;
 

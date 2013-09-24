@@ -1593,6 +1593,8 @@ package org.granite.tide {
 			var saveTracking:Boolean = _tracking;
 			try {
 				_tracking = false;
+                if (serverSession == null)
+                    serverSession = _tide.mainServerSession;
             	serverSession.initializeObject(this, obj, path);
 			}
 			finally {
@@ -1867,10 +1869,10 @@ package org.granite.tide {
 		 * 	@private
 		 *  Handle data updates
 		 *
-		 *  @param sourceSessionId sessionId from which data updates come (null when from current session) 
+		 *  @param externalData true when data does not come from current user session
 		 *  @param updates list of data updates
 		 */
-		public function meta_handleUpdates(sourceSessionId:String, updates:Array):void {
+		public function meta_handleUpdates(externalData:Boolean, updates:Array):void {
 			var merges:Array = [], removals:Array = [], persists:Array = [];
 			for each (var update:Array in updates) {
                 if (update[0] == 'PERSIST') {
@@ -1884,9 +1886,9 @@ package org.granite.tide {
             }
 
             if (merges.length == 1)
-                meta_mergeExternalData(merges[0], null, sourceSessionId, removals, persists);
+                meta_mergeExternalData(merges[0], null, externalData, removals, persists);
             else
-			    meta_mergeExternalData(merges, null, sourceSessionId, removals, persists);
+			    meta_mergeExternalData(merges, null, externalData, removals, persists);
 		}
 		
 		/**
@@ -1897,7 +1899,7 @@ package org.granite.tide {
 		 */
 		public function meta_handleUpdateEvents(updates:Array):void {
 			var refreshes:Dictionary = new Dictionary();
-			
+
 			for each (var update:Array in updates) {
 				var entity:Object = meta_getCachedObject(update[1], String(update[0]).toLowerCase() != "remove");
 				
@@ -1939,7 +1941,7 @@ package org.granite.tide {
 				_entityManager.uninitializing = uninitializing;
 	        	
 	        	var next:Object = externalData
-					? meta_mergeExternalData(obj, null, '$$EXTSESSIONID$$')	// Force handling of external data
+					? meta_mergeExternalData(obj, null, true)	// Force handling of external data
 					: meta_mergeExternal(obj);
 			}
 			finally {

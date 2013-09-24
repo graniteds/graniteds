@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -21,8 +21,6 @@
  */
 package org.granite.test.tide.data
 {
-    import flash.utils.getQualifiedClassName;
-    
     import mx.data.utils.Managed;
     import mx.utils.ObjectUtil;
     
@@ -82,7 +80,7 @@ package org.granite.test.tide.data
             var change:Change = new Change(alias, "P1", 1, 1);
             change.changes.lastName = "Toto";
 
-            _ctx.meta_handleUpdates("SID", [[ 'UPDATE', new ChangeSet([ change ]) ]]);
+            _ctx.meta_handleUpdates(true, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
 
 			Assert.assertEquals("Last name changed", "Toto", person.lastName);
             Assert.assertEquals("Version increased", 1, person.version);
@@ -102,7 +100,7 @@ package org.granite.test.tide.data
             ccs.addChange(1, null, contact);
             change.changes.contacts = ccs;
 
-            _ctx.meta_handleUpdates("SID", [[ 'UPDATE', new ChangeSet([ change ]) ]]);
+            _ctx.meta_handleUpdates(true, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
 
             Assert.assertEquals("Contact added", 1, person.contacts.length);
             Assert.assertTrue("Contact", person.contacts.getItemAt(0) is Contact);
@@ -126,7 +124,7 @@ package org.granite.test.tide.data
             ccs.addChange(1, null, contact2);
             change.changes.contacts = ccs;
 
-            _ctx.meta_handleUpdates("SID", [[ 'UPDATE', new ChangeSet([ change ]) ]]);
+            _ctx.meta_handleUpdates(true, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
 
             Assert.assertEquals("Contact added", 2, person.contacts.length);
             Assert.assertStrictlyEquals("Contact attached", person, person.contacts.getItemAt(1).person);
@@ -202,7 +200,7 @@ package org.granite.test.tide.data
 			collChanges2.addChange(1, null, contact2c);
 			change2.changes.contacts = collChanges2;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
 			
 			Assert.assertStrictlyEquals("Person em", _ctx, person.meta::entityManager);
 			Assert.assertEquals("Contact added", 2, person.contacts.length);
@@ -258,7 +256,7 @@ package org.granite.test.tide.data
 			collChanges.addChange(1, null, contact2b);
 			change.changes.contacts = collChanges;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
 			
 			Assert.assertStrictlyEquals("Person em", _ctx, person.meta::entityManager);
 			Assert.assertEquals("Contact added", 2, person.contacts.length);
@@ -297,7 +295,7 @@ package org.granite.test.tide.data
 			collChanges.addChange(1, null, contact2b);
 			change.changes.contacts = collChanges;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
 			
 			Assert.assertStrictlyEquals("Person em", _ctx, person.meta::entityManager);
 			Assert.assertFalse("Contacts uninitialized", IPersistentCollection(person.contacts).isInitialized());
@@ -379,7 +377,7 @@ package org.granite.test.tide.data
 			collChanges2.addChange(1, null, test2c);
 			change2.changes.tests = collChanges2;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
 			
 			Assert.assertStrictlyEquals("Patient em", _ctx, patient.meta::entityManager);
 			Assert.assertEquals("Test added to patient", 2, patient.tests.length);
@@ -458,7 +456,7 @@ package org.granite.test.tide.data
 			collChanges2.addChange(1, null, test2c);
 			change2.changes.tests = collChanges2;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
 			
 			Assert.assertStrictlyEquals("Patient em", _ctx, patient.meta::entityManager);
 			Assert.assertEquals("Test added to patient", 2, patient.tests.length);
@@ -519,7 +517,7 @@ package org.granite.test.tide.data
 			collChanges.addChange(-1, null, new ChangeRef(Type.forClass(Visit).name, visit2.uid, visit2.id));
 			change.changes.visits = collChanges;
 			
-			_ctx.meta_handleUpdates(null, [
+			_ctx.meta_handleUpdates(false, [
 				[ 'PERSIST', visitc ],
 				[ 'PERSIST', visitd ],
 				[ 'UPDATE', new ChangeSet([ change ]) ], 
@@ -611,7 +609,7 @@ package org.granite.test.tide.data
 			collChanges2.addChange(1, 1, test2c);
 			change2.changes.tests = collChanges2;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
 			
 			Assert.assertStrictlyEquals("Patient em", _ctx, patient.meta::entityManager);
 			Assert.assertEquals("Test added to patient", 2, patient.tests.length);
@@ -706,7 +704,7 @@ package org.granite.test.tide.data
 			collChanges2.addChange(1, 1, test2c);
 			change2.changes.tests = collChanges2;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
 			
 			Assert.assertStrictlyEquals("Patient em", _ctx, patient.meta::entityManager);
 			Assert.assertEquals("Test added to patient", 3, patient.tests.length);
@@ -799,7 +797,7 @@ package org.granite.test.tide.data
 			collChanges2.addChange(1, 1, test2c);
 			change2.changes.tests = collChanges2;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'UPDATE', new ChangeSet([ change2 ]) ]]);
 			
 			Assert.assertStrictlyEquals("Patient em", _ctx, patient.meta::entityManager);
 			Assert.assertEquals("Test added to patient", 3, patient.tests.length);
@@ -883,7 +881,7 @@ package org.granite.test.tide.data
 			collChanges3.addChange(1, 1, diagnosis2b);
 			change3.changes.deathCauses = collChanges3;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'PERSIST', diagnosis2b ] , [ 'UPDATE', new ChangeSet([ change3 ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'PERSIST', diagnosis2b ] , [ 'UPDATE', new ChangeSet([ change3 ]) ]]);
 			
 			Assert.assertStrictlyEquals("Patient em", _ctx, patient.meta::entityManager);
 			Assert.assertStrictlyEquals("Diagnosis patient", patient, patient.diagnosis.getItemAt(1).patient);
@@ -992,7 +990,7 @@ package org.granite.test.tide.data
 			collChanges3.addChange(1, 1, diagnosis2b);
 			change3.changes.deathCauses = collChanges3;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'PERSIST', diagnosis2b ] , [ 'UPDATE', new ChangeSet([ change3 ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'PERSIST', diagnosis2b ] , [ 'UPDATE', new ChangeSet([ change3 ]) ]]);
 			
 			Assert.assertStrictlyEquals("Patient em", _ctx, patient.meta::entityManager);
 			Assert.assertStrictlyEquals("Diagnosis patient", patient, patient.diagnosis.getItemAt(1).patient);
@@ -1053,7 +1051,7 @@ package org.granite.test.tide.data
 			collChanges.addChange(-1, 4, c4b);
 			change.changes.subclasses = collChanges;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
 			
 			Assert.assertEquals("List size", 4, list.subclasses.length);
 			Assert.assertEquals("List elt 3", "C4", list.subclasses.getItemAt(2).uid);
@@ -1107,7 +1105,7 @@ package org.granite.test.tide.data
 			collChanges.addChange(1, 3, c3b);
 			change.changes.subclasses = collChanges;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
 			
 			Assert.assertEquals("List size", 4, list.subclasses.length);
 			Assert.assertEquals("List elt 3", "C4", list.subclasses.getItemAt(2).uid);
@@ -1163,7 +1161,7 @@ package org.granite.test.tide.data
 			collChanges.addChange(1, 2, new ChangeRef(Type.forClass(Classification).name, "C1", 2));
 			change.changes.subclasses = collChanges;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
 			
 			Assert.assertEquals("List size", 4, list.subclasses.length);
 			Assert.assertEquals("List elt 3", "C1", list.subclasses.getItemAt(2).uid);
@@ -1220,7 +1218,7 @@ package org.granite.test.tide.data
 			collChanges1.addChange(1, keyb, valb);
 			change1.changes.map = collChanges1;
 			
-			_ctx.meta_handleUpdates(null, [[ 'UPDATE', new ChangeSet([ change1 ]) ]]);
+			_ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ]]);
 			
 			Assert.assertStrictlyEquals("Patient em", _ctx, person.meta::entityManager);
 			Assert.assertEquals("Entry added to person.map", 2, person.map.length);
@@ -1253,7 +1251,7 @@ package org.granite.test.tide.data
             change.changes.lastName = "Toto";
 
             _ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, dataConflictHandler, false, 0, true);
-            _ctx.meta_handleUpdates("SID", [[ 'UPDATE', new ChangeSet([ change ]) ]]);
+            _ctx.meta_handleUpdates(true, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
 
             Assert.assertEquals("Last name not changed", "Tutu", person.lastName);
             Assert.assertEquals("Conflict detected", 1, _conflicts.conflicts.length);
@@ -1283,7 +1281,7 @@ package org.granite.test.tide.data
             change.changes.lastName = "Toto";
 
             _ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, dataConflictHandler, false, 0, true);
-            _ctx.meta_handleUpdates("SID", [[ 'UPDATE', new ChangeSet([ change ]) ]]);
+            _ctx.meta_handleUpdates(true, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
 
             Assert.assertEquals("Last name not changed", "Tutu", person.lastName);
             Assert.assertEquals("Conflict detected", 1, _conflicts.conflicts.length);
@@ -1379,7 +1377,7 @@ package org.granite.test.tide.data
 			diag.version = 0;
 			diag.patient.version = 1;
 			var updates:Array = [ [ 'PERSIST', diag ], [ 'UPDATE', change ] ];
-			_ctx.meta_handleUpdates(null, updates);
+			_ctx.meta_handleUpdates(false, updates);
 			
 			Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
 			Assert.assertEquals("Patient version", 1, patient.version);

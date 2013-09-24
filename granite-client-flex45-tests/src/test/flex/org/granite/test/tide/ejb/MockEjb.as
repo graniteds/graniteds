@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -25,8 +25,9 @@ package org.granite.test.tide.ejb
     import org.granite.tide.rpc.TideOperation;
     import org.granite.tide.ejb.Ejb;
     import mx.rpc.remoting.mxml.RemoteObject;
-    
-    
+
+    import org.granite.tide.service.ServerSession;
+
     public class MockEjb extends Ejb
     {
         public var token:MockEjbAsyncToken;
@@ -34,16 +35,16 @@ package org.granite.test.tide.ejb
         public function MockEjb(destination:String = null) {
             super(destination);
         }
-        
-        public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
-	        return new MockEjbOperation(this, name);
-        } 
-        
+
+        protected override function initServerSession(destination:String):ServerSession {
+            return new MockEjbServerSession(destination);
+        }
+
 		public static function getInstance():MockEjb {
-			var tide:Tide = Tide.getInstance("ejb", MockEjb);
+			var tide:Tide = Tide.getInstance("server", MockEjb);
 			if (!(tide is MockEjb)) {
 				Tide.resetInstance();
-				tide = Tide.getInstance("ejb", MockEjb);
+				tide = Tide.getInstance("server", MockEjb);
 			}
 			return tide as MockEjb;
 		}
@@ -57,20 +58,31 @@ package org.granite.test.tide.ejb
 
 
 import mx.rpc.remoting.mxml.RemoteObject;
-import mx.rpc.AbstractOperation;
-import org.granite.test.tide.spring.MockSpringAsyncToken;
 import org.granite.test.tide.ejb.MockEjb;
 import org.granite.test.tide.ejb.MockEjbAsyncToken;
-import org.granite.tide.Tide;
+import org.granite.tide.ejb.EjbServerSession;
 import org.granite.tide.rpc.TideOperation;
 import mx.rpc.AsyncToken;
+
+import org.granite.tide.service.ServerSession;
+
+class MockEjbServerSession extends EjbServerSession {
+
+    public function MockEjbServerSession(destination:String):void {
+        super(destination);
+    }
+
+    public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
+        return new MockEjbOperation(this, name);
+    }
+}
 
 class MockEjbOperation extends TideOperation {
     
     private var _name:String = null;
     
-    public function MockEjbOperation(tide:Tide, name:String):void {
-        super(tide);
+    public function MockEjbOperation(serverSession:ServerSession, name:String):void {
+        super(serverSession);
         _name = name;
     }
     

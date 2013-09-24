@@ -447,7 +447,7 @@ package org.granite.tide.seam {
                 mergeExternal = invocationResult.merge;
 				
 				if (invocationResult.updates)
-					meta_handleUpdates(null, invocationResult.updates);
+					meta_handleUpdates(false, invocationResult.updates);
                 
 				// Handle scope changes
 				if (_tide.isComponentInEvent(componentName) && invocationResult.scope == Tide.SCOPE_SESSION && !meta_isGlobal()) {

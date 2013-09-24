@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -47,7 +47,7 @@ package org.granite.test.tide.framework
 			Util['externalToString'](tideToString);
 			
 			var entity:Object = new Object();
-			entity.test = new PersistentCollection(null, "test", new PersistentSet(false));
+			entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
 			Assert.assertEquals("Uninitialized collection for object: null test", Util.toString(entity.test));
         }
 		

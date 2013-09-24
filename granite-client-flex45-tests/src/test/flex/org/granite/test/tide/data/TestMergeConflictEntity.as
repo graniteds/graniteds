@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -61,7 +61,7 @@ package org.granite.test.tide.data
         	contact.version = 0;
         	contact.person = person;
         	person.contacts.addItem(contact);
-        	_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+        	_ctx.person = _ctx.meta_mergeExternalData(person, null, false);
         	person = _ctx.person;
         	
         	person.lastName = "toto";
@@ -90,7 +90,7 @@ package org.granite.test.tide.data
         	
         	_ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, conflictsHandler);
         	
-        	_ctx.meta_mergeExternalData(person2, null, "S2");
+        	_ctx.meta_mergeExternalData(person2, null, true);
         	
         	Assert.assertEquals("Conflicts after merge", 1, _conflicts.conflicts.length);
 			Assert.assertTrue("Person dirty after merge", _ctx.meta_isEntityChanged(person));
@@ -129,7 +129,7 @@ package org.granite.test.tide.data
         	contact3b.person = person3;
         	person3.contacts.addItem(contact3);
         	
-        	_ctx.meta_mergeExternalData(person3, null, "S2");
+        	_ctx.meta_mergeExternalData(person3, null, true);
         	
         	Assert.assertEquals("Conflicts after merge 2", 1, _conflicts.conflicts.length);
         	
@@ -152,7 +152,7 @@ package org.granite.test.tide.data
 			contact.version = 0;
 			contact.person = person;
 			person.contacts.addItem(contact);
-			_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+			_ctx.person = _ctx.meta_mergeExternalData(person, null, false);
 			person = _ctx.person;
 			
 			person.lastName = "toto";
@@ -186,7 +186,7 @@ package org.granite.test.tide.data
 			
 			_ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, conflictsHandler);
 			
-			_ctx.meta_mergeExternalData(person2, null, "S2");
+			_ctx.meta_mergeExternalData(person2, null, true);
 			
 			Assert.assertNull("Conflicts after merge", _conflicts);
 			Assert.assertFalse("Person dirty after merge", _ctx.meta_isEntityChanged(person));
@@ -205,7 +205,7 @@ package org.granite.test.tide.data
 			contact.version = 0;
 			contact.person = person;
 			person.contacts.addItem(contact);
-			_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+			_ctx.person = _ctx.meta_mergeExternalData(person, null, false);
 			person = _ctx.person;
 			
 			person.lastName = "tutu";
@@ -228,7 +228,7 @@ package org.granite.test.tide.data
 			
 			_ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, acceptServerConflictsHandler);
 			
-			_ctx.meta_mergeExternalData([person2], null, "S2");
+			_ctx.meta_mergeExternalData([person2], null, true);
 
 			Assert.assertFalse("Person dirty after merge", _ctx.meta_isEntityChanged(person));
 			Assert.assertEquals("Person firstName", "tutu", person.firstName);
@@ -248,7 +248,7 @@ package org.granite.test.tide.data
             contact.version = 0;
             contact.person = person;
             person.contacts.addItem(contact);
-            _ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+            _ctx.person = _ctx.meta_mergeExternalData(person, null, false);
             person = Person(_ctx.person);
             contact = Contact(person.contacts.getItemAt(0));
 
@@ -273,7 +273,7 @@ package org.granite.test.tide.data
 
             _ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, acceptServerConflictsHandler);
 
-            _ctx.meta_mergeExternalData([person2], null, "S2");
+            _ctx.meta_mergeExternalData([person2], null, true);
 
             Assert.assertFalse("Contact dirty after merge", _ctx.meta_isEntityChanged(contact));
             Assert.assertEquals("Contact email", "toto@toto.net", contact.email);
@@ -300,7 +300,7 @@ package org.granite.test.tide.data
 			contact.version = 0;
 			contact.person = person;
 			person.contacts.addItem(contact);
-			_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+			_ctx.person = _ctx.meta_mergeExternalData(person, null, false);
 			person = _ctx.person;
 			
 			person.lastName = "tutu";
@@ -321,7 +321,7 @@ package org.granite.test.tide.data
 			contact2.person = person2;
 			person2.contacts.addItem(contact2);
 			
-			_ctx.meta_mergeExternalData([person2], null, "S2");
+			_ctx.meta_mergeExternalData([person2], null, true);
 			
 			Assert.assertTrue("Person dirty after merge", _ctx.meta_isEntityChanged(person));
 			
@@ -348,7 +348,7 @@ package org.granite.test.tide.data
 			contact.version = 0;
 			contact.person = person;
 			person.contacts.addItem(contact);
-			_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+			_ctx.person = _ctx.meta_mergeExternalData(person, null, false);
 			person = Person(_ctx.person);
 			contact = Contact(person.contacts.getItemAt(0));
 			
@@ -376,7 +376,7 @@ package org.granite.test.tide.data
 			_conflicts = null;
 			_ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, conflictsHandler);
 			
-			_ctx.meta_mergeExternalData([personb], null, "S2");
+			_ctx.meta_mergeExternalData([personb], null, true);
 			
 			Assert.assertTrue("Person dirty after merge", _ctx.meta_isEntityChanged(person));
 			Assert.assertNotNull("Conflict", _conflicts);

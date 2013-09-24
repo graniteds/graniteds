@@ -193,7 +193,7 @@ package org.granite.tide.data {
                 var receivedSessionId:String = event.message.headers["GDSSessionID"] as String;
                 var updates:Array = event.message.body as Array;
                 _context.meta_setServerSession(_serverSession);
-                _context.meta_handleUpdates(receivedSessionId, updates);
+                _context.meta_handleUpdates(receivedSessionId != null && receivedSessionId != _serverSession.sessionId, updates);
                 _context.meta_handleUpdateEvents(updates);
             }
             finally {

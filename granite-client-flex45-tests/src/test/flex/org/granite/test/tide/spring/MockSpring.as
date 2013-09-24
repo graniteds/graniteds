@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -21,10 +21,8 @@
  */
 package org.granite.test.tide.spring
 {
-    import mx.rpc.remoting.mxml.RemoteObject;
-    
     import org.granite.tide.Tide;
-    import org.granite.tide.rpc.TideOperation;
+    import org.granite.tide.service.ServerSession;
     import org.granite.tide.spring.Spring;
     
     
@@ -36,16 +34,16 @@ package org.granite.test.tide.spring
         public function MockSpring(destination:String = null) {
             super(destination);
         }
-        
-        public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
-	        return new MockSpringOperation(this, name);
-        } 
-        
+
+        protected override function initServerSession(destination:String):ServerSession {
+            return new MockSpringServerSession(destination);
+        }
+
 		public static function getInstance():MockSpring {
-			var tide:Tide = Tide.getInstance("spring", MockSpring);
+			var tide:Tide = Tide.getInstance("server", MockSpring);
 			if (!(tide is MockSpring)) {
 				Tide.resetInstance();
-				tide = Tide.getInstance("spring", MockSpring);
+				tide = Tide.getInstance("server", MockSpring);
 			}
 			return tide as MockSpring;
 		}
@@ -59,21 +57,32 @@ package org.granite.test.tide.spring
 
 
 
-import mx.rpc.AbstractOperation;
 import mx.rpc.AsyncToken;
 import mx.rpc.remoting.mxml.RemoteObject;
 
 import org.granite.test.tide.spring.MockSpring;
 import org.granite.test.tide.spring.MockSpringAsyncToken;
-import org.granite.tide.Tide;
 import org.granite.tide.rpc.TideOperation;
+import org.granite.tide.service.ServerSession;
+import org.granite.tide.spring.SpringServerSession;
+
+class MockSpringServerSession extends SpringServerSession {
+
+    public function MockSpringServerSession(destination:String):void {
+        super(destination);
+    }
+
+    public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
+        return new MockSpringOperation(this, name);
+    }
+}
 
 class MockSpringOperation extends TideOperation {
     
     private var _name:String = null;
     
-    public function MockSpringOperation(tide:Tide, name:String):void {
-        super(tide);
+    public function MockSpringOperation(serverSession:ServerSession, name:String):void {
+        super(serverSession);
         _name = name;
     }
     

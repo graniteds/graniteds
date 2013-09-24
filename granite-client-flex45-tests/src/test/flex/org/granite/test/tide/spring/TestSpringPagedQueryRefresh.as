@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -87,7 +87,7 @@ package org.granite.test.tide.spring
 			person.lastName = "Person" + count;
 			
 			var updates:Array = [ [ 'PERSIST', person ] ];
-			_ctx.meta_handleUpdates(null, updates);
+			_ctx.meta_handleUpdates(false, updates);
 			
 			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, refreshHandler, 1000, count+1);
 			
@@ -146,7 +146,7 @@ package org.granite.test.tide.spring
 			person.lastName = "Person" + count;
 			
 			var updates:Array = [ [ 'PERSIST', person ] ];
-			_ctx.meta_handleUpdates(null, updates);
+			_ctx.meta_handleUpdates(false, updates);
 			
 			Async.handleEvent(this, pagedQuery, PagedCollection.COLLECTION_PAGE_CHANGE, refresh2Handler, 1000, count+1, timeout2Handler);
 			

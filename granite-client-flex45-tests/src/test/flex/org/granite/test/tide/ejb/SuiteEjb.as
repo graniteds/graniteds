@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -21,9 +21,6 @@
  */
 package org.granite.test.tide.ejb
 {
-	import org.granite.test.tide.ejb.TestEjbClientPagedQuery;
-	import org.granite.test.tide.ejb.TestEjbServerPagedQuery;
-	
 	[Suite]
 	[RunWith("org.flexunit.runners.Suite")]
 	public class SuiteEjb
