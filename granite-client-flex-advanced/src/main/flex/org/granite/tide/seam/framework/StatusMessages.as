@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -32,7 +32,6 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.tide.seam.framework {
 
     import flash.utils.flash_proxy;
@@ -77,10 +76,8 @@ package org.granite.tide.seam.framework {
      *  The messages are either received from the server or added locally by the addMessage or addMessageToControl method.<br/> 
      *  <br/>
      * 	The StatusMessages component is by default bound to the context with the name 'statusMessages'.<br/>
-     * 	<ol>
      *  <li>messages is an ArrayCollection of TideMessage that can be retrieved or bound from tideContext.statusMessages.messages.</li>
      *  <li>keyedMessages is an Map of ArrayCollections of TideMessages that can be retrieved or bound from tideContext.statusMessages.keyedMessages.</li>
-     *  </ol>
      *  These message lists are bindable properties that can be used as providers for Repeaters or Lists.
      * 
      * 	@author William DRAI

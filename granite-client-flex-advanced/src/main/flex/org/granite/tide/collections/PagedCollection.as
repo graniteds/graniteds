@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -32,7 +32,6 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.tide.collections {
     
     import flash.events.Event;
@@ -199,7 +198,7 @@ package org.granite.tide.collections {
 		}
 		
 		/**
-		 *  Set whether or not the collection will subscribe to org.granite.tide.data.refresh.&lt;Entity Name&gt;
+		 *  Set whether or not the collection will subscribe to org.granite.tide.data.refresh.&lt;Entity Name&gt; 
 		 *  events and automatically refresh when they are dispatched
 		 */
 		public function set autoRefresh(autoRefresh:Boolean):void {

@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -114,7 +114,7 @@ package org.granite.math {
 		 * </ul>
 		 * 
 		 * @param value the value to be assigned to the new <code>Long</code>.
-		 * @param radix the radix (2 <= radix <= 36) to be used for string conversion
+		 * @param radix the radix (2 &lt;= radix &lt;= 36) to be used for string conversion
 		 * 		(ignored if the <code>value</code> parameter isn't a string).
 		 * @throws org.granite.math.NumberFormatError if the <code>value</code>
 		 * 		parameter is an invalid String representation or it doesn't fit into

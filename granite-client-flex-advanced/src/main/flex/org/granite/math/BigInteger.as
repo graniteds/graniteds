@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -113,7 +113,7 @@ package org.granite.math {
 		 * <ul>
 		 * <li><code>String</code>: it must be a not empty String in the form of
 		 * 		<i>-?[0-9a-zA-Z]+</i> (ie: an optional '-' character followed by
-		 * 		a not empty sequence of digits (with radix >= 2 and <= 36)). When
+		 * 		a not empty sequence of digits (with radix &gt;= 2 and &lt;= 36)). When
 		 * 		a String value is used, the second parameter <code>radix</code>
 		 * 		is also used, and the supplied digits must be in accordance with
 		 * 		the specified radix.</li>
@@ -130,7 +130,7 @@ package org.granite.math {
 		 * </ul>
 		 * 
 		 * @param value the value to be assigned to the new <code>BigInteger</code>.
-		 * @param radix the radix (2 <= radix <= 36) to be used for string conversion
+		 * @param radix the radix (2 &lt;= radix &lt;= 36) to be used for string conversion
 		 * 		(ignored if the <code>value</code> parameter isn't a string).
 		 * @throws org.granite.math.NumberFormatError if the <code>value</code>
 		 * 		parameter is an invalid String representation. 

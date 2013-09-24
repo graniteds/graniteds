@@ -16,3 +16,5 @@ classes*
 .settings
 .FlexUnitSettings
 .externalToolBuilders/
+.DS_Store
+

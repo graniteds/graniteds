@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -84,7 +84,7 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border="1">
+		 * <table style="border: 1px solid #808080">
 		 * <tr valign="top">
 		 * <th>Input Number</th>
 		 * <th>Input rounded to one digit<br> with <code>CEILING</code> rounding</th>
@@ -110,7 +110,7 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border="1">
+		 * <table style="border: 1px solid #808080">
 		 * <tr valign="top">
 		 * <th>Input Number</th>
 		 * <th>Input rounded to one digit<br> with <code>DOWN</code> rounding</th>
@@ -137,7 +137,7 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border="1">
+		 * <table style="border: 1px solid #808080">
 		 * <tr valign="top">
 		 * <th>Input Number</th>
 		 * <th>Input rounded to one digit<br> with <code>FLOOR</code> rounding</th>
@@ -164,7 +164,7 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border="1">
+		 * <table style="border: 1px solid #808080">
 		 * <tr valign="top">
 		 * <th>Input Number</th>
 		 * <th>Input rounded to one digit<br> with <code>HALF_DOWN</code> rounding</th>
@@ -198,7 +198,7 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border="1">
+		 * <table style="border: 1px solid #808080">
 		 * <tr valign="top">
 		 * <th>Input Number</th>
 		 * <th>Input rounded to one digit<br> with <code>HALF_EVEN</code> rounding</th>
@@ -226,7 +226,7 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border="1">
+		 * <table style="border: 1px solid #808080">
 		 * <tr valign="top">
 		 * <th>Input Number</th>
 		 * <th>Input rounded to one digit<br> with <code>HALF_UP</code> rounding</th>
@@ -253,7 +253,7 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border="1">
+		 * <table style="border: 1px solid #808080">
 		 * <tr valign="top">
 		 * <th>Input Number</th>
 		 * <th>Input rounded to one digit<br> with <code>UNNECESSARY</code> rounding</th>
@@ -280,7 +280,7 @@ package org.granite.math {
 		 * <br>
 		 * <br>
 		 * Example:
-		 * <table border="1">
+		 * <table style="border: 1px solid #808080">
 		 * <tr valign="top">
 		 * <th>Input Number</th>
 		 * <th>Input rounded to one digit<br> with <code>UP</code> rounding</th>

@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -32,11 +32,11 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.tide {
-import org.granite.reflect.Method;
 
-/**
+	import org.granite.reflect.Method;
+
+	/**
 	 * 	@author William DRAI
 	 */
 	public interface IArgumentPreprocessor {

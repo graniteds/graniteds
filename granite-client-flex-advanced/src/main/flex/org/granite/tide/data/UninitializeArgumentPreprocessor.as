@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -32,18 +32,17 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-
 package org.granite.tide.data {
 
 	import mx.data.utils.Managed;
 	import mx.logging.ILogger;
     import mx.logging.Log;
 
-import org.granite.math.IllegalArgumentError;
-import org.granite.reflect.Annotation;
-import org.granite.reflect.Method;
+    import org.granite.math.IllegalArgumentError;
+    import org.granite.reflect.Annotation;
+    import org.granite.reflect.Method;
 
-import org.granite.reflect.Type;
+    import org.granite.reflect.Type;
     import org.granite.tide.BaseContext;
     import org.granite.tide.EntityDescriptor;
     import org.granite.tide.IArgumentPreprocessor;

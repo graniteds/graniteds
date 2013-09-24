@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -32,8 +32,8 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package	org.granite.tide.service
-{
+package	org.granite.tide.service {
+
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	

@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -19,7 +19,6 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-
 package org.granite.gravity.channels {
 
     import flash.events.*;
@@ -244,6 +243,10 @@ package org.granite.gravity.channels {
 		
 		protected function internalCallResponder(responder:MessageResponder, response:IMessage):void {
 			callResponder(responder, response);
+		}
+		
+		protected function get tunnel():GravityStreamTunnel {
+			return _tunnel;
 		}
 
 		protected function newTunnel():GravityStreamTunnel {
