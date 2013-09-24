@@ -71,6 +71,8 @@ package org.granite.tide.data {
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
     import org.granite.tide.data.events.TideDataConflictsEvent;
+    import org.granite.tide.service.ServerSession;
+    import org.granite.tide.service.ServerSession;
     import org.granite.util.Enum;
 
 
@@ -86,6 +88,7 @@ package org.granite.tide.data {
 	 */
     public class MergeContext {
 
+        private var _serverSession:ServerSession = null;
         private var _context:BaseContext = null;
         private var _entityManager:EntityManager = null;
         private var _dirtyCheckContext:DirtyCheckContext = null;
@@ -106,10 +109,17 @@ package org.granite.tide.data {
 
 
         public function MergeContext(context:BaseContext, entityManager:EntityManager, dirtyCheckContext:DirtyCheckContext) {
-            super();
             _context = context;
             _entityManager = entityManager;
             _dirtyCheckContext = dirtyCheckContext;
+        }
+
+        public function get serverSession():ServerSession {
+            return _serverSession;
+        }
+
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
         }
 
         /**
@@ -125,7 +135,6 @@ package org.granite.tide.data {
             merging = false;
             mergeUpdate = false;
         }
-		
 		
 
         public function addConflict(localEntity:IEntity, receivedEntity:Object):void {
@@ -167,7 +176,7 @@ package org.granite.tide.data {
 			if (_entityCache == null) {
 				_entityCache = new Dictionary();
 				mergeUpdate = true;
-			}			
+			}
 		}
 		public function saveEntityCache():Dictionary {
 			var entityCache:Dictionary = _entityCache;

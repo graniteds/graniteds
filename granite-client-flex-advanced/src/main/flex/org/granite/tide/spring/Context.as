@@ -34,61 +34,36 @@
  */
 package org.granite.tide.spring {
 
-    import flash.events.Event;
-    import flash.events.IEventDispatcher;
-    import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
-    import flash.utils.getQualifiedClassName;
-    
+
     import mx.collections.ArrayCollection;
-    import mx.collections.ArrayList;
     import mx.collections.IList;
-    import mx.collections.ItemResponder;
-    import mx.collections.ListCollectionView;
-    import mx.controls.Alert;
-    import mx.core.IUID;
-    import mx.core.UIComponent;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
-    import mx.events.FlexEvent;
     import mx.events.PropertyChangeEvent;
-    import mx.events.PropertyChangeEventKind;
-    import mx.events.ValidationResultEvent;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.messaging.events.ChannelFaultEvent;
     import mx.messaging.messages.ErrorMessage;
     import mx.rpc.AbstractOperation;
     import mx.rpc.AsyncToken;
-    import mx.rpc.remoting.mxml.RemoteObject;
-    import mx.rpc.events.FaultEvent;
     import mx.rpc.events.ResultEvent;
-    import mx.utils.ObjectProxy;
-    import mx.utils.ObjectUtil;
     import mx.utils.object_proxy;
-    import mx.validators.ValidationResult;
-    
-    import org.granite.collections.IPersistentCollection;
-    import org.granite.events.SecurityEvent;
+
     import org.granite.meta;
     import org.granite.tide.Tide;
     import org.granite.tide.BaseContext;
     import org.granite.tide.IComponent;
     import org.granite.tide.Component;
     import org.granite.tide.IEntity;
-    import org.granite.tide.IEntityManager;
     import org.granite.tide.IExpression;
     import org.granite.tide.IInvocationCall;
     import org.granite.tide.IInvocationResult;
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.impl.ComponentProperty;
+    import org.granite.tide.service.ServerSession;
     import org.granite.tide.invocation.InvocationCall;
     import org.granite.tide.invocation.InvocationResult;
     import org.granite.tide.invocation.ContextUpdate;
-    import org.granite.tide.collections.PersistentCollection;
-    import org.granite.tide.events.TideFaultEvent;
-    import org.granite.tide.events.TideResultEvent;
-
 
     use namespace flash_proxy;
     use namespace object_proxy;
@@ -230,10 +205,10 @@ package org.granite.tide.spring {
          * 
          *  @return the operation token
          */
-        public override function meta_callComponent(component:IComponent, op:String, args:Array, withContext:Boolean = true):AsyncToken {
+        public override function meta_callComponent(serverSession:ServerSession, component:IComponent, op:String, args:Array, withContext:Boolean = true):AsyncToken {
             log.debug("callComponent {0}.{1}", component.meta_name, op);
             
-            var token:AsyncToken = super.meta_callComponent(component, op, args, withContext);
+            var token:AsyncToken = super.meta_callComponent(serverSession, component, op, args, withContext);
 			
             if (withContext) {
                 _pendingUpdates = new ArrayCollection(_updates.toArray());
@@ -244,7 +219,7 @@ package org.granite.tide.spring {
         }
         
         
-        public override function meta_prepareCall(operation:AbstractOperation, withContext:Boolean = true):IInvocationCall {
+        public override function meta_prepareCall(serverSession:ServerSession, operation:AbstractOperation, withContext:Boolean = true):IInvocationCall {
 		    var call:InvocationCall = null;
 		    if (withContext)
 		        call = new InvocationCall(null, _updates, null);

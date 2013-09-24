@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectCodeStyleSettingsManager">
+    <option name="PER_PROJECT_SETTINGS">
+      <value>
+        <ECMA4CodeStyleSettings>
+          <option name="INDENT_PACKAGE_CHILDREN" value="1" />
+        </ECMA4CodeStyleSettings>
+        <XML>
+          <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
+        </XML>
+        <codeStyleSettings language="ECMA Script Level 4">
+          <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
+          <option name="BLANK_LINES_AFTER_PACKAGE" value="1" />
+          <option name="ELSE_ON_NEW_LINE" value="true" />
+          <option name="CATCH_ON_NEW_LINE" value="true" />
+          <option name="FINALLY_ON_NEW_LINE" value="true" />
+          <option name="ALIGN_MULTILINE_TERNARY_OPERATION" value="true" />
+          <option name="ALIGN_MULTILINE_ARRAY_INITIALIZER_EXPRESSION" value="true" />
+          <option name="TERNARY_OPERATION_SIGNS_ON_NEXT_LINE" value="true" />
+          <option name="ARRAY_INITIALIZER_LBRACE_ON_NEXT_LINE" value="true" />
+          <option name="ARRAY_INITIALIZER_RBRACE_ON_NEXT_LINE" value="true" />
+          <option name="PLACE_ASSIGNMENT_SIGN_ON_NEXT_LINE" value="true" />
+          <arrangement>
+            <groups>
+              <group>
+                <type>GROUP_PROPERTY_FIELD_WITH_GETTER_SETTER</type>
+                <order>KEEP</order>
+              </group>
+            </groups>
+            <rules>
+              <rule>
+                <match>
+                  <STATIC_INIT />
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <CONST />
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PUBLIC />
+                    <STATIC />
+                    <VAR />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PROTECTED />
+                    <STATIC />
+                    <VAR />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PACKAGE_PRIVATE />
+                    <STATIC />
+                    <VAR />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PRIVATE />
+                    <STATIC />
+                    <VAR />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PROPERTY />
+                    <PUBLIC />
+                    <STATIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PROPERTY />
+                    <PROTECTED />
+                    <STATIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PACKAGE_PRIVATE />
+                    <PROPERTY />
+                    <STATIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PRIVATE />
+                    <PROPERTY />
+                    <STATIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <METHOD />
+                    <PUBLIC />
+                    <STATIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <METHOD />
+                    <PROTECTED />
+                    <STATIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <METHOD />
+                    <PACKAGE_PRIVATE />
+                    <STATIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <METHOD />
+                    <PRIVATE />
+                    <STATIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <CONSTRUCTOR />
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PUBLIC />
+                    <VAR />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PROTECTED />
+                    <VAR />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PACKAGE_PRIVATE />
+                    <VAR />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PRIVATE />
+                    <VAR />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <OVERRIDE />
+                    <PROPERTY />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PROPERTY />
+                    <PUBLIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PROPERTY />
+                    <PROTECTED />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PACKAGE_PRIVATE />
+                    <PROPERTY />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <PRIVATE />
+                    <PROPERTY />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <METHOD />
+                    <OVERRIDE />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <METHOD />
+                    <PUBLIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <METHOD />
+                    <PROTECTED />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <METHOD />
+                    <PACKAGE_PRIVATE />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <METHOD />
+                    <PRIVATE />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <EVENT_HANDLER />
+                    <OVERRIDE />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <EVENT_HANDLER />
+                    <PUBLIC />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <EVENT_HANDLER />
+                    <PROTECTED />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <EVENT_HANDLER />
+                    <PACKAGE_PRIVATE />
+                  </AND>
+                </match>
+              </rule>
+              <rule>
+                <match>
+                  <AND>
+                    <EVENT_HANDLER />
+                    <PRIVATE />
+                  </AND>
+                </match>
+              </rule>
+            </rules>
+          </arrangement>
+        </codeStyleSettings>
+      </value>
+    </option>
+    <option name="USE_PER_PROJECT_SETTINGS" value="true" />
+  </component>
+</project>
+

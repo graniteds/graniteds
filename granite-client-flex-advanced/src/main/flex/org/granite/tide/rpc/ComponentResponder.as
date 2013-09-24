@@ -34,22 +34,23 @@
  */
 package org.granite.tide.rpc {
 
+    import mx.rpc.AsyncToken;
     import mx.rpc.IResponder;
     import mx.rpc.AbstractOperation;
     
     import org.granite.tide.BaseContext;
 	import org.granite.tide.IComponent;
     import org.granite.tide.ITideResponder;
-    
+    import org.granite.tide.service.ServerSession;
 
     /**
      * @author William DRAI
      */
-    [ExcludeClass]
     public class ComponentResponder implements IResponder {
         
         private var _sourceContext:BaseContext;
         private var _sourceModulePrefix:String;
+        private var _serverSession:ServerSession;
         private var _component:IComponent;
 		private var _componentName:String;
 		private var _op:String;
@@ -62,8 +63,9 @@ package org.granite.tide.rpc {
         private var _info:Object;
         
         
-        public function ComponentResponder(sourceContext:BaseContext, resultHandler:Function, faultHandler:Function, 
+        public function ComponentResponder(serverSession:ServerSession,sourceContext:BaseContext, resultHandler:Function, faultHandler:Function,
             component:IComponent = null, op:String = null, args:Array = null, operation:AbstractOperation = null, clearOp:Boolean = false, tideResponder:ITideResponder = null, info:Object = null):void {
+            _serverSession = serverSession;
             _sourceContext = sourceContext;
             _sourceModulePrefix = _sourceContext.meta_tide.currentModulePrefix;
             _component = component;
@@ -89,7 +91,7 @@ package org.granite.tide.rpc {
 		public function get args():Array {
 			return _args;
 		}
-		
+
 		public function get sourceContext():BaseContext {
 			return _sourceContext;
 		}
@@ -97,13 +99,17 @@ package org.granite.tide.rpc {
 		public function get component():IComponent {
 			return _component;
 		}
-        
+
+        public function retry():AsyncToken {
+            return _serverSession.reinvokeComponent(this);
+        }
+
         
 	    public function result(data:Object):void {
 	        if (_info != null)
-		        _resultHandler(_sourceContext, _sourceModulePrefix, data, _info, _componentName, _op, _tideResponder, this);
+		        _resultHandler(_serverSession, _sourceContext, _sourceModulePrefix, data, _info, _componentName, _op, _tideResponder, this);
 		    else
-		        _resultHandler(_sourceContext, _sourceModulePrefix, data, _componentName, _op, _tideResponder, this);
+		        _resultHandler(_serverSession, _sourceContext, _sourceModulePrefix, data, _componentName, _op, _tideResponder, this);
 		    
 		    if (_clearOp)
 		        _operation.clearResult();
@@ -111,9 +117,9 @@ package org.granite.tide.rpc {
 	    
 	    public function fault(info:Object):void {
 	        if (_info != null)
-		        _faultHandler(_sourceContext, _sourceModulePrefix, info, _info, _componentName, _op, _tideResponder, this);
+		        _faultHandler(_serverSession, _sourceContext, _sourceModulePrefix, info, _info, _componentName, _op, _tideResponder, this);
 	        else
-		        _faultHandler(_sourceContext, _sourceModulePrefix, info, _componentName, _op, _tideResponder, this);
+		        _faultHandler(_serverSession, _sourceContext, _sourceModulePrefix, info, _componentName, _op, _tideResponder, this);
 		    
 		    if (_clearOp)
 				_operation.clearResult();

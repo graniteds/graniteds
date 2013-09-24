@@ -50,8 +50,10 @@ package org.granite.tide.data {
 	import org.granite.tide.IComponent;
 	import org.granite.tide.Tide;
 	import org.granite.tide.events.TideSubscriptionEvent;
-	import org.granite.tide.service.IServiceInitializer;
-	import org.granite.util.ClassUtil;
+    import org.granite.tide.service.DefaultChannelBuilder;
+    import org.granite.tide.service.IServer;
+    import org.granite.tide.service.ServerSession;
+    import org.granite.util.ClassUtil;
     
 
 	[Bindable]
@@ -72,12 +74,19 @@ package org.granite.tide.data {
 	public class DataObserver extends EventDispatcher implements IComponent {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.data.DataObserver");
-		
+
+        private var _serverSession:ServerSession = null;
+        private var _type:String = null;
 		private var _consumer:Consumer = null;
 		
 		private var _name:String;
 		private var _context:BaseContext;
-		
+
+
+        public function DataObserver(serverSession:ServerSession = null, type:String = DefaultChannelBuilder.LONG_POLLING):void {
+            _serverSession = serverSession;
+            _type = type;
+        }
 		
 		public function get meta_name():String {
 			return _consumer.destination;
@@ -91,13 +100,11 @@ package org.granite.tide.data {
 			
 		    log.debug("init DataObserver {0}", componentName);
 			_context = context;
-	        _consumer = new Consumer();
-	        var serviceInitializer:IServiceInitializer = IServiceInitializer(context.byType(IServiceInitializer));
-	        if (serviceInitializer != null)
-	        	serviceInitializer.initialize(_consumer);
-	        
-	        _consumer.destination = componentName;
-	        _consumer.topic = "tideDataTopic";
+            if (_serverSession == null)
+                _serverSession = context.meta_tide.mainServerSession;
+
+	        _consumer = _serverSession.getConsumer(_type, componentName);
+            _consumer.topic = "tideDataTopic";
 		}
 		
 		public function meta_clear():void {
@@ -146,7 +153,7 @@ package org.granite.tide.data {
 		    _consumer.addEventListener(MessageAckEvent.ACKNOWLEDGE, unsubscribeHandler);
 			_consumer.addEventListener(MessageFaultEvent.FAULT, unsubscribeFaultHandler);
 			_consumer.addEventListener(ChannelFaultEvent.FAULT, unsubscribeFaultHandler);
-		    _context.meta_tide.checkWaitForLogout();
+            _serverSession.checkWaitForLogout();
 		    _consumer.unsubscribe();
 		}
 		
@@ -156,7 +163,7 @@ package org.granite.tide.data {
 			_consumer.removeEventListener(MessageFaultEvent.FAULT, unsubscribeFaultHandler);
 			_consumer.removeEventListener(ChannelFaultEvent.FAULT, unsubscribeFaultHandler);
 	    	_consumer.disconnect();
-		    _context.meta_tide.tryLogout();
+            _serverSession.tryLogout();
 			dispatchEvent(new TideSubscriptionEvent(TideSubscriptionEvent.TOPIC_UNSUBSCRIBED));
 		}
 		
@@ -166,7 +173,7 @@ package org.granite.tide.data {
 			_consumer.removeEventListener(MessageFaultEvent.FAULT, unsubscribeFaultHandler);
 			_consumer.removeEventListener(ChannelFaultEvent.FAULT, unsubscribeFaultHandler);
 			_consumer.disconnect();
-			_context.meta_tide.tryLogout();
+			_serverSession.tryLogout();
 			dispatchEvent(new TideSubscriptionEvent(TideSubscriptionEvent.TOPIC_UNSUBSCRIBED_FAULT));
 		}
 
@@ -182,13 +189,16 @@ package org.granite.tide.data {
             
             // Save the call context because data has not been requested by the current user 
             var savedCallContext:Object = _context.meta_saveAndResetCallContext();
-            
-            var receivedSessionId:String = event.message.headers["GDSSessionID"] as String;
-            var updates:Array = event.message.body as Array;
-			_context.meta_handleUpdates(receivedSessionId, updates);
-			_context.meta_handleUpdateEvents(updates);
-	      	
-	      	_context.meta_restoreCallContext(savedCallContext);
+            try {
+                var receivedSessionId:String = event.message.headers["GDSSessionID"] as String;
+                var updates:Array = event.message.body as Array;
+                _context.meta_setServerSession(_serverSession);
+                _context.meta_handleUpdates(receivedSessionId, updates);
+                _context.meta_handleUpdateEvents(updates);
+            }
+            finally {
+	      	    _context.meta_restoreCallContext(savedCallContext);
+            }
         }
 	}
 }

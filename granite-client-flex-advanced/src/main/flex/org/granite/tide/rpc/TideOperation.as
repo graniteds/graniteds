@@ -46,39 +46,40 @@ package org.granite.tide.rpc {
     import mx.rpc.events.FaultEvent;
     
     import org.granite.tide.Tide;
-    
+    import org.granite.tide.service.ServerSession;
+
     use namespace mx_internal;
 
 
     [ExcludeClass]
     public class TideOperation extends Operation {
 
-		private var _tide:Tide;
+		private var _serverSession:ServerSession;
 		
 		
-        public function TideOperation(tide:Tide, svc:RemoteObject = null, name:String = null) : void {
+        public function TideOperation(serverSession:ServerSession, svc:RemoteObject = null, name:String = null) : void {
             super(svc, name);
-            _tide = tide;
+            _serverSession = serverSession;
         }
         
         
     	override public function cancel(id:String = null):AsyncToken {
-    		_tide.busy = false;
+            _serverSession.busy = false;
     		
         	return super.cancel(id);
     	}
 		
 		
         mx_internal override function invoke(msg:IMessage, token:AsyncToken = null):AsyncToken {
-			_tide.busy = true;
+			_serverSession.busy = true;
 			
-			_tide.processInterceptors(msg, true);
+			_serverSession.processMessageInterceptors(msg, true);
 
             return super.invoke(msg, token);
         }
         
     	mx_internal override function preHandle(event:MessageEvent):AsyncToken {
-    		_tide.busy = false;
+    		_serverSession.busy = false;
     		
     		return super.preHandle(event);
         }
@@ -88,9 +89,9 @@ package org.granite.tide.rpc {
     		
         	if (!event.isDefaultPrevented()) {
 	    		if (event is FaultEvent && FaultEvent(event).fault && FaultEvent(event).fault.faultCode == 'Channel.Call.Failed')
-	    			_tide.disconnected = true;
+                    _serverSession.disconnected = true;
 	    		else
-	    			_tide.disconnected = false;
+                    _serverSession.disconnected = false;
 	    	}
     	}    
     }

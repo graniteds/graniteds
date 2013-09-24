@@ -43,7 +43,7 @@ package org.granite.tide.validators {
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
     import org.granite.tide.events.TideValidatorEvent;
-
+    import org.granite.tide.service.ServerSession;
 
     /**
      * 	Remote validator for managed entities	
@@ -58,13 +58,14 @@ package org.granite.tide.validators {
         private var _entity:IEntity;
         private var _entityProperty:String;
         private var _entityManager:IEntityManager;
+        private var _serverSession:ServerSession = null;
         
         private var _valueChecking:Object = null;
         private var _lastCheckedValue:Object = null;
         private var _lastCheckedResults:Array = [];
         
         
-        public function TideInputValidator() {
+        public function TideInputValidator():void {
             super();
         }
 
@@ -92,6 +93,10 @@ package org.granite.tide.validators {
         
         public function set entityManager(entityManager:IEntityManager):void {
             _entityManager = entityManager;
+        }
+
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
         }
 
 
@@ -139,7 +144,7 @@ package org.granite.tide.validators {
                 if (value != _lastCheckedValue) {
                 	if (_valueChecking == null && em != null) {
 	                	_valueChecking = value;
-	                	em.meta_validateObject(_entity, _entityProperty, value);
+	                	em.meta_validateObject(_serverSession, _entity, _entityProperty, value);
 	                }
                 	return results;
                 }

@@ -60,8 +60,8 @@ package org.granite.tide.collections {
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.IWrapper;
     import org.granite.tide.data.EntityManager;
-    
-    
+    import org.granite.tide.service.ServerSession;
+
     use namespace flash_proxy;
     use namespace object_proxy;
     
@@ -79,7 +79,8 @@ package org.granite.tide.collections {
 	public class PersistentCollection extends ListCollectionView implements IPersistentCollection, IPropertyHolder, IWrapper {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.collections.PersistentCollection");
-		
+
+        private var _serverSession:ServerSession = null;
 	    private var _entity:IEntity = null;
 	    private var _propertyName:String = null;
 	
@@ -96,11 +97,16 @@ package org.granite.tide.collections {
         	return _propertyName;
         }
 		
-		public function PersistentCollection(entity:IEntity, propertyName:String, collection:IPersistentCollection) {
+		public function PersistentCollection(serverSession:ServerSession, entity:IEntity, propertyName:String, collection:IPersistentCollection) {
 		    super(IList(collection));
+            _serverSession = serverSession;
 		    _entity = entity;
 		    _propertyName = propertyName;
 		}
+
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
+        }
 		
         
         public function get object():Object {
@@ -127,7 +133,7 @@ package org.granite.tide.collections {
             
             if (!_itemPendingError) {
                 log.debug("initialization requested " + toString());
-                em.meta_initializeObject(this);
+                em.meta_initializeObject(_serverSession, this);
                 
                 _itemPendingError = new ItemPendingError("PersistentCollection initializing");
             }
@@ -199,7 +205,7 @@ package org.granite.tide.collections {
 				return;
 			
 			log.debug("forced reload requested " + toString());
-			em.meta_initializeObject(this);
+			em.meta_initializeObject(_serverSession, this);
 		}
 		
         

@@ -77,7 +77,7 @@ package org.granite.tide.events {
         }
 		
 		public function retry():AsyncToken {
-			return context.meta_tide.reinvokeComponent(componentResponder);
+			return componentResponder.retry();
 		}
     }
 }

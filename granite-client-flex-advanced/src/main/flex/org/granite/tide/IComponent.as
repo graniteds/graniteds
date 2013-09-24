@@ -35,9 +35,10 @@
 package org.granite.tide {
     
     import flash.events.IEventDispatcher;
-    
-	
-	/**
+
+    import org.granite.tide.service.ServerSession;
+
+    /**
 	 * 	Interface for components remote proxies
 	 * 
 	 * 	@author William DRAI
@@ -50,7 +51,7 @@ package org.granite.tide {
 	     *  @return component name
 	     */ 
 	    function get meta_name():String;
-	    
+
 	    /**
 	     * 	Init component
 	     *

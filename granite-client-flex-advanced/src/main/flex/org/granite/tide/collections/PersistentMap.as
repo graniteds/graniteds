@@ -62,7 +62,7 @@ package org.granite.tide.collections {
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.IWrapper;
     import org.granite.tide.data.EntityManager;
-
+    import org.granite.tide.service.ServerSession;
 
     use namespace flash_proxy;
     use namespace object_proxy;
@@ -81,7 +81,8 @@ package org.granite.tide.collections {
 	public class PersistentMap extends BasicMap implements IPersistentCollection, IPropertyHolder, IWrapper {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.collections.PersistentMap");
-		
+
+        private var _serverSession:ServerSession;
 	    private var _entity:IEntity = null;
 	    private var _propertyName:String = null;
 		private var _lazy:Boolean = false;
@@ -100,15 +101,20 @@ package org.granite.tide.collections {
         	return _propertyName;
         }
 		
-		public function PersistentMap(entity:IEntity, propertyName:String, collection:IPersistentCollection) {
+		public function PersistentMap(serverSession:ServerSession, entity:IEntity, propertyName:String, collection:IPersistentCollection) {
 		    super();
+            _serverSession = serverSession;
 		    _entity = entity;
 		    _propertyName = propertyName;
 			_lazy = !collection.isInitialized();
 		    _map = IMap(collection);
             _map.addEventListener(CollectionEvent.COLLECTION_CHANGE, mapChangeHandler, false, 0, true);
 		}
-		
+
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
+        }
+
         
         public function get object():Object {
             return _map;
@@ -134,7 +140,7 @@ package org.granite.tide.collections {
             
             if (!_itemPendingError) {
                 log.debug("initialization requested " + toString());
-                em.meta_initializeObject(this);
+                em.meta_initializeObject(_serverSession, this);
                 
                 _itemPendingError = new ItemPendingError("PersistentMap initializing");
             }
@@ -205,7 +211,7 @@ package org.granite.tide.collections {
 				return;
 			
 			log.debug("forced reload requested " + toString());
-			em.meta_initializeObject(this);
+			em.meta_initializeObject(_serverSession, this);
 		}
         
         

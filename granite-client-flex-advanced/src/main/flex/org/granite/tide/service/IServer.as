@@ -32,35 +32,31 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
+
 package org.granite.tide.service {
 
-	import flash.events.Event;
-	import mx.messaging.Channel;
+    /**
+     *  
+     * 	@author William DRAI
+     */
+    public interface IServer {
 
-	import org.granite.gravity.websocket.WebSocketChannel;
-	import org.granite.tide.Tide;
-	import org.granite.tide.service.DefaultServiceInitializer;
+        function set secure(secure:Boolean):void;
 
-	public class WebSocketServiceInitializer extends DefaultServiceInitializer {
+        function set serverName(serverName:String):void;
 
-		protected var _embedded:Boolean = false;
+        function set serverPort(serverPort:String):void;
 
-		public function WebSocketServiceInitializer(contextRoot:String = "", graniteUrlMapping:String = "/graniteamf/amf.txt", gravityUrlMapping:String = "/websocketamf/amf", secure:Boolean = false, embedded:Boolean = false) {
-			super(contextRoot, graniteUrlMapping, gravityUrlMapping, secure);
-			_embedded = embedded;
+        function set contextRoot(contextRoot:String):void;
 
-			Tide.getInstance().addEventListener("GDSSessionIdChanged", function(event:Event):void {
-				for each (var channel:WebSocketChannel in gravityChannelSet.channels) {
-					channel.sessionId = Tide.getInstance().sessionId;
-				}
-			});
-		}
+        function get secure():Boolean;
 
-		protected override function newGravityChannel(id:String, uri:String):Channel {
-			var scheme:String = _secure ? "wss" : "ws";
-			if (_embedded)
-				return new WebSocketChannel(id, scheme + "://" + _serverName + ":" + _serverPort);
-			return new WebSocketChannel(id, scheme + "://" + _serverName + ":" + _serverPort + _contextRoot + _gravityUrlMapping);
-		}
-	}
+        function get serverName():String;
+
+        function get serverPort():String;
+
+        function get contextRoot():String;
+        
+        function initialize():void;
+    }
 }

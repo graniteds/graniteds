@@ -73,6 +73,7 @@ package org.granite.tide {
     import org.granite.tide.impl.ContextVariable;
     import org.granite.tide.impl.IComponentProducer;
     import org.granite.tide.impl.TypeScanner;
+    import org.granite.tide.service.ServerSession;
     import org.granite.util.ClassUtil;
 
     use namespace flash_proxy;
@@ -178,16 +179,11 @@ package org.granite.tide {
             _isContextIdFromServer = fromServer;
             _contextManager.updateContextId(previousContextId, this);
         }
-        
-        
-        /**
-		 *  Returns the RemoteObject destination for this context
-		 *  @return destination name
-		 */
-        public function get meta_destination():String {
-            return _tide.destination;
+
+
+        public function meta_setServerSession(serverSession:ServerSession):void {
+            _entityManager.setServerSession(serverSession);
         }
-        
         
         /**
 		 *  Returns the Tide singleton for this context
@@ -1456,13 +1452,14 @@ package org.granite.tide {
         /**
          *	@private 	
          *  Abstract method: constructs a call object and prepares the remote operation
-         * 
+         *
+         *  @param serverSession server session
          *  @param operation current operation
          *  @param withContext include additional context with call
          * 
          *  @return the call object
          */
-        public function meta_prepareCall(operation:AbstractOperation, withContext:Boolean = true):IInvocationCall {
+        public function meta_prepareCall(serverSession:ServerSession, operation:AbstractOperation, withContext:Boolean = true):IInvocationCall {
             return null;
         }
         
@@ -1470,7 +1467,8 @@ package org.granite.tide {
         /**
          *	@private 	
          *  Calls a remote component
-         * 
+         *
+         *  @param serverSession current server session
          *  @param component the target component
          *  @param op name of the called metho
          *  @param arg method parameters
@@ -1478,7 +1476,7 @@ package org.granite.tide {
          * 
          *  @return the operation token
          */
-        public function meta_callComponent(component:IComponent, op:String, args:Array, withContext:Boolean = true):AsyncToken {
+        public function meta_callComponent(serverSession:ServerSession, component:IComponent, op:String, args:Array, withContext:Boolean = true):AsyncToken {
             if (_finished)
 		        throw new InvalidContextError(_contextId);
 		    
@@ -1510,10 +1508,15 @@ package org.granite.tide {
                 args = app.preprocess(method, args);
 			
 			_entityManager.clearCache();
-			
-            _tracking = false;
-            var token:AsyncToken = _tide.invokeComponent(this, component, op, args, responder, withContext);
-            _tracking = true;
+
+            var token:AsyncToken = null;
+            try {
+                _tracking = false;
+                token = serverSession.invokeComponent(this, component, op, args, responder, withContext);
+            }
+            finally {
+                _tracking = true;
+            }
             
             _firstCall = false;
             return token;
@@ -1522,21 +1525,26 @@ package org.granite.tide {
         
         /**
          *  Resync current context with server (similar to invoke with no operation)
-         * 
+         *
+         *  @param serverSession server session
          *  @param resultHandler result handler
          *  @param faultHandler fault handler
          * 
          *  @return the operation token
          */
-        public function meta_resync(resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
+        public function meta_resync(serverSession:ServerSession, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
             if (_finished)
 		        throw new InvalidContextError(_contextId);
 		    
 		    var responder:ITideResponder = new TideResponder(resultHandler, faultHandler);
-            
-            _tracking = false;
-            var token:AsyncToken = _tide.resyncContext(this, responder);
-            _tracking = true;
+
+            try {
+                _tracking = false;
+                var token:AsyncToken = serverSession.resyncContext(this, responder);
+            }
+            finally {
+                _tracking = true;
+            }
             
             _firstCall = false;
             return token;
@@ -1568,7 +1576,7 @@ package org.granite.tide {
          * 
          *  @return the operation token
          */
-        public function meta_initializeObject(obj:Object):void {
+        public function meta_initializeObject(serverSession:ServerSession, obj:Object):void {
             if (_finished)
             	return;
             
@@ -1585,7 +1593,7 @@ package org.granite.tide {
 			var saveTracking:Boolean = _tracking;
 			try {
 				_tracking = false;
-            	_tide.initializeObject(this, obj, path);
+            	serverSession.initializeObject(this, obj, path);
 			}
 			finally {
             	_tracking = saveTracking;
@@ -1609,12 +1617,17 @@ package org.granite.tide {
          * 
          *  @return the operation token
          */
-        public function meta_validateObject(obj:IEntity, propertyName:String, value:Object):AsyncToken {
+        public function meta_validateObject(serverSession:ServerSession, obj:IEntity, propertyName:String, value:Object):AsyncToken {
 	      	_entityManager.attachEntity(obj);
-	       	
-            _tracking = false;
-            var token:AsyncToken = _tide.validateObject(this, obj, propertyName, value);
-            _tracking = true;
+
+            var token:AsyncToken = null;
+            try {
+                _tracking = false;
+                token = serverSession.validateObject(this, obj, propertyName, value);
+            }
+            finally {
+                _tracking = true;
+            }
             return token;
         }
         
@@ -1631,7 +1644,7 @@ package org.granite.tide {
          *  @private  
          *  (Almost) abstract method: manages a remote call result
          *  This should be called by the implementors at the end of the result processing
-         * 
+         *
          *  @param componentName name of the target component
          *  @param operation name of the called operation
          *  @param ires invocation result object
@@ -1644,7 +1657,7 @@ package org.granite.tide {
         /**
          *  @private 
          *  Abstract method: manages a remote call fault
-         * 
+         *
          *  @param componentName name of the target component
          *  @param operation name of the called operation
          *  @param emsg error message
@@ -1656,7 +1669,8 @@ package org.granite.tide {
         /**
          *  @private 
          *  Abstract method: manages a login call
-         * 
+         *
+         *  @param serverSession server session
          *  @param identity identity component
          *  @param username username
          *  @param password password
@@ -1665,37 +1679,39 @@ package org.granite.tide {
          *  
          *  @return operation token
          */
-        public function meta_login(identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):AsyncToken {
+        public function meta_login(serverSession:ServerSession, identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):AsyncToken {
             var responder:TideResponder = new TideResponder(resultHandler, faultHandler);
 
-            return _tide.login(this, identity, username, password, responder, charset);
+            return serverSession.login(this, identity, username, password, responder, charset);
         }
         
         /**
          *  @private 
          *  Abstract method: manages a login check call
-         * 
+         *
+         *  @param serverSession server session
          *  @param identity identity component
          *  @param resultHandler optional result handler method
          *  @param faultHandler optional fault handler method
          *  
          *  @return operation token
          */
-        public function meta_isLoggedIn(identity:IIdentity, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
+        public function meta_isLoggedIn(serverSession:ServerSession, identity:IIdentity, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
             var responder:TideResponder = new TideResponder(resultHandler, faultHandler);
 
-            return _tide.checkLoggedIn(this, identity, responder);
+            return serverSession.checkLoggedIn(this, identity, responder);
         }
         
         
         /**
          *  @private 
          *  Abstract method: manages a logout call
-         * 
+         *
+         *  @param serverSession server session
          *  @param identity identity component
          */ 
-        public function meta_logout(identity:IIdentity, expired:Boolean = false):void {
-            _tide.logout(this, identity, expired);
+        public function meta_logout(serverSession:ServerSession, identity:IIdentity, expired:Boolean = false):void {
+            serverSession.logout(this, identity, expired);
         }
 
 
@@ -1824,19 +1840,18 @@ package org.granite.tide {
          *
          *  @return merged object (should === prev when prev not null)
          */
-        public function meta_mergeExternalData(obj:Object, prev:Object = null, sourceSessionId:String = null, removals:Array = null, persists:Array = null):Object {
+        public function meta_mergeExternalData(obj:Object, prev:Object = null, externalData:Boolean = false, removals:Array = null, persists:Array = null):Object {
             _entityManager.initMerge();
 
-			var isExternalData:Boolean = sourceSessionId && sourceSessionId != _tide.sessionId;
 			try {
-	        	if (isExternalData)
+	        	if (externalData)
 	        		_entityManager.externalData = true;
 	        	
 	        	var next:Object = meta_mergeExternal(obj, prev);
 	
 	            _entityManager.handleRemovalsAndPersists(removals, persists);
 	        	
-				if (isExternalData) {
+				if (externalData) {
 	        		_entityManager.handleMergeConflicts();        	
 		        	meta_clearCache();
 				}
@@ -1924,7 +1939,7 @@ package org.granite.tide {
 				_entityManager.uninitializing = uninitializing;
 	        	
 	        	var next:Object = externalData
-					? meta_mergeExternalData(obj, null, _tide.sessionId + '$')	// Force handling of external data
+					? meta_mergeExternalData(obj, null, '$$EXTSESSIONID$$')	// Force handling of external data
 					: meta_mergeExternal(obj);
 			}
 			finally {

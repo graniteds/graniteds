@@ -46,10 +46,12 @@ package org.granite.tide.events {
     import org.granite.reflect.Type;
     import org.granite.gravity.Consumer;
     import org.granite.gravity.Producer;
+    import org.granite.tide.service.DefaultChannelBuilder;
+    import org.granite.tide.service.ServerSession;
     import org.granite.util.ClassUtil;
     import org.granite.tide.BaseContext;
 	import org.granite.tide.IComponent;
-	import org.granite.tide.service.IServiceInitializer;
+	import org.granite.tide.service.IServer;
     
 
 	[Bindable]
@@ -68,7 +70,14 @@ package org.granite.tide.events {
 		
 		private var _name:String;
 		private var _context:BaseContext;
-		
+        private var _serverSession:ServerSession;
+        private var _type:String;
+
+
+        public function EventRouter(serverSession:ServerSession = null, type:String = DefaultChannelBuilder.LONG_POLLING):void {
+            _serverSession = serverSession;
+            _type = type;
+        }
 		
 		public function get meta_name():String {
 			return _consumer.destination;
@@ -80,19 +89,14 @@ package org.granite.tide.events {
 			
 		    log.debug("init EventRouter {0}", componentName);
 			_context = context;
-	        _consumer = new Consumer();
-	        _producer = new Producer();
-	        var serviceInitializer:IServiceInitializer = IServiceInitializer(context.byType(IServiceInitializer));
-	        if (serviceInitializer != null) {
-	        	serviceInitializer.initialize(_consumer);
-	        	serviceInitializer.initialize(_producer);
-	        }
-	        
-	        _consumer.destination = componentName;
-	        _consumer.topic = "tideEventTopic";
-	        
-	        _producer.destination = componentName;
-	        _producer.topic = "tideEventTopic";
+            if (_serverSession == null)
+                _serverSession = _context.meta_tide.mainServerSession;
+
+	        _consumer = _serverSession.getConsumer(_type, componentName);
+            _consumer.topic = "tideEventTopic";
+
+	        _producer = _serverSession.getProducer(_type, componentName);
+            _producer.topic = "tideEventTopic";
 		}
 		
 		public function meta_clear():void {
@@ -121,7 +125,7 @@ package org.granite.tide.events {
 		 */
 		public function unsubscribe():void {
 		    _consumer.addEventListener(MessageAckEvent.ACKNOWLEDGE, unsubscribeHandler);
-		    _context.meta_tide.checkWaitForLogout();
+		    _serverSession.checkWaitForLogout();
 		    _consumer.unsubscribe();
 		}
 		
@@ -129,7 +133,7 @@ package org.granite.tide.events {
 			log.info("destination {0} unsubscribed", meta_name);
 		    _consumer.removeEventListener(MessageAckEvent.ACKNOWLEDGE, unsubscribeHandler);
 		    _consumer.disconnect();
-		    _context.meta_tide.tryLogout();
+            _serverSession.tryLogout();
 			dispatchEvent(new TideSubscriptionEvent(TideSubscriptionEvent.TOPIC_UNSUBSCRIBED));
 		}
 

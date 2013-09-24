@@ -64,7 +64,8 @@ package org.granite.tide {
     import mx.utils.ObjectUtil;
     
     import org.granite.gravity.Consumer;
-    import org.granite.tide.service.IServiceInitializer;
+    import org.granite.tide.service.DefaultChannelBuilder;
+    import org.granite.tide.service.IServer;
     import org.granite.tide.events.TidePluginEvent;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideResultEvent;
@@ -107,12 +108,8 @@ package org.granite.tide {
 		    _tide.addEventListener(Tide.PLUGIN_LOGIN_FAULT, loginFault);
 		    _tide.addEventListener(Tide.PLUGIN_LOGOUT, logout);
 		    
-	        _consumer = new Consumer();
-	        var serviceInitializer:IServiceInitializer = IServiceInitializer(_tide.getContext().byType(IServiceInitializer));
-	        if (serviceInitializer != null)
-	        	serviceInitializer.initialize(_consumer);
-	        _consumer.destination = _destination;
-			
+	        _consumer = _tide.mainServerSession.getConsumer(DefaultChannelBuilder.LONG_POLLING, _destination);
+
 		    log.info("Tide async proxy initialized");
 		}
 		
@@ -145,10 +142,12 @@ package org.granite.tide {
             log.debug("message received {0}", event.toString());
             
             var savedCallContext:Object = _tide.getContext().meta_saveAndResetCallContext();
-            
-            _tide.result(_tide.getContext(), "", event);
-	      	
-	      	_tide.getContext().meta_restoreCallContext(savedCallContext);
+            try {
+                _tide.mainServerSession.result(_tide.getContext(), "", event);
+            }
+            finally {
+	      	    _tide.getContext().meta_restoreCallContext(savedCallContext);
+            }
         }
 	}
 }

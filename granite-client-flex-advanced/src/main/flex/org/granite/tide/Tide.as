@@ -47,24 +47,12 @@ package org.granite.tide {
 	import mx.binding.BindabilityInfo;
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
-	import mx.controls.Alert;
 	import mx.core.Application;
 	import mx.core.IUIComponent;
-	import mx.core.mx_internal;
-	import mx.logging.ILogger;
+    import mx.events.PropertyChangeEvent;
+    import mx.logging.ILogger;
 	import mx.logging.Log;
-	import mx.messaging.events.ChannelFaultEvent;
-	import mx.messaging.events.MessageEvent;
-	import mx.messaging.messages.ErrorMessage;
-	import mx.messaging.messages.IMessage;
-	import mx.rpc.AbstractOperation;
-	import mx.rpc.AsyncToken;
-	import mx.rpc.Fault;
-	import mx.rpc.Responder;
-	import mx.rpc.events.FaultEvent;
-	import mx.rpc.events.ResultEvent;
-	import mx.rpc.remoting.mxml.RemoteObject;
-	import mx.utils.DescribeTypeCache;
+    import mx.utils.DescribeTypeCache;
 	import mx.utils.DescribeTypeCacheRecord;
 	import mx.utils.ObjectUtil;
 	import mx.utils.RPCObjectUtil;
@@ -72,23 +60,13 @@ package org.granite.tide {
 	import org.granite.reflect.Annotation;
 	import org.granite.reflect.Method;
 	import org.granite.reflect.Type;
-	import org.granite.tide.collections.PersistentCollection;
-	import org.granite.tide.collections.PersistentMap;
 	import org.granite.tide.events.IEventInterceptor;
 	import org.granite.tide.events.TideContextEvent;
-	import org.granite.tide.events.TideFaultEvent;
-	import org.granite.tide.events.TidePluginEvent;
-	import org.granite.tide.events.TideResultEvent;
 	import org.granite.tide.impl.ComponentInfo;
 	import org.granite.tide.impl.ComponentStore;
 	import org.granite.tide.impl.ContextManager;
 	import org.granite.tide.impl.IComponentProducer;
-	import org.granite.tide.rpc.ComponentResponder;
-	import org.granite.tide.rpc.IInvocationInterceptor;
-	import org.granite.tide.rpc.InitializerResponder;
-	import org.granite.tide.rpc.TideOperation;
-	import org.granite.tide.service.IServiceInitializer;
-	import org.granite.tide.validators.ValidatorResponder;
+    import org.granite.tide.service.ServerSession;
 
 
 	[Bindable]
@@ -155,40 +133,29 @@ package org.granite.tide {
         
 	    private static var _tide:Tide;
 	    
-	    private var _destination:String = null;
-	            
 		private var _componentStore:ComponentStore = null;
 		private var _managedInstances:Dictionary = new Dictionary(true);
 		private var _contextManager:IContextManager;
 		private var _entityDescriptors:Dictionary = new Dictionary(true);
         private var _componentClass:Class;
+
+        private var _mainServerSession:ServerSession;
 	    
-	    private var _sessionId:String = null;
-	    private var _firstCall:Boolean = true;
-	    
-		protected var _ro:RemoteObject = null;
-		protected var _roInitialize:RemoteObject = null;
-		protected var _rosByDestination:Dictionary = new Dictionary();
-		
-		private var _initializing:Boolean = true;
-		private var _logoutInProgress:Boolean = false;
-		private var _waitForLogout:int = 0;
-        
         private var _registeredListeners:ArrayCollection = new ArrayCollection();
         private var _newListeners:ArrayCollection = new ArrayCollection();
         
         private var _currentModulePrefix:String = "";
         
         public static var showBusyCursor:Boolean = true;
-        public var busy:Boolean = false;
+        private var _busy:int = 0;
         public var disconnected:Boolean = false;
-		
-		
+
+
 		public function Tide(destination:String) {
 		    log.info("Initializing Tide proxy");
-		    
-		    _destination = destination;
-        
+
+            _mainServerSession = initServerSession(destination);
+
             DescribeTypeCache.registerCacheHandler("bindabilityInfo", bindabilityInfoHandler);
 			DescribeTypeCache.registerCacheHandler("componentInfo", componentInfoHandler);
 			
@@ -220,70 +187,8 @@ package org.granite.tide {
 		private function tideToString(value:Object, namespaceURIs:Array = null, exclude:Array = null):String {
 			return BaseContext.toString(value);
 		}
-		
-		
-		protected function get ro():RemoteObject {
-			if (_ro == null)
-				initRemoteObject();		
-			return _ro;				
-		}
-		
-		protected function get roInitialize():RemoteObject {
-			if (_roInitialize == null)
-				initRemoteObject();
-			return _roInitialize;
-		}
-		
-		/**
-		 * 	@private
-		 *  Init RemoteObject
-		 */
-        protected function initRemoteObject():void {
-        }
-		
-		/**
-		 * 	@private
-		 *  Create RemoteObject
-		 * 
-		 * 	@param destination destination
-		 *  @param concurrency remote object concurrenty
-		 *  @return internal RemoteObject
-		 */
-		protected function createRemoteObject(destination:String = null, concurrency:String = "multiple"):RemoteObject {
-	        var ro:RemoteObject = new RemoteObject(destination != null ? destination : _destination);
-	        var serviceInitializer:IServiceInitializer = IServiceInitializer(getContext().byType(IServiceInitializer));
-	        if (serviceInitializer != null)
-	        	serviceInitializer.initialize(ro);
-	        else
-	        	ro.destination = destination != null ? destination : _destination;
-			ro.concurrency = concurrency;
-			ro.makeObjectsBindable = true;
-			return ro;
-		}
-		
-		
-		/**
-		 * 	@private
-		 *  Create Operation
-		 * 
-		 *  @param name operation name
-		 * 
-		 *  @return internal operation
-		 */
-		public function createOperation(name:String, ro:RemoteObject = null):TideOperation {
-			var op:TideOperation = new TideOperation(this, ro);
-			op.name = name;
-			return op;
-		}
-		
-		
-		/**
-		 *  RemoteObject destination used
-		 */
-		public function get destination():String {
-		    return _destination;
-		}
-		
+
+
 		/**
 		 *	Factory for current instance Tide singleton
 		 * 
@@ -320,28 +225,36 @@ package org.granite.tide {
 		public function getContext(contextId:String = null, parentContextId:String = null, create:Boolean = true):BaseContext {
 			return _contextManager.getContext(contextId, parentContextId, create);
 		}
-		
-		
-		/**
-		 * 	@private
-		 * 	Current sessionId
-		 * 
-		 * 	@return sessionId
-		 */
-		public function get sessionId():String {
-			return _sessionId;
-		} 
-		
-		/**
-		 * 	@private
-		 * 	Is it the first remote call ?
-		 * 
-		 * 	@return is first call
-		 */
-		public function get firstCall():Boolean {
-			return _firstCall;
-		} 
-		
+
+        /**
+         *  Return the main server session
+         *
+         *  @return server session
+         */
+        public function get mainServerSession():ServerSession {
+            return _mainServerSession;
+        }
+
+
+        protected function initServerSession(destination:String):ServerSession {
+            return new ServerSession(destination);
+        }
+
+
+        public function busy():Boolean {
+            return _busy > 0;
+        }
+        public function notifyBusy(busy:Boolean):void {
+            var oldBusy:Boolean = this.busy;
+            if (busy)
+                _busy++;
+            else
+                _busy--;
+            if (this.busy != oldBusy)
+                dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "busy", oldBusy, this.busy));
+        }
+
+
 		/**
 		 *  @private
 		 *  Name of the current module in which observers and injections are handled
@@ -1425,799 +1338,17 @@ package org.granite.tide {
         public function get newListeners():ArrayCollection {
             return _newListeners;
         }
-		
-		
+
         /**
-         *	@private
-         * 	Abtract method: check of user login status
-         * 
-         *  @return true if logged in 
+         *  Force send of all listeners as new
+         *  Used during login
          */
-		protected function isLoggedIn():Boolean {
-		    throw new Error("Must be overriden");
-		}
-		
-        /**
-         *	@private
-         * 	Abtract method: define user login status
-         * 
-         *  @param value true if logged in 
-         */
-		protected function setLoggedIn(value:Boolean):void {
-		    throw new Error("Must be overriden");
-		}
-		
-		
-		/**
-		 * 	@private
-		 * 	Implementation of login
-		 * 	
-		 * 	@param ctx current context
-		 *  @param componentName component name of identity
-		 *  @param username user name
-		 *  @param password password
-		 *  @param responder Tide responder
-		 * 
-		 *  @return token for the remote operation
-		 */
-		public function login(ctx:BaseContext, component:IComponent, username:String, password:String, responder:ITideResponder = null, charset:String = null):AsyncToken {
-		    log.info("login {0} > {1}", component.meta_name, username);
-		    
-		    _firstCall = false;
-		    for (var i:int = 0; i < _registeredListeners.length; i++)
-		    	_newListeners.addItem(_registeredListeners.getItemAt(i));
-		    
-			ro.setCredentials(username, password, charset);
-			dispatchEvent(new TidePluginEvent(PLUGIN_SET_CREDENTIALS, { username: username, password: password }));
-			return null;
-		}
-		
-				
-		/**
-		 * 	@private
-		 * 	Implementation of login check
-		 * 	
-		 * 	@param ctx current context
-		 *  @param componentName component name of identity
-		 *  @param responder Tide responder
-		 * 
-		 *  @return token for the remote operation
-		 */
-		public function checkLoggedIn(ctx:BaseContext, component:IComponent, responder:ITideResponder = null):AsyncToken {
-			return null;
-		}
-		
-		/**
-		 * 	@private
-		 * 	Implementation of logout
-		 * 	
-		 * 	@param ctx current context
-		 *  @param componentName component name of identity
-		 */
-		public function logout(context:BaseContext, component:IComponent, expired:Boolean = false):void {
-            _logoutInProgress = true;
-		    _waitForLogout = 1;
-		    
-		    context.raiseEvent(LOGOUT);
-            
-			// If expired, tryLogout() will be called later by the global fault handler
-			if (!expired)
-            	tryLogout();
-        }
-        
-        
-		/**
-		 * 	Notify the framework that it should wait for a async operation before effectively logging out.
-		 *  Only if a logout has been requested.
-		 */
-        public function checkWaitForLogout():void {
-            if (_logoutInProgress)
-                _waitForLogout++;
-        }
-        
-		/**
-		 * 	Try logout. Should be called after all remote operations on a component are finished.
-		 *  The effective logout is done when all remote operations on all components have been notified as finished.
-		 */
-        public function tryLogout():void {
-            if (!_logoutInProgress)
-                return;
-            
-            _waitForLogout--;
-            if (_waitForLogout > 0)
-                return;
-			
-			dispatchEvent(new TidePluginEvent(PLUGIN_LOGOUT));
-
-			if (ro.channelSet) {
-				var asyncToken:AsyncToken = ro.channelSet.logout();	// Workaround described in BLZ-310
-				asyncToken.addResponder(new Responder(logoutComplete, logoutFault));
-			}
-			else
-				logoutComplete(null);
-		}
-		
-		/**
-		 * 	@private
-		 * 	
-		 * 	Handler method for logout complete
-		 */
-		private function logoutComplete(event:Event, logoutRemoteObject:Boolean = true):void {
-			if (logoutRemoteObject)
-				ro.logout();
-			
-			log.info("Tide application logout");
-			
-			_contextManager.destroyContexts();
-			
-			_logoutInProgress = false;
-			_waitForLogout = 0;
-			
-			getContext().raiseEvent(LOGGED_OUT);
-		}
-		
-		private function logoutFault(event:Event):void {
-			log.warn("Channel logout failed, assume the client is logged out");
-			
-			logoutComplete(event, false);
-		}
-        
-        
-		/**
-		 * 	@private
-		 * 	Implementation of login success handler
-		 * 	
-		 * 	@param sourceContext source context of remote call
-		 *  @param sourceModulePrefix source module prefix
-		 *  @param data return object
-		 *  @param componentName component name
-		 *  @param op remote operation
-		 *  @param tideResponder Tide responder for the remote call
-		 */
-        public function loginSuccessHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-			result(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
-			
-			if (isLoggedIn()) {
-				// Force reinitialization of all application at login
-				currentApplication().executeBindings(true);
-				
-				initAfterLogin(sourceContext);
-			}
-			else {
-				// Not logged in : consider as a login fault
-				dispatchEvent(new TidePluginEvent(PLUGIN_LOGOUT));
-				ro.logout();
-				
-				dispatchEvent(new TidePluginEvent(PLUGIN_LOGIN_FAULT, { sessionId: _sessionId }));
-			}
-            
-            _initializing = false;
-        }
-        
-		/**
-		 * 	@private
-		 * 	Implementation of is logged in success handler
-		 * 	
-		 * 	@param sourceContext source context of remote call
-		 *  @param data return object
-		 *  @param componentName component name
-		 *  @param op remote operation
-		 *  @param tideResponder Tide responder for the remote call
-		 */
-        public function isLoggedInSuccessHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            result(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
-            
-            if (isLoggedIn())
-                initAfterLogin(sourceContext);
-            
-            _initializing = false;
-        }
-        
-		/**
-		 * 	@private
-		 * 	Called when user is already logged in at application startup
-		 * 	
-		 * 	@param sourceContext source context of remote call
-		 */
-        public function initAfterLogin(sourceContext:BaseContext):void {
-        	dispatchEvent(new TidePluginEvent(PLUGIN_LOGIN_SUCCESS, { sessionId: _sessionId }));
-		    
-            sourceContext.raiseEvent(LOGIN);
+        public function forceNewListeners():void {
+            for (var i:int = 0; i < _registeredListeners.length; i++)
+                _newListeners.addItem(_registeredListeners.getItemAt(i));
         }
 
-		/**
-		 * 
-		 * @private
-		 * 
-		 * Called when session expiration has been detected
-		 * 
-		 * 	@param sourceContext source context of remote call
-		 */
-		public function sessionExpired(sourceContext:BaseContext):void {
-			log.info("Application session expired");
-			
-			_sessionId = null;
-			_firstCall = true;
-			
-			_logoutInProgress = false;
-			_waitForLogout = 0;
-			
-			sourceContext.raiseEvent(SESSION_EXPIRED);		
-			logout(sourceContext, null, true);
-		}
-        
-        
-		/**
-		 * 	@private
-		 * 	Implementation of login fault handler
-		 * 	
-		 * 	@param sourceContext source context of remote call
-		 *  @param data return object
-		 *  @param componentName component name
-		 *  @param op remote operation
-		 *  @param tideResponder Tide responder for the remote call
-		 */
-        public function loginFaultHandler(sourceContext:BaseContext, sourceModulePrefix:String, info:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            fault(sourceContext, sourceModulePrefix, info, componentName, op, tideResponder, componentResponder);
-            
-        	dispatchEvent(new TidePluginEvent(PLUGIN_LOGOUT));
-			ro.logout();
-			
-        	dispatchEvent(new TidePluginEvent(PLUGIN_LOGIN_FAULT, { sessionId: _sessionId }));
-        }
-        
-		/**
-		 * 	@private
-		 * 	Implementation of is logged in success handler
-		 * 	
-		 * 	@param sourceContext source context of remote call
-		 *  @param data return object
-		 *  @param componentName component name
-		 *  @param op remote operation
-		 *  @param tideResponder Tide responder for the remote call
-		 */
-        public function isLoggedInFaultHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-        	if (data is FaultEvent && data.fault is Fault && data.fault.faultCode == "Server.Security.NotLoggedIn")
-        		result(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
-        	else
-            	fault(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
-        }
-	    
-		
-		/**
-		 * 	@private
-		 * 	Internal implementation of component invocation
-		 * 	
-		 *  @param componentResponder the component token responder for the operation
-		 * 	@param ctx current context
-		 *  @param component component proxy
-		 *  @param op remote operation
-		 *  @param args array of operation arguments
-		 *  @param responder Tide responder
-		 *  @param withContext send additional context with the call
-		 * 
-		 *  @return token for the remote operation
-		 */		
-		private function internalInvokeComponent(componentResponder:ComponentResponder, withContext:Boolean):AsyncToken {
-			var ctx:BaseContext = componentResponder.sourceContext;
-			var component:IComponent = componentResponder.component;
-			var op:String = componentResponder.op;
-			var args:Array = componentResponder.args;
-			
-			var interceptors:Array = ctx.allByType(IInvocationInterceptor);
-			if (interceptors != null) {
-				for each (var interceptor:IInvocationInterceptor in interceptors)
-					interceptor.beforeInvocation(ctx, component, op, args, componentResponder);
-			}
-			
-			_contextManager.destroyFinishedContexts();
-			
-			var token:AsyncToken = null;
-			var operation:AbstractOperation = null;
-			if (ro != null) {
-				ro.showBusyCursor = showBusyCursor;
-				operation = ro.getOperation("invokeComponent");
-				var call:IInvocationCall = ctx.meta_prepareCall(operation, withContext);
-				var alias:String = component != null ? Type.forInstance(component).alias : null;
-				var componentClassName:String = alias ? alias : null;
-				token = operation.send(component.meta_name, componentClassName, op, args, call);
-			}
-			else {
-				var roCall:RemoteObject = _rosByDestination[component.meta_name];
-				if (roCall == null) {
-					roCall = createRemoteObject(component.meta_name);
-					_rosByDestination[component.meta_name] = roCall;
-				}
-				roCall.showBusyCursor = showBusyCursor;
-				var ops:Object = roCall.operations;
-				operation = ops[op];
-				if (operation == null) {
-					operation = createOperation(op, roCall);
-					ops[op] = operation;
-					operation.mx_internal::asyncRequest = roCall.mx_internal::asyncRequest;
-				}
-				
-				operation.arguments = args;
-				token = operation.send();
-			}
-			componentResponder.operation = operation;
-			
-			token.addResponder(componentResponder);
-			
-			_firstCall = false;
-			
-			checkWaitForLogout();
-			
-			return token;
-		}
-	    
-		/**
-		 * 	@private
-		 * 	Implementation of component invocation
-		 * 	
-		 * 	@param ctx current context
-		 *  @param component component proxy
-		 *  @param op remote operation
-		 *  @param args array of operation arguments
-		 *  @param responder Tide responder
-		 *  @param withContext send additional context with the call
-		 *  @param resultHandler additional result handler
-		 *  @param faultHandler additional fault handler
-		 * 
-		 *  @return token for the remote operation
-		 */
-		public function invokeComponent(ctx:BaseContext, component:IComponent, op:String, args:Array, responder:ITideResponder, 
-			withContext:Boolean = true, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
-		    log.debug("invokeComponent {0} > {1}.{2}", ctx.contextId, component.meta_name, op);
-		    
-		    var rh:Function = resultHandler != null ? resultHandler : result;
-		    var fh:Function = faultHandler != null ? faultHandler : fault;
-		    var componentResponder:ComponentResponder = new ComponentResponder(ctx, rh, fh, component, op, args, null, false, responder);
-				
-			return internalInvokeComponent(componentResponder, withContext);
-		}
-	    
-		/**
-		 * 	@private
-		 * 	Invoke again the same operation of a component (retry after fault for example) 
-		 * 	
-		 * 	@param ctx current context
-		 *  @param component component proxy
-		 *  @param op remote operation
-		 *  @param args array of operation arguments
-		 *  @param responder Tide responder
-		 *  @param withContext send additional context with the call
-		 *  @param resultHandler additional result handler
-		 *  @param faultHandler additional fault handler
-		 * 
-		 *  @return token for the remote operation
-		 */
-		public function reinvokeComponent(componentResponder:ComponentResponder):AsyncToken {
-			var ctx:BaseContext = componentResponder.sourceContext;
-			var component:IComponent = componentResponder.component;
-			var op:String = componentResponder.op;
-			
-		    log.debug("reinvokeComponent {0} > {1}.{2}", ctx.contextId, component.meta_name, op);
-		    
-			return internalInvokeComponent(componentResponder, true);
-		}
-		
-		
-		/**
-		 * 	Returns the internal RemoteObject used for a particular component name
-		 * 	
-		 * 	@param componentName component name
-		 * 
-		 *  @return remote object instance
-		 */
-		public function getRemoteObject(componentName:String):RemoteObject {
-		    if (ro != null)
-				return ro;
-			return _rosByDestination[componentName];
-		}
-		
-	    
-		/**
-		 * 	@private
-		 * 	Implementation of context resync
-		 * 	
-		 * 	@param ctx current context
-		 *  @param responder Tide responder
-		 * 
-		 *  @return token for the remote operation
-		 */
-		public function resyncContext(ctx:BaseContext, responder:ITideResponder):AsyncToken {
-		    log.debug("resyncContext {0}", ctx.contextId);
-		    
-		    _contextManager.destroyFinishedContexts();
-		    
-		    var operation:AbstractOperation = ro.getOperation("resyncContext");
-	        var call:IInvocationCall = ctx.meta_prepareCall(operation, true);
-		    var token:AsyncToken = operation.send(call);
-            token.addResponder(new ComponentResponder(ctx, result, fault, null, null, null, operation, true, responder));
-            
-            _firstCall = false;
-            
-            if (_logoutInProgress)
-                _waitForLogout++;
-            
-            return token;
-		}
-        
-		/**
-		 * 	@private
-		 * 	Implementation of lazy initialization
-		 * 	
-		 * 	@param ctx current context
-		 *  @param obj object to initialize (should be a PersistentCollection or PersistentMap)
-		 *  @param path path of the object in the context 
-		 * 
-		 *  @return token for the remote operation
-		 */
-        public function initializeObject(ctx:BaseContext, obj:Object, path:IExpression):void {
-            log.debug("initializeObject {0} > {1}", ctx.contextId, obj);
-		    
-		    // For now, assumes that obj is a PersistentCollection
-		    if (!(obj is PersistentCollection || obj is PersistentMap))
-		        throw new Error("Auto initialization works only with PersistentCollection/PersistentMap " + BaseContext.toString(obj));
-		    
-		    var entity:Object = obj.entity;
-		    
-		    _objectsInitializing.push({ context: ctx, entity: path ? path.path : obj.entity, propertyName: obj.propertyName });
-		    
-		    currentApplication().callLater(doInitializeObjects, [ctx]);
-		}
-		
-		private function doInitializeObjects(ctx:BaseContext):void {
-			
-			var initMap:Dictionary = new Dictionary();
-			
-			for (var i:int = 0; i < _objectsInitializing.length; i++) {
-				if (_objectsInitializing[i].context != ctx)
-					continue;
-				
-				var propertyNames:Array = initMap[_objectsInitializing[i].entity];
-				if (propertyNames == null) {
-					propertyNames = [ _objectsInitializing[i].propertyName ];
-					initMap[_objectsInitializing[i].entity] = propertyNames;
-				}
-				else
-					propertyNames.push(_objectsInitializing[i].propertyName);
-			    
-			    _objectsInitializing.splice(i, 1);
-			    i--;
-	        }
-	        
-	        for (var entity:Object in initMap) {
-			    var operation:AbstractOperation = roInitialize.getOperation("initializeObject");
-			    var call:IInvocationCall = ctx.meta_prepareCall(operation, false);
-			    var token:AsyncToken = operation.send(entity, initMap[entity], call);
-	            token.addResponder(new InitializerResponder(ctx, initializerResult, initializerFault, entity, initMap[entity]));
-	            
-	            if (_logoutInProgress)
-	                _waitForLogout++;
-	        }
-        }
-        
-        private var _objectsInitializing:Array = new Array();
-        
-		/**
-		 * 	@private
-		 * 	Implementation of remote validation
-		 * 	
-		 * 	@param ctx current context
-		 *  @param entity object to validate
-		 *  @param propertyName property to validate
-		 *  @param value value to validate
-		 * 
-		 *  @return token for the remote operation
-		 */
-        public function validateObject(ctx:BaseContext, entity:IEntity, propertyName:String, value:Object):AsyncToken {
-            log.debug("validateObject {0} > {1}", ctx.contextId, entity);
-		    
-		    var operation:AbstractOperation = ro.getOperation("validateObject");
-		    var call:IInvocationCall = ctx.meta_prepareCall(operation, false);
-		    // For now, assumes that obj is a PeristentCollection
-		    var token:AsyncToken = operation.send(entity, propertyName, value, call);
 
-            token.addResponder(new ValidatorResponder(ctx, entity, propertyName));
-            
-            if (_logoutInProgress)
-                _waitForLogout++;
-            
-            return token;
-        }
-        
-        
-		/**
-		 * 	@private
-		 * 	Get the contextId from the server response, should be overriden by subclasses
-		 * 	
-		 * 	@param event the response message
-		 *  @param fromFault the message is a fault
-		 * 
-		 *  @return contextId
-		 */
-        protected function extractContextId(event:MessageEvent, fromFault:Boolean = false):String {
-            return DEFAULT_CONTEXT;
-        }
-		/**
-		 * 	@private
-		 * 	Get the conversation status from the server response, should be overriden by subclasses
-		 * 	
-		 * 	@param event the response message
-		 * 
-		 *  @return true if the conversation was created by the server
-		 */
-        protected function wasConversationCreated(event:MessageEvent):Boolean {
-        	return false;
-        }
-		/**
-		 * 	@private
-		 * 	Get the conversation status from the server response, should be overriden by subclasses
-		 * 	
-		 * 	@param event the response message
-		 * 
-		 *  @return true if the conversation was ended by the server
-		 */
-        protected function wasConversationEnded(event:MessageEvent):Boolean {
-        	return false;
-        }
-        
-        
-        public function processInterceptors(message:IMessage, before:Boolean):void {
-        	var interceptors:Array = getContext().allByType(IMessageInterceptor, true);
-    		for each (var interceptor:IMessageInterceptor in interceptors) {
-    			if (before)
-    				interceptor.before(message);
-    			else
-    				interceptor.after(message);
-    		}
-        }
-        
-        
-        /**
-         *	@private
-         *  Get the context where the result/fault shall be processed
-         * 
-         *  @param sourceContext context from where the call has been issued
-         *  @param event response message
-         *  @param fromFault is a fault
-         */ 
-        private function extractContext(sourceContext:BaseContext, event:MessageEvent, fromFault:Boolean = false):BaseContext {
-            var sessionId:String = event.message.headers['org.granite.sessionId'];
-            if (sessionId != _sessionId) {
-                _sessionId = sessionId;
-				dispatchEvent(new Event("GDSSessionIdChanged"));
-			}
-            
-            processInterceptors(event.message, false);    
-            
-            var contextId:String = extractContextId(event, fromFault);
-            var wasConversationCreated:Boolean = wasConversationCreated(event);
-            var wasConversationEnded:Boolean = wasConversationEnded(event);
-            
-            var context:BaseContext = null;
-            if (!sourceContext.meta_isGlobal() && contextId == DEFAULT_CONTEXT && wasConversationEnded) {
-            	// The conversation of the source context was ended
-                // Get results in the current conversation when finished
-                context = sourceContext;
-                context.meta_markAsFinished();
-            }
-            else if (!sourceContext.meta_isGlobal() && contextId == DEFAULT_CONTEXT && !sourceContext.meta_isContextIdFromServer) {
-            	// A call to a non conversational component was issued from a conversation context
-                // Get results in the current conversation
-                context = sourceContext;
-            }
-            else if (!sourceContext.meta_isGlobal() && contextId != DEFAULT_CONTEXT
-            	&& (sourceContext.contextId == null || (sourceContext.contextId != contextId && !wasConversationCreated))) {
-            	// The conversationId has been updated by the server
-            	var previousContextId:String = sourceContext.contextId;
-                context = sourceContext;
-                context.meta_setContextId(contextId, true);
-                _contextManager.updateContextId(previousContextId, context);
-            }
-            else {
-                context = getContext(contextId);
-                if (contextId != DEFAULT_CONTEXT)
-                    context.meta_setContextId(contextId, true);
-            }
-            
-            return context;
-		}
-		 	
-        
-		/**
-		 * 	@private
-		 * 	Implementation of result handler
-		 * 	
-		 * 	@param sourceContext source context of remote call
-		 *  @param data return object
-		 *  @param componentName component name
-		 *  @param op remote operation
-		 *  @param tideResponder Tide responder for the remote call
-		 */
-        public function result(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, componentName:String = null, operation:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            var invocationResult:IInvocationResult = null;
-            var result:Object = null;
-            if (data is ResultEvent)
-                result = ResultEvent(data).result;
-            else if (data is MessageEvent)
-                result = MessageEvent(data).message.body;
-            
-            if (result is IInvocationResult) {
-                invocationResult = result as IInvocationResult;
-                result = invocationResult.result;
-            }
-            
-            var context:BaseContext = extractContext(sourceContext, MessageEvent(data));
-            
-            var saveModulePrefix:String = _currentModulePrefix;
-            _currentModulePrefix = sourceModulePrefix;
-            
-            context.meta_result(componentName, operation, invocationResult, result, 
-                tideResponder is ITideMergeResponder ? ITideMergeResponder(tideResponder).mergeResultWith : null);
-            if (invocationResult)
-            	result = invocationResult.result;
-            
-            var handled:Boolean = false;
-            if (tideResponder) {
-                var event:TideResultEvent = new TideResultEvent(TideResultEvent.RESULT, context, false, true, data.token, componentResponder, result);
-				tideResponder.result(event);
-                if (event.isDefaultPrevented())
-                	handled = true;
-            }
-            
-            _currentModulePrefix = saveModulePrefix;
-            
-            context.meta_clearCache();
-            
-            // Should be after event result handling and responder: previous could trigger other remote calls
-            if (context.meta_finished)
-                context.meta_scheduleDestroy();
-            
-            _initializing = false;
-            
-            if (!handled && !_logoutInProgress)
-            	context.raiseEvent(CONTEXT_RESULT, result);
-            
-            tryLogout();
-        }
-
-		/**
-		 * 	@private
-		 * 	Implementation of fault handler
-		 * 	
-		 * 	@param sourceContext source context of remote call
-		 *  @param info fault object
-		 *  @param componentName component name
-		 *  @param op remote operation
-		 *  @param tideResponder Tide responder for the remote call
-		 */
-		public function fault(sourceContext:BaseContext, sourceModulePrefix:String, info:Object, componentName:String = null, operation:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-			log.error("fault {0}", info);
-			var faultEvent:FaultEvent = info as FaultEvent;
-			
-			var context:BaseContext = extractContext(sourceContext, faultEvent, true);
-			
-			var emsg:ErrorMessage = faultEvent.message is ErrorMessage ? faultEvent.message as ErrorMessage : null;
-			var m:ErrorMessage = emsg;
-			var extendedData:Object = emsg ? emsg.extendedData : null;
-			do {
-				if (m && m.faultCode && m.faultCode.search("Server.Security.") == 0) {
-					emsg = m;
-					extendedData = emsg ? emsg.extendedData : null;
-					break;
-				}
-				if (m && (m.rootCause is FaultEvent || m.rootCause is ChannelFaultEvent))
-					m = m.rootCause.rootCause as ErrorMessage;
-				else if (m)
-					m = m.rootCause as ErrorMessage;
-			}
-			while (m);
-			
-			var saveModulePrefix:String = _currentModulePrefix;
-			_currentModulePrefix = sourceModulePrefix;
-			
-			context.meta_fault(componentName, operation, emsg);
-			
-			var handled:Boolean = false;
-			var fault:Fault = null;
-			if (emsg != null && emsg !== faultEvent.message) {
-				fault = new Fault(emsg.faultCode, emsg.faultString, emsg.faultDetail);
-				fault.message = faultEvent.fault.message;
-				fault.rootCause = faultEvent.fault.rootCause;
-			}
-			else
-				fault = faultEvent.fault;
-			var event:TideFaultEvent = new TideFaultEvent(TideFaultEvent.FAULT, context, false, true, info.token, componentResponder, fault, extendedData);
-			if (tideResponder) {
-				tideResponder.fault(event);
-				if (event.isDefaultPrevented())
-					handled = true;
-			}
-			
-			if (!handled) {
-				var _exceptionHandlers:Array = getContext().allByType(IExceptionHandler, true);
-				if (emsg != null) {
-					// Lookup for a suitable exception handler
-					for each (var handler:IExceptionHandler in _exceptionHandlers) {
-						if (handler.accepts(emsg)) {
-							if (handler is IExtendedExceptionHandler)
-								IExtendedExceptionHandler(handler).handleEx(context, emsg, event);
-							else
-								handler.handle(context, emsg);
-							handled = true;
-							break;
-						}
-					}
-					if (!handled)
-						log.error("Unhandled fault: " + emsg.faultCode + ": " + emsg.faultDetail);
-				}
-				else if (_exceptionHandlers.length > 0 && faultEvent.message is ErrorMessage) {
-					// Handle fault with default exception handler
-					if (_exceptionHandlers[0] is IExtendedExceptionHandler)
-						IExtendedExceptionHandler(_exceptionHandlers[0]).handleEx(context, faultEvent.message as ErrorMessage, event);
-					else
-						_exceptionHandlers[0].handle(context, faultEvent.message as ErrorMessage);
-				}
-				else {
-					log.error("Unknown fault: " + faultEvent.toString());
-					Alert.show("Unknown fault: " + faultEvent.toString());
-				}
-			}
-			
-			_currentModulePrefix = saveModulePrefix;
-			
-			if (!handled && !_logoutInProgress)
-				context.raiseEvent(CONTEXT_FAULT, info.message);
-			
-			tryLogout();
-		}
-        
-        
-		/**
-		 * 	@private
-		 * 	Implementation of initializer success handler
-		 * 	
-		 * 	@param sourceContext source context of remote call
-		 *  @param data return object
-		 *  @param entity object to initialize
-		 *  @param propertyNames array of property names to initialize
-		 */
-        public function initializerResult(sourceContext:BaseContext, data:Object, entity:Object, propertyNames:Array):void {
-            var res:Array = data.result.result as Array;
-            
-			var saveUninitializeAllowed:Boolean = sourceContext.meta_uninitializeAllowed;
-			try {
-	            sourceContext.meta_uninitializeAllowed = false;
-	            
-	            // Assumes objects is a PersistentCollection or PersistentMap
-			    sourceContext.meta_mergeExternal(data.result.result, entity);
-			    
-	            result(sourceContext, "", data);
-			}
-			finally {
-            	sourceContext.meta_uninitializeAllowed = saveUninitializeAllowed;
-			}
-        }
-        
-		/**
-		 * 	@private
-		 * 	Implementation of initializer fault handler
-		 * 	
-		 * 	@param sourceContext source context of remote call
-		 *  @param data return object
-		 *  @param entity object to initialize
-		 *  @param propertyNames array of property names to initialize
-		 */
-        public function initializerFault(sourceContext:BaseContext, info:Object, entity:Object, propertyNames:Array):void {
-            log.error("Fault initializing collection " + BaseContext.toString(entity) + " " + info.toString());
-            
-            fault(sourceContext, "", info);
-        }        
-        
-        
 		/**
 		 * 	@private
 		 * 	Hack to force the context to be [Managed]/[Bindable] and modify the Flex reflection cache

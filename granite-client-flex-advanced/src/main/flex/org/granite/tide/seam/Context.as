@@ -96,7 +96,7 @@ package org.granite.tide.seam {
     import org.granite.tide.events.TideResultEvent;
     import org.granite.tide.seam.security.Identity;
     import org.granite.tide.seam.framework.StatusMessages;
-
+    import org.granite.tide.service.ServerSession;
 
     use namespace flash_proxy;
     use namespace object_proxy;
@@ -313,18 +313,19 @@ package org.granite.tide.seam {
         /**
 		 * 	@private
          *  Calls a remote component
-         * 	
+         *
+         * 	@param serverSession current server session
          *  @param component the target component
          *  @op name of the called metho
          *  @arg method parameters
          * 
          *  @return the operation token
          */
-        public override function meta_callComponent(component:IComponent, op:String, args:Array, withContext:Boolean = true):AsyncToken {
+        public override function meta_callComponent(serverSession:ServerSession, component:IComponent, op:String, args:Array, withContext:Boolean = true):AsyncToken {
             log.debug("callComponent {0}.{1}", component.meta_name, op);
             meta_traceCall();
             
-            var token:AsyncToken = super.meta_callComponent(component, op, args, withContext);
+            var token:AsyncToken = super.meta_callComponent(serverSession, component, op, args, withContext);
 
             if (withContext) {
                 _pendingUpdates = new ArrayCollection(_updates.toArray());
@@ -347,7 +348,7 @@ package org.granite.tide.seam {
          * 
          *  @return the operation token
          */
-        public override function meta_login(identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):AsyncToken {
+        public override function meta_login(serverSession:ServerSession, identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):AsyncToken {
             meta_traceCall();
             
             // Keep only updates for identity component
@@ -359,7 +360,7 @@ package org.granite.tide.seam {
                 }
             }
 			
-			var token:AsyncToken = super.meta_login(identity, username, password, resultHandler, faultHandler, charset);
+			var token:AsyncToken = super.meta_login(serverSession, identity, username, password, resultHandler, faultHandler, charset);
             
             _updates.removeAll();
 
@@ -378,7 +379,7 @@ package org.granite.tide.seam {
          * 
          *  @return the operation token
          */
-        public override function meta_isLoggedIn(identity:IIdentity, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
+        public override function meta_isLoggedIn(serverSession:ServerSession, identity:IIdentity, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
             log.debug("isLoggedIn");
             meta_traceCall();
             
@@ -391,7 +392,7 @@ package org.granite.tide.seam {
                 }
             }
             
-            var token:AsyncToken = super.meta_isLoggedIn(identity, resultHandler, faultHandler);
+            var token:AsyncToken = super.meta_isLoggedIn(serverSession, identity, resultHandler, faultHandler);
             
             _updates.removeAll();
 
@@ -408,10 +409,10 @@ package org.granite.tide.seam {
          * 
          *  @return the call object
          */
-        public override function meta_prepareCall(operation:AbstractOperation, withContext:Boolean = true):IInvocationCall {
+        public override function meta_prepareCall(serverSession:ServerSession, operation:AbstractOperation, withContext:Boolean = true):IInvocationCall {
 		    SeamOperation(operation).conversationId = conversationId;
     	    SeamOperation(operation).conversationPropagation = (contextId != null && !meta_isContextIdFromServer ? "join" : null);
-    		SeamOperation(operation).firstCall = (withContext && _tide.firstCall);
+    		SeamOperation(operation).firstCall = (withContext && serverSession.firstCall);
     		SeamOperation(operation).firstConvCall = (withContext && meta_firstCall);
 		    
 		    var call:InvocationCall = null;

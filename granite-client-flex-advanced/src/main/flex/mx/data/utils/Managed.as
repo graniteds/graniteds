@@ -60,12 +60,12 @@ package mx.data.utils {
 	        return event;
 	    }
 	    
-	    public static function getDestination(obj:IManaged):String {
-	    	var em:IEntityManager = getEntityManager(obj);
-	        if (em)
-	            return em.meta_destination;
-	        return null;
-	    }
+//	    public static function getDestination(obj:IManaged):String {
+//	    	var em:IEntityManager = getEntityManager(obj);
+//	        if (em)
+//	            return em.meta_destination;
+//	        return null;
+//	    }
 	    
 	    public static function setProperty(obj:IManaged, property:Object, oldValue:*, newValue:*):void {
 	    	try {

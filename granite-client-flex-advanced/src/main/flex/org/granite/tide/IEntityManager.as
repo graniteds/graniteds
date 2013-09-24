@@ -36,23 +36,17 @@ package org.granite.tide {
     
     import flash.events.IEventDispatcher;
     import mx.rpc.AsyncToken;
-    
-	
-	/**
+
+    import org.granite.tide.service.ServerSession;
+
+    /**
 	 * 	IEntityManager is the interface for entity management (!)
 	 * 	It is implemented by the Tide context
 	 *
 	 * 	@author William DRAI
 	 */
 	public interface IEntityManager extends IEventDispatcher {
-	    
-	    /**
-	     *	Return the remote Flex destination
-	     *  
-	     *  @return the destination name
-	     */ 
-	    function get meta_destination():String
-		
+
 		/**
 		 * 	Intercept a property getter
 		 * 
@@ -131,7 +125,7 @@ package org.granite.tide {
          * 
          *  @param obj collection to initialize
          */
-		function meta_initializeObject(entity:Object):void;
+		function meta_initializeObject(serverSession:ServerSession, entity:Object):void;
 		
         /**
          *  @private 
@@ -143,7 +137,7 @@ package org.granite.tide {
          * 
          *  @return the operation token
          */
-		function meta_validateObject(entity:IEntity, propertyName:String, value:Object):AsyncToken;
+		function meta_validateObject(serverSession:ServerSession, entity:IEntity, propertyName:String, value:Object):AsyncToken;
 		
         /**
          *  Equality for objects, using uid property when possible
