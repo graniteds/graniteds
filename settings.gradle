@@ -2,7 +2,6 @@ include 'granite-server-core'
 include 'granite-server-servlet3'
 
 include 'granite-server-udp'
-include 'granite-client-java-udp'
 
 include 'granite-server-jetty6'
 include 'granite-server-jetty8'
@@ -42,6 +41,7 @@ include 'granite-client-flex-udp'
 
 include 'granite-client-java'
 include 'granite-client-java-advanced'
+include 'granite-client-java-udp'
 include 'granite-client-javafx'
 include 'granite-client-android'
 
