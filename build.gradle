@@ -155,7 +155,7 @@ configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { s
 			println 'Project ' + subproject.name + ': Flex SDK not found, disable build of Flex libraries'
 			subproject.configurations.remove(subproject.configurations.flexSDK)
 			subproject.configurations.create('flexSDK')
-			subproject.flexHome = project(':granite-client-flex-doc').file('flex-sdk')
+			subproject.flexHome = project(':granite-client-flex').file('flex-sdk')
 			subproject.tasks.each { it.enabled = false }
 		}
 	}
@@ -171,7 +171,7 @@ configure(subprojects.findAll { it.name != 'granite-server' && it.name != 'grani
 		header rootProject.file('HEADER-' + subproject.moduleLicense + '.txt')
 		strictCheck true
 		ext.year = Calendar.getInstance().get(Calendar.YEAR)
-		mapping('as', 'JAVADOC_STYLE')
+		mapping('as', 'SLASHSTAR_STYLE')
 	}
 }
 
@@ -441,6 +441,28 @@ project('granite-server-glassfishv3') {
 		compile 'com.sun.grizzly:grizzly-websockets:1.9.59'
 		
 		compile project(':granite-server-core')
+	}
+}
+
+// UDP Integration for Gravity
+project('granite-server-udp') {
+	
+	description = 'GraniteDS UDP support server library'
+	
+	dependencies {
+		compile project(':granite-server-core')
+	}
+}
+
+// UDP Integration for Gravity (Java client)
+project('granite-client-java-udp') {
+	
+	description = 'GraniteDS UDP support client library (Java)'
+	
+	dependencies {
+		compile project(':granite-server-udp')
+		compile project(':granite-client-java')
+		compile project(':granite-server-servlet3')
 	}
 }
 
@@ -1146,29 +1168,25 @@ project('granite-client-flex') {
 	}
 }
 
-// ASDoc for all Flex libs
-project('granite-client-flex-doc') {
+
+// Flex advanced client library (tide, math, validation)
+project('granite-client-flex-advanced') {
 	
-	description = 'GraniteDS Flex ASDoc'
+	description = "GraniteDS Advanced Flex client library"
 	
 	type = 'swc'
-	srcDirs = [
-		project(':granite-client-flex').file('src/main/flex').path,
-		project(':granite-client-flex-advanced').file('src/main/flex').path
-	]
+	srcDirs = [ 'src/main/flex' ]
 	
 	additionalCompilerOptions = [
 		'-define=CONFIG::debugging,false',
-		'-define=CONFIG::flex40,true',
-		'-define=CONFIG::flex45,false'
+		'-define=CONFIG::flex40,false',
+		'-define=CONFIG::flex45,true'
 	]
-
-    configurations {
-        create('asdoc')
-    }
-
+	
 	dependencies {
-		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
+		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
+		
+		external project(':granite-client-flex')
 		
 		external group: 'org.graniteds', name: 'flex-websocket-client', version: '1.0', ext: 'swc'
 	}
@@ -1181,58 +1199,17 @@ project('granite-client-flex-doc') {
 //			"-main-title 'GraniteDS Flex API Documentation - ${granitedsVersion}'"
 //		]
 	}
-	
-	task asdocJar(type: Jar, dependsOn: 'asdoc') {
-		classifier = 'javadoc'
-		from asdoc.outputDir
-	}
-	
-	artifacts {
-		asdoc asdocJar
-	}
-	
-	task build(overwrite: true, dependsOn: [ 'asdoc', 'asdocJar' ]) {
-	}	
-}
-
-// Flex advanced client library (tide, math, validation)
-project('granite-client-flex-advanced') {
-	
-	description = "GraniteDS Advanced Flex client library"
-	
-	type = 'swc'
-	srcDirs = [ 'src/main/flex' ]
-	
-	additionalCompilerOptions = [
-		'-define=CONFIG::debugging,false',
-		'-define=CONFIG::flex40,true',
-		'-define=CONFIG::flex45,false'
-	]
-	
-	configurations {
-		create('asdoc')
-	}
-	
-	dependencies {
-		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
-		
-		external project(':granite-client-flex')
-		
-		external group: 'org.graniteds', name: 'flex-websocket-client', version: '1.0', ext: 'swc'
-		
-		asdoc project(path: ':granite-client-flex-doc', configuration: 'asdoc')
-	}
 
 	task sourcesJar(type: Jar) {
 		classifier = 'sources'
 		from srcDirs
 	}
 	
-	task javadocJar(type: Jar, dependsOn: ':granite-client-flex-doc:asdocJar') {
+	task javadocJar(type: Jar, dependsOn: 'asdoc') {
 		classifier = 'javadoc'
-		from configurations.asdoc.collect { zipTree(it) }
+		from asdoc.outputDir
 	}
-	
+
 	artifacts {
 		archives sourcesJar
 		archives javadocJar
@@ -1259,18 +1236,74 @@ project('granite-client-flex45-advanced') {
 		'-define=CONFIG::flex45,true'
 	]
 	
-	configurations {
-		create('asdoc')
-	}
-	
 	dependencies {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
 		
 		external project(':granite-client-flex')
 		
 		external group: 'org.graniteds', name: 'flex-websocket-client', version: '1.0', ext: 'swc'
+	}
+
+	asdoc {
+		outputDir 'build/docs/asdoc'
 		
-		asdoc project(path: ':granite-client-flex-doc', configuration: 'asdoc')
+//		additionalASDocOptions = [
+//			"-window-title 'GraniteDS Flex API Documentation'",
+//			"-main-title 'GraniteDS Flex API Documentation - ${granitedsVersion}'"
+//		]
+	}
+
+	task sourcesJar(type: Jar) {
+		classifier = 'sources'
+		from srcDirs
+	}
+		
+	task javadocJar(type: Jar, dependsOn: 'asdoc') {
+		classifier = 'javadoc'
+		from asdoc.outputDir
+	}
+
+	artifacts {
+		archives sourcesJar
+		archives javadocJar
+	}
+	
+	build {
+		it.dependsOn 'sourcesJar'
+		it.dependsOn 'javadocJar'
+	}
+}
+
+// Flex UDP client library
+project('granite-client-flex-udp') {
+	
+	description = "GraniteDS Flex UDP client library"
+	
+	type = 'swc'
+	srcDirs = [ 'src/main/flex' ]
+	
+	dependencies {
+		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
+		
+		external project(':granite-client-flex')
+	}
+	
+	afterEvaluate {
+		dependencies {
+			external files(flexHome + '/frameworks/libs/air/aircore.swc')
+			external files(flexHome + '/frameworks/libs/air/airglobal.swc')
+			external files(flexHome + '/frameworks/libs/air/airframework.swc')
+		}
+	}
+
+	asdoc {
+		outputDir 'build/docs/asdoc'
+/*
+		additionalASDocOptions = [
+			"-window-title", "'GraniteDS Flex API Documentation'",
+			"-main-title", "'GraniteDS Flex API Documentation - ${granitedsVersion}'"
+		]
+*/
 	}
 
 	task sourcesJar(type: Jar) {
@@ -1278,9 +1311,9 @@ project('granite-client-flex45-advanced') {
 		from srcDirs
 	}
 	
-	task javadocJar(type: Jar, dependsOn: ':granite-client-flex-doc:asdocJar') {
+	task javadocJar(type: Jar, dependsOn: 'asdoc') {
 		classifier = 'javadoc'
-		from configurations.asdoc.collect { zipTree(it) }
+		from asdoc.outputDir
 	}
 
 	artifacts {

@@ -1,6 +1,9 @@
 include 'granite-server-core'
 include 'granite-server-servlet3'
 
+include 'granite-server-udp'
+include 'granite-client-java-udp'
+
 include 'granite-server-jetty6'
 include 'granite-server-jetty8'
 include 'granite-server-tomcat6'
@@ -33,9 +36,9 @@ include 'granite-server-beanvalidation'
 
 include 'granite-client-flex'
 include 'granite-client-flex-advanced'
-include 'granite-client-flex-doc'
 include 'granite-client-flex45-advanced'
 include 'granite-client-flex45-tests'
+include 'granite-client-flex-udp'
 
 include 'granite-client-java'
 include 'granite-client-java-advanced'
