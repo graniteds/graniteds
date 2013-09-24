@@ -70,11 +70,11 @@ is thus also required):
 Then zip them and install them like this:
 
 ----
-cd /path/to/flex-sdk-3.6
+cd /path/to/flex-sdk-3.6-parent-directory
 zip -r flex-sdk-3.6.zip flex-sdk-3.6    // Note: on Windows use any GUI zip tool
 mvn install:install-file -DgroupId=com.adobe -DartifactId=flex-sdk -Dversion=3.6 -Dpackaging=zip -Dfile=flex-sdk-3.6.zip
 
-cd /path/to/flex-sdk-4.5
+cd /path/to/flex-sdk-4.5-parent-directory
 zip -r flex-sdk-4.5.zip flex-sdk-4.5    // Note: on Windows use any GUI zip tool
 mvn install:install-file -DgroupId=com.adobe -DartifactId=flex-sdk -Dversion=4.5 -Dpackaging=zip -Dfile=flex-sdk-4.5.zip
 ----
