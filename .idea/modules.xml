@@ -4,9 +4,11 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/granite-client-android/granite-client-android.iml" filepath="$PROJECT_DIR$/granite-client-android/granite-client-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-flex/granite-client-flex.iml" filepath="$PROJECT_DIR$/granite-client-flex/granite-client-flex.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-client-flex-udp/granite-client-flex-udp.iml" filepath="$PROJECT_DIR$/granite-client-flex-udp/granite-client-flex-udp.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-flex45-advanced/granite-client-flex45-advanced.iml" filepath="$PROJECT_DIR$/granite-client-flex45-advanced/granite-client-flex45-advanced.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/granite-client-java.iml" filepath="$PROJECT_DIR$/granite-client-java/granite-client-java.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java-advanced/granite-client-java-advanced.iml" filepath="$PROJECT_DIR$/granite-client-java-advanced/granite-client-java-advanced.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-client-java-udp/granite-client-java-udp.iml" filepath="$PROJECT_DIR$/granite-client-java-udp/granite-client-java-udp.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-javafx/granite-client-javafx.iml" filepath="$PROJECT_DIR$/granite-client-javafx/granite-client-javafx.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-server/granite-server.iml" filepath="$PROJECT_DIR$/granite-server/granite-server.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-server-activemq/granite-server-activemq.iml" filepath="$PROJECT_DIR$/granite-server-activemq/granite-server-activemq.iml" />
@@ -32,6 +34,7 @@
       <module fileurl="file://$PROJECT_DIR$/granite-server-tomcat6/granite-server-tomcat6.iml" filepath="$PROJECT_DIR$/granite-server-tomcat6/granite-server-tomcat6.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-server-tomcat7/granite-server-tomcat7.iml" filepath="$PROJECT_DIR$/granite-server-tomcat7/granite-server-tomcat7.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-server-toplink/granite-server-toplink.iml" filepath="$PROJECT_DIR$/granite-server-toplink/granite-server-toplink.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-udp/granite-server-udp.iml" filepath="$PROJECT_DIR$/granite-server-udp/granite-server-udp.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-server-weblogic/granite-server-weblogic.iml" filepath="$PROJECT_DIR$/granite-server-weblogic/granite-server-weblogic.iml" />
     </modules>
   </component>
