@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -61,7 +61,7 @@ package org.granite.test.tide.data
         	contact.version = 0;
         	contact.person = person;
         	person.contacts.addItem(contact);
-        	_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+        	_ctx.person = _ctx.meta_mergeExternalData(person, null, false);
         	person = _ctx.person;
 			
 			_ctx.dispatchEvent(new TideUIConversationEvent("person#1", "editPerson", person));
@@ -84,7 +84,7 @@ package org.granite.test.tide.data
         	contact2.person = person2;
         	person2.contacts.addItem(contact2);
         	
-        	_ctx.meta_mergeExternalData(person2, null, "S2");
+        	_ctx.meta_mergeExternalData(person2, null, true);
         	
         	Assert.assertEquals("Conflicts after merge", 1, component.conflicts.conflicts.length);
         	
@@ -122,7 +122,7 @@ package org.granite.test.tide.data
         	contact3b.person = person3;
         	person3.contacts.addItem(contact3);
         	
-        	_ctx.meta_mergeExternalData(person3, null, "S3");
+        	_ctx.meta_mergeExternalData(person3, null, true);
         	
         	Assert.assertEquals("Conflicts after merge 2", 1, component.conflicts.conflicts.length);
         	

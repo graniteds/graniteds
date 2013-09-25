@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -37,5 +37,6 @@ package org.granite.test.tide.spring
 		public var test10:org.granite.test.tide.spring.TestGrailsPagedQuery;
         public var test11:org.granite.test.tide.spring.TestSpringUninitPreprocessor;
 		public var test12:org.granite.test.tide.spring.TestSpringComponentRestrict;
+        public var test13:org.granite.test.tide.spring.TestSpringMultiServer;
 	}
 }

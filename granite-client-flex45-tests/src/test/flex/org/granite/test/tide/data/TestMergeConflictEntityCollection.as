@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -60,7 +60,7 @@ package org.granite.test.tide.data
         	contact.version = 0;
         	contact.person = person;
         	person.contacts.addItem(contact);
-        	_ctx.person = _ctx.meta_mergeExternalData(person, null, null);
+        	_ctx.person = _ctx.meta_mergeExternalData(person, null, false);
         	person = _ctx.person;
         	
 			// User A changes some simple property
@@ -88,7 +88,7 @@ package org.granite.test.tide.data
         	
         	_ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, conflictsHandler);
         	
-        	_ctx.meta_mergeExternalData(person2, null, "S2");
+        	_ctx.meta_mergeExternalData(person2, null, true);
         	
         	Assert.assertEquals("Conflicts after merge", 1, _conflicts.conflicts.length);
 			Assert.assertEquals("Contacts collections not yet merged", 1, person.contacts.length);
@@ -99,7 +99,7 @@ package org.granite.test.tide.data
 			Assert.assertEquals("Person last name", "toto", person.lastName);
 			Assert.assertTrue("Person still dirty after accept client", _ctx.meta_isEntityChanged(person));
 			
-			_ctx.meta_mergeExternalData(person2, null, "S2");
+			_ctx.meta_mergeExternalData(person2, null, true);
 			
 			Assert.assertEquals("Conflicts after merge 2", 1, _conflicts.conflicts.length);
 			Assert.assertEquals("Contacts collections not yet merged 2", 1, person.contacts.length);

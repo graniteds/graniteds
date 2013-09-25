@@ -56,7 +56,8 @@ package org.granite.tide.spring {
     import org.granite.tide.ITideResponder;
     import org.granite.tide.events.TideResultEvent;
     import org.granite.tide.events.TideFaultEvent;
-    
+    import org.granite.tide.service.ServerSession;
+
     use namespace flash_proxy;
     use namespace object_proxy;
     
@@ -69,17 +70,17 @@ package org.granite.tide.spring {
      * 	@author Sebastien DELEUZE
      */
     public class Identity extends Component implements IIdentity {
+
+        public function Identity(serverSession:ServerSession = null):void {
+            super(serverSession);
+        }
         
         public override function meta_init(componentName:String, context:BaseContext):void {
             super.meta_init(componentName, context);
             addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, loggedInChangeHandler);
             this.loggedIn = false;
         }
-        
-        public function set context(context:BaseContext):void {
-            _context = context;
-        }
-        
+
         
         public function get loggedIn():Boolean {
             return getProperty("loggedIn") as Boolean;
@@ -109,12 +110,12 @@ package org.granite.tide.spring {
          *  @param faultHandler optional fault handler 
          */
         public function isLoggedIn(resultHandler:Function = null, faultHandler:Function = null):void {
-            _context.meta_isLoggedIn(this, resultHandler, faultHandler);
+            _context.meta_isLoggedIn(_serverSession, this, resultHandler, faultHandler);
         }
         
         
         public function login(username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):void {
-            _context.meta_login(this, username, password, resultHandler, faultHandler, charset);
+            _context.meta_login(_serverSession, this, username, password, resultHandler, faultHandler, charset);
         }
         
         
@@ -122,7 +123,7 @@ package org.granite.tide.spring {
             this.loggedIn = false;
             this.username = null;
             
-            _context.meta_logout(this);
+            _context.meta_logout(_serverSession, this);
             
             clearSecurityCache();
         }
@@ -147,7 +148,7 @@ package org.granite.tide.spring {
                 if (loggedIn) {
                     var responder:TideRoleResponder = new TideRoleResponder(ifAllGrantedResultHandler, ifAllGrantedFaultHandler, roleName);
                     responder.addHandlers(resultHandler, faultHandler);
-                    _context.meta_callComponent(this, "ifAllGranted", [roleName, responder], false);
+                    _context.meta_callComponent(_serverSession, this, "ifAllGranted", [roleName, responder], false);
                     _ifAllGrantedCache[roleName] = responder;
                 }
                 return false;
@@ -187,7 +188,7 @@ package org.granite.tide.spring {
                 if (loggedIn) {
                     var responder:TideRoleResponder = new TideRoleResponder(ifNotGrantedResultHandler, ifNotGrantedFaultHandler, roleName);
                     responder.addHandlers(resultHandler, faultHandler);
-                    _context.meta_callComponent(this, "ifNotGranted", [roleName, responder], false);
+                    _context.meta_callComponent(_serverSession, this, "ifNotGranted", [roleName, responder], false);
                     _ifNotGrantedCache[roleName] = responder;
                 }
                 return false;
@@ -227,7 +228,7 @@ package org.granite.tide.spring {
                 if (loggedIn) {
                     var responder:TideRoleResponder = new TideRoleResponder(ifAnyGrantedResultHandler, ifAnyGrantedFaultHandler, roleName);
                     responder.addHandlers(resultHandler, faultHandler);
-                    _context.meta_callComponent(this, "ifAnyGranted", [roleName, responder], false);
+                    _context.meta_callComponent(_serverSession, this, "ifAnyGranted", [roleName, responder], false);
                     _ifAnyGrantedCache[roleName] = responder;
                 }
                 return false;
@@ -271,7 +272,7 @@ package org.granite.tide.spring {
                 if (loggedIn) {
                     var responder:TidePermissionResponder = new TidePermissionResponder(permissionResultHandler, permissionFaultHandler, target, action);
                     responder.addHandlers(resultHandler, faultHandler);
-                    _context.meta_callComponent(this, "hasPermission", [target, action, responder], false);
+                    _context.meta_callComponent(_serverSession, this, "hasPermission", [target, action, responder], false);
                     if (cache == null) {
                         cache = new Object();
                         _permissionsCache[target] = cache;

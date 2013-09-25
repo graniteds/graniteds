@@ -54,6 +54,7 @@ package org.granite.tide.validators {
     import org.granite.tide.IExceptionHandler;
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.events.TideValidatorEvent;
+    import org.granite.tide.service.ServerSession;
     import org.granite.validation.ConstraintViolationEvent;
     import org.granite.validation.ValidationEvent;
 
@@ -76,7 +77,7 @@ package org.granite.tide.validators {
             return emsg.faultCode == VALIDATION_FAILED;
         }
 
-        public function handle(context:BaseContext, emsg:ErrorMessage):void {
+        public function handle(serverSession:ServerSession, context:BaseContext, emsg:ErrorMessage):void {
 			var invalidValues:Array = emsg.extendedData.invalidValues as Array;
 			if (invalidValues) {
 				var bean:Object, rootBean:Object;

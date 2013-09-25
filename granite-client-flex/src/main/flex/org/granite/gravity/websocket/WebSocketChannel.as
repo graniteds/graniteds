@@ -44,13 +44,14 @@ package org.granite.gravity.websocket {
     import net.gimite.websocket.WebSocket;
     import net.gimite.websocket.WebSocketEvent;
 
+    import org.granite.gravity.channels.SessionAware;
 
     /**
      *	Channel implementation for the Gravity Comet based communication with serlvet containers
      *  
      * 	@author Franck WOLFF
      */
-    public class WebSocketChannel extends Channel {
+    public class WebSocketChannel extends Channel implements SessionAware {
         
         private static var log:ILogger = Log.getLogger("org.granite.gravity.channels.WebSocketChannel");
 

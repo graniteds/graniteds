@@ -49,9 +49,9 @@ package org.granite.tide.seam.framework {
     import org.granite.tide.events.TideResultEvent;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideContextEvent;
-    
-	
-	[Bindable]
+    import org.granite.tide.service.ServerSession;
+
+    [Bindable]
 	public class ConversationList extends ArrayCollection implements IComponent {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.seam.framework.ConversationList");
@@ -61,13 +61,22 @@ package org.granite.tide.seam.framework {
         public static const CONVERSATION_TIMEOUT:String = "org.jboss.seam.conversationTimeout";
         public static const CONVERSATION_DESTROYED:String = "org.jboss.seam.conversationDestroyed";
 		
-		
+		private var _serverSession:ServerSession = null;
 	    private var _componentName:String = null;
         private var _context:BaseContext = null;
         
         private var _initialized:Boolean = false;
-        
-		
+
+
+        public function ConversationList(serverSession:ServerSession = null):void {
+            super();
+            _serverSession = serverSession;
+        }
+
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
+        }
+
 		public function meta_init(componentName:String, context:BaseContext):void {			
 		    log.debug("init ConversationList {0}", componentName);
 			_componentName = componentName;

@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -56,7 +56,7 @@ package org.granite.test.tide.data
 			var contact2:Contact = new Contact(2, 0, person, "C2");
 			coll.addItem(contact2);
 			
-			person.contacts = new PersistentCollection(person, "contacts", new PersistentSet());
+			person.contacts = new PersistentCollection(null, person, "contacts", new PersistentSet());
 			person.contacts.addItem(contact2);
 			person.contacts.addItem(new Contact(3, 0, person, "C3"));
 			person.contacts.addAllAt(coll, 1);
@@ -77,7 +77,7 @@ package org.granite.test.tide.data
 			var contact2:Contact = new Contact(2, 0, person, "C2");
 			coll.addItem(contact2);
 			
-			person.contacts = new PersistentCollection(person, "contacts", new PersistentSet());
+			person.contacts = new PersistentCollection(null, person, "contacts", new PersistentSet());
 			person.contacts.addItem(new Contact(3, 0, person, "C3"));
 			person.contacts.addAllAt(coll, 0);
 			
@@ -97,7 +97,7 @@ package org.granite.test.tide.data
 			var contact2:Contact = new Contact(2, 0, person, "C2");
 			coll.addItem(contact2);
 			
-			person.contacts = new PersistentCollection(person, "contacts", new PersistentSet());
+			person.contacts = new PersistentCollection(null, person, "contacts", new PersistentSet());
 			person.contacts.addItem(new Contact(3, 0, person, "C3"));
 			person.contacts.addAll(coll);
 			

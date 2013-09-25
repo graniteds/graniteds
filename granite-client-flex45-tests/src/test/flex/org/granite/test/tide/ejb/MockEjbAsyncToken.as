@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -29,7 +29,6 @@ package org.granite.test.tide.ejb
     import mx.messaging.messages.ErrorMessage;
     import mx.messaging.messages.IMessage;
     import mx.rpc.AsyncToken;
-    import mx.rpc.Fault;
     import mx.rpc.IResponder;
     import mx.rpc.events.AbstractEvent;
     import mx.rpc.events.FaultEvent;

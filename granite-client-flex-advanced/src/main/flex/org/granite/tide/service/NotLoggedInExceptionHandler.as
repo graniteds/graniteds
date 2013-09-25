@@ -36,23 +36,12 @@ package org.granite.tide.service {
 
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.messaging.Channel;
-    import mx.messaging.ChannelSet;
-    import mx.messaging.channels.AMFChannel;
-    import mx.messaging.channels.SecureAMFChannel;
     import mx.messaging.messages.ErrorMessage;
-    import mx.rpc.remoting.RemoteObject;
-    
-    import org.granite.gravity.Consumer;
-    import org.granite.gravity.Producer;
-    import org.granite.gravity.channels.GravityChannel;
-    import org.granite.gravity.channels.SecureGravityChannel;
+
     import org.granite.tide.BaseContext;
     import org.granite.tide.IExceptionHandler;
     import org.granite.tide.IIdentity;
     import org.granite.tide.Tide;
-    import org.granite.tide.events.TideFaultEvent;
-    
 
     /**
      * 	@author William DRAI
@@ -66,11 +55,11 @@ package org.granite.tide.service {
 			return emsg.faultCode == "Server.Security.NotLoggedIn";
 		}
 		
-		public function handle(context:BaseContext, emsg:ErrorMessage):void {
+		public function handle(serverSession:ServerSession, context:BaseContext, emsg:ErrorMessage):void {
 			var identity:IIdentity = context.byType(IIdentity, false) as IIdentity;
 			if (identity && identity.loggedIn) {
 				// Session expired, directly mark the channel as logged out
-				context.meta_logout(identity, true);
+				context.meta_logout(serverSession, identity, true);
 				identity.loggedIn = false;
 				context.raiseEvent(Tide.SESSION_EXPIRED);
 			}

@@ -34,13 +34,14 @@
  */
 package org.granite.tide.seam {
 
-    import mx.rpc.remoting.mxml.Operation;
     import mx.core.mx_internal;
+
+    import org.granite.tide.service.ServerSession;
+
     use namespace mx_internal;
     import mx.rpc.AsyncToken;
     import mx.messaging.messages.IMessage;
     import mx.rpc.remoting.mxml.RemoteObject;
-    import mx.rpc.events.ResultEvent;
     import org.granite.tide.Tide;
     import org.granite.tide.rpc.TideOperation;
 
@@ -60,8 +61,8 @@ package org.granite.tide.seam {
         private var _isFirstConvCall:Boolean;
 
         
-        public function SeamOperation(tide:Tide, svc:RemoteObject = null, name:String = null):void {
-            super(tide, svc, name);
+        public function SeamOperation(serverSession:ServerSession, svc:RemoteObject = null, name:String = null):void {
+            super(serverSession, svc, name);
         }
 
         public function set conversationId(cid:String):void {

@@ -34,44 +34,45 @@
  */
 package org.granite.tide.collections {
     
-    import flash.utils.Dictionary;
-    
     import mx.collections.ArrayCollection;
-    import mx.events.CollectionEvent;
-    import mx.events.CollectionEventKind;
-    import mx.events.PropertyChangeEvent;
 	import mx.logging.ILogger;
 	import mx.logging.Log;
     
     import org.granite.tide.IComponent;
     import org.granite.tide.BaseContext;
-    import org.granite.tide.Tide;
     import org.granite.tide.events.TideResultEvent;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideContextEvent;
-    
-	
-	[Bindable]
+    import org.granite.tide.service.ServerSession;
+
+    [Bindable]
 	public class RemoteList extends ArrayCollection implements IComponent {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.collections.RemoteList");
-		
-		
+
 	    private var _componentName:String = null;
         private var _context:BaseContext = null;
+        private var _serverSession:ServerSession = null;
         
         private var _initialized:Boolean = false;
         
 		
-		public function RemoteList() {
+		public function RemoteList(serverSession:ServerSession = null):void {
 		    log.debug("create RemoteList");
 			
 			super();
-		}
-		
+            _serverSession = serverSession;
+        }
+
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
+        }
+
 		public function meta_init(componentName:String, context:BaseContext):void {			
 			_componentName = componentName;
 			_context = context;
+            if (_serverSession == null)
+                _serverSession = context.meta_tide.mainServerSession;
 		}
 		
 		public function refreshList(event:TideContextEvent):void {
@@ -84,7 +85,7 @@ package org.granite.tide.collections {
 		
 		private function internalRefreshList():void {
 			_context.meta_addResult(_componentName, null);
-			_context.meta_resync(refreshListResult, refreshListFault);
+			_context.meta_resync(_serverSession, refreshListResult, refreshListFault);
 		}
 		
 		protected function refreshListResult(event:TideResultEvent):void {

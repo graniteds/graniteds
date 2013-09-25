@@ -33,19 +33,18 @@
  *   details.
  */
 package org.granite.tide.service {
-	
-	import flash.events.TimerEvent;
-	import flash.utils.Timer;
-	
-	import mx.messaging.messages.ErrorMessage;
-	import mx.messaging.messages.IMessage;
-	
-	import org.granite.tide.BaseContext;
-	import org.granite.tide.IExceptionHandler;
-	import org.granite.tide.IIdentity;
-	import org.granite.tide.IMessageInterceptor;
-	import org.granite.tide.Tide;
-	import org.granite.tide.spring.Identity;
+
+    import flash.events.TimerEvent;
+    import flash.utils.Timer;
+
+    import mx.messaging.messages.ErrorMessage;
+    import mx.messaging.messages.IMessage;
+
+    import org.granite.tide.BaseContext;
+    import org.granite.tide.IExceptionHandler;
+    import org.granite.tide.IIdentity;
+    import org.granite.tide.IMessageInterceptor;
+    import org.granite.tide.Tide;
 
     /**
      *  
@@ -60,13 +59,13 @@ package org.granite.tide.service {
 			return emsg.faultCode == "Server.Security.NotLoggedIn";
 		}
 		
-		public function handle(context:BaseContext, emsg:ErrorMessage):void {
+		public function handle(serverSession:ServerSession, context:BaseContext, emsg:ErrorMessage):void {
 			var identity:IIdentity = context.byType(IIdentity) as IIdentity;
 			if (identity != null && identity.loggedIn) {
 				identity.loggedIn = false;
 				
 				// Session expired, directly mark the channel as logged out
-				context.meta_tide.sessionExpired(context);
+				serverSession.sessionExpired(context);
 			}
 		}
         

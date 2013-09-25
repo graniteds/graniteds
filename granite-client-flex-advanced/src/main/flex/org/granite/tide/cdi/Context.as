@@ -72,7 +72,7 @@ package org.granite.tide.cdi {
     import org.granite.tide.invocation.ContextUpdate;
     import org.granite.tide.invocation.InvocationCall;
     import org.granite.tide.invocation.InvocationResult;
-
+    import org.granite.tide.service.ServerSession;
 
     use namespace flash_proxy;
     use namespace object_proxy;
@@ -312,18 +312,19 @@ package org.granite.tide.cdi {
 		/**
 		 * 	@private
 		 *  Calls a remote component
-		 * 	
+		 *
+         * 	@param serverSession current server session
 		 *  @param component the target component
 		 *  @op name of the called metho
 		 *  @arg method parameters
 		 * 
 		 *  @return the operation token
 		 */
-		public override function meta_callComponent(component:IComponent, op:String, args:Array, withContext:Boolean = true):AsyncToken {
+		public override function meta_callComponent(serverSession:ServerSession, component:IComponent, op:String, args:Array, withContext:Boolean = true):AsyncToken {
 			log.debug("callComponent {0}.{1}", component.meta_name, op);
 			meta_traceCall();
 			
-			var token:AsyncToken = super.meta_callComponent(component, op, args, withContext);
+			var token:AsyncToken = super.meta_callComponent(serverSession, component, op, args, withContext);
 			
 			if (withContext) {
 				_pendingUpdates = new ArrayCollection(_updates.toArray());
@@ -346,7 +347,7 @@ package org.granite.tide.cdi {
 		 * 
 		 *  @return the operation token
 		 */
-		public override function meta_login(identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):AsyncToken {
+		public override function meta_login(serverSession:ServerSession, identity:IIdentity, username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):AsyncToken {
 			meta_traceCall();
 			
 			// Keep only updates for identity component
@@ -358,7 +359,7 @@ package org.granite.tide.cdi {
 				}
 			}
 			
-			var token:AsyncToken = super.meta_login(identity, username, password, resultHandler, faultHandler, charset);
+			var token:AsyncToken = super.meta_login(serverSession, identity, username, password, resultHandler, faultHandler, charset);
 			
 			_updates.removeAll();
 			
@@ -377,7 +378,7 @@ package org.granite.tide.cdi {
 		 * 
 		 *  @return the operation token
 		 */
-		public override function meta_isLoggedIn(identity:IIdentity, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
+		public override function meta_isLoggedIn(serverSession:ServerSession, identity:IIdentity, resultHandler:Function = null, faultHandler:Function = null):AsyncToken {
 			log.debug("isLoggedIn");
 			meta_traceCall();
 			
@@ -390,7 +391,7 @@ package org.granite.tide.cdi {
 				}
 			}
 			
-			var token:AsyncToken = super.meta_isLoggedIn(identity, resultHandler, faultHandler);
+			var token:AsyncToken = super.meta_isLoggedIn(serverSession, identity, resultHandler, faultHandler);
 			
 			_updates.removeAll();
 			
@@ -398,9 +399,9 @@ package org.granite.tide.cdi {
 		}
 		        
         
-        public override function meta_prepareCall(operation:AbstractOperation, withContext:Boolean = true):IInvocationCall {
+        public override function meta_prepareCall(serverSession:ServerSession, operation:AbstractOperation, withContext:Boolean = true):IInvocationCall {
 		    CdiOperation(operation).conversationId = conversationId;
-    		CdiOperation(operation).firstCall = (withContext && _tide.firstCall);
+    		CdiOperation(operation).firstCall = (withContext && serverSession.firstCall);
     		CdiOperation(operation).firstConvCall = (withContext && meta_firstCall);
 		    
 		    var call:IInvocationCall = null;
@@ -427,7 +428,7 @@ package org.granite.tide.cdi {
                 mergeExternal = invocationResult.merge;
 				
 				if (invocationResult.updates)
-					meta_handleUpdates(null, invocationResult.updates);
+					meta_handleUpdates(false, invocationResult.updates);
 				
 				// Handle scope changes
 				if (_tide.isComponentInEvent(componentName) && invocationResult.scope == Tide.SCOPE_SESSION && !meta_isGlobal()) {

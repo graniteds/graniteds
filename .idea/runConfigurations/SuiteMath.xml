@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="SuiteMath" type="FlexUnitRunConfigurationType" factoryName="FlexUnit" appDescriptorForEmulator="Android" class_name="org.granite.test.math.SuiteMath" emulatorAdlOptions="" method_name="" output_log_level="null" package_name="" scope="Class">
+    <option name="BCName" value="granite-client-flex45-advanced" />
+    <option name="launcherParameters">
+      <LauncherParameters>
+        <option name="browserFamily" value="FIREFOX" />
+        <option name="launcherType" value="Player" />
+        <option name="playerPath" value="$PROJECT_DIR$/../../flex-sdk-4.5/runtimes/player/10.2/win/FlashPlayerDebugger.exe" />
+      </LauncherParameters>
+    </option>
+    <option name="moduleName" value="granite-client-flex45-advanced" />
+    <option name="trusted" value="true" />
+    <method />
+  </configuration>
+</component>

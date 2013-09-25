@@ -62,9 +62,9 @@ package org.granite.tide.spring {
     import org.granite.tide.collections.PagedCollectionResponder;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideResultEvent;
-	
-	
-	[Bindable]
+    import org.granite.tide.service.ServerSession;
+
+    [Bindable]
 	/**
 	 * 	Implementation of the Tide paged collection for Spring services
 	 * 
@@ -73,13 +73,13 @@ package org.granite.tide.spring {
 	public class PagedQuery extends org.granite.tide.collections.PagedQuery {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.spring.PagedQuery");
-        
+
         private var _useController:Boolean = false;
         private var _useGrailsController:Boolean = false;
 		
 		
-		public function PagedQuery() {
-			super();
+		public function PagedQuery(serverSession:ServerSession = null):void {
+			super(serverSession);
 		}
 		
 		
@@ -114,7 +114,7 @@ package org.granite.tide.spring {
 				}
 				
 				if (_useGrailsController) {
-					_context.meta_callComponent(_component, _methodName, [{ filter: filter, 
+					_context.meta_callComponent(_serverSession, _component, _methodName, [{ filter: filter,
 							offset: first, 
 							max: max, 
 							sort: order, 
@@ -126,7 +126,7 @@ package org.granite.tide.spring {
 					return;
 				}
 				else if (_useController) {
-					_context.meta_callComponent(_component, _methodName, [{ filter: filter, 
+					_context.meta_callComponent(_serverSession, _component, _methodName, [{ filter: filter,
 							first: first, 
 							max: max, 
 							order: order, 
@@ -162,7 +162,7 @@ package org.granite.tide.spring {
 				}
 				
 				if (_useGrailsController) {
-					_context.meta_callComponent(_component, _methodName, [{ filter: filter, 
+					_context.meta_callComponent(_serverSession, _component, _methodName, [{ filter: filter,
 							offset: first, 
 							max: max, 
 							sort: order, 
@@ -174,7 +174,7 @@ package org.granite.tide.spring {
 					return;
 				}
 				else if (_useController) {
-					_context.meta_callComponent(_component, _methodName, [{ filter: filter, 
+					_context.meta_callComponent(_serverSession, _component, _methodName, [{ filter: filter,
 							first: first, 
 							max: max, 
 							order: order, 

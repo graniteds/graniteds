@@ -36,24 +36,14 @@ package org.granite.tide.collections {
     
     import flash.events.Event;
     
-    import mx.binding.utils.BindingUtils;
     import mx.collections.*;
-    import mx.collections.errors.ItemPendingError;
     import mx.core.IPropertyChangeNotifier;
-    import mx.core.IUID;
-    import mx.events.CollectionEvent;
-    import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
-    import mx.events.PropertyChangeEventKind;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.rpc.IResponder;
-    import mx.rpc.events.FaultEvent;
     import mx.rpc.events.ResultEvent;
-    import mx.utils.ArrayUtil;
     import mx.utils.ObjectProxy;
-    import mx.utils.ObjectUtil;
-    
+
     import org.granite.reflect.Method;
     import org.granite.reflect.Parameter;
     import org.granite.reflect.Type;
@@ -62,11 +52,10 @@ package org.granite.tide.collections {
     import org.granite.tide.IComponent;
     import org.granite.tide.IPropertyHolder;
     import org.granite.tide.data.model.PageInfo;
-    import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideResultEvent;
-	
-	
-	[Bindable]
+    import org.granite.tide.service.ServerSession;
+
+    [Bindable]
 	/**
 	 * 	Implementation of the Tide paged collection with an generic service backend.<br/>
 	 *  <br/>
@@ -87,7 +76,8 @@ package org.granite.tide.collections {
 	public class PagedQuery extends PagedCollection implements IComponent, IPropertyHolder {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.collections.PagedQuery");
-		
+
+        protected var _serverSession:ServerSession = null
 	    protected var _component:Component = null;
         
         private var _remoteComponentName:String = null;
@@ -99,12 +89,24 @@ package org.granite.tide.collections {
         
         private var _internalFilter:Object = new Object();
         private var _filter:IPropertyChangeNotifier = new ObjectProxy(_internalFilter);
-		
+
+
+        public function PagedQuery(serverSession:ServerSession = null):void {
+            _serverSession = serverSession;
+        }
+
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
+        }
+
 		
 		public override function meta_init(componentName:String, context:BaseContext):void {
 			super.meta_init(componentName, context);
+            if (_serverSession == null)
+                _serverSession = context.meta_tide.mainServerSession;
+
 			_remoteComponentName = componentName;
-			_component = new Component();
+			_component = new Component(_serverSession);
 			_component.meta_init(_remoteComponentName, context);
 			_component.meta_templateObject = this;
 			filter.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, filterChangedHandler);
@@ -220,11 +222,11 @@ package org.granite.tide.collections {
 					usePage = true;
 				
 				if (usePage)
-					_context.meta_callComponent(_component, _methodName, [filter, new PageInfo(first, max, 
+					_context.meta_callComponent(_serverSession, _component, _methodName, [filter, new PageInfo(first, max,
 						order is Array || order == null ? order : [ order ], 
 						desc is Array || desc == null ? desc : [ desc ]), findResponder]);
 				else
-					_context.meta_callComponent(_component, _methodName, [filter, first, max, order, desc, findResponder]);
+					_context.meta_callComponent(_serverSession, _component, _methodName, [filter, first, max, order, desc, findResponder]);
 			}
 		}
 		
@@ -254,9 +256,9 @@ package org.granite.tide.collections {
 					usePage = true;
 
 				if (usePage)
-					_context.meta_callComponent(_component, _methodName, [filter, new PageInfo(first, max, order, desc), findResponder]);
+					_context.meta_callComponent(_serverSession, _component, _methodName, [filter, new PageInfo(first, max, order, desc), findResponder]);
 				else
-					_context.meta_callComponent(_component, _methodName, [filter, first, max, order, desc, findResponder]);
+					_context.meta_callComponent(_serverSession, _component, _methodName, [filter, first, max, order, desc, findResponder]);
 			}
 		}
 		

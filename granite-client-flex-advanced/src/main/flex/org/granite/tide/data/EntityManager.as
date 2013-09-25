@@ -72,6 +72,7 @@ package org.granite.tide.data {
     import org.granite.tide.collections.PersistentCollection;
     import org.granite.tide.collections.PersistentMap;
     import org.granite.tide.data.events.TideDataConflictsEvent;
+    import org.granite.tide.service.ServerSession;
     import org.granite.util.Enum;
 
 
@@ -179,6 +180,10 @@ package org.granite.tide.data {
                 _customMergers = customMergers;
             else
                 _customMergers = null;
+        }
+
+        public function setServerSession(serverSession:ServerSession):void {
+            _mergeContext.serverSession = serverSession;
         }
 
         /**
@@ -1156,7 +1161,7 @@ package org.granite.tide.data {
             if (parent is IEntity && propertyName != null && nextList is IPersistentCollection && !(nextList is PersistentCollection)) {
                 log.debug("create initialized persistent collection from {0}", BaseContext.toString(nextList));
 				
-            	nextList = new PersistentCollection(IEntity(parent), propertyName, IPersistentCollection(nextList));
+            	nextList = new PersistentCollection(_mergeContext.serverSession, IEntity(parent), propertyName, IPersistentCollection(nextList));
             }
             else
             	log.debug("mergeCollection result: {0}", BaseContext.toString(nextList));
@@ -1322,7 +1327,7 @@ package org.granite.tide.data {
             if (parent is IEntity && propertyName != null && nextMap is IPersistentCollection && !(nextMap is PersistentMap)) {
                 log.debug("create initialized persistent map from {0}", BaseContext.toString(nextMap));
 				
-            	nextMap = new PersistentMap(IEntity(parent), propertyName, IPersistentCollection(nextMap));
+            	nextMap = new PersistentMap(_mergeContext.serverSession, IEntity(parent), propertyName, IPersistentCollection(nextMap));
             }
             else
             	log.debug("mergeMap result: {0}", BaseContext.toString(nextMap));
@@ -1355,6 +1360,7 @@ package org.granite.tide.data {
 
             if (previous is PersistentCollection) {
 				_mergeContext.pushMerge(coll, previous);
+                previous.serverSession = _mergeContext.serverSession;
                 if (PersistentCollection(previous).isInitialized()) {
                 	if (_mergeContext.uninitializeAllowed && _mergeContext.versionChangeCache[PersistentCollection(previous).entity] != null) {
 	                    log.debug("uninitialize lazy collection {0}", BaseContext.toString(previous));
@@ -1368,6 +1374,7 @@ package org.granite.tide.data {
             }
             else if (previous is PersistentMap) {
 				_mergeContext.pushMerge(coll, previous);
+                previous.serverSession = _mergeContext.serverSession;
                 if (PersistentMap(previous).isInitialized()) {
                 	if (_mergeContext.uninitializeAllowed && _mergeContext.versionChangeCache[PersistentMap(previous).entity] != null) {
 	                    log.debug("uninitialize lazy map {0}", BaseContext.toString(previous));
@@ -1388,7 +1395,7 @@ package org.granite.tide.data {
 					pm = duplicatePersistentCollection(PersistentMap(coll).object, parent, propertyName);
 				else if (_mergeContext.sourceContext != null)
 					pm = duplicatePersistentCollection(pm, parent, propertyName);
-            	var pmap:PersistentMap = new PersistentMap(parent, propertyName, pm);
+            	var pmap:PersistentMap = new PersistentMap(_mergeContext.serverSession, parent, propertyName, pm);
 				_mergeContext.pushMerge(coll, pmap);
             	if (pmap.isInitialized()) {
 	                for each (var key:Object in pmap.keySet) {
@@ -1411,7 +1418,7 @@ package org.granite.tide.data {
 				pc = duplicatePersistentCollection(PersistentCollection(coll).object, parent, propertyName);
 			else if (_mergeContext.sourceContext != null)
 				pc = duplicatePersistentCollection(pc, parent, propertyName);
-            var pcoll:PersistentCollection = new PersistentCollection(parent, propertyName, pc);
+            var pcoll:PersistentCollection = new PersistentCollection(_mergeContext.serverSession, parent, propertyName, pc);
 			_mergeContext.pushMerge(coll, pcoll);
             if (pcoll.isInitialized()) {
 	            for (var i:int = 0; i < pcoll.length; i++) {

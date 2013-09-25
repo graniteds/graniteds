@@ -37,8 +37,7 @@ package org.granite.tide {
     import mx.messaging.messages.ErrorMessage;
     import mx.controls.Alert;
     
-    import org.granite.tide.BaseContext;
-    
+    import org.granite.tide.service.ServerSession;
 
     /**
      * 	Default exception handler that just displays the fault in an Alert
@@ -51,7 +50,7 @@ package org.granite.tide {
             return true;
         }
 
-        public function handle(context:BaseContext, emsg:ErrorMessage):void {
+        public function handle(serverSession:ServerSession, context:BaseContext, emsg:ErrorMessage):void {
             Alert.show(emsg.faultString);
         }
     }

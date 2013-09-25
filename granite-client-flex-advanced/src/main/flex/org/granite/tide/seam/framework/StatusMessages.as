@@ -65,7 +65,8 @@ package org.granite.tide.seam.framework {
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.seam.Seam;
     import org.granite.tide.seam.Context;
-    
+    import org.granite.tide.service.ServerSession;
+
     use namespace flash_proxy;
     use namespace object_proxy;
     
@@ -94,6 +95,9 @@ package org.granite.tide.seam.framework {
         }
         
         public function meta_init(componentName:String, context:BaseContext):void {
+        }
+
+        public function set serverSession(serverSession:ServerSession):void {
         }
         
         

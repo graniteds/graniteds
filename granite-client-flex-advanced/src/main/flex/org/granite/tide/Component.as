@@ -37,7 +37,6 @@ package org.granite.tide {
     import flash.utils.flash_proxy;
     
     import mx.collections.IList;
-    import mx.collections.errors.ItemPendingError;
     import mx.logging.ILogger;
     import mx.logging.Log;
     import mx.rpc.events.ResultEvent;
@@ -48,8 +47,7 @@ package org.granite.tide {
     
     import org.granite.tide.impl.ComponentProperty;
     import org.granite.tide.impl.ContextExpression;
-    import org.granite.collections.IPersistentCollection;
-    import org.granite.meta;
+    import org.granite.tide.service.ServerSession;
 
     use namespace flash_proxy;
     use namespace object_proxy;
@@ -67,15 +65,21 @@ package org.granite.tide {
 
         private var _name:String;
         protected var _context:BaseContext;
+        protected var _serverSession:ServerSession;
         
         private var _templateObject:Object = null;
 
+        public function Component(serverSession:ServerSession = null):void {
+            _serverSession = serverSession;
+        }
 
         public function meta_init(name:String, context:BaseContext):void {
             proxyClass = ComponentProperty;
             log.info("init {0} ", name);
             _name = name;
             _context = context;
+            if (_serverSession == null)
+                _serverSession = context.meta_tide.mainServerSession;
         }
         
         public function set meta_templateObject(templateObject:Object):void {
@@ -89,9 +93,19 @@ package org.granite.tide {
         public function get meta_context():BaseContext {
             return _context;
         }
-        
+
+        public function set context(context:BaseContext):void {
+            _context = context;
+            if (_serverSession == null)
+                _serverSession = context.meta_tide.mainServerSession;
+        }
+
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
+        }
+
         public function get meta_remoteObject():RemoteObject {
-        	return _context.meta_tide.getRemoteObject(_name);
+        	return _serverSession.getRemoteObject(_name);
         }
         
         
@@ -184,10 +198,10 @@ package org.granite.tide {
             var op:String = name is QName ? QName(name).localName : name;
             if (args && args.length > 0 && args[0] is BaseContext) {
             	var context:BaseContext = BaseContext(args[0]);
-            	return context.meta_callComponent(this, op, args.slice(1));
+            	return context.meta_callComponent(_serverSession, this, op, args.slice(1));
             }
             
-            return _context.meta_callComponent(this, op, args);
+            return _context.meta_callComponent(_serverSession, this, op, args);
         }
     }
 }

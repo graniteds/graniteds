@@ -1,4 +1,4 @@
-/**
+/*
  *   GRANITE DATA SERVICES
  *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
@@ -26,25 +26,26 @@ package org.granite.test.tide.cdi
     import org.granite.tide.cdi.Cdi;
     import org.granite.tide.cdi.CdiOperation;
     import mx.rpc.remoting.mxml.RemoteObject;
-    
-    
+
+    import org.granite.tide.service.ServerSession;
+
     public class MockCdi extends Cdi
     {
         public var token:MockCdiAsyncToken;
         
-        public function MockCdi(destination:String = null) {
-            super(destination);
+        public function MockCdi():void {
+            super();
+        }
+
+        protected override function initServerSession():ServerSession {
+            return new MockCdiServerSession();
         }
         
-        public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
-	        return new MockCdiOperation(this, name);
-        } 
-        
 		public static function getInstance():MockCdi {
-			var tide:Tide = Tide.getInstance("cdi", MockCdi);
+			var tide:Tide = Tide.getInstance(null, MockCdi);
 			if (!(tide is MockCdi)) {
 				Tide.resetInstance();
-				tide = Tide.getInstance("cdi", MockCdi);
+				tide = Tide.getInstance(null, MockCdi);
 			}
 			return tide as MockCdi;
 		}
@@ -58,19 +59,27 @@ package org.granite.test.tide.cdi
 
 
 import mx.rpc.remoting.mxml.RemoteObject;
-import mx.rpc.AbstractOperation;
-import org.granite.tide.Tide;
 import org.granite.tide.cdi.CdiOperation;
 import mx.rpc.AsyncToken;
 import org.granite.test.tide.cdi.MockCdi;
 import org.granite.test.tide.cdi.MockCdiAsyncToken;
+import org.granite.tide.cdi.CdiServerSession;
+import org.granite.tide.rpc.TideOperation;
+import org.granite.tide.service.ServerSession;
+
+class MockCdiServerSession extends CdiServerSession {
+
+    public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
+        return new MockCdiOperation(this, name);
+    }
+}
 
 class MockCdiOperation extends CdiOperation {
     
     private var _name:String = null;
     
-    public function MockCdiOperation(tide:Tide, name:String):void {
-        super(tide);
+    public function MockCdiOperation(serverSession:ServerSession, name:String):void {
+        super(serverSession);
         _name = name;
     }
     

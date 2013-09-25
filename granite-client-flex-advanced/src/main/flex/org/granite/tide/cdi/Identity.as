@@ -34,27 +34,18 @@
  */
 package org.granite.tide.cdi {
 
-    import mx.collections.ArrayCollection;
-    import mx.collections.ItemResponder;
-    import mx.core.Application;
     import mx.events.PropertyChangeEvent;
-    import mx.messaging.events.ChannelFaultEvent;
-    import mx.messaging.messages.ErrorMessage;
-    import mx.rpc.AsyncToken;
-    import mx.rpc.events.FaultEvent;
-    import mx.rpc.events.ResultEvent;
     import mx.utils.object_proxy;
     import flash.utils.flash_proxy;
     import flash.events.Event;
     
-    import org.granite.events.SecurityEvent;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Component;
     import org.granite.tide.IIdentity;
-    import org.granite.tide.ITideResponder;
     import org.granite.tide.events.TideResultEvent;
     import org.granite.tide.events.TideFaultEvent;
-    
+    import org.granite.tide.service.ServerSession;
+
     use namespace flash_proxy;
     use namespace object_proxy;
     
@@ -67,17 +58,17 @@ package org.granite.tide.cdi {
      * 	@author William DRAI
      */
     public class Identity extends Component implements IIdentity {
-        
+
+        public function Identity(serverSession:ServerSession = null):void {
+            super(serverSession);
+        }
+
         public override function meta_init(componentName:String, context:BaseContext):void {
             super.meta_init(componentName, context);
             addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, loggedInChangeHandler);
             this.loggedIn = false;
         }
-        
-        public function set context(context:BaseContext):void {
-            _context = context;
-        }
-		
+
 		public function get meta_credentialsClassName():String {
 			return "org.granite.tide.cdi.Identity";
 		}
@@ -111,11 +102,11 @@ package org.granite.tide.cdi {
          *  @param faultHandler optional fault handler 
          */
         public function isLoggedIn(resultHandler:Function = null, faultHandler:Function = null):void {
-            _context.meta_isLoggedIn(this, resultHandler, faultHandler);
+            _context.meta_isLoggedIn(_serverSession, this, resultHandler, faultHandler);
         }
         
         public function login(username:String, password:String, resultHandler:Function = null, faultHandler:Function = null, charset:String = null):void {
-            _context.meta_login(this, username, password, resultHandler, faultHandler, charset);
+            _context.meta_login(_serverSession, this, username, password, resultHandler, faultHandler, charset);
         }
         
         
@@ -123,7 +114,7 @@ package org.granite.tide.cdi {
             this.loggedIn = false;
             this.username = null;
             
-            _context.meta_logout(this);
+            _context.meta_logout(_serverSession, this);
             
             clearSecurityCache();
         }
@@ -146,7 +137,7 @@ package org.granite.tide.cdi {
                 if (loggedIn) {
                     var responder:TideRoleResponder = new TideRoleResponder(roleResultHandler, roleFaultHandler, roleName);
                     responder.addHandlers(resultHandler, faultHandler);
-                    _context.meta_callComponent(this, "hasRole", [roleName, responder], false);
+                    _context.meta_callComponent(_serverSession, this, "hasRole", [roleName, responder], false);
                     _rolesCache[roleName] = responder;
                 }
                 return false;

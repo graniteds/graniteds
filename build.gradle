@@ -244,7 +244,10 @@ configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith
 	
 	apply plugin: 'maven'
 	apply plugin: 'signing'
-	
+
+    group = 'org.graniteds'
+    version = granitedsVersion
+
 	configurations {
 		deployerJars
 	}
@@ -935,7 +938,7 @@ project('granite-server-hibernate') {
 		
 		testCompile project(':granite-server-core').sourceSets.test.output
 		testCompile 'org.hibernate:hibernate-entitymanager:3.6.10.Final'
-		
+
 		testCompile project(':granite-server-spring').sourceSets.main.output
 		testCompile 'org.springframework:spring-orm:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
@@ -1195,8 +1198,8 @@ project('granite-client-flex-advanced') {
 		outputDir 'build/docs/asdoc'
 
         additionalASDocOptions = [
-                "-window-title", "GraniteDS Flex API Documentation",
-                "-main-title", "GraniteDS Flex API Documentation - " + granitedsVersion
+            "-window-title", "GraniteDS Flex API Documentation",
+            "-main-title", "GraniteDS Flex API Documentation - " + granitedsVersion
         ]
 	}
 
@@ -1246,11 +1249,11 @@ project('granite-client-flex45-advanced') {
 
 	asdoc {
 		outputDir 'build/docs/asdoc'
-		
-//		additionalASDocOptions = [
-//			"-window-title 'GraniteDS Flex API Documentation'",
-//			"-main-title 'GraniteDS Flex API Documentation - ${granitedsVersion}'"
-//		]
+
+        additionalASDocOptions = [
+            "-window-title", "GraniteDS Flex API Documentation",
+            "-main-title", "GraniteDS Flex API Documentation - " + granitedsVersion
+        ]
 	}
 
 	task sourcesJar(type: Jar) {
@@ -1287,7 +1290,8 @@ project('granite-client-flex-udp') {
 		
 		external project(':granite-client-flex')
 	}
-	
+
+    // Use afterEvaluate because the flexHome variable is defined after project configuration
 	afterEvaluate {
 		dependencies {
 			external files(flexHome + '/frameworks/libs/air/aircore.swc')
@@ -1298,12 +1302,11 @@ project('granite-client-flex-udp') {
 
 	asdoc {
 		outputDir 'build/docs/asdoc'
-/*
-		additionalASDocOptions = [
-			"-window-title", "'GraniteDS Flex API Documentation'",
-			"-main-title", "'GraniteDS Flex API Documentation - ${granitedsVersion}'"
-		]
-*/
+
+        additionalASDocOptions = [
+            "-window-title", "GraniteDS Flex API Documentation",
+            "-main-title", "GraniteDS Flex API Documentation - " + granitedsVersion
+        ]
 	}
 
 	task sourcesJar(type: Jar) {

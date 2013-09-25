@@ -38,29 +38,18 @@ package org.granite.tide.seam.security {
     import flash.utils.Dictionary;
     import flash.events.Event;
     
-    import mx.collections.ArrayCollection;
-    import mx.collections.ItemResponder;
-    import mx.core.Application;
-    import mx.events.PropertyChangeEvent;
-    import mx.messaging.events.ChannelFaultEvent;
-    import mx.messaging.messages.ErrorMessage;
-    import mx.rpc.AsyncToken;
-    import mx.rpc.events.FaultEvent;
-    import mx.rpc.events.ResultEvent;
     import mx.utils.object_proxy;
     
-    import org.granite.events.SecurityEvent;
     import org.granite.tide.Tide;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Component;
-    import org.granite.tide.IEntity;
     import org.granite.tide.IIdentity;
-    import org.granite.tide.ITideResponder;
     import org.granite.tide.events.TideContextEvent;
     import org.granite.tide.events.TideResultEvent;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.seam.Seam;
-    
+    import org.granite.tide.service.ServerSession;
+
     use namespace flash_proxy;
     use namespace object_proxy;
     
@@ -80,16 +69,16 @@ package org.granite.tide.seam.security {
      * 	@author William DRAI
      */
     public class Identity extends Component implements IIdentity {
-        
+
+        public function Identity(serverSession:ServerSession = null):void {
+            super(serverSession);
+        }
+
         public override function meta_init(componentName:String, context:BaseContext):void {
             super.meta_init(componentName, context);
             context.addContextEventListener(Tide.LOGIN, loginSuccessHandler);
         }
-        
-        public function set context(context:BaseContext):void {
-            _context = context;
-        }
-        
+
         
         /**
          * 	User name
@@ -123,7 +112,7 @@ package org.granite.tide.seam.security {
         public function set loggedIn(loggedIn:Boolean):void {
             setInternalProperty("loggedIn", loggedIn);
             if (!loggedIn)
-				_context.meta_logout(this);
+				_context.meta_logout(_serverSession, this);
         }
         
         
@@ -138,7 +127,7 @@ package org.granite.tide.seam.security {
             var l:Boolean = loggedIn;
             var u:String = username;
             
-            _context.meta_isLoggedIn(this, resultHandler, faultHandler);
+            _context.meta_isLoggedIn(_serverSession, this, resultHandler, faultHandler);
         }
         
         /**
@@ -150,7 +139,7 @@ package org.granite.tide.seam.security {
         public function login(resultHandler:Function = null, faultHandler:Function = null, charset:String = null):void {
             var l:Boolean = loggedIn;    // Force evaluation of loggedIn state
             
-            _context.meta_login(this, object.username, object.password, resultHandler, faultHandler, charset);
+            _context.meta_login(_serverSession, this, object.username, object.password, resultHandler, faultHandler, charset);
         }
         
         private function loginSuccessHandler(event:TideContextEvent):void {
@@ -190,7 +179,7 @@ package org.granite.tide.seam.security {
                 if (loggedIn) {
                     var responder:TideRoleResponder = new TideRoleResponder(roleResultHandler, roleFaultHandler, roleName);
                     responder.addHandlers(resultHandler, faultHandler);
-                    _context.meta_callComponent(this, "hasRole", [roleName, responder], false);
+                    _context.meta_callComponent(_serverSession, this, "hasRole", [roleName, responder], false);
                     _rolesCache[roleName] = responder;
                 }
                 return false;
@@ -234,7 +223,7 @@ package org.granite.tide.seam.security {
                 if (loggedIn) {
                     var responder:TidePermissionResponder = new TidePermissionResponder(permissionResultHandler, permissionFaultHandler, target, action);
                     responder.addHandlers(resultHandler, faultHandler);
-                    _context.meta_callComponent(this, "hasPermission", [target, action, responder], false);
+                    _context.meta_callComponent(_serverSession, this, "hasPermission", [target, action, responder], false);
                     if (cache == null) {
                         cache = new Object();
                         _permissionsCache[target] = cache;
@@ -286,7 +275,6 @@ package org.granite.tide.seam.security {
 }
 
 
-import flash.utils.Dictionary;
 import org.granite.tide.ITideResponder;
 import org.granite.tide.events.TideResultEvent;
 import org.granite.tide.events.TideFaultEvent;

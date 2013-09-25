@@ -34,14 +34,12 @@
  */
 package org.granite.tide {
     
-    import flash.events.IEventDispatcher;
-    
     import mx.messaging.messages.ErrorMessage;
 	
 	import org.granite.tide.events.TideFaultEvent;
-    
-	
-	/**
+    import org.granite.tide.service.ServerSession;
+
+    /**
 	 * 	Interface for extended exception handlers
 	 * 
 	 * 	An exception handler should tell which ErrorMessage it handles and do some action when the accepted error happens
@@ -55,12 +53,13 @@ package org.granite.tide {
 	    
 		/**
 		 * 	Handle the error
-		 * 
-		 * 	@param context the context in which the error occured
+		 *
+         *  @param serverSession server session
+         * 	@param context the context in which the error occured
 		 *  @param emsg the error message
 		 *  @param event the full fault event
 		 */
-	    function handleEx(context:BaseContext, emsg:ErrorMessage, event:TideFaultEvent):void;
+	    function handleEx(serverSession:ServerSession, context:BaseContext, emsg:ErrorMessage, event:TideFaultEvent):void;
 
 	}
 }

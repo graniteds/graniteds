@@ -89,7 +89,7 @@ package org.granite.tide.ejb {
     import org.granite.tide.invocation.ContextResult;
     import org.granite.tide.invocation.ContextUpdate;
     import org.granite.tide.Component;
-
+    import org.granite.tide.service.ServerSession;
 
     use namespace flash_proxy;
     use namespace object_proxy;
@@ -112,7 +112,7 @@ package org.granite.tide.ejb {
 		}
         
         
-        public override function meta_prepareCall(operation:AbstractOperation, withContext:Boolean = true):IInvocationCall {
+        public override function meta_prepareCall(serverSession:ServerSession, operation:AbstractOperation, withContext:Boolean = true):IInvocationCall {
 		    var call:IInvocationCall = null;
 		    if (withContext) {
 		        call = new InvocationCall(_tide.newListeners);
@@ -137,7 +137,7 @@ package org.granite.tide.ejb {
                 mergeExternal = invocationResult.merge;
 				
 				if (invocationResult.updates)
-					meta_handleUpdates(null, invocationResult.updates);
+					meta_handleUpdates(false, invocationResult.updates);
 				
                 var resultMap:IList = invocationResult.results;
 

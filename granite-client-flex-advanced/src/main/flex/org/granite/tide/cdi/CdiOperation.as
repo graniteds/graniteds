@@ -34,8 +34,10 @@
  */
 package org.granite.tide.cdi {
 
-    import mx.rpc.remoting.mxml.Operation;
     import mx.core.mx_internal;
+
+    import org.granite.tide.service.ServerSession;
+
     use namespace mx_internal;
     import mx.rpc.AsyncToken;
     import mx.messaging.messages.IMessage;
@@ -59,8 +61,8 @@ package org.granite.tide.cdi {
         private var _isFirstConvCall:Boolean;
 
         
-        public function CdiOperation(tide:Tide, svc:RemoteObject = null, name:String = null):void {
-            super(tide, svc, name);
+        public function CdiOperation(serverSession:ServerSession, svc:RemoteObject = null, name:String = null):void {
+            super(serverSession, svc, name);
         }
 
         public function set conversationId(cid:String):void {
