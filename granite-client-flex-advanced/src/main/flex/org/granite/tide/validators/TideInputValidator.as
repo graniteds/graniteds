@@ -42,6 +42,7 @@ package org.granite.tide.validators {
     
     import org.granite.tide.IEntity;
     import org.granite.tide.IEntityManager;
+    import org.granite.tide.Tide;
     import org.granite.tide.events.TideValidatorEvent;
     import org.granite.tide.service.ServerSession;
 
@@ -144,7 +145,8 @@ package org.granite.tide.validators {
                 if (value != _lastCheckedValue) {
                 	if (_valueChecking == null && em != null) {
 	                	_valueChecking = value;
-	                	em.meta_validateObject(_serverSession, _entity, _entityProperty, value);
+                        var serverSession:ServerSession = _serverSession != null ? _serverSession : Tide.getInstance().mainServerSession;
+	                	em.meta_validateObject(serverSession, _entity, _entityProperty, value);
 	                }
                 	return results;
                 }

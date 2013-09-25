@@ -52,11 +52,11 @@ package org.granite.tide.cdi {
         }
 
         protected override function isLoggedIn():Boolean {
-            return _tide.getContext().byType(IIdentity).loggedIn;
+            return byType(IIdentity).loggedIn;
         }
 
         protected override function setLoggedIn(value:Boolean):void {
-            _tide.getContext().byType(IIdentity).loggedIn = value;
+            byType(IIdentity).loggedIn = value;
         }
 
         public override function checkLoggedIn(ctx:BaseContext, component:IComponent, responder:ITideResponder = null):AsyncToken {
@@ -65,12 +65,12 @@ package org.granite.tide.cdi {
 
         public override function isLoggedInSuccessHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
             if (componentName == Cdi.IDENTITY_NAME) {
-                var wasLoggedIn:Boolean = _tide.getContext()[Cdi.IDENTITY_NAME].loggedIn;
+                var wasLoggedIn:Boolean = getContext()[Cdi.IDENTITY_NAME].loggedIn;
 
-                _tide.getContext()[Cdi.IDENTITY_NAME].username = data.result.result as String;
-                _tide.getContext()[Cdi.IDENTITY_NAME].loggedIn = data.result.result != null;
+                Tide.getInstance().getContext()[Cdi.IDENTITY_NAME].username = data.result.result as String;
+                getContext()[Cdi.IDENTITY_NAME].loggedIn = data.result.result != null;
 
-                if (!_tide.getContext()[Cdi.IDENTITY_NAME].loggedIn && wasLoggedIn)
+                if (!getContext()[Cdi.IDENTITY_NAME].loggedIn && wasLoggedIn)
                     sessionExpired(sourceContext);
             }
 
@@ -79,8 +79,8 @@ package org.granite.tide.cdi {
 
         public override function isLoggedInFaultHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
             if (componentName == Cdi.IDENTITY_NAME) {
-                _tide.getContext()[Cdi.IDENTITY_NAME].username = null;
-                _tide.getContext()[Cdi.IDENTITY_NAME].loggedIn = false;
+                getContext()[Cdi.IDENTITY_NAME].username = null;
+                getContext()[Cdi.IDENTITY_NAME].loggedIn = false;
             }
 
             super.isLoggedInFaultHandler(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
@@ -101,15 +101,15 @@ package org.granite.tide.cdi {
         }
 
         public function cdiLoginSuccessHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, username:String, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            _tide.getContext()[Cdi.IDENTITY_NAME].username = username;
-            _tide.getContext()[Cdi.IDENTITY_NAME].loggedIn = true;
+            getContext()[Cdi.IDENTITY_NAME].username = username;
+            getContext()[Cdi.IDENTITY_NAME].loggedIn = true;
 
             super.loginSuccessHandler(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
         }
 
         public function cdiLoginFaultHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, username:String, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            _tide.getContext()[Cdi.IDENTITY_NAME].username = null;
-            _tide.getContext()[Cdi.IDENTITY_NAME].loggedIn = false;
+            getContext()[Cdi.IDENTITY_NAME].username = null;
+            getContext()[Cdi.IDENTITY_NAME].loggedIn = false;
 
             super.loginFaultHandler(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
         }

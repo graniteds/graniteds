@@ -107,9 +107,9 @@ package org.granite.tide.rpc {
         
 	    public function result(data:Object):void {
 	        if (_info != null)
-		        _resultHandler(_serverSession, _sourceContext, _sourceModulePrefix, data, _info, _componentName, _op, _tideResponder, this);
+		        _resultHandler(_sourceContext, _sourceModulePrefix, data, _info, _componentName, _op, _tideResponder, this);
 		    else
-		        _resultHandler(_serverSession, _sourceContext, _sourceModulePrefix, data, _componentName, _op, _tideResponder, this);
+		        _resultHandler(_sourceContext, _sourceModulePrefix, data, _componentName, _op, _tideResponder, this);
 		    
 		    if (_clearOp)
 		        _operation.clearResult();
@@ -117,9 +117,9 @@ package org.granite.tide.rpc {
 	    
 	    public function fault(info:Object):void {
 	        if (_info != null)
-		        _faultHandler(_serverSession, _sourceContext, _sourceModulePrefix, info, _info, _componentName, _op, _tideResponder, this);
+		        _faultHandler(_sourceContext, _sourceModulePrefix, info, _info, _componentName, _op, _tideResponder, this);
 	        else
-		        _faultHandler(_serverSession, _sourceContext, _sourceModulePrefix, info, _componentName, _op, _tideResponder, this);
+		        _faultHandler(_sourceContext, _sourceModulePrefix, info, _componentName, _op, _tideResponder, this);
 		    
 		    if (_clearOp)
 				_operation.clearResult();

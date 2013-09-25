@@ -47,11 +47,11 @@ package org.granite.tide.seam {
         }
 
         protected override function isLoggedIn():Boolean {
-            return _tide.getContext().identity.loggedIn;
+            return getContext().identity.loggedIn;
         }
 
         protected override function setLoggedIn(value:Boolean):void {
-            _tide.getContext().identity.loggedIn = value;
+            getContext().identity.loggedIn = value;
         }
 
 

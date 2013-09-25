@@ -41,11 +41,11 @@ package org.granite.tide.ejb {
 
 
         protected override function isLoggedIn():Boolean {
-            return _tide.getContext().identity.loggedIn;
+            return getContext().identity.loggedIn;
         }
 
         protected override function setLoggedIn(value:Boolean):void {
-            _tide.getContext().identity.loggedIn = value;
+            getContext().identity.loggedIn = value;
         }
 
         public override function checkLoggedIn(ctx:BaseContext, component:IComponent, responder:ITideResponder = null):AsyncToken {
@@ -53,20 +53,20 @@ package org.granite.tide.ejb {
         }
 
         public override function isLoggedInSuccessHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            var wasLoggedIn:Boolean = _tide.getContext().identity.loggedIn;
+            var wasLoggedIn:Boolean = getContext().identity.loggedIn;
 
-            _tide.getContext().identity.username = data.result.result as String;
-            _tide.getContext().identity.loggedIn = data.result.result != null;
+            getContext().identity.username = data.result.result as String;
+            getContext().identity.loggedIn = data.result.result != null;
 
-            if (!_tide.getContext().identity.loggedIn && wasLoggedIn)
+            if (!getContext().identity.loggedIn && wasLoggedIn)
                 sessionExpired(sourceContext);
 
             super.isLoggedInSuccessHandler(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
         }
 
         public override function isLoggedInFaultHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            _tide.getContext().getEjbContext().identity.username = null;
-            _tide.getContext().identity.loggedIn = false;
+            getContext().getEjbContext().identity.username = null;
+            getContext().identity.loggedIn = false;
 
             super.isLoggedInFaultHandler(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
         }
@@ -83,15 +83,15 @@ package org.granite.tide.ejb {
         }
 
         public function ejbLoginSuccessHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, username:String, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            _tide.getContext().identity.username = username;
-            _tide.getContext().identity.loggedIn = true;
+            getContext().identity.username = username;
+            getContext().identity.loggedIn = true;
 
             super.loginSuccessHandler(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
         }
 
         public function ejbLoginFaultHandler(sourceContext:BaseContext, sourceModulePrefix:String, data:Object, username:String, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
-            _tide.getContext().identity.username = null;
-            _tide.getContext().identity.loggedIn = false;
+            getContext().identity.username = null;
+            getContext().identity.loggedIn = false;
 
             super.loginFaultHandler(sourceContext, sourceModulePrefix, data, componentName, op, tideResponder, componentResponder);
         }

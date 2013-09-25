@@ -54,8 +54,6 @@ package org.granite.tide.service {
 
         private static var log:ILogger = Log.getLogger("org.granite.tide.service.ServerSession");
 
-        protected var _tide:Tide;
-
         private var _server:IServer;
 
         private var _destination:String = null;
@@ -67,6 +65,7 @@ package org.granite.tide.service {
         protected var _roInitialize:RemoteObject = null;
         protected var _rosByDestination:Dictionary = new Dictionary();
         protected var _channelSetsByType:Dictionary = new Dictionary();
+        private var _defaultChannelBuilder:IChannelBuilder = new DefaultChannelBuilder();
 
         private var _initializing:Boolean = true;
         private var _logoutInProgress:Boolean = false;
@@ -77,7 +76,6 @@ package org.granite.tide.service {
 
 
         public function ServerSession(secure:Boolean = false, serverName:String = "", serverPort:String = "", contextRoot:String = "", destination:String = "server"):void {
-            _tide = Tide.getInstance();
             _server = new DefaultServer(secure, serverName, serverPort, contextRoot);
             _destination = destination;
 
@@ -142,15 +140,23 @@ package org.granite.tide.service {
                 channelSet = new ChannelSet();
                 _channelSetsByType[type] = channelSet;
             }
-            var channelBuilders:Array = _tide.getContext().allByType(IChannelBuilder, true);
+            var channelBuilders:Array = allByType(IChannelBuilder, true);
+            var channel:Channel = null;
             for each (var channelBuilder:IChannelBuilder in channelBuilders) {
-                var channel:Channel = channelBuilder.build(type, _server);
+                channel = channelBuilder.build(type, _server);
                 if (channel != null) {
                     channelSet.addChannel(channel);
                     return channelSet;
                 }
             }
-            throw new Error("Could not init ChannelSet of type " + type + ": no channel builder found");
+
+            channel = _defaultChannelBuilder.build(type, _server);
+            if (channel != null) {
+                channelSet.addChannel(channel);
+                return channelSet;
+            }
+
+            throw new Error("Could not init ChannelSet of type " + type + ": no channel builder found")
         }
 
 
@@ -236,7 +242,7 @@ package org.granite.tide.service {
 
         public function set busy(busy:Boolean):void {
             _busy = busy;
-            _tide.notifyBusy(busy);
+            Tide.getInstance().notifyBusy(busy);
         }
 
         /**
@@ -244,7 +250,7 @@ package org.granite.tide.service {
          * @param before
          */
         public function processMessageInterceptors(message:IMessage, before:Boolean):void {
-            var interceptors:Array = _tide.getContext().allByType(IMessageInterceptor, true);
+            var interceptors:Array = allByType(IMessageInterceptor, true);
             for each (var interceptor:IMessageInterceptor in interceptors) {
                 if (before)
                     interceptor.before(message);
@@ -476,7 +482,7 @@ package org.granite.tide.service {
                 context.meta_contextManager.updateContextId(previousContextId, context);
             }
             else {
-                context = _tide.getContext(contextId);
+                context = sourceContext.meta_tide.getContext(contextId);
                 if (contextId != Tide.DEFAULT_CONTEXT)
                     context.meta_setContextId(contextId, true);
             }
@@ -509,9 +515,9 @@ package org.granite.tide.service {
 
             var context:BaseContext = extractContext(sourceContext, MessageEvent(data));
 
-            var saveModulePrefix:String = _tide.currentModulePrefix;
+            var saveModulePrefix:String = sourceContext.meta_tide.currentModulePrefix;
             try {
-                _tide.currentModulePrefix = sourceModulePrefix;
+                sourceContext.meta_tide.currentModulePrefix = sourceModulePrefix;
 
                 context.meta_setServerSession(this);
                 context.meta_result(componentName, operation, invocationResult, result,
@@ -528,7 +534,7 @@ package org.granite.tide.service {
                 }
             }
             finally {
-                _tide.currentModulePrefix = saveModulePrefix;
+                sourceContext.meta_tide.currentModulePrefix = saveModulePrefix;
             }
 
             context.meta_clearCache();
@@ -577,9 +583,9 @@ package org.granite.tide.service {
             }
             while (m);
 
-            var saveModulePrefix:String = _tide.currentModulePrefix;
+            var saveModulePrefix:String = sourceContext.meta_tide.currentModulePrefix;
             try {
-                _tide.currentModulePrefix = sourceModulePrefix;
+                sourceContext.meta_tide.currentModulePrefix = sourceModulePrefix;
 
                 context.meta_setServerSession(this);
                 context.meta_fault(componentName, operation, emsg);
@@ -601,7 +607,7 @@ package org.granite.tide.service {
                 }
 
                 if (!handled) {
-                    var _exceptionHandlers:Array = _tide.getContext().allByType(IExceptionHandler, true);
+                    var _exceptionHandlers:Array = allByType(IExceptionHandler, true);
                     if (emsg != null) {
                         // Lookup for a suitable exception handler
                         for each (var handler:IExceptionHandler in _exceptionHandlers) {
@@ -631,7 +637,7 @@ package org.granite.tide.service {
                 }
             }
             finally {
-                _tide.currentModulePrefix = saveModulePrefix;
+                sourceContext.meta_tide.currentModulePrefix = saveModulePrefix;
             }
 
             if (!handled && !_logoutInProgress)
@@ -662,7 +668,7 @@ package org.granite.tide.service {
             if (_waitForLogout > 0)
                 return;
 
-            _tide.dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGOUT, { serverSession: this }));
+            dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGOUT, { serverSession: this }));
 
             if (ro.channelSet) {
                 var asyncToken:AsyncToken = ro.channelSet.logout();	// Workaround described in BLZ-310
@@ -703,12 +709,12 @@ package org.granite.tide.service {
 
             log.info("Tide application logout");
 
-            _tide.getContext().meta_contextManager.destroyContexts();
+            getContext().meta_contextManager.destroyContexts();
 
             _logoutInProgress = false;
             _waitForLogout = 0;
 
-            _tide.getContext().raiseEvent(Tide.LOGGED_OUT);
+            getContext().raiseEvent(Tide.LOGGED_OUT);
         }
 
         private function logoutFault(event:Event):void {
@@ -733,10 +739,10 @@ package org.granite.tide.service {
             log.info("login {0} > {1}", component.meta_name, username);
 
             _firstCall = false;
-            _tide.forceNewListeners();
+            Tide.getInstance().forceNewListeners();
 
-            _ro.setCredentials(username, password, charset);
-            _tide.dispatchEvent(new TidePluginEvent(Tide.PLUGIN_SET_CREDENTIALS, { serverSession: this, username: username, password: password }));
+            ro.setCredentials(username, password, charset);
+            dispatchEvent(new TidePluginEvent(Tide.PLUGIN_SET_CREDENTIALS, { serverSession: this, username: username, password: password }));
             return null;
         }
 
@@ -778,10 +784,10 @@ package org.granite.tide.service {
             }
             else {
                 // Not logged in : consider as a login fault
-                _tide.dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGOUT, { serverSession: this }));
+                dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGOUT, { serverSession: this }));
                 ro.logout();
 
-                _tide.dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGIN_FAULT, { serverSession: this, sessionId: _sessionId }));
+                dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGIN_FAULT, { serverSession: this, sessionId: _sessionId }));
             }
 
             _initializing = false;
@@ -813,7 +819,7 @@ package org.granite.tide.service {
          * 	@param sourceContext source context of remote call
          */
         public function initAfterLogin(sourceContext:BaseContext):void {
-            _tide.dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGIN_SUCCESS, { serverSession: this, sessionId: _sessionId }));
+            dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGIN_SUCCESS, { serverSession: this, sessionId: _sessionId }));
 
             sourceContext.raiseEvent(Tide.LOGIN);
         }
@@ -853,10 +859,10 @@ package org.granite.tide.service {
         public function loginFaultHandler(sourceContext:BaseContext, sourceModulePrefix:String, info:Object, componentName:String = null, op:String = null, tideResponder:ITideResponder = null, componentResponder:ComponentResponder = null):void {
             fault(sourceContext, sourceModulePrefix, info, componentName, op, tideResponder, componentResponder);
 
-            _tide.dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGOUT, { serverSession: ServerSession }));
+            dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGOUT, { serverSession: ServerSession }));
             ro.logout();
 
-            _tide.dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGIN_FAULT, { serverSession: ServerSession, sessionId: _sessionId }));
+            dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGIN_FAULT, { serverSession: ServerSession, sessionId: _sessionId }));
         }
 
         /**
@@ -1027,6 +1033,23 @@ package org.granite.tide.service {
             log.error("Fault initializing collection " + BaseContext.toString(entity) + " " + info.toString());
 
             fault(sourceContext, "", info);
+        }
+
+
+        protected function getContext():BaseContext {
+            return Tide.getInstance().getContext();
+        }
+
+        protected function byType(serviceClass:Class, create:Boolean = false):Object {
+            return getContext().byType(serviceClass, create);
+        }
+
+        protected function allByType(serviceClass:Class, create:Boolean = false):Array {
+            return getContext().allByType(serviceClass, create);
+        }
+
+        protected function dispatchEvent(event:Event):Boolean {
+            return Tide.getInstance().dispatchEvent(event);
         }
     }
 }
