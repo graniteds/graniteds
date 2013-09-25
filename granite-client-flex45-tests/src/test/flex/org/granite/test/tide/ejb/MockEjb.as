@@ -32,12 +32,12 @@ package org.granite.test.tide.ejb
     {
         public var token:MockEjbAsyncToken;
         
-        public function MockEjb(destination:String = null) {
-            super(destination);
+        public function MockEjb():void {
+            super();
         }
 
-        protected override function initServerSession(destination:String):ServerSession {
-            return new MockEjbServerSession(destination);
+        protected override function initServerSession():ServerSession {
+            return new MockEjbServerSession();
         }
 
 		public static function getInstance():MockEjb {
@@ -67,10 +67,6 @@ import mx.rpc.AsyncToken;
 import org.granite.tide.service.ServerSession;
 
 class MockEjbServerSession extends EjbServerSession {
-
-    public function MockEjbServerSession(destination:String):void {
-        super(destination);
-    }
 
     public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
         return new MockEjbOperation(this, name);

@@ -54,7 +54,7 @@ package org.granite.tide.rpc {
     [ExcludeClass]
     public class TideOperation extends Operation {
 
-		private var _serverSession:ServerSession;
+		protected var _serverSession:ServerSession;
 		
 		
         public function TideOperation(serverSession:ServerSession, svc:RemoteObject = null, name:String = null) : void {

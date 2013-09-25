@@ -52,15 +52,11 @@ package org.granite.tide.cdi {
         private static var log:ILogger = Log.getLogger("org.granite.tide.cdi.Cdi");
 		
 		public static const IDENTITY_NAME:String = "org.granite.tide.cdi.identity";
-		
-		
-		public function Cdi(destination:String) {
-		    super(destination);
-		}
-		
-		public static function getInstance(destination:String = null):Cdi {
-			return Tide.getInstance(destination != null ? destination : "server", Cdi) as Cdi;
-		}
+
+
+        public static function getInstance(destination:String = null):Cdi {
+            return Tide.getInstance(destination, Cdi) as Cdi;
+        }
 		
 		/**
 		 *	Clear Tide singleton (should be used only for testing)
@@ -76,8 +72,8 @@ package org.granite.tide.cdi {
 			getDescriptor(IDENTITY_NAME).scope = Tide.SCOPE_SESSION;
 		}
 
-        protected override function initServerSession(destination:String):ServerSession {
-            return new CdiServerSession(destination);
+        protected override function initServerSession():ServerSession {
+            return new CdiServerSession();
         }
 
 		public function getCdiContext(contextId:String = null):Context {

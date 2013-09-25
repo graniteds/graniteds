@@ -52,7 +52,7 @@ package org.granite.tide.service {
     /**
      * 	@author William DRAI
      */
-    public class DefaultServer implements IServer {
+    public class SimpleServer implements IServer {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.service.DefaultServer");
 
@@ -68,7 +68,7 @@ package org.granite.tide.service {
 		 * 	@param name component name
 		 *  @param context current context
 		 */
-        public function DefaultServer(secure:Boolean = false, serverName:String = "{server.name}", serverPort:String = "{server.port}", contextRoot:String = "") {
+        public function SimpleServer(secure:Boolean = false, serverName:String = "{server.name}", serverPort:String = "{server.port}", contextRoot:String = "") {
             _secure = secure;
             _serverName = serverName;
             _serverPort = serverPort;

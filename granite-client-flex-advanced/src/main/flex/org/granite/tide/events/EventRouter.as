@@ -68,7 +68,7 @@ package org.granite.tide.events {
 		private var _consumer:Consumer = null;
 		private var _producer:Producer = null;
 		
-		private var _name:String;
+		private var _componentName:String;
 		private var _context:BaseContext;
         private var _serverSession:ServerSession;
         private var _type:String;
@@ -78,7 +78,23 @@ package org.granite.tide.events {
             _serverSession = serverSession;
             _type = type;
         }
-		
+
+        public function set serverSession(serverSession:ServerSession):void {
+            if (serverSession == _serverSession)
+                return;
+
+            _serverSession = serverSession;
+            initConsumerProducer();
+        }
+
+        public function set type(type:String):void {
+            if (type == _type)
+                return;
+
+            _type = type;
+            initConsumerProducer();
+        }
+
 		public function get meta_name():String {
 			return _consumer.destination;
 		}
@@ -89,13 +105,22 @@ package org.granite.tide.events {
 			
 		    log.debug("init EventRouter {0}", componentName);
 			_context = context;
+            _componentName = componentName;
+
             if (_serverSession == null)
                 _serverSession = _context.meta_tide.mainServerSession;
 
-	        _consumer = _serverSession.getConsumer(_type, componentName);
+            initConsumerProducer();
+        }
+
+        private function initConsumerProducer():void {
+            if (_componentName == null)
+                return;
+
+	        _consumer = _serverSession.getConsumer(_type, _componentName);
             _consumer.topic = "tideEventTopic";
 
-	        _producer = _serverSession.getProducer(_type, componentName);
+	        _producer = _serverSession.getProducer(_type, _componentName);
             _producer.topic = "tideEventTopic";
 		}
 		

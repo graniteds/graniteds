@@ -52,12 +52,8 @@ package org.granite.tide.ejb {
         private static var log:ILogger = Log.getLogger("org.granite.tide.ejb.Ejb");
 		
 		
-		public function Ejb(destination:String) {
-		    super(destination);
-		}
-		
 		public static function getInstance(destination:String = null):Ejb {
-			return Tide.getInstance(destination != null ? destination : "server", Ejb) as Ejb;
+            return Tide.getInstance(destination, Ejb) as Ejb;
 		}
 		
 		/**
@@ -73,8 +69,8 @@ package org.granite.tide.ejb {
 			getDescriptor("identity").scope = Tide.SCOPE_SESSION;
 		}
 
-        protected override function initServerSession(destination:String):ServerSession {
-            return new EjbServerSession(destination);
+        protected override function initServerSession():ServerSession {
+            return new EjbServerSession();
         }
 
 		public function getEjbContext(contextId:String = null):Context {

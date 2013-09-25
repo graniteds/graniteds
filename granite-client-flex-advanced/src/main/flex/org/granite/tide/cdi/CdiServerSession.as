@@ -28,8 +28,8 @@ package org.granite.tide.cdi {
         private static var log:ILogger = Log.getLogger("org.granite.tide.cdi.CdiServerSession");
 
 
-        public function CdiServerSession(destination:String):void {
-            super(destination);
+        public function CdiServerSession(secure:Boolean = false, serverName:String = "", serverPort:String = "", contextRoot:String = "", destination:String = "server"):void {
+            super(secure, serverName, serverPort, contextRoot, destination);
         }
 
         protected override function setupRemoteObjects():void {

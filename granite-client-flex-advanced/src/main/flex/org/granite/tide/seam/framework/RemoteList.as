@@ -70,7 +70,11 @@ package org.granite.tide.seam.framework {
 			super();
             _serverSession = serverSession;
 		}
-		
+
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
+        }
+
 		public function meta_init(componentName:String, context:BaseContext):void {			
 			_componentName = componentName;
 			_context = context;

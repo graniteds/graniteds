@@ -33,19 +33,19 @@ package org.granite.test.tide.cdi
     {
         public var token:MockCdiAsyncToken;
         
-        public function MockCdi(destination:String = null) {
-            super(destination);
+        public function MockCdi():void {
+            super();
         }
 
-        protected override function initServerSession(destination:String):ServerSession {
-            return new MockCdiServerSession(destination);
+        protected override function initServerSession():ServerSession {
+            return new MockCdiServerSession();
         }
         
 		public static function getInstance():MockCdi {
-			var tide:Tide = Tide.getInstance("cdi", MockCdi);
+			var tide:Tide = Tide.getInstance(null, MockCdi);
 			if (!(tide is MockCdi)) {
 				Tide.resetInstance();
-				tide = Tide.getInstance("cdi", MockCdi);
+				tide = Tide.getInstance(null, MockCdi);
 			}
 			return tide as MockCdi;
 		}
@@ -68,10 +68,6 @@ import org.granite.tide.rpc.TideOperation;
 import org.granite.tide.service.ServerSession;
 
 class MockCdiServerSession extends CdiServerSession {
-
-    public function MockCdiServerSession(destination:String):void {
-        super(destination);
-    }
 
     public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
         return new MockCdiOperation(this, name);

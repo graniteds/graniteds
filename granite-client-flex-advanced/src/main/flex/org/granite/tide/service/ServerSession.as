@@ -75,9 +75,9 @@ package org.granite.tide.service {
         public var disconnected:Boolean = false;
 
 
-        public function ServerSession(destination:String = "server", secure:Boolean = false, serverName:String = "", serverPort:String = "", contextRoot:String = ""):void {
-            _server = new DefaultServer(secure, serverName, serverPort, contextRoot);
+        public function ServerSession(secure:Boolean = false, serverName:String = "", serverPort:String = "", contextRoot:String = "", destination:String = "server"):void {
             _destination = destination;
+            _server = new SimpleServer(secure, serverName, serverPort, contextRoot);
 
             initServer();
         }
@@ -100,6 +100,10 @@ package org.granite.tide.service {
             }
         }
 
+
+        public function set destination(destination:String):void {
+            _destination = destination;
+        }
 
         /**
          *  RemoteObject destination used

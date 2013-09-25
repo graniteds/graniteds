@@ -151,10 +151,10 @@ package org.granite.tide {
         public var disconnected:Boolean = false;
 
 
-		public function Tide(destination:String) {
+		public function Tide():void {
 		    log.info("Initializing Tide proxy");
 
-            _mainServerSession = initServerSession(destination);
+            _mainServerSession = initServerSession();
 
             DescribeTypeCache.registerCacheHandler("bindabilityInfo", bindabilityInfoHandler);
 			DescribeTypeCache.registerCacheHandler("componentInfo", componentInfoHandler);
@@ -198,10 +198,12 @@ package org.granite.tide {
 		public static function getInstance(destination:String = null, tideClass:Class = null):Tide {
 		    if (!_tide) {
 		    	if (tideClass == null)
-		    		_tide = new Tide(destination);
+		    		_tide = new Tide();
 		    	else
-		        	_tide = new tideClass(destination);
+		        	_tide = new tideClass();
 		    }
+            if (destination != null)
+                _tide.mainServerSession.destination = destination;
 		    return _tide;
 		}
 		
@@ -236,8 +238,8 @@ package org.granite.tide {
         }
 
 
-        protected function initServerSession(destination:String):ServerSession {
-            return new ServerSession(destination);
+        protected function initServerSession():ServerSession {
+            return new ServerSession();
         }
 
 

@@ -49,14 +49,10 @@ package org.granite.tide.seam {
      *  @author William DRAI
      */
 	public class Seam extends Tide {
-		
-		public function Seam(destination:String) {
-		    super(destination);
-		}
-		
-		public static function getInstance(destination:String = null):Seam {
-			return Tide.getInstance(destination != null ? destination : "server", Seam) as Seam;
-		}
+
+        public static function getInstance(destination:String = null):Seam {
+            return Tide.getInstance(destination, Seam) as Seam;
+        }
 		
 		/**
 		 *	Clear Tide singleton (should be used only for testing)
@@ -81,8 +77,8 @@ package org.granite.tide.seam {
 		    addContextEventListener(ConversationList.CONVERSATION_TIMEOUT, conversationTimeoutHandler, true); 
 		}
 
-        protected override function initServerSession(destination:String):ServerSession {
-            return new SeamServerSession(destination);
+        protected override function initServerSession():ServerSession {
+            return new SeamServerSession();
         }
 
 		public function getSeamContext(conversationId:String = null):Context {

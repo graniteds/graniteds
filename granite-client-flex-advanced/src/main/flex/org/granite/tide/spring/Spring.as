@@ -51,15 +51,11 @@ package org.granite.tide.spring {
 	public class Spring extends Tide {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.spring.Spring");
-		
-		
-		public function Spring(destination:String) {
-		    super(destination);
-		}
-		
-		public static function getInstance(destination:String = null):Spring {
-			return Tide.getInstance(destination != null ? destination : "server", Spring) as Spring;
-		}
+
+
+        public static function getInstance(destination:String = null):Spring {
+            return Tide.getInstance(destination, Spring) as Spring;
+        }
 		
 		/**
 		 *	Clear Tide singleton (should be used only for testing)
@@ -74,8 +70,8 @@ package org.granite.tide.spring {
 			getDescriptor("identity").scope = Tide.SCOPE_SESSION;		// Default scope for remote proxies is EVENT
 		}
 
-        protected override function initServerSession(destination:String):ServerSession {
-            return new SpringServerSession(destination);
+        protected override function initServerSession():ServerSession {
+            return new SpringServerSession();
         }
 
 		public function getSpringContext(contextId:String = null):Context {

@@ -21,29 +21,34 @@
  */
 package org.granite.test.tide.spring
 {
+
+    import mx.rpc.AsyncToken;
+
+    import org.granite.test.tide.spring.MockSpringServerSession;
+
     import org.granite.tide.Tide;
     import org.granite.tide.service.ServerSession;
     import org.granite.tide.spring.Spring;
-    
-    
+
     public class MockSpring extends Spring
     {
-		public var token:MockSpringAsyncToken = null;
-        public var tokenClass:Class = null;
-        
-        public function MockSpring(destination:String = null) {
-            super(destination);
+        protected override function initServerSession():ServerSession {
+            return new MockSpringServerSession();
         }
 
-        protected override function initServerSession(destination:String):ServerSession {
-            return new MockSpringServerSession(destination);
+        public function set token(token:AsyncToken):void {
+            MockSpringServerSession(mainServerSession).token = token;
         }
 
-		public static function getInstance():MockSpring {
-			var tide:Tide = Tide.getInstance("server", MockSpring);
+        public function set tokenClass(tokenClass:Class):void {
+            MockSpringServerSession(mainServerSession).token = tokenClass;
+        }
+
+        public static function getInstance():MockSpring {
+			var tide:Tide = Tide.getInstance(null, MockSpring);
 			if (!(tide is MockSpring)) {
 				Tide.resetInstance();
-				tide = Tide.getInstance("server", MockSpring);
+				tide = Tide.getInstance(null, MockSpring);
 			}
 			return tide as MockSpring;
 		}
@@ -51,48 +56,5 @@ package org.granite.test.tide.spring
 		public static function reset():void {
 		    Tide.resetInstance();
 		}
-    }
-}
-
-
-
-
-import mx.rpc.AsyncToken;
-import mx.rpc.remoting.mxml.RemoteObject;
-
-import org.granite.test.tide.spring.MockSpring;
-import org.granite.test.tide.spring.MockSpringAsyncToken;
-import org.granite.tide.rpc.TideOperation;
-import org.granite.tide.service.ServerSession;
-import org.granite.tide.spring.SpringServerSession;
-
-class MockSpringServerSession extends SpringServerSession {
-
-    public function MockSpringServerSession(destination:String):void {
-        super(destination);
-    }
-
-    public override function createOperation(name:String, ro:RemoteObject = null):TideOperation {
-        return new MockSpringOperation(this, name);
-    }
-}
-
-class MockSpringOperation extends TideOperation {
-    
-    private var _name:String = null;
-    
-    public function MockSpringOperation(serverSession:ServerSession, name:String):void {
-        super(serverSession);
-        _name = name;
-    }
-    
-    public override function send(... args:Array):AsyncToken {
-		var token:MockSpringAsyncToken = MockSpring.getInstance().token;
-		if (token == null) {
-			var tokenClass:Class = MockSpring.getInstance().tokenClass;
-        	token = new tokenClass() as MockSpringAsyncToken;
-		}
-        token.send(_name, args);
-        return token;
     }
 }

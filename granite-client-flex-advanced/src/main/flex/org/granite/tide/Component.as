@@ -100,6 +100,10 @@ package org.granite.tide {
                 _serverSession = context.meta_tide.mainServerSession;
         }
 
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
+        }
+
         public function get meta_remoteObject():RemoteObject {
         	return _serverSession.getRemoteObject(_name);
         }

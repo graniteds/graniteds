@@ -77,6 +77,7 @@ package org.granite.tide.data {
 
         private var _serverSession:ServerSession = null;
         private var _type:String = null;
+        private var _componentName:String = null;
 		private var _consumer:Consumer = null;
 		
 		private var _name:String;
@@ -87,11 +88,27 @@ package org.granite.tide.data {
             _serverSession = serverSession;
             _type = type;
         }
-		
+
+        public function set serverSession(serverSession:ServerSession):void {
+            if (serverSession == _serverSession)
+                return;
+
+            _serverSession = serverSession;
+            initConsumer();
+        }
+
+        public function set type(type:String):void {
+            if (type == _type)
+                return;
+
+            _type = type;
+            initConsumer();
+        }
+
 		public function get meta_name():String {
 			return _consumer.destination;
 		}
-		
+
 		public function meta_init(componentName:String, context:BaseContext):void {
 			if (!context.meta_isGlobal())
 				throw new Error("Cannot setup DataObserver on conversation context");
@@ -100,10 +117,18 @@ package org.granite.tide.data {
 			
 		    log.debug("init DataObserver {0}", componentName);
 			_context = context;
+            _componentName = componentName;
             if (_serverSession == null)
                 _serverSession = context.meta_tide.mainServerSession;
 
-	        _consumer = _serverSession.getConsumer(_type, componentName);
+            initConsumer();
+        }
+
+        private function initConsumer():void {
+            if (_componentName == null)
+                return;
+
+	        _consumer = _serverSession.getConsumer(_type, _componentName);
             _consumer.topic = "tideDataTopic";
 		}
 		

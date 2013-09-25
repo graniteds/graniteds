@@ -64,5 +64,12 @@ package org.granite.tide {
 	     *	Clear component properties
 	     */ 
 	    function meta_clear():void;
+
+        /**
+         *  Set the current server session
+         *
+         *  @param serverSession
+         */
+        function set serverSession(serverSession:ServerSession):void;
 	}
 }

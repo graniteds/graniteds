@@ -62,9 +62,9 @@ package org.granite.tide.seam.framework {
     import org.granite.tide.collections.PagedCollectionResponder;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideResultEvent;
-	
-	
-	[Bindable]
+    import org.granite.tide.service.ServerSession;
+
+    [Bindable]
 	/**
 	 * 	Implementation of the Tide paged collection backed by a Seam Query component.<br/>
 	 *  <br/>
@@ -80,7 +80,8 @@ package org.granite.tide.seam.framework {
 	public class PagedQuery extends PagedCollection implements IComponent, IPropertyHolder {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.seam.PagedQuery");
-		
+
+        protected var _serverSession:ServerSession = null
 	    private var _component:Component = null;
 		
 		private var _remoteComponentName:String = null;
@@ -88,10 +89,13 @@ package org.granite.tide.seam.framework {
         private var _restrictionParameters:Array = new Array();
 		
 		
-		public function PagedQuery() {
-		    log.debug("create collection");
-			super();
-		}
+		public function PagedQuery(serverSession:ServerSession = null) {
+            _serverSession = serverSession;
+        }
+
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
+        }
 		
 		public override function meta_init(componentName:String, context:BaseContext):void {
 			super.meta_init(componentName, context);

@@ -95,6 +95,10 @@ package org.granite.tide.collections {
             _serverSession = serverSession;
         }
 
+        public function set serverSession(serverSession:ServerSession):void {
+            _serverSession = serverSession;
+        }
+
 		
 		public override function meta_init(componentName:String, context:BaseContext):void {
 			super.meta_init(componentName, context);
