@@ -30,6 +30,7 @@ import junit.framework.Assert;
 import org.granite.tide.data.DataUtils;
 import org.junit.Test;
 
+@SuppressWarnings("deprecation")
 public class TestDataUtils {
 	
 	@Test

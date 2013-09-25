@@ -16,4 +16,26 @@
 		<nature>com.adobe.flexbuilder.project.flexlibnature</nature>
 		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>[source path] actionscript</name>
+			<type>2</type>
+			<location>/Users/franckwolff/Developments/workspace64/graniteds/granite-client-flex-advanced/src/test/actionscript</location>
+		</link>
+		<link>
+			<name>[source path] flex</name>
+			<type>2</type>
+			<location>/Users/franckwolff/Developments/workspace64/graniteds/granite-client-flex-advanced/src/main/flex</location>
+		</link>
+		<link>
+			<name>[source path] main-resources</name>
+			<type>2</type>
+			<location>/Users/franckwolff/Developments/workspace64/graniteds/granite-client-flex-advanced/src/main/resources</location>
+		</link>
+		<link>
+			<name>[source path] test-resources</name>
+			<type>2</type>
+			<location>/Users/franckwolff/Developments/workspace64/graniteds/granite-client-flex-advanced/src/test/resources</location>
+		</link>
+	</linkedResources>
 </projectDescription>

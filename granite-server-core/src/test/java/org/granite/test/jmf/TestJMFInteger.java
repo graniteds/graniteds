@@ -38,7 +38,6 @@ import org.granite.test.jmf.Util.ByteArrayJMFDumper;
 import org.granite.test.jmf.Util.ByteArrayJMFSerializer;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestJMFInteger implements JMFConstants {
@@ -178,6 +177,7 @@ public class TestJMFInteger implements JMFConstants {
 		checkIntObject(Integer.MAX_VALUE, 		bytes( 0x60 | JMF_INTEGER_OBJECT, 0x7F, 0xFF, 0xFF, 0xFF ));
 	}
 	
+	@SuppressWarnings("unused")
 	private void checkInt(int i) throws IOException {
 		checkInt(i, null);
 	}
@@ -215,6 +215,7 @@ public class TestJMFInteger implements JMFConstants {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private void checkVariableInt(int i) throws IOException {
 		checkVariableInt(i, null);
 	}

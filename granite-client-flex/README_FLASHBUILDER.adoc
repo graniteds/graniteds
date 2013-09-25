@@ -1,0 +1,21 @@
+===== http://www.graniteds.org[Granite Data Services]
+'''
+
+== Building With FlashBuilder
+
+=== Requirements
+
+This configuration was tested with FlashBuilder 4.7 and probably won't work
+with earlier versions.
+
+=== Create the "FLEX_WEBSOCKET_CLIENT_SWC" variable
+
+Under Eclipse, open +Preferences... > General > Workspace > Linked Resources+.
+Create a new path variable named +FLEX_WEBSOCKET_CLIENT_SWC+ and pointing to
+the +flex-websocket-client-1.0.swc+ library (you can download it from Maven
+http://search.maven.org/remotecontent?filepath=org/graniteds/flex-websocket-client/1.0/flex-websocket-client-1.0.swc[Here]).
+
+=== Import the FlashBuilder project
+
+Right click on your package explorer, select +Import... > Existing Projects into Workspace+
+and browse to the granite-client-flex project directory.

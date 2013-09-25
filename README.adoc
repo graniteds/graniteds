@@ -1,10 +1,11 @@
-== Granite Data Services
+===== http://www.graniteds.org[Granite Data Services]
+'''
 
-==== http://www.graniteds.org
+=== Overview
 
-GraniteDS provides server and client libraries that can be used to connect desktop and mobile application
-to a server using the AMF3 or JMF serialization protocols, using RPC (remoting) and different messaging
-technologies (long-polling, websocket, UDP).
+GraniteDS provides server and client libraries that can be used to connect desktop and mobile applications
+to a server using the AMF3 or JMF serialization protocols, through RPC (remoting) and different messaging
+technologies (Comet, WebSocket, UDP).
 
 It also provides comprehensive data management features for use with Flex, JavaFX and Android applications.
 

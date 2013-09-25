@@ -38,7 +38,6 @@ import org.granite.test.jmf.Util.ByteArrayJMFDumper;
 import org.granite.test.jmf.Util.ByteArrayJMFSerializer;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestJMFLong implements JMFConstants {
@@ -242,6 +241,7 @@ public class TestJMFLong implements JMFConstants {
 		checkLongObject(Long.MAX_VALUE,			bytes( 0x70 | JMF_LONG_OBJECT, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ));
 	}
 	
+	@SuppressWarnings("unused")
 	private void checkLong(long i) throws IOException {
 		checkLong(i, null);
 	}
