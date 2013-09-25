@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry kind="src" path="src/test/java"/>
-	<classpathentry kind="src" path="src/test/resources"/>
+	<classpathentry excluding="seam.properties" kind="src" path="src/test/resources"/>
 	<classpathentry exported="true" kind="src" path="/granite-server-core"/>
 	<classpathentry exported="true" kind="src" path="/granite-server-hibernate"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>

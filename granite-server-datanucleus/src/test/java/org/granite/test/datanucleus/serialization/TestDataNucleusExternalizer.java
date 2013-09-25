@@ -24,7 +24,6 @@ package org.granite.test.datanucleus.serialization;
 import java.util.Properties;
 
 import org.granite.test.externalizers.AbstractTestJPAExternalizer;
-import org.junit.Ignore;
 import org.junit.Test;
 
 

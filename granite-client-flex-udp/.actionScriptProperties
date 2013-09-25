@@ -13,9 +13,9 @@
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/core.swc" useDefaultLinkType="false"/>
         </excludedEntries>
       </libraryPathEntry>
-      <libraryPathEntry kind="3" linkType="2" path="/Users/franckwolff/.gradle/gradleFx/sdks/f3041528d2878e0821c211df2a7f02d19f42a50f/frameworks/libs/air/aircore.swc" useDefaultLinkType="true"/>
-      <libraryPathEntry kind="3" linkType="2" path="/Users/franckwolff/.gradle/gradleFx/sdks/f3041528d2878e0821c211df2a7f02d19f42a50f/frameworks/libs/air/airglobal.swc" useDefaultLinkType="true"/>
-      <libraryPathEntry kind="3" linkType="2" path="/Users/franckwolff/.gradle/gradleFx/sdks/f3041528d2878e0821c211df2a7f02d19f42a50f/frameworks/libs/air/airframework.swc" useDefaultLinkType="true"/>
+      <libraryPathEntry kind="3" linkType="2" path="${PROJECT_FRAMEWORKS}/libs/air/aircore.swc" useDefaultLinkType="true"/>
+      <libraryPathEntry kind="3" linkType="2" path="${PROJECT_FRAMEWORKS}/libs/air/airglobal.swc" useDefaultLinkType="true"/>
+      <libraryPathEntry kind="3" linkType="2" path="${PROJECT_FRAMEWORKS}/libs/air/airframework.swc" useDefaultLinkType="true"/>
       <libraryPathEntry kind="3" linkType="2" path="/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="true"/>
     </libraryPath>
     <sourceAttachmentPath/>

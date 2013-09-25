@@ -4,8 +4,8 @@
 	<comment>GraniteDS Tomcat 6 support server library</comment>
 	<projects/>
 	<natures>
-		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
+		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
 	<buildSpec>
 		<buildCommand>
