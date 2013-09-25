@@ -21,7 +21,10 @@
  */
 package org.granite.test.tide.data
 {
-	[Suite]
+
+    import org.granite.test.tide.data.TestCollectionSet;
+
+    [Suite]
 	[RunWith("org.flexunit.runners.Suite")]
 	public class SuiteData
 	{
@@ -82,5 +85,6 @@ package org.granite.test.tide.data
         public var test40:org.granite.test.tide.data.TestEntityCollectionRefs;
         public var test41:org.granite.test.tide.data.TestUninitAssociations;
         public var test42:org.granite.test.tide.data.TestUninitArguments;
+        public var test43:org.granite.test.tide.data.TestCollectionSet;
 	}
 }
