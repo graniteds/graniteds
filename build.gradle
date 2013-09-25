@@ -1141,10 +1141,10 @@ project('granite-client-flex') {
 	asdoc {
 		outputDir 'build/docs/asdoc'
 		
-//		additionalASDocOptions = [
-//			"-window-title 'GraniteDS Flex API Documentation'",
-//			"-main-title 'GraniteDS Flex API Documentation - ${granitedsVersion}'"
-//		]
+		additionalASDocOptions = [
+			"-window-title", "GraniteDS Flex API Documentation",
+			"-main-title", "GraniteDS Flex API Documentation - " + granitedsVersion
+		]
 	}
 
 	task sourcesJar(type: Jar) {
@@ -1193,11 +1193,11 @@ project('granite-client-flex-advanced') {
 
 	asdoc {
 		outputDir 'build/docs/asdoc'
-		
-//		additionalASDocOptions = [
-//			"-window-title 'GraniteDS Flex API Documentation'",
-//			"-main-title 'GraniteDS Flex API Documentation - ${granitedsVersion}'"
-//		]
+
+        additionalASDocOptions = [
+                "-window-title", "GraniteDS Flex API Documentation",
+                "-main-title", "GraniteDS Flex API Documentation - " + granitedsVersion
+        ]
 	}
 
 	task sourcesJar(type: Jar) {
