@@ -75,13 +75,13 @@ package org.granite.tide.service {
         public var disconnected:Boolean = false;
 
 
-        public function ServerSession(secure:Boolean = false, serverName:String = "", serverPort:String = "", contextRoot:String = "", destination:String = "server"):void {
+        public function ServerSession(destination:String = "server", secure:Boolean = false, serverName:String = "", serverPort:String = "", contextRoot:String = ""):void {
             _server = new DefaultServer(secure, serverName, serverPort, contextRoot);
             _destination = destination;
 
             initServer();
         }
-
+		
         public function set server(server:IServer):void {
             if (server == _server)
                 return;
@@ -387,6 +387,11 @@ package org.granite.tide.service {
          *  @param componentName component name of identity
          */
         public function logout(context:BaseContext, component:IComponent, expired:Boolean = false):void {
+            // For late execution in case logout() is called during a result handler
+            Tide.currentApplication().callLater(doLogout, [ context, expired ]);
+        }
+
+        private function doLogout(context:BaseContext, expired:Boolean = false):void {
             _logoutInProgress = true;
             _waitForLogout = 1;
 
@@ -673,6 +678,7 @@ package org.granite.tide.service {
             if (ro.channelSet) {
                 var asyncToken:AsyncToken = ro.channelSet.logout();	// Workaround described in BLZ-310
                 asyncToken.addResponder(new Responder(logoutComplete, logoutFault));
+                checkWaitForLogout();
             }
             else
                 logoutComplete(null);

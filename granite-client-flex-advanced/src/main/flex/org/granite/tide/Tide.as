@@ -241,7 +241,7 @@ package org.granite.tide {
         }
 
 
-        public function busy():Boolean {
+        public function get busy():Boolean {
             return _busy > 0;
         }
         public function notifyBusy(busy:Boolean):void {
