@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="SuiteData" type="FlexUnitRunConfigurationType" factoryName="FlexUnit" appDescriptorForEmulator="Android" class_name="org.granite.test.tide.data.SuiteData" emulatorAdlOptions="" method_name="" output_log_level="null" package_name="" scope="Class">
+  <configuration default="false" name="SuiteValidation" type="FlexUnitRunConfigurationType" factoryName="FlexUnit" appDescriptorForEmulator="Android" class_name="org.granite.test.validation.SuiteValidation" emulatorAdlOptions="" method_name="" output_log_level="null" package_name="" scope="Class">
     <option name="BCName" value="granite-client-flex45-advanced" />
     <option name="launcherParameters">
       <LauncherParameters>
@@ -10,9 +10,7 @@
     </option>
     <option name="moduleName" value="granite-client-flex45-advanced" />
     <option name="trusted" value="true" />
-    <RunnerSettings RunnerId="FlexDebugRunner" />
     <RunnerSettings RunnerId="FlexRunner" />
-    <ConfigurationWrapper RunnerId="FlexDebugRunner" />
     <ConfigurationWrapper RunnerId="FlexRunner" />
     <method />
   </configuration>
