@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<actionScriptProperties analytics="false" mainApplicationPath="dummy.as" projectUUID="82926a72-1f56-4016-b77e-7b3e8d2d93ab" version="11">
-  <compiler additionalCompilerArguments="" autoRSLOrdering="true" copyDependentFiles="false" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="src/main/flex" strict="true" targetPlayerVersion="11.1.0" useApolloConfig="false" useDebugRSLSwfs="true" useFlashSDK="false" verifyDigests="true" warn="true">
+<actionScriptProperties analytics="false" mainApplicationPath="dummy.as" projectUUID="c3453138-b636-4381-8577-0b413748accc" version="11">
+  <compiler additionalCompilerArguments="-locale en_US" autoRSLOrdering="true" copyDependentFiles="false" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="src/main/flex" strict="true" targetPlayerVersion="11.1.0" useApolloConfig="true" useDebugRSLSwfs="true" useFlashSDK="false" verifyDigests="true" warn="true">
     <compilerSourcePath>
       <compilerSourcePathEntry kind="1" linkType="1" path="src/main/flex"/>
       <compilerSourcePathEntry kind="1" linkType="1" path="src/main/resources"/>
@@ -9,14 +9,15 @@
     </compilerSourcePath>
     <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">
+        <modifiedEntries>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/authoringsupport.swc" useDefaultLinkType="false"/>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flash-integration.swc" useDefaultLinkType="false"/>
+        </modifiedEntries>
         <excludedEntries>
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flex.swc" useDefaultLinkType="false"/>
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/core.swc" useDefaultLinkType="false"/>
         </excludedEntries>
       </libraryPathEntry>
-      <libraryPathEntry kind="3" linkType="2" path="${PROJECT_FRAMEWORKS}/libs/air/aircore.swc" useDefaultLinkType="true"/>
-      <libraryPathEntry kind="3" linkType="2" path="${PROJECT_FRAMEWORKS}/libs/air/airglobal.swc" useDefaultLinkType="true"/>
-      <libraryPathEntry kind="3" linkType="2" path="${PROJECT_FRAMEWORKS}/libs/air/airframework.swc" useDefaultLinkType="true"/>
       <libraryPathEntry kind="3" linkType="2" path="/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="true"/>
     </libraryPath>
     <sourceAttachmentPath/>

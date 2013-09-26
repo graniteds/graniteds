@@ -43,7 +43,6 @@ package org.granite.gravity.channels.udp {
     import mx.utils.URLUtil;
     
     import org.granite.gravity.channels.GravityChannel;
-    import org.granite.gravity.channels.GravityStream;
     import org.granite.gravity.channels.GravityStreamTunnel;
 
 	
@@ -61,6 +60,9 @@ package org.granite.gravity.channels.udp {
         
         private static var log:ILogger = Log.getLogger("org.granite.enterprise.gravity.channels.UdpGravityChannel");
 		
+		public static const UDP_CONNECT:String = "udpChannelConnect";
+		public static const UDP_DISCONNECT:String = "udpChannelDisconnect";
+
 		private var _defaultLocalPort:int = 0;
 		private var _defaultLocalAddress:String = "0.0.0.0"; // For IPv6, use "::"
 
