@@ -260,7 +260,16 @@ configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith
 		required { gradle.taskGraph.hasTask("uploadArchives") }
 		sign configurations.archives
 	}
-	
+
+    // Adds an install task for Flex projects because maven plugin does not add it for GradleFx projects
+    if (subproject.name.startsWith('granite-client-flex')) {
+        task install(type: Upload) {
+            configuration = subproject.configurations.archives
+            description = 'Installs the \'archives\' artifacts into the local Maven repository.'
+            repositories.mavenInstaller()
+        }
+    }
+
 	uploadArchives {
 		repositories {
 			mavenDeployer {
