@@ -638,10 +638,7 @@ project('granite-generator-share') {
         classifier = 'sources'
 
         from project(':granite-server-core').sourceSets.main.allSource
-        include 'org/granite/util/ClassUtil.java',
-                'org/granite/util/ClassUtil$*.java',
-                'org/granite/util/URIUtil.java',
-                'org/granite/messaging/amf/io/util/Property.java',
+        include 'org/granite/messaging/amf/io/util/Property.java',
                 'org/granite/messaging/amf/io/util/externalizer/Externalizer.java',
                 'org/granite/messaging/amf/io/util/externalizer/annotation/**',
                 'org/granite/messaging/service/annotations/**',
@@ -655,32 +652,26 @@ project('granite-generator-share') {
         classifier = 'javadoc'
 
         from project(':granite-server-core').javadoc.destinationDir
-        include 'org/granite/util/ClassUtil.html',
-            'org/granite/util/ClassUtil$*.html',
-            'org/granite/util/URIUtil.html',
-            'org/granite/messaging/amf/io/util/Property.html',
-            'org/granite/messaging/amf/io/util/externalizer/Externalizer.html',
-            'org/granite/messaging/amf/io/util/externalizer/annotation/**',
-            'org/granite/messaging/service/annotations/**',
-            'org/granite/messaging/annotations/**',
-            'org/granite/messaging/service/security/*DestinationSecurizer.html',
-            'org/granite/tide/annotations/**',
-            'org/granite/tide/data/Lazy.html'
+        include 'org/granite/messaging/amf/io/util/Property.html',
+                'org/granite/messaging/amf/io/util/externalizer/Externalizer.html',
+                'org/granite/messaging/amf/io/util/externalizer/annotation/**',
+                'org/granite/messaging/service/annotations/**',
+                'org/granite/messaging/annotations/**',
+                'org/granite/messaging/service/security/*DestinationSecurizer.html',
+                'org/granite/tide/annotations/**',
+                'org/granite/tide/data/Lazy.html'
     }
 
     jar {
         from project(':granite-server-core').sourceSets.main.output.classesDir
-        include 'org/granite/util/ClassUtil.class',
-            'org/granite/util/ClassUtil$*.class',
-            'org/granite/util/URIUtil.class',
-            'org/granite/messaging/amf/io/util/Property.class',
-            'org/granite/messaging/amf/io/util/externalizer/Externalizer.class',
-            'org/granite/messaging/amf/io/util/externalizer/annotation/**',
-            'org/granite/messaging/service/annotations/**',
-            'org/granite/messaging/annotations/**',
-            'org/granite/messaging/service/security/*DestinationSecurizer.class',
-            'org/granite/tide/annotations/**',
-            'org/granite/tide/data/Lazy.class'
+        include 'org/granite/messaging/amf/io/util/Property.class',
+                'org/granite/messaging/amf/io/util/externalizer/Externalizer.class',
+                'org/granite/messaging/amf/io/util/externalizer/annotation/**',
+                'org/granite/messaging/service/annotations/**',
+                'org/granite/messaging/annotations/**',
+                'org/granite/messaging/service/security/*DestinationSecurizer.class',
+                'org/granite/tide/annotations/**',
+                'org/granite/tide/data/Lazy.class'
 
         metaInf {
             from 'LICENSE.txt'
@@ -713,6 +704,22 @@ project('granite-generator-share') {
             docTitle = 'GraniteDS API Documentation - ' + granitedsVersion
             links = rootProject.ext.javadocLinks
         }
+    }
+}
+
+
+// Generator (engine + ant task)
+project('granite-generator') {
+
+    description = 'GraniteDS Code generator'
+
+    dependencies {
+        compile 'org.codehaus.groovy:groovy:1.6.4'
+        compile 'org.apache.ant:ant:1.8.4'
+        compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+        compile 'javax.jdo:jdo2-api:2.3-eb'
+
+        compile project(':granite-generator-share')
     }
 }
 

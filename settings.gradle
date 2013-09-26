@@ -17,6 +17,7 @@ include 'granite-server-activemq'
 
 include 'granite-server'
 include 'granite-generator-share'
+include 'granite-generator'
 
 include 'granite-server-ejb'
 include 'granite-server-cdi'

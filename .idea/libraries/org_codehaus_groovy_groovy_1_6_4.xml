@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="org.codehaus.groovy:groovy:1.6.4" type="repository">
+    <properties maven-id="org.codehaus.groovy:groovy:1.6.4" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/groovy-1.6.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/antlr-2.7.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-2.2.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/junit-3.8.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ant-1.7.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ant-launcher-1.7.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-util-2.2.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-tree-2.2.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-analysis-2.2.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jline-0.9.94.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
