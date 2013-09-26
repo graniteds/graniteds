@@ -1,0 +1,8 @@
+
+Granite Data Services Builder (http://www.graniteds.org)
+--------------------------------------------------------------
+
+You must run the prebuild.xml Ant script before building the
+plugin with the Eclipse "Export Wizard": the Ant task definition
+under Eclipse (see plugin.xml) requires a library with all
+generator classes/resources. 
