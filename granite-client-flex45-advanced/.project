@@ -12,9 +12,9 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
 		<nature>com.adobe.flexbuilder.project.flexlibnature</nature>
 		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
+		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
 	</natures>
 	<linkedResources>
 		<link>
