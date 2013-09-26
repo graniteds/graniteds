@@ -32,51 +32,37 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.client.test.javafx;
+package org.granite.client.javafx.validation;
 
-import java.io.Serializable;
+import java.util.List;
 
-import javafx.beans.property.ReadOnlySetProperty;
-import javafx.beans.property.ReadOnlySetWrapper;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.ObservableSet;
+import org.granite.client.javafx.validation.ValidationResult;
 
-import org.granite.client.javafx.persistence.collection.FXPersistentCollections;
-import org.granite.client.messaging.RemoteAlias;
-import org.granite.client.persistence.Entity;
-import org.granite.messaging.annotations.Serialized;
+import javafx.event.Event;
+import javafx.event.EventTarget;
+import javafx.event.EventType;
 
-
-@Entity
-@Serialized
-@RemoteAlias("org.granite.client.test.javafx.Entity1b")
-public class FXEntity1b implements Serializable {
+/**
+ * @author William DRAI
+ */
+public class ValidationResultEvent extends Event {
 
 	private static final long serialVersionUID = 1L;
 	
-    @SuppressWarnings("unused")
-    private boolean __initialized__ = true;
-    @SuppressWarnings("unused")
-	private String __detachedState__ = null;
-    
-	private StringProperty name = new SimpleStringProperty(this, "name", null);	
-	private ReadOnlySetWrapper<FXEntity2b> list = FXPersistentCollections.readOnlyObservablePersistentSet(this, "list");
+	public static EventType<ValidationResultEvent> ANY = new EventType<ValidationResultEvent>(Event.ANY);
+	public static EventType<ValidationResultEvent> VALID = new EventType<ValidationResultEvent>(ANY, "valid");
+	public static EventType<ValidationResultEvent> INVALID = new EventType<ValidationResultEvent>(ANY, "invalid");
+	public static EventType<ValidationResultEvent> UNHANDLED = new EventType<ValidationResultEvent>(ANY, "unhandled");
 	
-	public StringProperty nameProperty() {
-		return name;
-	}
-	public String getName() {
-		return this.name.get();
-	}
-	public void setName(String name) {
-		this.name.set(name);
-	}
+
+	private final List<ValidationResult> errorResults;
 	
-	public ReadOnlySetProperty<FXEntity2b> listProperty() {
-		return list.getReadOnlyProperty();
+	public ValidationResultEvent(Object source, EventTarget target, EventType<ValidationResultEvent> type, List<ValidationResult> errorResults) {
+		super(source, target, type);
+		this.errorResults = errorResults;
 	}
-	public ObservableSet<FXEntity2b> getList() {
-		return list.get();
+
+	public List<ValidationResult> getErrorResults() {
+		return errorResults;
 	}
 }
