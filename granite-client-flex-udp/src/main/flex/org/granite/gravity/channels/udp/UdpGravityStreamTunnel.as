@@ -42,11 +42,11 @@ package org.granite.gravity.channels.udp {
 	import flash.utils.ByteArray;
 	import flash.utils.Timer;
 	
-	import mx.controls.Alert;
 	import mx.logging.ILogger;
 	import mx.logging.Log;
 	import mx.messaging.MessageResponder;
 	import mx.messaging.events.ChannelEvent;
+	import mx.messaging.events.ChannelFaultEvent;
 	import mx.messaging.messages.CommandMessage;
 	import mx.messaging.messages.ErrorMessage;
 	import mx.messaging.messages.IMessage;
@@ -137,7 +137,7 @@ package org.granite.gravity.channels.udp {
 			
 			super.disconnect();
 				
-			channel.dispatchEvent(UdpChannelEvent.createEvent(UdpChannelEvent.DISCONNECT, (channel as UdpGravityChannel)));
+			channel.dispatchEvent(ChannelEvent.createEvent(UdpGravityChannel.UDP_DISCONNECT, (channel as UdpGravityChannel)));
 		}
 		
 		protected function cancelHeartBeatTimer():void {
@@ -202,7 +202,7 @@ package org.granite.gravity.channels.udp {
 				}
             }
             catch (e:Error) {
-				dispatchFaultEvent("Client." + getUnqualifiedClassName(this) + ".Read", ObjectUtil.toString(e), event);
+				dispatchFaultEvent("UdpClient." + getUnqualifiedClassName(this) + ".Read", ObjectUtil.toString(e), event);
 				log.debug("datagramEventHandler: {0}", ObjectUtil.toString(e));
             }
 			
@@ -221,7 +221,7 @@ package org.granite.gravity.channels.udp {
         }
 		
         override protected function dispatchFaultEvent(code:String, description:String, rootCause:Object = null):void {
-            var fault:UdpChannelFaultEvent = UdpChannelFaultEvent.createEvent((channel as UdpGravityChannel), code, null, description);
+			var fault:ChannelFaultEvent = ChannelFaultEvent.createEvent(channel, false, code, null, description);
             if (rootCause != null)
             	fault.rootCause = rootCause;
             channel.dispatchEvent(fault);
@@ -261,7 +261,7 @@ package org.granite.gravity.channels.udp {
 				_heartBeatClientTimer.start();
 			}
 
-			channel.dispatchEvent(UdpChannelEvent.createEvent(UdpChannelEvent.CONNECT, (channel as UdpGravityChannel)));
+			channel.dispatchEvent(ChannelEvent.createEvent(UdpGravityChannel.UDP_CONNECT, (channel as UdpGravityChannel)));
 		}
 		
 		internal function internalConnectStatus(request:IMessage, response:IMessage):void {

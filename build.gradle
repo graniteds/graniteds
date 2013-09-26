@@ -949,23 +949,23 @@ project('granite-server-hibernate') {
 	dependencies {
 		compile 'org.hibernate:hibernate-core:3.6.10.Final'
 		compile files('lib/hibernate-validator.jar')			// Not in maven central
-		
 		compile project(':granite-server-core')
 		
-		testCompile project(':granite-server-core').sourceSets.test.output
-		testCompile 'org.hibernate:hibernate-entitymanager:3.6.10.Final'
-
-		testCompile project(':granite-server-spring').sourceSets.main.output
+		testCompile('org.hibernate:hibernate-entitymanager:3.6.10.Final')
 		testCompile 'org.springframework:spring-orm:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
 		testCompile 'com.h2database:h2:1.3.173'
+		testCompile project(':granite-server-core').sourceSets.test.output
+		testCompile(project(':granite-server-spring')) {
+			transitive = false
+		}
 		
 		testRuntime 'cglib:cglib:3.0'
 		testRuntime 'org.ow2.asm:asm-util:4.0'
 		testRuntime 'org.springframework.security:spring-security-web:3.1.4.RELEASE'
 	}
-	
+
 	// Recompile abstract test classes from Spring module with Hibernate 3
 	sourceSets {
 		test {
@@ -977,7 +977,7 @@ project('granite-server-hibernate') {
 			}
 		}
 	}
-	
+
 	test {
 		includes = [ 
 			'org/granite/test/hibernate/**/Test*', 
@@ -992,17 +992,18 @@ project('granite-server-hibernate4') {
 	description = 'GraniteDS Hibernate 4.x support library'
 	
 	dependencies {
-		compile 'org.hibernate:hibernate-core:4.0.1.Final'
 		
+		compile 'org.hibernate:hibernate-core:4.0.1.Final'
 		compile project(':granite-server-core')
 		
-		testCompile project(':granite-server-core').sourceSets.test.output
 		testCompile 'org.hibernate:hibernate-entitymanager:4.0.1.Final'
-		
-		testCompile project(':granite-server-spring').sourceSets.main.output
 		testCompile 'org.springframework:spring-orm:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
+		testCompile project(':granite-server-core').sourceSets.test.output
+		testCompile(project(':granite-server-spring')) {
+			transitive = false
+		}
 		
 		testRuntime 'cglib:cglib:3.0'
 		testRuntime 'org.ow2.asm:asm-util:4.0'

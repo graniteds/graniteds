@@ -35,8 +35,8 @@
 package org.granite.gravity.channels.udp {
 
     import mx.messaging.messages.IMessage;
-
-	import org.granite.gravity.channels.StreamMessageResponder;
+    
+    import org.granite.gravity.channels.StreamMessageResponder;
 
 	[ExcludeClass]
     /**

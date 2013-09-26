@@ -3,15 +3,15 @@
 	<name>granite-server-core</name>
 	<comment>GraniteDS Core server library</comment>
 	<projects/>
-	<natures>
-		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
-		<nature>org.eclipse.jdt.core.javanature</nature>
-	</natures>
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
 			<arguments/>
 		</buildCommand>
 	</buildSpec>
+	<natures>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
+	</natures>
 	<linkedResources/>
 </projectDescription>

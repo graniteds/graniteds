@@ -12,30 +12,30 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
 		<nature>com.adobe.flexbuilder.project.flexlibnature</nature>
 		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
+		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
 	</natures>
 	<linkedResources>
 		<link>
 			<name>[source path] actionscript</name>
 			<type>2</type>
-			<location>/Users/franckwolff/Developments/workspace64/graniteds/granite-client-flex-advanced/src/test/actionscript</location>
+			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/test/actionscript</locationURI>
 		</link>
 		<link>
 			<name>[source path] flex</name>
 			<type>2</type>
-			<location>/Users/franckwolff/Developments/workspace64/graniteds/granite-client-flex-advanced/src/main/flex</location>
+			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/main/flex</locationURI>
 		</link>
 		<link>
 			<name>[source path] main-resources</name>
 			<type>2</type>
-			<location>/Users/franckwolff/Developments/workspace64/graniteds/granite-client-flex-advanced/src/main/resources</location>
+			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/main/resources</locationURI>
 		</link>
 		<link>
 			<name>[source path] test-resources</name>
 			<type>2</type>
-			<location>/Users/franckwolff/Developments/workspace64/graniteds/granite-client-flex-advanced/src/test/resources</location>
+			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/test/resources</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
