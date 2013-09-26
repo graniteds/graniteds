@@ -83,7 +83,16 @@ public class Reflection {
 	public Reflection(ClassLoader classLoader, BypassConstructorAllocator instanceFactory) {
 		this.classLoader = classLoader;
 		
-		this.instanceFactory = (instanceFactory != null ? instanceFactory : new SunBypassConstructorAllocator());
+		if (instanceFactory != null)
+			this.instanceFactory = instanceFactory;
+		else {
+			try {
+				this.instanceFactory = new SunBypassConstructorAllocator();
+			}
+			catch (Exception e) {
+				throw new RuntimeException("Could not instantiate BypassConstructorAllocator", e);
+			}
+		}
 		
 		this.lexicalPropertyComparator = new Comparator<Property>() {
 			public int compare(Property p1, Property p2) {

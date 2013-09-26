@@ -43,23 +43,33 @@ package org.granite.messaging.reflect;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
-import sun.reflect.ReflectionFactory;
+import java.lang.reflect.Method;
 
 /**
  * @author Franck WOLFF
  */
 public class SunBypassConstructorAllocator implements BypassConstructorAllocator {
+	
+	private final Object reflectionFactory;
+	private final Method newConstructorForSerialization;
+	private final Constructor<?> objectConstructor;
+	
+	public SunBypassConstructorAllocator()
+		throws ClassNotFoundException, NoSuchMethodException, SecurityException,
+		IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		
+		Class<?> reflectionFactoryClass = Thread.currentThread().getContextClassLoader().loadClass("sun.reflect.ReflectionFactory");
+		reflectionFactory = reflectionFactoryClass.getDeclaredMethod("getReflectionFactory").invoke(null);
+		newConstructorForSerialization = reflectionFactoryClass.getDeclaredMethod("newConstructorForSerialization", Class.class, Constructor.class);
+		objectConstructor = Object.class.getDeclaredConstructor();
+	}
     
     @SuppressWarnings("unchecked")
 	public <T> T newInstance(Class<T> cls)
 		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 		InvocationTargetException, SecurityException, NoSuchMethodException {
 
-    	ReflectionFactory factory = ReflectionFactory.getReflectionFactory();
-    	Constructor<?> constructor = Object.class.getDeclaredConstructor();
-    	
-    	constructor = factory.newConstructorForSerialization(cls, constructor);
+    	Constructor<?> constructor = (Constructor<?>)newConstructorForSerialization.invoke(reflectionFactory, cls, objectConstructor);
         constructor.setAccessible(true);
         
         return (T)constructor.newInstance();
