@@ -32,13 +32,29 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.client.platform.android;
+package org.granite.client.android.platform;
 
-import org.granite.messaging.reflect.Property;
+import java.lang.reflect.Method;
+
+import org.granite.messaging.reflect.MethodProperty;
+import org.granite.messaging.reflect.SimpleMethodProperty;
 
 /**
  * @author Franck WOLFF
  */
-public interface AndroidProperty extends Property {
+public class AndroidMethodProperty extends AbstractAndroidProperty implements MethodProperty {
 
+	public AndroidMethodProperty(Method getter, Method setter, String name) {
+		super(new SimpleMethodProperty(getter, setter, name));
+	}
+
+	@Override
+	public Method getGetter() {
+		return ((MethodProperty)property).getGetter();
+	}
+
+	@Override
+	public Method getSetter() {
+		return ((MethodProperty)property).getSetter();
+	}
 }

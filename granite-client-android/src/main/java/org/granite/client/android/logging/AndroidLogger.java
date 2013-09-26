@@ -32,7 +32,7 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.logging.android;
+package org.granite.client.android.logging;
 
 import org.granite.logging.Logger;
 import org.granite.logging.LoggingFormatter;

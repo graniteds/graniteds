@@ -32,12 +32,12 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.client.platform.android;
+package org.granite.client.android.platform;
 
+import org.granite.client.android.messaging.DexRemoteAliasScanner;
+import org.granite.client.android.messaging.transport.LoopjTransport;
 import org.granite.client.messaging.RemoteAliasScanner;
-import org.granite.client.messaging.android.DexRemoteAliasScanner;
 import org.granite.client.messaging.transport.Transport;
-import org.granite.client.messaging.transport.android.LoopjTransport;
 import org.granite.client.platform.Platform;
 import org.granite.messaging.reflect.Reflection;
 

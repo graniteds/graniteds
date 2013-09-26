@@ -32,7 +32,7 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.messaging.reflect.android;
+package org.granite.client.android.messaging.reflect;
 
 import java.io.ObjectStreamClass;
 import java.lang.reflect.InvocationTargetException;

@@ -32,7 +32,7 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.client.platform.android;
+package org.granite.client.android.platform;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;

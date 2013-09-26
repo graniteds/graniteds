@@ -32,7 +32,7 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.client.messaging.transport.android;
+package org.granite.client.android.messaging.transport;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

@@ -32,7 +32,7 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.client.messaging.android;
+package org.granite.client.android.messaging;
 
 import java.io.IOException;
 import java.util.Enumeration;

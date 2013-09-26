@@ -32,24 +32,32 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.client.platform.android;
+package org.granite.client.android.tide;
 
-import java.lang.reflect.Field;
+import org.granite.client.tide.impl.DefaultApplication;
+import org.granite.client.tide.server.ServerSession;
 
-import org.granite.messaging.reflect.FieldProperty;
-import org.granite.messaging.reflect.SimpleFieldProperty;
+import android.app.Activity;
 
 /**
- * @author Franck WOLFF
+ * @author William DRAI
  */
-public class AndroidFieldProperty extends AbstractAndroidProperty implements FieldProperty {
-
-	public AndroidFieldProperty(Field field) {
-		super(new SimpleFieldProperty(field));
+public class AndroidApplication extends DefaultApplication {
+	
+	private Activity activity;
+	
+	public AndroidApplication(Activity activity) {
+		this.activity = activity;
 	}
-
+	
 	@Override
-	public Field getField() {
-		return ((FieldProperty)property).getField();
+	public void configure(Object object) {
+		if (object instanceof ServerSession)
+			((ServerSession)object).setAppContext(activity);
+	}
+	
+	@Override
+	public void execute(Runnable runnable) {
+		activity.runOnUiThread(runnable);
 	}
 }

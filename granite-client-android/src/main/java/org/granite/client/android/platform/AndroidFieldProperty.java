@@ -32,27 +32,24 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.client.platform.android;
+package org.granite.client.android.platform;
 
-import org.granite.messaging.reflect.Reflection;
-import org.granite.messaging.reflect.android.AndroidBypassConstructorAllocator;
+import java.lang.reflect.Field;
+
+import org.granite.messaging.reflect.FieldProperty;
+import org.granite.messaging.reflect.SimpleFieldProperty;
 
 /**
  * @author Franck WOLFF
  */
-public class AndroidReflection extends Reflection {
+public class AndroidFieldProperty extends AbstractAndroidProperty implements FieldProperty {
 
-	public AndroidReflection(ClassLoader classLoader) {
-		super(classLoader, new AndroidBypassConstructorAllocator());
+	public AndroidFieldProperty(Field field) {
+		super(new SimpleFieldProperty(field));
 	}
-	
-//	@Override
-//	protected FieldProperty newFieldProperty(Field field) {
-//		return new AndroidFieldProperty(field);
-//	}
-//
-//	@Override
-//	protected MethodProperty newMethodProperty(Method getter, Method setter, String name) {
-//		return new AndroidMethodProperty(getter, setter, name);
-//	}
+
+	@Override
+	public Field getField() {
+		return ((FieldProperty)property).getField();
+	}
 }

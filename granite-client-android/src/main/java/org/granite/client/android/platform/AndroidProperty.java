@@ -32,32 +32,13 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.client.tide.android;
+package org.granite.client.android.platform;
 
-import org.granite.client.tide.impl.DefaultApplication;
-import org.granite.client.tide.server.ServerSession;
-
-import android.app.Activity;
+import org.granite.messaging.reflect.Property;
 
 /**
- * @author William DRAI
+ * @author Franck WOLFF
  */
-public class AndroidApplication extends DefaultApplication {
-	
-	private Activity activity;
-	
-	public AndroidApplication(Activity activity) {
-		this.activity = activity;
-	}
-	
-	@Override
-	public void configure(Object object) {
-		if (object instanceof ServerSession)
-			((ServerSession)object).setAppContext(activity);
-	}
-	
-	@Override
-	public void execute(Runnable runnable) {
-		activity.runOnUiThread(runnable);
-	}
+public interface AndroidProperty extends Property {
+
 }
