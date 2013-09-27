@@ -43,9 +43,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.granite.client.configuration.Configuration;
+import org.granite.client.javafx.platform.SimpleJavaFXConfiguration;
 import org.granite.client.messaging.ClientAliasRegistry;
 import org.granite.client.messaging.codec.MessagingCodec.ClientType;
-import org.granite.client.platform.javafx.SimpleJavaFXConfiguration;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.SimpleGraniteContext;

@@ -56,6 +56,7 @@ import javafx.beans.value.WritableSetValue;
 import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 
+import org.granite.client.javafx.persistence.collection.FXPersistentCollections;
 import org.granite.client.persistence.collection.PersistentBag;
 import org.granite.client.persistence.collection.PersistentList;
 import org.granite.client.persistence.collection.PersistentMap;
@@ -63,7 +64,6 @@ import org.granite.client.persistence.collection.PersistentSet;
 import org.granite.client.persistence.collection.PersistentSortedMap;
 import org.granite.client.persistence.collection.PersistentSortedSet;
 import org.granite.client.persistence.collection.UnsafePersistentCollection;
-import org.granite.client.persistence.collection.javafx.FXPersistentCollections;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.util.Property;
 import org.granite.util.TypeUtil;

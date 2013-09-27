@@ -49,6 +49,8 @@ public enum ContentType {
 	AMF("application/x-amf"),
 	JMF_AMF("application/x-jmf+amf");
 	
+	public static final String KEY = "Content-Type";
+	
 	private final String mimeType;
 	
 	ContentType(String mimeType) {

@@ -21,17 +21,22 @@
  */
 package org.granite.gravity.glassfish;
 
+import javax.servlet.ServletContext;
+
 import org.granite.gravity.AbstractChannelFactory;
 import org.granite.gravity.Gravity;
 
 public class GlassFishWebSocketChannelFactory extends AbstractChannelFactory<GlassFishWebSocketChannel> {
 	
-	public GlassFishWebSocketChannelFactory(Gravity gravity) {
+	private ServletContext servletContext;
+
+	public GlassFishWebSocketChannelFactory(Gravity gravity, ServletContext servletContext) {
 		super(gravity);
+		this.servletContext = servletContext;
 	}
 
 	public GlassFishWebSocketChannel newChannel(String id, String clientType) {
-		return new GlassFishWebSocketChannel(getGravity(), id, this, clientType);
+		return new GlassFishWebSocketChannel(getGravity(), id, this, servletContext, clientType);
 	}
 
 }

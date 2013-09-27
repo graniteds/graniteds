@@ -45,8 +45,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableMap;
 
+import org.granite.client.javafx.persistence.collection.FXPersistentCollections;
 import org.granite.client.messaging.RemoteAlias;
-import org.granite.client.persistence.collection.javafx.FXPersistentCollections;
 import org.granite.messaging.annotations.Serialized;
 
 
