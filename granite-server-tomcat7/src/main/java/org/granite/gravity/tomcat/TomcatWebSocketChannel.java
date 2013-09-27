@@ -36,13 +36,18 @@ import javax.servlet.ServletContext;
 import org.apache.catalina.websocket.MessageInbound;
 import org.apache.catalina.websocket.StreamInbound;
 import org.apache.catalina.websocket.WsOutbound;
+import org.granite.config.GraniteConfigListener;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityConfig;
 import org.granite.logging.Logger;
+import org.granite.messaging.jmf.JMFDeserializer;
+import org.granite.messaging.jmf.JMFSerializer;
+import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.webapp.ServletGraniteContext;
+import org.granite.util.ContentType;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
@@ -54,14 +59,19 @@ public class TomcatWebSocketChannel extends AbstractChannel {
 	
 	private StreamInbound streamInbound = new MessageInboundImpl();
 	private ServletContext servletContext;
+	private SharedContext jmfSharedContext;
+	private ContentType contentType;
+	
 	private WsOutbound connection;
 	private byte[] connectAckMessage;
 
 	
 	public TomcatWebSocketChannel(Gravity gravity, String id, TomcatWebSocketChannelFactory factory, ServletContext servletContext, String clientType) {
     	super(gravity, id, factory, clientType);
+
     	this.servletContext = servletContext;
-    }
+        this.jmfSharedContext = GraniteConfigListener.getSharedContext(servletContext);
+	}
 	
 	public void setConnectAckMessage(Message ackMessage) {
 		try {
@@ -73,6 +83,14 @@ public class TomcatWebSocketChannel extends AbstractChannel {
 		}
 	}
 	
+	public ContentType getContentType() {
+		return contentType;
+	}
+
+	public void setContentType(ContentType contentType) {
+		this.contentType = contentType;
+	}
+
 	public StreamInbound getStreamInbound() {
 		return streamInbound;
 	}
@@ -179,13 +197,23 @@ public class TomcatWebSocketChannel extends AbstractChannel {
 		return gravity;
 	}
 
-	private static Message[] deserialize(Gravity gravity, byte[] data) throws ClassNotFoundException, IOException {
+	private Message[] deserialize(Gravity gravity, byte[] data) throws ClassNotFoundException, IOException {
 		ByteArrayInputStream is = new ByteArrayInputStream(data);
+		
 		try {
-			ObjectInput amf3Deserializer = gravity.getGraniteConfig().newAMF3Deserializer(is);
-	        Object[] objects = (Object[])amf3Deserializer.readObject();
-	        Message[] messages = new Message[objects.length];
-	        System.arraycopy(objects, 0, messages, 0, objects.length);
+			Message[] messages = null;
+			
+			if (ContentType.JMF_AMF.equals(contentType)) {
+		    	@SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
+				JMFDeserializer deserializer = new JMFDeserializer(is, jmfSharedContext);
+				messages = (Message[])deserializer.readObject();
+			}
+			else {
+				ObjectInput amf3Deserializer = gravity.getGraniteConfig().newAMF3Deserializer(is);
+		        Object[] objects = (Object[])amf3Deserializer.readObject();
+		        messages = new Message[objects.length];
+		        System.arraycopy(objects, 0, messages, 0, objects.length);
+			}
 	        
 	        return messages;
 		}
@@ -194,13 +222,22 @@ public class TomcatWebSocketChannel extends AbstractChannel {
 		}
 	}
 	
-	private static byte[] serialize(Gravity gravity, Message[] messages) throws IOException {
+	private byte[] serialize(Gravity gravity, Message[] messages) throws IOException {
 		ByteArrayOutputStream os = null;
 		try {
 	        os = new ByteArrayOutputStream(200*messages.length);
-	        ObjectOutput amf3Serializer = gravity.getGraniteConfig().newAMF3Serializer(os);
-	        amf3Serializer.writeObject(messages);	        
-	        os.flush();
+	        
+	        if (ContentType.JMF_AMF.equals(contentType)) {
+		        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'serializer' is never closed)...
+	            JMFSerializer serializer = new JMFSerializer(os, jmfSharedContext);
+	            serializer.writeObject(messages);
+	        }
+	        else {
+		        ObjectOutput amf3Serializer = gravity.getGraniteConfig().newAMF3Serializer(os);
+		        amf3Serializer.writeObject(messages);	        
+		        os.flush();
+	        }
+
 	        return os.toByteArray();
 		}
 		finally {

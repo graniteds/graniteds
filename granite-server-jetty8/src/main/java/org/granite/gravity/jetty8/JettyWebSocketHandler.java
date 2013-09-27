@@ -32,6 +32,7 @@ import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.ServletGraniteContext;
+import org.granite.util.ContentType;
 
 import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.Message;
@@ -87,6 +88,13 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 			Message ackMessage = gravity.handleMessage(channelFactory, pingMessage);
 			
 			JettyWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
+
+			ContentType contentType = ContentType.forMimeType(request.getContentType());
+			if (contentType == null) {
+				log.warn("No (or unsupported) content type in request: %s", request.getContentType());
+				contentType = ContentType.AMF;
+			}
+			channel.setContentType(contentType);
 			
 			if (!ackMessage.getClientId().equals(clientId))
 				channel.setConnectAckMessage(ackMessage);

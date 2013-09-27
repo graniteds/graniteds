@@ -26,11 +26,13 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.ServletGraniteContext;
+import org.granite.util.ContentType;
 
 import com.sun.grizzly.tcp.Request;
 import com.sun.grizzly.websockets.WebSocket;
@@ -101,14 +103,16 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 
 	@Override
     public void onConnect(WebSocket websocket) {
-		GlassFishWebSocketChannelFactory channelFactory = new GlassFishWebSocketChannelFactory(gravity);
+		ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
+		HttpServletRequest request = graniteContext.getRequest();
+
+		GlassFishWebSocketChannelFactory channelFactory = new GlassFishWebSocketChannelFactory(gravity, request.getServletContext());
 		
 		try {
 			log.info("WebSocket connection");
-			ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
 			
-			String connectMessageId = (String)graniteContext.getRequest().getAttribute("connectId");
-			String clientId = (String)graniteContext.getRequest().getAttribute("clientId");
+			String connectMessageId = (String)request.getAttribute("connectId");
+			String clientId = (String)request.getAttribute("clientId");
 			
 			CommandMessage pingMessage = new CommandMessage();
 			pingMessage.setMessageId(connectMessageId != null ? connectMessageId : "OPEN_CONNECTION");
@@ -119,8 +123,17 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 			Message ackMessage = gravity.handleMessage(channelFactory, pingMessage);
 			
 			GlassFishWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
+
+			ContentType contentType = ContentType.forMimeType(request.getContentType());
+			if (contentType == null) {
+				log.warn("No (or unsupported) content type in request: %s", request.getContentType());
+				contentType = ContentType.AMF;
+			}
+			channel.setContentType(contentType);
+
 			if (!ackMessage.getClientId().equals(clientId))
 				channel.setConnectAckMessage(ackMessage);
+			
 			channel.setWebSocket(websocket);
 		}
 		finally {
