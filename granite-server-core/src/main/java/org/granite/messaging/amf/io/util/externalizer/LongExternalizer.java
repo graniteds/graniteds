@@ -33,9 +33,6 @@ import org.granite.messaging.amf.io.util.instantiator.LongInstantiator;
  */
 public class LongExternalizer extends DefaultExternalizer {
 
-	public LongExternalizer() {
-	}
-
 	@Override
 	public int accept(Class<?> clazz) {
 		return (clazz == Long.class || clazz == Long.TYPE ? 1 : -1);

@@ -70,10 +70,7 @@ import org.granite.messaging.service.MethodMatcher;
 import org.granite.messaging.service.ServiceInvocationListener;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.tide.TideComponentMatcher;
-import org.granite.scan.ScannedItem;
-import org.granite.scan.ScannedItemHandler;
-import org.granite.scan.Scanner;
-import org.granite.scan.ScannerFactory;
+import org.granite.scan.*;
 import org.granite.util.StreamUtil;
 import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
@@ -337,22 +334,23 @@ public class GraniteConfig implements ScannedItemHandler {
     }
 
     private void handleClass(Class<?> clazz) {
-        if (!clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers())) {
-            if (Externalizer.class.isAssignableFrom(clazz)) {
-                try {
-                    scannedExternalizers.add(TypeUtil.newInstance(clazz, Externalizer.class));
-                } catch (Exception e) {
-                    log.error(e, "Could not create new instance of: %s", clazz);
-                }
+        if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()))
+            return;
+
+        if (Externalizer.class.isAssignableFrom(clazz)) {
+            try {
+                scannedExternalizers.add(TypeUtil.newInstance(clazz, Externalizer.class));
+            } catch (Exception e) {
+                log.error(e, "Could not create new instance of: %s", clazz);
             }
-            
-            if (ExceptionConverter.class.isAssignableFrom(clazz)) {
-                try {
-                    exceptionConverters.add(TypeUtil.newInstance(clazz, ExceptionConverter.class));
-                } catch (Exception e) {
-                	if (!clazz.getName().equals("org.granite.tide.hibernate.HibernateValidatorExceptionConverter"))	// GDS-582
-                		log.error(e, "Could not create new instance of: %s", clazz);
-                }
+        }
+
+        if (ExceptionConverter.class.isAssignableFrom(clazz)) {
+            try {
+                exceptionConverters.add(TypeUtil.newInstance(clazz, ExceptionConverter.class));
+            } catch (Exception e) {
+                if (!clazz.getName().equals("org.granite.tide.hibernate.HibernateValidatorExceptionConverter"))	// GDS-582
+                    log.error(e, "Could not create new instance of: %s", clazz);
             }
         }
     }

@@ -34,9 +34,6 @@ import org.granite.messaging.amf.io.util.instantiator.BigDecimalInstantiator;
  */
 public class BigDecimalExternalizer extends DefaultExternalizer {
 	
-	public BigDecimalExternalizer() {
-	}
-
 	@Override
 	public int accept(Class<?> clazz) {
 		return (clazz == BigDecimal.class ? 1 : -1);

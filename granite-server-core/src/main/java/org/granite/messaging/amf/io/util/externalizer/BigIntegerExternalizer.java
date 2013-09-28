@@ -36,9 +36,6 @@ public class BigIntegerExternalizer extends DefaultExternalizer {
 	
 	public static final int RADIX = 36;
 
-	public BigIntegerExternalizer() {
-	}
-
 	@Override
 	public int accept(Class<?> clazz) {
 		return (clazz == BigInteger.class ? 1 : -1);

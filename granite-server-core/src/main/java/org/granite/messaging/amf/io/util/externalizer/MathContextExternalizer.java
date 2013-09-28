@@ -34,9 +34,6 @@ import org.granite.messaging.amf.io.util.instantiator.MathContextInstantiator;
  */
 public class MathContextExternalizer extends DefaultExternalizer {
 
-	public MathContextExternalizer() {
-	}
-
 	@Override
 	public int accept(Class<?> clazz) {
 		return (clazz == MathContext.class ? 1 : -1);
