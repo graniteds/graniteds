@@ -263,7 +263,7 @@ configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith
 
     // Adds an install task for Flex projects because maven plugin does not add it for GradleFx projects
     if (subproject.name.startsWith('granite-client-flex')) {
-        task install(type: Upload) {
+        task install(type: Upload, dependsOn: 'build') {
             configuration = subproject.configurations.archives
             description = 'Installs the \'archives\' artifacts into the local Maven repository.'
             repositories.mavenInstaller()
@@ -535,7 +535,6 @@ project('granite-server') {
 		':granite-server-glassfishv2',
 		':granite-server-glassfishv3',
 		':granite-server-weblogic',
-		':granite-server-appengine',
 		':granite-server-activemq'
 	]
 	
@@ -551,7 +550,8 @@ project('granite-server') {
 		':granite-server-eclipselink',
 		':granite-server-openjpa',
 		':granite-server-toplink',
-		':granite-server-beanvalidation'
+		':granite-server-beanvalidation',
+        ':granite-server-appengine'
 	]
 	
 	dependencies {
@@ -624,7 +624,20 @@ project('granite-server') {
 			docTitle = 'GraniteDS API Documentation - ' + granitedsVersion
 			links = rootProject.ext.javadocLinks
 		}
-	}	
+	}
+
+    // Remove granite-server-* dependencies from pom, the jar already contains everything
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                pom.whenConfigured { pom ->
+                    pom.dependencies.removeAll(
+                        pom.dependencies.findAll { it.groupId == 'org.graniteds' && it.artifactId.startsWith('granite-server') }
+                    )
+                }
+            }
+        }
+    }
 }
 
 // Lib shared with generator
