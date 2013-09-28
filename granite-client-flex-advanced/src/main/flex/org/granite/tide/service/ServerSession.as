@@ -75,9 +75,9 @@ package org.granite.tide.service {
         public var disconnected:Boolean = false;
 
 
-        public function ServerSession(secure:Boolean = false, serverName:String = "", serverPort:String = "", contextRoot:String = "", destination:String = "server"):void {
+        public function ServerSession(contextRoot:String = "", secure:Boolean = false, serverName:String = "", serverPort:String = "", destination:String = "server"):void {
             _destination = destination;
-            _server = new SimpleServer(secure, serverName, serverPort, contextRoot);
+            _server = new SimpleServer(contextRoot, secure, serverName, serverPort);
 
             initServer();
         }
@@ -457,7 +457,7 @@ package org.granite.tide.service {
                 _sessionId = sessionId;
                 // Update sessionId for all SessionAware channels
                 for each (var channelSet:ChannelSet in _channelSetsByType) {
-                    channelSet.channels.forEach(function(channel:Channel):void {
+                    channelSet.channels.forEach(function(channel:Channel, index:int, arr:Array):void {
                         if (channel is SessionAware)
                             SessionAware(channel).sessionId = sessionId;
                     });

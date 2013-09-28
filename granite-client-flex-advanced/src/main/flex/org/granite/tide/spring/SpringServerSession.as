@@ -23,8 +23,8 @@ package org.granite.tide.spring {
         private static var log:ILogger = Log.getLogger("org.granite.tide.spring.SpringServerSession");
 
 
-        public function SpringServerSession(secure:Boolean = false, serverName:String = "", serverPort:String = "", contextRoot:String = "", destination:String = "server"):void {
-            super(secure, serverName, serverPort, contextRoot, destination);
+        public function SpringServerSession(contextRoot:String = "", secure:Boolean = false, serverName:String = "", serverPort:String = "", destination:String = "server"):void {
+            super(contextRoot, secure, serverName, serverPort, destination);
         }
 
 

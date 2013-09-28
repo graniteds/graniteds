@@ -84,7 +84,7 @@ package org.granite.tide.service {
         }
 
         public function build(type:String, server:IServer):Channel {
-            var uri:String;
+            var uri:String, scheme:String;
             if (type == DEFAULT) {
                 uri = (server.secure ? "https" : "http") + "://" + server.serverName + ":" + server.serverPort + server.contextRoot + _graniteUrlMapping;
                 return server.secure ? new SecureAMFChannel("graniteamf", uri) : new AMFChannel("graniteamf", uri);
@@ -94,11 +94,11 @@ package org.granite.tide.service {
                 return server.secure ? new SecureGravityChannel("gravityamf", uri) : new GravityChannel("gravityamf", uri);
             }
             else if (type == WEBSOCKET) {
-                var scheme:String = server.secure ? "wss" : "ws";
+                scheme = server.secure ? "wss" : "ws";
                 return new WebSocketChannel("websocketamf", scheme + "://" + server.serverName + ":" + server.serverPort + server.contextRoot + _websocketUrlMapping);
             }
             else if (type == WEBSOCKET_EMBEDDED) {
-                var scheme:String = server.secure ? "wss" : "ws";
+                scheme = server.secure ? "wss" : "ws";
                 return new WebSocketChannel("websocketamf", scheme + "://" + server.serverName + ":" + server.serverPort);
             }
             return null;
