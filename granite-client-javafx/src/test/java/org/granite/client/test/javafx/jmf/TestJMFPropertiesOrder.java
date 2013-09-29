@@ -103,24 +103,24 @@ public class TestJMFPropertiesOrder {
 	@Test
 	public void testPropertiesOrder() throws ClassNotFoundException, IOException {
 		
-		clientAliasRegistry.registerAlias(ClientConcretePersitableChild.class);
+		clientAliasRegistry.registerAlias(ClientConcretePersistableChild.class);
 
-		ConcretePersitableChild entity = new ConcretePersitableChild();
+		ConcretePersistableChild entity = new ConcretePersistableChild();
 		entity.setId(12);
 		entity.setA("AAAA");
 		entity.setZ("ZZZZZZZZZ");
 		
 		Object clientEntity = serializeAndDeserializeServerToClient(entity, true);
-		Assert.assertTrue(clientEntity instanceof ClientConcretePersitableChild);
-		Assert.assertEquals(entity.getId(), ((ClientConcretePersitableChild)clientEntity).getId());
-		Assert.assertEquals(entity.getA(), ((ClientConcretePersitableChild)clientEntity).getA());
-		Assert.assertEquals(entity.getZ(), ((ClientConcretePersitableChild)clientEntity).getZ());
+		Assert.assertTrue(clientEntity instanceof ClientConcretePersistableChild);
+		Assert.assertEquals(entity.getId(), ((ClientConcretePersistableChild)clientEntity).getId());
+		Assert.assertEquals(entity.getA(), ((ClientConcretePersistableChild)clientEntity).getA());
+		Assert.assertEquals(entity.getZ(), ((ClientConcretePersistableChild)clientEntity).getZ());
 		
 		Object serverEntity = serializeAndDeserializeClientToServer(clientEntity, true);
-		Assert.assertTrue(serverEntity instanceof ConcretePersitableChild);
-		Assert.assertEquals(((ClientConcretePersitableChild)clientEntity).getId(), ((ConcretePersitableChild)serverEntity).getId());
-		Assert.assertEquals(((ClientConcretePersitableChild)clientEntity).getA(), ((ConcretePersitableChild)serverEntity).getA());
-		Assert.assertEquals(((ClientConcretePersitableChild)clientEntity).getZ(), ((ConcretePersitableChild)serverEntity).getZ());
+		Assert.assertTrue(serverEntity instanceof ConcretePersistableChild);
+		Assert.assertEquals(((ClientConcretePersistableChild)clientEntity).getId(), ((ConcretePersistableChild)serverEntity).getId());
+		Assert.assertEquals(((ClientConcretePersistableChild)clientEntity).getA(), ((ConcretePersistableChild)serverEntity).getA());
+		Assert.assertEquals(((ClientConcretePersistableChild)clientEntity).getZ(), ((ConcretePersistableChild)serverEntity).getZ());
 	}
 //	
 //	private Object serializeAndDeserializeServerToServer(Object obj, boolean dump) throws ClassNotFoundException, IOException {

@@ -34,14 +34,22 @@
  */
 package org.granite.client.test.javafx.jmf;
 
-public class ConcretePersitableChild extends AbstractPersistable<Integer> {
+import java.io.Serializable;
+
+import org.granite.client.messaging.RemoteAlias;
+import org.granite.messaging.annotations.Serialized;
+
+@RemoteAlias("org.granite.client.test.javafx.jmf.ConcretePersistableChild")
+@Serialized(propertiesOrder={"id", "a", "z"})
+public class ClientConcretePersistableChild implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private String a;
 	private String z;
+	private String a;
+	private Integer id;
 	
-	public ConcretePersitableChild() {
+	public ClientConcretePersistableChild() {
 	}
 
 	public String getA() {
@@ -58,5 +66,13 @@ public class ConcretePersitableChild extends AbstractPersistable<Integer> {
 
 	public void setZ(String z) {
 		this.z = z;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
 	}
 }
