@@ -52,7 +52,7 @@ import org.granite.client.persistence.Uid;
 import org.granite.client.persistence.Version;
 
 @Entity
-@RemoteAlias("org.granite.client.test.jmf.ServerEntity")
+@RemoteAlias("org.granite.client.test.javafx.jmf.ServerEntity")
 public class ClientFXEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;

@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.granite.client.javafx.tide.JavaFXApplication;
+import org.granite.client.test.tide.MockInstanceStoreFactory;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextManager;
 import org.granite.client.tide.data.EntityManager;

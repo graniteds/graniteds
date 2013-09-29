@@ -38,6 +38,7 @@ package org.granite.client.test.javafx.tide;
 import java.util.Arrays;
 
 import org.granite.client.javafx.tide.JavaFXApplication;
+import org.granite.client.test.tide.MockInstanceStoreFactory;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextManager;
 import org.granite.client.tide.data.Conflicts;

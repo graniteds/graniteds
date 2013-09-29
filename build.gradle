@@ -52,8 +52,8 @@ task build {
 configure(subprojects) {
 	
 	repositories {
-		mavenLocal()
 		mavenCentral()
+        mavenLocal()
 	}
 }
 
@@ -1581,7 +1581,8 @@ project('granite-client-javafx') {
 		compile project(':granite-client-java')
 		
 		testCompile project(':granite-client-java').sourceSets.test.output
-		
+        testCompile project(':granite-client-java-advanced').sourceSets.test.output
+
 		testCompile 'org.hibernate:hibernate-core:3.6.10.Final',
 			'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
 			'antlr:antlr:2.7.7'

@@ -21,9 +21,10 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="granite-client-java" exported="" />
+    <orderEntry type="module" module-name="granite-client-java" />
     <orderEntry type="module" module-name="granite-client-java-advanced" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.hibernate:hibernate-core:3.6.10.Final" level="project" />
     <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>
@@ -42,9 +43,17 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library" scope="TEST">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../granite-client-java-advanced/build/classes/test" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="module" module-name="granite-server-core" scope="TEST" />
     <orderEntry type="module" module-name="granite-server-hibernate" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="org.hibernate:hibernate-core:3.6.10.Final" level="project" />
   </component>
 </module>
 

@@ -48,6 +48,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import org.granite.client.javafx.tide.JavaFXApplication;
 import org.granite.client.javafx.tide.JavaFXDataManager;
 import org.granite.client.persistence.collection.PersistentCollection;
+import org.granite.client.test.tide.MockInstanceStoreFactory;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextManager;
 import org.granite.client.tide.data.EntityManager;
