@@ -8,6 +8,9 @@
             <entry module-name="granite-client-flex" build-configuration-name="granite-client-flex">
               <dependency linkage="External" />
             </entry>
+            <entry module-name="granite-client-flex45-advanced" build-configuration-name="granite-client-flex45-advanced">
+              <dependency linkage="External" />
+            </entry>
           </entries>
           <sdk name="Flex SDK 4.5" />
         </dependencies>
@@ -27,6 +30,7 @@
     <orderEntry type="jdk" jdkName="Flex SDK 4.5" jdkType="Flex SDK Type (new)" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="granite-client-flex" exported="" />
+    <orderEntry type="module" module-name="granite-client-flex45-advanced" exported="" />
   </component>
 </module>
 

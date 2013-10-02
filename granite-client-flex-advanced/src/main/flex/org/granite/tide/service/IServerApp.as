@@ -39,7 +39,7 @@ package org.granite.tide.service {
      *  
      * 	@author William DRAI
      */
-    public interface IServer {
+    public interface IServerApp {
 
         function set secure(secure:Boolean):void;
 

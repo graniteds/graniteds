@@ -51,7 +51,7 @@ package org.granite.tide.events {
     import org.granite.util.ClassUtil;
     import org.granite.tide.BaseContext;
 	import org.granite.tide.IComponent;
-	import org.granite.tide.service.IServer;
+	import org.granite.tide.service.IServerApp;
     
 
 	[Bindable]

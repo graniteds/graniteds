@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="org.eclipse.jetty:jetty-webapp:8.1.12.v20130726" type="repository">
+    <properties maven-id="org.eclipse.jetty:jetty-webapp:8.1.12.v20130726" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jetty-webapp-8.1.12.v20130726.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-xml-8.1.12.v20130726.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-util-8.1.12.v20130726.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-servlet-8.1.12.v20130726.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-security-8.1.12.v20130726.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-server-8.1.12.v20130726.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-continuation-8.1.12.v20130726.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-http-8.1.12.v20130726.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-io-8.1.12.v20130726.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

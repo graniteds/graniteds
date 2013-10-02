@@ -88,7 +88,7 @@ package org.granite.tide.service {
 
         private static var log:ILogger = Log.getLogger("org.granite.tide.service.ServerSession");
 
-        private var _server:IServer;
+        private var _server:IServerApp;
 
         private var _destination:String = null;
 
@@ -111,12 +111,12 @@ package org.granite.tide.service {
 
         public function ServerSession(contextRoot:String = "", secure:Boolean = false, serverName:String = "", serverPort:String = "", destination:String = "server"):void {
             _destination = destination;
-            _server = new SimpleServer(contextRoot, secure, serverName, serverPort);
+            _server = new SimpleServerApp(contextRoot, secure, serverName, serverPort);
 
             initServer();
         }
 		
-        public function set server(server:IServer):void {
+        public function set server(server:IServerApp):void {
             if (server == _server)
                 return;
             _server = server;

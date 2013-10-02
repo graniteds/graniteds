@@ -71,6 +71,14 @@ public class LoopjTransport extends AbstractTransport<Context> implements HTTPTr
     private AsyncHttpClient httpClient = null;
     private PersistentCookieStore cookieStore = null;
 
+
+    public LoopjTransport() {
+    }
+
+    public LoopjTransport(Context context) {
+        super(context);
+    }
+
     @Override
     public synchronized boolean start() {
 

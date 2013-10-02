@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="org.eclipse.jetty:jetty-annotations:8.1.12.v20130726" type="repository">
+    <properties maven-id="org.eclipse.jetty:jetty-annotations:8.1.12.v20130726" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jetty-annotations-8.1.12.v20130726.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.objectweb.asm-3.1.0.v200803061910.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

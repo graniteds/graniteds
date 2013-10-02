@@ -58,9 +58,9 @@ import flex.messaging.messages.Message;
 /**
  * @author Franck WOLFF
  */
-public class AbstractAMFMessagingChannel extends AbstractAMFChannel implements MessagingChannel {
+public class BaseAMFMessagingChannel extends AbstractAMFChannel implements MessagingChannel {
 	
-	private static final Logger log = Logger.getLogger(AbstractAMFMessagingChannel.class);
+	private static final Logger log = Logger.getLogger(BaseAMFMessagingChannel.class);
 	
 	protected final MessagingCodec<Message[]> codec;
 	
@@ -73,7 +73,7 @@ public class AbstractAMFMessagingChannel extends AbstractAMFChannel implements M
 	protected volatile long reconnectMaxAttempts = 60L;
 	protected volatile long reconnectAttempts = 0L;
 
-	protected AbstractAMFMessagingChannel(MessagingCodec<Message[]> codec, Transport transport, String id, URI uri) {
+	protected BaseAMFMessagingChannel(MessagingCodec<Message[]> codec, Transport transport, String id, URI uri) {
 		super(transport, id, uri, 1);
 		
 		this.codec = codec;

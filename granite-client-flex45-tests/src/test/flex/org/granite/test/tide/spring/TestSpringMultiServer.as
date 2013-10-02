@@ -30,7 +30,7 @@ package org.granite.test.tide.spring
     import org.granite.test.tide.Person;
 	import org.granite.tide.BaseContext;
 	import org.granite.tide.collections.PagedCollection;
-    import org.granite.tide.service.SimpleServer;
+    import org.granite.tide.service.SimpleServerApp;
     import org.granite.tide.spring.PagedQuery;
 
     public class TestSpringMultiServer
@@ -42,7 +42,7 @@ package org.granite.test.tide.spring
         public function setUp():void {
             MockSpring.reset();
             _ctx = MockSpring.getInstance().getSpringContext();
-            MockSpring.getInstance().mainServerSession.server = new SimpleServer("/app1", false, "localhost", "8080");
+            MockSpring.getInstance().mainServerSession.server = new SimpleServerApp("/app1", false, "localhost", "8080");
             Object(MockSpring.getInstance().mainServerSession).token = new MockMultiCallAsyncToken("app1");
             _ctx.serverSession2 = new MockSpringServerSession(new MockMultiCallAsyncToken("app2"));
             MockSpring.getInstance().addComponentWithFactory("pagedQueryClient1", PagedQuery, { maxResults: 20 });

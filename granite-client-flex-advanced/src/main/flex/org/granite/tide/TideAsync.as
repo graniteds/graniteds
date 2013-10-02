@@ -65,7 +65,7 @@ package org.granite.tide {
     
     import org.granite.gravity.Consumer;
     import org.granite.tide.service.DefaultChannelBuilder;
-    import org.granite.tide.service.IServer;
+    import org.granite.tide.service.IServerApp;
     import org.granite.tide.events.TidePluginEvent;
     import org.granite.tide.events.TideFaultEvent;
     import org.granite.tide.events.TideResultEvent;

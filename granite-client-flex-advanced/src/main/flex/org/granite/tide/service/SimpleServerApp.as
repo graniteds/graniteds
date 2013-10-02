@@ -32,11 +32,8 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package	org.granite.tide.service
-{
 
-    import flash.events.Event;
-    import flash.events.EventDispatcher;
+package org.granite.tide.service {
 
     import mx.logging.ILogger;
     import mx.logging.Log;
@@ -44,43 +41,42 @@ package	org.granite.tide.service
     import mx.messaging.ChannelSet;
     import mx.messaging.channels.AMFChannel;
     import mx.messaging.channels.SecureAMFChannel;
-    import mx.rpc.events.FaultEvent;
-    import mx.rpc.events.ResultEvent;
-    import mx.rpc.http.HTTPService;
     import mx.rpc.remoting.RemoteObject;
 
     import org.granite.gravity.Consumer;
     import org.granite.gravity.Producer;
     import org.granite.gravity.channels.GravityChannel;
     import org.granite.gravity.channels.SecureGravityChannel;
+    import org.granite.tide.Tide;
 
-    [Event(name="configured", type="flash.events.Event")]
-	[Event(name="error", type="flash.events.Event")]
-	
-	public class DynamicServer extends EventDispatcher implements IServer {
-		
-		private static var log:ILogger = Log.getLogger("org.granite.tide.service.DynamicServer");
-		
-		public static const CONFIGURED:String = "configured";
-		public static const ERROR:String = "error";
+    /**
+     * 	@author William DRAI
+     */
+    public class SimpleServerApp implements IServerApp {
+        
+        private static var log:ILogger = Log.getLogger("org.granite.tide.service.SimpleServerApp");
 
-        private var _configUrl:String = null;
-		private var _initialized:Boolean = false;
+        private static const DEFAULT_SERVER_NAME:String = "{server.name}";
+        private static const DEFAULT_SERVER_PORT:String = "{server.port}";
+
+        private var _contextRoot:String = "";
 		private var _secure:Boolean = false;
-        private var _contextRoot:String = null;
-        private var _serverName:String = null;
-        private var _serverPort:String = "80";
+        private var _serverName:String = "{server.name}";
+        private var _serverPort:String = "{server.port}";
 
-		
+
 		/**
 		 * 	Tide constructor used at component instantiation
 		 *
 		 * 	@param name component name
 		 *  @param context current context
 		 */
-		public function DynamicServer(configUrl:String = "config.xml") {
-            _configUrl = configUrl;
-		}
+        public function SimpleServerApp(contextRoot:String = "", secure:Boolean = false, serverName:String = DEFAULT_SERVER_NAME, serverPort:String = DEFAULT_SERVER_PORT) {
+            _secure = secure;
+            _serverName = serverName;
+            _serverPort = serverPort;
+            _contextRoot = contextRoot;
+        }
 
         public function get secure():Boolean {
             return _secure;
@@ -115,35 +111,35 @@ package	org.granite.tide.service
         }
 
         public function initialize():void {
-            var httpService:HTTPService = new HTTPService();
-            httpService.url = _configUrl;
-            httpService.method = "GET";
-            httpService.useProxy = false;
-            httpService.resultFormat = "e4x";
-            httpService.addEventListener(ResultEvent.RESULT, resultHandler);
-            httpService.addEventListener(FaultEvent.FAULT, faultHandler);
-            httpService.send();
+            var application:Object = Tide.currentApplication();
+
+            if (application.url && application.url.indexOf("https") == 0)
+                _secure = true;
+
+            if (application.url.indexOf("http") == 0) {
+                var idx0:int = application.url.indexOf("://");
+                if (idx0 > 0) {
+                    var idx:int = application.url.indexOf("/", idx0+3);
+                    if (idx > 0) {
+                        var idx1:int = application.url.indexOf(":", idx0+3);
+                        if (idx1 > 0) {
+                            if (!_serverName || _serverName == DEFAULT_SERVER_NAME)
+                                _serverName = application.url.substring(idx0+3, idx1);
+                            if (!_serverPort || _serverPort == DEFAULT_SERVER_PORT)
+                                _serverPort = application.url.substring(idx1+1, idx);
+                        }
+                        else {
+                            if (!_serverName || _serverName == DEFAULT_SERVER_NAME)
+                                _serverName = application.url.substring(idx0+3, idx);
+                            if (!_serverPort || _serverPort == DEFAULT_SERVER_PORT)
+                                _serverPort = _secure ? "443" : "80";
+                        }
+                        var idx2:int = application.url.indexOf("/", idx+1);
+                        if (!_contextRoot && idx2 > 0 && idx2 > idx)
+                            _contextRoot = application.url.substring(idx, idx2);
+                    }
+                }
+            }
         }
-
-		private function resultHandler(event:ResultEvent):void {
-			if (event.result.hasOwnProperty("secure"))
-				_secure = event.result.secure;
-            else if (event.result.hasOwnProperty("protocol"))
-                _secure = event.result.protocol == "https";
-            _serverName = event.result["server-name"];
-            if (event.result.hasOwnProperty("server-port"))
-                _serverPort = event.result["server-port"];
-			_contextRoot = event.result["context-root"];
-
-			_initialized = true;
-			dispatchEvent(new Event(CONFIGURED));
-		}
-		
-		private function faultHandler(event:FaultEvent):void {
-			_initialized = false;
-			log.error("Server configuration error: " + event.formatToString("FaultEvent", "fault"));
-			dispatchEvent(new Event(ERROR));
-		}
-		
-	}
+    }
 }

@@ -10,6 +10,8 @@
       <root url="jar://$PROJECT_DIR$/lib/tomcat-util-7.0.42.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-catalina-7.0.42-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

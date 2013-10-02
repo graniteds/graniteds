@@ -73,8 +73,6 @@ public class AndroidPlatform extends Platform {
 		if (!(context instanceof Context))
 			throw new IllegalArgumentException("context must be an Android application context: " + context);
 		
-		LoopjTransport transport = new LoopjTransport();
-		transport.setContext(context);
-		return transport;
+		return new LoopjTransport((Context)context);
 	}
 }

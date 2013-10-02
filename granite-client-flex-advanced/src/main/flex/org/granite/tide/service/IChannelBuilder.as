@@ -42,6 +42,6 @@ package org.granite.tide.service {
      */
     public interface IChannelBuilder {
 
-        function build(type:String, server:IServer):Channel;
+        function build(type:String, server:IServerApp, options:Object = null):Channel;
     }
 }

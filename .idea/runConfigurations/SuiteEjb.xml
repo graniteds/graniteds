@@ -5,6 +5,7 @@
       <LauncherParameters>
         <option name="browserFamily" value="FIREFOX" />
         <option name="launcherType" value="Player" />
+        <option name="newPlayerInstance" value="false" />
         <option name="playerPath" value="$PROJECT_DIR$/../../flex-sdk-4.5/runtimes/player/10.2/win/FlashPlayerDebugger.exe" />
       </LauncherParameters>
     </option>

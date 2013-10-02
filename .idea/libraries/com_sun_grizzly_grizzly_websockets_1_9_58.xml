@@ -10,7 +10,6 @@
       <root url="jar://$PROJECT_DIR$/lib/grizzly-rcm-1.9.58.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/grizzly-portunif-1.9.58.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/grizzly-http-servlet-1.9.58.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/servlet-api-2.5.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

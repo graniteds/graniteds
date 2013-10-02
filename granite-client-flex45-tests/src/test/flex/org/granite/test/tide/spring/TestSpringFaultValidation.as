@@ -46,7 +46,6 @@ package org.granite.test.tide.spring
     {
         private var _ctx:BaseContext = MockSpring.getInstance().getContext();
         
-        
         [Before]
         public function setUp():void {
             MockSpring.reset();

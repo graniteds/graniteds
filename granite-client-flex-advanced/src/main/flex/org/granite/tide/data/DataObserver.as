@@ -51,7 +51,7 @@ package org.granite.tide.data {
 	import org.granite.tide.Tide;
 	import org.granite.tide.events.TideSubscriptionEvent;
     import org.granite.tide.service.DefaultChannelBuilder;
-    import org.granite.tide.service.IServer;
+    import org.granite.tide.service.IServerApp;
     import org.granite.tide.service.ServerSession;
     import org.granite.util.ClassUtil;
     

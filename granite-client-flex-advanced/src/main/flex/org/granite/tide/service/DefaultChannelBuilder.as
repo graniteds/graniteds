@@ -83,19 +83,23 @@ package org.granite.tide.service {
             _websocketUrlMapping = websocketUrlMapping;
         }
 
-        public function build(type:String, server:IServer):Channel {
+        public function build(type:String, server:IServerApp, options:Object = null):Channel {
+            var graniteUrlMapping:String = options && options.graniteUrlMapping ? options.graniteUrlMapping : _graniteUrlMapping;
+            var gravityUrlMapping:String = options && options.gravityUrlMapping ? options.gravityUrlMapping : _gravityUrlMapping;
+            var websocketUrlMapping:String = options && options.websocketUrlMapping ? options.websocketUrlMapping : _websocketUrlMapping;
+
             var uri:String, scheme:String;
             if (type == DEFAULT) {
-                uri = (server.secure ? "https" : "http") + "://" + server.serverName + ":" + server.serverPort + server.contextRoot + _graniteUrlMapping;
+                uri = (server.secure ? "https" : "http") + "://" + server.serverName + ":" + server.serverPort + server.contextRoot + graniteUrlMapping;
                 return server.secure ? new SecureAMFChannel("graniteamf", uri) : new AMFChannel("graniteamf", uri);
             }
             else if (type == LONG_POLLING) {
-                uri = (server.secure ? "https" : "http") + "://" + server.serverName + ":" + server.serverPort + server.contextRoot + _gravityUrlMapping;
+                uri = (server.secure ? "https" : "http") + "://" + server.serverName + ":" + server.serverPort + server.contextRoot + gravityUrlMapping;
                 return server.secure ? new SecureGravityChannel("gravityamf", uri) : new GravityChannel("gravityamf", uri);
             }
             else if (type == WEBSOCKET) {
                 scheme = server.secure ? "wss" : "ws";
-                return new WebSocketChannel("websocketamf", scheme + "://" + server.serverName + ":" + server.serverPort + server.contextRoot + _websocketUrlMapping);
+                return new WebSocketChannel("websocketamf", scheme + "://" + server.serverName + ":" + server.serverPort + server.contextRoot + websocketUrlMapping);
             }
             else if (type == WEBSOCKET_EMBEDDED) {
                 scheme = server.secure ? "wss" : "ws";
