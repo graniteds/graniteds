@@ -77,7 +77,7 @@ public class TestMessaging {
     private ContentType contentType;
     private String containerClassName;
     private String channelType;
-    private static EmbeddedContainer container;
+    protected static EmbeddedContainer container;
 
     private static final ServerApp SERVER_APP_APP = new ServerApp("/chat", false, "localhost", 8787);
 

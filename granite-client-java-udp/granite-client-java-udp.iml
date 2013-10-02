@@ -5,12 +5,19 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="granite-server-core" />
     <orderEntry type="module" module-name="granite-client-java" />
     <orderEntry type="module" module-name="granite-client-java-advanced" />
+    <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.slf4j:slf4j-api:1.7.3" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.slf4j:slf4j-log4j12:1.7.3" level="project" />
+    <orderEntry type="module" module-name="granite-server-servlet3" scope="TEST" />
+    <orderEntry type="library" scope="TEST" name="org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3" level="project" />
   </component>
 </module>
 
