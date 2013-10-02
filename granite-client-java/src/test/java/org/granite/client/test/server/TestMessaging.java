@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
@@ -246,6 +247,8 @@ public class TestMessaging {
             thread.start();
         }
 
+        private CountDownLatch waitToStop = new CountDownLatch(1);
+
         @Override
         public void run() {
             channelFactory = buildChannelFactory();
@@ -261,16 +264,22 @@ public class TestMessaging {
                         barrier.await();
                     }
                     catch (Exception e) {
-                        Thread.currentThread().interrupt();
                     }
                 }
 
                 @Override
                 public void onIssue(IssueEvent event) {
                     log.error("Consumer " + id + ": subscription failed " + event.toString());
-                    Thread.currentThread().interrupt();
                 }
             });
+
+            try {
+                waitToStop.await(60, TimeUnit.SECONDS);
+                channelFactory.stop();
+            }
+            catch (Exception e) {
+                log.error("Consumer did not terminate correctly", e);
+            }
         }
 
         private class ConsumerMessageListener implements TopicMessageListener {
@@ -292,20 +301,17 @@ public class TestMessaging {
                             @Override
                             public void onResult(ResultEvent event) {
                                 log.info("Consumer " + id + ": unsubscribed " + event.getResult());
-
-                                channelFactory.stop();
                                 try {
                                     barrier.await();
                                 }
                                 catch (Exception e) {
                                 }
-                                Thread.currentThread().interrupt();
+                                waitToStop.countDown();
                             }
 
                             @Override
                             public void onIssue(IssueEvent event) {
                                 log.error("Consumer " + id + ": unsubscription failed " + event.toString());
-                                Thread.currentThread().interrupt();
                             }
                         });
                     }
