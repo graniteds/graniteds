@@ -30,7 +30,7 @@ import org.granite.client.messaging.transport.Transport;
 /**
  * @author Franck WOLFF
  */
-public class JMFAMFMessagingChannel extends AbstractAMFMessagingChannel {
+public class JMFAMFMessagingChannel extends BaseAMFMessagingChannel {
 	
 	public JMFAMFMessagingChannel(Transport transport, ClientSharedContext sharedContext, String id, URI uri) {
 		super(new JMFAMF3MessagingCodec(sharedContext), transport, id, uri);

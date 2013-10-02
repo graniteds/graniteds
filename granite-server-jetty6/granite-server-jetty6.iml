@@ -9,7 +9,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="granite-server-core" exported="" />
+    <orderEntry type="module" module-name="granite-server-core" />
     <orderEntry type="library" name="org.mortbay.jetty:jetty:6.1.26" level="project" />
     <orderEntry type="library" name="org.mortbay.jetty:jetty-util:6.1.26" level="project" />
   </component>

@@ -11,7 +11,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="granite-server-core" exported="" />
-    <orderEntry type="library" name="javax:javaee-api:6.0" level="project" />
+    <orderEntry type="library" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
   </component>
 </module>
 

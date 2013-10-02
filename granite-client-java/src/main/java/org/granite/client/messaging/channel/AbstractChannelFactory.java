@@ -24,14 +24,21 @@ package org.granite.client.messaging.channel;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import flex.messaging.messages.Message;
 import org.granite.client.messaging.ClientAliasRegistry;
+import org.granite.client.messaging.ServerApp;
+import org.granite.client.messaging.codec.MessagingCodec;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.client.messaging.transport.TransportException;
 import org.granite.client.platform.Platform;
 import org.granite.messaging.AliasRegistry;
+import org.granite.messaging.amf.AMF0Message;
+import org.granite.scan.ServiceLoader;
 import org.granite.util.ContentType;
 
 /**
@@ -43,7 +50,9 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	
 	protected Transport remotingTransport = null;
 	protected Transport messagingTransport = null;
+    protected Map<String, Transport> messagingTransports = new HashMap<String, Transport>();
 	protected Object context = null;
+    protected ChannelBuilder defaultChannelBuilder = new DefaultChannelBuilder();
 
 	protected Set<String> scanPackageNames = null;
 	protected AliasRegistry aliasRegistry = null;
@@ -74,6 +83,10 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 		this.context = context;
 	}
 
+    public void setDefaultChannelBuilder(ChannelBuilder channelBuilder) {
+        this.defaultChannelBuilder = channelBuilder;
+    }
+
 	public ContentType getContentType() {
 		return contentType;
 	}
@@ -98,13 +111,23 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 		this.remotingTransport = remotingTransport;
 	}
 
-	public Transport getMessagingTransport() {
-		return messagingTransport;
-	}
-
 	public void setMessagingTransport(Transport messagingTransport) {
 		this.messagingTransport = messagingTransport;
 	}
+
+    public void setMessagingTransport(String channelType, Transport messagingTransport) {
+        this.messagingTransports.put(channelType, messagingTransport);
+    }
+
+    public Transport getMessagingTransport() {
+        return messagingTransport;
+    }
+
+    public Transport getMessagingTransport(String channelType) {
+        if (channelType != null && messagingTransports.containsKey(channelType))
+            return messagingTransports.get(channelType);
+        return messagingTransport;
+    }
 
 	public void setScanPackageNames(String... packageNames) {
 		if (packageNames != null)
@@ -135,6 +158,13 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 		}
 		else if (!messagingTransport.isStarted() && !messagingTransport.start())
 			throw new TransportException("Could not start messaging transport: " + messagingTransport);
+
+        for (Transport transport : messagingTransports.values()) {
+            if (transport != remotingTransport && transport != messagingTransport) {
+                if (!transport.isStarted() && !transport.start())
+                    throw new TransportException("Could not start messaging transport: " + transport);
+            }
+        }
 		
 		if (aliasRegistry == null)
 			aliasRegistry = new ClientAliasRegistry();
@@ -160,6 +190,12 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 				messagingTransport.stop();
 				messagingTransport = null;
 			}
+
+            for (Transport transport : messagingTransports.values()) {
+                if (transport.isStarted())
+                    transport.stop();
+            }
+            messagingTransports.clear();
 		}
 	}
 
@@ -172,7 +208,12 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	public RemotingChannel newRemotingChannel(String id, URI uri) {
 		return newRemotingChannel(id, uri, RemotingChannel.DEFAULT_MAX_CONCURRENT_REQUESTS);
 	}
-	
+
+    @Override
+    public RemotingChannel newRemotingChannel(String id, ServerApp serverApp) {
+        return newRemotingChannel(id, serverApp, RemotingChannel.DEFAULT_MAX_CONCURRENT_REQUESTS);
+    }
+
 	@Override
 	public RemotingChannel newRemotingChannel(String id, String uri, int maxConcurrentRequests) {
 		try {
@@ -185,18 +226,26 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	
 	@Override
 	public RemotingChannel newRemotingChannel(String id, URI uri, int maxConcurrentRequests) {
-		RemotingChannel channel = createRemotingChannel(id, uri, maxConcurrentRequests);
+        RemotingChannel channel = defaultChannelBuilder.buildRemotingChannel(getRemotingChannelClass(), id, uri, maxConcurrentRequests, getRemotingTransport(), newMessagingCodec(AMF0Message.class));
 		if (defaultTimeToLive != null)
 			channel.setDefaultTimeToLive(defaultTimeToLive);
 		return channel;
 	}
-	
-	protected abstract RemotingChannel createRemotingChannel(String id, URI uri, int maxConcurrentRequests);
-	
+
+    @Override
+    public RemotingChannel newRemotingChannel(String id, ServerApp serverApp, int maxConcurrentRequests) {
+        RemotingChannel channel = defaultChannelBuilder.buildRemotingChannel(getRemotingChannelClass(), id, serverApp, maxConcurrentRequests, getRemotingTransport(), newMessagingCodec(AMF0Message.class));
+        if (defaultTimeToLive != null)
+            channel.setDefaultTimeToLive(defaultTimeToLive);
+        return channel;
+    }
+
+	protected abstract Class<? extends RemotingChannel> getRemotingChannelClass();
+
 	@Override
-	public MessagingChannel newMessagingChannel(String id, String uri) {
+	public MessagingChannel newMessagingChannel(String channelType, String id, String uri) {
 		try {
-			return newMessagingChannel(id, new URI(uri));
+			return newMessagingChannel(channelType, id, new URI(uri));
 		}
 		catch (URISyntaxException e) {
 			throw new IllegalArgumentException("Bad uri: " + uri, e);
@@ -204,12 +253,44 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	}
 	
 	@Override
-	public MessagingChannel newMessagingChannel(String id, URI uri) {
-		MessagingChannel channel = createMessagingChannel(id, uri);
+	public MessagingChannel newMessagingChannel(String channelType, String id, URI uri) {
+        Transport transport = getMessagingTransport(channelType);
+        MessagingCodec<Message[]> codec = newMessagingCodec(Message[].class);
+        for (ChannelBuilder builder : ServiceLoader.load(ChannelBuilder.class)) {
+            MessagingChannel channel = builder.buildMessagingChannel(channelType, id, uri, transport, codec);
+            if (channel != null) {
+                if (defaultTimeToLive != null)
+                    channel.setDefaultTimeToLive(defaultTimeToLive);
+                return channel;
+            }
+        }
+		MessagingChannel channel = defaultChannelBuilder.buildMessagingChannel(channelType, id, uri, transport, codec);
+        if (channel == null)
+            throw new RuntimeException("Could not build channel for type " + channelType + " and uri " + uri);
 		if (defaultTimeToLive != null)
 			channel.setDefaultTimeToLive(defaultTimeToLive);
 		return channel;
 	}
-	
-	protected abstract MessagingChannel createMessagingChannel(String id, URI uri);
+
+    @Override
+    public MessagingChannel newMessagingChannel(String channelType, String id, ServerApp serverApp) {
+        Transport transport = getMessagingTransport(channelType);
+        MessagingCodec<Message[]> codec = newMessagingCodec(Message[].class);
+        for (ChannelBuilder builder : ServiceLoader.load(ChannelBuilder.class)) {
+            MessagingChannel channel = builder.buildMessagingChannel(channelType, id, serverApp, transport, codec);
+            if (channel != null) {
+                if (defaultTimeToLive != null)
+                    channel.setDefaultTimeToLive(defaultTimeToLive);
+                return channel;
+            }
+        }
+        MessagingChannel channel = defaultChannelBuilder.buildMessagingChannel(channelType, id, serverApp, transport, codec);
+        if (channel == null)
+            throw new RuntimeException("Could not build channel for type " + channelType + " and server " + serverApp.getServerName());
+        if (defaultTimeToLive != null)
+            channel.setDefaultTimeToLive(defaultTimeToLive);
+        return channel;
+    }
+
+	protected abstract <M> MessagingCodec<M> newMessagingCodec(Class<M> messageClass);
 }

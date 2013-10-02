@@ -84,6 +84,6 @@ public class UdpChannelFactoryBridge {
 		if (defaultTimeToLive != -1L)
 			channel.setDefaultTimeToLive(defaultTimeToLive);
 		
-		return new UdpMessagingChannelImpl(codec, channelFactory.getMessagingTransport(), id, uri);
+		return channel;
 	}
 }

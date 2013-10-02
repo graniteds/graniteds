@@ -38,25 +38,27 @@ import java.net.URI;
 
 import org.granite.client.configuration.Configuration;
 import org.granite.client.messaging.channel.AMFChannelFactory;
+import org.granite.client.messaging.channel.RemotingChannel;
 import org.granite.client.messaging.channel.amf.AMFRemotingChannel;
+import org.granite.client.messaging.transport.Transport;
 import org.granite.client.test.MockAMFRemotingChannel;
+import org.granite.client.test.MockTransport;
 
 public class MockAMFChannelFactory extends AMFChannelFactory {
 
-    private Configuration configuration;
-    
+    private MockTransport transport = new MockTransport();
+
     public MockAMFChannelFactory(Object context, Configuration defaultConfiguration) {
         super(context, defaultConfiguration);
-        this.configuration = defaultConfiguration;
-    }
-    
-    @Override
-    public AMFRemotingChannel newRemotingChannel(String id, URI uri) {
-        return new MockAMFRemotingChannel(configuration);
     }
 
     @Override
-    public AMFRemotingChannel newRemotingChannel(String id, URI uri, int maxConcurrentRequests) {
-        return new MockAMFRemotingChannel(configuration);
-    }    
+    public Transport getRemotingTransport() {
+        return transport;
+    }
+
+    @Override
+    protected Class<? extends RemotingChannel> getRemotingChannelClass() {
+        return MockAMFRemotingChannel.class;
+    }
 }

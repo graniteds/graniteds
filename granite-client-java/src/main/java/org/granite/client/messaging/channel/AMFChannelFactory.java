@@ -24,10 +24,13 @@ package org.granite.client.messaging.channel;
 import java.net.URI;
 
 import org.granite.client.configuration.Configuration;
-import org.granite.client.messaging.channel.amf.AMFMessagingChannel;
 import org.granite.client.messaging.channel.amf.AMFRemotingChannel;
+import org.granite.client.messaging.codec.AMF0MessagingCodec;
+import org.granite.client.messaging.codec.AMF3MessagingCodec;
+import org.granite.client.messaging.codec.MessagingCodec;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.client.platform.Platform;
+import org.granite.messaging.amf.AMF0Message;
 import org.granite.util.ContentType;
 
 /**
@@ -57,20 +60,27 @@ public class AMFChannelFactory extends AbstractChannelFactory {
 		super(ContentType.AMF, context, remotingTransport, messagingTransport);
 		
 		this.defaultConfiguration = (defaultConfiguration != null ? defaultConfiguration : Platform.getInstance().newConfiguration());
+        if (!this.defaultConfiguration.isLoaded())
+            this.defaultConfiguration.load();
+
 		this.aliasRegistry = this.defaultConfiguration.getGraniteConfig().getAliasRegistry();
 	}
 
 	@Override
-	protected AMFRemotingChannel createRemotingChannel(String id, URI uri, int maxConcurrentRequests) {
-		return new AMFRemotingChannel(getRemotingTransport(), defaultConfiguration, id, uri, maxConcurrentRequests);
+	protected Class<? extends RemotingChannel> getRemotingChannelClass() {
+        return AMFRemotingChannel.class;
 	}
-	
-	@Override
-	protected AMFMessagingChannel createMessagingChannel(String id, URI uri) {
-		return new AMFMessagingChannel(getMessagingTransport(), defaultConfiguration, id, uri);
-	}
-	
-	public Configuration getDefaultConfiguration() {
+
+    @Override
+    protected <M> MessagingCodec<M> newMessagingCodec(Class<M> messageClass) {
+        if (messageClass == flex.messaging.messages.Message[].class)
+            return (MessagingCodec<M>)new AMF3MessagingCodec(defaultConfiguration);
+        else if (messageClass == AMF0Message.class)
+            return (MessagingCodec<M>)new AMF0MessagingCodec(defaultConfiguration);
+        throw new IllegalArgumentException("Unknown message class " + messageClass);
+    }
+
+    public Configuration getDefaultConfiguration() {
 		return defaultConfiguration;
 	}
 }

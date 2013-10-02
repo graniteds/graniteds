@@ -124,6 +124,10 @@ configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it
 		testCompile 'junit:junit:4.11'
 	}
 
+    test {
+        workingDir = subproject.rootDir
+    }
+
 	javadoc {
 		title 'GraniteDS API Documentation'
 		
@@ -346,7 +350,7 @@ project('granite-server-core') {
 		compile 'javax.jms:jms-api:1.1-rev-1'
 		compile 'javax.transaction:transaction-api:1.1-rev-1'
 		compile 'javax.enterprise:cdi-api:1.0-SP4'					// Required for @NonBinding annotation on @DataEnabled
-	}
+    }
 }
 
 // Servlet 3 Integration for Gravity async I/O and auto configuration
@@ -383,7 +387,14 @@ project('granite-server-tomcat7') {
 		compile 'org.apache.tomcat:tomcat-coyote:7.0.42'
 		
 		compile project(':granite-server-core')
-	}
+
+        testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3',
+                'org.apache.tomcat.embed:tomcat-embed-core:7.0.42',
+                'org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.42',
+                'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.42'
+
+        testCompile project(':granite-server-core').sourceSets.test.output
+    }
 }
 
 // Jetty 6 support (security + gravity)
@@ -410,6 +421,15 @@ project('granite-server-jetty8') {
 		compile 'org.eclipse.jetty:jetty-websocket:8.1.12.v20130726'
 		
 		compile project(':granite-server-core')
+
+        testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3',
+                'org.jboss.shrinkwrap.container:shrinkwrap-extension-jetty-70:1.0.0-beta-1',
+                'org.eclipse.jetty:jetty-webapp:8.1.+',
+                'org.eclipse.jetty:jetty-util:8.1.+',
+                'org.eclipse.jetty:jetty-plus:8.1.+',
+                'org.eclipse.jetty:jetty-annotations:8.1.+'
+
+        testCompile project(':granite-server-core').sourceSets.test.output
 	}
 }
 
@@ -453,6 +473,11 @@ project('granite-server-glassfishv3') {
 		compile 'com.sun.grizzly:grizzly-websockets:1.9.59'
 		
 		compile project(':granite-server-core')
+
+        testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3',
+                'org.glassfish.main.extras:glassfish-embedded-all:3.1.2.2'
+
+        testCompile project(':granite-server-core').sourceSets.test.output
 	}
 }
 
@@ -463,18 +488,6 @@ project('granite-server-udp') {
 	
 	dependencies {
 		compile project(':granite-server-core')
-	}
-}
-
-// UDP Integration for Gravity (Java client)
-project('granite-client-java-udp') {
-	
-	description = 'GraniteDS UDP support client library (Java)'
-	
-	dependencies {
-		compile project(':granite-server-udp')
-		compile project(':granite-client-java')
-		compile project(':granite-server-servlet3')
 	}
 }
 
@@ -751,23 +764,16 @@ project('granite-server-ejb') {
 	
 	description = 'GraniteDS EJB integration server library'
 	
-	configurations {
-		create('glassFishTestRuntime')
-		create('openEJBTestRuntime')
-	}
-	
 	dependencies {
 		compile 'org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:1.0.2.Final'
 		
 		compile project(':granite-server-core')
 		
 		testCompile 'org.apache.openejb:openejb-lite:4.5.0'
-		testCompile 'org.glassfish.main.extras:glassfish-embedded-all:3.1.2'
+		testCompile 'org.glassfish.main.extras:glassfish-embedded-all:3.1.2.2'
 		testCompile 'org.apache.geronimo.specs:geronimo-jms_1.1_spec:1.1.1'
 		testCompile 'org.apache.geronimo.specs:geronimo-j2ee-management_1.1_spec:1.0.1'
 		testCompile 'org.apache.geronimo.specs:geronimo-jta_1.0.1B_spec:1.0.1'
-		testCompile 'org.jboss.shrinkwrap:shrinkwrap-api:1.1.3'
-		testCompile 'org.jboss.shrinkwrap:shrinkwrap-spi:1.1.3'
 		testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3'
 		testCompile 'org.jboss.shrinkwrap:shrinkwrap-extension-openejb:1.0.0-alpha-13'
 		testCompile 'org.jboss.shrinkwrap:shrinkwrap-extension-glassfish:1.0.0-alpha-13'
@@ -1319,6 +1325,7 @@ project('granite-client-flex-udp') {
 		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
 		
 		external project(':granite-client-flex')
+        external project(':granite-client-flex-advanced')
 	}
 
     // Use afterEvaluate because the flexHome variable is defined after project configuration
@@ -1459,6 +1466,13 @@ project('granite-client-flex45-tests') {
 project('granite-client-java') {
     description = 'GraniteDS Java client'
 
+    configurations {
+        create('testTomcat7Runtime')
+        create('testJetty8Runtime')
+        create('testGlassFishv31Runtime')
+        create('testJBossAS7Runtime')
+    }
+
     dependencies {
 
 		// Dependencies from granite-core
@@ -1474,6 +1488,37 @@ project('granite-client-java') {
                 'javax.validation:validation-api:1.0.0.GA',
                 'org.springframework:spring-beans:3.1.4.RELEASE',
                 'org.springframework:spring-context:3.1.4.RELEASE'
+
+        testRuntime 'org.slf4j:slf4j-api:1.7.3',
+                'org.slf4j:slf4j-log4j12:1.7.3'
+
+        testCompile project(':granite-server-servlet3')
+
+        testCompile 'org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:1.0.2.Final'
+
+        testCompile project(':granite-server-core').sourceSets.test.output
+
+        testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3'
+
+        testTomcat7Runtime 'org.apache.tomcat.embed:tomcat-embed-core:7.0.42',
+                'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.42',
+                'org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.42'
+
+        testTomcat7Runtime project(':granite-server-tomcat7').sourceSets.test.output
+
+        testJetty8Runtime 'org.eclipse.jetty:jetty-webapp:8.1.12.v20130726',
+                'org.eclipse.jetty:jetty-plus:8.1.12.v20130726',
+                'org.eclipse.jetty:jetty-annotations:8.1.12.v20130726',
+                'org.eclipse.jetty:jetty-websocket:8.1.12.v20130726',
+                'org.jboss.shrinkwrap.container:shrinkwrap-extension-jetty-70:1.0.0-beta-1'
+
+        testJetty8Runtime project(':granite-server-jetty8').sourceSets.test.output
+
+        testGlassFishv31Runtime 'org.glassfish.main.extras:glassfish-embedded-all:3.1.2.2'
+
+        testGlassFishv31Runtime project(':granite-server-glassfishv3').sourceSets.test.output
+        testGlassFishv31Runtime project(':granite-server-ejb').sourceSets.main.output
+        testGlassFishv31Runtime project(':granite-server-eclipselink')
     }
 	
 	List<String> javaExcludes = [ 
@@ -1546,7 +1591,52 @@ project('granite-client-java') {
 	javadoc {
 		source = sourceSets.main.java		// Redefine here so filter is applied
 	}
-	
+
+    task testTomcat7(type: Test) {
+        systemProperties = [ 'container.className' : 'org.granite.test.container.tomcat7.EmbeddedTomcat7' ]
+
+        includes = [ 'org/granite/client/test/server/TestMessaging*' ]
+
+        workingDir = rootDir
+        reports.junitXml.destination = new File(buildDir, 'test-results/tomcat7')
+        reports.html.destination = new File(buildDir, 'reports/tests/tomcat7')
+
+        // Add Tomcat jars to the classpath
+        classpath = project.sourceSets.test.runtimeClasspath + project.configurations.testTomcat7Runtime
+    }
+
+    task testJetty8(type: Test) {
+        systemProperties = [ 'container.className' : 'org.granite.test.container.jetty8.EmbeddedJetty8' ]
+
+        includes = [ 'org/granite/client/test/server/TestMessaging*' ]
+
+        workingDir = rootDir
+        reports.junitXml.destination = new File(buildDir, 'test-results/jetty8')
+        reports.html.destination = new File(buildDir, 'reports/tests/jetty8')
+
+        // Add Jetty jars to the classpath
+        classpath = project.sourceSets.test.runtimeClasspath + project.configurations.testJetty8Runtime
+    }
+
+    task testGlassFishv31(type: Test) {
+        systemProperties = [ 'container.className' : 'org.granite.test.container.glassfishv31.EmbeddedGlassFishv31' ]
+
+        includes = [ 'org/granite/client/test/server/Test*' ]
+
+        workingDir = rootDir
+        reports.junitXml.destination = new File(buildDir, 'test-results/glassfishv31')
+        reports.html.destination = new File(buildDir, 'reports/tests/glassfishv31')
+
+        // Add GlassFish jars to the classpath
+        classpath = project.sourceSets.test.runtimeClasspath + project.configurations.testGlassFishv31Runtime
+    }
+
+    test {
+        it.dependsOn 'testTomcat7', 'testJetty8', 'testGlassFishv31'
+
+        excludes = [ 'org/granite/client/test/server/Test*' ]
+    }
+
     test {
         exclude 'org/granite/client/test/websocket/**'
     }
@@ -1561,6 +1651,18 @@ project('granite-client-java-advanced') {
 		
 		testCompile project(':granite-client-java').sourceSets.test.output
 	}
+}
+
+// UDP Integration for Gravity (Java client)
+project('granite-client-java-udp') {
+
+    description = 'GraniteDS UDP support client library (Java)'
+
+    dependencies {
+        compile project(':granite-server-udp')
+        compile project(':granite-client-java')
+        compile project(':granite-server-servlet3')
+    }
 }
 
 // JavaFX client library

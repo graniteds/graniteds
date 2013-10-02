@@ -35,6 +35,7 @@ public interface Configuration {
 
 	GraniteConfig getGraniteConfig();
 	ServicesConfig getServicesConfig();
-	
+
+    boolean isLoaded();
 	void load();
 }

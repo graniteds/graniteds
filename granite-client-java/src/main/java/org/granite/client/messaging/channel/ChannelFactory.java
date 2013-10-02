@@ -24,6 +24,7 @@ package org.granite.client.messaging.channel;
 import java.net.URI;
 import java.util.Set;
 
+import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.messaging.AliasRegistry;
 import org.granite.util.ContentType;
@@ -41,12 +42,16 @@ public interface ChannelFactory {
 	Object getContext();
 	void setContext(Object context);
 
+    void setDefaultChannelBuilder(ChannelBuilder channelBuilder);
+
 	Transport getRemotingTransport();
 	void setRemotingTransport(Transport remotingTransport);
 
-	Transport getMessagingTransport();
-	void setMessagingTransport(Transport messagingTransport);
-	
+    void setMessagingTransport(Transport messagingTransport);
+    void setMessagingTransport(String channelType, Transport messagingTransport);
+    Transport getMessagingTransport();
+	Transport getMessagingTransport(String channelType);
+
     void setAliasRegistry(AliasRegistry aliasRegistry);
 	void setScanPackageNames(Set<String> packageNames);
 	
@@ -57,9 +62,13 @@ public interface ChannelFactory {
 
 	RemotingChannel newRemotingChannel(String id, String uri);
 	RemotingChannel newRemotingChannel(String id, String uri, int maxConcurrentRequests);
-	MessagingChannel newMessagingChannel(String id, String uri);
+	MessagingChannel newMessagingChannel(String channelType, String id, String uri);
 
 	RemotingChannel newRemotingChannel(String id, URI uri);
 	RemotingChannel newRemotingChannel(String id, URI uri, int maxConcurrentRequests);
-	MessagingChannel newMessagingChannel(String id, URI uri);
+	MessagingChannel newMessagingChannel(String channelType, String id, URI uri);
+
+    RemotingChannel newRemotingChannel(String id, ServerApp serverApp);
+    RemotingChannel newRemotingChannel(String id, ServerApp serverApp, int maxConcurrentRequests);
+    MessagingChannel newMessagingChannel(String channelType, String id, ServerApp serverApp);
 }

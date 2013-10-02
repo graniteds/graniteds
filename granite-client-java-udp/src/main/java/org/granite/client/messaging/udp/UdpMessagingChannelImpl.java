@@ -47,7 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.granite.client.messaging.Consumer;
-import org.granite.client.messaging.channel.amf.AbstractAMFMessagingChannel;
+import org.granite.client.messaging.channel.amf.BaseAMFMessagingChannel;
 import org.granite.client.messaging.codec.MessagingCodec;
 import org.granite.client.messaging.messages.ResponseMessage;
 import org.granite.client.messaging.messages.responses.ResultMessage;
@@ -63,7 +63,7 @@ import flex.messaging.messages.Message;
 /**
  * @author Franck WOLFF
  */
-public class UdpMessagingChannelImpl extends AbstractAMFMessagingChannel implements UdpMessagingChannel, UpdMessageListener {
+public class UdpMessagingChannelImpl extends BaseAMFMessagingChannel implements UdpMessagingChannel, UpdMessageListener {
 
 	private static final Logger log = Logger.getLogger(UdpMessagingChannelImpl.class);
 

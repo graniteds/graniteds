@@ -26,13 +26,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.granite.client.messaging.channel.amf.JMFAMFMessagingChannel;
 import org.granite.client.messaging.channel.amf.JMFAMFRemotingChannel;
+import org.granite.client.messaging.codec.*;
 import org.granite.client.messaging.jmf.ClientSharedContext;
 import org.granite.client.messaging.jmf.DefaultClientSharedContext;
 import org.granite.client.messaging.jmf.ext.ClientEntityCodec;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.client.platform.Platform;
+import org.granite.messaging.amf.AMF0Message;
 import org.granite.messaging.jmf.DefaultCodecRegistry;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.reflect.Reflection;
@@ -125,12 +126,16 @@ public class JMFChannelFactory extends AbstractChannelFactory {
 	}
 
 	@Override
-	protected JMFAMFRemotingChannel createRemotingChannel(String id, URI uri, int maxConcurrentRequests) {
-		return new JMFAMFRemotingChannel(getRemotingTransport(), getSharedContext(), id, uri, maxConcurrentRequests);
+	protected Class<? extends RemotingChannel> getRemotingChannelClass() {
+        return JMFAMFRemotingChannel.class;
 	}
 	
 	@Override
-	protected JMFAMFMessagingChannel createMessagingChannel(String id, URI uri) {
-		return new JMFAMFMessagingChannel(getMessagingTransport(), getSharedContext(),id, uri);
-	}
+    protected <M> MessagingCodec<M> newMessagingCodec(Class<M> messageClass) {
+        if (messageClass == flex.messaging.messages.Message[].class)
+            return (MessagingCodec<M>)new JMFAMF3MessagingCodec(getSharedContext());
+        else if (messageClass == AMF0Message.class)
+            return (MessagingCodec<M>)new JMFAMF0MessagingCodec(getSharedContext());
+        throw new IllegalArgumentException("Unknown message class " + messageClass);
+    }
 }

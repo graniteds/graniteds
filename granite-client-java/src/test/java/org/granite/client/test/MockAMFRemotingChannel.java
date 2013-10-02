@@ -26,85 +26,21 @@ import java.net.URI;
 
 import org.granite.client.configuration.Configuration;
 import org.granite.client.messaging.channel.AsyncToken;
-import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.channel.RemotingChannel;
 import org.granite.client.messaging.channel.amf.AMFRemotingChannel;
+import org.granite.client.messaging.codec.MessagingCodec;
 import org.granite.client.messaging.transport.Transport;
-import org.granite.client.messaging.transport.TransportException;
-import org.granite.client.messaging.transport.TransportFuture;
 import org.granite.client.messaging.transport.TransportMessage;
-import org.granite.client.messaging.transport.TransportStatusHandler;
-import org.granite.client.messaging.transport.TransportStopListener;
+import org.granite.messaging.amf.AMF0Message;
 
 public class MockAMFRemotingChannel extends AMFRemotingChannel {
 
-	public MockAMFRemotingChannel(Configuration configuration) {
-		super(new MockTransport(), configuration, "test", URI.create("/temp"), RemotingChannel.DEFAULT_MAX_CONCURRENT_REQUESTS);
-	}
-	
+    public MockAMFRemotingChannel(Transport transport, MessagingCodec<AMF0Message> codec, String id, URI uri, int maxConcurrentRequests) {
+        super(transport, codec, id, uri, maxConcurrentRequests);
+    }
+
 	public TransportMessage createMessage(AsyncToken token) throws UnsupportedEncodingException {
 		return createTransportMessage(token);
 	}
 
-	private static class MockTransport implements Transport {
-
-		@Override
-		public void setContext(Object context) {
-		}
-
-		@Override
-		public Object getContext() {
-			return null;
-		}
-
-		@Override
-		public void setConfiguration(Configuration config) {
-		}
-
-		@Override
-		public Configuration getConfiguration() {
-			return null;
-		}
-
-		@Override
-		public boolean start() {
-			return false;
-		}
-
-		@Override
-		public boolean isStarted() {
-			return false;
-		}
-
-		@Override
-		public void stop() {
-		}
-
-		@Override
-		public void setStatusHandler(TransportStatusHandler statusHandler) {
-		}
-
-		@Override
-		public TransportStatusHandler getStatusHandler() {
-			return null;
-		}
-
-		@Override
-		public void addStopListener(TransportStopListener listener) {
-		}
-
-		@Override
-		public boolean removeStopListener(TransportStopListener listener) {
-			return false;
-		}
-
-		@Override
-		public TransportFuture send(Channel channel, TransportMessage message) throws TransportException {
-			return null;
-		}
-
-		@Override
-		public void poll(Channel channel, TransportMessage message) throws TransportException {
-		}
-	}
 }

@@ -12,7 +12,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="granite-client-java" exported="" />
-    <orderEntry type="module" module-name="granite-server-core" exported="" />
+    <orderEntry type="module" module-name="granite-server-core" />
+    <orderEntry type="library" exported="" name="org.springframework:spring-context:3.1.4.RELEASE" level="project" />
     <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>

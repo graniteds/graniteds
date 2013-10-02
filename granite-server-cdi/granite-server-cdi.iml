@@ -13,7 +13,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="granite-server-core" exported="" />
-    <orderEntry type="library" name="javax:javaee-api:6.0" level="project" />
     <orderEntry type="library" name="org.jboss.weld.servlet:weld-servlet:1.1.14.Final" level="project" />
     <orderEntry type="library" name="org.jboss.weld:weld-api:1.1.Final" level="project" />
     <orderEntry type="library" name="org.jboss.weld:weld-spi:1.1.Final" level="project" />
@@ -26,6 +25,7 @@
     <orderEntry type="library" scope="TEST" name="org.jboss.weld.se:weld-se-core:1.1.14.Final" level="project" />
     <orderEntry type="library" scope="TEST" name="javax.el:el-api:2.2" level="project" />
     <orderEntry type="library" scope="TEST" name="org.hsqldb:hsqldb:2.3.0" level="project" />
+    <orderEntry type="library" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
   </component>
 </module>
 

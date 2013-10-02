@@ -36,7 +36,6 @@ package org.granite.client.tide.server;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,19 +60,8 @@ import javax.annotation.PreDestroy;
 import javax.inject.Named;
 
 import org.granite.client.configuration.Configuration;
-import org.granite.client.messaging.ClientAliasRegistry;
-import org.granite.client.messaging.Consumer;
-import org.granite.client.messaging.Producer;
-import org.granite.client.messaging.RemoteService;
-import org.granite.client.messaging.ResultFaultIssuesResponseListener;
-import org.granite.client.messaging.TopicAgent;
-import org.granite.client.messaging.channel.AMFChannelFactory;
-import org.granite.client.messaging.channel.ChannelFactory;
-import org.granite.client.messaging.channel.JMFChannelFactory;
-import org.granite.client.messaging.channel.MessagingChannel;
-import org.granite.client.messaging.channel.RemotingChannel;
-import org.granite.client.messaging.channel.SessionAwareChannel;
-import org.granite.client.messaging.channel.UsernamePasswordCredentials;
+import org.granite.client.messaging.*;
+import org.granite.client.messaging.channel.*;
 import org.granite.client.messaging.codec.MessagingCodec.ClientType;
 import org.granite.client.messaging.events.Event;
 import org.granite.client.messaging.events.FaultEvent;
@@ -132,28 +120,14 @@ public class ServerSession implements ContextAware {
 	public static final String LOGIN = "org.granite.client.tide.login";
 	public static final String LOGOUT = "org.granite.client.tide.logout";
 	public static final String SESSION_EXPIRED = "org.granite.client.tide.sessionExpired";
-	
-	private static final String DEFAULT_REMOTING_URL_MAPPING = "/graniteamf/amf.txt";
-	private static final String DEFAULT_COMET_URL_MAPPING = "/gravityamf/amf.txt";
-	private static final String DEFAULT_WEBSOCKET_URL_MAPPING = "/websocketamf/amf";
-    
-    
-	@SuppressWarnings("unused")
-	private boolean confChanged = false;
+
+
+    private ServerApp serverApp = new ServerApp();
 	private ContentType contentType = ContentType.JMF_AMF;
 	private Class<? extends ChannelFactory> channelFactoryClass = null;
-	private boolean useWebSocket = true; // TODO remove...
     private Transport remotingTransport = null;
     private Transport messagingTransport = null;
-    private String protocol = "http";
-    private String contextRoot = "";
-    private String serverName = null;
-    private int serverPort = 0;
-    private String graniteUrlMapping = DEFAULT_REMOTING_URL_MAPPING;		// .txt for stupid bug in IE8
-    private String gravityUrlMapping = DEFAULT_COMET_URL_MAPPING;
-    
-    private URI graniteURI;
-	private URI gravityURI;
+    private Map<String, Transport> messagingTransports = new HashMap<String, Transport>();
     
 	private Context context = null;
     private TrackingContext trackingContext = new TrackingContext();
@@ -167,9 +141,10 @@ public class ServerSession implements ContextAware {
 		
 	private String destination = "server";
 	private Object appContext = null;
+    private ChannelBuilder defaultChannelBuilder = null;
 	private ChannelFactory channelFactory;
-    private RemotingChannel remotingChannel;
-	private MessagingChannel messagingChannel;
+    private RemotingChannel remotingChannel = null;
+    private Map<String, MessagingChannel> messagingChannelsByType = new HashMap<String, MessagingChannel>();
 	protected Map<String, RemoteService> remoteServices = new HashMap<String, RemoteService>();
 	protected Map<String, TopicAgent> topicAgents = new HashMap<String, TopicAgent>();
 	private Set<String> packageNames = new HashSet<String>();
@@ -180,33 +155,26 @@ public class ServerSession implements ContextAware {
     }
     
     public ServerSession(String contextRoot, String serverName, int serverPort) throws Exception {
-    	this(null, "http", contextRoot, serverName, serverPort, null, null);
+    	this(contextRoot, false, serverName, serverPort, null);
     }
 
-    public ServerSession(String contextRoot, String serverName, int serverPort, String graniteUrlMapping, String gravityUrlMapping) throws Exception {
-    	this(null, "http", contextRoot, serverName, serverPort, graniteUrlMapping, gravityUrlMapping);
-    }
-    
-    public ServerSession(String destination, String contextRoot, String serverName, int serverPort) throws Exception {
-    	this(destination, "http", contextRoot, serverName, serverPort, null, null);
+    public ServerSession(String contextRoot, boolean secure, String serverName, int serverPort) throws Exception {
+        this(contextRoot, secure, serverName, serverPort, null);
     }
 
-    public ServerSession(String destination, String contextRoot, String serverName, int serverPort, String graniteUrlMapping, String gravityUrlMapping) throws Exception {
-    	this(destination, "http", contextRoot, serverName, serverPort, graniteUrlMapping, gravityUrlMapping);
-    }
-    
-    public ServerSession(String destination, String protocol, String contextRoot, String serverName, int serverPort, String graniteUrlMapping, String gravityUrlMapping) throws Exception {
-        super();
+    public ServerSession(String contextRoot, Boolean secure, String serverName, int serverPort, String destination) throws Exception {
         if (destination != null)
         	this.destination = destination;
-        this.protocol = protocol;
-        this.contextRoot = contextRoot;
-        this.serverName = serverName;
-        this.serverPort = serverPort;
-        if (graniteUrlMapping != null)
-        	this.graniteUrlMapping = graniteUrlMapping;
-        if (gravityUrlMapping != null)
-        	this.gravityUrlMapping = gravityUrlMapping;
+        this.serverApp = new ServerApp(contextRoot, secure, serverName, serverPort);
+    }
+
+    public ServerSession(ServerApp serverApp) throws Exception {
+        this.serverApp = serverApp;
+    }
+
+    public ServerSession(ServerApp serverApp, String destination) throws Exception {
+        this.serverApp = serverApp;
+        this.destination = destination;
     }
 
     public ContentType getContentType() {
@@ -218,41 +186,19 @@ public class ServerSession implements ContextAware {
 			throw new NullPointerException("contentType cannot be null");
 		this.contentType = contentType;
 	}
+
+    public void setDefaultChannelBuilder(ChannelBuilder channelBuilder) {
+        this.defaultChannelBuilder = channelBuilder;
+    }
 	
 	public void setChannelFactoryClass(Class<? extends ChannelFactory> channelFactoryClass) {
 	    this.channelFactoryClass = channelFactoryClass;
 	}
 
-	public void setContextRoot(String contextRoot) {
-    	this.contextRoot = contextRoot;
-    	confChanged = true;
+	public void setServerApp(ServerApp serverApp) {
+        this.serverApp = serverApp;
     }
-    
-    public void setProtocol(String protocol) {
-    	this.protocol = protocol;
-    	confChanged = true;
-    }
-    
-    public void setServerName(String serverName) {
-    	this.serverName = serverName;
-    	confChanged = true;
-    }
-    
-    public void setServerPort(int serverPort) {
-    	this.serverPort = serverPort;
-    	confChanged = true;
-    }
-    
-    public void setGraniteUrlMapping(String graniteUrlMapping) {
-    	this.graniteUrlMapping = graniteUrlMapping;
-    	confChanged = true;
-    }
-    
-    public void setGravityUrlMapping(String gravityUrlMapping) {
-    	this.gravityUrlMapping = gravityUrlMapping;
-    	confChanged = true;
-    }
-    
+
 	public void setDestination(String destination) {
 		this.destination = destination;
 	}
@@ -279,13 +225,7 @@ public class ServerSession implements ContextAware {
 	public Status getStatus() {
 		return status;
 	}
-	
-	public void setUseWebSocket(boolean useWebSocket) {
-		this.useWebSocket = useWebSocket;
-		if (useWebSocket && DEFAULT_COMET_URL_MAPPING.equals(gravityUrlMapping))
-			this.gravityUrlMapping = DEFAULT_WEBSOCKET_URL_MAPPING;
-	}
-	
+
 	public void setRemotingTransport(Transport transport) {
 		this.remotingTransport = transport;
 	}
@@ -293,7 +233,11 @@ public class ServerSession implements ContextAware {
 	public void setMessagingTransport(Transport transport) {
 		this.messagingTransport = transport;
 	}
-	
+
+    public void setMessagingTransport(String channelType, Transport transport) {
+        this.messagingTransports.put(channelType, transport);
+    }
+
 	public void addRemoteAliasPackage(String packageName) {		
 		this.packageNames.add(packageName);
 	}
@@ -318,8 +262,7 @@ public class ServerSession implements ContextAware {
 	    
 	    ClientAliasRegistry aliasRegistry = new ClientAliasRegistry();
 	    aliasRegistry.registerAlias(InvalidValue.class);
-	    
-	    
+
 	    if (channelFactoryClass != null) {
 	        Constructor<? extends ChannelFactory> constructor = null;
 	        try {
@@ -347,28 +290,28 @@ public class ServerSession implements ContextAware {
         channelFactory.setAliasRegistry(aliasRegistry);
 		channelFactory.setScanPackageNames(packageNames);
 		
-		if (remotingTransport != null)
+		if (remotingTransport != null) {
 			channelFactory.setRemotingTransport(remotingTransport);
-		if (messagingTransport != null)
+            remotingTransport.setStatusHandler(statusHandler);
+        }
+		if (messagingTransport != null) {
 			channelFactory.setMessagingTransport(messagingTransport);
+            messagingTransport.setStatusHandler(statusHandler);
+        }
+        for (Map.Entry<String, Transport> me : messagingTransports.entrySet()) {
+            channelFactory.setMessagingTransport(me.getKey(), me.getValue());
+            me.getValue().setStatusHandler(statusHandler);
+        }
+        if (defaultChannelBuilder != null)
+            channelFactory.setDefaultChannelBuilder(defaultChannelBuilder);
 		
 		if (defaultTimeToLive >= 0)
 		    channelFactory.setDefaultTimeToLive(defaultTimeToLive);
 		
 		channelFactory.start();
-		
-		channelFactory.getRemotingTransport().setStatusHandler(statusHandler);
-		channelFactory.getMessagingTransport().setStatusHandler(statusHandler);
-		
-		graniteURI = new URI(protocol + "://" + this.serverName + (this.serverPort > 0 ? ":" + this.serverPort : "") + this.contextRoot + this.graniteUrlMapping);
-		remotingChannel = channelFactory.newRemotingChannel("graniteamf", graniteURI, 1);
-		
-		if (useWebSocket)
-			gravityURI = new URI(protocol.replace("http", "ws") + "://" + this.serverName + (this.serverPort > 0 ? ":" + this.serverPort : "") + this.contextRoot + this.gravityUrlMapping);
-		else
-			gravityURI = new URI(protocol + "://" + this.serverName + (this.serverPort > 0 ? ":" + this.serverPort : "") + this.contextRoot + this.gravityUrlMapping);
-		messagingChannel = channelFactory.newMessagingChannel("gravityamf", gravityURI);
-		
+
+        remotingChannel = channelFactory.newRemotingChannel("graniteamf", serverApp, 1);
+
 		sessionExpirationTimer = Executors.newSingleThreadScheduledExecutor();
 	}
 	
@@ -391,7 +334,7 @@ public class ServerSession implements ContextAware {
 			}
 	            
             remotingChannel = null;
-			messagingChannel = null;
+			messagingChannelsByType.clear();
 		}
 	}
 	
@@ -444,9 +387,19 @@ public class ServerSession implements ContextAware {
 		return remoteService;
 	}
 
-	public synchronized Consumer getConsumer(String destination, String topic) {
+    public MessagingChannel getMessagingChannel(String channelType) {
+        MessagingChannel messagingChannel = messagingChannelsByType.get(channelType);
+        if (messagingChannel != null)
+            return messagingChannel;
+
+        messagingChannel = channelFactory.newMessagingChannel(channelType + "amf", channelType, serverApp);
+        return messagingChannel;
+    }
+
+	public synchronized Consumer getConsumer(String channelType, String destination, String topic) {
+        MessagingChannel messagingChannel = getMessagingChannel(channelType);
 		if (messagingChannel == null)
-			throw new IllegalStateException("Channel not defined for server session");
+			throw new IllegalStateException("Channel not defined in server session for type " + channelType + "");
 		
 		String key = destination + '@' + topic;
 		TopicAgent consumer = topicAgents.get(key);
@@ -457,8 +410,9 @@ public class ServerSession implements ContextAware {
 		return consumer instanceof Consumer ? (Consumer)consumer : null;
 	}
 
-	public synchronized Producer getProducer(String destination, String topic) {
-		if (messagingChannel == null)
+	public synchronized Producer getProducer(String channelType, String destination, String topic) {
+        MessagingChannel messagingChannel = getMessagingChannel(channelType);
+        if (messagingChannel == null)
 			throw new IllegalStateException("Channel not defined for server session");
 		
 		String key = destination + '@' + topic;
@@ -480,8 +434,8 @@ public class ServerSession implements ContextAware {
 	
 	public void restoreSessionId(String sessionId) {
 		this.sessionId = sessionId;
-		
-		if (messagingChannel != null)
+
+        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
 			messagingChannel.setSessionId(sessionId);
 	}
 	
@@ -534,8 +488,10 @@ public class ServerSession implements ContextAware {
 		if (sessionId == null || !sessionId.equals(oldSessionId))
 		    log.info("Received new sessionId %s", sessionId);
 		
-		if (messagingChannel != null && (oldSessionId != null || sessionId != null))
-			((SessionAwareChannel)messagingChannel).setSessionId(sessionId);
+		if (oldSessionId != null || sessionId != null) {
+            for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+			    messagingChannel.setSessionId(sessionId);
+        }
 		
 		isFirstCall = false;
 		status.setConnected(true);
@@ -557,8 +513,10 @@ public class ServerSession implements ContextAware {
         if (sessionId == null || !sessionId.equals(oldSessionId))
             log.info("Received new sessionId %s", sessionId);
         
-		if (messagingChannel != null && (oldSessionId != null || sessionId != null))
-			((SessionAwareChannel)messagingChannel).setSessionId(sessionId);
+		if (oldSessionId != null || sessionId != null) {
+            for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+                messagingChannel.setSessionId(sessionId);
+        }
 		
         if (emsg != null && emsg.getCode().equals(Code.SERVER_CALL_FAILED))
         	status.setConnected(false);            
@@ -606,7 +564,8 @@ public class ServerSession implements ContextAware {
 	 */
     public void login(String username, String password) {
     	remotingChannel.setCredentials(new UsernamePasswordCredentials(username, password));
-    	messagingChannel.setCredentials(new UsernamePasswordCredentials(username, password));
+        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+    	    messagingChannel.setCredentials(new UsernamePasswordCredentials(username, password));
     }
 
 	/**
@@ -618,7 +577,8 @@ public class ServerSession implements ContextAware {
 	 */
     public void login(String username, String password, Charset charset) {
     	remotingChannel.setCredentials(new UsernamePasswordCredentials(username, password, charset));
-    	messagingChannel.setCredentials(new UsernamePasswordCredentials(username, password, charset));
+        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+    	    messagingChannel.setCredentials(new UsernamePasswordCredentials(username, password, charset));
     }
 
     public void afterLogin() {
@@ -633,8 +593,8 @@ public class ServerSession implements ContextAware {
 		sessionId = null;
 		if (remotingChannel instanceof SessionAwareChannel)
 		    ((SessionAwareChannel)remotingChannel).setSessionId(null);
-        if (messagingChannel != remotingChannel)
-            ((SessionAwareChannel)messagingChannel).setSessionId(null);
+        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+            messagingChannel.setSessionId(null);
 		
 		logoutState.sessionExpired();
 		
@@ -648,8 +608,8 @@ public class ServerSession implements ContextAware {
         sessionId = null;
         if (remotingChannel instanceof SessionAwareChannel)
             ((SessionAwareChannel)remotingChannel).setSessionId(null);
-        if (messagingChannel != remotingChannel)
-            ((SessionAwareChannel)messagingChannel).setSessionId(null);
+        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+            messagingChannel.setSessionId(null);
     	
     	logoutState.loggedOut(event);
     }
@@ -749,9 +709,11 @@ public class ServerSession implements ContextAware {
 				}
 			});
 		}
-		
-		if (messagingChannel != remotingChannel && messagingChannel.isAuthenticated())
-			messagingChannel.logout();
+
+        for (MessagingChannel messagingChannel : messagingChannelsByType.values()) {
+		    if (messagingChannel != remotingChannel && messagingChannel.isAuthenticated())
+			    messagingChannel.logout();
+        }
 		
 		isFirstCall = true;
 	}
@@ -1046,10 +1008,10 @@ public class ServerSession implements ContextAware {
 	    
 	    if (channelFactory != null)
 	        channelFactory.setDefaultTimeToLive(timeToLive);
-	    
-	    if (messagingChannel != null)
-	        messagingChannel.setDefaultTimeToLive(timeToLive);
-	    
+
+        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+            messagingChannel.setDefaultTimeToLive(timeToLive);
+
 	    if (remotingChannel != null)
 	        remotingChannel.setDefaultTimeToLive(timeToLive);
 	}

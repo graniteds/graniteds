@@ -21,6 +21,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module" module-name="granite-server-core" />
     <orderEntry type="module" module-name="granite-client-java" />
     <orderEntry type="module" module-name="granite-client-java-advanced" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
@@ -52,7 +53,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="granite-server-core" scope="TEST" />
     <orderEntry type="module" module-name="granite-server-hibernate" scope="TEST" />
   </component>
 </module>

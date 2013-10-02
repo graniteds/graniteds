@@ -69,6 +69,7 @@ public class DataObserver implements ContextAware, NameAware {
     private Context context;
     private ServerSession serverSession = null;
     private EntityManager entityManager = null;
+    private String channelType = "long-polling";
     private String destination = null;
     
 	private Consumer consumer = null;
@@ -82,7 +83,13 @@ public class DataObserver implements ContextAware, NameAware {
 		this.serverSession = serverSession;
 		this.entityManager = serverSession.getContext().getEntityManager();
 	}
-    
+
+    public DataObserver(String channelType, ServerSession serverSession) {
+        this.channelType = channelType;
+        this.serverSession = serverSession;
+        this.entityManager = serverSession.getContext().getEntityManager();
+    }
+
 	public DataObserver(ServerSession serverSession, EntityManager entityManager) {
 		this.serverSession = serverSession;
 		this.entityManager = entityManager;
@@ -93,7 +100,14 @@ public class DataObserver implements ContextAware, NameAware {
 		this.serverSession = serverSession;
 		this.entityManager = entityManager;
 	}
-	
+
+    public DataObserver(String destination, String channelType, ServerSession serverSession, EntityManager entityManager) {
+        this.destination = destination;
+        this.channelType = channelType;
+        this.serverSession = serverSession;
+        this.entityManager = entityManager;
+    }
+
 	public void setContext(Context context) {
 		this.context = context;
 	}
@@ -105,7 +119,7 @@ public class DataObserver implements ContextAware, NameAware {
 	
 	@PostConstruct
 	public void start() {
-        consumer = serverSession.getConsumer(destination, DATA_OBSERVER_TOPIC_NAME);
+        consumer = serverSession.getConsumer(channelType, destination, DATA_OBSERVER_TOPIC_NAME);
 	}	
 	
 	@PreDestroy
@@ -184,14 +198,14 @@ public class DataObserver implements ContextAware, NameAware {
 	
 	private TopicMessageListener messageListener = new TopicMessageListenerImpl();
 	
-	/**
-	 * 	Message handler that merges data from the JMS topic in the current context.<br/>
-	 *  Could be overriden to provide custom behaviour.
-	 * 
-	 *  @param event message event from the Consumer
-	 */
     public class TopicMessageListenerImpl implements TopicMessageListener {
-		@Override
+        /**
+         * 	Message handler that merges data from the JMS topic in the current context.<br/>
+         *  Could be overriden to provide custom behaviour.
+         *
+         *  @param event message event from the Consumer
+         */
+        @Override
 		public void onMessage(TopicMessageEvent event) {
 	        log.debug("Destination %s message event received %s", destination, event.toString());
 	        

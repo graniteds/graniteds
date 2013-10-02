@@ -57,6 +57,12 @@ public class AMFRemotingChannel extends AbstractAMFChannel implements RemotingCh
 		this.codec = new AMF0MessagingCodec(configuration);
 	}
 
+    public AMFRemotingChannel(Transport transport, MessagingCodec<AMF0Message> codec, String id, URI uri, int maxConcurrentRequests) {
+        super(transport, id, uri, maxConcurrentRequests);
+
+        this.codec = codec;
+    }
+
 	@Override
 	protected TransportMessage createTransportMessage(AsyncToken token) throws UnsupportedEncodingException {
 		AMF0Message amf0Message = new AMF0Message();

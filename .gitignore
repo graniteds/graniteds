@@ -17,3 +17,4 @@ classes*
 .FlexUnitSettings
 .externalToolBuilders/
 .DS_Store
+*.log

@@ -64,6 +64,10 @@ public class SimpleConfiguration implements Configuration {
 	public void setGraniteConfigPath(String graniteConfigPath) {
 		this.graniteConfigPath = graniteConfigPath;
 	}
+
+    public boolean isLoaded() {
+        return graniteConfig != null;
+    }
 	
 	public void load() {
 		InputStream is = null;

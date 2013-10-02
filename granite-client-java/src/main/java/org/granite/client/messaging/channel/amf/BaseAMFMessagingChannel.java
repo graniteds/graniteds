@@ -73,7 +73,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	protected volatile long reconnectMaxAttempts = 60L;
 	protected volatile long reconnectAttempts = 0L;
 
-	protected BaseAMFMessagingChannel(MessagingCodec<Message[]> codec, Transport transport, String id, URI uri) {
+	public BaseAMFMessagingChannel(MessagingCodec<Message[]> codec, Transport transport, String id, URI uri) {
 		super(transport, id, uri, 1);
 		
 		this.codec = codec;
