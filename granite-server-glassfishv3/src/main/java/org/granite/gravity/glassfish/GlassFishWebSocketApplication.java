@@ -49,6 +49,7 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 	private final ServletContext servletContext;
 	private final Gravity gravity;
 	private final Pattern mapping;
+    private String protocol;
 
 
 	public GlassFishWebSocketApplication(ServletContext servletContext, Gravity gravity, String mapping) {
@@ -58,9 +59,13 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 	}
 
 	@Override
-	public List<String> getSupportedProtocols(List<String> subProtocol) {
-		if (subProtocol.contains("org.granite.gravity"))
-			return Collections.singletonList("org.granite.gravity");
+	public List<String> getSupportedProtocols(List<String> subProtocols) {
+        for (String subProtocol : subProtocols) {
+		    if (subProtocol.startsWith("org.granite.gravity")) {
+                this.protocol = subProtocol;
+			    return Collections.singletonList(subProtocol);
+            }
+        }
 		return Collections.emptyList();
 	}
 
@@ -76,13 +81,15 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 			connectMessageId = request.getParameters().getParameter("connectId");
 		String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameters().getParameter("GDSClientId");
 		String sessionId = null;
-		
-		for (int i = 0; i < request.getCookies().getCookieCount(); i++) {
-			if ("JSESSIONID".equals(request.getCookies().getCookie(i).getName())) {
-				sessionId = request.getCookies().getCookie(i).getValue().getString();
-				break;
-			}
-		}
+
+        if (request.getCookies() != null) {
+            for (int i = 0; i < request.getCookies().getCookieCount(); i++) {
+                if ("JSESSIONID".equals(request.getCookies().getCookie(i).getName())) {
+                    sessionId = request.getCookies().getCookie(i).getValue().getString();
+                    break;
+                }
+            }
+        }
 		String clientType = null;
 		if (request.getHeader("GDSClientType") != null)
 			clientType = request.getHeader("GDSClientType");
@@ -124,7 +131,11 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 			
 			GlassFishWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
 
-			ContentType contentType = ContentType.forMimeType(request.getContentType());
+            String ctype = request.getContentType();
+            if (ctype == null && protocol.length() > "org.granite.gravity".length())
+                ctype = "application/x-" + protocol.substring("org.granite.gravity.".length());
+
+			ContentType contentType = ContentType.forMimeType(ctype);
 			if (contentType == null) {
 				log.warn("No (or unsupported) content type in request: %s", request.getContentType());
 				contentType = ContentType.AMF;

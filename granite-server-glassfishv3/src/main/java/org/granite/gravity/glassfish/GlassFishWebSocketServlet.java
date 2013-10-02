@@ -58,7 +58,13 @@ public class GlassFishWebSocketServlet extends HttpServlet {
 			mapping = sr.getMappings().iterator().next(); 
 		}
 		app = new GlassFishWebSocketApplication(getServletContext(), gravity, mapping);
-        WebSocketEngine.getEngine().register(app);
+		try {
+			WebSocketEngine.getEngine().register(getServletContext().getContextPath(), mapping, app);
+		}
+		catch (NoSuchMethodError e) {
+			// Deprecated since Grizzly 1.5.?
+			WebSocketEngine.getEngine().register(app);
+		}
 	}
 
     @Override

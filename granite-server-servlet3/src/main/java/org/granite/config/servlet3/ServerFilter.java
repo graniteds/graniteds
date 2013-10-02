@@ -53,6 +53,8 @@ public @interface ServerFilter {
 	Class<? extends ConfigProvider> configProviderClass() default ConfigProvider.class;
 	
 	Class<? extends ServiceFactory> factoryClass() default ServiceFactory.class;
+
+    String factoryClassName() default "";
 	
 	Class<? extends SecurityService> securityServiceClass() default SecurityService.class;
 	

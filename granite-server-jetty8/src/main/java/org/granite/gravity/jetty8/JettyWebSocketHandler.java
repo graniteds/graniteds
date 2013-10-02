@@ -48,7 +48,7 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 	}
 	
     public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) {
-    	if (!"org.granite.gravity".equals(protocol))
+    	if (!protocol.startsWith("org.granite.gravity"))
     		return null;
     	
 		Gravity gravity = GravityManager.getGravity(servletContext);
@@ -66,7 +66,7 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 		        
 				sessionId = session.getId();
 			}
-			else {
+			else if (request.getCookies() != null) {
 				for (int i = 0; i < request.getCookies().length; i++) {
 					if ("JSESSIONID".equals(request.getCookies()[i].getName())) {
 						sessionId = request.getCookies()[i].getValue();
@@ -76,6 +76,10 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 		        ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), 
 		        		this.servletContext, sessionId, clientType);
 			}
+            else {
+                ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
+                        this.servletContext, (String)null, clientType);
+            }
 			
 			log.info("WebSocket connection started %s clientId %s sessionId %s", protocol, clientId, sessionId);
 			
@@ -89,7 +93,11 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 			
 			JettyWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
 
-			ContentType contentType = ContentType.forMimeType(request.getContentType());
+            String ctype = request.getContentType();
+            if (ctype == null && protocol.length() > "org.granite.gravity".length())
+                ctype = "application/x-" + protocol.substring("org.granite.gravity.".length());
+
+			ContentType contentType = ContentType.forMimeType(ctype);
 			if (contentType == null) {
 				log.warn("No (or unsupported) content type in request: %s", request.getContentType());
 				contentType = ContentType.AMF;

@@ -253,16 +253,12 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 			
 			// Setup serialization context (thread local)
 			Gravity gravity = getGravity();
-	        GraniteContext context = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId, clientType);
-	        
-	        os = new ByteArrayOutputStream(500);
-	        ObjectOutput amf3Serializer = context.getGraniteConfig().newAMF3Serializer(os);
-	        
-	        log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
-	        
-	        amf3Serializer.writeObject(messagesArray);
-	        
-	        connection.sendMessage(os.toByteArray(), 0, os.size());
+            ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId, clientType);
+
+            log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
+
+            byte[] msg = serialize(gravity, messagesArray);
+	        connection.sendMessage(msg, 0, msg.length);
 	        
 	        return true; // Messages were delivered
 		}

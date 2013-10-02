@@ -281,22 +281,17 @@ public class TomcatWebSocketChannel extends AbstractChannel {
 			
 			// Setup serialization context (thread local)
 			Gravity gravity = getGravity();
-	        GraniteContext context = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId, clientType);
-	        
-	        os = new ByteArrayOutputStream(500);
-	        ObjectOutput amf3Serializer = context.getGraniteConfig().newAMF3Serializer(os);
-	        
+            ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId, clientType);
+
 	        log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
-	        
-	        amf3Serializer.writeObject(messagesArray);
-	        
-	        connection.writeBinaryMessage(ByteBuffer.wrap(os.toByteArray()));
-	        
+
+	        connection.writeBinaryMessage(ByteBuffer.wrap(serialize(gravity, messagesArray)));
+
 	        return true; // Messages were delivered
 		}
 		catch (IOException e) {
 			log.warn(e, "Could not send messages to channel: %s (retrying later)", this);
-			
+
 			GravityConfig gravityConfig = getGravity().getGravityConfig();
 			if (gravityConfig.isRetryOnError()) {
 				receivedQueueLock.lock();

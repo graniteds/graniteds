@@ -237,18 +237,13 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 			
 			// Setup serialization context (thread local)
 			Gravity gravity = getGravity();
-	        GraniteContext context = SimpleGraniteContext.createThreadInstance(
+	        SimpleGraniteContext.createThreadInstance(
 	            gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>(), clientType
 	        );
 	        
-	        os = new ByteArrayOutputStream(500);
-	        ObjectOutput amf3Serializer = context.getGraniteConfig().newAMF3Serializer(os);
-	        
-	        log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
-	        
-	        amf3Serializer.writeObject(messagesArray);
-	        
-        	websocket.send(os.toByteArray());
+            log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
+
+        	websocket.send(serialize(gravity, messagesArray));
 	        
 	        return true; // Messages were delivered, http context isn't valid anymore.
 		}

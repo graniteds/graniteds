@@ -38,6 +38,14 @@ public abstract class AbstractTransport<C> implements Transport {
 	private volatile TransportStatusHandler statusHandler = new LogEngineStatusHandler();
 	
 	protected final List<TransportStopListener> stopListeners = new ArrayList<TransportStopListener>();
+
+
+    public AbstractTransport() {
+    }
+
+    public AbstractTransport(C context) {
+        this.context = context;
+    }
 	
 	@SuppressWarnings("unchecked")
 	@Override

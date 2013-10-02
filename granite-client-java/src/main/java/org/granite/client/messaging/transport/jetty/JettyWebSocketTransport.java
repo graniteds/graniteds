@@ -163,11 +163,11 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> implement
 			WebSocketClient webSocketClient = webSocketClientFactory.newWebSocketClient();
 			webSocketClient.setMaxIdleTime(maxIdleTime);
 			webSocketClient.setMaxTextMessageSize(1024);
-			webSocketClient.setProtocol("org.granite.gravity");
-			
+			webSocketClient.setProtocol("org.granite.gravity." + transportMessage.getContentType().substring("application/x-".length()));
+
 			if (transportMessage.getSessionId() != null)
 				webSocketClient.getCookies().put("JSESSIONID", transportMessage.getSessionId());
-			
+
 			String u = uri.toString();
 			u += "?connectId=" + transportMessage.getId() + "&GDSClientType=" + transportMessage.getClientType();
 			if (transportMessage.getClientId() != null)

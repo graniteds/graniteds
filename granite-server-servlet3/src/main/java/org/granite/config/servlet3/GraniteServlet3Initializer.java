@@ -186,6 +186,14 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	        
 	        if (!serverFilter.factoryClass().equals(ServiceFactory.class))
 	        	factoryClass = serverFilter.factoryClass();
+            else if (!serverFilter.factoryClassName().equals("")) {
+                try {
+                    factoryClass = TypeUtil.forName(serverFilter.factoryClassName(), ServiceFactory.class);
+                }
+                catch (ClassNotFoundException e) {
+                    throw new ServletException("Could not find service factory class " + serverFilter.factoryClassName(), e);
+                }
+            }
 	        
 	        if (factoryClass == null) {
 	        	factoryClass = SimpleServiceFactory.class;
@@ -338,11 +346,12 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	    		try {
 	    			// Call by reflection because of JDK 1.4
 	    			Method m = servletContext.getClass().getMethod("getContextPath");
+                    m.setAccessible(true);
 	    			String contextPath = (String)m.invoke(servletContext);
 	    			lookup = lookup.replace("{context.root}", contextPath.substring(1));
 	    		}
 	    		catch (Exception e) {
-	    			log.error(e, "Could not get context path, please define lookup manually in @FlexFilter");
+	    			log.error(e, "Could not get context path, please define lookup manually in @ServerFilter");
 	    		}
 	    	}
 	    	factoryProperties.put("lookup", lookup);
