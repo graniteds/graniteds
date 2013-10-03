@@ -134,27 +134,29 @@ public class TestMessaging {
 
     @Test
     public void testChatTextSingleConsumer() throws Exception {
-        CyclicBarrier barrier = new CyclicBarrier(2);
+        CyclicBarrier[] barriers = new CyclicBarrier[3];
+        barriers[0] = new CyclicBarrier(2);
+        barriers[1] = new CyclicBarrier(2);
+        barriers[2] = new CyclicBarrier(2);
 
         String[] messages = new String[MSG_COUNT];
         for (int i = 0; i < MSG_COUNT; i++)
             messages[i] = UUID.randomUUID().toString();
 
-        ConsumerThread consumer = new ConsumerThread("C", messages, barrier);
+        ConsumerThread consumer = new ConsumerThread("C", messages, barriers);
         consumer.start();
 
-        ChannelFactory channelFactory = buildChannelFactory();
-        MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP_APP);
-        Producer producer = new Producer(channel, "chat", "chat");
-
         try {
-            barrier.await(5, TimeUnit.SECONDS);
+            barriers[0].await(5, TimeUnit.SECONDS);
         }
         catch (TimeoutException e) {
             log.error(e, "Consumer subscription timeout");
             Assert.fail("Consumer subscription failed");
         }
-        barrier.reset();
+
+        ChannelFactory channelFactory = buildChannelFactory();
+        MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP_APP);
+        Producer producer = new Producer(channel, "chat", "chat");
 
         for (int i = 0; i < MSG_COUNT; i++) {
             messages[i] = UUID.randomUUID().toString();
@@ -162,16 +164,15 @@ public class TestMessaging {
         }
 
         try {
-            barrier.await(5, TimeUnit.SECONDS);
+            barriers[1].await(5, TimeUnit.SECONDS);
         }
         catch (TimeoutException e) {
             log.error(e, "Consumer reception timeout");
             Assert.fail("Consumer receive messages failed");
         }
-        barrier.reset();
 
         try {
-            barrier.await(5, TimeUnit.SECONDS);
+            barriers[2].await(5, TimeUnit.SECONDS);
         }
         catch (TimeoutException e) {
             log.error(e, "Consumer unsubscription timeout");
@@ -183,30 +184,32 @@ public class TestMessaging {
 
     @Test
     public void testChatTextMultiConsumer() throws Exception {
-        CyclicBarrier barrier = new CyclicBarrier(CONSUMER_COUNT+1);
+        CyclicBarrier[] barriers = new CyclicBarrier[3];
+        barriers[0] = new CyclicBarrier(CONSUMER_COUNT+1);
+        barriers[1] = new CyclicBarrier(CONSUMER_COUNT+1);
+        barriers[2] = new CyclicBarrier(CONSUMER_COUNT+1);
 
         String[] messages = new String[MSG_COUNT];
         for (int i = 0; i < MSG_COUNT; i++)
             messages[i] = UUID.randomUUID().toString();
 
         for (int i = 0; i < CONSUMER_COUNT; i++) {
-            ConsumerThread consumer = new ConsumerThread("C" + (i+1), messages, barrier);
+            ConsumerThread consumer = new ConsumerThread("C" + (i+1), messages, barriers);
             consumer.start();
         }
 
-        ChannelFactory channelFactory = buildChannelFactory();
-        MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP_APP);
-        Producer producer = new Producer(channel, "chat", "chat");
-
         try {
-            barrier.await(10, TimeUnit.SECONDS);
+            barriers[0].await(10, TimeUnit.SECONDS);
             log.info("All consumers subscribed");
         }
         catch (TimeoutException e) {
             log.error(e, "Consumers subscription timeout");
             Assert.fail("Consumers not subscribed");
         }
-        barrier.reset();
+
+        ChannelFactory channelFactory = buildChannelFactory();
+        MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP_APP);
+        Producer producer = new Producer(channel, "chat", "chat");
 
         for (int i = 0; i < MSG_COUNT; i++) {
             messages[i] = UUID.randomUUID().toString();
@@ -215,17 +218,16 @@ public class TestMessaging {
         }
 
         try {
-            barrier.await(10, TimeUnit.SECONDS);
+            barriers[1].await(10, TimeUnit.SECONDS);
             log.info("All messages received");
         }
         catch (TimeoutException e) {
             log.error(e, "Consumers reception timeout");
             Assert.fail("Consumers receive messages failed");
         }
-        barrier.reset();
 
         try {
-            barrier.await(10, TimeUnit.SECONDS);
+            barriers[2].await(10, TimeUnit.SECONDS);
             log.info("All consumers unsubscribed");
         }
         catch (TimeoutException e) {
@@ -240,15 +242,15 @@ public class TestMessaging {
         private String id;
         private List<String> messages;
         private List<String> received = new ArrayList<String>();
-        private CyclicBarrier barrier;
+        private CyclicBarrier[] barriers;
         private Thread thread = new Thread(this);
         private ChannelFactory channelFactory;
         private Consumer consumer;
 
-        public ConsumerThread(String id, String[] messages, CyclicBarrier barrier) {
+        public ConsumerThread(String id, String[] messages, CyclicBarrier[] barriers) {
             this.id = id;
             this.messages = Arrays.asList(messages);
-            this.barrier = barrier;
+            this.barriers = barriers;
         }
 
         public void start() {
@@ -269,7 +271,7 @@ public class TestMessaging {
                 public void onResult(ResultEvent event) {
                     log.info("Consumer " + id + ": subscribed " + event.getResult());
                     try {
-                        barrier.await();
+                        barriers[0].await();
                     }
                     catch (Exception e) {
                     }
@@ -299,7 +301,7 @@ public class TestMessaging {
 
                     if (received.size() == messages.size() && received.containsAll(messages)) {
                         try {
-                            barrier.await();
+                            barriers[1].await();
                         }
                         catch (Exception e) {
                             Thread.currentThread().interrupt();
@@ -310,7 +312,7 @@ public class TestMessaging {
                             public void onResult(ResultEvent event) {
                                 log.info("Consumer " + id + ": unsubscribed " + event.getResult());
                                 try {
-                                    barrier.await();
+                                    barriers[2].await();
                                 }
                                 catch (Exception e) {
                                 }
