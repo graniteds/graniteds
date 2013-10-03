@@ -144,6 +144,7 @@ public class TestMessagingChat {
 
         try {
             barriers[0].await(5, TimeUnit.SECONDS);
+            log.info("Consumer subscribed");
         }
         catch (TimeoutException e) {
             log.error(e, "Consumer subscription timeout");
@@ -161,6 +162,7 @@ public class TestMessagingChat {
 
         try {
             barriers[1].await(5, TimeUnit.SECONDS);
+            log.info("Consumer received messaged");
         }
         catch (TimeoutException e) {
             log.error(e, "Consumer reception timeout");
@@ -169,6 +171,7 @@ public class TestMessagingChat {
 
         try {
             barriers[2].await(5, TimeUnit.SECONDS);
+            log.info("Consumer unsubscribed and stopped");
         }
         catch (TimeoutException e) {
             log.error(e, "Consumer unsubscription timeout");
@@ -224,11 +227,11 @@ public class TestMessagingChat {
 
         try {
             barriers[2].await(10, TimeUnit.SECONDS);
-            log.info("All consumers unsubscribed");
+            log.info("All consumers unsubscribed and stopped");
         }
         catch (TimeoutException e) {
             log.error(e, "Consumers unsubscription timeout");
-            Assert.fail("Consumers unsubscription failed");
+            Assert.fail("Consumers unsubscription/stop failed");
         }
     }
 
@@ -282,6 +285,11 @@ public class TestMessagingChat {
             try {
                 waitToStop.await(60, TimeUnit.SECONDS);
                 channelFactory.stop();
+                try {
+                    barriers[2].await();
+                }
+                catch (Exception e) {
+                }
             }
             catch (Exception e) {
                 log.error("Consumer did not terminate correctly", e);
@@ -308,11 +316,6 @@ public class TestMessagingChat {
                             @Override
                             public void onResult(ResultEvent event) {
                                 log.info("Consumer " + id + ": unsubscribed " + event.getResult());
-                                try {
-                                    barriers[2].await();
-                                }
-                                catch (Exception e) {
-                                }
                                 waitToStop.countDown();
                             }
 
