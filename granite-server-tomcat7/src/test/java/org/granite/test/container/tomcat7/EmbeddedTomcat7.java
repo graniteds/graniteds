@@ -30,6 +30,9 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import java.io.File;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by william on 30/09/13.
@@ -78,9 +81,14 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
         serverThread = new Thread(this);
     }
 
+    private CountDownLatch waitForStart = new CountDownLatch(1);
+
     public void run() {
         try {
             tomcat.start();
+
+            waitForStart.countDown();
+
             tomcat.getServer().await();
         }
         catch (Exception e) {
@@ -91,6 +99,12 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
     @Override
     public void start() {
         serverThread.start();
+        try {
+            waitForStart.await(10, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            throw new RuntimeException("Could not start tomcat", e);
+        }
     }
 
     @Override

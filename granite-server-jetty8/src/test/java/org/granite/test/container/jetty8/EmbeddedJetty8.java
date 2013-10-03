@@ -100,7 +100,7 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
             waitForStart.await(10, TimeUnit.SECONDS);
         }
         catch (InterruptedException e) {
-            throw new RuntimeException("Could not start", e);
+            throw new RuntimeException("Could not start jetty", e);
         }
     }
 
