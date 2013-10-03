@@ -19,17 +19,37 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.client.test.server;
+package org.granite.client.test.server.feed;
 
-import org.granite.config.servlet3.ServerFilter;
-import org.granite.gravity.config.servlet3.MessagingDestination;
+import org.granite.messaging.amf.io.util.externalizer.DefaultExternalizer;
+import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedBean;
+
+import java.io.Serializable;
 
 /**
  * Created by william on 30/09/13.
  */
-@ServerFilter
-public class ChatApplication {
+@ExternalizedBean(type=DefaultExternalizer.class)
+public class Info implements Serializable {
 
-    @MessagingDestination(noLocal=true)
-    private String chat;
+    private static final long serialVersionUID = 1L;
+
+    private String name;
+    private double value;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
 }

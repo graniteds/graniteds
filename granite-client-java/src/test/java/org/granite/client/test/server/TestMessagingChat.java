@@ -31,6 +31,7 @@ import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TopicMessageEvent;
 import org.granite.client.messaging.messages.ResponseMessage;
 import org.granite.client.messaging.transport.jetty.JettyWebSocketTransport;
+import org.granite.client.test.server.chat.ChatApplication;
 import org.granite.test.container.Utils;
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.logging.Logger;
@@ -56,9 +57,9 @@ import java.util.concurrent.TimeoutException;
  * Created by william on 30/09/13.
  */
 @RunWith(Parameterized.class)
-public class TestMessaging {
+public class TestMessagingChat {
 
-    private static final Logger log = Logger.getLogger(TestMessaging.class);
+    private static final Logger log = Logger.getLogger(TestMessagingChat.class);
 
     private static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
 
@@ -83,7 +84,7 @@ public class TestMessaging {
 
     private static final ServerApp SERVER_APP_APP = new ServerApp("/chat", false, "localhost", 8787);
 
-    public TestMessaging(String containerClassName, ContentType contentType, String channelType) {
+    public TestMessagingChat(String containerClassName, ContentType contentType, String channelType) {
         this.containerClassName = containerClassName;
         this.contentType = contentType;
         this.channelType = channelType;
@@ -91,11 +92,6 @@ public class TestMessaging {
 
     @BeforeClass
     public static void startContainer() throws Exception {
-        // Show classpath
-//        URL[] urls = ((URLClassLoader)Thread.currentThread().getContextClassLoader()).getURLs();
-//        for (URL url : urls)
-//            System.out.println("cp: " + url.getFile());
-
         // Build a chat server application
         WebArchive war = ShrinkWrap.create(WebArchive.class, "chat.war");
         war.addClass(ChatApplication.class);
@@ -300,6 +296,7 @@ public class TestMessaging {
                     received.add((String)event.getData());
 
                     if (received.size() == messages.size() && received.containsAll(messages)) {
+                        log.info("Consumer " + id + ": received all messages");
                         try {
                             barriers[1].await();
                         }

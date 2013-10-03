@@ -19,7 +19,7 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.client.test.server;
+package org.granite.client.test.server.data;
 
 import javax.ejb.Stateless;
 import javax.persistence.*;

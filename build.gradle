@@ -1683,7 +1683,7 @@ project('granite-client-java-udp') {
     task testTomcat7(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-tomcat7:jar', ':granite-server-udp:jar' ]) {
         systemProperties = [ 'container.className' : 'org.granite.test.container.tomcat7.EmbeddedTomcat7' ]
 
-        includes = [ 'org/granite/client/test/udp/server/TestMessaging*' ]
+        includes = [ 'org/granite/client/test/udp/server/TestUdpMessaging*' ]
 
         workingDir = rootDir
         reports.junitXml.destination = new File(buildDir, 'test-results/tomcat7')

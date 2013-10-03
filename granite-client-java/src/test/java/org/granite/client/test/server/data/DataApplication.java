@@ -19,31 +19,15 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.client.test.server;
+package org.granite.client.test.server.data;
 
-import org.granite.messaging.service.annotations.RemoteDestination;
-
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.util.List;
+import org.granite.config.servlet3.ServerFilter;
 
 /**
  * Created by william on 30/09/13.
  */
-@RemoteDestination(id="dataService")
-@Stateless
-public class DataServiceBean {
-
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    public void create(Data data) {
-        entityManager.persist(data);
-    }
-
-    public List<Data> findAll() {
-        return entityManager.createQuery("select d from Data d", Data.class).getResultList();
-    }
+@ServerFilter(
+    factoryClassName="org.granite.messaging.service.EjbServiceFactory"
+)
+public class DataApplication {
 }

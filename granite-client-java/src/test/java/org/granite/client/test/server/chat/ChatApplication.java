@@ -19,15 +19,17 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.client.test.server;
+package org.granite.client.test.server.chat;
 
 import org.granite.config.servlet3.ServerFilter;
+import org.granite.gravity.config.servlet3.MessagingDestination;
 
 /**
  * Created by william on 30/09/13.
  */
-@ServerFilter(
-    factoryClassName="org.granite.messaging.service.EjbServiceFactory"
-)
-public class DataApplication {
+@ServerFilter
+public class ChatApplication {
+
+    @MessagingDestination(noLocal=true)
+    private String chat;
 }

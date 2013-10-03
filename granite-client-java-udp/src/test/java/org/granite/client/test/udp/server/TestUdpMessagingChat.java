@@ -36,8 +36,8 @@ package org.granite.client.test.udp.server;
 
 import org.granite.client.messaging.*;
 import org.granite.client.messaging.udp.UdpChannelBuilder;
-import org.granite.client.test.server.ChatApplication;
-import org.granite.client.test.server.TestMessaging;
+import org.granite.client.test.server.TestMessagingChat;
+import org.granite.client.test.server.chat.ChatApplication;
 import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.test.container.Utils;
@@ -59,9 +59,9 @@ import java.util.List;
  * Created by william on 30/09/13.
  */
 @RunWith(Parameterized.class)
-public class TestUdpMessaging extends TestMessaging {
+public class TestUdpMessagingChat extends TestMessagingChat {
 
-    private static final Logger log = Logger.getLogger(TestUdpMessaging.class);
+    private static final Logger log = Logger.getLogger(TestUdpMessagingChat.class);
 
     private static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
 
@@ -74,13 +74,9 @@ public class TestUdpMessaging extends TestMessaging {
         return params;
     }
 
-    private ContentType contentType;
-    private String containerClassName;
     private static EmbeddedContainer container;
 
-    private static final ServerApp SERVER_APP_APP = new ServerApp("/chat", false, "localhost", 8787);
-
-    public TestUdpMessaging(String containerClassName, ContentType contentType) {
+    public TestUdpMessagingChat(String containerClassName, ContentType contentType) {
         super(containerClassName, contentType, UdpChannelBuilder.UDP_CHANNEL_TYPE);
     }
 
@@ -94,7 +90,7 @@ public class TestUdpMessaging extends TestMessaging {
         war.addAsLibraries(new File("granite-server-udp/build/libs/").listFiles(new Utils.ArtifactFileFilter()));
         war.addAsWebInfResource(new File("granite-client-java-udp/src/test/resources/granite-config-udp.xml"), "granite/granite-config.xml");
 
-        container = (EmbeddedContainer) TypeUtil.newInstance(CONTAINER_CLASS_NAME, new Class<?>[]{WebArchive.class}, new Object[]{war});
+        container = (EmbeddedContainer) TypeUtil.newInstance(CONTAINER_CLASS_NAME, new Class<?>[] { WebArchive.class }, new Object[] { war });
         container.start();
         log.info("Container started");
     }

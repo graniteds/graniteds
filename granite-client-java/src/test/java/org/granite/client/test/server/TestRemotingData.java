@@ -27,6 +27,9 @@ import org.granite.client.messaging.channel.*;
 import org.granite.client.messaging.events.*;
 import org.granite.client.messaging.messages.ResponseMessage;
 import org.granite.client.messaging.transport.jetty.JettyWebSocketTransport;
+import org.granite.client.test.server.data.Data;
+import org.granite.client.test.server.data.DataApplication;
+import org.granite.client.test.server.data.DataServiceBean;
 import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.test.container.Utils;
@@ -52,9 +55,9 @@ import java.util.concurrent.TimeUnit;
  * Created by william on 30/09/13.
  */
 @RunWith(Parameterized.class)
-public class TestRemoting {
+public class TestRemotingData {
 
-    private static final Logger log = Logger.getLogger(TestRemoting.class);
+    private static final Logger log = Logger.getLogger(TestRemotingData.class);
 
     private static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
 
@@ -73,7 +76,7 @@ public class TestRemoting {
 
     private static final ServerApp SERVER_APP_APP = new ServerApp("/data", false, "localhost", 8787);
 
-    public TestRemoting(String containerClassName, ContentType contentType) {
+    public TestRemotingData(String containerClassName, ContentType contentType) {
         this.containerClassName = containerClassName;
         this.contentType = contentType;
     }
