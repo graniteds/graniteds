@@ -50,6 +50,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by william on 30/09/13.
@@ -149,7 +150,8 @@ public class TestMessaging {
         try {
             barrier.await(5, TimeUnit.SECONDS);
         }
-        catch (Exception e) {
+        catch (TimeoutException e) {
+            log.error(e, "Consumer subscription timeout");
             Assert.fail("Consumer subscription failed");
         }
         barrier.reset();
@@ -162,7 +164,8 @@ public class TestMessaging {
         try {
             barrier.await(5, TimeUnit.SECONDS);
         }
-        catch (Exception e) {
+        catch (TimeoutException e) {
+            log.error(e, "Consumer reception timeout");
             Assert.fail("Consumer receive messages failed");
         }
         barrier.reset();
@@ -170,7 +173,8 @@ public class TestMessaging {
         try {
             barrier.await(5, TimeUnit.SECONDS);
         }
-        catch (Exception e) {
+        catch (TimeoutException e) {
+            log.error(e, "Consumer unsubscription timeout");
             Assert.fail("Consumer unsubscription failed");
         }
     }
@@ -195,12 +199,14 @@ public class TestMessaging {
         Producer producer = new Producer(channel, "chat", "chat");
 
         try {
-            barrier.await(5, TimeUnit.SECONDS);
+            barrier.await(10, TimeUnit.SECONDS);
             log.info("All consumers subscribed");
         }
-        catch (Exception e) {
+        catch (TimeoutException e) {
+            log.error(e, "Consumers subscription timeout");
             Assert.fail("Consumers not subscribed");
         }
+        barrier.reset();
 
         for (int i = 0; i < MSG_COUNT; i++) {
             messages[i] = UUID.randomUUID().toString();
@@ -212,16 +218,18 @@ public class TestMessaging {
             barrier.await(10, TimeUnit.SECONDS);
             log.info("All messages received");
         }
-        catch (Exception e) {
+        catch (TimeoutException e) {
+            log.error(e, "Consumers reception timeout");
             Assert.fail("Consumers receive messages failed");
         }
         barrier.reset();
 
         try {
-            barrier.await(5, TimeUnit.SECONDS);
+            barrier.await(10, TimeUnit.SECONDS);
             log.info("All consumers unsubscribed");
         }
-        catch (Exception e) {
+        catch (TimeoutException e) {
+            log.error(e, "Consumers unsubscription timeout");
             Assert.fail("Consumers unsubscription failed");
         }
     }
