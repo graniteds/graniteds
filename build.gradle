@@ -756,6 +756,10 @@ project('granite-generator') {
 
         compile project(':granite-generator-share')
     }
+
+    test {
+        it.dependsOn ':granite-client-java:jar', ':granite-client-javafx:jar', ':granite-client-android:jar'
+    }
 }
 
 

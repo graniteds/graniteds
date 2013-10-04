@@ -22,6 +22,7 @@
 package org.granite.test.generator.entities;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
@@ -39,6 +40,7 @@ import org.granite.generator.as3.JavaAs3Input;
 import org.granite.generator.as3.JavaAs3Output;
 import org.granite.generator.gsp.GroovyTemplate;
 import org.granite.generator.java.JavaGroovyTransformer;
+import org.granite.test.container.Utils;
 import org.granite.test.generator.MockJavaAs3GroovyConfiguration;
 import org.granite.test.generator.MockJavaFXGroovyConfiguration;
 import org.granite.test.generator.MockListener;
@@ -259,15 +261,19 @@ public class TestGenEntity {
 	
 	
 	private void checkCompile(JavaFileObject... sources) {
-        // TODO Check how to get the compile classpath for generated classes
-//		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-//		String jfxJar = System.getenv("JAVA_HOME") + "/jre/lib/jfxrt.jar";
-//		String[] options = new String[] {
-//			"-classpath", jfxJar + File.pathSeparator + "lib-test/granite-client.jar" + File.pathSeparator + "lib-test/granite-client-javafx.jar",
-//			"-d", "test-classes"
-//		};
-//		Boolean compileOk = compiler.getTask(null, null, null, Arrays.asList(options), null, Arrays.asList(sources)).call();
-//		Assert.assertTrue("Compilation ok", compileOk);
+        File[] clientJavaJars = new File("granite-client-java/build/libs/").listFiles(new ArtifactFileFilter());
+        File[] clientJavaFXJars = new File("granite-client-javafx/build/libs/").listFiles(new ArtifactFileFilter());
+        File testClasses = new File("test-classes");
+        testClasses.mkdirs();
+
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		String jfxJar = System.getenv("JAVA_HOME") + "/jre/lib/jfxrt.jar";
+		String[] options = new String[] {
+			"-classpath", jfxJar + File.pathSeparator + clientJavaJars[0].getPath() + File.pathSeparator + clientJavaFXJars[0].getPath(),
+			"-d", "test-classes"
+		};
+		Boolean compileOk = compiler.getTask(null, null, null, Arrays.asList(options), null, Arrays.asList(sources)).call();
+		Assert.assertTrue("Compilation ok", compileOk);
 	}	
 	
 	static class JavaSourceCodeObject extends SimpleJavaFileObject {
@@ -302,4 +308,11 @@ public class TestGenEntity {
 	        this.sourceCode = sourceCode;
 	    }
 	}
+
+    public static class ArtifactFileFilter implements FileFilter {
+        @Override
+        public boolean accept(File file) {
+            return !file.getName().endsWith("-sources.jar") && !file.getName().endsWith("-javadoc.jar");
+        }
+    }
 }
