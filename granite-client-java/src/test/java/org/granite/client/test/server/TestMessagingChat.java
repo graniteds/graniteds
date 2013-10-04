@@ -300,8 +300,8 @@ public class TestMessagingChat {
             @Override
             public void onMessage(TopicMessageEvent event) {
                 if (messages.contains(event.getData())) {
-                    log.info("Consumer " + id + ": received message " + event.getData());
                     received.add((String)event.getData());
+                    log.info("Consumer %s: received message %s (%d)", id, event.getData(), received.size());
 
                     if (received.size() == messages.size() && received.containsAll(messages)) {
                         log.info("Consumer " + id + ": received all messages");
