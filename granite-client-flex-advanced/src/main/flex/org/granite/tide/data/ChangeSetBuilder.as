@@ -220,34 +220,18 @@ package org.granite.tide.data {
 					var v:Object = entity[p];
 					if (save != null && save.hasOwnProperty(p)) {
 						if (v is IList || v is IMap) {
-							var collEvents:Array = save[p] as Array;
+							var collSnapshot:Array = save[p] as Array;
 							var collChanges:CollectionChanges = new CollectionChanges();
 							changes[p] = collChanges;
-							
-							for each (var event:CollectionEvent in collEvents) {
-								if (event.target is IMap) {
-									if (event.kind == CollectionEventKind.ADD && event.items.length == 1) {
-										collChanges.addChange(1, buildRef(event.items[0][0]), buildRef(event.items[0][1]));
-									}
-									else if (event.kind == CollectionEventKind.REMOVE && event.items.length == 1) {
-										collChanges.addChange(-1, buildRef(event.items[0][0]), buildRef(event.items[0][1]));
-									}
-									else if (event.kind == CollectionEventKind.REPLACE && event.items.length == 1) {
-										collChanges.addChange(0, buildRef(event.items[0].property), buildRef(event.items[0].newValue));
-									}
-								}
-								else {
-									if (event.kind == CollectionEventKind.ADD && event.items.length == 1) {
-										collChanges.addChange(1, event.location, buildRef(event.items[0]));
-									}
-									else if (event.kind == CollectionEventKind.REMOVE && event.items.length == 1) {
-										collChanges.addChange(-1, event.location, buildRef(event.items[0]));
-									}
-									else if (event.kind == CollectionEventKind.REPLACE && event.items.length == 1) {
-										collChanges.addChange(0, event.location, buildRef(event.items[0]));
-									}
-								}
-							}
+
+                            var diffOps:Array;
+                            if (v is IMap)
+                                diffOps = DataUtils.diffMaps(collSnapshot, IMap(v));
+                            else
+                                diffOps = DataUtils.diffLists(collSnapshot, IList(v).toArray());
+
+                            for each (var op:Array in diffOps)
+                                collChanges.addChange(op[0], buildRef(op[1]), buildRef(op[2]));
 						}
 						else {
 							changes[p] = buildRef(v);

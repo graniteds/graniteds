@@ -431,12 +431,14 @@ package org.granite.test.tide.data
 			patientc.uid = patient.uid;
 			patientc.id = patient.id;
 			patientc.version = patient.version;
+            patientc.name = patient.name;
 			patientc.visits = new PersistentSet(false);
 			patientc.tests = new PersistentSet(false);
 			var visitc:Visit = new Visit();
 			visitc.uid = visit.uid;
 			visitc.id = visit.id;
 			visitc.version = visit.version;
+            visitc.name = visit.name;
 			visitc.patient = patientc;
 			visitc.tests = new PersistentSet(false);
 			var test2c:VisitTest = new VisitTest();

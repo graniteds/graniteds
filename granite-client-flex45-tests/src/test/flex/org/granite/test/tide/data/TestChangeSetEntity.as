@@ -379,6 +379,8 @@ package org.granite.test.tide.data
 			contact3.person = person;
 			person.contacts.addItem(contact3);			
 			person = _ctx.person = _ctx.meta_mergeExternal(person);
+
+            var collSnapshot:Array = person.contacts.toArray();
 			
 			var c:Contact = person.contacts.removeItemAt(0) as Contact;
 			person.contacts.addItemAt(c, 2);
@@ -388,16 +390,9 @@ package org.granite.test.tide.data
 			var changeSet:ChangeSet = new ChangeSetBuilder(_ctx).buildChangeSet();
 			
 			Assert.assertEquals("ChangeSet count", 1, changeSet.length);
-			var colls:Array = changeSet.changes[0].changes.contacts.changes as Array;
-			Assert.assertEquals("ChangeSet coll count", 4, colls.length);
-			Assert.assertEquals("ChangeSet coll 1 type", -1, colls[0].type);
-			Assert.assertEquals("ChangeSet coll 1 key", 0, colls[0].key);
-			Assert.assertEquals("ChangeSet coll 2 type", 1, colls[1].type);
-			Assert.assertEquals("ChangeSet coll 2 key", 2, colls[1].key);
-			Assert.assertEquals("ChangeSet coll 3 type", -1, colls[2].type);
-			Assert.assertEquals("ChangeSet coll 3 key", 1, colls[2].key);
-			Assert.assertEquals("ChangeSet coll 4 type", 1, colls[3].type);
-			Assert.assertEquals("ChangeSet coll 4 key", 0, colls[3].key);
+			var collChanges:CollectionChanges = changeSet.changes[0].changes.contacts as CollectionChanges;
+
+            TestDataUtils.checkListChangeSet(person.contacts, collChanges, collSnapshot);
 		}
 		
 		
@@ -427,8 +422,10 @@ package org.granite.test.tide.data
 			contact3.person = person;
 			person.contacts.addItem(contact3);			
 			person = _ctx.person = _ctx.meta_mergeExternal(person);
-			
-			var contact4:Contact = new Contact();
+
+            var collSnapshot:Array = person.contacts.toArray();
+
+            var contact4:Contact = new Contact();
 			contact4.uid = "C4";
 			contact4.id = 4;
 			contact4.version = 0;
@@ -439,18 +436,13 @@ package org.granite.test.tide.data
 			person.contacts.addItemAt(c, 1);
 			c = person.contacts.removeItemAt(1) as Contact;
 			person.contacts.addItemAt(c, 0);
-			
+
 			var changeSet:ChangeSet = new ChangeSetBuilder(_ctx).buildChangeSet();
 			
 			Assert.assertEquals("ChangeSet count", 1, changeSet.length);
-			var colls:Array = changeSet.changes[0].changes.contacts.changes as Array;
-			Assert.assertEquals("ChangeSet coll count", 3, colls.length);
-			Assert.assertEquals("ChangeSet coll 1 type", 1, colls[0].type);
-			Assert.assertEquals("ChangeSet coll 1 key", 3, colls[0].key);
-			Assert.assertEquals("ChangeSet coll 2 type", -1, colls[1].type);
-			Assert.assertEquals("ChangeSet coll 2 key", 2, colls[1].key);
-			Assert.assertEquals("ChangeSet coll 3 type", 1, colls[2].type);
-			Assert.assertEquals("ChangeSet coll 3 key", 0, colls[2].key);
+			var collChanges:CollectionChanges = changeSet.changes[0].changes.contacts as CollectionChanges;
+
+            TestDataUtils.checkListChangeSet(person.contacts, collChanges, collSnapshot);
 		}
     }
 }

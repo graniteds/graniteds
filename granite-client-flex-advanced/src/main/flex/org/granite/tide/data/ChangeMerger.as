@@ -54,7 +54,8 @@ package org.granite.tide.data {
 	import org.granite.meta;
 	import org.granite.reflect.Type;
 	import org.granite.tide.*;
-	import org.granite.util.Enum;
+    import org.granite.tide.data.CollectionChange;
+    import org.granite.util.Enum;
 	
 	
 	/**
@@ -79,7 +80,8 @@ package org.granite.tide.data {
 		/**
 		 *  Merge an entity coming from the server in the entity manager
 		 *
-		 *  @param obj external entity
+         *  @param mergeContext current merge context
+		 *  @param changeSet incoming change/changeSet
 		 *  @param previous previously existing object in the context (null if no existing object)
 		 *  @param expr current path from the context
 		 *  @param parent parent object for collections
@@ -266,18 +268,15 @@ package org.granite.tide.data {
 		
 		
 		private function applyListChanges(mergeContext:MergeContext, coll:IList, ccs:CollectionChanges, savedArray:Array):void {
-			var found:Boolean, i:uint, j:uint, ce:CollectionEvent, cc:CollectionChange, item:*;
-			
-			// Detect element permutations (1 REMOVE + 1 ADD for same entity)
-			var moves:Array = [];
-			
-			if (savedArray != null) {
-				var savedList:Array = savedArray.concat();
+			var cc:CollectionChange, i:uint, j:uint, item:*;
 
-				// Apply received operations
+			if (savedArray != null) {
+                // If list has been modified locally, apply received operations to the current saved snapshot
+				var savedList:Array = savedArray.concat();
+                var value:Object;
+
 				for each (cc in ccs.changes) {
 					if (cc.type == -1) {
-						// Not found in local changes, apply remote change
 						if (cc.key != null && cc.key >= 0 && cc.value is ChangeRef && cc.value.isForEntity(savedList[cc.key]))
 							savedList.splice(cc.key, 1);
 						else if (cc.key != null && cc.key >= 0 && mergeContext.objectEquals(cc.value, savedList[cc.key]))
@@ -300,7 +299,6 @@ package org.granite.tide.data {
 						}
 					}
 					else if (cc.type == 1) {
-						// Not found in local changes, apply remote change
 						if (cc.key != null && cc.key >= 0)
 							savedList.splice(cc.key, 0, cc.value);
 						else if (cc.key != null)
@@ -312,262 +310,133 @@ package org.granite.tide.data {
 						savedList[cc.key] = cc.value;
 					}
 				}
-				
-				// Check if local changes and remote changes give the same result
-				if (savedList.length == coll.length) {
-					var isSame:Boolean = true;
-					for (i = 0; i < savedList.length; i++) {
-						if (savedList[i] is ChangeRef) {
-							if (!savedList[i].isForEntity(coll.getItemAt(i))) {
-								isSame = false;
-								break;
-							}
-						}
-						else if (!mergeContext.objectEquals(coll.getItemAt(i), savedList[i])) {
-							isSame = false;
-							break;
-						}
-					}
-					if (isSame) {
-						// Replace content by received objects
-						for (i = 0; i < savedList.length; i++) {
-							if (coll.getItemAt(i) !== savedList[i] && !(savedList[i] is IEntityRef))
-								coll.setItemAt(savedList[i], i);
-						}
-						return;
-					}
+
+                var e:Object;
+                // Replace local objects by received objects in merged collection
+                for (i = 0; i < coll.length; i++) {
+                    for each (e in savedList) {
+                        if (mergeContext.objectEquals(coll.getItemAt(i), e) && coll.getItemAt(i) !== e) {
+                            coll.setItemAt(e, i);
+                            break;
+                        }
+                    }
 				}
-				
-				for (i = 0; i < ccs.changes.length; i++) {
-					if (ccs.changes[i].key == null)
-						continue;
-					
-					for (j = i+1; j < ccs.changes.length; j++) {
-						if (ccs.changes[j].type != -ccs.changes[i].type || !mergeContext.objectEquals(ccs.changes[i].value, ccs.changes[j].value))
-							continue;
-					
-						var value:Object = ccs.changes[i].value;
-						var fromIndex:int = -1, toIndex:int = -1;
-						if (ccs.changes[i].type == -1) {
-							fromIndex = ccs.changes[i].key;
-							toIndex = ccs.changes[j].key;
-						}
-						else if (ccs.changes[i].key < ccs.changes[j].key) {
-							fromIndex = ccs.changes[j].key-1;
-							toIndex = ccs.changes[i].key;
-						}
-						else {
-							fromIndex = ccs.changes[j].key;
-							toIndex = ccs.changes[i].key-1;
-						}
-						
-						// Lookup in savedArray
-						found = false;
-						
-						for (var i2:int = 0; i2 < savedArray.length; i2++) {
-							for (var j2:int = i2+1; j2 < savedArray.length; j2++) {
-								if (((savedArray[i2].kind == CollectionEventKind.REMOVE && savedArray[j2].kind == CollectionEventKind.ADD)
-									|| (savedArray[i2].kind == CollectionEventKind.ADD && savedArray[j2].kind == CollectionEventKind.REMOVE))
-									&& savedArray[i2].items[0] === savedArray[j2].items[0]) {
-									var fromIndex2:int = -1, toIndex2:int = -1;
-									if (savedArray[i2].kind == CollectionEventKind.REMOVE) {
-										fromIndex2 = savedArray[i2].location;
-										toIndex2 = savedArray[j2].location;
-									}
-									else if (savedArray[i2].location < savedArray[j2].location) {
-										fromIndex2 = savedArray[j2].location-1;
-										toIndex2 = savedArray[i2].location;
-									}
-									else {
-										fromIndex2 = savedArray[j2].location;
-										toIndex2 = savedArray[i2].location-1;
-									}
-									
-									if ((fromIndex2 == fromIndex && toIndex2 == toIndex && mergeContext.objectEquals(value, savedArray[i2].items[0]))
-										|| (fromIndex2 == toIndex && toIndex2 == fromIndex && mergeContext.objectEquals(value, coll.getItemAt(fromIndex2)))) {
-										moves.push(ccs.changes[i]);
-										moves.push(ccs.changes[j]);
-										found = true;
-										break;
-									}
-								}
-							}							
-							if (found)
-								break;
-						}
-						if (found)
-							break;
-					}
-				}
+
+                savedArray.splice(0, savedArray.length);
+                for each (e in savedList)
+                    savedArray.push(e);
 			}
-			
-			for each (cc in ccs.changes) {
-				if (moves.indexOf(cc) >= 0)
-					continue;
-				
-				if (cc.type == -1) {
-					found = false;
-					// Check in current local changes if the received chance has already been applied
-					if (savedArray != null) {
-						for (i = 0; i < savedArray.length; i++) {
-							ce = CollectionEvent(savedArray[i]);
-							if (ce.kind == CollectionEventKind.REMOVE && (cc.key == null || ce.location == cc.key)) {
-								for each (item in ce.items) {
-									if ((cc.value is ChangeRef && cc.value.isForEntity(item)) || mergeContext.objectEquals(cc.value, item)) {
-										found = true;
-										break;
-									}
-								}
-							}
-						}
-					}
-					
-					if (!found) {
-						// Not found in local changes, apply remote change
-						if (cc.key != null && cc.key >= 0 && cc.value is ChangeRef && cc.value.isForEntity(coll.getItemAt(cc.key)))
-							coll.removeItemAt(cc.key);
-						else if (cc.key != null && cc.key >= 0 && mergeContext.objectEquals(cc.value, coll.getItemAt(cc.key)))
-							coll.removeItemAt(cc.key);
-						else if (cc.key == null && cc.value is ChangeRef) {
-							for (i = 0; i < coll.length; i++) {
-								if (cc.value.isForEntity(coll.getItemAt(i))) {
-									coll.removeItemAt(i);
-									i--;
-								}
-							}
-						}
-						else if (cc.key == null) {
-							for (i = 0; i < coll.length; i++) {
-								if (mergeContext.objectEquals(cc.value, coll.getItemAt(i))) {
-									coll.removeItemAt(i);
-									i--;
-								}
-							}
-						}
-					}
-				}
-				else if (cc.type == 1) {
-					found = false;
-					// Check in current local changes if the received change has already been applied
-					if (savedArray != null) {
-						for (i = 0; i < savedArray.length; i++) {
-							ce = CollectionEvent(savedArray[i]);
-							if (ce.kind == CollectionEventKind.ADD && (cc.key == null || ce.location == cc.key)) {
-								for (j = 0; j < ce.items.length; j++) {
-									if (mergeContext.objectEquals(cc.value, ce.items[j]) || (cc.value is IEntityRef && cc.value.isForEntity(ce.items[j]))) {
-										// If local change found, update the added value with the one received from the server
-										if (cc.value is IEntity) {
-											// Adjust location of stored event with following changes
-											var currentLocation:int = ce.location;
-											if (i < savedArray.length-1) {
-												for (var k:uint = i+1; k < savedArray.length; k++) {
-													var cek:CollectionEvent = CollectionEvent(savedArray[k]);
-													if (cek.kind == CollectionEventKind.ADD && cek.location <= currentLocation)
-														currentLocation += cek.items.length;
-													else if (cek.kind == CollectionEventKind.REMOVE && cek.location <= currentLocation)
-														currentLocation -= cek.items.length;
-												}
-											}
-											coll[currentLocation] = cc.value;
-										}
-										found = true;
-										break;
-									}
-								}
-							}
-						}
-					}
-					
-					if (!found) {
-						// Not found in local changes, apply remote change
-						if (cc.key != null && cc.key >= 0)
-							coll.addItemAt(cc.value, cc.key);
-						else if (cc.key != null)
-							coll.addItem(cc.value);
-						else
-							coll.addItem(cc.value);
-					}
-				}
-				else if (cc.type == 0 && cc.key != null && cc.key >= 0) {
-					coll.setItemAt(cc.value, cc.key);
-				}
-			}
+            else {
+                // If list has not been modified locally, apply received operations to the current collection content
+                for each (cc in ccs.changes) {
+                    if (cc.type == -1) {
+                        if (cc.key != null && cc.key >= 0 && cc.value is ChangeRef && cc.value.isForEntity(coll.getItemAt(cc.key)))
+                            coll.removeItemAt(cc.key);
+                        else if (cc.key != null && cc.key >= 0 && mergeContext.objectEquals(cc.value, coll.getItemAt(cc.key)))
+                            coll.removeItemAt(cc.key);
+                        else if (cc.key == null && cc.value is ChangeRef) {
+                            for (i = 0; i < coll.length; i++) {
+                                if (cc.value.isForEntity(coll.getItemAt(i))) {
+                                    coll.removeItemAt(i);
+                                    i--;
+                                }
+                            }
+                        }
+                        else if (cc.key == null) {
+                            for (i = 0; i < coll.length; i++) {
+                                if (mergeContext.objectEquals(cc.value, coll.getItemAt(i))) {
+                                    coll.removeItemAt(i);
+                                    i--;
+                                }
+                            }
+                        }
+                    }
+                    else if (cc.type == 1) {
+                        if (cc.key != null && cc.key >= 0)
+                            coll.addItemAt(cc.value, cc.key);
+                        else if (cc.key != null)
+                            coll.addItem(cc.value);
+                        else
+                            coll.addItem(cc.value);
+                    }
+                    else if (cc.type == 0 && cc.key != null && cc.key >= 0) {
+                        coll.setItemAt(cc.value, cc.key);
+                    }
+                }
+            }
 		}
-		
+
 		private function applyMapChanges(mergeContext:MergeContext, map:IMap, ccs:CollectionChanges, savedArray:Array):void {
-			var found:Boolean, i:uint, j:uint, ce:CollectionEvent, k:*, key:*, entry:*;
-			
-			for each (var cc:CollectionChange in ccs.changes) {
-				if (cc.type == -1) {
-					found = false;
-					// Check in current local changes if the received change has already been applied
-					if (savedArray != null) {
-						for (i = 0; i < savedArray.length; i++) {
-							ce = CollectionEvent(savedArray[i]);
-							if (ce.kind == CollectionEventKind.REMOVE) {
-								for each (entry in ce.items) {
-									if (((cc.key is ChangeRef && cc.key.isForEntity(entry[0])) || mergeContext.objectEquals(cc.key, entry[0]))
-										&& ((cc.value is ChangeRef && cc.value.isForEntity(entry[1])) || mergeContext.objectEquals(cc.value, entry[1]))) {
-										found = true;
-										break;
-									}
-								}
-							}
-						}
-					}
-					
-					if (!found) {
-						// Not found in local changes, apply remote change
-						key = cc.key is ChangeRef ? mergeContext.getCachedObject(cc.key, true) : cc.key;
-						
-						if (key != null && cc.value is ChangeRef && cc.value.isForEntity(map.get(key)))
-							map.remove(key);
-						else if (key != null && mergeContext.objectEquals(cc.value, map.get(key)))
-							map.remove(key);
-					}
-				}
-				else if (cc.type == 1) {
-					found = false;
-					// Check in current local changes if the received change has already been applied
-					if (savedArray != null) {
-						for (i = 0; i < savedArray.length; i++) {
-							ce = CollectionEvent(savedArray[i]);
-							if (ce.kind == CollectionEventKind.ADD) {
-								for each (entry in ce.items) {
-									if (((cc.key is ChangeRef && cc.key.isForEntity(entry[0])) || mergeContext.objectEquals(cc.key, entry[0]))
-										&& ((cc.value is ChangeRef && cc.value.isForEntity(entry[1])) || mergeContext.objectEquals(cc.value, entry[1]))) {
-										// If local change found, update the added value with the one received from the server
-										
-										key = entry[0];
-										for each (k in map.keySet) {
-											if (mergeContext.objectEquals(k, entry[0])) {
-												key = k;
-												break;
-											}
-										}
-										
-										if (key is IEntity) {
-											map.remove(key);
-											map.put(cc.key, cc.value);
-										}
-										else if (cc.value is IEntity) {
-											map.put(key, cc.value);
-										}
-										
-										found = true;
-										break;
-									}
-								}
-							}
-						}
-					}
-					
-					if (!found) {
-						// Not found in local changes, apply remote change
-						key = cc.key is ChangeRef ? mergeContext.getCachedObject(cc.key, true) : cc.key;						
-						map.put(key, cc.value);
-					}
-				}
+			var cc:CollectionChange, k:*, v:*, key:*, value:*;
+
+            if (savedArray != null) {
+                // If map has been modified locally, apply received operations to the current saved snapshot
+                var savedMap:Dictionary = new Dictionary();
+                for each (var se:Array in savedArray)
+                    savedMap[se[0]] = se[1];
+
+                for each (cc in ccs.changes) {
+                    if (cc.type == -1) {
+                        key = cc.key is ChangeRef ? mergeContext.getCachedObject(cc.key, true) : cc.key;
+
+                        if (key != null && cc.value is ChangeRef && cc.value.isForEntity(savedMap.get(key)))
+                            delete savedMap[key];
+                        else if (key != null && mergeContext.objectEquals(cc.value, savedMap.get(key)))
+                            delete savedMap[key];
+                    }
+                    else if (cc.type == 0 || cc.type == 1) {
+                        key = cc.key is ChangeRef ? mergeContext.getCachedObject(cc.key, true) : cc.key;
+                        savedMap[key] = cc.value;
+                    }
+                }
+
+                // Replace local objects by received objects in merged map
+                for each (key in map.keySet) {
+                    value = map.get(key);
+                    for (k in savedMap) {
+                        if (mergeContext.objectEquals(key, k) && key !== k) {
+                            map.remove(key);
+                            key = k;
+                            map.put(key, value);
+                        }
+                        if (mergeContext.objectEquals(value, k) && value !== k) {
+                            value = k;
+                            map.put(key, value);
+                        }
+                        v = savedMap[k];
+                        if (mergeContext.objectEquals(key, v) && key !== v) {
+                            map.remove(key);
+                            key = v;
+                            map.put(key, value);
+                        }
+                        if (mergeContext.objectEquals(value, v) && value !== v) {
+                            value = v;
+                            map.put(key, value);
+                        }
+                    }
+                }
+
+                savedArray.splice(0, savedArray.length);
+                for (var key:Object in savedMap)
+                    savedArray.push([ key, savedMap[key] ]);
+            }
+            else {
+                // Map has not been modified, just apply received operations to current content
+                for each (cc in ccs.changes) {
+                    if (cc.type == -1) {
+                        key = cc.key is ChangeRef ? mergeContext.getCachedObject(cc.key, true) : cc.key;
+
+                        if (key != null && cc.value is ChangeRef && cc.value.isForEntity(map.get(key)))
+                            map.remove(key);
+                        else if (key != null && mergeContext.objectEquals(cc.value, map.get(key)))
+                            map.remove(key);
+                    }
+                    else if (cc.type == 1) {
+                        // Not found in local changes, apply remote change
+                        key = cc.key is ChangeRef ? mergeContext.getCachedObject(cc.key, true) : cc.key;
+                        map.put(key, cc.value);
+                    }
+                }
 			}
 		}
 		

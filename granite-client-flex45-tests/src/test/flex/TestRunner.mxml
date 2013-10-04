@@ -55,10 +55,10 @@
 						SuiteValidation,
 					 	SuiteFramework,
 						SuiteData,
-			                       	// SuiteDataChangeSet,
+			            SuiteDataChangeSet,
 					 	SuiteEjb,
 						SuiteSpring,
-                        			// SuiteSpringChangeSet,
+                        SuiteSpringChangeSet,
 						SuiteSeam,
 						SuiteCdi
 					]

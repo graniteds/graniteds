@@ -111,12 +111,12 @@ package org.granite.test.tide.data
 			
 			Assert.assertEquals("ChangeSet count", 1, changeSet.length);
 			coll = changeSet.getChange(0).changes.testMap as CollectionChanges;
-			Assert.assertEquals("ChangeSet collection", 2, coll.length);
-			Assert.assertEquals("ChangeSet collection type", 0, coll.getChange(1).type);
-			Assert.assertTrue("ChangeSet collection key", coll.getChange(1).key is ChangeRef);
-			Assert.assertEquals("ChangeSet collection key", key2.uid, coll.getChange(1).key.uid);
-			Assert.assertTrue("ChangeSet collection value", coll.getChange(1).value is ChangeRef);
-			Assert.assertEquals("ChangeSet collection value", value3.uid, coll.getChange(1).value.uid);
+			Assert.assertEquals("ChangeSet collection", 1, coll.length);
+			Assert.assertEquals("ChangeSet collection type", 1, coll.getChange(0).type);
+			Assert.assertTrue("ChangeSet collection key", coll.getChange(0).key is ChangeRef);
+			Assert.assertEquals("ChangeSet collection key", key2.uid, coll.getChange(0).key.uid);
+			Assert.assertTrue("ChangeSet collection value", coll.getChange(0).value is ChangeRef);
+			Assert.assertEquals("ChangeSet collection value", value3.uid, coll.getChange(0).value.uid);
 		}
     }
 }

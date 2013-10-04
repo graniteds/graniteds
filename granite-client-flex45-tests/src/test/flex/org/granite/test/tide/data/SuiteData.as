@@ -86,5 +86,6 @@ package org.granite.test.tide.data
         public var test41:org.granite.test.tide.data.TestUninitAssociations;
         public var test42:org.granite.test.tide.data.TestUninitArguments;
         public var test43:org.granite.test.tide.data.TestCollectionSet;
+        public var test44:org.granite.test.tide.data.TestDataUtils;
 	}
 }
