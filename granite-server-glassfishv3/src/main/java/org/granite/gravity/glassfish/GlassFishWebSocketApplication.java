@@ -116,12 +116,12 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 		GlassFishWebSocketChannelFactory channelFactory = new GlassFishWebSocketChannelFactory(gravity, request.getServletContext());
 		
 		try {
-			log.info("WebSocket connection");
-			
 			String connectMessageId = (String)request.getAttribute("connectId");
 			String clientId = (String)request.getAttribute("clientId");
-			
-			CommandMessage pingMessage = new CommandMessage();
+
+            log.debug("WebSocket connection clientId %s", clientId);
+
+            CommandMessage pingMessage = new CommandMessage();
 			pingMessage.setMessageId(connectMessageId != null ? connectMessageId : "OPEN_CONNECTION");
 			pingMessage.setOperation(CommandMessage.CLIENT_PING_OPERATION);
 			if (clientId != null)
