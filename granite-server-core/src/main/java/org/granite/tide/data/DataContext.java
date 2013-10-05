@@ -205,7 +205,7 @@ public class DataContext {
 			if (type.ordinal() != u.type.ordinal())
 				return type.ordinal() - u.type.ordinal();
 		    if (!entity.equals(u.entity))
-		        return entity.hashCode() - u.entity.hashCode();
+		        return Math.abs(entity.hashCode()) - Math.abs(u.entity.hashCode()); // hashCode can be negative !!!
 	        return priority - u.priority;
 		}
 		

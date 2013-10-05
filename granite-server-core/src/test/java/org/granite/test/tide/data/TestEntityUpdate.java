@@ -24,9 +24,11 @@ package org.granite.test.tide.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import org.granite.tide.data.DataContext.EntityUpdate;
 import org.granite.tide.data.DataContext.EntityUpdateType;
+import org.granite.util.UUIDUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,16 +36,23 @@ public class TestEntityUpdate {
 	
 	@Test
 	public void testSortUpdates() {
-		List<EntityUpdate> updates = new ArrayList<EntityUpdate>();
-		updates.add(new EntityUpdate(EntityUpdateType.UPDATE, new Entree(), 0));
-		updates.add(new EntityUpdate(EntityUpdateType.UPDATE, new EntreeObs(), 0));
-		updates.add(new EntityUpdate(EntityUpdateType.PERSIST, new EntreeObs(), 0));
-		updates.add(new EntityUpdate(EntityUpdateType.PERSIST, new Entree(), 0));
-		
-		Collections.sort(updates);
-		
-		Assert.assertEquals("PERSIST first", EntityUpdateType.PERSIST, updates.get(0).type);
-		Assert.assertEquals("PERSIST second", EntityUpdateType.PERSIST, updates.get(1).type);
-	}
+        Random random = new Random();
 
+        for (int count = 0; count < 20; count++) {
+            List<EntityUpdate> updates = new ArrayList<EntityUpdate>();
+            for (int i = 0; i < 10000; i++) {
+                EntityUpdateType type = EntityUpdateType.UPDATE;
+                Object entity = random.nextBoolean() ? new Patient(random.nextLong(), 0L, UUIDUtil.randomUUID()) : new Medication(random.nextLong(), 0L, UUIDUtil.randomUUID());
+                updates.add(new EntityUpdate(type, entity, 0));
+            }
+
+            try {
+                Collections.sort(updates);
+                // No violation contract!!
+            }
+            catch (IllegalArgumentException e) {
+                Assert.fail(e.getMessage());
+            }
+        }
+	}
 }
