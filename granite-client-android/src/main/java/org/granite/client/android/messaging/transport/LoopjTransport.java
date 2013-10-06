@@ -79,6 +79,10 @@ public class LoopjTransport extends AbstractTransport<Context> implements HTTPTr
         super(context);
     }
 
+    public boolean isReconnectAfterReceive() {
+        return true;
+    }
+
     @Override
     public synchronized boolean start() {
 

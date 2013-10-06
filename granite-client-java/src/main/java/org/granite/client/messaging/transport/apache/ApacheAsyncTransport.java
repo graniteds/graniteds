@@ -78,6 +78,10 @@ public class ApacheAsyncTransport extends AbstractTransport<Object> implements H
 		return httpClient;
 	}
 
+    public boolean isReconnectAfterReceive() {
+        return true;
+    }
+
 	@Override
 	public synchronized boolean start() {
 		if (httpClient != null)

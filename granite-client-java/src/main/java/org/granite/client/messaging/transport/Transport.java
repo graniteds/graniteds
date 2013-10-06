@@ -38,6 +38,8 @@ public interface Transport {
 	boolean start();
 	boolean isStarted();
 	void stop();
+
+    boolean isReconnectAfterReceive();
 	
 	void setStatusHandler(TransportStatusHandler statusHandler);
 	TransportStatusHandler getStatusHandler();

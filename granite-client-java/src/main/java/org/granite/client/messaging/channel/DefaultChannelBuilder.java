@@ -43,7 +43,7 @@ public class DefaultChannelBuilder implements ChannelBuilder {
 
     private String graniteUrlMapping = "/graniteamf/amf.txt";
     private String gravityUrlMapping = "/gravityamf/amf.txt";
-    private String websocketUrlMapping = "/websocketamf/amf.txt";
+    private String websocketUrlMapping = "/websocketamf/amf";
 
     public void setGraniteUrlMapping(String graniteUrlMapping) {
         this.graniteUrlMapping = graniteUrlMapping;

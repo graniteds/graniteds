@@ -65,7 +65,11 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> implement
 	public void setMaxIdleTime(int maxIdleTime) {
 		this.maxIdleTime = maxIdleTime;
 	}
-	
+
+    public boolean isReconnectAfterReceive() {
+        return false;
+    }
+
 	@Override
 	public synchronized boolean start() {
 		if (isStarted())
@@ -163,6 +167,7 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> implement
 			WebSocketClient webSocketClient = webSocketClientFactory.newWebSocketClient();
 			webSocketClient.setMaxIdleTime(maxIdleTime);
 			webSocketClient.setMaxTextMessageSize(1024);
+            webSocketClient.setMaxBinaryMessageSize(16384);
 			webSocketClient.setProtocol("org.granite.gravity." + transportMessage.getContentType().substring("application/x-".length()));
 
 			if (transportMessage.getSessionId() != null)
@@ -191,7 +196,7 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> implement
 				public void onMessage(byte[] data, int offset, int length) {
 					channel.onMessage(new ByteArrayInputStream(data, offset, length));
 				}
-	
+
 				@Override
 				public void onClose(int closeCode, String message) {
 					boolean waitBeforeReconnect = !(closeCode == CLOSE_NORMAL && message.startsWith("Idle"));

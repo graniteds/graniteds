@@ -157,7 +157,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 
 	@Override
 	protected ResponseMessage decodeResponse(InputStream is) throws IOException {
-		boolean reconnect = true;
+		boolean reconnect = transport.isReconnectAfterReceive();
 		
 		try {
 			if (is.available() > 0) {
@@ -209,6 +209,9 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 					
 					return response;
 				}
+
+                if (messages.length == 0)
+                    log.warn("Received empty messages !!");
 				
 				for (Message message : messages) {
 					if (!(message instanceof AsyncMessage))
@@ -222,6 +225,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 						log.warn("No consumer for subscriptionId: %s", subscriptionId);
 				}
 			}
+            else
+                log.warn("No data available in received stream !!");
 		}
 		finally {
 			if (reconnect) {
