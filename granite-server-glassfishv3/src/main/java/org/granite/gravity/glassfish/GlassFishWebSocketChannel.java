@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -243,8 +244,25 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 	        
             log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
 
-        	websocket.send(serialize(gravity, messagesArray));
-	        
+            byte[] msg = serialize(gravity, messagesArray);
+            if (msg.length > 16000) {
+                // Split in ~2000 bytes chunks
+                int count = msg.length / 2000;
+                int chunkSize = messagesArray.length / count;
+                int index = 0;
+                while (index < messagesArray.length) {
+                    AsyncMessage[] chunk = Arrays.copyOfRange(messagesArray, index, Math.min(messagesArray.length, index + chunkSize));
+                    msg = serialize(gravity, chunk);
+                    log.debug("Send binary message: %d msgs (%d bytes)", chunk.length, msg.length);
+                    websocket.send(msg);
+                    index += chunkSize;
+                }
+            }
+            else {
+                websocket.send(msg);
+                log.debug("Send binary message: %d msgs (%d bytes)", messagesArray.length, msg.length);
+            }
+
 	        return true; // Messages were delivered, http context isn't valid anymore.
 		}
 		catch (IOException e) {

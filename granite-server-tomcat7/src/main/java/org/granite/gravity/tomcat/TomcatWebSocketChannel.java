@@ -285,7 +285,25 @@ public class TomcatWebSocketChannel extends AbstractChannel {
 
 	        log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
 
-	        connection.writeBinaryMessage(ByteBuffer.wrap(serialize(gravity, messagesArray)));
+            byte[] msg = serialize(gravity, messagesArray);
+            if (msg.length > 16000) {
+                // Split in ~2000 bytes chunks
+                int count = msg.length / 2000;
+                int chunkSize = messagesArray.length / count;
+                int index = 0;
+                while (index < messagesArray.length) {
+                    AsyncMessage[] chunk = Arrays.copyOfRange(messagesArray, index, Math.min(messagesArray.length, index+chunkSize));
+                    msg = serialize(gravity, chunk);
+                    log.debug("Send binary message: %d msgs (%d bytes)", chunk.length, msg.length);
+                    connection.writeBinaryMessage(ByteBuffer.wrap(msg));
+                    index += chunkSize;
+                }
+            }
+            else {
+                connection.writeBinaryMessage(ByteBuffer.wrap(msg));
+                log.debug("Send binary message: %d msgs (%d bytes)", messagesArray.length, msg.length);
+            }
+
 
 	        return true; // Messages were delivered
 		}

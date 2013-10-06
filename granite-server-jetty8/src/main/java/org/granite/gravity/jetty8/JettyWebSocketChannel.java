@@ -83,8 +83,8 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	public void onOpen(Connection connection) {
 		this.connection = connection;
 		this.connection.setMaxIdleTime((int)getGravity().getGravityConfig().getChannelIdleTimeoutMillis());
-		
-		log.debug("WebSocket connection onOpen");
+
+		log.debug("Channel %s websocket connection onOpen", getId());
 		
 		if (connectAckMessage == null)
 			return;
@@ -100,7 +100,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 			connectAckMessage = null;
 		}
 		catch (IOException e) {
-			log.error(e, "Could not send connect acknowledge");
+			log.error(e, "Channel %s could not send connect acknowledge", getId());
 		}
 		finally {
 			cleanupRequest();
@@ -108,11 +108,11 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	}
 
 	public void onClose(int closeCode, String message) {
-		log.debug("WebSocket connection onClose %d, %s", closeCode, message);
+		log.debug("Channel %s websocket connection onClose %d, %s", getId(), closeCode, message);
 	}
 
 	public void onMessage(byte[] data, int offset, int length) {
-		log.debug("WebSocket connection onMessage %d", data.length);
+		log.debug("Channel %s websocket connection onMessage %d", getId(), data.length);
 		
 		try {
 			initializeRequest();
@@ -149,7 +149,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	            log.debug("<< [AMF3 RESPONSES] %s", (Object)responses);
 	
 	            byte[] resultData = serialize(getGravity(), responses);
-	            
+
 	            connection.sendMessage(resultData, 0, resultData.length);
             }
 		}
@@ -226,7 +226,6 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	public boolean runReceived(AsyncHttpContext asyncHttpContext) {
 		
 		LinkedList<AsyncMessage> messages = null;
-		ByteArrayOutputStream os = null;
 
 		try {
 			receivedQueueLock.lock();
@@ -258,8 +257,24 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
             log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
 
             byte[] msg = serialize(gravity, messagesArray);
-	        connection.sendMessage(msg, 0, msg.length);
-	        
+            if (msg.length > 16000) {
+                // Split in ~2000 bytes chunks
+                int count = msg.length / 2000;
+                int chunkSize = messagesArray.length / count;
+                int index = 0;
+                while (index < messagesArray.length) {
+                    AsyncMessage[] chunk = Arrays.copyOfRange(messagesArray, index, Math.min(messagesArray.length, index+chunkSize));
+                    msg = serialize(gravity, chunk);
+                    log.debug("Send binary message: %d msgs (%d bytes)", chunk.length, msg.length);
+                    connection.sendMessage(msg, 0, msg.length);
+                    index += chunkSize;
+                }
+            }
+            else {
+                connection.sendMessage(msg, 0, msg.length);
+                log.debug("Send binary message: %d msgs (%d bytes)", messagesArray.length, msg.length);
+            }
+
 	        return true; // Messages were delivered
 		}
 		catch (IOException e) {
@@ -288,15 +303,6 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 			return true; // Messages weren't delivered, but http context isn't valid anymore.
 		}
 		finally {
-			if (os != null) {
-				try {
-					os.close();
-				}
-				catch (Exception e) {
-					// Could not close bytearray ???
-				}
-			}
-			
 			// Cleanup serialization context (thread local)
 			try {
 				GraniteContext.release();
