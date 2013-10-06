@@ -40,7 +40,6 @@ import org.granite.generator.as3.JavaAs3Input;
 import org.granite.generator.as3.JavaAs3Output;
 import org.granite.generator.gsp.GroovyTemplate;
 import org.granite.generator.java.JavaGroovyTransformer;
-import org.granite.test.container.Utils;
 import org.granite.test.generator.MockJavaAs3GroovyConfiguration;
 import org.granite.test.generator.MockJavaFXGroovyConfiguration;
 import org.granite.test.generator.MockListener;
