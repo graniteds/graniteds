@@ -123,23 +123,23 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 	        		genericType = buildGenericTypeName((ParameterizedType)jType, declaringClass, declaringTypes, propertyType, imports);
 	        	
 	            if (propertyType.isProperty() && List.class.isAssignableFrom(jClass)) {
-	            	imports.add("org.granite.client.persistence.collection.javafx.FXPersistentCollections");
+	            	imports.add("org.granite.client.javafx.persistence.collection.FXPersistentCollections");
 	                javafxType = new JavaFXType("javafx.collections", "ObservableList" + genericType, "javafx.beans.property.ReadOnlyListProperty" + genericType, "javafx.beans.property.ReadOnlyListWrapper" + genericType, "FXPersistentCollections.readOnlyObservablePersistentList", null, true);
 	            }
                 else if (propertyType.isProperty() && SortedSet.class.isAssignableFrom(jClass)) {
-                    imports.add("org.granite.client.persistence.collection.javafx.FXPersistentCollections");
+                    imports.add("org.granite.client.javafx.persistence.collection.FXPersistentCollections");
                     javafxType = new JavaFXType("javafx.collections", "ObservableSet" + genericType, "javafx.beans.property.ReadOnlySetProperty" + genericType, "javafx.beans.property.ReadOnlySetWrapper" + genericType, "FXPersistentCollections.readOnlyObservablePersistentSortedSet", null, true);
                 }
 	            else if (propertyType.isProperty() && Set.class.isAssignableFrom(jClass)) {
-	            	imports.add("org.granite.client.persistence.collection.javafx.FXPersistentCollections");
+	            	imports.add("org.granite.client.javafx.persistence.collection.FXPersistentCollections");
 	                javafxType = new JavaFXType("javafx.collections", "ObservableSet" + genericType, "javafx.beans.property.ReadOnlySetProperty" + genericType, "javafx.beans.property.ReadOnlySetWrapper" + genericType, "FXPersistentCollections.readOnlyObservablePersistentSet", null, true);
 	            }
                 else if (propertyType.isProperty() && SortedMap.class.isAssignableFrom(jClass)) {
-                    imports.add("org.granite.client.persistence.collection.javafx.FXPersistentCollections");
+                    imports.add("org.granite.client.javafx.persistence.collection.FXPersistentCollections");
                     javafxType = new JavaFXType("javafx.collections", "ObservableMap" + genericType, "javafx.beans.property.ReadOnlyMapProperty" + genericType, "javafx.beans.property.ReadOnlyMapWrapper" + genericType, "FXPersistentCollections.readOnlyObservablePersistentSortedMap", null, true);
                 }
 	            else if (propertyType.isProperty() && Map.class.isAssignableFrom(jClass)) {
-	            	imports.add("org.granite.client.persistence.collection.javafx.FXPersistentCollections");
+	            	imports.add("org.granite.client.javafx.persistence.collection.FXPersistentCollections");
 	                javafxType = new JavaFXType("javafx.collections", "ObservableMap" + genericType, "javafx.beans.property.ReadOnlyMapProperty" + genericType, "javafx.beans.property.ReadOnlyMapWrapper" + genericType, "FXPersistentCollections.readOnlyObservablePersistentMap", null, true);
 	            }
 	            else if (jClass.getName().equals("com.google.appengine.api.datastore.Key")) {
