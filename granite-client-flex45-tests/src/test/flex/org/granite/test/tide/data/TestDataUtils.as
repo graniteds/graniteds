@@ -1,3 +1,24 @@
+/*
+ *   GRANITE DATA SERVICES
+ *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+ *
+ *   This file is part of the Granite Data Services Platform.
+ *
+ *   Granite Data Services is free software; you can redistribute it and/or
+ *   modify it under the terms of the GNU Lesser General Public
+ *   License as published by the Free Software Foundation; either
+ *   version 2.1 of the License, or (at your option) any later version.
+ *
+ *   Granite Data Services is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ *   General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public
+ *   License along with this library; if not, write to the Free Software
+ *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ *   USA, or see <http://www.gnu.org/licenses/>.
+ */
 /**
  * Created by william on 03/10/13.
  */
@@ -31,13 +52,13 @@ package org.granite.test.tide.data {
         [Test]
         public function testDiffRandom():void {
             for (var count:int = 0; count < 500; count++) {
-                var oldSize = Math.floor(Math.random()*200);
-                var newSize = Math.floor(Math.random()*200);
+                var oldSize:int = Math.floor(Math.random()*200);
+                var newSize:int = Math.floor(Math.random()*200);
 
                 var max:int = Math.max(oldSize,  newSize);
                 var c:Array = [];
                 for (var i:int = 0; i < max; i++)
-                    c[i] = new Classification(null, null, "C" + i);
+                    c[i] = new Classification(NaN, NaN, "C" + i);
 
                 var oldList:IList = new ArrayCollection();
                 var newList:IList = new ArrayCollection();

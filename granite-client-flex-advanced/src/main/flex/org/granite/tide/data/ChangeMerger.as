@@ -417,7 +417,7 @@ package org.granite.tide.data {
                 }
 
                 savedArray.splice(0, savedArray.length);
-                for (var key:Object in savedMap)
+                for (key in savedMap)
                     savedArray.push([ key, savedMap[key] ]);
             }
             else {

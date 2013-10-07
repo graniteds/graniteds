@@ -1,3 +1,37 @@
+/*
+ *   GRANITE DATA SERVICES
+ *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+ *
+ *   This file is part of the Granite Data Services Platform.
+ *
+ *                               ***
+ *
+ *   Community License: GPL 3.0
+ *
+ *   This file is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published
+ *   by the Free Software Foundation, either version 3 of the License,
+ *   or (at your option) any later version.
+ *
+ *   This file is distributed in the hope that it will be useful, but
+ *   WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *                               ***
+ *
+ *   Available Commercial License: GraniteDS SLA 1.0
+ *
+ *   This is the appropriate option if you are creating proprietary
+ *   applications and you are not prepared to distribute and share the
+ *   source code of your application under the GPL v3 license.
+ *
+ *   Please visit http://www.granitedataservices.com/license for more
+ *   details.
+ */
 /**
  * Created by william on 03/10/13.
  */
@@ -110,6 +144,8 @@ class ListDiff {
     }
 
     public function diff():void {
+        var i:int;
+
         for (_oldi = 0; _oldi < _oldList.length; _oldi++) {
             if (_skipOld.indexOf(_oldi) >= 0)
                 continue;
@@ -123,7 +159,7 @@ class ListDiff {
             // Lookup same element in new list
             var foundNext:int = -1;
             if (_newi < _newList.length-1) {
-                for (var i:int = _newi+1; i < _newList.length; i++) {
+                for (i = _newi+1; i < _newList.length; i++) {
                     if (_newList[i] == _oldList[_oldi] && !_delayedNew[i]) {
                         foundNext = i;
                         break;
@@ -154,7 +190,7 @@ class ListDiff {
                     var foundOld:int = -1;
                     // Lookup if the element is present later in the old list
                     if (_oldi < _oldList.length-1) {
-                        for (var i:int = _oldi+1; i < _oldList.length; i++) {
+                        for (i = _oldi+1; i < _oldList.length; i++) {
                             if (_newList[_newi] == _oldList[i] && _skipOld.indexOf(i) < 0) {
                                 foundOld = i;
                                 break;
