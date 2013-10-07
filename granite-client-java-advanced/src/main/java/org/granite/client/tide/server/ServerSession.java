@@ -392,7 +392,7 @@ public class ServerSession implements ContextAware {
         if (messagingChannel != null)
             return messagingChannel;
 
-        messagingChannel = channelFactory.newMessagingChannel(channelType + "amf", channelType, serverApp);
+        messagingChannel = channelFactory.newMessagingChannel(channelType, channelType + "amf", serverApp);
         return messagingChannel;
     }
 
