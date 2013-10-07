@@ -126,6 +126,7 @@ configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it
 
     test {
         workingDir = subproject.rootDir
+        ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
     }
 
 	javadoc {
