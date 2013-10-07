@@ -88,7 +88,7 @@ package org.granite.tide.service {
 
         private static var log:ILogger = Log.getLogger("org.granite.tide.service.ServerSession");
 
-        private var _server:IServerApp;
+        private var _serverApp:IServerApp;
 
         private var _destination:String = null;
 
@@ -111,20 +111,20 @@ package org.granite.tide.service {
 
         public function ServerSession(contextRoot:String = "", secure:Boolean = false, serverName:String = "", serverPort:String = "", destination:String = "server"):void {
             _destination = destination;
-            _server = new SimpleServerApp(contextRoot, secure, serverName, serverPort);
+            _serverApp = new SimpleServerApp(contextRoot, secure, serverName, serverPort);
 
             initServer();
         }
 		
-        public function set server(server:IServerApp):void {
-            if (server == _server)
+        public function set serverApp(serverApp:IServerApp):void {
+            if (serverApp == _serverApp)
                 return;
-            _server = server;
+            _serverApp = serverApp;
             initServer();
         }
 
         private function initServer():void {
-            _server.initialize();
+            _serverApp.initialize();
 
             // Update channelSets
             for (var type:String in _channelSetsByType) {
@@ -181,14 +181,14 @@ package org.granite.tide.service {
             var channelBuilders:Array = allByType(IChannelBuilder, true);
             var channel:Channel = null;
             for each (var channelBuilder:IChannelBuilder in channelBuilders) {
-                channel = channelBuilder.build(type, _server);
+                channel = channelBuilder.build(type, _serverApp);
                 if (channel != null) {
                     channelSet.addChannel(channel);
                     return channelSet;
                 }
             }
 
-            channel = _defaultChannelBuilder.build(type, _server);
+            channel = _defaultChannelBuilder.build(type, _serverApp);
             if (channel != null) {
                 channelSet.addChannel(channel);
                 return channelSet;
