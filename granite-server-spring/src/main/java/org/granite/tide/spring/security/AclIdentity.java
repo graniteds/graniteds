@@ -48,14 +48,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * 	Adapted from the Spring security JSP taglib
  */
 @TideEnabled
-public class AclIdentity3 extends Identity3 {
+public class AclIdentity extends Identity {
     
     private SidRetrievalStrategy sidRetrievalStrategy = null;
     private ObjectIdentityRetrievalStrategy objectIdentityRetrievalStrategy = null;
     private AclService aclService = null;
     
     
-    public AclIdentity3() {
+    public AclIdentity() {
     	sidRetrievalStrategy = new SidRetrievalStrategyImpl();
     	objectIdentityRetrievalStrategy = new ObjectIdentityRetrievalStrategyImpl();
     }

@@ -42,9 +42,9 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("deprecation")
 @TideEnabled
-public class Identity3 {
+public class Identity {
         
-    public Identity3() {
+    public Identity() {
     }
     
     

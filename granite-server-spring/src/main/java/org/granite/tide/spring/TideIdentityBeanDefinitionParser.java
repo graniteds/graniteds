@@ -56,20 +56,9 @@ public class TideIdentityBeanDefinitionParser extends AbstractSingleBeanDefiniti
 
     @Override
     protected String getBeanClassName(Element element) {
-    	// Determine Spring Security version
-    	boolean spring3 = false;
-    	try {
-    		getClass().getClassLoader().loadClass("org.springframework.security.access.AccessDeniedException");
-    		spring3 = true;
-    	}
-    	catch (ClassNotFoundException e) {
-    		// Assume Spring 2
-    	}
-    	
         String aclService = element.getAttribute("acl-service");
         return "org.granite.tide.spring.security." 
-        	+ (aclService != null && aclService.trim().length() > 0 ? "AclIdentity" : "Identity") 
-        	+ (spring3 ? "3" : "");
+        	+ (aclService != null && aclService.trim().length() > 0 ? "AclIdentity" : "Identity");
     }
 
     static void mapOptionalAttributes(Element element, ParserContext parserContext, BeanDefinitionBuilder builder, String... attrs) {
