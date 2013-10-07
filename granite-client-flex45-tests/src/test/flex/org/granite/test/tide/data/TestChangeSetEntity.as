@@ -34,6 +34,7 @@ package org.granite.test.tide.data
     import org.granite.tide.data.ChangeRef;
     import org.granite.tide.data.ChangeSet;
     import org.granite.tide.data.ChangeSetBuilder;
+    import org.granite.tide.data.CollectionChange;
     import org.granite.tide.data.CollectionChanges;
     
     
@@ -51,7 +52,7 @@ package org.granite.test.tide.data
         
         public var ctxDirty:Boolean;
         public var personDirty:Boolean;
-        
+
         [Test]
         public function testChangeSetEntity():void {
         	var person:Person = new Person();
@@ -347,9 +348,16 @@ package org.granite.test.tide.data
             ccs = CollectionChanges(changeSet.getChange(0).changes.testMap);
             Assert.assertEquals("ChangeSet add", 1, ccs.changes[0].type);
             Assert.assertEquals("ChangeSet add", 1, ccs.changes[1].type);
-            Assert.assertEquals("ChangeSet add key", "K2", ccs.changes[1].key.uid);
-			Assert.assertTrue("ChangeSet add value", "test@test.com", ccs.changes[1].value.email);
-            Assert.assertFalse("ChangeSet add value uninit", ccs.changes[1].value.meta::isInitialized("person"));
+            var cc:CollectionChange = null;
+            for (var i:int = 0; i < ccs.changes.length; i++) {
+                if (ccs.changes[i].key.uid == "K2") {
+                    cc = ccs.changes[i];
+                    break;
+                }
+            }
+            Assert.assertNotNull("ChangeSet add key K2", cc);
+            Assert.assertTrue("ChangeSet add value", "test@test.com", cc.value.email);
+            Assert.assertFalse("ChangeSet add value uninit", cc.value.meta::isInitialized("person"));
         }
 		
 		
