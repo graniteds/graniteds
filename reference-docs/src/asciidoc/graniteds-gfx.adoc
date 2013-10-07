@@ -1,3 +1,5 @@
+:imagesdir: ./images
+
 [[graniteds.gfx]]
 == JavaFX Code Generator
 
@@ -20,8 +22,8 @@ Gfx may also replicate validation annotations in order to use the client side va
 The generator (named GFX) is implemented as an Ant task. This Ant task is packaged as an Eclipse 3.2+ Ant plugin but may also be used outside of Eclipse 
 for command line Ant calls. It can also be used with Maven by using the Maven ant runner plugin.
 
-NOTE
-=====
+[NOTE]
+====
 You may wonder why it is necessary let alone useful to generate Java classes from Java classes.
  
 1. The JavaFX programming model is *very* different from JPA and you probably don't want a dependency on JPA on your client classes  
@@ -29,7 +31,7 @@ You may wonder why it is necessary let alone useful to generate Java classes fro
     your client app (to be able to deserialize proxies for example). This is probably not what you want.
 3. We think it's much better to completely separate the client and server parts of the application and keep the dependencies where they have a meaning 
     (you probably don't want to try to persist JavaFX bindable entities with JPA).
-===== 
+====
 
 [[gfx.classes]]
 === Generated JavaFX Classes

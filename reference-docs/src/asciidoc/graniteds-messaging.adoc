@@ -1,3 +1,5 @@
+:imagesdir: ./images
+
 [[graniteds.messaging]]
 == Messaging (Gravity)
 

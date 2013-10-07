@@ -1,5 +1,6 @@
-[[graniteds.datamanagement]]
+:imagesdir: ./images
 
+[[graniteds.datamanagement]]
 == Data Management
 
 GraniteDS provides various features that simplify the handling of data transfer between Flex and Java EE, in particular when using JPA or Hibernate as a persistence mechanism. 

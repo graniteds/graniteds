@@ -38,12 +38,12 @@ however it can be useful to know how things work at the lower level in case you 
 === Server libraries
 
 The GraniteDS server libraries are available from the +libraries/server+ folder of the distribution. 
-You will always need +granite.jar+ which contains the core features of GraniteDS.
+You will always need +granite-server.jar+ which contains the core features of GraniteDS.
 Usually you will have to include the jar corresponding to
 
-- your server framework (++granite-spring.jar++ for Spring for example)
-- your JPA provider (++granite-hibernate.jar++ for Hibernate) 
-- other integration libraries, for example ++granite-beanvalidation.jar++ if you want to benefit from the integration with the Bean Validation API on the server.  
+- your server framework (++granite-server-spring.jar++ for Spring for example)
+- your JPA provider (++granite-server-hibernate.jar++ for Hibernate)
+- other integration libraries, for example ++granite-server-beanvalidation.jar++ if you want to benefit from the integration with the Bean Validation API on the server.
 
 [[setup.webxml]]
 === Configuring +web.xml+
@@ -213,7 +213,7 @@ private function init():void {
 ----
 
 [[setup.ant]]
-=== Developing with Ant
+=== Building with Ant
 
 _Ant_ is probably one of the most popular build tools. 
 The Flex SDK comes with a set of ant tasks that can perform various development tasks, 
@@ -277,11 +277,11 @@ ifdef::java[]
 [[setup.client.jars]]
 === Client libraries
 
-+granite-client.jar+ is the core Java client library. It includes a stripped down version of the 
-core server +granite.jar+ that includes the minimal core of GraniteDS necessary on the client and 
++granite-client-java.jar+ is the core Java client library. It includes a stripped down version of the
+core server +granite-server.jar+ that includes the minimal core of GraniteDS necessary on the client and
 the core Java client library.
 
-+granite-javafx-client.jar+ contains the Tide client framework and the specific integration for JavaFX. 
++granite-client-javafx.jar+ contains the Tide client framework and the specific integration for JavaFX.
 
 For remoting and Comet support, the GraniteDS client requires the Apache Asynchronous HTTP client, 
 and for WebSocket, the Jetty WebSocket client. All these jars can be found in the +libraries/java-client/dependencies+ 
@@ -291,31 +291,69 @@ You simply have to add the necessary GraniteDS jars and dependencies to your app
 endif::java[]
 
 [[setup.maven]]
-=== Developing with Maven
+=== Building with Maven
 
-_Maven_ is a popular build tool. Though GraniteDS itself is not built with Maven (all will probably never be), 
+Though GraniteDS itself is not built with Maven (all will probably never be),
 its artifacts are published in the Maven central repository and can thus be easily added as dependencies to any Maven project. 
 
-The Java dependencies for the server application are in the group +org.graniteds+. 
+The Java dependencies for the server application are under the group +org.graniteds+.
 
 [source,xml]
+.Sample dependencies for an EJB/Hibernate project
 ----
 <dependency>
     <groupId>org.graniteds</groupId>
-    <artifactId>granite-core</artifactId>
+    <artifactId>granite-server</artifactId>
     <version>${graniteds.version}</version>
     <type>jar</type>
 </dependency>
 
 <dependency>
     <groupId>org.graniteds</groupId>
-    <artifactId>granite-hibernate</artifactId>
+    <artifactId>granite-server-ejb</artifactId>
     <version>${graniteds.version}</version>
     <type>jar</type>
 </dependency>
 
+<dependency>
+    <groupId>org.graniteds</groupId>
+    <artifactId>granite-server-hibernate</artifactId>
+    <version>${graniteds.version}</version>
+    <type>jar</type>
+</dependency>
 ...	
 ----
+
+Here is the list of available server libraries artifacts:
+
+|===
+| artifactId                    | Role              | License |
+
+| granite-server                | Core library      | LGPL 2.1 |
+
+| granite-server-spring         | Spring 3+ framework integration  | LGPL 2.1 |
+
+| granite-server-spring2        | Spring 2.x framework integration  | LGPL 2.1 |
+
+| granite-server-ejb            | EJB 3+ integration  | LGPL 2.1 |
+
+| granite-server-cdi            | CDI (Weld only) integration  | LGPL 2.1 |
+
+| granite-server-seam2          | Seam 2 framework integration  | LGPL 2.1 |
+
+| granite-server-hibernate      | Hibernate 3.x integration  | LGPL 2.1 |
+
+| granite-server-hibernate4     | Hibernate 4.x integration  | LGPL 2.1 |
+
+| granite-server-toplink        | TopLink essentials integration  | LGPL 2.1 |
+
+| granite-server-eclipselink    | EclipseLink integration  | LGPL 2.1 |
+
+| granite-server-datanucleus    | DataNucleus integration  | LGPL 2.1 |
+
+| granite-server-udp            | UDP messaging support | GPL 3 / Commercial |
+
+|===
 
 ifdef::flex[]
 The Flex application can be built using the link:$$http://flexmojos.sonatype.org/$$[Flexmojos] plugin. 
@@ -356,14 +394,14 @@ FlexUnit, and the GraniteDS Flex libraries :
         <dependency>
             <scope>internal</scope>
             <groupId>org.graniteds</groupId>
-            <artifactId>granite-essentials-swc</artifactId>
+            <artifactId>granite-client-flex</artifactId>
             <version>${graniteds.version}</version>
             <type>swc</type>
         </dependency>
     
         <dependency>
             <groupId>org.graniteds</groupId>
-            <artifactId>granite-swc</artifactId>
+            <artifactId>granite-client-flex-advanced</artifactId>
             <version>${graniteds.version}</version>
             <type>swc</type>
         </dependency>
@@ -427,6 +465,23 @@ FlexUnit, and the GraniteDS Flex libraries :
     </build>
 </project>        
 ----
+
+The necessary dependencies depend on the target Flex SDK and on the features required by the application.
+Here is the list of available Flex client libraries artifacts:
+
+|===
+| artifactId                    | Role              | License   |
+
+| granite-client-flex           | Core library (basic remoting + messaging)   | LGPL 2.1 |
+
+| granite-client-flex-advanced  | Advanced features library for Flex 3.x and Flex 4.0/4.1 (Tide framework, data management, validation...) | GPL 3 / Commercial |
+
+| granite-client-flex-advanced  | Advanced features library for Flex 4.5+ including Apache Flex (Tide framework, data management, validation...) | GPL 3 / Commercial |
+
+| granite-client-flex-udp       | UDP client library (requires AIR) | GPL 3 / Commercial |
+
+|===
+
 endif::flex[]
 
 ifdef::java[]
@@ -436,7 +491,7 @@ The dependencies for the Java client application are as follows:
 ----
 <dependency>
     <groupId>org.graniteds</groupId>
-    <artifactId>granite-client</artifactId>
+    <artifactId>granite-client-java</artifactId>
     <version>${graniteds.version}</version>
     <type>jar</type>
 </dependency>
@@ -471,6 +526,20 @@ The dependencies for the Java client application are as follows:
  	<type>jar</type>
 </dependency>		
 ----
+
+|===
+| artifactId                    | Role              | License   |
+
+| granite-client-java           | Core library (basic remoting + messaging)   | LGPL 2.1 |
+
+| granite-client-javafx         | Advanced features library for JavaFX (data management, validation...) | GPL 3.0 / Commercial |
+
+| granite-client-android        | Advanced features library for Flex 4.5+ including Apache Flex (Tide framework, data management, validation...) | GPL 3.0 / Commercial |
+
+| granite-client-java-udp       | UDP client library | GPL 3.0 / Commercial |
+
+|===
+
 endif::java[]
 
 ifdef::flex[]
@@ -632,3 +701,4 @@ image::fb8.png[Step 8]
 If you have configured a target server (Tomcat for example), you now have a complete environment to run your application. 
 All changes to the Flex application will be automatically deployed to Tomcat thanks to the Eclipse WTP 
 automatic publishing of the +WebContent+ folder. 
+endif::flex[]

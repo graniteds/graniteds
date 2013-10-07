@@ -1,0 +1,43 @@
+= GraniteDS Flex Reference Guide
+William Drai <william.drai@graniteds.org>, Franck Wolff <franck.wolff@graniteds.org>
+{docdate}
+:version:
+:imagesdir: ./images
+
+Version {version}
+
+include::graniteds-overview.adoc[]
+
+include::graniteds-gettingstarted.adoc[]
+
+include::graniteds-usagescenarios.adoc[]
+
+include::graniteds-projectsetup.adoc[]
+
+include::graniteds-remoting.adoc[]
+
+include::graniteds-gas3.adoc[]
+
+include::graniteds-messaging.adoc[]
+
+include::graniteds-ejb3.adoc[]
+
+include::graniteds-spring.adoc[]
+
+include::graniteds-seam2.adoc[]
+
+include::graniteds-ee6cdi.adoc[]
+
+include::graniteds-validation-flex.adoc[]
+
+include::graniteds-reflection-flex.adoc[]
+
+include::graniteds-bignumbers-flex.adoc[]
+
+include::graniteds-tideframework-flex.adoc[]
+
+include::graniteds-datamanagement-flex.adoc[]
+
+include::graniteds-extensibility.adoc[]
+
+include::graniteds-configuration.adoc[]

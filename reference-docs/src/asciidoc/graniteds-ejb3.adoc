@@ -1,3 +1,5 @@
+:imagesdir: ./images
+
 [[graniteds.ejb3]]
 == Integration with EJB3
 
@@ -988,3 +990,4 @@ the required role. It will always return +false+ until the remote call result is
 It is important to note that +identity+ caches the user access rights so only the first call to +hasRole()+ will be remote. If the user rights have changed 
 on the server, or if you want to enforce security more than once per user session, you can clear the security cache manually with +identity.clearSecurityCache()+, 
 for example periodically in a +Timer+. 
+endif::flex[]

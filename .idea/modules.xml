@@ -41,6 +41,7 @@
       <module fileurl="file://$PROJECT_DIR$/granite-server-toplink/granite-server-toplink.iml" filepath="$PROJECT_DIR$/granite-server-toplink/granite-server-toplink.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-server-udp/granite-server-udp.iml" filepath="$PROJECT_DIR$/granite-server-udp/granite-server-udp.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-server-weblogic/granite-server-weblogic.iml" filepath="$PROJECT_DIR$/granite-server-weblogic/granite-server-weblogic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/reference-docs/reference-docs.iml" filepath="$PROJECT_DIR$/reference-docs/reference-docs.iml" />
     </modules>
   </component>
 </project>

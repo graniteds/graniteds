@@ -1,4 +1,4 @@
-:imagedir: ./images
+:imagesdir: ./images
 
 [[graniteds.configuration]]
 == Configuration Reference

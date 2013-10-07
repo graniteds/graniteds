@@ -1,3 +1,5 @@
+:imagesdir: ./images
+
 [[graniteds.remoting]]
 == Remoting and serialization
 
@@ -1089,7 +1091,7 @@ endif::java[]
 
 ifdef::flex[]
 [[remoting.externalization]]
-=== Externalizers and AS3 code generationExternalizers and Java code generation
+=== Externalizers and AS3 code generation
 
 In some cases it can be necessary to serialize private fields of a Java class (for example the +@Version+ field of a JPA entity). Due to the limited capabilities 
 of the ActionScript 3 reflection API than cannot access private fields, it is necessary to create  an externalizable AS3 class 
@@ -1531,8 +1533,8 @@ GraniteDS comes with a set of built-in externalizers for the most usual kinds of
     Include +granite-datanucleus.jar+ in your classpath in order to use this feature. 
 * ++org.granite.tide.cdi.TideEventExternalizer++: this externalizer externalizes classes annotated with the +TideEvent+ annotation. 
 * ++org.granite.messaging.amf.io.util.externalizer.LongExternalizer++: externalizes Java +long+ or +Long+ values. 
-*  ++org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer++: externalizes Java +BigInteger+ values. 
-*  ++org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer++: externalizes Java +BigDecimal+ values. 
+* ++org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer++: externalizes Java +BigInteger+ values.
+* ++org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer++: externalizes Java +BigDecimal+ values.
 
 ifdef::java[]
 [[remoting.extbuiltin.client]]
@@ -1549,7 +1551,7 @@ It is easy to write your own externalizer, you have to implement the +org.granit
 the +DefaultExternalizer+ class. There is no particular use case for this extension; it mostly depends on your specific needs  and you should look at 
 the standard externalizer implementations to figure out how to write your custom code. 
 
-If you use autoscan configuration, make sure your class is packaged in a jar accessible via the +GraniteConfig+ class loader (++granite.jar++ classpath), 
+If you use autoscan configuration, make sure your class is packaged in a jar accessible via the +GraniteConfig+ class loader (++granite-server.jar++ classpath),
 put a ++META-INF/granite-config.properties++ in your jar, even empty, and put relevant code in the accept method to define which classes your externalizer 
 should process: 
 

@@ -1,3 +1,5 @@
+:imagesdir: ./images
+
 [[graniteds.spring]]
 
 == Integration with Spring
@@ -769,7 +771,8 @@ public class HelloController {
 }	        
 ----
 
-This is almost identical to the standard Tide API described in the <<remoting.tideremoting,Tide remoting>> section, and all other methods apply for Spring.  
+This is almost identical to the standard Tide API described in the <<remoting.tideremoting,Tide remoting>> section, and all other methods apply for Spring.
+endif::java[]
 
 ifdef::flex[]
 [[spring.tideremotingtypesafe.flex]]

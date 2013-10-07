@@ -1,14 +1,15 @@
-:imagesDir: ./images
+:imagesdir: ./images
 
 [preface]
 == Project overview
 
 ifdef::flex[]
-_Granite Data Services_ (GraniteDS) is a comprehensive development and integration platform for building Flex / Java EE RIA  applications. The framework is completely open source and released under the LGPL v2 license. 
+_Granite Data Services_ (GraniteDS) is a comprehensive development and integration platform for building Flex / Java EE RIA applications.
 endif::flex[]
 ifdef::java[]
-_Granite Data Services_ (GraniteDS) is a comprehensive development and integration platform for building RIA applications with a Java EE backend and a Java/JavaFX frontend. The framework is completely open source and released under the LGPL v2 license. 
+_Granite Data Services_ (GraniteDS) is a comprehensive development and integration platform for building RIA applications with a Java EE backend and a Java/JavaFX frontend.
 endif::java[]
+The framework is completely open source and released partly under the LGPL 2.1 license, partly under a dual GPL 3 / commercial license for some advanced features.
 
 ifdef::flex[]
 Integration and features stack :  
@@ -33,64 +34,42 @@ The main features of GraniteDS are :
 The core development team is Franck Wolff and William Drai, two engineers from Granite Data Services. 
 Many people have contributed to GraniteDS by giving ideas, patches or new features. If you feel you should be listed below, please email link:$$http://www.graniteds.org/confluence/display/~fwolff$$[me]. 
 
-[[overview.spring]]
-=== Spring integration
-
-* Igor SAZHNEV: Initial Spring service factory implementation and Java Enum externalizer.			
+Spring integration::
+* Igor SAZHNEV: Initial Spring service factory implementation and Java Enum externalizer.
 * Francisco PEREDO: Acegi security support and Spring/Acegi/EJB 3 sample application.			
 * Sebastien DELEUZE (aka Bouiaw): Spring 2 security service.
 
-[[overview.seam]]
-=== Seam 2 Integration
-
+Seam 2 Integration::
 * Cameron INGRAM, Venkat DANDA and Stuart ROBERTSON: Seam integration implementation and Tide framework.
 
-[[overview.guice]]
-=== Guice/Warp integration
-
+Guice/Warp integration::
 * Matt GIACOMI: Initial Guice/Warp integration implementation and sample application.
 
-[[overview.grails]]
-=== Grails plugin
-
+Grails plugin::
 * Ford GUO: major improvements of the GDS/Grails plugin.
 
-[[overview.osgi]]
-=== OSGi integration
-
-* Zhang BIN: GDS/OSGi integration.
+OSGi integration::
+* Zhang BIN: Initial GDS/OSGi integration.
 					 
-[[overview.datanucleus]]
-=== DataNucleus Integration
-
+DataNucleus Integration::
 * Stephen MORE: initial DataNucleus engine support.
 					 
-[[overview.webcompiler]]
-=== Web MXML/ActionScript3 compiler
-
+Web MXML/ActionScript3 compiler::
 * Sebastien DELEUZE (aka Bouiaw) and Marvin FROEDER (aka VELO): A servlet-based compiler that compiles your MXML and ActionScript3 sources on the fly.
 
-[[overview.maven]]
-=== Maven build
-
-* Rafique ANWAR: Initial Maven POM files and deploy script (java.net).					
+Maven build::
+* Rafique ANWAR: Initial Maven POM files and deploy script (java.net).
 * Edward YAKOP: Improved Maven POM files and deploy script (Sonatype).
 
-[[overview.gas3]]
-=== ActionScript3 code generation
-
+ActionScript3 code generation::
 * Francesco FARAONE and Saverio TRIONE: Gas3 extension with typed as3 client proxies generation.
 
-[[overview.doc]]
-=== Documentation
-
-* Michael SLINN: Oversight.					
+Documentation::
+* Michael SLINN: Oversight.
 * Elizabeth Claire MYERS: Proofreading/editing.
 
-[[overview.other]]
-=== Other contributions
-
-* Francesco FARAONE: HibernateExternalizer Map support.					
+Other contributions::
+* Francesco FARAONE: HibernateExternalizer Map support.
 * Marcelo SCHROEDER: Service exception handler.
 * Sebastien GUIMONT: Initial Java Enum support in Gas3.				
 * Pedro GONCALVES: Improved service method finder for generics.

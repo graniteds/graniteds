@@ -1,7 +1,6 @@
-:imagesDir: ./images
+:imagesdir: ./images
 
 [[graniteds.gettingstarted]]
-
 == Getting Started
 
 This section introduces:
@@ -61,7 +60,7 @@ In order to create, build, and deploy this sample application you need these fre
     For example, +$$/flex_4_6_sdk$$+ (for Windows users: ++$$C:\Dev\flex_4_6_sdk$$++).             
 * __Tomcat 7+__: Download link:$$http://tomcat.apache.org/download-70.cgi$$[Tomcat] and unzip it somewhere. For example, +/apache-tomcat-7.0.29+ 
     (for Windows users: ++C:\Dev\apache-tomcat-7.0.29++). 
-* __granite.jar__: You may take it from any of the GraniteDS sample applications or from GraniteDS source distribution in the +libraries/server+ folder. 
+* __granite-server.jar__: You may take it from any of the GraniteDS sample applications or from GraniteDS source distribution in the +libraries/server+ folder.
     Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
 
 Creation of the project in Eclipse: 
@@ -89,7 +88,7 @@ public class HelloWorldService {
 
 You should now see something like the following picture under Eclipse: 
 
-image:hwservice.jpg 
+image::hwservice.jpg
 
 Now let create the Flex client code. Create a new folder named +flex+ by right-clicking on the +helloworld+ project  and selecting _New / Folder_. 
 Create a new file directly in this new folder and name it +HelloWorld.mxml+ by right-clicking on the +flex+ folder and selecting _New / File_. 
@@ -127,11 +126,11 @@ In the file editor, which may be Flah Builder or a simple text editor depending 
 
 You should now see something like the following picture under Eclipse:  
 
-image:hwclient.jpg
+image::hwclient.jpg
 
 Now we have to create the two main GraniteDS configuration files +services-config.xml+ and +web.xml+ at the root of the project. You should now see:   
 
-image:config.jpg
+image::config.jpg
 
 Copy and paste the following code into these files: 
 
@@ -269,13 +268,13 @@ From top to bottom:
 
 Here is basic flow chart that summarizes the expected communication between the Flex client application and the Java server:  
 
-image:flow.jpg
+image::flow.jpg
 
 The last thing to do is to build and deploy the application. 
 
-First we have to add the +granite.jar+ library and create a build file, here using Ant. 
+First we have to add the +granite-server.jar+ library and create a build file, here using Ant.
 
-Create a new folder named +lib+ at the root of the project and put +granite.jar+ into this new folder. Create a new file named +build.xml+ at the root of the project. 
+Create a new folder named +lib+ at the root of the project and put +granite-server.jar+ into this new folder. Create a new file named +build.xml+ at the root of the project.
 Copy and paste the following content into it; you may have to modify the properties +$$FLEX_HOME$$+ and +$$TOMCAT_HOME$$+ to reflect your environment: 
 
 [source,xml]
@@ -321,7 +320,7 @@ Copy and paste the following content into it; you may have to modify the propert
 
 You should see something like the following picture:  
 
-image:build.jpg
+image::build.jpg
 
 You may now right-click on the +build.xml+ file and select _Run As / Ant Build_. This will launch the build process,  compile the MXML code to an SWF, 
 create a WAR (Web Archive), and copy it into your Tomcat +webapps+ directory. 
@@ -335,7 +334,7 @@ endif::flex[]
 
 ifdef::java[]
 [[gettingstarted.helloworld.java]]
-===Hello World, POJO
+=== Hello World, POJO
 
 This section will guide you through the setting up of a very basic GraniteDS project deployed in Tomcat and a Java command line client. 
 Expected result is a typical "Hello, world" application. 
@@ -353,9 +352,9 @@ In order to create, build, and deploy this sample application you need these fre
 * __Eclipse 3.5+__: Download link:$$http://www.eclipse.org/downloads/$$[Eclipse] and unzip it somewhere.             
 * __Tomcat 7+__: Download link:$$http://tomcat.apache.org/download-70.cgi/$$[Tomcat] and unzip it somewhere. 
     For example, +/apache-tomcat-7.0.29+ (for Windows users: ++C:\apache-tomcat-7.0.29++). 
-* __granite.jar__: You may take it from the GraniteDS distribution in the +libraries/server+ folder. 
+* __granite-server.jar__: You may take it from the GraniteDS distribution in the +libraries/server+ folder.
     Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
-* _granite-client.jar_: You may take it from any of the GraniteDS sample applications or from GraniteDS source distribution in the +libraries/java-client+ folder. 
+* _granite-client-java.jar_: You may take it from any of the GraniteDS sample applications or from GraniteDS source distribution in the +libraries/java-client+ folder.
     Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
 
 Creation of the project in Eclipse: 
@@ -448,7 +447,7 @@ Copy and paste the following code into these files:
 
 Next we have to build and deploy the server application: 
 
-Create a folder named +lib+ at the root of the project and put +granite.jar+ in this folder. Create a new file named +build.xml+ at the root of the 
+Create a folder named +lib+ at the root of the project and put +granite-server.jar+ in this folder. Create a new file named +build.xml+ at the root of the
 project and copy/paste the following content into it; you may have to modify +$$TOMCAT_HOME$$+ to reflect your environment: 
 
 .+build.xml+
@@ -486,7 +485,7 @@ on +startup.bat+, or +startup.sh+ for Unix/Mac users. After a short while, you s
 
 You should now see something like the following picture under Eclipse:  
 
-image:hwservicej.jpg
+image::hwservicej.jpg
 
 Now let create the Java client code, for this example we are simply going to create a command line application but we could use any Java view technology, 
 such as Swing, JavaFX, SWT or Android.  
@@ -584,15 +583,15 @@ url mapping for GraniteDS, but any other can work.
 
 [source,java]
 ----
-ApacheAsyncTransport transport = new ApacheAsyncTransport();
-transport.start();
-AMFRemotingChannel channel = new AMFRemotingChannel(transport, "graniteamf", 
+AMFChannelFactory channelFactory = new AMFChannelFactory();
+channelFactory.start();
+RemotingChannel channel = channelFactory.newRemotingChannel("graniteamf",
 	new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"));
 RemoteService srv = new RemoteService(channel, "helloWorldService");        
 ----
 
-This is the initialization part of the GraniteDS Java client. It requires creating a transport (here the default transport based on the Apache 
-asynchronous HTTP client), a remoting channel and a +RemoteService+ whose target destination matches the destination we declared earlier in the server configuration. 
+This is the initialization part of the GraniteDS Java client. It requires creating and starting a channel factory with the desired protocol (here AMF),
+creating a remoting channel and a +RemoteService+ whose target destination matches the destination declared earlier in the server configuration.
 
 [source,java]
 ----
@@ -617,7 +616,7 @@ srv.newInvocation("sayHello", args[0]).setTimeToLive(5, TimeUnit.SECONDS)
 ----
 
 This is the main client part where the +RemoteService+ triggers a server request that will call the +sayHello()+ method with the first argument 
-of the +main+ method:  +srv.sayHello(args\[0\])+. 
+of the +main+ method: +srv.sayHello(args[0])+.
 
 The result of this call will be displayed, when available, in the console output in the asynchronous result handler of the remote call.
 endif::java[] 
@@ -629,7 +628,7 @@ ifdef::flex[]
 This tutorial shows an evolution of the basic "Hello, world" example application with some Hibernate persistence operations (JPA). When finished and 
 deployed it should look like this picture:  
 
-image:hw1.jpg
+image::hw1.jpg
 
 In this picture, you see a small data grid that displays the history of all previous say hello operations. This history is persisted in the database
 by means of a JPA entity bean and those objects are serialized back to the Flex client each time you enter a new name. 
@@ -647,9 +646,9 @@ In order to create, build, and deploy this sample application you need these fre
     For example, +$$/flex_4_6_sdk$$+ (for Windows users: ++$$C:\Dev\flex_4_6_sdk$$++).             
 * __JBoss 4.2.3.GA__: Download link:$$http://www.jboss.org/jbossas/downloads/$$[JBoss] and unzip it somewhere. For example, +/jboss-4.2.3.GA+ 
     (for Windows users: ++C:\Dev\jboss-4.2.3.GA++). 
-* _granite.jar_, _granite-hibernate.jar_: You may take it from GraniteDS distribution in the +libraries/server+ folder. 
+* _granite-server.jar_, _granite-server-ejb.jar_, _granite-server-hibernate.jar_: You may take it from GraniteDS distribution in the +libraries/server+ folder.
     Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
-* _granite-flex45.swc_, _granite-essentials.swc_: You may take it from GraniteDS distribution in the +libraries/flex-client+ folder. 
+* _granite-client-flex.swc_: You may take it from GraniteDS distribution in the +libraries/flex-client+ folder.
     Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
 * __GraniteDS Eclipse Builder__: You may download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here] 
     (follow these installation instructions <<graniteds.gas3,here>>). 
@@ -661,17 +660,17 @@ Start Eclipse and create a new Java project named +helloworld2+. You may just ty
 Because we are going to have two types of sources, Java and Flex MXML, it is better to rename the default Java source folder +src+ to +java+. 
 You can do this by right-clicking on the +src+ source folder and selecting _Refactor / Rename_. 
 
-Create a new directory named +lib+ at the root of this project and put +granite.jar+, +granite-hibernate.jar+, +granite-flex45.swc+ and +granite-essentials.swc+ 
-into it. Also add these two JBoss jars: +ejb3-persistence.jar+ and +jboss-ejb3x.jar+, which you will find in the +/jboss-4.2.3.GA/server/default/lib+ directory. 
+Create a new directory named +lib+ at the root of this project and put +granite-server.jar+, +granite-server-ejb.jar+, +granite-server-hibernate.jar+,
++granite-client-flex.swc+ into it. Also add these two JBoss jars: +ejb3-persistence.jar+ and +jboss-ejb3x.jar+, which you will find in the +/jboss-4.2.3.GA/server/default/lib+ directory.
 Right-click on those JBoss jars and select _Build Path / Add to Build Path_. 
 
 You should now see something like the following picture under Eclipse:  
  
-image:hw2.jpg 
+image::hw2.jpg
 
 Right-click on the +java+ source folder, select _New / Class_ and fill the New Java Class dialog as follows: 
 
-image:hw3.jpg 
+image::hw3.jpg
 
 Copy and paste the following code in the Java editor: 
 
@@ -780,7 +779,7 @@ operations with the +findWelcomeHistory()+ method.
 
 Your Java project should look like that after this step:  
 
-image:hw5.jpg
+image::hw5.jpg
 
 Now let create the Flex client code. Create a new folder named +flex+ by right-clicking on the +helloworld2+ project and selecting _New / Folder_. 
 Create a new file directly in this new folder and name it +HelloWorld.mxml+  by right-clicking on the +flex+ folder and selecting _New / File_. 
@@ -838,21 +837,21 @@ We are now going to configure the Granite Eclipse Builder that will generate the
 You can install it directly from the Eclipse marketplace, and restart. In your package explorer, right-click on the +helloworld2+ project and 
 select __Add GraniteDS Nature__:  
 
-image:hw6.jpg
+image::hw6.jpg
 
 In the configuration wizard, click on the _Add Folder_ button and select the +java+ source folder:  
 
-image:hw7.jpg
+image::hw7.jpg
 
 Select the _Excluded_ subnode and click on the _Edit_ button. In the following dialog, change the _Output Directory_ to +flex+, instead of the default +as3+, 
 and add the  +\*\*/\*Service\*.java+ exclusion pattern, as we don't want code generation for services, just for entities:  
 
-image:hw8.jpg
+image::hw8.jpg
 
 After those short configuration steps, you may accept all other default options and click directly on the _Finish_ button in the wizard. 
 The generation process starts and produces two files as shown in the following picture:  
 
-image:hw9.jpg
+image::hw9.jpg
 
 There is no need to modify those files for our short example but, if you want to add specific methods to your ActionScript 3 bean, you must put it in 
 the +Welcome.as+ class and not in the +WelcomeBase.as+ class that may be overwritten by subsequent generation processes. 
@@ -1018,7 +1017,7 @@ find detailed documentation on them on the Internet. Here is their contents.  Ag
 
 You should now see something like this in your package explorer:  
 
-image:hw10.jpg
+image::hw10.jpg
 
 The last thing to do is to build and deploy the application. 
 
@@ -1105,3 +1104,4 @@ create an ear (Enterprise ARchive) and copy it into your JBoss +deploy+ director
 Finally start JBoss and test the application. To start JBoss, go to the directory +bin+ just under your JBoss installation directory, 
 +/jboss-4.2.3.GA/bin+ for example, and double-click on +run.bat+, or +run.sh+ for Unix/Mac users. After a short while, you should see in the console 
 that JBoss has started. You may now point your Web browser to link:$$http://localhost:8080/helloworld/$$[+http://localhost:8080/helloworld/+]. 
+endif::flex[]

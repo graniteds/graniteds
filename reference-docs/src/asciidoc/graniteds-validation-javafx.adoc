@@ -1,5 +1,6 @@
-[[graniteds.validation]]
+:imagesdir: ./images
 
+[[graniteds.validation]]
 == Client-Side Validation API (JSR 303)
 
 The "Bean Validation" link:$$http://jcp.org/en/jsr/detail?id=303$$[specification] (aka JSR-303) standardizes an annotation-based validation framework for Java. 

@@ -1,3 +1,5 @@
+:imagesdir: ./images
+
 [[graniteds.ee6cdi]]
 == Integration with CDI
 
@@ -153,8 +155,10 @@ The destination named +server+ will be the one and only destination required for
 [[cdi.tide]]
 === Using the Tide API
 
-Most of what is described in the <<remoting.tideremoting,Tide Remoting>> section applies for CDI, however GraniteDS also provides a much improved integration 
-with CDI when using the Tide client API. 
+ifdef::flex[]
+
+Most of what is described in the <<remoting.tideremoting.flex,Tide Remoting>> section applies for CDI, however GraniteDS also provides a much improved integration
+with CDI when using the Tide client API.
 
 [[cdi.tideremotingdi.flex]]
 ==== Basic remoting with dependency injection
@@ -199,9 +203,14 @@ for an CDI bean:
 </mx:Application>
 ----
 
-This is almost identical to the standard Tide API described in the <<remoting.tideremoting,Tide remoting>> section, and all other methods apply for CDI.  
+This is almost identical to the standard Tide API described in the <<remoting.tideremoting.flex,Tide remoting>> section, and all other methods apply for CDI.
+endif::flex[]
 
 ifdef::java[]
+
+Most of what is described in the <<remoting.tideremoting.java,Tide Remoting>> section applies for CDI, however GraniteDS also provides a much improved integration
+with CDI when using the Tide client API.
+
 [[cdi.tideremotingdi.java]]
 ==== Basic remoting with dependency injection
 
@@ -238,11 +247,11 @@ public class HelloController {
     }
 }
 ----
+
+This is almost identical to the standard Tide API described in the <<remoting.tideremoting.java,Tide remoting>> section, and all other methods apply for CDI.
 endif::java[]
 
 ifdef::flex[]
-This is almost identical to the standard Tide API described in the <<remoting.tideremoting,Tide remoting>> section, and all other methods apply for CDI.  
-
 [[cdi.tideremotingtypesafe.flex]]
 ==== Typesafe Remoting with Dependency Injection
 
@@ -542,7 +551,8 @@ has the required role. It will always return +false+ until the remote call resul
 
 It is important to note that +identity+ caches the user access rights so only the first call to +hasRole()+ will be remote. If the user rights have changed 
 on the server, or if you want to enforce security more than once per user session, you can clear the security cache manually with +identity.clearSecurityCache()+, 
-for example periodically in a +Timer+. 
+for example periodically in a +Timer+.
+endif::flex[]
 
 [[cdi.messaging]]
 === Messaging with CDI (Gravity)
