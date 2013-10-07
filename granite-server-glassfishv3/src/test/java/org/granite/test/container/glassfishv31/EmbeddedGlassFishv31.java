@@ -56,8 +56,8 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
 
         glassfish = glassfishRuntime.newGlassFish(serverProps);
 
-        war.addAsLibraries(new File("granite-server-glassfishv3/build/libs/").listFiles(new Utils.ArtifactFileFilter()));
-        war.addAsLibraries(new File("granite-server-eclipselink/build/libs/").listFiles(new Utils.ArtifactFileFilter()));
+        war.addAsLibraries(new File("granite-server-glassfishv3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
+        war.addAsLibraries(new File("granite-server-eclipselink/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.setWebXML(new File("granite-server-glassfishv3/src/test/resources/web-websocket.xml"));
 
         appName = war.getName().substring(0, war.getName().lastIndexOf("."));

@@ -68,7 +68,7 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
         host.setDeployOnStartup(true);
         host.setConfigClass(EmbeddedContextConfig.class.getCanonicalName());
 
-        war.addAsLibraries(new File("granite-server-tomcat7/build/libs/").listFiles(new Utils.ArtifactFileFilter()));
+        war.addAsLibraries(new File("granite-server-tomcat7/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.setWebXML(new File("granite-server-tomcat7/src/test/resources/web-websocket.xml"));
 
         warFile = new File(appBase, war.getName());

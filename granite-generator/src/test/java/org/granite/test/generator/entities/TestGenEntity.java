@@ -22,7 +22,7 @@
 package org.granite.test.generator.entities;
 
 import java.io.File;
-import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
@@ -260,15 +260,15 @@ public class TestGenEntity {
 	
 	
 	private void checkCompile(JavaFileObject... sources) {
-        File[] clientJavaJars = new File("granite-client-java/build/libs/").listFiles(new ArtifactFileFilter());
-        File[] clientJavaFXJars = new File("granite-client-javafx/build/libs/").listFiles(new ArtifactFileFilter());
+        File clientJavaJar = new File("granite-client-java/build/libs/").listFiles(new ArtifactFilenameFilter())[0];
+        File clientJavaFXJar = new File("granite-client-javafx/build/libs/").listFiles(new ArtifactFilenameFilter())[0];
         File testClasses = new File("test-classes");
         testClasses.mkdirs();
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		String jfxJar = System.getenv("JAVA_HOME") + "/jre/lib/jfxrt.jar";
 		String[] options = new String[] {
-			"-classpath", jfxJar + File.pathSeparator + clientJavaJars[0].getPath() + File.pathSeparator + clientJavaFXJars[0].getPath(),
+			"-classpath", jfxJar + File.pathSeparator + clientJavaJar.getPath() + File.pathSeparator + clientJavaFXJar.getPath(),
 			"-d", "test-classes"
 		};
 		Boolean compileOk = compiler.getTask(null, null, null, Arrays.asList(options), null, Arrays.asList(sources)).call();
@@ -308,10 +308,10 @@ public class TestGenEntity {
 	    }
 	}
 
-    public static class ArtifactFileFilter implements FileFilter {
+    public static class ArtifactFilenameFilter implements FilenameFilter {
         @Override
-        public boolean accept(File file) {
-            return !file.getName().endsWith("-sources.jar") && !file.getName().endsWith("-javadoc.jar");
+        public boolean accept(File dir, String name) {
+            return !name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar");
         }
     }
 }

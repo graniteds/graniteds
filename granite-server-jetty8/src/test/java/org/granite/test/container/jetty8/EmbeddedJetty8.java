@@ -61,7 +61,7 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
         jetty.setConnectors(new Connector[]{connector});
         jetty.setHandler(new HandlerCollection(true));
 
-        war.addAsLibraries(new File("granite-server-jetty8/build/libs/").listFiles(new Utils.ArtifactFileFilter()));
+        war.addAsLibraries(new File("granite-server-jetty8/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         // Not sure why these libs muse be added as they are already in the classpath
         war.addAsLibrary(Utils.findJarContainingResource("META-INF/maven/org.eclipse.jetty/jetty-websocket/pom.xml"));
         war.addAsLibrary(Utils.findJarContainingResource("META-INF/maven/org.eclipse.jetty/jetty-server/pom.xml"));

@@ -23,6 +23,7 @@ package org.granite.test.container;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -49,10 +50,10 @@ public class Utils {
         }
     }
 
-    public static class ArtifactFileFilter implements FileFilter {
+    public static class ArtifactFilenameFilter implements FilenameFilter {
         @Override
-        public boolean accept(File file) {
-            return !file.getName().endsWith("-sources.jar") && !file.getName().endsWith("-javadoc.jar");
+        public boolean accept(File dir, String name) {
+            return !name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar");
         }
     }
 }
