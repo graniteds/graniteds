@@ -43,6 +43,7 @@ package org.granite.hibernate.jmf;
 
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodecService;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -50,6 +51,14 @@ import org.granite.messaging.jmf.codec.ExtendedObjectCodecService;
 public class Hibernate3CodecService implements ExtendedObjectCodecService {
 
 	public ExtendedObjectCodec[] getExtensions() {
+        try {
+            // Check if Hibernate 3 is present
+            TypeUtil.forName("org.hibernate.engine.SessionFactoryImplementor");
+        }
+        catch (ClassNotFoundException e) {
+            return new ExtendedObjectCodec[0];
+        }
+
 		return new ExtendedObjectCodec[] {
 			new PersistentSetCodec(),
 			new PersistentListCodec(),

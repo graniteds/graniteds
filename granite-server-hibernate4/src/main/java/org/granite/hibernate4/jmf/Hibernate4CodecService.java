@@ -43,6 +43,7 @@ package org.granite.hibernate4.jmf;
 
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodecService;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -50,7 +51,15 @@ import org.granite.messaging.jmf.codec.ExtendedObjectCodecService;
 public class Hibernate4CodecService implements ExtendedObjectCodecService {
 
 	public ExtendedObjectCodec[] getExtensions() {
-		return new ExtendedObjectCodec[] {
+        try {
+            // Check if Hibernate 4 is present
+            TypeUtil.forName("org.hibernate.service.Service");
+        }
+        catch (ClassNotFoundException e) {
+            return new ExtendedObjectCodec[0];
+        }
+
+        return new ExtendedObjectCodec[] {
 			new PersistentSetCodec(),
 			new PersistentListCodec(),
 			new PersistentBagCodec(),
