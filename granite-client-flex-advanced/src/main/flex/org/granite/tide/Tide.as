@@ -352,7 +352,9 @@ package org.granite.tide {
 		 */
 		protected function resetApplication():void {
 			_contextManager.destroyContexts(true);
-			
+            // Cleanup app domains so each unit test is not polluted with other registrations
+            Type.resetRegisteredDomains();
+
 			var app:Object = currentApplication();
 			app.removeEventListener(Event.ADDED, addedHandler);
 	        app.systemManager.removeEventListener(Event.ADDED, addedHandler);

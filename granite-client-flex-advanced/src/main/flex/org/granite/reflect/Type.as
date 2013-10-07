@@ -176,8 +176,12 @@ package org.granite.reflect {
 				for (var key:Object in _registeredDomains) {
 					var registeredDomain:ApplicationDomain = ApplicationDomain(key);
 					if (ClassUtil.hasDefinition(name, registeredDomain)) {
-						if (clazz != null)
-							throw new AmbiguousClassNameError("Class " + name + " exists in several application domains");
+						if (clazz != null) {
+                            if (isChildDomain(registeredDomain, domain))
+                                continue;
+                            else if (!isChildDomain(domain, registeredDomain))
+							    throw new AmbiguousClassNameError("Class " + name + " exists in several application domains");
+                        }
 						clazz = ClassUtil.forName(name, registeredDomain);
 						domain = registeredDomain;
 					}
@@ -188,6 +192,18 @@ package org.granite.reflect {
 			
 			return forClass(clazz, domain);
 		}
+
+        private static function isChildDomain(appDomain:ApplicationDomain, parentDomain:ApplicationDomain):Boolean {
+            if (appDomain === parentDomain)
+                return true;
+            var domain:ApplicationDomain = appDomain;
+            while (domain.parentDomain != null) {
+                if (domain.parentDomain === parentDomain)
+                    return true;
+                domain = domain.parentDomain;
+            }
+            return false;
+        }
 		
 		/**
 		 * Returns <code>Type</code> instance for the supplied o instance parameter, in the optional
@@ -337,6 +353,17 @@ package org.granite.reflect {
 			}
 			return false;
 		}
+
+        /**
+         * Unregisters all application domains and children domains
+         */
+        public static function resetRegisteredDomains():void {
+            var domains:Array = [];
+            for (var domain:Object in _registeredDomains)
+                domains.push(domain);
+            for each (domain in domains)
+                unregisterDomain(ApplicationDomain(domain));
+        }
 		
 		/**
 		 * Unregisters an application domain and all its children domains. Additionally,
