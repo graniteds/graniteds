@@ -36,22 +36,21 @@ package org.granite.tide.events {
 	
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.utils.getQualifiedClassName;
-    import mx.logging.ILogger;
-    import mx.logging.Log;
-    import mx.messaging.messages.AsyncMessage;
-    import mx.messaging.events.MessageAckEvent;
-    import mx.messaging.events.MessageEvent;
-    import mx.utils.ObjectUtil;
-    import org.granite.reflect.Type;
-    import org.granite.gravity.Consumer;
-    import org.granite.gravity.Producer;
-    import org.granite.tide.service.DefaultChannelBuilder;
-    import org.granite.tide.service.ServerSession;
-    import org.granite.util.ClassUtil;
-    import org.granite.tide.BaseContext;
+	
+	import mx.logging.ILogger;
+	import mx.logging.Log;
+	import mx.messaging.events.MessageAckEvent;
+	import mx.messaging.events.MessageEvent;
+	import mx.messaging.messages.AsyncMessage;
+	import mx.utils.ObjectUtil;
+	
+	import org.granite.gravity.Consumer;
+	import org.granite.gravity.Producer;
+	import org.granite.reflect.Type;
+	import org.granite.tide.BaseContext;
 	import org.granite.tide.IComponent;
-	import org.granite.tide.service.IServerApp;
+	import org.granite.tide.service.DefaultChannelBuilder;
+	import org.granite.tide.service.ServerSession;
     
 
 	[Bindable]
@@ -74,9 +73,9 @@ package org.granite.tide.events {
         private var _type:String;
 
 
-        public function EventRouter(serverSession:ServerSession = null, type:String = DefaultChannelBuilder.LONG_POLLING):void {
+        public function EventRouter(serverSession:ServerSession = null, type:String = null):void {
             _serverSession = serverSession;
-            _type = type;
+            _type = (type ? type : DefaultChannelBuilder.LONG_POLLING);
         }
 
         public function set serverSession(serverSession:ServerSession):void {

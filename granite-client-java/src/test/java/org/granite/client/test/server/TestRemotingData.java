@@ -71,13 +71,11 @@ public class TestRemotingData {
     }
 
     private ContentType contentType;
-    private String containerClassName;
     private static EmbeddedContainer container;
 
     private static final ServerApp SERVER_APP_APP = new ServerApp("/data", false, "localhost", 8787);
 
     public TestRemotingData(String containerClassName, ContentType contentType) {
-        this.containerClassName = containerClassName;
         this.contentType = contentType;
     }
 
@@ -117,11 +115,13 @@ public class TestRemotingData {
         RemotingChannel channel = channelFactory.newRemotingChannel("graniteamf", SERVER_APP_APP, 1);
         RemoteService remoteService = new RemoteService(channel, "dataService");
 
-        ResponseMessage createResult = remoteService.newInvocation("create", new Data("dataSync" + contentType)).invoke().get();
+        @SuppressWarnings("unused")
+		ResponseMessage createResult = remoteService.newInvocation("create", new Data("dataSync" + contentType)).invoke().get();
 
         ResponseMessage findAllResult = remoteService.newInvocation("findAll").invoke().get();
 
-        List<Data> results = (List<Data>)findAllResult.getData();
+        @SuppressWarnings("unchecked")
+		List<Data> results = (List<Data>)findAllResult.getData();
         boolean found = false;
         for (Data result : results) {
             if (result.getValue().equals("dataSync" + contentType)) {
@@ -144,7 +144,8 @@ public class TestRemotingData {
             @Override
             public void onResult(ResultEvent event) {
                 remoteService.newInvocation("findAll").addListener(new ResultFaultIssuesResponseListener() {
-                    @Override
+                    @SuppressWarnings("unchecked")
+					@Override
                     public void onResult(ResultEvent event) {
                         results.addAll((List<Data>)event.getResult());
                         waitForResult.countDown();

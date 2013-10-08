@@ -24,9 +24,7 @@ package org.granite.client.test;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
-import org.granite.client.configuration.Configuration;
 import org.granite.client.messaging.channel.AsyncToken;
-import org.granite.client.messaging.channel.RemotingChannel;
 import org.granite.client.messaging.channel.amf.AMFRemotingChannel;
 import org.granite.client.messaging.codec.MessagingCodec;
 import org.granite.client.messaging.transport.Transport;

@@ -21,13 +21,14 @@
  */
 package org.granite.client.messaging.channel;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.granite.client.messaging.channel.amf.JMFAMFRemotingChannel;
-import org.granite.client.messaging.codec.*;
+import org.granite.client.messaging.codec.JMFAMF0MessagingCodec;
+import org.granite.client.messaging.codec.JMFAMF3MessagingCodec;
+import org.granite.client.messaging.codec.MessagingCodec;
 import org.granite.client.messaging.jmf.ClientSharedContext;
 import org.granite.client.messaging.jmf.DefaultClientSharedContext;
 import org.granite.client.messaging.jmf.ext.ClientEntityCodec;
@@ -130,6 +131,7 @@ public class JMFChannelFactory extends AbstractChannelFactory {
         return JMFAMFRemotingChannel.class;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
     protected <M> MessagingCodec<M> newMessagingCodec(Class<M> messageClass) {
         if (messageClass == flex.messaging.messages.Message[].class)

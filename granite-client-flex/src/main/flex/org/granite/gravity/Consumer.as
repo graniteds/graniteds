@@ -21,12 +21,9 @@
  */
 package org.granite.gravity {
 
-    import mx.controls.Alert;
     import mx.core.mx_internal;
-    import mx.logging.ILogger;
     import mx.logging.Log;
     import mx.messaging.events.ChannelEvent;
-    import mx.messaging.events.ChannelFaultEvent;
     import mx.messaging.events.MessageEvent;
     import mx.messaging.messages.AbstractMessage;
     import mx.messaging.messages.AcknowledgeMessage;
@@ -34,7 +31,6 @@ package org.granite.gravity {
     import mx.messaging.messages.CommandMessage;
     import mx.messaging.messages.ErrorMessage;
     import mx.messaging.messages.IMessage;
-    import mx.utils.ObjectUtil;
 
 	
 	[Event(name="message", type="mx.messaging.events.MessageEvent")]

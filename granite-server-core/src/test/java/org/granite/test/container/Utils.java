@@ -22,7 +22,6 @@
 package org.granite.test.container;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;

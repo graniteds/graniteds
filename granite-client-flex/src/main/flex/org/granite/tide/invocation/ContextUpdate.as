@@ -21,10 +21,6 @@
  */
 package org.granite.tide.invocation {
     
-    import flash.utils.IDataInput;
-    import flash.utils.IDataOutput;
-    import flash.utils.IExternalizable;
-    
     import org.granite.tide.IExpression;
 
 

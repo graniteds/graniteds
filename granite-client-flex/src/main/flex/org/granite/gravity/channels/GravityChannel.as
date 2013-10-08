@@ -21,11 +21,7 @@
  */
 package org.granite.gravity.channels {
 
-    import flash.events.*;
-    import flash.net.*;
-    import flash.utils.ByteArray;
     import flash.utils.Dictionary;
-    import flash.utils.Timer;
     
     import mx.logging.ILogger;
     import mx.logging.Log;
@@ -39,7 +35,6 @@ package org.granite.gravity.channels {
     import mx.messaging.messages.CommandMessage;
     import mx.messaging.messages.ErrorMessage;
     import mx.messaging.messages.IMessage;
-    import mx.utils.ObjectUtil;
     import mx.utils.URLUtil;
     
     import org.granite.gravity.Consumer;

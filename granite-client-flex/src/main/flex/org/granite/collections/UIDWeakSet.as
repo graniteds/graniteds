@@ -21,11 +21,10 @@
  */
 package org.granite.collections {
 
+    import flash.utils.Dictionary;
     import flash.utils.getQualifiedClassName;
-	import flash.utils.Dictionary;
-	import mx.core.IUID;
-    import mx.collections.ArrayCollection;
-    import mx.collections.IList;
+    
+    import mx.core.IUID;
 	
 	
     /**

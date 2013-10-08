@@ -36,7 +36,6 @@ package org.granite.collections {
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
-    import mx.utils.ObjectUtil;
     
     import org.granite.util.Enum;
 

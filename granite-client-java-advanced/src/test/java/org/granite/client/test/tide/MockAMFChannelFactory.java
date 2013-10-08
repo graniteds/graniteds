@@ -34,12 +34,9 @@
  */
 package org.granite.client.test.tide;
 
-import java.net.URI;
-
 import org.granite.client.configuration.Configuration;
 import org.granite.client.messaging.channel.AMFChannelFactory;
 import org.granite.client.messaging.channel.RemotingChannel;
-import org.granite.client.messaging.channel.amf.AMFRemotingChannel;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.client.test.MockAMFRemotingChannel;
 import org.granite.client.test.MockTransport;

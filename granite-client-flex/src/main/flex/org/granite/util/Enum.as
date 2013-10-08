@@ -24,7 +24,6 @@ package org.granite.util {
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
     import flash.utils.IExternalizable;
-    import flash.utils.Dictionary;
     import flash.utils.getQualifiedClassName;
 
     /**

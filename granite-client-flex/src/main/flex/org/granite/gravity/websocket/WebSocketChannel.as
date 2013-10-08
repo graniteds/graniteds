@@ -21,11 +21,10 @@
  */
 package org.granite.gravity.websocket {
 
-    import flash.events.*;
-    import flash.net.*;
+    import flash.events.TimerEvent;
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
-	import flash.utils.Timer;
+    import flash.utils.Timer;
     
     import mx.logging.ILogger;
     import mx.logging.Log;
@@ -43,7 +42,7 @@ package org.granite.gravity.websocket {
     
     import net.gimite.websocket.WebSocket;
     import net.gimite.websocket.WebSocketEvent;
-
+    
     import org.granite.gravity.channels.SessionAware;
 
     /**

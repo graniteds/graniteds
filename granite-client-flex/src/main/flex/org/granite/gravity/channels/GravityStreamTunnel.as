@@ -23,7 +23,6 @@ package org.granite.gravity.channels {
 
     import flash.events.Event;
     import flash.events.IOErrorEvent;
-    import flash.events.ProgressEvent;
     import flash.events.TimerEvent;
     import flash.utils.ByteArray;
     import flash.utils.Timer;

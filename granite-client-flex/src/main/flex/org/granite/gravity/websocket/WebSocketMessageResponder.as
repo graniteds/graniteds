@@ -24,11 +24,9 @@ package org.granite.gravity.websocket {
     import mx.messaging.Channel;
     import mx.messaging.MessageAgent;
     import mx.messaging.MessageResponder;
-    import mx.messaging.messages.IMessage;
-    import mx.utils.ObjectUtil;
-
     import mx.messaging.messages.AcknowledgeMessage;
     import mx.messaging.messages.ErrorMessage;
+    import mx.messaging.messages.IMessage;
 
 	[ExcludeClass]
     /**

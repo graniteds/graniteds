@@ -24,12 +24,9 @@ package org.granite.persistence {
     import flash.utils.IDataInput;
     import flash.utils.IDataOutput;
     
-    import mx.core.IUID;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
-    import mx.events.PropertyChangeEvent;
     
-    import org.granite.IValue;
     import org.granite.collections.BasicMap;
     import org.granite.collections.IPersistentCollection;
     import org.granite.collections.UIDArraySet;

@@ -21,21 +21,14 @@
  */
 package org.granite.persistence {
 
-import flash.events.Event;
-import flash.utils.IDataInput;
-    import flash.utils.IDataOutput;
-
-import mx.core.EventPriority;
-
-import mx.core.IUID;
-    import mx.events.CollectionEvent;
-    import mx.events.CollectionEventKind;
-    import mx.events.PropertyChangeEvent;
-    
-    import org.granite.IValue;
-    import org.granite.collections.IPersistentCollection;
-    import org.granite.collections.UIDList;
-
+	import flash.utils.IDataInput;
+	import flash.utils.IDataOutput;
+	
+	import mx.events.CollectionEvent;
+	import mx.events.CollectionEventKind;
+	
+	import org.granite.collections.IPersistentCollection;
+	import org.granite.collections.UIDList;
 
     /**
      * @author Franck WOLFF

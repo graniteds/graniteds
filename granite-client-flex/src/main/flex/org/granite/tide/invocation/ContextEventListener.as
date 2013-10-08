@@ -21,11 +21,6 @@
  */
 package org.granite.tide.invocation {
     
-    import flash.utils.IDataInput;
-    import flash.utils.IDataOutput;
-    import flash.utils.IExternalizable;
-
-
     [ExcludeClass]
     [RemoteClass(alias="org.granite.tide.invocation.ContextEventListener")]
     /**

@@ -19,6 +19,7 @@
         </excludedEntries>
       </libraryPathEntry>
       <libraryPathEntry kind="3" linkType="2" path="/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="true"/>
+      <libraryPathEntry kind="3" linkType="2" path="/granite-client-flex45-advanced/bin/granite-client-flex45-advanced.swc" useDefaultLinkType="true"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>

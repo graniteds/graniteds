@@ -77,14 +77,12 @@ public class TestMessagingChat {
     }
 
     private ContentType contentType;
-    private String containerClassName;
     private String channelType;
     protected static EmbeddedContainer container;
 
     private static final ServerApp SERVER_APP_APP = new ServerApp("/chat", false, "localhost", 8787);
 
     public TestMessagingChat(String containerClassName, ContentType contentType, String channelType) {
-        this.containerClassName = containerClassName;
         this.contentType = contentType;
         this.channelType = channelType;
     }

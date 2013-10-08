@@ -38,14 +38,12 @@ package org.granite.tide.service {
     import mx.logging.ILogger;
     import mx.logging.Log;
     import mx.messaging.Channel;
-    import mx.messaging.ChannelSet;
     import mx.messaging.channels.AMFChannel;
     import mx.messaging.channels.SecureAMFChannel;
-
+    
     import org.granite.gravity.channels.GravityChannel;
     import org.granite.gravity.channels.SecureGravityChannel;
     import org.granite.gravity.websocket.WebSocketChannel;
-    import org.granite.tide.Tide;
 
     /**
      * 	@author William DRAI

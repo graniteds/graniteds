@@ -22,25 +22,24 @@
 package org.granite.gravity.channels {
 
     import flash.events.Event;
+    import flash.events.EventDispatcher;
     import flash.events.HTTPStatusEvent;
     import flash.events.IOErrorEvent;
     import flash.events.ProgressEvent;
     import flash.events.SecurityErrorEvent;
-    import flash.events.EventDispatcher;
-    import flash.net.URLStream;
+    import flash.net.ObjectEncoding;
     import flash.net.URLRequest;
     import flash.net.URLRequestMethod;
-    import flash.net.ObjectEncoding;
+    import flash.net.URLStream;
     import flash.utils.ByteArray;
-	import flash.utils.getQualifiedClassName;
-
+    import flash.utils.getQualifiedClassName;
+    
     import mx.messaging.MessageResponder;
     import mx.messaging.events.ChannelFaultEvent;
-    import mx.messaging.messages.IMessage;
     import mx.messaging.messages.AbstractMessage;
     import mx.messaging.messages.AsyncMessage;
     import mx.messaging.messages.CommandMessage;
-    import mx.messaging.messages.ErrorMessage;
+    import mx.messaging.messages.IMessage;
     import mx.utils.ObjectUtil;
 
 	[ExcludeClass]

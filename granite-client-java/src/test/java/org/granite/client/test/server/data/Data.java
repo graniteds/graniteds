@@ -21,10 +21,13 @@
  */
 package org.granite.client.test.server.data;
 
-import javax.ejb.Stateless;
-import javax.persistence.*;
 import java.io.Serializable;
-import java.util.List;
+
+import javax.persistence.Basic;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 /**
  * Created by william on 30/09/13.

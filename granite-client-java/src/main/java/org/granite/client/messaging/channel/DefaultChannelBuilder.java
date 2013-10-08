@@ -67,7 +67,6 @@ public class DefaultChannelBuilder implements ChannelBuilder {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public RemotingChannel buildRemotingChannel(Class<? extends RemotingChannel> channelClass, String id, ServerApp serverApp, int maxConcurrentRequest, Transport transport, MessagingCodec<AMF0Message> codec) {
         String uri = (serverApp.getSecure() ? "https" : "http") + "://" + serverApp.getServerName() + ":" + serverApp.getServerPort() + serverApp.getContextRoot() + graniteUrlMapping;
 
@@ -79,7 +78,6 @@ public class DefaultChannelBuilder implements ChannelBuilder {
         }
     }
 
-    @SuppressWarnings("unchecked")
 	public MessagingChannel buildMessagingChannel(String channelType, String id, URI uri, Transport transport, MessagingCodec<Message[]> codec) {
         if (!(channelType.equals(LONG_POLLING_CHANNEL_TYPE) || channelType.equals(WEBSOCKET_CHANNEL_TYPE)))
             return null;
@@ -87,7 +85,6 @@ public class DefaultChannelBuilder implements ChannelBuilder {
         return new BaseAMFMessagingChannel(codec, transport, id, uri);
     }
 
-    @SuppressWarnings("unchecked")
     public MessagingChannel buildMessagingChannel(String channelType, String id, ServerApp serverApp, Transport transport, MessagingCodec<Message[]> codec) {
         String uri;
         if (channelType.equals(LONG_POLLING_CHANNEL_TYPE))

@@ -21,8 +21,6 @@
  */
 package org.granite.client.messaging.channel;
 
-import java.net.URI;
-
 import org.granite.client.configuration.Configuration;
 import org.granite.client.messaging.channel.amf.AMFRemotingChannel;
 import org.granite.client.messaging.codec.AMF0MessagingCodec;
@@ -71,7 +69,8 @@ public class AMFChannelFactory extends AbstractChannelFactory {
         return AMFRemotingChannel.class;
 	}
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     protected <M> MessagingCodec<M> newMessagingCodec(Class<M> messageClass) {
         if (messageClass == flex.messaging.messages.Message[].class)
             return (MessagingCodec<M>)new AMF3MessagingCodec(defaultConfiguration);

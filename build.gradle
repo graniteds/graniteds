@@ -1501,6 +1501,7 @@ project('granite-client-java') {
 
         testCompile 'org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:1.0.2.Final'
 
+        testCompile project(':granite-server-core')
         testCompile project(':granite-server-core').sourceSets.test.output
 
         testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3'
@@ -1588,7 +1589,7 @@ project('granite-client-java') {
 		}
 	}
 	
-	// For some reaons excludes must be applied on filter after the sourceSets definitions 
+	// For some reasons excludes must be applied on filter after the sourceSets definitions 
 	sourceSets.main.java.filter.exclude javaExcludes
 	
 	sourceSets.main.resources.filter.exclude resourceExcludes
@@ -1721,15 +1722,17 @@ project('granite-client-javafx') {
 		compile files(System.properties.'java.home' + '/lib/jfxrt.jar')
 		
 		compile project(':granite-client-java')
-		
-		testCompile project(':granite-client-java').sourceSets.test.output
-        testCompile project(':granite-client-java-advanced').sourceSets.test.output
+		compile project(':granite-client-java-advanced')
 
 		testCompile 'org.hibernate:hibernate-core:3.6.10.Final',
 			'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
 			'antlr:antlr:2.7.7'
+        
+        testCompile project(':granite-server-core')
+        testCompile project(':granite-server-hibernate')
 			
-		testCompile project(':granite-server-core'), project(':granite-server-hibernate')
+		testCompile project(':granite-client-java').sourceSets.test.output
+		testCompile project(':granite-client-java-advanced').sourceSets.test.output
 	}
 	
 	// Include sources of advanced java client
