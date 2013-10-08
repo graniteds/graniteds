@@ -589,7 +589,14 @@ public class ServerSession implements ContextAware {
     
     public void sessionExpired() {
 		log.info("Application session expired");
-		
+
+        if (remotingChannel.isAuthenticated())
+            remotingChannel.logout(false);
+        for (MessagingChannel messagingChannel : messagingChannelsByType.values()) {
+            if (messagingChannel.isAuthenticated())
+                messagingChannel.logout(false);
+        }
+
 		sessionId = null;
 		if (remotingChannel instanceof SessionAwareChannel)
 		    ((SessionAwareChannel)remotingChannel).setSessionId(null);

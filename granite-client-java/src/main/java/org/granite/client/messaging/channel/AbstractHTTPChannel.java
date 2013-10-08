@@ -386,10 +386,17 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	
     @Override
     public ResponseMessageFuture logout(ResponseListener... listeners) {
-		credentials = null;
-		authenticated = false;
-		return send(new LogoutMessage(), listeners);
+        return logout(true, listeners);
 	}
+
+    @Override
+    public ResponseMessageFuture logout(boolean sendLogout, ResponseListener... listeners) {
+        credentials = null;
+        authenticated = false;
+        if (sendLogout)
+            return send(new LogoutMessage(), listeners);
+        return null;
+    }
 
 	@Override
 	public void onMessage(InputStream is) {

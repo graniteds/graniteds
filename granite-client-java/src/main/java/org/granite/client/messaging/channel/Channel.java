@@ -60,7 +60,8 @@ public interface Channel {
 	
 	ResponseMessageFuture send(RequestMessage request, ResponseListener... listeners);
 	ResponseMessageFuture logout(ResponseListener... listeners);
-	
+    ResponseMessageFuture logout(boolean sendLogout, ResponseListener... listeners);
+
 	<D> D getTransportData();
 	void setTransportData(Object data);
 
