@@ -63,7 +63,7 @@ package org.granite.tide.events {
      */
 	public class EventRouter extends EventDispatcher implements IComponent, IEventInterceptor {
         
-        private static var log:ILogger = Log.getLogger("org.granite.tide.data.DataObserver");
+        private static var log:ILogger = Log.getLogger("org.granite.tide.events.EventRouter");
 		
 		private var _consumer:Consumer = null;
 		private var _producer:Producer = null;
@@ -74,7 +74,7 @@ package org.granite.tide.events {
         private var _type:String;
 
 
-        public function EventRouter(serverSession:ServerSession = null, type:String = DefaultChannelBuilder.LONG_POLLING):void {
+        public function EventRouter(serverSession:ServerSession = null, type:String = "long-polling"):void {
             _serverSession = serverSession;
             _type = type;
         }

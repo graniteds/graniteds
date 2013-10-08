@@ -84,7 +84,7 @@ package org.granite.tide.data {
 		private var _context:BaseContext;
 
 
-        public function DataObserver(serverSession:ServerSession = null, type:String = DefaultChannelBuilder.LONG_POLLING):void {
+        public function DataObserver(serverSession:ServerSession = null, type:String = "long-polling"):void {
             _serverSession = serverSession;
             _type = type;
         }
