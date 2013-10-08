@@ -38,7 +38,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -79,7 +78,6 @@ import org.granite.client.tide.ApplicationConfigurable;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextAware;
 import org.granite.client.tide.Identity;
-import org.granite.client.tide.PropertyHolder;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.EntityManager.Update;
 import org.granite.client.tide.data.spi.DataManager;
@@ -87,8 +85,6 @@ import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.validation.InvalidValue;
 import org.granite.config.GraniteConfig;
 import org.granite.logging.Logger;
-import org.granite.tide.Expression;
-import org.granite.tide.invocation.ContextResult;
 import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationResult;
 import org.granite.util.ContentType;
@@ -130,8 +126,7 @@ public class ServerSession implements ContextAware {
     private Map<String, Transport> messagingTransports = new HashMap<String, Transport>();
     
 	private Context context = null;
-    private TrackingContext trackingContext = new TrackingContext();
-	
+
 	private Status status = new DefaultStatus();
 	
 	private String sessionId = null;
@@ -213,11 +208,7 @@ public class ServerSession implements ContextAware {
 	public void setAppContext(Object appContext) {
 	    this.appContext = appContext;
 	}
-	
-	public TrackingContext getTrackingContext() {
-		return trackingContext;
-	}
-	
+
 	public void setStatus(Status status) {
 		this.status = status;
 	}
@@ -738,8 +729,6 @@ public class ServerSession implements ContextAware {
      *  @param mergeWith previous value with which the result will be merged
      */
     public void handleResult(Context context, String componentName, String operation, InvocationResult invocationResult, Object result, Object mergeWith) {
-        trackingContext.clearPendingUpdates();
-        
         log.debug("result {0}", result);
         
         List<ContextUpdate> resultMap = null;
@@ -749,8 +738,6 @@ public class ServerSession implements ContextAware {
         DataManager dataManager = context.getDataManager();
         
         try {
-            trackingContext.setEnabled(false);
-            
             // Clear flash context variable for Grails/Spring MVC
             context.remove("flash");
             
@@ -767,72 +754,12 @@ public class ServerSession implements ContextAware {
                         updates.add(Update.forUpdate((String)u[0], u[1]));
                     entityManager.handleUpdates(mergeContext, null, updates);
                 }
-                
-                resultMap = invocationResult.getResults();
-                
-                if (resultMap != null) {
-                    log.debug("result conversationId {0}", context.getContextId());
-                    
-                    // Order the results by container, i.e. 'person.contacts' has to be evaluated after 'person'
-                    Collections.sort(resultMap, RESULTS_COMPARATOR);
-                    
-                    for (int k = 0; k < resultMap.size(); k++) {
-                        ContextUpdate r = resultMap.get(k);
-                        Object val = r.getValue();
-                        
-                        log.debug("update expression {0}: {1}", r, val);
-    
-                        String compName = r.getComponentName();
-                        
-                        trackingContext.addLastResult(compName 
-                                + (r.getComponentClassName() != null ? "(" + r.getComponentClassName() + ")" : "") 
-                                + (r.getExpression() != null ? "." + r.getExpression() : ""));
-                        
-                        Object obj = context.byNameNoProxy(compName);
-                        String[] p = r.getExpression() != null ? r.getExpression().split("\\.") : null;
-                        if (p != null && p.length > 1) {
-                            for (int i = 0; i < p.length-1; i++)
-                                obj = dataManager.getPropertyValue(obj, p[i]);
-                        }
-                        
-                        Object previous = null;
-                        String propName = null;
-                        if (p != null && p.length > 0) {
-                            propName = p[p.length-1];
-                            
-                            if (obj instanceof PropertyHolder)
-                                previous = dataManager.getPropertyValue(((PropertyHolder)obj).getObject(), propName);
-                            else if (obj != null)
-                                previous = dataManager.getPropertyValue(obj, propName);
-                        }
-                        else
-                            previous = obj;
-                        
-                        // Don't merge with temporary properties
-                        // TODO: merge context variables
-                        if (previous instanceof Component) //  || previous instanceof ComponentProperty)
-                            previous = null;
-                        
-                        Expression res = new ContextResult(r.getComponentName(), r.getExpression());
-                        val = entityManager.mergeExternal(mergeContext, val, previous, res, null, null, false);
-                        
-                        if (propName != null) {
-                            if (obj instanceof PropertyHolder) {
-                                ((PropertyHolder)obj).setProperty(propName, val);
-                            }
-                            else if (obj != null)
-                                dataManager.setPropertyValue(obj, propName, val);
-                        }
-                        else
-                            context.set(compName, val);
-                    }
-                }
             }
             
             // Merges final result object
             if (result != null) {
                 if (mergeExternal)
-                    result = entityManager.mergeExternal(mergeContext, result, mergeWith, null, null, null, false);
+                    result = entityManager.mergeExternal(mergeContext, result, mergeWith, null, null, false);
                 else
                     log.debug("skipped merge of remote result");
                 if (invocationResult != null)
@@ -841,14 +768,10 @@ public class ServerSession implements ContextAware {
         }
         finally {
             MergeContext.destroy(entityManager);
-            
-            trackingContext.setEnabled(true);
         }
 
         // Dispatch received data update events         
         if (invocationResult != null) {
-            trackingContext.removeResults(resultMap);
-            
             // Dispatch received data update events
             if (updates != null)
                 entityManager.raiseUpdateEvents(context, updates);
@@ -879,7 +802,6 @@ public class ServerSession implements ContextAware {
      *  @param emsg error message
      */
     public void handleFault(Context context, String componentName, String operation, FaultMessage emsg) {
-        trackingContext.clearPendingUpdates();
     }
     
     private static final ResultsComparator RESULTS_COMPARATOR = new ResultsComparator();

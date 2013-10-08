@@ -109,7 +109,7 @@ public class Context {
     	this.eventBus = eventBus;
         this.instanceStore = instanceStore;
         platform.initContext(this, initialBeans);
-        this.entityManager = new EntityManagerImpl("", dataManager, null, null);
+        this.entityManager = new EntityManagerImpl("", dataManager);
         this.entityManager.setRemoteInitializer(new RemoteInitializerImpl(this));
     }
     

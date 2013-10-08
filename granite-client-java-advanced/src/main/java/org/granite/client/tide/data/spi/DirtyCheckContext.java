@@ -40,14 +40,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.granite.client.tide.data.spi.DataManager.ChangeKind;
-import org.granite.client.tide.server.TrackingContext;
 
 /**
  * @author William DRAI
  */
 public interface DirtyCheckContext {
-    
-    public void setTrackingContext(TrackingContext trackingContext);
 
     public void clear(boolean notify);
 

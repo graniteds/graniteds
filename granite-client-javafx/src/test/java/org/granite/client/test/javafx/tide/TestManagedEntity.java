@@ -71,7 +71,7 @@ public class TestManagedEntity {
     
     @Before
     public void setup() throws Exception {
-        entityManager = new EntityManagerImpl("", dataManager, null, null);
+        entityManager = new EntityManagerImpl("", dataManager);
     }
     
     @Test

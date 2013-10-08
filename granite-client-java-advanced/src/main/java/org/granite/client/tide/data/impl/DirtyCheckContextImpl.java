@@ -49,13 +49,12 @@ import java.util.Set;
 
 import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.tide.PropertyHolder;
+import org.granite.client.tide.data.Value;
 import org.granite.client.tide.data.spi.DataManager;
 import org.granite.client.tide.data.spi.DataManager.ChangeKind;
 import org.granite.client.tide.data.spi.DirtyCheckContext;
-import org.granite.client.tide.data.spi.ExpressionEvaluator.Value;
 import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.data.spi.Wrapper;
-import org.granite.client.tide.server.TrackingContext;
 import org.granite.client.util.WeakIdentityHashMap;
 import org.granite.logging.Logger;
 
@@ -67,22 +66,15 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
     private static Logger log = Logger.getLogger("org.granite.client.tide.data.DirtyCheckContextImpl");
     
     private DataManager dataManager;
-    private TrackingContext trackingContext;
     private int dirtyCount = 0;
     private WeakIdentityHashMap<Object, Map<String, Object>> savedProperties = new WeakIdentityHashMap<Object, Map<String, Object>>();
     private WeakIdentityHashMap<Object, Object> unsavedEntities = new WeakIdentityHashMap<Object, Object>();
     
     
-    public DirtyCheckContextImpl(DataManager dataManager, TrackingContext trackingContext) {
+    public DirtyCheckContextImpl(DataManager dataManager) {
         this.dataManager = dataManager;
-        this.trackingContext = trackingContext;
     }
 
-    @Override
-    public void setTrackingContext(TrackingContext trackingContext) {
-        this.trackingContext = trackingContext;
-    }
-    
     private boolean isEntity(Object obj) {
     	return dataManager.isEntity(obj);
     }
@@ -172,62 +164,54 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 		if (!dataManager.isInitialized(entity))
 			return false;
 		
-        boolean saveTracking = trackingContext.isEnabled();
-        try {
-            trackingContext.setEnabled(false);
-            
-            boolean dirty = false;
-            
-            Map<String, Object> pval = dataManager.getPropertyValues(entity, true, false);
-            
-            Map<String, Object> save = savedProperties.get(entity);
-			
-			if (embedded == null)
-				embedded = entity;
-            
-            for (String p : pval.keySet()) {
-                Object val = (entity == embedded && p.equals(propName)) ? value : pval.get(p);
-                Object saveval = save != null ? save.get(p) : null;
-                
-                if (save != null && ((val != null && (ObjectUtil.isSimple(val) || val instanceof byte[]))
-                        || (saveval != null && (ObjectUtil.isSimple(saveval) || saveval instanceof byte[])))) {
-                    dirty = true;
-                    break;
-                }
-                else if (save != null && (val instanceof Value || saveval instanceof Value || val instanceof Enum || saveval instanceof Enum)) {
-                    if (saveval != null && ((val == null && saveval != null) || !val.equals(saveval))) {
-                        dirty = true;
-                        break;
-                    }
-                }
-                else if (save != null && (isEntity(val) || isEntity(saveval))) {
-                    if (saveval != null && val != save.get(p)) {
-                        dirty = true;
-                        break;
-                    }
-                }
-                else if ((val instanceof Collection<?> || val instanceof Map<?, ?>)) {
-	               	if (!dataManager.isInitialized(val))
-	               		continue;
-	               	
-                    List<Change> savedArray = (List<Change>)saveval;
-                    if (savedArray != null && !savedArray.isEmpty()) {
-                        dirty = true;
-                        break;
-                    }
-                }
-                else if (val != null
-                    && !(isEntity(val) || ObjectUtil.isSimple(val) || val instanceof Enum || val instanceof Value || val instanceof byte[]) 
-                    && isEntityChanged(val)) {
+        boolean dirty = false;
+
+        Map<String, Object> pval = dataManager.getPropertyValues(entity, true, false);
+
+        Map<String, Object> save = savedProperties.get(entity);
+
+        if (embedded == null)
+            embedded = entity;
+
+        for (String p : pval.keySet()) {
+            Object val = (entity == embedded && p.equals(propName)) ? value : pval.get(p);
+            Object saveval = save != null ? save.get(p) : null;
+
+            if (save != null && ((val != null && (ObjectUtil.isSimple(val) || val instanceof byte[]))
+                    || (saveval != null && (ObjectUtil.isSimple(saveval) || saveval instanceof byte[])))) {
+                dirty = true;
+                break;
+            }
+            else if (save != null && (val instanceof Value || saveval instanceof Value || val instanceof Enum || saveval instanceof Enum)) {
+                if (saveval != null && ((val == null && saveval != null) || !val.equals(saveval))) {
                     dirty = true;
                     break;
                 }
             }
-            return dirty;
+            else if (save != null && (isEntity(val) || isEntity(saveval))) {
+                if (saveval != null && val != save.get(p)) {
+                    dirty = true;
+                    break;
+                }
+            }
+            else if ((val instanceof Collection<?> || val instanceof Map<?, ?>)) {
+                if (!dataManager.isInitialized(val))
+                    continue;
+
+                List<Change> savedArray = (List<Change>)saveval;
+                if (savedArray != null && !savedArray.isEmpty()) {
+                    dirty = true;
+                    break;
+                }
+            }
+            else if (val != null
+                && !(isEntity(val) || ObjectUtil.isSimple(val) || val instanceof Enum || val instanceof Value || val instanceof byte[])
+                && isEntityChanged(val)) {
+                dirty = true;
+                break;
+            }
         }
-        finally {
-            trackingContext.setEnabled(saveTracking);
-        }
+        return dirty;
     }
 	
 	public boolean isEntityDeepChanged(Object entity) {		
@@ -244,72 +228,64 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 		if (!dataManager.isInitialized(entity))
 			return false;
 		
-		boolean saveTracking = trackingContext.isEnabled();
-		try {
-			trackingContext.setEnabled(false);
-			
-            Map<String, Object> pval = dataManager.getPropertyValues(entity, true, false);
-            
-            if (embedded == null)
-            	embedded = entity;
-            
-            Map<String, Object> save = savedProperties.get(entity);
-            
-            for (String p : pval.keySet()) {
-                Object val = pval.get(p);
-                Object saveval = save != null ? save.get(p) : null;
-                
-                if (save != null && ((val != null && (ObjectUtil.isSimple(val) || val instanceof byte[]))
-                        || (saveval != null && (ObjectUtil.isSimple(saveval) || saveval instanceof byte[])))) {
+        Map<String, Object> pval = dataManager.getPropertyValues(entity, true, false);
+
+        if (embedded == null)
+            embedded = entity;
+
+        Map<String, Object> save = savedProperties.get(entity);
+
+        for (String p : pval.keySet()) {
+            Object val = pval.get(p);
+            Object saveval = save != null ? save.get(p) : null;
+
+            if (save != null && ((val != null && (ObjectUtil.isSimple(val) || val instanceof byte[]))
+                    || (saveval != null && (ObjectUtil.isSimple(saveval) || saveval instanceof byte[])))) {
+                return true;
+            }
+            else if (save != null && (val instanceof Value || saveval instanceof Value || val instanceof Enum || saveval instanceof Enum)) {
+                if (saveval != null && ((val == null && saveval != null) || !val.equals(saveval))) {
                     return true;
                 }
-                else if (save != null && (val instanceof Value || saveval instanceof Value || val instanceof Enum || saveval instanceof Enum)) {
-                    if (saveval != null && ((val == null && saveval != null) || !val.equals(saveval))) {
-                        return true;
+            }
+            else if (save != null && (isEntity(val) || isEntity(saveval))) {
+                if (saveval != null && val != save.get(p))
+                    return true;
+
+                if (isEntityDeepChanged(val, null, cache))
+                    return true;
+            }
+            else if (val instanceof Collection<?> || val instanceof Map<?, ?>) {
+                 if (!dataManager.isInitialized(val))
+                     continue;
+
+                 @SuppressWarnings("unchecked")
+                 List<Change> savedArray = (List<Change>)saveval;
+                 if (savedArray != null && !savedArray.isEmpty())
+                     return true;
+
+                 if (val instanceof Collection<?>) {
+                     for (Object elt : (Collection<?>)val) {
+                         if (isEntityDeepChanged(elt, null, cache))
+                             return true;
+                     }
+                 }
+                 else if (val instanceof Map<?, ?>) {
+                    for (Entry<?, ?> me : ((Map<?, ?>)val).entrySet()) {
+                        if (isEntityDeepChanged(me.getKey(), null, cache))
+                            return true;
+                        if (isEntityDeepChanged(me.getValue(), null, cache))
+                            return true;
                     }
                 }
-                else if (save != null && (isEntity(val) || isEntity(saveval))) {
-                    if (saveval != null && val != save.get(p))
-                        return true;
-                    
-                    if (isEntityDeepChanged(val, null, cache))
-						return true;
-                }
-                else if (val instanceof Collection<?> || val instanceof Map<?, ?>) {
-                	 if (!dataManager.isInitialized(val))
-                		 continue;
-                	 
-                	 @SuppressWarnings("unchecked")
-                	 List<Change> savedArray = (List<Change>)saveval;
-                	 if (savedArray != null && !savedArray.isEmpty())
-                		 return true;
-                	 
-                	 if (val instanceof Collection<?>) {
-                		 for (Object elt : (Collection<?>)val) {
-                			 if (isEntityDeepChanged(elt, null, cache))
-                				 return true;
-                		 }
-                	 }
-                	 else if (val instanceof Map<?, ?>) {
-						for (Entry<?, ?> me : ((Map<?, ?>)val).entrySet()) {
-							if (isEntityDeepChanged(me.getKey(), null, cache))
-								return true;
-							if (isEntityDeepChanged(me.getValue(), null, cache))
-								return true;
-						}
-					}
-                }
-                else if (val != null
-                    && !(isEntity(val) || ObjectUtil.isSimple(val) || val instanceof Enum || val instanceof Value || val instanceof byte[]) 
-                    && isEntityDeepChanged(val, embedded, cache)) {
-                    return true;
-                }
-			}
-		}
-		finally {            
-			trackingContext.setEnabled(saveTracking);
-		}
-		
+            }
+            else if (val != null
+                && !(isEntity(val) || ObjectUtil.isSimple(val) || val instanceof Enum || val instanceof Value || val instanceof byte[])
+                && isEntityDeepChanged(val, embedded, cache)) {
+                return true;
+            }
+        }
+
 		return false;
 	}
 

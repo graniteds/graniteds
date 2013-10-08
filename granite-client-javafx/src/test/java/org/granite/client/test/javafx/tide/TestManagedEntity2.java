@@ -57,7 +57,7 @@ public class TestManagedEntity2 {
     @Before
     public void setup() throws Exception {
     	dataManager = new JavaFXDataManager();
-        entityManager = new EntityManagerImpl("", dataManager, null, null);
+        entityManager = new EntityManagerImpl("", dataManager);
     }
     
     

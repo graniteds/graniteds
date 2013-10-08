@@ -49,16 +49,8 @@ import java.util.Set;
 
 import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.tide.Context;
-import org.granite.client.tide.SyncMode;
 import org.granite.client.tide.collection.CollectionLoader;
-import org.granite.client.tide.data.Conflict;
-import org.granite.client.tide.data.DataConflictListener;
-import org.granite.client.tide.data.DataMerger;
-import org.granite.client.tide.data.EntityManager;
-import org.granite.client.tide.data.EntityProxy;
-import org.granite.client.tide.data.PersistenceManager;
-import org.granite.client.tide.data.RemoteInitializer;
-import org.granite.client.tide.data.RemoteValidator;
+import org.granite.client.tide.data.*;
 import org.granite.client.tide.data.impl.UIDWeakSet.Matcher;
 import org.granite.client.tide.data.impl.UIDWeakSet.Operation;
 import org.granite.client.tide.data.spi.DataManager;
@@ -66,15 +58,10 @@ import org.granite.client.tide.data.spi.DataManager.ChangeKind;
 import org.granite.client.tide.data.spi.DataManager.TrackingHandler;
 import org.granite.client.tide.data.spi.DirtyCheckContext;
 import org.granite.client.tide.data.spi.EntityRef;
-import org.granite.client.tide.data.spi.ExpressionEvaluator;
-import org.granite.client.tide.data.spi.ExpressionEvaluator.Value;
 import org.granite.client.tide.data.spi.MergeContext;
-import org.granite.client.tide.server.Component;
 import org.granite.client.tide.server.ServerSession;
-import org.granite.client.tide.server.TrackingContext;
 import org.granite.client.util.WeakIdentityHashMap;
 import org.granite.logging.Logger;
-import org.granite.tide.Expression;
 import org.granite.util.TypeUtil;
 
 /**
@@ -86,10 +73,8 @@ public class EntityManagerImpl implements EntityManager {
     
     private String id;
     private boolean active = false;
-    private ExpressionEvaluator expressionEvaluator = null;
     private DataManager dataManager = null;
     private TrackingHandler trackingHandler = new DefaultTrackingHandler();
-    private TrackingContext trackingContext = null;
     private DirtyCheckContext dirtyCheckContext = null;
     private UIDWeakSet entitiesByUid = null;
     private WeakIdentityHashMap<Object, List<Object>> entityReferences = new WeakIdentityHashMap<Object, List<Object>>();
@@ -97,15 +82,13 @@ public class EntityManagerImpl implements EntityManager {
     private DataMerger[] customMergers = null;
     
 
-    public EntityManagerImpl(String id, DataManager dataManager, TrackingContext trackingContext, ExpressionEvaluator expressionEvaluator) {
+    public EntityManagerImpl(String id, DataManager dataManager) {
         this.id = id;
         this.active = true;
         this.dataManager = dataManager != null ? dataManager : new JavaBeanDataManager();
         this.dataManager.setTrackingHandler(this.trackingHandler);
         this.entitiesByUid = new UIDWeakSet(this.dataManager);
-        this.trackingContext = trackingContext != null ? trackingContext : new TrackingContext();
-        this.dirtyCheckContext = new DirtyCheckContextImpl(this.dataManager, this.trackingContext);
-        this.expressionEvaluator = expressionEvaluator;
+        this.dirtyCheckContext = new DirtyCheckContextImpl(this.dataManager);
     }
     
     
@@ -131,16 +114,15 @@ public class EntityManagerImpl implements EntityManager {
      */
     public void clear() {
     	entitiesByUid.apply(new Operation() {
-			@Override
-			public void apply(Object o) {
-				PersistenceManager.setEntityManager(o, null);
-			}
-    	});
+            @Override
+            public void apply(Object o) {
+                PersistenceManager.setEntityManager(o, null);
+            }
+        });
         entitiesByUid.clear();
         entityReferences.clear();
         dirtyCheckContext.clear(false);
         dataManager.clear();
-        trackingContext.clear();
         active = true;
     }
     
@@ -218,7 +200,6 @@ public class EntityManagerImpl implements EntityManager {
             throw new IllegalArgumentException("Dirty check context cannot be null");
         
         this.dirtyCheckContext = dirtyCheckContext;
-        this.dirtyCheckContext.setTrackingContext(trackingContext);
     }
 
     
@@ -230,7 +211,7 @@ public class EntityManagerImpl implements EntityManager {
     public EntityManager newTemporaryEntityManager() {
         try {
             DataManager tmpDataManager = TypeUtil.newInstance(dataManager.getClass(), DataManager.class);
-            return new EntityManagerImpl("$$TMP$$" + (tmpEntityManagerId++), tmpDataManager, trackingContext, expressionEvaluator);
+            return new EntityManagerImpl("$$TMP$$" + (tmpEntityManagerId++), tmpDataManager);
         }
         catch (Exception e) {
             throw new RuntimeException("Could not create temporaty entity manager", e);
@@ -327,7 +308,7 @@ public class EntityManagerImpl implements EntityManager {
 			detachEntity(object, true, forceRemove);
 			
 			for (Entry<String, Object> me : values.entrySet())
-				removeReference(me.getValue(), object, me.getKey(), null);
+				removeReference(me.getValue(), object, me.getKey());
 		}
 		
 		for (Entry<String, Object> me : values.entrySet()) {
@@ -419,53 +400,6 @@ public class EntityManagerImpl implements EntityManager {
         return owners;
     }
 
-    
-    /**
-     *  {@inheritDoc}
-     */
-    public Expression getReference(Object obj, boolean recurse, Set<Object> cache) {
-        if (cache != null) {
-            if (cache.contains(obj))    // We are in a graph loop, no reference can be found from this path
-                return null;
-            cache.add(obj);
-        }
-        else if (recurse)
-            throw new Error("Cache must be provided to get reference recursively");
-        
-        List<Object> refs = entityReferences.get(obj);
-        if (refs == null)
-            return null;
-        
-        for (int i = 0; i < refs.size(); i++) {
-            // Return first context expression reference that is remote enabled
-            if (refs.get(i) instanceof Expression && expressionEvaluator != null && expressionEvaluator.getRemoteSync(refs.get(i)) != SyncMode.NONE)
-                return (Expression)refs.get(i);
-        }
-        
-        if (recurse) {
-            Object ref = null;
-            for (int i = 0; i < refs.size(); i++) {
-                if (refs.get(i) instanceof Object[] && ((Object[])refs.get(i))[0] instanceof String) {
-                    ref = entitiesByUid.get((String)((Object[])refs.get(i))[0]);
-                    if (ref != null) {
-                        ref = getReference(ref, recurse, cache);
-                        if (ref != null)
-                            return (Expression)ref;
-                    }
-                }
-                else if (refs.get(i) instanceof Object[] && !(refs.get(i) instanceof Expression)) {
-                    ref = ((Object[])refs.get(i))[0];
-                    if (ref != null) {
-                        ref = getReference(ref, recurse, cache);
-                        if (ref != null)
-                            return (Expression)ref;
-                    } 
-                }
-            }
-        }
-        return null;
-    }
-    
     /**
      *  Init references array for an object
      *   
@@ -488,31 +422,14 @@ public class EntityManagerImpl implements EntityManager {
      *  @param obj an entity
      *  @param parent the parent entity
      *  @param propName name of the parent entity property that references the entity
-     *  @param res the context expression
-     */ 
-    public void addReference(Object obj, Object parent, String propName, Expression res) {
+     */
+    public void addReference(Object obj, Object parent, String propName) {
         if (isEntity(obj))
             attachEntity(obj);
         
         dataManager.startTracking(obj, parent);
 
         List<Object> refs = entityReferences.get(obj);
-        if (!(obj instanceof PersistentCollection) && res != null) {
-            refs = initRefs(obj);
-            boolean found = false;
-            for (int i = 0; i < refs.size(); i++) {
-                if (!(refs.get(i) instanceof Expression))
-                    continue; 
-                Expression r = (Expression)refs.get(i);
-                if (r.getComponentName().equals(res.getComponentName()) 
-                        && ((r.getExpression() == null && res.getExpression() == null) || (r.getExpression() != null && r.getExpression().equals(res.getExpression())))) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-                refs.add(res);
-        }
         boolean found = false;
         if (isEntity(parent)) {
             String ref = dataManager.getCacheKey(parent);
@@ -551,10 +468,9 @@ public class EntityManagerImpl implements EntityManager {
      *  @param obj an entity
      *  @param parent the parent entity to dereference
      *  @param propName name of the parent entity property that references the entity
-     *  @param res expression to remove
      *  @return true if actually removed
      */ 
-    public boolean removeReference(Object obj, Object parent, String propName, Expression res) {
+    public boolean removeReference(Object obj, Object parent, String propName) {
         List<Object> refs = entityReferences.get(obj);
         if (refs == null)
             return true;
@@ -573,14 +489,6 @@ public class EntityManagerImpl implements EntityManager {
                 if (refs.get(i) instanceof Object[] && ((Object[])refs.get(i))[0].equals(parent)) {
                     idx = i;
                     break;                    
-                }
-            }
-        }
-        else if (res != null) {
-            for (int i = 0; i < refs.size(); i++) {
-                if (refs.get(i) instanceof Expression && ((Expression)refs.get(i)).getPath().equals(res.getPath())) {
-                    idx = i;
-                    break;
                 }
             }
         }
@@ -603,16 +511,16 @@ public class EntityManagerImpl implements EntityManager {
         
         if (obj instanceof Iterable<?>) {
             for (Object elt : (Iterable<?>)obj)
-                removeReference(elt, parent, propName, null);
+                removeReference(elt, parent, propName);
         }
         else if (obj != null && obj.getClass().isArray()) {
             for (int i = 0; i < Array.getLength(obj); i++)
-                removeReference(Array.get(obj, i), parent, propName, null);
+                removeReference(Array.get(obj, i), parent, propName);
         }
         else if (obj instanceof Map<?, ?>) {
             for (Entry<?, ?> me : ((Map<?, ?>)obj).entrySet()) {
-                removeReference(me.getKey(), parent, propName, null);
-                removeReference(me.getValue(), parent, propName, null);
+                removeReference(me.getKey(), parent, propName);
+                removeReference(me.getValue(), parent, propName);
             }
         }
         
@@ -627,10 +535,10 @@ public class EntityManagerImpl implements EntityManager {
     /**
      *  Merge an object coming from the server in the context
      *
-     *	@param mergeContext current merge context
+     *
+     * @param mergeContext current merge context
      *  @param obj external object
      *  @param previous previously existing object in the context (null if no existing object)
-     *  @param expr current path from the context
      *  @param parent parent object for collections
      *  @param propertyName property name of the current object in the parent object
      *  @param forceUpdate force update of property (used for externalized properties)
@@ -638,7 +546,7 @@ public class EntityManagerImpl implements EntityManager {
      *  @return merged object (should === previous when previous not null)
      */
     @SuppressWarnings("unchecked")
-    public Object mergeExternal(final MergeContext mergeContext, Object obj, Object previous, Expression expr, Object parent, String propertyName, boolean forceUpdate) {
+    public Object mergeExternal(final MergeContext mergeContext, Object obj, Object previous, Object parent, String propertyName, boolean forceUpdate) {
 
         mergeContext.initMerge();
         
@@ -674,27 +582,27 @@ public class EntityManagerImpl implements EntityManager {
                 }
                 else if (((obj instanceof PersistentCollection && !((PersistentCollection)obj).wasInitialized()) 
                     || (obj instanceof PersistentCollection && !(previous instanceof PersistentCollection))) && isEntity(parent) && propertyName != null) {
-                    next = mergePersistentCollection(mergeContext, (PersistentCollection)obj, previous, null, parent, propertyName);
+                    next = mergePersistentCollection(mergeContext, (PersistentCollection)obj, previous, parent, propertyName);
                     addRef = true;
                 }
                 else if (obj instanceof List<?>) {
-                    next = mergeList(mergeContext, (List<Object>)obj, previous, parent == null ? expr : null, parent, propertyName);
+                    next = mergeList(mergeContext, (List<Object>)obj, previous, parent, propertyName);
                     addRef = true;
                 }
                 else if (obj instanceof Set<?>) {
-                    next = mergeSet(mergeContext, (Set<Object>)obj, previous, parent == null ? expr : null, parent, propertyName);
+                    next = mergeSet(mergeContext, (Set<Object>)obj, previous, parent, propertyName);
                     addRef = true;
                 }
                 else if (obj instanceof Map<?, ?>) {
-                    next = mergeMap(mergeContext, (Map<Object, Object>)obj, previous, parent == null ? expr : null, parent, propertyName);
+                    next = mergeMap(mergeContext, (Map<Object, Object>)obj, previous, parent, propertyName);
                     addRef = true;
                 }
                 else if (obj.getClass().isArray()) {
-                	next = mergeArray(mergeContext, obj, previous, expr, parent, propertyName);
+                	next = mergeArray(mergeContext, obj, previous, parent, propertyName);
                 	addRef = true;
                 }
                 else if (isEntity(obj)) {
-                    next = mergeEntity(mergeContext, obj, previous, expr, parent, propertyName);
+                    next = mergeEntity(mergeContext, obj, previous, parent, propertyName);
                     addRef = true;
                 }
                 else {
@@ -702,7 +610,7 @@ public class EntityManagerImpl implements EntityManager {
                     if (customMergers != null) {
                         for (DataMerger merger : customMergers) {
                             if (merger.accepts(obj)) {
-                                next = merger.merge(mergeContext, obj, previous, parent == null ? expr : null, parent, propertyName);
+                                next = merger.merge(mergeContext, obj, previous, parent, propertyName);
 
                                 // Keep notified of collection updates to notify the server at next remote call
                                 dataManager.startTracking(previous, parent);
@@ -712,17 +620,17 @@ public class EntityManagerImpl implements EntityManager {
                         }
                     }
                     if (!merged && !ObjectUtil.isSimple(obj) && !(obj instanceof Enum || obj instanceof Value || obj instanceof byte[])) {
-                        next = mergeEntity(mergeContext, obj, previous, expr, parent, propertyName);
+                        next = mergeEntity(mergeContext, obj, previous, parent, propertyName);
                         addRef = true;
                     }
                 }
             }
             
             if (next != null && !fromCache && addRef
-                && (expr != null || (prev == null && parent != null))) {
+                && (prev == null && parent != null)) {
                 // Store reference from current object to its parent entity or root component expression
                 // If it comes from the cache, we are probably in a circular graph 
-                addReference(next, parent, propertyName, expr);
+                addReference(next, parent, propertyName);
             }
             
             mergeContext.setMergeUpdate(saveMergeUpdate);
@@ -759,13 +667,12 @@ public class EntityManagerImpl implements EntityManager {
      *	@param mergeContext current merge context
      *  @param obj external entity
      *  @param previous previously existing object in the context (null if no existing object)
-     *  @param expr current path from the context
      *  @param parent parent object for collections
      *  @param propertyName propertyName from the owner object
      *
      *  @return merged entity (=== previous when previous not null)
      */ 
-    private Object mergeEntity(MergeContext mergeContext, final Object obj, Object previous, Expression expr, Object parent, String propertyName) {
+    private Object mergeEntity(MergeContext mergeContext, final Object obj, Object previous, Object parent, String propertyName) {
         if (obj != null || previous != null)
             log.debug("mergeEntity: %s previous %s%s", ObjectUtil.toString(obj), ObjectUtil.toString(previous), obj == previous ? " (same)" : "");
         
@@ -918,14 +825,14 @@ public class EntityManagerImpl implements EntityManager {
             if (!ignore) {
 				if (obj instanceof EntityProxy) {
 					mergeContext.setCurrentMerge(obj);
-					defaultMerge(mergeContext, ((EntityProxy)obj).getWrappedObject(), dest, expr, parent, propertyName);
+					defaultMerge(mergeContext, ((EntityProxy)obj).getWrappedObject(), dest, parent, propertyName);
 				}
 				else
-					defaultMerge(mergeContext, obj, dest, expr, parent, propertyName);
+					defaultMerge(mergeContext, obj, dest, parent, propertyName);
             }
         }
         else
-            defaultMerge(mergeContext, obj, dest, expr, parent, propertyName);
+            defaultMerge(mergeContext, obj, dest, parent, propertyName);
         
         if (dest != null && !ignore && !mergeContext.isSkipDirtyCheck() && !mergeContext.isResolvingConflict())
             dirtyCheckContext.checkAndMarkNotDirty(mergeContext, dest, obj, isEntity(parent) && !isEntity(dest) ? parent : null);
@@ -941,14 +848,14 @@ public class EntityManagerImpl implements EntityManager {
     }
     
     
-    private Object mergeArray(MergeContext mergeContext, Object array, Object previous, Expression expr, Object parent, String propertyName) {
+    private Object mergeArray(MergeContext mergeContext, Object array, Object previous, Object parent, String propertyName) {
     	Object dest = mergeContext.getSourceEntityManager() == null ? array : Array.newInstance(array.getClass().getComponentType(), Array.getLength(array));
     	
 		mergeContext.pushMerge(array, dest);
         
         for (int i = 0; i < Array.getLength(array); i++) {
         	Object obj = Array.get(array, i);
-            obj = mergeExternal(mergeContext, obj, null, propertyName != null ? expr : null, propertyName != null ? parent : null, propertyName, false);
+            obj = mergeExternal(mergeContext, obj, null, propertyName != null ? parent : null, propertyName, false);
             
             if (mergeContext.isMergeUpdate())
             	Array.set(dest, i, obj);
@@ -964,14 +871,13 @@ public class EntityManagerImpl implements EntityManager {
      *	@param mergeContext current merge context
      *  @param coll external collection
      *  @param previous previously existing collection in the context (can be null if no existing collection)
-     *  @param expr current path from the context
      *  @param parent owner object for collections
      *  @param propertyName property name in owner object
      * 
      *  @return merged collection (=== previous when previous not null)
      */ 
     @SuppressWarnings("unchecked")
-    private List<?> mergeList(MergeContext mergeContext, List<Object> coll, Object previous, Expression expr, Object parent, String propertyName) {
+    private List<?> mergeList(MergeContext mergeContext, List<Object> coll, Object previous, Object parent, String propertyName) {
         log.debug("mergeList: %s previous %s", ObjectUtil.toString(coll), ObjectUtil.toString(previous));
         
         if (mergeContext.isUninitializing() && isEntity(parent) && propertyName != null) {
@@ -995,7 +901,7 @@ public class EntityManagerImpl implements EntityManager {
             for (int i = 0; i < coll.size(); i++) {
                 Object obj = coll.get(i);
 
-                obj = mergeExternal(mergeContext, obj, null, null, propertyName != null ? parent : null, propertyName, false);
+                obj = mergeExternal(mergeContext, obj, null, propertyName != null ? parent : null, propertyName, false);
                 added.add(obj);
             }
             
@@ -1061,7 +967,7 @@ public class EntityManagerImpl implements EntityManager {
                 for (int j = i; j < destColl.size(); j++) {
                     Object prev = destColl.get(j);
                     if (i < destColl.size() && ObjectUtil.objectEquals(dataManager, prev, obj)) {
-                        obj = mergeExternal(mergeContext, obj, prev, propertyName != null ? expr : null, propertyName != null ? parent : null, propertyName, false);
+                        obj = mergeExternal(mergeContext, obj, prev, propertyName != null ? parent : null, propertyName, false);
                         
                         if (j != i) {
                             destColl.remove(j);
@@ -1079,7 +985,7 @@ public class EntityManagerImpl implements EntityManager {
                     }
                 }
                 if (!found) {
-                    obj = mergeExternal(mergeContext, obj, null, propertyName != null ? expr : null, propertyName != null ? parent : null, propertyName, false);
+                    obj = mergeExternal(mergeContext, obj, null, propertyName != null ? parent : null, propertyName, false);
                     
                     if (mergeContext.isMergeUpdate()) {
                         if (i < prevColl.size())
@@ -1091,7 +997,7 @@ public class EntityManagerImpl implements EntityManager {
             }
             else {
                 Object prev = obj;
-                obj = mergeExternal(mergeContext, obj, null, propertyName != null ? expr : null, propertyName != null ? parent : null, propertyName, false);
+                obj = mergeExternal(mergeContext, obj, null, propertyName != null ? parent : null, propertyName, false);
                 if (obj != prev)
                     coll.set(i, obj);
             }
@@ -1132,14 +1038,13 @@ public class EntityManagerImpl implements EntityManager {
      *	@param mergeContext current merge context
      *  @param coll external collection
      *  @param previous previously existing collection in the context (can be null if no existing collection)
-     *  @param expr current path from the context
      *  @param parent owner object for collections
      *  @param propertyName property name in owner object
      * 
      *  @return merged collection (=== previous when previous not null)
      */ 
     @SuppressWarnings("unchecked")
-    private Set<?> mergeSet(MergeContext mergeContext, Set<Object> coll, Object previous, Expression expr, Object parent, String propertyName) {
+    private Set<?> mergeSet(MergeContext mergeContext, Set<Object> coll, Object previous, Object parent, String propertyName) {
         log.debug("mergeSet: %s previous %s", ObjectUtil.toString(coll), ObjectUtil.toString(previous));
         
         if (mergeContext.isUninitializing() && isEntity(parent) && propertyName != null) {
@@ -1163,7 +1068,7 @@ public class EntityManagerImpl implements EntityManager {
             for (Iterator<Object> icoll = coll.iterator(); icoll.hasNext(); ) {
                 Object obj = icoll.next();
 
-                obj = mergeExternal(mergeContext, obj, null, null, propertyName != null ? parent : null, propertyName, false);
+                obj = mergeExternal(mergeContext, obj, null, propertyName != null ? parent : null, propertyName, false);
                 added.add(obj);
             }
             
@@ -1228,7 +1133,7 @@ public class EntityManagerImpl implements EntityManager {
                 for (Iterator<Object> jc = destColl.iterator(); jc.hasNext(); ) {
                     Object prev = jc.next();
                     if (ObjectUtil.objectEquals(dataManager, prev, obj)) {
-                        obj = mergeExternal(mergeContext, obj, prev, propertyName != null ? expr : null, propertyName != null ? parent : null, propertyName, false);
+                        obj = mergeExternal(mergeContext, obj, prev, propertyName != null ? parent : null, propertyName, false);
                         if (obj != prev) {
                             ic.remove();
                             changed.add(obj);
@@ -1237,7 +1142,7 @@ public class EntityManagerImpl implements EntityManager {
                     }
                 }
                 if (!found) {
-                    obj = mergeExternal(mergeContext, obj, null, propertyName != null ? expr : null, propertyName != null ? parent : null, propertyName, false);
+                    obj = mergeExternal(mergeContext, obj, null, propertyName != null ? parent : null, propertyName, false);
                     
                     if (mergeContext.isMergeUpdate())
                         destColl.add(obj);
@@ -1245,7 +1150,7 @@ public class EntityManagerImpl implements EntityManager {
             }
             else {
                 Object prev = obj;
-                obj = mergeExternal(mergeContext, obj, null, propertyName != null ? expr : null, propertyName != null ? parent : null, propertyName, false);
+                obj = mergeExternal(mergeContext, obj, null, propertyName != null ? parent : null, propertyName, false);
                 if (obj != prev) {
                     ic.remove();
                     changed.add(obj);
@@ -1293,14 +1198,13 @@ public class EntityManagerImpl implements EntityManager {
      *	@param mergeContext current merge context
      *  @param map external map
      *  @param previous previously existing map in the context (null if no existing map)
-     *  @param expr current path from the context
      *  @param parent owner object for the map if applicable
      *  @param propertyName property name from the owner
      * 
      *  @return merged map (=== previous when previous not null)
      */ 
     @SuppressWarnings("unchecked")
-    private Map<?, ?> mergeMap(MergeContext mergeContext, Map<Object, Object> map, Object previous, Expression expr, Object parent, String propertyName) {
+    private Map<?, ?> mergeMap(MergeContext mergeContext, Map<Object, Object> map, Object previous, Object parent, String propertyName) {
         log.debug("mergeMap: %s previous %s", ObjectUtil.toString(map), ObjectUtil.toString(previous));
         
         if (mergeContext.isUninitializing() && isEntity(parent) && propertyName != null) {
@@ -1322,8 +1226,8 @@ public class EntityManagerImpl implements EntityManager {
             
             Map<Object, Object> added = new HashMap<Object, Object>();
             for (Entry<?, ?> me : map.entrySet()) {
-                Object key = mergeExternal(mergeContext, me.getKey(), null, null, propertyName != null ? parent: null, propertyName, false);
-                Object value = mergeExternal(mergeContext, me.getValue(), null, null, propertyName != null ? parent : null, propertyName, false);
+                Object key = mergeExternal(mergeContext, me.getKey(), null, propertyName != null ? parent: null, propertyName, false);
+                Object value = mergeExternal(mergeContext, me.getValue(), null, propertyName != null ? parent : null, propertyName, false);
                 added.put(key, value);
             }
             
@@ -1364,9 +1268,9 @@ public class EntityManagerImpl implements EntityManager {
             
             if (map != prevMap) {
                 for (Entry<?, ?> me : map.entrySet()) {
-                    Object newKey = mergeExternal(mergeContext, me.getKey(), null, null, parent, propertyName, false);
+                    Object newKey = mergeExternal(mergeContext, me.getKey(), null, parent, propertyName, false);
                     Object prevValue = prevMap.get(newKey);
-                    Object value = mergeExternal(mergeContext, me.getValue(), prevValue, null, parent, propertyName, false);
+                    Object value = mergeExternal(mergeContext, me.getValue(), prevValue, parent, propertyName, false);
                     if (mergeContext.isMergeUpdate() || prevMap.containsKey(newKey))
                         prevMap.put(newKey, value);
                 }
@@ -1396,8 +1300,8 @@ public class EntityManagerImpl implements EntityManager {
         else {
             List<Object[]> addedToMap = new ArrayList<Object[]>();
             for (Entry<?, ?> me : map.entrySet()) {
-                Object value = mergeExternal(mergeContext, me.getValue(), null, null, parent, propertyName, false);
-                Object key = mergeExternal(mergeContext, me.getKey(), null, null, parent, propertyName, false);
+                Object value = mergeExternal(mergeContext, me.getValue(), null, parent, propertyName, false);
+                Object key = mergeExternal(mergeContext, me.getKey(), null, parent, propertyName, false);
                 addedToMap.add(new Object[] { key, value });
             }
             map.clear();
@@ -1431,13 +1335,12 @@ public class EntityManagerImpl implements EntityManager {
      *	@param mergeContext current merge context
      *  @param coll the collection to wrap
      *  @param previous the previous existing collection
-     *  @param expr the path expression from the context
      *  @param parent the owner object
      *  @param propertyName owner property
      * 
      *  @return the wrapped persistent collection
      */ 
-    protected Object mergePersistentCollection(MergeContext mergeContext, PersistentCollection coll, Object previous, Expression expr, Object parent, String propertyName) {
+    protected Object mergePersistentCollection(MergeContext mergeContext, PersistentCollection coll, Object previous, Object parent, String propertyName) {
         if (previous instanceof PersistentCollection) {
             mergeContext.pushMerge(coll, previous);
             if (((PersistentCollection)previous).wasInitialized()) {
@@ -1473,7 +1376,7 @@ public class EntityManagerImpl implements EntityManager {
         		@SuppressWarnings("unchecked")
 				List<Object> plist = (List<Object>)pcoll;
 	            for (int i = 0; i < plist.size(); i++) {
-	                Object obj = mergeExternal(mergeContext, plist.get(i), null, null, parent, propertyName, false);
+	                Object obj = mergeExternal(mergeContext, plist.get(i), null, parent, propertyName, false);
 	                if (obj != plist.get(i)) 
 	                	plist.set(i, obj);
 	            }
@@ -1484,7 +1387,7 @@ public class EntityManagerImpl implements EntityManager {
         		List<Object> toAdd = new ArrayList<Object>();
         		for (Iterator<Object> iset = pset.iterator(); iset.hasNext(); ) {
         			Object obj = iset.next();
-	                Object merged = mergeExternal(mergeContext, obj, null, null, parent, propertyName, false);
+	                Object merged = mergeExternal(mergeContext, obj, null, parent, propertyName, false);
 	                if (merged != obj) { 
 	                	iset.remove();
 	                	toAdd.add(merged);
@@ -1537,7 +1440,7 @@ public class EntityManagerImpl implements EntityManager {
             
             Object next = externalDataSessionId != null
                 ? internalMergeExternalData(mergeContext, obj, null, null, null) // Force handling of external data
-                : mergeExternal(mergeContext, obj, null, null, null, null, false);
+                : mergeExternal(mergeContext, obj, null, null, null, false);
             
             return next;
         }
@@ -1606,26 +1509,17 @@ public class EntityManagerImpl implements EntityManager {
     public Object internalMergeExternalData(MergeContext mergeContext, Object obj, Object prev, List<Object> removals, List<Object> persists) {
         Map<String, Object> savedContext = null;
         
-        try {
-            if (mergeContext.getExternalDataSessionId() != null)
-                savedContext = trackingContext.saveAndResetContext();
-            
-            Object next = mergeExternal(mergeContext, obj, prev, null, null, null, false);
-            
-            if (removals != null)
-                handleRemovalsAndPersists(mergeContext, removals, persists);
-            
-            if (mergeContext.getExternalDataSessionId() != null) {
-                handleMergeConflicts(mergeContext);         
-                clearCache();
-            }
-            
-            return next;
+        Object next = mergeExternal(mergeContext, obj, prev, null, null, false);
+
+        if (removals != null)
+            handleRemovalsAndPersists(mergeContext, removals, persists);
+
+        if (mergeContext.getExternalDataSessionId() != null) {
+            handleMergeConflicts(mergeContext);
+            clearCache();
         }
-        finally {               
-            if (mergeContext.getExternalDataSessionId() != null)
-                trackingContext.restoreContext(savedContext);
-        }           
+
+        return next;
     }
     
     
@@ -1784,7 +1678,7 @@ public class EntityManagerImpl implements EntityManager {
             if (modifiedEntity == null)
                 handleRemovalsAndPersists(mergeContext, Collections.singletonList(localEntity), Collections.emptyList());
             else
-                mergeExternal(mergeContext, modifiedEntity, localEntity, null, null, null, false);
+                mergeExternal(mergeContext, modifiedEntity, localEntity, null, null, false);
     
             mergeContext.checkConflictsResolved();
         }
@@ -1812,11 +1706,10 @@ public class EntityManagerImpl implements EntityManager {
      *	@param mergeContext current merge context
      *  @param obj source object
      *  @param dest destination object
-     *  @param expr current path of the entity in the context (mostly for internal use)
      *  @param parent owning object
      *  @param propertyName property name of the owning object
      */ 
-    public void defaultMerge(MergeContext mergeContext, Object obj, Object dest, Expression expr, Object parent, String propertyName) {
+    public void defaultMerge(MergeContext mergeContext, Object obj, Object dest, Object parent, String propertyName) {
         // Merge internal state
     	if (isEntity(obj))
     		dataManager.copyProxyState(dest, obj);
@@ -1830,7 +1723,7 @@ public class EntityManagerImpl implements EntityManager {
             String propName = mval.getKey();
             Object o = mval.getValue();
             Object d = dataManager.getPropertyValue(dest, propName);
-            o = mergeExternal(mergeContext, o, d, expr, isEmbedded ? parent : dest, isEmbedded ? propertyName + "." + propName : propName, false);
+            o = mergeExternal(mergeContext, o, d, isEmbedded ? parent : dest, isEmbedded ? propertyName + "." + propName : propName, false);
             if (o != d && mergeContext.isMergeUpdate())
                 dataManager.setPropertyValue(dest, propName, o);
             
@@ -1847,7 +1740,7 @@ public class EntityManagerImpl implements EntityManager {
             if (isEntity(o) || isEntity(d))
                 throw new IllegalStateException("Cannot merge the read-only property " + propName + " on bean " + obj + " with an Identifiable value, this will break local unicity and caching. Change property access to read-write.");  
             
-            mergeExternal(mergeContext, o, d, expr, parent != null ? parent : dest, propertyName != null ? propertyName + '.' + propName : propName, false);
+            mergeExternal(mergeContext, o, d, parent != null ? parent : dest, propertyName != null ? propertyName + '.' + propName : propName, false);
         }
     }
     
@@ -1913,42 +1806,34 @@ public class EntityManagerImpl implements EntityManager {
      *  {@inheritDoc}
      */ 
     public void acceptConflict(Conflict conflict, boolean client) {
-        boolean saveTracking = trackingContext.isEnabled();
+        Object modifiedEntity = null;
+        if (client) {
+            // Copy the local entity to save local changes
+            EntityManager entityManager = PersistenceManager.getEntityManager(conflict.getLocalEntity());
+            EntityManager tmp = entityManager.newTemporaryEntityManager();
+            modifiedEntity = tmp.mergeFromEntityManager(entityManager, conflict.getLocalEntity(), null, false);
+            tmp.clear();
+        }
+        else
+            modifiedEntity = conflict.getReceivedEntity();
+
         try {
-            trackingContext.setEnabled(false);
-            
-            Object modifiedEntity = null;
+            MergeContext mergeContext = new MergeContext(this, dirtyCheckContext, null);
+
+            // Reset the local entity to its last stable state
+            resetEntity(conflict.getLocalEntity());
+
             if (client) {
-                // Copy the local entity to save local changes
-            	EntityManager entityManager = PersistenceManager.getEntityManager(conflict.getLocalEntity());
-            	EntityManager tmp = entityManager.newTemporaryEntityManager();
-            	modifiedEntity = tmp.mergeFromEntityManager(entityManager, conflict.getLocalEntity(), null, false);
-            	tmp.clear();
+                // Merge with the incoming entity (to update version, id and all)
+                if (conflict.getReceivedEntity() != null)
+                    mergeExternal(mergeContext, conflict.getReceivedEntity(), conflict.getLocalEntity(), null, null, false);
             }
-            else
-                modifiedEntity = conflict.getReceivedEntity();
-            
-            try {
-                MergeContext mergeContext = new MergeContext(this, dirtyCheckContext, null);
-                
-                // Reset the local entity to its last stable state
-                resetEntity(conflict.getLocalEntity());
-                
-                if (client) {
-                    // Merge with the incoming entity (to update version, id and all)
-                    if (conflict.getReceivedEntity() != null)
-                        mergeExternal(mergeContext, conflict.getReceivedEntity(), conflict.getLocalEntity(), null, null, null, false);
-                }
-                
-                // Finally reapply local changes on merged received result
-                resolveMergeConflicts(mergeContext, modifiedEntity, conflict.getLocalEntity(), client);
-            }
-            finally {
-                MergeContext.destroy(this);
-            }
+
+            // Finally reapply local changes on merged received result
+            resolveMergeConflicts(mergeContext, modifiedEntity, conflict.getLocalEntity(), client);
         }
         finally {
-            trackingContext.setEnabled(saveTracking);
+            MergeContext.destroy(this);
         }
     }
     
@@ -1965,16 +1850,9 @@ public class EntityManagerImpl implements EntityManager {
      */
     public boolean initializeObject(ServerSession serverSession, Object entity, String propertyName, Object object) {
         boolean initialize = false;
-        if (remoteInitializer != null) {
-            boolean saveTracking = trackingContext.isEnabled();
-            try {
-                trackingContext.setEnabled(false);
-                initialize = remoteInitializer.initializeObject(serverSession, entity, propertyName, object);
-            }
-            finally {
-                trackingContext.setEnabled(saveTracking);
-            }
-        }
+        if (remoteInitializer != null)
+            initialize = remoteInitializer.initializeObject(serverSession, entity, propertyName, object);
+
         return initialize;
     }
 
@@ -1996,12 +1874,12 @@ public class EntityManagerImpl implements EntityManager {
             
             if (newValue != oldValue) {
                 if (isEntity(oldValue) || oldValue instanceof Collection<?> || oldValue instanceof Map<?, ?>) {
-                    removeReference(oldValue, target, property, null);
+                    removeReference(oldValue, target, property);
                     dataManager.stopTracking(oldValue, target);
                 }
                 
                 if (isEntity(newValue) || newValue instanceof Collection<?> || newValue instanceof Map<?, ?>) {
-                    addReference(newValue, target, property, null);
+                    addReference(newValue, target, property);
                     dataManager.startTracking(newValue, target);
                 }
             }
@@ -2026,15 +1904,6 @@ public class EntityManagerImpl implements EntityManager {
          *  @param items changed items
          */ 
         public void collectionChangeHandler(ChangeKind kind, Object target, Integer location, Object[] items) {
-            MergeContext mergeContext = MergeContext.get(PersistenceManager.getEntityManager(target));
-            if ((mergeContext != null && mergeContext.getSourceEntityManager() == this) || !isActive())
-                return;
-            
-            if (target instanceof Component)
-                return;
-            
-            if (kind == ChangeKind.ADD || kind == ChangeKind.REMOVE || kind == ChangeKind.REPLACE)
-                addUpdates(target);
         }
         
         /**
@@ -2058,7 +1927,7 @@ public class EntityManagerImpl implements EntityManager {
                 for (i = 0; i < items.length; i++) {
                     if (isEntity(items[i])) {
                         if (parent != null)
-                            addReference(items[i], parent[0], (String)parent[1], null);
+                            addReference(items[i], parent[0], (String)parent[1]);
                         else
                             attachEntity(items[i]);
                         dataManager.startTracking(items[i], parent != null ? parent[0] : null);
@@ -2070,7 +1939,7 @@ public class EntityManagerImpl implements EntityManager {
                 if (parent != null) {
                     for (i = 0; i < items.length; i++) {
                         if (isEntity(items[i]))
-                            removeReference(items[i], parent[0], (String)parent[1], null);
+                            removeReference(items[i], parent[0], (String)parent[1]);
                     }
                 }
             }
@@ -2080,7 +1949,7 @@ public class EntityManagerImpl implements EntityManager {
                     Object newValue = ((Object[])items[i])[1];
                     if (isEntity(newValue)) {
                         if (parent != null)
-                            addReference(newValue, parent[0], (String)parent[1], null);
+                            addReference(newValue, parent[0], (String)parent[1]);
                         else
                             attachEntity(newValue);
                         dataManager.startTracking(newValue, parent != null ? parent[0] : null);
@@ -2099,14 +1968,6 @@ public class EntityManagerImpl implements EntityManager {
                 else
                     dirtyCheckContext.entityCollectionChangeHandler(parent[0], (String)parent[1], (Collection<?>)target, kind, location, items);
             }
-            
-            if (items != null && items.length > 0 && isEntity(items[0]))
-                addUpdates(target);
-            else if (kind == ChangeKind.UPDATE && items != null && items.length > 0) {
-                PropertyChange pc = (PropertyChange)items[0];
-                if (isEntity(pc.getObject()))
-                    addUpdates(target);
-            }
         }
         
         /**
@@ -2118,15 +1979,6 @@ public class EntityManagerImpl implements EntityManager {
          *  @param items changed items
          */ 
         public void mapChangeHandler(ChangeKind kind, Object target, Integer location, Object[] items) {
-            MergeContext mergeContext = MergeContext.get(PersistenceManager.getEntityManager(target));
-            if ((mergeContext != null && mergeContext.getSourceEntityManager() == this) || !isActive())
-                return;
-            
-            if (target instanceof Component)
-                return;
-            
-            if (kind == ChangeKind.ADD || kind == ChangeKind.REMOVE || kind == ChangeKind.REPLACE)
-                addUpdates(target);
         }
         
         /**
@@ -2148,7 +2000,7 @@ public class EntityManagerImpl implements EntityManager {
                 for (int i = 0; i < items.length; i++) {
                     if (isEntity(items[i])) {
                         if (parent != null)
-                            addReference(items[i], parent[0], (String)parent[1], null);
+                            addReference(items[i], parent[0], (String)parent[1]);
                         else
                             attachEntity(items[i]);
                         dataManager.startTracking(items[i], parent != null ? parent[0] : null);
@@ -2157,14 +2009,14 @@ public class EntityManagerImpl implements EntityManager {
                         Object[] obj = (Object[])items[i];
                         if (isEntity(obj[0])) {
                             if (parent != null)
-                                addReference(obj[0], parent[0], (String)parent[1], null);
+                                addReference(obj[0], parent[0], (String)parent[1]);
                             else
                                 attachEntity(obj[0]);
                             dataManager.startTracking(obj[0], parent != null ? parent[0] : null);
                         }
                         if (isEntity(obj[1])) {
                             if (parent != null)
-                                addReference(obj[1], parent[0], (String)parent[1], null);
+                                addReference(obj[1], parent[0], (String)parent[1]);
                             else
                                 attachEntity(obj[1]);
                             dataManager.startTracking(obj[1], parent != null ? parent[0] : null);
@@ -2177,15 +2029,15 @@ public class EntityManagerImpl implements EntityManager {
                 if (parent != null) {
                     for (int i = 0; i < items.length; i++) {
                         if (isEntity(items[i])) {
-                            removeReference(items[i], parent[0], (String)parent[1], null);
+                            removeReference(items[i], parent[0], (String)parent[1]);
                         }
                         else if (items[i] instanceof Object[]) {
                             Object[] obj = (Object[])items[i];
                             if (isEntity(obj[0])) {
-                                removeReference(obj[0], parent[0], (String)parent[1], null);
+                                removeReference(obj[0], parent[0], (String)parent[1]);
                             }
                             if (isEntity(obj[1])) {
-                                removeReference(obj[1], parent[0], (String)parent[1], null);
+                                removeReference(obj[1], parent[0], (String)parent[1]);
                             }
                         }
                     }
@@ -2197,11 +2049,11 @@ public class EntityManagerImpl implements EntityManager {
                     Object[] item = (Object[])items[i];
                     if (isEntity(item[1])) {
                         if (parent != null)
-                            removeReference(item[1], parent[0], (String)parent[1], null);
+                            removeReference(item[1], parent[0], (String)parent[1]);
                     }
                     if (isEntity(item[2])) {
                         if (parent != null)
-                            addReference(item[2], parent[0], (String)parent[1], null);
+                            addReference(item[2], parent[0], (String)parent[1]);
                         else
                             attachEntity(item[2]);
                         dataManager.startTracking(item[2], parent != null ? parent[0] : null);
@@ -2220,30 +2072,9 @@ public class EntityManagerImpl implements EntityManager {
                 else
                     dirtyCheckContext.entityMapChangeHandler(parent[0], (String)parent[1], (Map<?, ?>)target, kind, items);
             }
-            
-            if (items != null && items.length > 0 && items[0] instanceof Object[] && isEntity(((Object[])items[0])[1])) {
-                addUpdates(target);
-            }
-            else if (kind == ChangeKind.UPDATE && items != null && items.length > 0) {
-                if (isEntity(((PropertyChange)items[0]).getObject()))
-                    addUpdates(target);
-            }
         }
     }
-    
-    /**
-     *  Track updates on target object
-     *
-     *  @param object tracked object
-     */ 
-    private void addUpdates(Object object) {
-        Expression ref = getReference(object, true, new HashSet<Object>());
-        if (ref != null && expressionEvaluator != null) {
-            Value value = expressionEvaluator.evaluate(ref);
-            trackingContext.addUpdate(value.componentName, value.componentClassName, ref.getExpression(), value.value);
-        }
-    }
-    
+
     /**
      *  Handle data updates
      *

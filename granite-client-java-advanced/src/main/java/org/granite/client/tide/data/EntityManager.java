@@ -36,14 +36,12 @@ package org.granite.client.tide.data;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.granite.client.tide.Context;
 import org.granite.client.tide.data.spi.DataManager;
 import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.data.spi.DataManager.TrackingHandler;
 import org.granite.client.tide.server.ServerSession;
-import org.granite.tide.Expression;
 
 /**
  *  EntityManager is the interface for entity management (!)
@@ -140,9 +138,8 @@ public interface EntityManager {
      *  @param entity an entity
      *  @param parent the parent entity
      *  @param propName name of the parent entity property that references the entity
-     *  @param expr the context expression
-     */ 
-    public void addReference(Object entity, Object parent, String propName, Expression expr);
+     */
+    public void addReference(Object entity, Object parent, String propName);
     
     /**
      *  Remove a reference on the provided object
@@ -150,21 +147,9 @@ public interface EntityManager {
      *  @param entity an entity
      *  @param parent the parent entity to dereference
      *  @param propName name of the parent entity property that references the entity
-     *  @param expr expression to remove
-     */ 
-    public boolean removeReference(Object entity, Object parent, String propName, Expression expr);
-    
-    /**
-     *  Retrieves context expression path for the specified entity (internal implementation)
-     *   
-     *  @param entity an entity
-     *  @param recurse should recurse until 'real' context path, otherwise object reference can be returned
-     *  @param cache graph visitor cache
-     * 
-     *  @return the path from the entity context (or null is no path found)
      */
-    public Expression getReference(Object entity, boolean recurse, Set<Object> cache);
-    
+    public boolean removeReference(Object entity, Object parent, String propName);
+
     /**
      *  Entity manager is dirty when any entity/collection/map has been modified
      *
@@ -208,7 +193,7 @@ public interface EntityManager {
     
     public MergeContext initMerge();
     
-    public Object mergeExternal(final MergeContext mergeContext, Object obj, Object previous, Expression expr, Object parent, String propertyName, boolean forceUpdate);
+    public Object mergeExternal(final MergeContext mergeContext, Object obj, Object previous, Object parent, String propertyName, boolean forceUpdate);
     
     /**
      *  Merge an object coming from a remote location (in general from a service) in the local context

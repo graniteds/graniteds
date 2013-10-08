@@ -55,7 +55,6 @@ import org.granite.client.tide.server.InvocationInterceptor;
 import org.granite.client.tide.server.ServerSession;
 import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
-import org.granite.client.tide.server.TrackingContext;
 import org.granite.logging.Logger;
 
 /**
@@ -177,20 +176,8 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
             }
         }
         
-        TrackingContext trackingContext = serverSession.getTrackingContext();
-        Future<T> future = null;
-        boolean saveTracking = trackingContext.isEnabled();
-        try {
-            trackingContext.setEnabled(false);
-            future = invoke(context, this, operation, args, responder, withContext, null);
-        }
-        finally {
-            trackingContext.setEnabled(saveTracking);
-        }
-        
-        if (withContext)
-            trackingContext.clearUpdates(true);
-        
+        Future<T> future = invoke(context, this, operation, args, responder, withContext, null);
+
         // TODO: conversation contexts
 		serverSession.trackCall();
 //        if (remoteConversation != null)

@@ -52,7 +52,6 @@ import org.granite.client.tide.data.PersistenceManager;
 import org.granite.client.tide.data.RemoteInitializer;
 import org.granite.client.tide.server.ServerSession;
 import org.granite.logging.Logger;
-import org.granite.tide.Expression;
 import org.granite.tide.invocation.InvocationCall;
 import org.granite.tide.invocation.InvocationResult;
 
@@ -96,15 +95,10 @@ public class RemoteInitializerImpl implements RemoteInitializer {
 		if (entityManager == null)
 			return false;
 		
-		Expression path = null;
-		
-		if (context.getContextId() != null && context.isContextIdFromServer())
-			path = entityManager.getReference(entity, false, new HashSet<Object>());
-		
-		entityManager.addReference(entity, null, null, null);
+		entityManager.addReference(entity, null, null);
 		
 		synchronized (objectsInitializing) {
-			objectsInitializing.add(new Object[] { context, path != null ? path.getPath() : entity, propertyName });
+			objectsInitializing.add(new Object[] { context, entity, propertyName });
 		}
 		
 		context.callLater(new DoInitializeObjects(serverSession));
