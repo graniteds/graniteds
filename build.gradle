@@ -814,7 +814,17 @@ project('granite-generator-eclipse') {
             'javax.jdo:jdo2-api:2.3-eb',
             'xpp3:xpp3:1.1.4c'
     }
-
+	
+	beforeEvaluate {
+		it.copy {
+			into ('lib')
+            from files(configurations.compile.findAll { it.name.startsWith('granite-generator') })
+            from configurations.compile.find { it.name.startsWith('xstream') }
+            from configurations.lib
+            rename { it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null }
+		}
+	}
+	
     task pluginJar(type: Jar) {
         archiveName = 'org.granite.builder_' + granitedsVersion + '.jar'
 
@@ -829,7 +839,7 @@ project('granite-generator-eclipse') {
         }
 
         from files('plugin.xml')
-
+		
         into ('lib') {
             from files(configurations.compile.findAll { it.name.startsWith('granite-generator') })
             from configurations.compile.find { it.name.startsWith('xstream') }
