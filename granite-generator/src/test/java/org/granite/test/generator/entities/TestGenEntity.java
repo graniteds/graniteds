@@ -32,7 +32,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.granite.generator.Generator;
 import org.granite.generator.as3.JavaAs3GroovyTransformer;

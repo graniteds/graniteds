@@ -21,7 +21,7 @@
  */
 package org.granite.test.generator.services;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.granite.generator.as3.JavaAs3GroovyConfiguration;
 import org.granite.generator.as3.reflect.JavaImport;
