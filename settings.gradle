@@ -18,6 +18,7 @@ include 'granite-server-activemq'
 include 'granite-server'
 include 'granite-generator-share'
 include 'granite-generator'
+include 'granite-generator-eclipse'
 
 include 'granite-server-ejb'
 include 'granite-server-cdi'

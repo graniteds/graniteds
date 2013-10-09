@@ -106,13 +106,13 @@ configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it
 		classifier = 'javadoc'
 		from javadoc.destinationDir
 	}
-	
-	jar {
-		metaInf {
-			from 'LICENSE.txt'
-		}
-	}
-	
+
+    jar {
+        metaInf {
+            from 'LICENSE.txt'
+        }
+    }
+
 	artifacts {
 		archives sourcesJar
 		archives javadocJar
@@ -654,7 +654,7 @@ project('granite-server') {
     }
 }
 
-// Lib shared with generator
+// Lib shared with generator (don't delete, used in flexmojos)
 project('granite-generator-share') {
 
     description = 'GraniteDS generator shared'
@@ -760,6 +760,88 @@ project('granite-generator') {
 
     test {
         it.dependsOn ':granite-client-java:jar', ':granite-client-javafx:jar', ':granite-client-android:jar'
+    }
+}
+
+// Generator Eclipse plugin
+project('granite-generator-eclipse') {
+
+    description = 'GraniteDS code generator eclipse plugin'
+
+    configurations {
+        create('lib')
+		
+		compile { transitive = false }
+		lib { transitive = false }
+    }
+	
+    dependencies {
+        // Shitty eclipse bric-a-brac of dependencies in maven central
+        compile 'org.eclipse:osgi:3.3.0-v20070530',
+            'org.eclipse.equinox:org.eclipse.equinox.registry:3.5.0.v20100503',
+            'org.eclipse.equinox:org.eclipse.equinox.common:3.6.0.v20100503',
+            'org.eclipse.core:org.eclipse.core.jobs:3.5.0.v20100515',
+            'org.eclipse.core:org.eclipse.core.runtime:3.6.0.v20100505',
+            'org.eclipse.core:org.eclipse.core.resources:3.6.0.v20100526-0737',
+            'org.eclipse.swt.win32.win32:x86:3.3.0-v3346',
+            'org.eclipse:ui:3.3.0-I20070614-0800',
+            'org.eclipse.core:databinding:1.0.0-I20070606-0010',
+            'org.eclipse.core:variables:3.2.0-v20070426',
+            'org.eclipse.core:expressions:3.3.0-v20070606-0010',
+            'org.eclipse.core:commands:3.3.0-I20070605-0010',
+            'org.eclipse.core:filesystem:1.1.0-v20070606',
+            'org.eclipse.jdt:core:3.3.0-v_771',
+            'org.eclipse.jdt:ui:3.3.0-v20070607-0010',
+            'org.eclipse.ui:ide:3.3.0-I20070620',
+            'org.eclipse.ui:editors:3.3.0-v20070606-0010',
+            'org.eclipse.ui:console:3.2.0-v20070530',
+            'org.eclipse.ui:workbench:3.3.0-I20070608-1100',
+            'org.eclipse:jface:3.3.0-I20070606-0010',
+            'org.eclipse.jface:text:3.3.0-v20070606-0010',
+            'org.eclipse.jface:databinding:1.1.0-I20070606-0010',
+            'org.eclipse.ant:core:3.1.100-v20060531',
+            'org.apache.ant:ant:1.7.0'
+		
+        compile project(':granite-generator')
+        compile project(':granite-generator-share')
+		
+        compile 'com.thoughtworks.xstream:xstream:1.3.1'
+
+        lib 'antlr:antlr:2.7.7',
+            'asm:asm:2.2.3',
+            'org.codehaus.groovy:groovy:1.6.4',
+            'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
+            'javax.jdo:jdo2-api:2.3-eb',
+            'xpp3:xpp3:1.1.4c'
+    }
+
+    task pluginJar(type: Jar) {
+        archiveName = 'org.granite.builder_' + granitedsVersion + '.jar'
+
+        metaInf {
+            from 'LICENSE.txt'
+        }
+
+        manifest {
+            from ('META-INF/MANIFEST.MF', {
+                eachEntry { if (it.key == 'Bundle-Version') { it.value = granitedsVersion } }
+            })
+        }
+
+        from files('plugin.xml')
+
+        into ('lib') {
+            from files(configurations.compile.findAll { it.name.startsWith('granite-generator') })
+            from configurations.compile.find { it.name.startsWith('xstream') }
+            from configurations.lib
+            rename { it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null }
+        }
+
+        into ('bin') { from sourceSets.main.output }
+    }
+
+    jar {
+        it.dependsOn 'pluginJar'
     }
 }
 
