@@ -2,12 +2,12 @@
 <?eclipse version="3.2"?>
 <plugin>
 
-	<!-- Granite Eclipse Builder -->
+    <!-- Granite Eclipse Builder -->
 
     <extension
-        id="org.granite.builder.granitenature"
-        name="GraniteDS Nature"
-        point="org.eclipse.core.resources.natures">
+            id="org.granite.builder.granitenature"
+            name="GraniteDS Nature"
+            point="org.eclipse.core.resources.natures">
         <requires-nature id="org.eclipse.jdt.core.javanature"/>
         <runtime>
             <run class="org.granite.builder.GraniteNature"/>
@@ -16,22 +16,22 @@
     </extension>
 
     <extension
-        id="org.granite.builder.granitebuilder"
-        name="GraniteDS Builder"
-        point="org.eclipse.core.resources.builders">
+            id="org.granite.builder.granitebuilder"
+            name="GraniteDS Builder"
+            point="org.eclipse.core.resources.builders">
         <builder hasNature="true">
             <run class="org.granite.builder.GraniteBuilder"/>
         </builder>
     </extension>
 
     <extension
-       id="org.granite.builder.popupMenus"
-       name="GraniteDS Menu"
-       point="org.eclipse.ui.popupMenus">
+            id="org.granite.builder.popupMenus"
+            name="GraniteDS Menu"
+            point="org.eclipse.ui.popupMenus">
         <objectContribution
-            adaptable="true"
-            objectClass="org.eclipse.core.resources.IProject"
-            id="org.granite.builder.popupMenus.nonGraniteNature">
+                adaptable="true"
+                objectClass="org.eclipse.core.resources.IProject"
+                id="org.granite.builder.popupMenus.nonGraniteNature">
             <visibility>
                 <and>
                     <objectState name="open" value="true"/>
@@ -42,98 +42,98 @@
                 </and>
             </visibility>
             <action
-                icon="bin/icons/gds16.gif"
-                label="Add GraniteDS Nature"
-                class="org.granite.builder.ToggleNatureAction"
-                enablesFor="+"
-                id="org.granite.builder.addNatureAction">
+                    icon="bin/icons/gds16.gif"
+                    label="Add GraniteDS Nature"
+                    class="org.granite.builder.ToggleNatureAction"
+                    enablesFor="+"
+                    id="org.granite.builder.addNatureAction">
             </action>
         </objectContribution>
 
         <objectContribution
-            adaptable="true"
-            objectClass="org.eclipse.core.resources.IProject"
-            id="org.granite.builder.popupMenus.graniteNature">
+                adaptable="true"
+                objectClass="org.eclipse.core.resources.IProject"
+                id="org.granite.builder.popupMenus.graniteNature">
             <visibility>
                 <objectState name="projectNature" value="org.granite.builder.granitenature"/>
             </visibility>
             <action
-                icon="bin/icons/gds16.gif"
-                label="Remove GraniteDS Nature"
-                class="org.granite.builder.ToggleNatureAction"
-                enablesFor="+"
-                id="org.granite.builder.removeNatureAction">
+                    icon="bin/icons/gds16.gif"
+                    label="Remove GraniteDS Nature"
+                    class="org.granite.builder.ToggleNatureAction"
+                    enablesFor="+"
+                    id="org.granite.builder.removeNatureAction">
             </action>
         </objectContribution>
     </extension>
 
     <extension
-       id="org.granite.builder.ui.granitePropertyPageExtension"
-       name="GraniteDS Properties"
-       point="org.eclipse.ui.propertyPages">
+            id="org.granite.builder.ui.granitePropertyPageExtension"
+            name="GraniteDS Properties"
+            point="org.eclipse.ui.propertyPages">
         <page
-            adaptable="true"
-            class="org.granite.builder.ui.GranitePropertyPage"
-            id="org.granite.builder.ui.granitePropertyPage"
-            name="GraniteDS"
-            objectClass="org.eclipse.core.resources.IProject">
+                adaptable="true"
+                class="org.granite.builder.ui.GranitePropertyPage"
+                id="org.granite.builder.ui.granitePropertyPage"
+                name="GraniteDS"
+                objectClass="org.eclipse.core.resources.IProject">
             <filter
-                name="nature"
-                value="org.granite.builder.granitenature"/>
+                    name="nature"
+                    value="org.granite.builder.granitenature"/>
         </page>
     </extension>
 
-	<!-- Gas3/Gfx Ant Task -->
+    <!-- Gas3/Gfx Ant Task -->
 
     <extension
-        id="org.granite.generator.ant.AntJavaAs3TaskExtension"
-        name="Gas3 Ant Task"
-        point="org.eclipse.ant.core.antTasks">
+            id="org.granite.generator.ant.AntJavaAs3TaskExtension"
+            name="Gas3 Ant Task"
+            point="org.eclipse.ant.core.antTasks">
         <antTask
-            class="org.granite.generator.ant.AntJavaAs3Task"
-            eclipseRuntime="false"
-            headless="true"
-            name="gas3"
-            library="lib/granite-generator.jar"/>
+                class="org.granite.generator.ant.AntJavaAs3Task"
+                eclipseRuntime="false"
+                headless="true"
+                name="gas3"
+                library="lib/granite-generator.jar"/>
     </extension>
 
     <extension
-        id="org.granite.generator.ant.AntJavaFXTaskExtension"
-        name="Gfx Ant Task"
-        point="org.eclipse.ant.core.antTasks">
+            id="org.granite.generator.ant.AntJavaFXTaskExtension"
+            name="Gfx Ant Task"
+            point="org.eclipse.ant.core.antTasks">
         <antTask
-            class="org.granite.generator.ant.AntJavaFXTask"
-            eclipseRuntime="false"
-            headless="true"
-            name="gas3"
-            library="lib/granite-generator.jar"/>
+                class="org.granite.generator.ant.AntJavaFXTask"
+                eclipseRuntime="false"
+                headless="true"
+                name="gas3"
+                library="lib/granite-generator.jar"/>
     </extension>
 
     <extension point="org.eclipse.ant.core.extraClasspathEntries">
         <extraClasspathEntry
-            eclipseRuntime="false"
-            headless="true"
-            library="lib/ejb3-persistence.jar"/>
+                eclipseRuntime="false"
+                headless="true"
+                library="lib/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
         <extraClasspathEntry
-            eclipseRuntime="false"
-            headless="true"
-            library="lib/jdo2-api-2.2.jar"/>
+                eclipseRuntime="false"
+                headless="true"
+                library="lib/jdo2-api-2.3-eb.jar"/>
         <extraClasspathEntry
-            eclipseRuntime="false"
-            headless="true"
-            library="lib/granite-generator-share.jar"/>
+                eclipseRuntime="false"
+                headless="true"
+                library="lib/granite-generator-share.jar"/>
         <extraClasspathEntry
-            eclipseRuntime="false"
-            headless="true"
-            library="lib/antlr-2.7.7.jar"/>
+                eclipseRuntime="false"
+                headless="true"
+                library="lib/antlr-2.7.7.jar"/>
         <extraClasspathEntry
-            eclipseRuntime="false"
-            headless="true"
-            library="lib/asm-2.2.3.jar"/>
+                eclipseRuntime="false"
+                headless="true"
+                library="lib/asm-2.2.3.jar"/>
         <extraClasspathEntry
-            eclipseRuntime="false"
-            headless="true"
-            library="lib/groovy-1.6.4.jar"/>
+                eclipseRuntime="false"
+                headless="true"
+                library="lib/groovy-1.6.4.jar"/>
     </extension>
 
 </plugin>

@@ -4,10 +4,11 @@ bin/
 bin-debug/
 /build
 build/
+test-classes/
 /.settings
 /doc
 /.gradle
-lib/
+/lib
 classes
 classes*
 .FlexUnitSettings

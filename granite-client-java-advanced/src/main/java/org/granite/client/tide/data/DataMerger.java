@@ -35,7 +35,6 @@
 package org.granite.client.tide.data;
 
 import org.granite.client.tide.data.spi.MergeContext;
-import org.granite.tide.Expression;
 
 /**
  * @author William DRAI
@@ -44,5 +43,5 @@ public interface DataMerger {
 
     public boolean accepts(Object obj);
     
-    public Object merge(MergeContext mergeContext, Object obj, Object previous, Expression expr, Object parent, String propertyName);
+    public Object merge(MergeContext mergeContext, Object obj, Object previous, Object parent, String propertyName);
 }

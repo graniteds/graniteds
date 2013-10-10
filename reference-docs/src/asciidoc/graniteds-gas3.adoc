@@ -233,7 +233,7 @@ Note that all these templates are bundled in the +granite-generator.jar+ archive
 +org.granite.generator.template+ package and accessible as resources via the class loader. 
 
 [[gas3.knownlimitations]]
-===Known Limitations
+=== Known Limitations
 
 Gas3 does not support inner classes except of enum type. You must declare your classes in separated source files 
 if you want them to be correctly handled by the generator. 

@@ -709,7 +709,7 @@ endif::flex[]
 
 ifdef::java[]
 [[ejb3.tideremotingdi.java]]
-====Basic remoting with dependency injection
+==== Basic remoting with dependency injection
 
  When using EJB3, the only difference on the client is that you have to use the destination named +server+ to build the +ServerSession+.  
  Here is a simple example of remoting with an Spring-injected client proxy for an EJB service: 
