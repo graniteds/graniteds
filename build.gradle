@@ -807,7 +807,7 @@ project('granite-generator-eclipse') {
             'xpp3:xpp3:1.1.4c',
             'com.thoughtworks.xstream:xstream:1.3.1'
     }
-	
+
 	beforeEvaluate {
 		it.copy {
 			into ('lib')
@@ -817,9 +817,11 @@ project('granite-generator-eclipse') {
             rename { it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null }
 		}
 	}
-	
+
+    def pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.0.SNAPSHOT')
+
     task pluginJar(type: Jar) {
-        archiveName = 'org.granite.builder_' + granitedsVersion.replace('-SNAPSHOT', '.0.SNAPSHOT') + '.jar'
+        archiveName = 'org.granite.builder_' + pluginVersion + '.jar'
         destinationDir = new File(new File(buildDir, 'update-site'), 'plugins')
 
         metaInf {
@@ -828,7 +830,7 @@ project('granite-generator-eclipse') {
 
         manifest {
             from ('META-INF/MANIFEST.MF', {
-                eachEntry { if (it.key == 'Bundle-Version') { it.value = granitedsVersion } }
+                eachEntry { if (it.key == 'Bundle-Version') { it.value = pluginVersion } }
             })
         }
 
@@ -844,12 +846,12 @@ project('granite-generator-eclipse') {
     }
 	
     task featureJar(type: Jar) {
-        archiveName = 'org.granite.builder_' + granitedsVersion + '.jar'
+        archiveName = 'org.granite.builder_' + pluginVersion + '.jar'
         destinationDir = new File(new File(buildDir, 'update-site'), 'features')
 
 
         from files('feature/feature.xml')
-        filter(ReplaceTokens, tokens: [granitedsVersion: granitedsVersion])
+        filter(ReplaceTokens, tokens: [granitedsVersion: pluginVersion])
     }
 
     artifacts {
