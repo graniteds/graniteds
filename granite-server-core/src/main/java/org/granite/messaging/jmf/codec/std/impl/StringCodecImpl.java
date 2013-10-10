@@ -79,8 +79,11 @@ public class StringCodecImpl extends AbstractIntegerStringCodec<String> implemen
 		if (jmfType != JMF_STRING)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
-		if ((parameterizedJmfType & UUID_FLAG) != 0)
-			return decodeUUID(ctx, parameterizedJmfType);
+		if ((parameterizedJmfType & UUID_FLAG) != 0) {
+			String uid = decodeUUID(ctx, parameterizedJmfType);
+			ctx.addSharedString(uid);
+			return uid;
+		}
 		
 		return readString(ctx, parameterizedJmfType, JMF_STRING_TYPE_HANDLER);
 	}
