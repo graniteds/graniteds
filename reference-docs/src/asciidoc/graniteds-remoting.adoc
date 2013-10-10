@@ -391,13 +391,12 @@ public class HelloController {
 	private RemoteService helloService;
 
 	public HelloController() {
-		ApacheAsyncTransport transport = new ApacheAsyncTransport();
-		transport.start();
-
-		AMFRemotingChannel channel = new AMFRemotingChannel(transport, "my-graniteamf", 
+	    ChannelFactory channelFactory = new AMFChannelFactory();
+	    channelFactory.start();
+	    RemotingChannel channel = channelFactory.newRemotingChannel("my-graniteamf",
 			new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"));
 		RemoteService srv = new RemoteService(channel, "hello");
-		
+
 		srv.newInvocation("sayHello", args[0]).setTimeToLive(5, TimeUnit.SECONDS)
 			.addListener(new ResultFaultIssuesResponseListener() {
 			         
