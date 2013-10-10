@@ -1507,8 +1507,6 @@ public class EntityManagerImpl implements EntityManager {
      *  @return merged object (should === previous when previous not null)
      */
     public Object internalMergeExternalData(MergeContext mergeContext, Object obj, Object prev, List<Object> removals, List<Object> persists) {
-        Map<String, Object> savedContext = null;
-        
         Object next = mergeExternal(mergeContext, obj, prev, null, null, false);
 
         if (removals != null)

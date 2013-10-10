@@ -38,7 +38,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,8 +58,21 @@ import javax.annotation.PreDestroy;
 import javax.inject.Named;
 
 import org.granite.client.configuration.Configuration;
-import org.granite.client.messaging.*;
-import org.granite.client.messaging.channel.*;
+import org.granite.client.messaging.ClientAliasRegistry;
+import org.granite.client.messaging.Consumer;
+import org.granite.client.messaging.Producer;
+import org.granite.client.messaging.RemoteService;
+import org.granite.client.messaging.ResultFaultIssuesResponseListener;
+import org.granite.client.messaging.ServerApp;
+import org.granite.client.messaging.TopicAgent;
+import org.granite.client.messaging.channel.AMFChannelFactory;
+import org.granite.client.messaging.channel.ChannelBuilder;
+import org.granite.client.messaging.channel.ChannelFactory;
+import org.granite.client.messaging.channel.JMFChannelFactory;
+import org.granite.client.messaging.channel.MessagingChannel;
+import org.granite.client.messaging.channel.RemotingChannel;
+import org.granite.client.messaging.channel.SessionAwareChannel;
+import org.granite.client.messaging.channel.UsernamePasswordCredentials;
 import org.granite.client.messaging.codec.MessagingCodec.ClientType;
 import org.granite.client.messaging.events.Event;
 import org.granite.client.messaging.events.FaultEvent;
@@ -80,12 +92,10 @@ import org.granite.client.tide.ContextAware;
 import org.granite.client.tide.Identity;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.EntityManager.Update;
-import org.granite.client.tide.data.spi.DataManager;
 import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.validation.InvalidValue;
 import org.granite.config.GraniteConfig;
 import org.granite.logging.Logger;
-import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationResult;
 import org.granite.util.ContentType;
 
@@ -731,11 +741,8 @@ public class ServerSession implements ContextAware {
     public void handleResult(Context context, String componentName, String operation, InvocationResult invocationResult, Object result, Object mergeWith) {
         log.debug("result {0}", result);
         
-        List<ContextUpdate> resultMap = null;
         List<Update> updates = null;
-        
         EntityManager entityManager = context.getEntityManager();
-        DataManager dataManager = context.getDataManager();
         
         try {
             // Clear flash context variable for Grails/Spring MVC
@@ -803,9 +810,6 @@ public class ServerSession implements ContextAware {
      */
     public void handleFault(Context context, String componentName, String operation, FaultMessage emsg) {
     }
-    
-    private static final ResultsComparator RESULTS_COMPARATOR = new ResultsComparator();
-	
 	
 	private static class LogoutState extends Observable {
 		
@@ -979,41 +983,4 @@ public class ServerSession implements ContextAware {
 		for (TransportExceptionListener listener : transportExceptionListeners)
 			listener.handleException(e);
 	}
-    
-	
-    private static class ResultsComparator implements Comparator<ContextUpdate> {
-        
-        /**
-         *  Comparator for expression evaluation ordering
-         * 
-         *  @param r1 expression 1
-         *  @param r2 expression 2
-         * 
-         *  @return comparison value
-         */
-        public int compare(ContextUpdate r1, ContextUpdate r2) {
-            
-            if (r1.getComponentClassName() != null && r2.getComponentClassName() != null && !r1.getComponentClassName().equals(r2.getComponentClassName()))
-                return r1.getComponentClassName().compareTo(r2.getComponentClassName());
-            
-            if (r1.getComponentName() != r2.getComponentName())
-                return r1.getComponentName().compareTo(r2.getComponentName());
-            
-            if (r1.getExpression() == null)
-                return r2.getExpression() == null ? 0 : -1;
-            
-            if (r2.getExpression() == null)
-                return 1;
-            
-            if (r1.getExpression().equals(r2.getExpression()))
-                return 0;
-            
-            if (r1.getExpression().indexOf(r2.getExpression()) == 0)
-                return 1;
-            if (r2.getExpression().indexOf(r1.getExpression()) == 0)
-                return -1;
-            
-            return r1.getExpression().compareTo(r2.getExpression()) < 0 ? -1 : 0;
-        }
-    }
 }
