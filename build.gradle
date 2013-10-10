@@ -155,7 +155,7 @@ configure(subprojects.findAll { it.name.startsWith('granite-client-flex') }) { s
 	apply plugin: 'gradlefx'
 	apply plugin: 'flashbuilder'
 	
-	output = 'libs/' + subproject.name
+	output = 'libs/' + subproject.name + '-' + granitedsVersion
 		
 	beforeEvaluate {
 		if (configurations.flexSDK.resolvedConfiguration.hasError()) {
@@ -819,7 +819,7 @@ project('granite-generator-eclipse') {
 	}
 	
     task pluginJar(type: Jar) {
-        archiveName = 'org.granite.builder_' + granitedsVersion + '.jar'
+        archiveName = 'org.granite.builder_' + granitedsVersion.replace('-SNAPSHOT', '.0.SNAPSHOT') + '.jar'
         destinationDir = new File(new File(buildDir, 'update-site'), 'plugins')
 
         metaInf {
