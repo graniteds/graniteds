@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 buildscript {
     repositories {
         mavenCentral()
@@ -765,6 +767,7 @@ project('granite-generator-eclipse') {
     }
 	
     dependencies {
+    
         // Shitty eclipse bric-a-brac of dependencies in maven central
         compile 'org.eclipse:osgi:3.3.0-v20070530',
             'org.eclipse.equinox:org.eclipse.equinox.registry:3.5.0.v20100503',
@@ -790,7 +793,7 @@ project('granite-generator-eclipse') {
             'org.eclipse.jface:databinding:1.1.0-I20070606-0010',
             'org.eclipse.ant:core:3.1.100-v20060531',
             'org.apache.ant:ant:1.7.0'
-		
+
         compile project(':granite-generator')
         compile project(':granite-generator-share')
 		
@@ -817,6 +820,7 @@ project('granite-generator-eclipse') {
 	
     task pluginJar(type: Jar) {
         archiveName = 'org.granite.builder_' + granitedsVersion + '.jar'
+        destinationDir = new File(new File(buildDir, 'update-site'), 'plugins')
 
         metaInf {
             from 'LICENSE.txt'
@@ -838,13 +842,22 @@ project('granite-generator-eclipse') {
 
         into ('bin') { from sourceSets.main.output }
     }
+	
+    task featureJar(type: Jar) {
+        archiveName = 'org.granite.builder_' + granitedsVersion + '.jar'
+        destinationDir = new File(new File(buildDir, 'update-site'), 'features')
+
+
+        from files('feature/feature.xml')
+        filter(ReplaceTokens, tokens: [granitedsVersion: granitedsVersion])
+    }
 
     artifacts {
         archives pluginJar
     }
 
     jar {
-        it.dependsOn 'pluginJar'
+        it.dependsOn 'pluginJar', 'featureJar'
     }
 }
 
