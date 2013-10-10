@@ -633,28 +633,23 @@ breaking existing object associations in the local context. So this merge featur
 instance of the collection is kept in sync.  
 
 [[remoting.tideserviceinit.flex]]
-==== Service initializer
+==== Server application endpoint initialization
 
 Tide remoting can be used without needing the standard +services-config.xml+ Flex configuration file. In this case, it is necessary to manually define 
 the remoting channels. 
 
-The easiest way is to setup the built-in default +DefaultServiceInitializer+ component implementation in the Tide context, for example in the +creationComplete+ 
+The easiest way is to setup the built-in default +ServerSession+ component implementation in the Tide context, for example in the +creationComplete+
 of the main application. 
 
 [source,actionscript]
 ----
-Tide.getInstance().addComponentWithFactory("serviceInitializer", DefaultServiceInitializer, 
-    { contextRoot: "/context-root" }
-);
+Tide.getInstance().mainServerSession.serverApp = new SimpleServerApp("/context-root");
 ----
 
-It is also possible to define +serverName+, +serverPort+ and alternative url mappings for Granite AMF remoting and for Gravity push +graniteUrlMapping+ 
-and +gravityUrlMapping+. 
+It is also possible to define +serverName+, +serverPort+ and use a secure https endpoint with +secure=true+.
 
-Tide additionally provides a built-in +DefaultSecureServiceInitializer+ with the same options to setup a +https+ channel. 
-
-Finally you can completely customize the channel initialization by providing your own implementation of +IServiceInitializer+. 
-It has only one method +initialize+ that is called for all ++RemoteObject++s or ++Consumer++s of the application. 
+You can completely customize the endpoint initialization by providing your own implementation of +IServerApp+, for example to fetch the endpoint parameters from a remote url.
+You can also customize the channel build by implementing the +IChannelBuilder+ interface.
 
 [[remoting.tideintercept.flex]]
 ==== Client message interceptors
@@ -771,7 +766,7 @@ endif::flex[]
 
 ifdef::java[]
 [[remoting.tideremoting.java]]
-===Using the Tide API
+=== Using the Tide API
 
 The Tide remoting API is an alternative to the low-level +RemoteService+ API that simplifies the handling of asynchronicity and brings much more features 
 that will be described in the next chapters. 
@@ -2166,7 +2161,7 @@ implementations instead of the previous container-based services: please refer t
 or <<graniteds.spring,Spring Services>> for more information. 
 
 [[remoting.secconfig]]
-====Configuration
+==== Configuration
 
 To enable security, you simply put this kind of declaration in your +granite-config.xml+ file:             
 

@@ -445,7 +445,7 @@ endif::flex[]
 
 ifdef::flex[]
 [[cdi.tidesecurity]]
-====Security
+==== Security
 
 GraniteDS provides a client-side component named +identity+ that ensures the integration between the client +RemoteObject+ credentials and the server-side 
 container security. It additionally includes an easy-to-use API to define runtime authorization checks on the Flex UI.  
