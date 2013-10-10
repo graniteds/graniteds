@@ -1550,15 +1550,14 @@ project('granite-client-flex45-tests') {
 			display:         flexUnit.display) {
 			
 			libraries.each { File libraryFile ->
-				println 'Library: ' + libraryFile.path
 				library(dir: libraryFile.parent) {
 					include(name: libraryFile.name)
 				}
 			}
 		}
-
+		
 		if (ant.properties[flexUnit.failureProperty] == "true") {
-			throw new Exception("Tests failed");
+			println "Tests failed"
 		}
 
 	}
