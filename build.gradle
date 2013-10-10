@@ -326,7 +326,10 @@ configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith
 						}
 					}
 				}
-			}
+
+                // Generated dependencies are not suitable for maven pom, remove everything for now
+                pom.whenConfigured { pom -> pom.dependencies.clear() }
+            }
 		}
 	}
 }
@@ -638,19 +641,6 @@ project('granite-server') {
 			links = rootProject.ext.javadocLinks
 		}
 	}
-
-    // Remove granite-server-* dependencies from pom, the jar already contains everything
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                pom.whenConfigured { pom ->
-                    pom.dependencies.removeAll(
-                        pom.dependencies.findAll { it.groupId == 'org.graniteds' && it.artifactId.startsWith('granite-server') }
-                    )
-                }
-            }
-        }
-    }
 }
 
 // Lib shared with generator (don't delete, used in flexmojos)
@@ -2035,7 +2025,7 @@ project('dist') {
 
     task docs(type: Zip, dependsOn: [ ':reference-docs:asciidoctor' ]) {
 
-        archiveName = 'graniteds-dist-' + granitedsVersion + '-docs.zip'
+        archiveName = 'graniteds-docs-' + granitedsVersion + '.zip'
 
         into ('graniteds-' + granitedsVersion)
 
