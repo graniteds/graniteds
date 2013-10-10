@@ -28,6 +28,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DefaultCodecRegistry;
@@ -37,6 +38,7 @@ import org.granite.test.jmf.Util.ByteArrayJMFDeserializer;
 import org.granite.test.jmf.Util.ByteArrayJMFDumper;
 import org.granite.test.jmf.Util.ByteArrayJMFSerializer;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -233,19 +235,64 @@ public class TestJMFString implements JMFConstants {
 		*/
 	}
 
-	private void checkString(String v) throws IOException {
-		checkString(v, false);
+	@Test
+	public void testUUIDString() throws ClassNotFoundException, IOException {
+		String uid = UUID.randomUUID().toString();
+		Assert.assertEquals(17, checkString(uid));
+		Assert.assertEquals(17, checkStringObject(uid));
+		
+		uid = UUID.randomUUID().toString().toUpperCase();
+		Assert.assertEquals(17, checkString(uid));
+		Assert.assertEquals(17, checkStringObject(uid));
+		
+		uid = "bb2256cf-fb4e-4a30-a500-a17d9a87d08a";
+		Assert.assertEquals(17, checkString(uid));
+		Assert.assertEquals(17, checkStringObject(uid));
+		
+		uid = "BB47A52E-2457-4616-934D-E0AD9A67FFEA";
+		Assert.assertEquals(17, checkString(uid));
+		Assert.assertEquals(17, checkStringObject(uid));
+
+		// Mixed uppercase / lowercase (invalid).
+		
+		uid = "Bb2256cf-fb4e-4a30-a500-a17d9a87d08a";
+		Assert.assertEquals(38, checkString(uid));
+		Assert.assertEquals(38, checkStringObject(uid));
+
+		uid = "bb2256Cf-fb4e-4A30-a500-a17d9a87d08a";
+		Assert.assertEquals(38, checkString(uid));
+		Assert.assertEquals(38, checkStringObject(uid));
+		
+		uid = "bb2256cf-fb4e-4a30-a500-a17d9a87d08A";
+		Assert.assertEquals(38, checkString(uid));
+		Assert.assertEquals(38, checkStringObject(uid));
+		
+		uid = "bB47A52E-2457-4616-934D-E0AD9A67FFEA";
+		Assert.assertEquals(38, checkString(uid));
+		Assert.assertEquals(38, checkStringObject(uid));
+
+		uid = "BB47A52E-2457-4616-934d-e0AD9A67FFEA";
+		Assert.assertEquals(38, checkString(uid));
+		Assert.assertEquals(38, checkStringObject(uid));
+		
+		uid = "BB47A52E-2457-4616-934D-E0AD9A67FFEa";
+		Assert.assertEquals(38, checkString(uid));
+		Assert.assertEquals(38, checkStringObject(uid));
 	}
 
-	private void checkString(String v, boolean dump) throws IOException {
-		checkString(v, null, dump);
+	private int checkString(String v) throws IOException {
+		return checkString(v, false);
+	}
+
+	private int checkString(String v, boolean dump) throws IOException {
+		return checkString(v, null, dump);
 	}
 	
-	private void checkString(String v, byte[] expected) throws IOException {
-		checkString(v, null, false);
+	private int checkString(String v, byte[] expected) throws IOException {
+		return checkString(v, null, false);
 	}
 	
-	private void checkString(String v, byte[] expected, boolean dump) throws IOException {
+	private int checkString(String v, byte[] expected, boolean dump) throws IOException {
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
 		serializer.writeUTF(v);
 		serializer.close();
@@ -286,21 +333,23 @@ public class TestJMFString implements JMFConstants {
 			
 			fail(sb.toString());
 		}
+		
+		return bytes.length;
 	}
 
-	private void checkStringObject(String v) throws ClassNotFoundException, IOException {
-		checkStringObject(v, false);
+	private int checkStringObject(String v) throws ClassNotFoundException, IOException {
+		return checkStringObject(v, false);
 	}
 
-	private void checkStringObject(String v, boolean dump) throws ClassNotFoundException, IOException {
-		checkStringObject(v, null, dump);
+	private int checkStringObject(String v, boolean dump) throws ClassNotFoundException, IOException {
+		return checkStringObject(v, null, dump);
 	}
 	
-	private void checkStringObject(String v, byte[] expected) throws ClassNotFoundException, IOException {
-		checkStringObject(v, null, false);
+	private int checkStringObject(String v, byte[] expected) throws ClassNotFoundException, IOException {
+		return checkStringObject(v, null, false);
 	}
 	
-	private void checkStringObject(String v, byte[] expected, boolean dump) throws ClassNotFoundException, IOException {
+	private int checkStringObject(String v, byte[] expected, boolean dump) throws ClassNotFoundException, IOException {
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
 		serializer.writeObject(v);
 		serializer.close();
@@ -344,5 +393,7 @@ public class TestJMFString implements JMFConstants {
 			
 			fail(sb.toString());
 		}
+		
+		return bytes.length;
 	}
 }

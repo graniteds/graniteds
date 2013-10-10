@@ -40,19 +40,19 @@ public interface JMFConstants {
 	static final int JMF_ARRAY				= 0x03; // JMF_XXXX_0011
 	static final int JMF_LONG				= 0x04; // JMF_XXXX_0100
 	static final int JMF_LONG_OBJECT		= 0x05; // JMF_XXXX_0101
+	static final int JMF_STRING				= 0x06; // JMF_XXXX_0110
 
-	static final int JMF_XXXX_0110			= 0x06; // JMF_XXXX_0110
 	static final int JMF_XXXX_0111			= 0x07; // JMF_XXXX_0111
 	
 	// Types with 3 bits of parameters (bit 5 always 0, bit 4 always 1)
 
 	static final int JMF_INTEGER			= 0x08; // JMF_XXX0_1000
 	static final int JMF_INTEGER_OBJECT		= 0x09; // JMF_XXX0_1001
-	static final int JMF_STRING				= 0x0A; // JMF_XXX0_1010
-	static final int JMF_ARRAY_LIST			= 0x0B; // JMF_XXX0_1011
-	static final int JMF_HASH_SET			= 0x0C; // JMF_XXX0_1100
-	static final int JMF_HASH_MAP			= 0x0D; // JMF_XXX0_1101
+	static final int JMF_ARRAY_LIST			= 0x0A; // JMF_XXX0_1010
+	static final int JMF_HASH_SET			= 0x0B; // JMF_XXX0_1011
+	static final int JMF_HASH_MAP			= 0x0C; // JMF_XXX0_1100
 
+	static final int JMF_XXX0_1101			= 0x0D; // JMF_XXX0_1101
 	static final int JMF_XXX0_1110			= 0x0E; // JMF_XXX0_1110
 	static final int JMF_XXX0_1111			= 0x0F; // JMF_XXX0_1111
 	
