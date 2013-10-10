@@ -9,7 +9,7 @@ buildscript {
 		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.6.0'
 		classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
         classpath group: 'org.gradlefx', name: 'gradlefx', version: '0.6.4'
-		classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.4.1'
+		classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.5.0'
     }
 }
 
@@ -58,7 +58,7 @@ configure(subprojects) {
 }
 
 // Add Java plugin for all non-Flex subprojects
-configure(subprojects.findAll { !it.name.startsWith('granite-client-flex') && it.name != 'granite-server' && it.name != 'granite-generator-share' && it.name != 'reference-docs' }) { subproject ->
+configure(subprojects.findAll { it.name.startsWith('granite') && !it.name.startsWith('granite-client-flex') && it.name != 'granite-server' && it.name != 'granite-generator-share' }) { subproject ->
 
 	apply plugin: 'java'
 	apply plugin: 'eclipse'
@@ -245,7 +245,7 @@ class ExtLicensePlugin extends LicensePlugin {
 
 // Common configuration for all subprojects
 // signing + maven deployment
-configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith('-doc') && !it.name.endsWith('-tests') }) { subproject ->
+configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith('-eclipse') && !it.name.endsWith('-tests') }) { subproject ->
 	
 	apply plugin: 'maven'
 	apply plugin: 'signing'
@@ -530,6 +530,35 @@ project('granite-server-activemq') {
 	}
 }
 
+def coreProjects = [
+        ':granite-server-core',
+        ':granite-server-servlet3',
+        ':granite-server-tomcat6',
+        ':granite-server-tomcat7',
+        ':granite-server-jetty6',
+        ':granite-server-jetty8',
+        ':granite-server-jboss',
+        ':granite-server-glassfishv2',
+        ':granite-server-glassfishv3',
+        ':granite-server-weblogic',
+        ':granite-server-activemq'
+]
+
+def allProjects = coreProjects + [
+        ':granite-server-cdi',
+        ':granite-server-ejb',
+        ':granite-server-spring',
+        ':granite-server-spring2',
+        ':granite-server-seam',
+        ':granite-server-hibernate',
+        ':granite-server-hibernate4',
+        ':granite-server-datanucleus',
+        ':granite-server-eclipselink',
+        ':granite-server-openjpa',
+        ':granite-server-toplink',
+        ':granite-server-beanvalidation',
+        ':granite-server-appengine'
+]
 
 // All server libs
 project('granite-server') {
@@ -537,36 +566,6 @@ project('granite-server') {
 	description = 'GraniteDS Server all libs'
 	
 	apply plugin: 'java'
-	
-	def coreProjects = [
-		':granite-server-core',
-		':granite-server-servlet3',
-		':granite-server-tomcat6',
-		':granite-server-tomcat7',
-		':granite-server-jetty6',
-		':granite-server-jetty8',
-		':granite-server-jboss',
-		':granite-server-glassfishv2',
-		':granite-server-glassfishv3',
-		':granite-server-weblogic',
-		':granite-server-activemq'
-	]
-	
-	def allProjects = coreProjects + [
-		':granite-server-cdi',
-		':granite-server-ejb',
-		':granite-server-spring',
-		':granite-server-spring2',
-		':granite-server-seam',
-		':granite-server-hibernate',
-		':granite-server-hibernate4',
-		':granite-server-datanucleus',
-		':granite-server-eclipselink',
-		':granite-server-openjpa',
-		':granite-server-toplink',
-		':granite-server-beanvalidation',
-        ':granite-server-appengine'
-	]
 	
 	dependencies {
 		coreProjects.each {
@@ -812,7 +811,8 @@ project('granite-generator-eclipse') {
             'org.codehaus.groovy:groovy:1.6.4',
             'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
             'javax.jdo:jdo2-api:2.3-eb',
-            'xpp3:xpp3:1.1.4c'
+            'xpp3:xpp3:1.1.4c',
+            'com.thoughtworks.xstream:xstream:1.3.1'
     }
 	
 	beforeEvaluate {
@@ -842,12 +842,15 @@ project('granite-generator-eclipse') {
 		
         into ('lib') {
             from files(configurations.compile.findAll { it.name.startsWith('granite-generator') })
-            from configurations.compile.find { it.name.startsWith('xstream') }
             from configurations.lib
             rename { it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null }
         }
 
         into ('bin') { from sourceSets.main.output }
+    }
+
+    artifacts {
+        archives pluginJar
     }
 
     jar {
@@ -1579,11 +1582,11 @@ project('granite-client-java') {
 		compile 'log4j:log4j:1.2.17'
 		
         compile 'org.apache.httpcomponents:httpasyncclient:4.0-beta4',
-                'javax.enterprise:cdi-api:1.0-SP4',
-                'javax.inject:javax.inject:1',
-                'net.sf.extcos:extcos:0.3b',
                 'org.eclipse.jetty:jetty-client:8.1.+',
                 'org.eclipse.jetty:jetty-websocket:8.1.+',
+                'net.sf.extcos:extcos:0.3b',
+                'javax.enterprise:cdi-api:1.0-SP4',
+                'javax.inject:javax.inject:1',
                 'javax.validation:validation-api:1.0.0.GA',
                 'org.springframework:spring-beans:3.1.4.RELEASE',
                 'org.springframework:spring-context:3.1.4.RELEASE'
@@ -1905,6 +1908,11 @@ project('reference-docs') {
 				idseparator: '-'
 			]
 		]
+
+        copy {
+            from new File(sourceDir, 'images')
+            into new File(outputDir, 'images')
+        }
 	}
 	
 	task docJava(type: org.asciidoctor.gradle.AsciidoctorTask) {
@@ -1922,8 +1930,149 @@ project('reference-docs') {
 				idseparator: '-'
 			]
 		]
+
+        copy {
+            from new File(sourceDir, 'images')
+            into new File(outputDir, 'images')
+        }
 	}
 	
 	task asciidoctor(overwrite: true, dependsOn: [ 'docFlex', 'docJava' ]) {		
 	}
+}
+
+
+// Distribution
+project('dist') {
+
+    defaultTasks 'dist'
+	
+	configurations {
+		create('server')
+		create('javaClient')
+		create('flexClient')
+		create('generator')
+        create('javaClientDeps')
+        create('javaClientWebsocket')
+
+        server { transitive = false }
+        serverCore { transitive = false }
+        javaClient { transitive = false }
+        flexClient { transitive = false }
+        generator { transitive = false }
+	}
+
+    def serverProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-server') && !coreProjects.contains(it.path) }
+    def serverCoreProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-server') && coreProjects.contains(it.path) }
+    def javaClientProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-client-java') || it.name.startsWith('granite-client-android') }
+    def flexClientProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-client-flex') && !it.name.endsWith('-tests') }
+    def generatorProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-generator') && it.name.indexOf('eclipse') < 0 }
+
+	dependencies {
+		server serverProjects
+        serverCore serverCoreProjects
+		javaClient javaClientProjects
+		flexClient flexClientProjects
+		generator generatorProjects
+
+        javaClientDeps 'org.apache.httpcomponents:httpasyncclient:4.0-beta4'
+
+        javaClientWebsocket 'org.eclipse.jetty:jetty-client:8.1.+',
+            'org.eclipse.jetty:jetty-websocket:8.1.+'
+	}
+	
+	task dist(type: Zip) {
+		archiveName = 'graniteds-dist-' + granitedsVersion + '.zip'
+
+        into ('graniteds-' + granitedsVersion)
+
+        from rootProject.file('dist-licenses/README-LICENSES.txt')
+
+        into ('licenses') {
+            from rootProject.fileTree('dist-licenses')
+            exclude 'README-LICENSES.txt'
+        }
+		
+		into ('libraries/server') {
+			from configurations.server
+		}
+        into ('libraries/server/submodules') {
+            from configurations.serverCore
+        }
+		into ('libraries/java-client') {
+			from configurations.javaClient
+		}
+        into ('libraries/java-client/dependencies') {
+            from configurations.javaClientDeps
+        }
+        into ('libraries/java-client/optional-websocket') {
+            from configurations.javaClientWebsocket
+        }
+		into ('libraries/flex-client') {
+			from configurations.flexClient
+		}
+		
+		into ('tools') {
+			from configurations.generator
+            from project(':granite-generator-eclipse').configurations.lib
+            rename { it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null }
+        }
+        into ('tools/eclipse') {
+            from project(':granite-generator-eclipse').configurations.archives.allArtifacts.find { it.file.name.startsWith('org.granite.builder') }.file
+        }
+
+        (serverProjects + serverCoreProjects + javaClientProjects).each { subproject ->
+            subproject.configurations.archives.allArtifacts.findAll { it.classifier == 'sources' }.each { artifact ->
+                into ('sources/java') { from artifact.file }
+            }
+        }
+        flexClientProjects.each { subproject ->
+            subproject.configurations.archives.allArtifacts.findAll { it.classifier == 'sources' }.each { artifact ->
+                into ('sources/as3') { from artifact.file }
+            }
+        }
+	}
+
+    task docs(type: Zip, dependsOn: [ ':reference-docs:asciidoctor' ]) {
+
+        archiveName = 'graniteds-dist-' + granitedsVersion + '-docs.zip'
+
+        into ('graniteds-' + granitedsVersion)
+
+        from rootProject.file('dist-licenses/README-LICENSES.txt')
+
+        into ('licenses') {
+            from rootProject.fileTree('dist-licenses')
+            exclude 'README-LICENSES.txt'
+        }
+
+        into ('docs/reference') {
+            from project(':reference-docs').fileTree('build/docs')
+        }
+
+        into ('docs/server/api') {
+            from project(':granite-server').fileTree('build/docs/javadoc')
+        }
+        into ('docs/server-udp/api') {
+            from project(':granite-server-udp').fileTree('build/docs/javadoc')
+        }
+        into ('docs/client-flex/api') {
+            from project(':granite-client-flex45-advanced').fileTree('build/docs/asdoc')
+        }
+        into ('docs/client-flex-udp/api') {
+            from project(':granite-client-flex-udp').fileTree('build/docs/asdoc')
+        }
+        into ('docs/client-java/api') {
+            from project(':granite-client-java').fileTree('build/docs/javadoc')
+        }
+        into ('docs/client-java-udp/api') {
+            from project(':granite-client-java-udp').fileTree('build/docs/javadoc')
+        }
+        into ('docs/client-javafx/api') {
+            from project(':granite-client-javafx').fileTree('build/docs/javadoc')
+        }
+        into ('docs/client-android/api') {
+            from project(':granite-client-android').fileTree('build/docs/javadoc')
+        }
+    }
 }

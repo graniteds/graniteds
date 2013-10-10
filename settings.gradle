@@ -48,3 +48,5 @@ include 'granite-client-javafx'
 include 'granite-client-android'
 
 include 'reference-docs'
+
+include 'dist'
