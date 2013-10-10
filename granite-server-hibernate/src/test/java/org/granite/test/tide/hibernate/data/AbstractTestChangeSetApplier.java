@@ -1011,7 +1011,13 @@ public abstract class AbstractTestChangeSetApplier {
 		
 		Patient2 p3 = find(Patient2.class, patientId);
 		
-		VitalSignTest2 vst3 = (VitalSignTest2)p3.getVisits().iterator().next().getTests().iterator().next();
+		VitalSignTest2 vst3 = null;
+        for (Test2 t : p3.getVisits().iterator().next().getTests()) {
+            if (!t.getUid().equals("VST1")) {
+                vst3 = (VitalSignTest2)t;   // New test will not have the uid for the first one
+                break;
+            }
+        }
 		Assert.assertNotNull("Test saved", vst3.getId());
 		Assert.assertEquals("Observations", 2, vst3.getVitalSignObservations().size());
 		
