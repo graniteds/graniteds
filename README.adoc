@@ -16,7 +16,7 @@ or on http://www.graniteds.org/confluence/display/DOWNLOAD[GraniteDS web site].
 
 === Licensing
 
-See LICENSES.txt.
+See LICENSES.adoc.
 
 === Documentation
 

@@ -1995,7 +1995,7 @@ project('dist') {
 
         from file('README.adoc')
 
-        from file('licenses/README-LICENSES.adoc')
+        from file('README-LICENSES.adoc')
 
         into ('licenses') {
             from fileTree('licenses')
@@ -2051,7 +2051,7 @@ project('dist') {
 
         into ('graniteds-' + granitedsVersion)
 
-        from file('licenses/README-LICENSES.adoc')
+        from file('README-LICENSES.adoc')
 
         into ('licenses') {
             from fileTree('licenses')

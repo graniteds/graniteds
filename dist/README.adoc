@@ -11,7 +11,7 @@ It also provides comprehensive data management features for use with Flex, JavaF
 
 === Licensing
 
-See README-LICENSES.txt
+See licenses/README-LICENSES.adoc
 
 === Documentation
 
