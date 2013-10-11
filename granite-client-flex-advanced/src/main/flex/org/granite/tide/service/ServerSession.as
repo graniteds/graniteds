@@ -129,6 +129,7 @@ package org.granite.tide.service {
             // Update channelSets
             for (var type:String in _channelSetsByType) {
                 var channelSet:ChannelSet = _channelSetsByType[type];
+                channelSet.disconnectAll();
                 channelSet.removeChannel(channelSet.channels[0]);
                 initChannelSet(type);
             }

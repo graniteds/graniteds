@@ -284,7 +284,7 @@ public class Persistence {
 			return raw ? property.getRawObject(entity) : property.getObject(entity);
         }
         catch (Exception e) {
-        	throw new RuntimeException("Could not get " + property + " of object " + entity);
+        	throw new RuntimeException("Could not get " + property + " of object " + entity, e);
         }
 	}
 	
@@ -294,7 +294,7 @@ public class Persistence {
 			property.setObject(entity, value);
         }
         catch (Exception e) {
-        	throw new RuntimeException("Could not set " + property + " of object " + entity);
+        	throw new RuntimeException("Could not set " + property + " of object " + entity, e);
         }
 	}
 	
@@ -326,7 +326,7 @@ public class Persistence {
             	values.put(property.getName(), raw ? property.getRawObject(entity) : property.getObject(entity));
             }
             catch (Exception e) {
-            	throw new RuntimeException("Could not get property " + property.getName() + " on entity " + entity);
+            	throw new RuntimeException("Could not get property " + property.getName() + " on entity " + entity, e);
             }
         }
         return values;
