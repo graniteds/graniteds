@@ -23,7 +23,7 @@
     java-client/granite-client-android-3.0.0.RC1.jar
     java-client/granite-client-java-udp-3.0.0.RC1.jar
     
-    server/granite-server-udp-3.0.0.RC.jar
+    server/granite-server-udp-3.0.0.RC1.jar
     
     Commercial licenses are available, please visit:
     http://www.granitedataservices.com/license.
