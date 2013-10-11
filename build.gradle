@@ -1995,11 +1995,11 @@ project('dist') {
 
         from file('README.adoc')
 
-        from rootProject.file('dist-licenses/README-LICENSES.txt')
+        from file('licenses/README-LICENSES.adoc')
 
         into ('licenses') {
-            from rootProject.fileTree('dist-licenses')
-            exclude 'README-LICENSES.txt'
+            from fileTree('licenses')
+            exclude 'README-LICENSES.adoc'
         }
 		
 		into ('libraries/server') {
@@ -2051,11 +2051,11 @@ project('dist') {
 
         into ('graniteds-' + granitedsVersion)
 
-        from rootProject.file('dist-licenses/README-LICENSES.txt')
+        from file('licenses/README-LICENSES.adoc')
 
         into ('licenses') {
-            from rootProject.fileTree('dist-licenses')
-            exclude 'README-LICENSES.txt'
+            from fileTree('licenses')
+            exclude 'README-LICENSES.adoc'
         }
 
         into ('docs/reference') {
