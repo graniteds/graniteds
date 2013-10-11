@@ -264,7 +264,9 @@ configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith
 	}
 	
 	signing {
-		required { gradle.taskGraph.hasTask("uploadArchives") }
+		required { 
+			gradle.taskGraph.hasTask(':dist:uploadArchives') 
+		}
 		sign configurations.archives
 	}
 
