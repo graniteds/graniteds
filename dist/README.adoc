@@ -1,5 +1,6 @@
-== Granite Data Services binary distribution
-'''
+== Binary Distribution / Readme
+===== +http://www.graniteds.org+ | +http://www.granitedataservices.com+
+
 
 === Overview
 
@@ -9,13 +10,15 @@ technologies (Comet, WebSocket, UDP).
 
 It also provides comprehensive data management features for use with Flex, JavaFX and Android applications.
 
+
 === Licensing
 
-See licenses/README-LICENSES.adoc
+See licenses/LICENSES.adoc
 
 === Documentation
 
 The documentation is available online on http://www.graniteds.org/confluence/pages/viewpage.action?pageId=16875660 or in the separate archive graniteds-docs-3.0.0.RC1.zip
+
 
 === Contents of this binary distribution
 
