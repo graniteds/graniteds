@@ -1,6 +1,0 @@
-===== http://www.graniteds.org[Granite Data Services]
-'''
-
-=== Licensing
-
-See README.adoc > Licensing.

@@ -1,0 +1,36 @@
+==== http://www.graniteds.org[Granite Data Services]
+'''
+
+=== GraniteDS Licenses
+
+===== GPL 3.0
+
+The following libraries are released under the http://www.gnu.org/licenses/gpl-3.0-standalone.html[GNU GENERAL PUBLIC LICENSE
+version 3]:
+
+----
+flex-client/granite-client-flex-advanced-3.0.0.RC1.swc
+flex-client/granite-client-flex45-advanced-3.0.0.RC1.swc
+flex-client/granite-client-flex-udp-3.0.0.RC1.swc
+
+java-client/granite-client-java-advanced-3.0.0.RC1.jar
+java-client/granite-client-javafx-3.0.0.RC1.jar
+java-client/granite-client-android-3.0.0.RC1.jar
+java-client/granite-client-java-udp-3.0.0.RC1.jar
+
+server/granite-server-udp-3.0.0.RC1.jar
+----
+
+Commercial licenses are available for these libraries, please visit:
+http://www.granitedataservices.com/license.
+    
+===== LGPL 2.1
+
+All other GraniteDS libraries (jar / swc) are distributed under the
+http://www.gnu.org/licenses/lgpl-2.1-standalone.html[GNU LESSER GENERAL PUBLIC LICENSE version 2.1].   
+
+=== Third-party Licenses
+  
+All third-party libraries (jar / swc) present in this distribution are
+licensed under specific terms and conditions: refer to the files placed in
+the "third-parties" directory for more details.

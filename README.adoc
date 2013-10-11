@@ -16,14 +16,7 @@ or on http://www.graniteds.org/confluence/display/DOWNLOAD[GraniteDS web site].
 
 === Licensing
 
-The core GraniteDS libraries and clients (granite-server, granite-client-flex, granite-client-java) are released under the
-http://www.gnu.org/licenses/lgpl-2.1-standalone.html[GNU Lesser General Public License, version 2.1].
-
-Advanced libraries (granite-client-flex-advanced, granite-client-javafx, granite-client-android) and other advanced features
-(UDP: granite-server-udp, granite-client-java-udp, granite-client-flex-udp) are released under the
-http://www.gnu.org/licenses/gpl-3.0-standalone.html[GNU General Public License, version 3.0].
-Commercial licenses are also available for these libraries, visit http://www.granitedataservices.com/license
-for more details.
+See LICENSES.txt.
 
 === Documentation
 

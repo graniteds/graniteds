@@ -1,0 +1,15 @@
+===== http://www.graniteds.org[Granite Data Services]
+'''
+
+=== Licensing
+
+Core GraniteDS libraries are released under the
+http://www.gnu.org/licenses/lgpl-2.1-standalone.html[GNU Lesser General Public License, version 2.1].
+
+Advanced GraniteDS libraries are released under the
+http://www.gnu.org/licenses/gpl-3.0-standalone.html[GNU General Public License, version 3.0]. Commercial
+licenses are also available for these libraries, visit http://www.granitedataservices.com/license
+for more details.
+
+Refer to the LICENSE.txt file in each sub-directory to find out the license applicable for the
+corresponding library.
