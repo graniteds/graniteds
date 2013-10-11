@@ -1,5 +1,6 @@
-===== http://www.graniteds.org[Granite Data Services]
-'''
+== Source Distribution / Readme
+===== +http://www.graniteds.org+ | +http://www.granitedataservices.com+
+
 
 === Overview
 
@@ -9,14 +10,17 @@ technologies (Comet, WebSocket, UDP).
 
 It also provides comprehensive data management features for use with Flex, JavaFX and Android applications.
 
+
 === Download
 
 Artifacts are available on http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.graniteds%22[Maven central]
 or on http://www.graniteds.org/confluence/display/DOWNLOAD[GraniteDS web site].
 
+
 === Licensing
 
-See LICENSES.txt.
+See LICENSES.adoc
+
 
 === Documentation
 
@@ -29,11 +33,13 @@ See LICENSES.txt.
 * Flex Reference documentation is http://www.graniteds.org/public/docs/3.0.0/docs/reference/flex/graniteds-refguide-flex.html[here].
 * JavaFX Reference documentation is http://www.graniteds.org/public/docs/3.0.0/docs/reference/java/graniteds-refguide-java.html[here].
 
+
 === Support
 
 You can get community support on the https://groups.google.com/forum/#!forum/graniteds[GraniteDS user forums].
 
 A dedicated http://granitedataservices.com/services/[Commercial support] is also available.
+
 
 === Issues
 
@@ -41,6 +47,7 @@ You can report issues via the http://www.graniteds.org/jira/[GraniteDS JIRA].
 
 If you are not sure that what you get is a bug, please ask on the forums before submitting
 an issue.
+
 
 === Building from sources
 

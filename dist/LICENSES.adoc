@@ -1,5 +1,6 @@
-==== http://www.graniteds.org[Granite Data Services]
-'''
+== Binary Distribution / Licenses
+===== +http://www.graniteds.org+ | +http://www.granitedataservices.com+
+
 
 === GraniteDS Licenses
 
@@ -29,7 +30,7 @@ http://www.granitedataservices.com/license.
 All other GraniteDS libraries (jar / swc) are distributed under the
 http://www.gnu.org/licenses/lgpl-2.1-standalone.html[GNU LESSER GENERAL PUBLIC LICENSE version 2.1].   
 
-=== Third-party Licenses
+=== Third-Party Licenses
   
 All third-party libraries (jar / swc) present in this distribution are
 licensed under specific terms and conditions: refer to the files placed in

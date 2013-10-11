@@ -1,5 +1,6 @@
-===== http://www.graniteds.org[Granite Data Services]
-'''
+== Source Distribution / Licenses
+===== +http://www.graniteds.org+ | +http://www.granitedataservices.com+
+
 
 === Licensing
 
