@@ -257,7 +257,11 @@ public class TestGenEntity {
 			new JavaSourceCodeObject("org.granite.test.generator.entities.Entity1Id", Util.readFile(outputs2[1].getFile()))
 		);
 	}
-	
+
+
+    public static void main(String[] args) {
+        System.out.println(System.getProperty("java.home"));
+    }
 	
 	private void checkCompile(JavaFileObject... sources) {
         File clientJavaJar = new File("granite-client-java/build/libs/").listFiles(new ArtifactFilenameFilter())[0];
@@ -266,7 +270,7 @@ public class TestGenEntity {
         testClasses.mkdirs();
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		String jfxJar = System.getenv("JAVA_HOME") + "/jre/lib/jfxrt.jar";
+		String jfxJar = System.getProperty("java.home") + "/lib/jfxrt.jar";
 		String[] options = new String[] {
 			"-classpath", jfxJar + File.pathSeparator + clientJavaJar.getPath() + File.pathSeparator + clientJavaFXJar.getPath(),
 			"-d", "test-classes"
