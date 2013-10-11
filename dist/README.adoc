@@ -13,7 +13,7 @@ It also provides comprehensive data management features for use with Flex, JavaF
 
 === Licensing
 
-See licenses/LICENSES.adoc
+See LICENSES.adoc
 
 === Documentation
 

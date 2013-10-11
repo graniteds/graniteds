@@ -34,4 +34,4 @@ http://www.gnu.org/licenses/lgpl-2.1-standalone.html[GNU LESSER GENERAL PUBLIC L
   
 All third-party libraries (jar / swc) present in this distribution are
 licensed under specific terms and conditions: refer to the files placed in
-the "third-parties" directory for more details.
+the "licenses/third-parties" directory for more details.
