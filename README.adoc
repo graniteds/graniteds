@@ -58,26 +58,32 @@ of the project to run the build.
 JDK 6+ (JDK 7+ recommended for JavaFX), JavaFX 2+ (optional if using JDK 7+).
 When using JavaFX 2 on a JDK 6, you will have to copy +jfxrt.jar+ in +JAVA_HOME/jre/lib+.
 
-==== Adobe/Apache Flex requirements
+==== Adobe/Apache Flex requirements (optional / Flex users only)
 
-The build of the Flex libraries is optional and requires Flex SDKs 3.6 and 4.5.
+The build of the Flex libraries is optional and requires Flex SDKs 3.6 and 4.5 (or above).
 Unfortunately due to licensing issues we can't redistribute them or even publish them on a remote repository so
 you will have to download them manually and install them in the local maven repository (a Maven 3.x installation
 is thus also required):
 
 * http://www.adobe.com/cfusion/entitlement/index.cfm?e=flex3sdk[Download Flex 3.6]
-* http://sourceforge.net/adobe/flexsdk/wiki/Download%20Flex%204.5/[Download Flex 4.5]
+* http://www.adobe.com/devnet/flex/flex-sdk-download.html[Download Flex 4.6]
 
-Then zip them and install them like this:
+Then, install them with the following commands:
 
 ----
-cd /path/to/flex-sdk-3.6-parent-directory
-zip -r flex-sdk-3.6.zip flex-sdk-3.6    // Note: on Windows use any GUI zip tool
-mvn install:install-file -DgroupId=com.adobe -DartifactId=flex-sdk -Dversion=3.6 -Dpackaging=zip -Dfile=flex-sdk-3.6.zip
+mvn install:install-file -DgroupId=com.adobe -DartifactId=flex-sdk -Dversion=3.6 -Dpackaging=zip -Dfile=flex_sdk_3.6a.zip
 
-cd /path/to/flex-sdk-4.5-parent-directory
-zip -r flex-sdk-4.5.zip flex-sdk-4.5    // Note: on Windows use any GUI zip tool
-mvn install:install-file -DgroupId=com.adobe -DartifactId=flex-sdk -Dversion=4.5 -Dpackaging=zip -Dfile=flex-sdk-4.5.zip
+mvn install:install-file -DgroupId=com.adobe -DartifactId=flex-sdk -Dversion=4.5 -Dpackaging=zip -Dfile=flex_sdk_4.6.zip
+----
+
+If you run into the following error when you build the project: 
+----
+Error: Could not create toplevel.xml: Cannot run program "/path/to/.gradle/gradleFx/sdks/c38cfb524afcc315b66387e5a36fe4f5c5b91c32/asdoc/templates/asDocHelper" (in directory "[...]"): error=13, Permission denied
+----
+
+Just issue this command and relaunch the build process:
+----
+chmod +x /path/to/.gradle/gradleFx/sdks/c38cfb524afcc315b66387e5a36fe4f5c5b91c32/asdoc/templates/asDocHelper
 ----
 
 NOTE: You can install any compatible version the Flex SDKs (for example Apache Flex 4.10 for SDK 4.5) but you must use
