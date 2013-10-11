@@ -1,0 +1,59 @@
+== Granite Data Services binary distribution
+'''
+
+=== Overview
+
+GraniteDS provides server and client libraries that can be used to connect desktop and mobile applications
+to a server using the AMF3 or JMF serialization protocols, through RPC (remoting) and different messaging
+technologies (Comet, WebSocket, UDP).
+
+It also provides comprehensive data management features for use with Flex, JavaFX and Android applications.
+
+=== Licensing
+
+See README-LICENSES.txt
+
+=== Documentation
+
+The documentation is available online on http://www.graniteds.org/confluence/pages/viewpage.action?pageId=16875660 or in the separate archive graniteds-docs-3.0.0.RC1.zip
+
+=== Contents of this binary distribution
+
+libraries/server::
+    Contains the core server library and the framework integration libraries.
+    +granite-server.jar+ contains everything that is already in the jars present in the +submodules+ folder. You can either
+    deploy only +granite-server.jar+ or deploy +granite-server-core.jar+ plus the necessary jars for your application server,
+    for example +granite-server-core.jar+ and +granite-server-jetty8.jar+ for a Jetty 8 container.
+    After this you will also have to deploy the jars necessary for the integration with other frameworks, such as
+    +granite-server-spring.jar+.
+
+libraries/flex-client::
+    Contains the client +swc+ libraries for Flex. +granite-client-flex.swc+ is the core library and must always be
+    linked to your application with the '-include-libraries' options (internal scope in Maven).
+    +granite-client-flex-advanced.swc+ contains advanced features for Flex 3.x to Flex 4.1.
+    +granite-client-flex45-advanced.swc+ contains the same features and must be used with Flex 4.5 and up (including Apache Flex 4.9+).
+    +granite-client-udp.swc' contains support for UDP messagind and requires AIR 2.x.
+
+libraries/java-client::
+    Contains the client libraries for Java. +granite-client-java.jar+ is the core library and is always required.
+    +granite-client-javafx.jar+ contains advanced features and integration for JavaFX.
+    +granite-client-android.jar+ contains advanced features and integration for Android.
+    +granite-client-java-udp.jar+ contains the UDP client library for Java.
+    The folder +dependencies+ contains the mandatory dependencies for the Java client (Apache http client).
+    The folder +dependencies-android+ contains the mandatory dependency the Android (Loopj http client).
+    The folder +optional-websocket+ contains the necessary dependencies for Websocket support on Java (Jetty websocket client).
+
+tools::
+    Contains the library +granite-generator.jar+ and its dependencies that contains the code generator ant tasks.
+
+tools/eclipse::
+    Contains the eclipse code generator plugin.
+
+sources/java::
+    Contains the source jars for all Java libraries.
+
+sources/as3::
+    Contains the source jars for all Flex libraries.
+
+licenses::
+    Contains the licenses for all GraniteDS and third party libraries.

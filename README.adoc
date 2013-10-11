@@ -19,8 +19,9 @@ or on http://www.graniteds.org/confluence/display/DOWNLOAD[GraniteDS web site].
 The core GraniteDS libraries and clients (granite-server, granite-client-flex, granite-client-java) are released under the
 http://www.gnu.org/licenses/lgpl-2.1-standalone.html[GNU Lesser General Public License, version 2.1].
 
-Advanced libraries (granite-client-flex-advanced, granite-client-javafx, granite-client-android and granite-client-java-advanced)
-are released under the http://www.gnu.org/licenses/gpl-3.0-standalone.html[GNU General Public License, version 3.0].
+Advanced libraries (granite-client-flex-advanced, granite-client-javafx, granite-client-android) and other advanced features
+(UDP: granite-server-udp, granite-client-java-udp, granite-client-flex-udp) are released under the
+http://www.gnu.org/licenses/gpl-3.0-standalone.html[GNU General Public License, version 3.0].
 Commercial licenses are also available for these libraries, visit http://www.granitedataservices.com/license
 for more details.
 
@@ -32,8 +33,8 @@ for more details.
 * JavaFX client http://www.graniteds.org/public/docs/3.0.0/docs/javafx-client/api/index.html[javadoc]
 * Android client http://www.graniteds.org/public/docs/3.0.0/docs/android-client/api/index.html[javadoc]
 
-* Flex Reference documentation is http://www.graniteds.org/public/docs/3.0.0/docs/reference/flex/en-US/html_single/index.html[here].
-* JavaFX Reference documentation is http://www.graniteds.org/public/docs/3.0.0/docs/reference/java/en-US/html_single/index.html[here].
+* Flex Reference documentation is http://www.graniteds.org/public/docs/3.0.0/docs/reference/flex/graniteds-refguide-flex.html[here].
+* JavaFX Reference documentation is http://www.graniteds.org/public/docs/3.0.0/docs/reference/java/graniteds-refguide-java.html[here].
 
 === Support
 
@@ -66,7 +67,7 @@ you will have to download them manually and install them in the local maven repo
 is thus also required):
 
 * http://www.adobe.com/cfusion/entitlement/index.cfm?e=flex3sdk[Download Flex 3.6]
-* http://sourceforge.net/adobe/flexsdk/wiki/Download%20Flex%204.5/[Download Flex 4.5]
+* http://fpdownload.adobe.com/pub/flex/sdk/builds/flex4.5/flex_sdk_4.5.1.21328A.zip/[Download Flex 4.5]
 
 Then zip them and install them like this:
 
@@ -92,7 +93,7 @@ git clone git://github.com/graniteds/graniteds.git
 ==== Import projects in a IDE
 
 Projects configuration are provided for Eclipse, you can directly import all subprojects in Eclipse.
-Note that the provided project files use Gradle-managed dependencies build path containers and suppose that you are
+Note that the provided project files use Gradle-managed dependencies build path containers and assume that you are
 using the Eclipse Gradle IDE plugin.
 
 ==== Quick build (just the libraries, skip tests and API docs)

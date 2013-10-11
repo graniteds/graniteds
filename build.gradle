@@ -1957,6 +1957,7 @@ project('dist') {
 		create('flexClient')
 		create('generator')
         create('javaClientDeps')
+        create('androidClientDeps')
         create('javaClientWebsocket')
 
         server { transitive = false }
@@ -1981,6 +1982,8 @@ project('dist') {
 
         javaClientDeps 'org.apache.httpcomponents:httpasyncclient:4.0-beta4'
 
+        androidClientDeps project(':granite-client-android').files('lib/android-async-http-1.4.3.jar')
+
         javaClientWebsocket 'org.eclipse.jetty:jetty-client:8.1.+',
             'org.eclipse.jetty:jetty-websocket:8.1.+'
 	}
@@ -1989,6 +1992,8 @@ project('dist') {
 		archiveName = 'graniteds-dist-' + granitedsVersion + '.zip'
 
         into ('graniteds-' + granitedsVersion)
+
+        from file('README.adoc')
 
         from rootProject.file('dist-licenses/README-LICENSES.txt')
 
@@ -2008,6 +2013,9 @@ project('dist') {
 		}
         into ('libraries/java-client/dependencies') {
             from configurations.javaClientDeps
+        }
+        into ('libraries/java-client/dependencies-android') {
+            from configurations.androidClientDeps
         }
         into ('libraries/java-client/optional-websocket') {
             from configurations.javaClientWebsocket
