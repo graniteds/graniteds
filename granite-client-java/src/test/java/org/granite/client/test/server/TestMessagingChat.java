@@ -22,10 +22,7 @@
 package org.granite.client.test.server;
 
 import org.granite.client.messaging.*;
-import org.granite.client.messaging.channel.AMFChannelFactory;
-import org.granite.client.messaging.channel.ChannelFactory;
-import org.granite.client.messaging.channel.JMFChannelFactory;
-import org.granite.client.messaging.channel.MessagingChannel;
+import org.granite.client.messaging.channel.*;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TopicMessageEvent;
@@ -241,6 +238,14 @@ public class TestMessagingChat {
     }
 
 
+    protected void waitForChannel(Channel channel, CyclicBarrier barrier) {
+        try {
+            barrier.await();
+        }
+        catch (Exception e) {
+        }
+    }
+
     private class ConsumerThread implements Runnable {
 
         private String id;
@@ -289,11 +294,7 @@ public class TestMessagingChat {
                 @Override
                 public void onResult(ResultEvent event) {
                     log.info("Consumer %s: subscribed %s", id, event.getResult());
-                    try {
-                        barriers[0].await();
-                    }
-                    catch (Exception e) {
-                    }
+                    waitForChannel(consumer.getChannel(), barriers[0]);
                 }
 
                 @Override

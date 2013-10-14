@@ -35,7 +35,10 @@
 package org.granite.client.test.udp.server;
 
 import org.granite.client.messaging.ServerApp;
+import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.udp.UdpChannelBuilder;
+import org.granite.client.messaging.udp.UdpChannelListener;
+import org.granite.client.messaging.udp.UdpMessagingChannel;
 import org.granite.client.test.server.TestMessagingChat;
 import org.granite.client.test.server.TestMessagingFeed;
 import org.granite.client.test.server.chat.ChatApplication;
@@ -58,6 +61,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CyclicBarrier;
 
 /**
  * Created by william on 30/09/13.
@@ -105,5 +109,28 @@ public class TestUdpMessagingFeed extends TestMessagingFeed {
     public static void stopContainer() throws Exception {
         container.stop();
         log.info("Container stopped");
+    }
+
+
+    @Override
+    protected void waitForChannel(final Channel channel, final CyclicBarrier barrier) {
+        ((UdpMessagingChannel)channel).addListener(new UdpChannelListener() {
+            @Override
+            public void onBound(UdpMessagingChannel channel) {
+            }
+
+            @Override
+            public void onConnected(UdpMessagingChannel channel) {
+                try {
+                    barrier.await();
+                } catch (Exception e) {
+                }
+            }
+
+            @Override
+            public void onClosed(UdpMessagingChannel channel) {
+
+            }
+        });
     }
 }

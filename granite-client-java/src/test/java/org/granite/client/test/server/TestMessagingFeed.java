@@ -34,11 +34,7 @@ import org.granite.client.messaging.Consumer;
 import org.granite.client.messaging.ResultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicMessageListener;
-import org.granite.client.messaging.channel.AMFChannelFactory;
-import org.granite.client.messaging.channel.ChannelFactory;
-import org.granite.client.messaging.channel.DefaultChannelBuilder;
-import org.granite.client.messaging.channel.JMFChannelFactory;
-import org.granite.client.messaging.channel.MessagingChannel;
+import org.granite.client.messaging.channel.*;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TopicMessageEvent;
@@ -206,6 +202,14 @@ public class TestMessagingFeed {
     }
 
 
+    protected void waitForChannel(Channel channel, CyclicBarrier barrier) {
+        try {
+            barrier.await();
+        }
+        catch (Exception e) {
+        }
+    }
+
     private class ConsumerThread implements Runnable {
 
         private String id;
@@ -237,11 +241,7 @@ public class TestMessagingFeed {
                 @Override
                 public void onResult(ResultEvent event) {
                     log.info("Consumer " + id + ": subscribed " + event.getResult());
-                    try {
-                        barriers[0].await();
-                    }
-                    catch (Exception e) {
-                    }
+                    waitForChannel(consumer.getChannel(), barriers[0]);
                 }
 
                 @Override
