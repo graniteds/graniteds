@@ -34,11 +34,13 @@
  */
 package org.granite.client.test.udp.server;
 
-import org.granite.client.messaging.ServerApp;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.granite.client.messaging.udp.UdpChannelBuilder;
-import org.granite.client.test.server.TestMessagingChat;
 import org.granite.client.test.server.TestMessagingFeed;
-import org.granite.client.test.server.chat.ChatApplication;
 import org.granite.client.test.server.feed.FeedApplication;
 import org.granite.client.test.server.feed.FeedListener;
 import org.granite.client.test.server.feed.Info;
@@ -53,11 +55,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by william on 30/09/13.
@@ -78,8 +75,6 @@ public class TestUdpMessagingFeed extends TestMessagingFeed {
         return params;
     }
 
-    private ContentType contentType;
-    private String containerClassName;
     private static EmbeddedContainer container;
 
     public TestUdpMessagingFeed(String containerClassName, ContentType contentType) {

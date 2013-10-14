@@ -34,7 +34,11 @@
  */
 package org.granite.client.test.udp.server;
 
-import org.granite.client.messaging.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.granite.client.messaging.udp.UdpChannelBuilder;
 import org.granite.client.test.server.TestMessagingChat;
 import org.granite.client.test.server.chat.ChatApplication;
@@ -49,11 +53,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by william on 30/09/13.
