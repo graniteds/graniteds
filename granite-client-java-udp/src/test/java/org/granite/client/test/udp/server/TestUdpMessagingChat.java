@@ -34,7 +34,12 @@
  */
 package org.granite.client.test.udp.server;
 
-import org.granite.client.messaging.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CyclicBarrier;
+
 import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.udp.UdpChannelBuilder;
 import org.granite.client.messaging.udp.UdpChannelListener;
@@ -52,12 +57,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CyclicBarrier;
 
 /**
  * Created by william on 30/09/13.
