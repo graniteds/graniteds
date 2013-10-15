@@ -39,12 +39,18 @@ import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
 
 public class MockGravity implements Gravity {
-	
+
+    private GraniteConfig graniteConfig;
+
 	private Message lastMessage;
 	
 	public Message getLastMessage() {
 		return lastMessage;
 	}
+
+    public void resetLastMessage() {
+        lastMessage = null;
+    }
 	
 	public boolean access(String arg0) {
 		return false;
@@ -61,8 +67,12 @@ public class MockGravity implements Gravity {
 		return null;
 	}
 
+    public void setGraniteConfig(GraniteConfig graniteConfig) {
+        this.graniteConfig = graniteConfig;
+    }
+
 	public GraniteConfig getGraniteConfig() {
-		return null;
+		return graniteConfig;
 	}
 
 	public GravityConfig getGravityConfig() {
