@@ -35,6 +35,7 @@ import org.granite.config.api.Configuration;
 import org.granite.config.api.internal.ConfigurationImpl;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
+import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.test.gravity.MockGravity;
@@ -124,6 +125,8 @@ public class AbstractTideTestCase {
     public void tearDown() throws Exception {
     	ejbContainer.stop();
     	ejbContainer = null;
+
+        GraniteContext.release();
     }
     
     

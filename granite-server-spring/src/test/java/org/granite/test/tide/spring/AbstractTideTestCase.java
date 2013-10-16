@@ -33,6 +33,7 @@ import org.granite.config.api.Configuration;
 import org.granite.config.api.internal.ConfigurationImpl;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
+import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.spring.ServerFilter;
@@ -44,6 +45,7 @@ import org.granite.tide.invocation.InvocationCall;
 import org.granite.tide.invocation.InvocationResult;
 import org.granite.tide.spring.SpringServiceFactory;
 import org.granite.util.XMap;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,6 +103,11 @@ public class AbstractTideTestCase implements ApplicationContextAware {
         springServiceFactory.setApplicationContext(applicationContext);
         
         applicationContext.getBean(ServerFilter.class).setServletContext(servletContext);
+    }
+
+    @After
+    public void tearDown() {
+        GraniteContext.release();
     }
     
     protected void initGravity() {
