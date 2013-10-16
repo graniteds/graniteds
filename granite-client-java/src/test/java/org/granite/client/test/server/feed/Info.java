@@ -52,4 +52,9 @@ public class Info implements Serializable {
     public void setValue(double value) {
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return name + " = " + value;
+    }
 }

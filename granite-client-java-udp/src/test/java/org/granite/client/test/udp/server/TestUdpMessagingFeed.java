@@ -118,13 +118,13 @@ public class TestUdpMessagingFeed extends TestMessagingFeed {
             public void onConnected(UdpMessagingChannel channel) {
                 try {
                     barrier.await();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                 }
             }
 
             @Override
             public void onClosed(UdpMessagingChannel channel) {
-
             }
         });
     }

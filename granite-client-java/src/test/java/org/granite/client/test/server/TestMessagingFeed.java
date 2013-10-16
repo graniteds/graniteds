@@ -127,9 +127,9 @@ public class TestMessagingFeed {
     @Test
     public void testFeedSingleConsumer() throws Exception {
         CyclicBarrier[] barriers = new CyclicBarrier[3];
-        barriers[0] = new CyclicBarrier(1);
-        barriers[1] = new CyclicBarrier(1);
-        barriers[2] = new CyclicBarrier(1);
+        barriers[0] = new CyclicBarrier(2);
+        barriers[1] = new CyclicBarrier(2);
+        barriers[2] = new CyclicBarrier(2);
 
         ConsumerThread consumer = new ConsumerThread("C", barriers);
         consumer.start();
@@ -164,9 +164,9 @@ public class TestMessagingFeed {
     @Test
     public void testFeedMultiConsumer() throws Exception {
         CyclicBarrier[] barriers = new CyclicBarrier[3];
-        barriers[0] = new CyclicBarrier(CONSUMER_COUNT);
-        barriers[1] = new CyclicBarrier(CONSUMER_COUNT);
-        barriers[2] = new CyclicBarrier(CONSUMER_COUNT);
+        barriers[0] = new CyclicBarrier(CONSUMER_COUNT+1);
+        barriers[1] = new CyclicBarrier(CONSUMER_COUNT+1);
+        barriers[2] = new CyclicBarrier(CONSUMER_COUNT+1);
 
         for (int i = 0; i < CONSUMER_COUNT; i++) {
             ConsumerThread consumer = new ConsumerThread("C" + (i+1), barriers);
