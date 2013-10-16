@@ -19,42 +19,36 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.client.test.server.feed;
+package org.granite.test.tide.spring;
 
-import org.granite.messaging.amf.io.util.externalizer.DefaultExternalizer;
-import org.granite.messaging.amf.io.util.externalizer.annotation.ExternalizedBean;
+import javax.inject.Inject;
 
-import java.io.Serializable;
+import org.granite.test.tide.spring.service.Params1Service;
+import org.granite.test.tide.spring.service.Params2Service;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.test.context.ContextConfiguration;
 
-/**
- * Created by william on 30/09/13.
- */
-@ExternalizedBean(type=DefaultExternalizer.class)
-public class Info implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+@ContextConfiguration(locations={ "/org/granite/test/tide/spring/test-context-observe-proxy.xml" })
+public class TestTideObserveDataPublishProxy extends AbstractTideInterceptorTestCase {
 
-    private String name;
-    private double value;
+	@Inject
+	private Params1Service params1Service;
+	
+	@Inject
+	private Params2Service params2Service;
+	
+    
+	@Test
+    public void testObserveProxy() {
 
-    public String getName() {
-        return name;
-    }
+        resetLastMessage();
+		params1Service.method1();
+        Assert.assertEquals("Update message", 1, ((Object[]) getLastMessage().getBody()).length);
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public double getValue() {
-        return value;
-    }
-
-    public void setValue(double value) {
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        return name + " = " + value;
+        resetLastMessage();
+		params2Service.method2();
+        Assert.assertNull("No message", getLastMessage());
     }
 }

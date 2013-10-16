@@ -34,11 +34,7 @@ import org.granite.client.messaging.Consumer;
 import org.granite.client.messaging.ResultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicMessageListener;
-import org.granite.client.messaging.channel.AMFChannelFactory;
-import org.granite.client.messaging.channel.ChannelFactory;
-import org.granite.client.messaging.channel.DefaultChannelBuilder;
-import org.granite.client.messaging.channel.JMFChannelFactory;
-import org.granite.client.messaging.channel.MessagingChannel;
+import org.granite.client.messaging.channel.*;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TopicMessageEvent;
@@ -131,9 +127,9 @@ public class TestMessagingFeed {
     @Test
     public void testFeedSingleConsumer() throws Exception {
         CyclicBarrier[] barriers = new CyclicBarrier[3];
-        barriers[0] = new CyclicBarrier(1);
-        barriers[1] = new CyclicBarrier(1);
-        barriers[2] = new CyclicBarrier(1);
+        barriers[0] = new CyclicBarrier(2);
+        barriers[1] = new CyclicBarrier(2);
+        barriers[2] = new CyclicBarrier(2);
 
         ConsumerThread consumer = new ConsumerThread("C", barriers);
         consumer.start();
@@ -168,9 +164,9 @@ public class TestMessagingFeed {
     @Test
     public void testFeedMultiConsumer() throws Exception {
         CyclicBarrier[] barriers = new CyclicBarrier[3];
-        barriers[0] = new CyclicBarrier(CONSUMER_COUNT);
-        barriers[1] = new CyclicBarrier(CONSUMER_COUNT);
-        barriers[2] = new CyclicBarrier(CONSUMER_COUNT);
+        barriers[0] = new CyclicBarrier(CONSUMER_COUNT+1);
+        barriers[1] = new CyclicBarrier(CONSUMER_COUNT+1);
+        barriers[2] = new CyclicBarrier(CONSUMER_COUNT+1);
 
         for (int i = 0; i < CONSUMER_COUNT; i++) {
             ConsumerThread consumer = new ConsumerThread("C" + (i+1), barriers);
@@ -206,6 +202,14 @@ public class TestMessagingFeed {
     }
 
 
+    protected void waitForChannel(Channel channel, CyclicBarrier barrier) {
+        try {
+            barrier.await();
+        }
+        catch (Exception e) {
+        }
+    }
+
     private class ConsumerThread implements Runnable {
 
         private String id;
@@ -237,11 +241,7 @@ public class TestMessagingFeed {
                 @Override
                 public void onResult(ResultEvent event) {
                     log.info("Consumer " + id + ": subscribed " + event.getResult());
-                    try {
-                        barriers[0].await();
-                    }
-                    catch (Exception e) {
-                    }
+                    waitForChannel(consumer.getChannel(), barriers[0]);
                 }
 
                 @Override

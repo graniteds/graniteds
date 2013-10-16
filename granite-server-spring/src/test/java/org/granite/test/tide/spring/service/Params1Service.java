@@ -21,17 +21,23 @@
  */
 package org.granite.test.tide.spring.service;
 
+import org.granite.test.tide.data.Person2;
+import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataEnabled.PublishMode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+
 
 @Service
 @Transactional
-@DataEnabled(topic="testTopic", params=ObserveParams1.class, publish=PublishMode.ON_COMMIT, useInterceptor=true)
+@DataEnabled(topic="testTopic", params=ObserveParams1.class, publish=PublishMode.ON_SUCCESS, useInterceptor=true)
 public class Params1Service {
-	
+
 	public void method1() {
-	}
+        DataContext.addUpdate(DataContext.EntityUpdateType.UPDATE, new Person2());
+    }
 }

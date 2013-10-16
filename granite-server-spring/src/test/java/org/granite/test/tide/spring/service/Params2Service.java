@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-@DataEnabled(topic="testTopic", params=ObserveParams2.class, publish=PublishMode.ON_COMMIT, useInterceptor=true)
+@DataEnabled(topic="testTopic", params=ObserveParams2.class, publish=PublishMode.ON_SUCCESS, useInterceptor=true)
 public class Params2Service {
 	
 	public void method2() {
