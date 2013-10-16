@@ -96,7 +96,7 @@ public class SpringGraniteConfig extends AbstractFrameworkGraniteConfig implemen
 			    		getGraniteConfig().setSecurityService(TypeUtil.newInstance("org.granite.messaging.service.security.SpringSecurityService", SecurityService.class));
 	    		}
 	    		catch (Exception e) {
-	    			throw new IOException("Could not configure Spring Security service");
+	    			log.error(e, "Could not configure Spring Security service");
 	    		}
     		}
     	}
