@@ -31,7 +31,6 @@ import java.io.UTFDataFormatException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -408,10 +407,9 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
         else {
         	final int length = type >> 1;
         	
-        	// AS3 Dictionary doesn't have a strict Java equivalent: use IdentityHashMap, which
-        	// should preserve everything at deserialization time, but can be converted later as
-        	// another Map instance which can (unlikely though) remove some duplicated keys...
-        	dictionary = new IdentityHashMap<Object, Object>(length);
+        	// AS3 Dictionary doesn't have a strict Java equivalent: use an HashMap, which
+        	// could (unlikely) lead to duplicated keys collision...
+        	dictionary = new HashMap<Object, Object>(length);
             
             addToStoredObjects(dictionary);
             
