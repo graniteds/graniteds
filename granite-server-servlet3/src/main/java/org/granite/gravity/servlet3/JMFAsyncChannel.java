@@ -35,17 +35,13 @@ import org.granite.util.ContentType;
  */
 public class JMFAsyncChannel extends AsyncChannel {
 
-	private final SharedContext jmfSharedContext;
-
 	public JMFAsyncChannel(Gravity gravity, String id, JMFAsyncChannelFactory factory, String clientType) {
         super(gravity, id, factory, clientType);
-        
-        this.jmfSharedContext = factory.getJmfSharedContext();
 	}
 
 	@Override
 	public ObjectOutput newSerializer(GraniteContext context, OutputStream os) {
-		return new JMFSerializer(os, jmfSharedContext);
+		return new JMFSerializer(os, getGravity().getSharedContext());
 	}
 
 	@Override

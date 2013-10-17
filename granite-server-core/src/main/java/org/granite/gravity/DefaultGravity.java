@@ -47,6 +47,7 @@ import org.granite.jmx.MBeanServerLocator;
 import org.granite.jmx.OpenMBean;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
+import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.security.SecurityServiceException;
 import org.granite.messaging.webapp.ServletGraniteContext;
@@ -77,6 +78,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     private GravityConfig gravityConfig = null;
     private ServicesConfig servicesConfig = null;
     private GraniteConfig graniteConfig = null;
+    private SharedContext sharedContext = null;
 
     private Channel serverChannel = null;
     private AdapterFactory adapterFactory = null;
@@ -90,13 +92,14 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
 
-    public DefaultGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig) {
+    public DefaultGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig, SharedContext sharedContext) {
         if (gravityConfig == null || servicesConfig == null || graniteConfig == null)
             throw new NullPointerException("All arguments must be non null.");
 
         this.gravityConfig = gravityConfig;
         this.servicesConfig = servicesConfig;
         this.graniteConfig = graniteConfig;
+        this.sharedContext = sharedContext;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -112,6 +115,10 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
 	public GraniteConfig getGraniteConfig() {
         return graniteConfig;
+    }
+
+    public SharedContext getSharedContext() {
+        return sharedContext;
     }
 
 	public boolean isStarted() {
@@ -405,7 +412,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	        	if (gdd != null && gdd.hasChannelId(clientId)) {
 	        		log.debug("Found channel id in distributed data: %s", clientId);
 	        		String channelFactoryClassName = gdd.getChannelFactoryClassName(clientId);
-	        		channelFactory = TypeUtil.newInstance(channelFactoryClassName, ChannelFactory.class);
+	        		channelFactory = (ChannelFactory)TypeUtil.newInstance(channelFactoryClassName, new Class<?>[] { Gravity.class }, new Object[] { this });
 	        		String clientType = GraniteContext.getCurrentInstance().getClientType();
 	        		C channel = channelFactory.newChannel(clientId, clientType);
 	    	    	timeChannel = new TimeChannel<C>(channel);

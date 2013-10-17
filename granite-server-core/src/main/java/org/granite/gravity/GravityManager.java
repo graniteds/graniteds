@@ -75,7 +75,7 @@ public class GravityManager {
 		        String gravityFactory = gravityConfig.getGravityFactory();
 		        try {
 					GravityFactory factory = TypeUtil.newInstance(gravityFactory, GravityFactory.class);
-					gravity = factory.newGravity(gravityConfig, servicesConfig, graniteConfig);
+					gravity = factory.newGravity(gravityConfig, servicesConfig, graniteConfig, GraniteConfigListener.getSharedContext(context));
 				} 
 		        catch (Exception e) {
 					throw new ServletException("Could not create Gravity instance with factory: " + gravityFactory, e);

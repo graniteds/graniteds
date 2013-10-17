@@ -24,6 +24,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
+    <filter>
+        <filter-name>CreateSessionFilter</filter-name>
+        <filter-class>org.granite.clustering.CreateSessionFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>CreateSessionFilter</filter-name>
+        <url-pattern>/gravityamf/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>CreateSessionFilter</filter-name>
+        <url-pattern>/websocketamf/*</url-pattern>
+    </filter-mapping>
+
     <servlet>
         <servlet-name>WebSocketServlet</servlet-name>
         <servlet-class>org.granite.gravity.jetty8.JettyWebSocketServlet</servlet-class>

@@ -53,14 +53,10 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 	private static final long serialVersionUID = 1L;
 
 	private static final Logger log = Logger.getLogger(GravityAsyncServlet.class);
-    
-    protected SharedContext jmfSharedContext = null;
-    
+
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		
-        jmfSharedContext = GraniteConfigListener.getSharedContext(config.getServletContext());
 	}
 
 	@Override
@@ -148,17 +144,12 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 
 	@Override
 	public void destroy() {
-		jmfSharedContext = null;
-
 		super.destroy();
 	}
 	
 	protected AsyncChannelFactory newAsyncChannelFactory(Gravity gravity, String contentType) throws ServletException {
 		if (ContentType.JMF_AMF.mimeType().equals(contentType)) {
-	    	if (jmfSharedContext == null)
-	    		throw GraniteConfigListener.newSharedContextNotInitializedException();
-			
-	    	return new JMFAsyncChannelFactory(gravity, jmfSharedContext);
+	    	return new JMFAsyncChannelFactory(gravity);
 		}
 		return new AsyncChannelFactory(gravity);
 	}
@@ -185,11 +176,11 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 	}
 	
 	protected Message[] deserializeJMFAMF(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException, ServletException {
-    	if (jmfSharedContext == null)
+    	if (gravity.getSharedContext() == null)
     		throw GraniteConfigListener.newSharedContextNotInitializedException();
     	
     	@SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
-		JMFDeserializer deserializer = new JMFDeserializer(is, jmfSharedContext);
+		JMFDeserializer deserializer = new JMFDeserializer(is, gravity.getSharedContext());
         return (Message[])deserializer.readObject();
 	}
 
@@ -201,7 +192,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 	}
 
 	protected void serializeJMFAMF(Gravity gravity, HttpServletResponse response, Message[] messages) throws IOException, ServletException {
-    	if (jmfSharedContext == null)
+    	if (gravity.getSharedContext() == null)
     		throw GraniteConfigListener.newSharedContextNotInitializedException();
     	
     	OutputStream os = null;
@@ -224,7 +215,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 	        os = response.getOutputStream();
 
 	        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'serializer' is never closed)...
-            JMFSerializer serializer = new JMFSerializer(os, jmfSharedContext);
+            JMFSerializer serializer = new JMFSerializer(os, gravity.getSharedContext());
             serializer.writeObject(messages);
 	        
 	        os.flush();

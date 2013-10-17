@@ -37,10 +37,12 @@ import org.granite.gravity.udp.UdpReceiverFactory;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
+import org.granite.messaging.jmf.SharedContext;
 
 public class MockGravity implements Gravity {
 
     private GraniteConfig graniteConfig;
+    private SharedContext sharedContext;
 
 	private Message lastMessage;
 	
@@ -75,15 +77,23 @@ public class MockGravity implements Gravity {
 		return graniteConfig;
 	}
 
+    public void setSharedContext(SharedContext sharedContext) {
+        this.sharedContext = sharedContext;
+    }
+
+    public SharedContext getSharedContext() {
+        return sharedContext;
+    }
+
+    public ServicesConfig getServicesConfig() {
+        return null;
+    }
+
 	public GravityConfig getGravityConfig() {
 		return null;
 	}
 
 	public ServiceAdapter getServiceAdapter(String arg0, String arg1) {
-		return null;
-	}
-
-	public ServicesConfig getServicesConfig() {
 		return null;
 	}
 

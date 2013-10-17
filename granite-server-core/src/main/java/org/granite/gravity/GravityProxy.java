@@ -31,6 +31,7 @@ import org.granite.gravity.udp.UdpReceiverFactory;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
+import org.granite.messaging.jmf.SharedContext;
 
 /**
  * @author William DRAI
@@ -58,6 +59,9 @@ public class GravityProxy implements Gravity {
     }
     public GraniteConfig getGraniteConfig() {
     	return getGravity().getGraniteConfig();
+    }
+    public SharedContext getSharedContext() {
+        return getGravity().getSharedContext();
     }
 
     ///////////////////////////////////////////////////////////////////////////

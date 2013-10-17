@@ -21,6 +21,7 @@
  */
 package org.granite.gravity.servlet3;
 
+import org.granite.config.GraniteConfigListener;
 import org.granite.gravity.Gravity;
 import org.granite.messaging.jmf.SharedContext;
 
@@ -29,20 +30,12 @@ import org.granite.messaging.jmf.SharedContext;
  */
 public class JMFAsyncChannelFactory extends AsyncChannelFactory {
 
-	private final SharedContext jmfSharedContext;
-	
-	public JMFAsyncChannelFactory(Gravity gravity, SharedContext jmfSharedContext) {
+	public JMFAsyncChannelFactory(Gravity gravity) {
 		super(gravity);
-		
-		this.jmfSharedContext = jmfSharedContext;
 	}
 
 	@Override
 	public AsyncChannel newChannel(String id, String clientType) {
         return new JMFAsyncChannel(getGravity(), id, this, clientType);
     }
-
-	public SharedContext getJmfSharedContext() {
-		return jmfSharedContext;
-	}
 }

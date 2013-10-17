@@ -30,6 +30,7 @@ import org.granite.gravity.udp.UdpReceiverFactory;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
+import org.granite.messaging.jmf.SharedContext;
 
 /**
  * @author Franck WOLFF
@@ -50,6 +51,7 @@ public interface Gravity extends ShutdownListener {
     public GravityConfig getGravityConfig();
     public ServicesConfig getServicesConfig();
     public GraniteConfig getGraniteConfig();
+    public SharedContext getSharedContext();
 
     ///////////////////////////////////////////////////////////////////////////
     // UDP support.

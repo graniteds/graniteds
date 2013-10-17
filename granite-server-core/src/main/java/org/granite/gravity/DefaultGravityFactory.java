@@ -23,13 +23,14 @@ package org.granite.gravity;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
+import org.granite.messaging.jmf.SharedContext;
 
 /**
  * @author Franck WOLFF
  */
 public class DefaultGravityFactory implements GravityFactory {
 
-	public Gravity newGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig) {
-		return new DefaultGravity(gravityConfig, servicesConfig, graniteConfig);
+	public Gravity newGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig, SharedContext sharedContext) {
+		return new DefaultGravity(gravityConfig, servicesConfig, graniteConfig, sharedContext);
 	}
 }

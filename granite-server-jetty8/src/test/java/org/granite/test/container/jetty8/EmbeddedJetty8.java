@@ -25,6 +25,8 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.session.HashSessionManager;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.granite.test.container.Utils;
 import org.granite.test.container.EmbeddedContainer;
@@ -54,6 +56,10 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
     };
 
     public EmbeddedJetty8(WebArchive war) throws Exception {
+        this(war, false);
+    }
+
+    public EmbeddedJetty8(WebArchive war, boolean persistSessions) throws Exception {
         jetty = new Server();
         Connector connector = new SelectChannelConnector();
         connector.setHost("localhost");
@@ -75,9 +81,13 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
         webAppContext.setParentLoaderPriority(true);
         webAppContext.setContextPath("/" + war.getName().substring(0, war.getName().lastIndexOf(".")));
         webAppContext.setConfigurationClasses(CONFIGURATION_CLASSES);
+        if (persistSessions) {
+            HashSessionManager sessionManager = new HashSessionManager();
+            sessionManager.setStoreDirectory(new File("granite-server-jetty8/build/tmp/jetty/sessions"));
+            sessionManager.setLazyLoad(false);
+            webAppContext.setSessionHandler(new SessionHandler(sessionManager));
+        }
         ((HandlerCollection)jetty.getHandler()).addHandler(webAppContext);
-
-        serverThread = new Thread(this);
     }
 
     private CountDownLatch waitForStart = new CountDownLatch(1);
@@ -95,6 +105,7 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
     }
 
     public void start() {
+        serverThread = new Thread(this);
         serverThread.start();
         try {
             if (!waitForStart.await(20, TimeUnit.SECONDS))
@@ -108,6 +119,7 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
     public void stop() {
         try {
             jetty.stop();
+            serverThread.interrupt();
         }
         catch (Exception e) {
             throw new RuntimeException("Could not stop embedded jetty", e);
