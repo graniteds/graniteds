@@ -95,11 +95,6 @@ public class TestMessagingFeed {
 
     @BeforeClass
     public static void startContainer() throws Exception {
-        // Show classpath
-//        URL[] urls = ((URLClassLoader)Thread.currentThread().getContextClassLoader()).getURLs();
-//        for (URL url : urls)
-//            System.out.println("cp: " + url.getFile());
-
         // Build a feed server application
         WebArchive war = ShrinkWrap.create(WebArchive.class, APP_NAME + ".war");
         war.addClasses(FeedApplication.class, FeedListener.class, Info.class);
@@ -119,7 +114,8 @@ public class TestMessagingFeed {
 
     private ChannelFactory buildChannelFactory() {
         ChannelFactory channelFactory = contentType.equals(ContentType.JMF_AMF) ? new JMFChannelFactory() : new AMFChannelFactory();
-        channelFactory.setMessagingTransport(DefaultChannelBuilder.WEBSOCKET_CHANNEL_TYPE, new JettyWebSocketTransport());
+        if (channelType.equals(DefaultChannelBuilder.WEBSOCKET_CHANNEL_TYPE))
+            channelFactory.setMessagingTransport(DefaultChannelBuilder.WEBSOCKET_CHANNEL_TYPE, new JettyWebSocketTransport());
         channelFactory.start();
         return channelFactory;
     }
@@ -252,6 +248,7 @@ public class TestMessagingFeed {
 
             try {
                 waitToStop.await(60, TimeUnit.SECONDS);
+                channel.stop();
                 channelFactory.stop();
             }
             catch (Exception e) {

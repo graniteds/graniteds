@@ -82,6 +82,8 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
 
             glassfish.getDeployer().deploy(warFile.toURI(), "--name", appName);
 
+            log.info("Deployed applications: " + glassfish.getDeployer().getDeployedApplications());
+
             waitForStart.countDown();
         }
         catch (Exception e) {

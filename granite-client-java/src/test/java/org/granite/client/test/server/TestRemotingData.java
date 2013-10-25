@@ -37,10 +37,7 @@ import org.granite.util.ContentType;
 import org.granite.util.TypeUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -81,7 +78,7 @@ public class TestRemotingData {
 
     @BeforeClass
     public static void startContainer() throws Exception {
-        // Build a chat server application
+        // Build a EJB/JPA data server application
         WebArchive war = ShrinkWrap.create(WebArchive.class, "data.war");
         war.addClasses(DataApplication.class, Data.class, DataServiceBean.class);
         war.addAsWebInfResource(new File("granite-client-java/src/test/resources/META-INF/persistence.xml"), "classes/META-INF/persistence.xml");
@@ -101,18 +98,24 @@ public class TestRemotingData {
         log.info("Container stopped");
     }
 
-    private ChannelFactory buildChannelFactory() {
-        SimpleConfiguration configuration = new SimpleConfiguration("org/granite/client/configuration/granite-config.xml", null);
-        ChannelFactory channelFactory = contentType.equals(ContentType.JMF_AMF) ? new JMFChannelFactory() : new AMFChannelFactory(null, configuration);
-        channelFactory.setMessagingTransport("websocket", new JettyWebSocketTransport());
+    private ChannelFactory channelFactory;
+    private RemotingChannel channel;
+
+    @Before
+    public void before() throws Exception {
+        channelFactory = contentType.equals(ContentType.JMF_AMF) ? new JMFChannelFactory() : new AMFChannelFactory();
         channelFactory.start();
-        return channelFactory;
+        channel = channelFactory.newRemotingChannel("graniteamf", SERVER_APP_APP, 1);
+    }
+
+    @After
+    public void after() throws Exception {
+        channel.stop();
+        channelFactory.stop();
     }
 
     @Test
     public void testCallJPASync() throws Exception {
-        ChannelFactory channelFactory = buildChannelFactory();
-        RemotingChannel channel = channelFactory.newRemotingChannel("graniteamf", SERVER_APP_APP, 1);
         RemoteService remoteService = new RemoteService(channel, "dataService");
 
         @SuppressWarnings("unused")
@@ -133,8 +136,6 @@ public class TestRemotingData {
 
     @Test
     public void testCallJPAAsync() throws Exception {
-        ChannelFactory channelFactory = buildChannelFactory();
-        RemotingChannel channel = channelFactory.newRemotingChannel("graniteamf", SERVER_APP_APP, 1);
         final RemoteService remoteService = new RemoteService(channel, "dataService");
 
         final CountDownLatch waitForResult = new CountDownLatch(1);

@@ -105,7 +105,8 @@ public class TestMessagingChat {
 
     private ChannelFactory buildChannelFactory() {
         ChannelFactory channelFactory = contentType.equals(ContentType.JMF_AMF) ? new JMFChannelFactory() : new AMFChannelFactory();
-        channelFactory.setMessagingTransport("websocket", new JettyWebSocketTransport());
+        if (channelType.equals("websocket"))
+            channelFactory.setMessagingTransport("websocket", new JettyWebSocketTransport());
         channelFactory.start();
         return channelFactory;
     }
@@ -118,6 +119,9 @@ public class TestMessagingChat {
         ResponseMessage message = producer.publish("test").get();
 
         Assert.assertNotNull("Message has clientId", message.getClientId());
+
+        channel.stop();
+        channelFactory.stop();
     }
 
     private static final int MSG_COUNT = 500;
@@ -174,6 +178,9 @@ public class TestMessagingChat {
             log.error(e, "Consumer unsubscription timeout");
             Assert.fail("Consumer unsubscription failed");
         }
+
+        channel.stop();
+        channelFactory.stop();
     }
 
     private static final int CONSUMER_COUNT = 5;
@@ -315,6 +322,7 @@ public class TestMessagingChat {
                 log.error(e, "Consumer %s time out", id);
             }
             try {
+                channel.stop();
                 channelFactory.stop();
                 barriers[2].await();
             }
