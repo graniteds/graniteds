@@ -100,7 +100,8 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
     public void start() {
         serverThread.start();
         try {
-            waitForStart.await(10, TimeUnit.SECONDS);
+            if (!waitForStart.await(20, TimeUnit.SECONDS))
+                throw new RuntimeException("tomcat start timeout");
         }
         catch (InterruptedException e) {
             throw new RuntimeException("Could not start tomcat", e);
