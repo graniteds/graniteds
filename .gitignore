@@ -19,3 +19,4 @@ classes*
 .externalToolBuilders/
 .DS_Store
 *.log
+.idea/dictionaries

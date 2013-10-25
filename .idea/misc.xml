@@ -9,6 +9,9 @@
     <type id="web" />
   </component>
   <component name="IdProvider" IDEtalkID="B4782127EA45B7D7DC359F89AF495672" />
+  <component name="ProjectResources">
+    <resource url="http://www.graniteds.org/config" location="$PROJECT_DIR$/granite-server-core/src/main/resources/org/granite/config/granite-config-3.0.xsd" />
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="JDK 7" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/bin" />
   </component>
