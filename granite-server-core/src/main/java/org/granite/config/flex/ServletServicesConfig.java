@@ -59,8 +59,12 @@ public class ServletServicesConfig {
     
     ///////////////////////////////////////////////////////////////////////////
     // Static ServicesConfig loaders.
-    
+
     public static synchronized ServicesConfig loadConfig(ServletContext context) throws ServletException {
+        return loadConfig(context, false);
+    }
+
+    public static synchronized ServicesConfig loadConfig(ServletContext context, boolean skipScan) throws ServletException {
         ServletServicesConfig servletServicesConfig = (ServletServicesConfig)context.getAttribute(SERVICES_CONFIG_KEY);
 
         if (servletServicesConfig == null) {
@@ -80,7 +84,7 @@ public class ServletServicesConfig {
 
             try {
                 GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(context);
-                ServicesConfig servicesConfig = new ServicesConfig(is, configuration, graniteConfig.getScan());
+                ServicesConfig servicesConfig = new ServicesConfig(is, configuration, skipScan ? false : graniteConfig.getScan());
                 
                 servletServicesConfig = loadConfig(context, servicesConfig);
             }

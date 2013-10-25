@@ -147,7 +147,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 		
 	    public void configureServices(ServletContext servletContext) throws ServletException {
 	        GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(servletContext);
-	        ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(servletContext);
+	        ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(servletContext, true);
 	    	
 	        ServerFilter serverFilter = serverFilterClass.getAnnotation(ServerFilter.class);
 	        

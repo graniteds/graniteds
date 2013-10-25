@@ -79,13 +79,14 @@ public class GraniteConfigListener implements ServletContextListener, HttpSessio
             ServiceConfigurator serviceConfigurator = (ServiceConfigurator)context.getAttribute(GRANITE_CONFIG_ATTRIBUTE);
             if (serviceConfigurator != null)
             	serviceConfigurator.initialize(context);
-            
+
             GraniteConfig gConfig = ServletGraniteConfig.loadConfig(context);
-            ServletServicesConfig.loadConfig(context);
-            
+
             if (serviceConfigurator != null)
             	serviceConfigurator.configureServices(context);
-            
+            else
+                ServletServicesConfig.loadConfig(context);
+
             if ("true".equals(context.getInitParameter(GRANITE_SESSION_TRACKING))) {
 	            Map<String, HttpSession> sessionMap = new ConcurrentHashMap<String, HttpSession>(200);
 	            context.setAttribute(GRANITE_SESSION_MAP, sessionMap);
