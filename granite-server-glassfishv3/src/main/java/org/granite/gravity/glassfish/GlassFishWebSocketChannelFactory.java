@@ -28,15 +28,12 @@ import org.granite.gravity.Gravity;
 
 public class GlassFishWebSocketChannelFactory extends AbstractChannelFactory<GlassFishWebSocketChannel> {
 	
-	private ServletContext servletContext;
-
-	public GlassFishWebSocketChannelFactory(Gravity gravity, ServletContext servletContext) {
+	public GlassFishWebSocketChannelFactory(Gravity gravity) {
 		super(gravity);
-		this.servletContext = servletContext;
 	}
 
 	public GlassFishWebSocketChannel newChannel(String id, String clientType) {
-		return new GlassFishWebSocketChannel(getGravity(), id, this, servletContext, clientType);
+		return new GlassFishWebSocketChannel(getGravity(), id, this, clientType);
 	}
 
 }

@@ -46,19 +46,17 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
     private Thread serverThread;
 
     public EmbeddedGlassFishv31(WebArchive war) throws Exception {
+        this(war, false);
+    }
+
+    public EmbeddedGlassFishv31(WebArchive war, boolean persistSessions) throws Exception {
         BootstrapProperties bootstrapProps = new BootstrapProperties();
         glassfishRuntime = GlassFishRuntime.bootstrap(bootstrapProps);
-
-        GlassFishProperties serverProps = new GlassFishProperties();
-        // serverProps.setPort("http-listener", 8787);
-        String configFileURI = new File("granite-server-glassfishv3/src/test/resources/domain.xml").toURI().toString();
-        serverProps.setConfigFileURI(configFileURI);
-
-        glassfish = glassfishRuntime.newGlassFish(serverProps);
 
         war.addAsLibraries(new File("granite-server-glassfishv3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-eclipselink/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.setWebXML(new File("granite-server-glassfishv3/src/test/resources/web-websocket.xml"));
+        war.addAsWebInfResource(new File("granite-server-glassfishv3/src/test/resources/glassfish-web.xml"), "glassfish-web.xml");
 
         appName = war.getName().substring(0, war.getName().lastIndexOf("."));
         File root = File.createTempFile("emb-gfv3", war.getName());
@@ -68,19 +66,24 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
         warFile = new File(root, war.getName());
         warFile.deleteOnExit();
         war.as(ZipExporter.class).exportTo(warFile, true);
-
-        serverThread = new Thread(this);
     }
 
     private CountDownLatch waitForStart = new CountDownLatch(1);
 
     public void run() {
         try {
+            GlassFishProperties serverProps = new GlassFishProperties();
+            // serverProps.setPort("http-listener", 8787);
+            String configFileURI = new File("granite-server-glassfishv3/src/test/resources/domain.xml").toURI().toString();
+            serverProps.setConfigFileURI(configFileURI);
+
+            glassfish = glassfishRuntime.newGlassFish(serverProps);
+
             glassfish.start();
 
             CommandResult result = glassfish.getCommandRunner().run("set", "configs.config.server-config.network-config.protocols.protocol.http-listener.http.websockets-support-enabled=true");
 
-            glassfish.getDeployer().deploy(warFile.toURI(), "--name", appName);
+            glassfish.getDeployer().deploy(warFile.toURI(), "--name", appName, "--keepstate=true");
 
             log.info("Deployed applications: " + glassfish.getDeployer().getDeployedApplications());
 
@@ -92,6 +95,7 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
     }
 
     public void start() {
+        serverThread = new Thread(this);
         serverThread.start();
         try {
             if (!waitForStart.await(20, TimeUnit.SECONDS))
@@ -104,12 +108,37 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
 
     public void stop() {
         try {
-            glassfish.getDeployer().undeploy(appName);
+            glassfish.getDeployer().undeploy(appName, "--keepstate=true");
             glassfish.stop();
-            glassfishRuntime.shutdown();
+
+            serverThread.interrupt();
         }
         catch (Exception e) {
             throw new RuntimeException("Could not stop embedded glassfish", e);
+        }
+        serverThread = null;
+    }
+
+    public void restart() {
+        try {
+            glassfish.stop();
+            glassfish.start();
+
+            System.out.println("Status: " + glassfish.getStatus());
+            // glassfish.getDeployer().deploy(warFile.toURI(), "--name", appName, "--keepstate=true", "--force=true");
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Could not restart embedded glassfish", e);
+        }
+    }
+
+    public void destroy() {
+        try {
+            glassfish.dispose();
+            glassfishRuntime.shutdown();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Could not destroy embedded glassfish", e);
         }
     }
 }

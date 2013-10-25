@@ -27,14 +27,17 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
 
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocket.OnBinaryMessage;
 import org.granite.config.GraniteConfigListener;
 import org.granite.context.GraniteContext;
+import org.granite.context.SimpleGraniteContext;
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.Gravity;
@@ -54,20 +57,20 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	
 	private static final Logger log = Logger.getLogger(JettyWebSocketChannel.class);
 	
-	private ServletContext servletContext;
-	private SharedContext jmfSharedContext;
+	private HttpSession session;
 	private ContentType contentType;
 	private Connection connection;
 	private Message connectAckMessage;
 
 	
-	public JettyWebSocketChannel(Gravity gravity, String id, JettyWebSocketChannelFactory factory, ServletContext servletContext, String clientType) {
+	public JettyWebSocketChannel(Gravity gravity, String id, JettyWebSocketChannelFactory factory, String clientType) {
     	super(gravity, id, factory, clientType);
-
-    	this.servletContext = servletContext;
-        this.jmfSharedContext = GraniteConfigListener.getSharedContext(servletContext);
     }
-	
+
+    public void setSession(HttpSession session) {
+        this.session = session;
+    }
+
 	public void setConnectAckMessage(Message ackMessage) {
 		this.connectAckMessage = ackMessage;
 	}
@@ -165,7 +168,10 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	}
 	
 	private Gravity initializeRequest() {
-		ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId, clientType);
+        if (session != null)
+            ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), session.getServletContext(), session, clientType);
+        else
+            SimpleGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>(), clientType);
 		return gravity;
 	}
 
@@ -177,7 +183,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 			
 			if (ContentType.JMF_AMF.equals(contentType)) {
 		    	@SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
-				JMFDeserializer deserializer = new JMFDeserializer(is, jmfSharedContext);
+				JMFDeserializer deserializer = new JMFDeserializer(is, gravity.getSharedContext());
 				messages = (Message[])deserializer.readObject();
 			}
 			else {
@@ -201,7 +207,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 	        
 	        if (ContentType.JMF_AMF.equals(contentType)) {
 		        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'serializer' is never closed)...
-	            JMFSerializer serializer = new JMFSerializer(os, jmfSharedContext);
+	            JMFSerializer serializer = new JMFSerializer(os, gravity.getSharedContext());
 	            serializer.writeObject(messages);
 	        }
 	        else {
@@ -252,7 +258,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 			
 			// Setup serialization context (thread local)
 			Gravity gravity = getGravity();
-            ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), servletContext, sessionId, clientType);
+            initializeRequest();
 
             log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
 

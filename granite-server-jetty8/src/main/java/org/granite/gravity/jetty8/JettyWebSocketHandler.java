@@ -52,14 +52,14 @@ public class JettyWebSocketHandler extends WebSocketHandler {
     		return null;
     	
 		Gravity gravity = GravityManager.getGravity(servletContext);
-		JettyWebSocketChannelFactory channelFactory = new JettyWebSocketChannelFactory(gravity, servletContext);
+		JettyWebSocketChannelFactory channelFactory = new JettyWebSocketChannelFactory(gravity);
 		
 		try {
 			String connectMessageId = request.getHeader("connectId") != null ? request.getHeader("connectId") : request.getParameter("connectId");
 			String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameter("GDSClientId");
 			String clientType = request.getHeader("GDSClientType") != null ? request.getHeader("GDSClientType") : request.getParameter("GDSClientType");
 			String sessionId = null;
-			HttpSession session = request.getSession(false);
+			HttpSession session = request.getSession("true".equals(servletContext.getInitParameter("org.granite.gravity.websocket.forceCreateSession")));
 			if (session != null) {
 		        ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), 
 		        		this.servletContext, session, clientType);
@@ -90,8 +90,11 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 				pingMessage.setClientId(clientId);
 			
 			Message ackMessage = gravity.handleMessage(channelFactory, pingMessage);
+            if (sessionId != null)
+                ackMessage.setHeader("JSESSIONID", sessionId);
 			
 			JettyWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
+            channel.setSession(session);
 
             String ctype = request.getContentType();
             if (ctype == null && protocol.length() > "org.granite.gravity".length())

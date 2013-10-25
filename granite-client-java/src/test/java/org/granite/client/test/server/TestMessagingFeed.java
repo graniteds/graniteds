@@ -109,6 +109,7 @@ public class TestMessagingFeed {
     @AfterClass
     public static void stopContainer() throws Exception {
         container.stop();
+        container.destroy();
         log.info("Container stopped");
     }
 
@@ -122,6 +123,7 @@ public class TestMessagingFeed {
 
     @Test
     public void testFeedSingleConsumer() throws Exception {
+        log.info("TestMessagingFeed.testFeedSingleConsumer %s - %s", channelType, contentType);
         CyclicBarrier[] barriers = new CyclicBarrier[3];
         barriers[0] = new CyclicBarrier(2);
         barriers[1] = new CyclicBarrier(2);
@@ -159,6 +161,7 @@ public class TestMessagingFeed {
 
     @Test
     public void testFeedMultiConsumer() throws Exception {
+        log.info("TestMessagingFeed.testFeedMultiConsumer %s - %s", channelType, contentType);
         CyclicBarrier[] barriers = new CyclicBarrier[3];
         barriers[0] = new CyclicBarrier(CONSUMER_COUNT+1);
         barriers[1] = new CyclicBarrier(CONSUMER_COUNT+1);
@@ -247,9 +250,16 @@ public class TestMessagingFeed {
             });
 
             try {
-                waitToStop.await(60, TimeUnit.SECONDS);
+                if (!waitToStop.await(20, TimeUnit.SECONDS))
+                    log.error("Consumer %s time out", id);
+            }
+            catch (Exception e) {
+                log.error(e, "Consumer %s interrupted", id);
+            }
+            try {
                 channel.stop();
                 channelFactory.stop();
+                barriers[2].await();
             }
             catch (Exception e) {
                 log.error("Consumer did not terminate correctly", e);
@@ -277,11 +287,6 @@ public class TestMessagingFeed {
                         @Override
                         public void onResult(ResultEvent event) {
                             log.info("Consumer " + id + ": unsubscribed " + event.getResult());
-                            try {
-                                barriers[2].await();
-                            }
-                            catch (Exception e) {
-                            }
                             waitToStop.countDown();
                         }
 

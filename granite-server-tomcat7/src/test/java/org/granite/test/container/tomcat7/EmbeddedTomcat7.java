@@ -47,6 +47,10 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
     private Thread serverThread;
 
     public EmbeddedTomcat7(WebArchive war) throws Exception {
+        this(war, false);
+    }
+
+    public EmbeddedTomcat7(WebArchive war, boolean persistSessions) throws Exception {
         tomcatHome = File.createTempFile("emb-t7-", "");
         if (!tomcatHome.delete() || !tomcatHome.mkdirs())
             throw new RuntimeException("Could not create embedded tomcat 7 home");
@@ -77,8 +81,6 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
 
         war.as(ZipExporter.class).exportTo(warFile, true);
         tomcat.addWebapp("/" + warFile.getName().substring(0, warFile.getName().lastIndexOf(".")), warFile.getAbsolutePath());
-
-        serverThread = new Thread(this);
     }
 
     private CountDownLatch waitForStart = new CountDownLatch(1);
@@ -98,6 +100,7 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
 
     @Override
     public void start() {
+        serverThread = new Thread(this);
         serverThread.start();
         try {
             if (!waitForStart.await(20, TimeUnit.SECONDS))
@@ -111,13 +114,30 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
     @Override
     public void stop() {
         try {
+            tomcat.getConnector().stop();
+            tomcat.getServer().stop();
             tomcat.stop();
-            tomcat.destroy();
+            serverThread.interrupt();
         }
         catch (Exception e) {
             throw new RuntimeException("Could not stop embedded tomcat", e);
         }
+    }
 
+    @Override
+    public void restart() {
+        stop();
+        start();
+    }
+
+    @Override
+    public void destroy() {
+        try {
+            tomcat.destroy();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Could not destroy embedded tomcat", e);
+        }
         deleteDir(tomcatHome);
     }
 

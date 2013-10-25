@@ -104,6 +104,7 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
         }
     }
 
+    @Override
     public void start() {
         serverThread = new Thread(this);
         serverThread.start();
@@ -116,6 +117,7 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
         }
     }
 
+    @Override
     public void stop() {
         try {
             jetty.stop();
@@ -124,5 +126,15 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
         catch (Exception e) {
             throw new RuntimeException("Could not stop embedded jetty", e);
         }
+    }
+
+    @Override
+    public void restart() {
+        stop();
+        start();
+    }
+
+    @Override
+    public void destroy() {
     }
 }

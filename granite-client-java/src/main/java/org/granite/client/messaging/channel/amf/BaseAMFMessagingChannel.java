@@ -185,7 +185,10 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 									if (reconnectMaxAttempts instanceof Number)
 										this.reconnectMaxAttempts = ((Number)reconnectMaxAttempts).longValue();
 								}
-								break;
+                                if (messages[0].getHeaders().containsKey("JSESSIONID"))
+                                    setSessionId((String)messages[0].getHeader("JSESSIONID"));
+
+                                break;
 							
 							case SUBSCRIBE:
 								result.setResult(messages[0].getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER));

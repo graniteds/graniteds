@@ -24,9 +24,9 @@
     </orderEntry>
     <orderEntry type="library" exported="" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
     <orderEntry type="library" name="org.apache.httpcomponents:httpasyncclient:4.0-beta4" level="project" />
+    <orderEntry type="library" name="org.eclipse.jetty:jetty-client:8.1.13.v20130916" level="project" />
+    <orderEntry type="library" name="org.eclipse.jetty:jetty-websocket:8.1.13.v20130916" level="project" />
     <orderEntry type="library" name="net.sf.extcos:extcos:0.3b" level="project" />
-    <orderEntry type="library" name="org.eclipse.jetty:jetty-client:8.1.12.v20130726" level="project" />
-    <orderEntry type="library" name="org.eclipse.jetty:jetty-websocket:8.1.12.v20130726" level="project" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
     <orderEntry type="library" scope="TEST" name="org.slf4j:slf4j-api:1.7.3" level="project" />
     <orderEntry type="library" scope="TEST" name="org.slf4j:slf4j-log4j12:1.7.3" level="project" />

@@ -23,16 +23,21 @@ package org.granite.client.messaging.transport.jetty;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocket.Connection;
 import org.eclipse.jetty.websocket.WebSocket.OnBinaryMessage;
 import org.eclipse.jetty.websocket.WebSocketClient;
 import org.eclipse.jetty.websocket.WebSocketClientFactory;
 import org.granite.client.messaging.channel.Channel;
+import org.granite.client.messaging.codec.MessagingCodec;
 import org.granite.client.messaging.transport.AbstractTransport;
 import org.granite.client.messaging.transport.TransportException;
 import org.granite.client.messaging.transport.TransportFuture;
@@ -59,12 +64,21 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> implement
 	private boolean connected = false;
 	
 	private int maxIdleTime = 3000000;
+    private int pingDelay = 30000;
 	private int reconnectMaxAttempts = 5;
 	private int reconnectIntervalMillis = 60000;
 	
 	public void setMaxIdleTime(int maxIdleTime) {
 		this.maxIdleTime = maxIdleTime;
 	}
+
+    public void setPingDelay(int pingDelay) {
+        this.pingDelay = pingDelay;
+    }
+
+    public void setReconnectIntervalMillis(int reconnectIntervalMillis) {
+        this.reconnectIntervalMillis = reconnectIntervalMillis;
+    }
 
     public boolean isReconnectAfterReceive() {
         return false;
@@ -154,6 +168,7 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> implement
 	
 	private int reconnectAttempts = 0;
 	private TransportMessage connectMessage = null;
+    private Timer timer = new Timer("ws-activity-check");
 
 	public Future<Connection> connect(final Channel channel, final TransportMessage transportMessage) {
 		if (connectionFuture != null)
@@ -179,77 +194,10 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> implement
 				u += "&GDSClientId=" + transportMessage.getClientId();
 			else if (channel.getClientId() != null)
 				u += "&GDSClientId=" + channel.getClientId();
-			
-			connectionFuture = webSocketClient.open(new URI(u), new OnBinaryMessage() {
-				
-				@Override
-				public void onOpen(Connection connection) {
-					synchronized (channel) {
-						connectionFuture = null;
-						reconnectAttempts = 0;
-						((TransportData)channel.getTransportData()).connection = connection;
-						send(channel, null);
-					}
-				}
-				
-				@Override
-				public void onMessage(byte[] data, int offset, int length) {
-					channel.onMessage(new ByteArrayInputStream(data, offset, length));
-				}
 
-				@Override
-				public void onClose(int closeCode, String message) {
-					boolean waitBeforeReconnect = !(closeCode == CLOSE_NORMAL && message.startsWith("Idle"));
-					
-					synchronized (channel) {
-						// Mark the connection as close, the channel should reopen a connection for the next message
-						((TransportData)channel.getTransportData()).connection = null;
-						connectionFuture = null;
-						
-						if (!isStarted())
-							connected = false;
-						
-						if (closeCode == CLOSE_SHUTDOWN) {
-							connected = false;
-							return;
-						}
-						
-						if (channel.getClientId() == null) {
-							getStatusHandler().handleException(new TransportException("Transport could not connect code: " + closeCode + " " + message));
-							return;
-						}
-						
-						if (connected) {
-							if (reconnectAttempts >= reconnectMaxAttempts) {
-								connected = false;
-								if (isStarted())
-									stop();
-								
-								channel.onError(transportMessage, new RuntimeException(message + " (code=" + closeCode + ")"));
-								getStatusHandler().handleException(new TransportException("Transport disconnected"));
-								return;
-							}
-							
-							if (waitBeforeReconnect) {
-								try {
-									waitBeforeReconnect = false;
-									Thread.sleep(reconnectIntervalMillis);
-								}
-								catch (InterruptedException e) {
-								}
-							}
-							
-							reconnectAttempts++;
-							
-							// If the channel should be connected, try to reconnect
-							log.info("Connection lost (code %d, msg %s), reconnect channel (retry #%d)", closeCode, message, reconnectAttempts);
-							connect(channel, connectMessage);
-						}
-					}
-				}
-			});
-			
-			return connectionFuture;
+            log.info("Connecting to websocket %s protocol %s sessionId %s", u, webSocketClient.getProtocol(), transportMessage.getSessionId());
+
+			return webSocketClient.open(new URI(u), new WebSocketHandler(channel));
 		}
 		catch (Exception e) {
 			getStatusHandler().handleException(new TransportException("Could not connect to uri " + channel.getUri(), e));
@@ -287,4 +235,124 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> implement
 		
 		log.info("Jetty WebSocketClient transport stopped.");
 	}
+
+
+    private class WebSocketHandler implements OnBinaryMessage {
+
+        private final Channel channel;
+        private Timer activityCheckTimer = new Timer();
+
+        public WebSocketHandler(Channel channel) {
+            this.channel = channel;
+        }
+
+        @Override
+        public void onOpen(Connection connection) {
+            synchronized (channel) {
+                connectionFuture = null;
+                reconnectAttempts = 0;
+                ((TransportData)channel.getTransportData()).connection = connection;
+                send(channel, null);
+                scheduleActivityCheck();
+            }
+        }
+
+        @Override
+        public void onMessage(byte[] data, int offset, int length) {
+            channel.onMessage(new ByteArrayInputStream(data, offset, length));
+        }
+
+        @Override
+        public void onClose(int closeCode, String message) {
+            boolean waitBeforeReconnect = !(closeCode == CLOSE_NORMAL && message.startsWith("Idle"));
+            log.info("Websocket connection closed %d %s", closeCode, message);
+
+            synchronized (channel) {
+                // Mark the connection as close, the channel should reopen a connection for the next message
+                ((TransportData)channel.getTransportData()).connection = null;
+                connectionFuture = null;
+
+                if (!isStarted())
+                    connected = false;
+                else if (closeCode != CLOSE_SHUTDOWN && channel.getClientId() == null) {
+                    getStatusHandler().handleException(new TransportException("Transport could not connect code: " + closeCode + " " + message));
+                    return;
+                }
+
+                if (connected) {
+                    if (waitBeforeReconnect || reconnectAttempts >= reconnectMaxAttempts) {
+                        connected = false;
+                        waitBeforeReconnect = false;
+//								if (isStarted())
+//									stop();
+
+                        channel.onError(connectMessage, new RuntimeException(message + " (code=" + closeCode + ")"));
+                        getStatusHandler().handleException(new TransportException("Transport disconnected"));
+                        return;
+                    }
+
+//							if (waitBeforeReconnect) {
+//								try {
+//									waitBeforeReconnect = false;
+//									Thread.sleep(reconnectIntervalMillis);
+//								}
+//								catch (InterruptedException e) {
+//								}
+//							}
+
+                    reconnectAttempts++;
+
+                    // If the channel should be connected, try to reconnect
+                    log.info("Connection lost (code %d, msg %s), reconnect channel (retry #%d)", closeCode, message, reconnectAttempts);
+                    connect(channel, connectMessage);
+                }
+            }
+        }
+
+        private void scheduleActivityCheck() {
+            activityCheckTimer.schedule(new ActivityCheckTask(), pingDelay);
+        }
+
+        private class ActivityCheckTask extends TimerTask {
+            @Override
+            public void run() {
+                send(channel, new TransportMessage() {
+                    @Override
+                    public MessagingCodec.ClientType getClientType() {
+                        return null;
+                    }
+
+                    @Override
+                    public String getId() {
+                        return null;
+                    }
+
+                    @Override
+                    public boolean isConnect() {
+                        return false;
+                    }
+
+                    @Override
+                    public String getClientId() {
+                        return null;
+                    }
+
+                    @Override
+                    public String getSessionId() {
+                        return null;
+                    }
+
+                    @Override
+                    public String getContentType() {
+                        return null;
+                    }
+
+                    @Override
+                    public void encode(OutputStream os) throws IOException {
+
+                    }
+                });
+            }
+        }
+    }
 }

@@ -42,6 +42,7 @@ public class SessionDistributedData implements DistributedData {
 	private static final String CREDENTIALS_KEY = KEY_PREFIX + "CREDENTIALS";
 	private static final String CREDENTIALS_CHARSET_KEY = KEY_PREFIX + "CREDENTIALS_CHARSET";
 	private static final String CHANNELID_KEY_PREFIX = KEY_PREFIX + "CHANNELID.";
+    private static final String CHANNEL_CLIENTTYPE_KEY_PREFIX = KEY_PREFIX + "CHANNELCLIENTTYPE.";
 	private static final String SUBSCRIPTION_KEY_PREFIX = KEY_PREFIX + "SUBSCRIPTION.";
 	private static final String DESTINATION_CLIENTID_KEY_PREFIX = "org.granite.gravity.channel.clientId.";
 	private static final String DESTINATION_SUBSCRIPTIONID_KEY_PREFIX = "org.granite.gravity.channel.subscriptionId.";
@@ -94,10 +95,11 @@ public class SessionDistributedData implements DistributedData {
 		session.removeAttribute(CREDENTIALS_CHARSET_KEY);
 	}
 
-	public void addChannelId(String channelId, String channelFactoryClassName) {
+	public void addChannelId(String channelId, String channelFactoryClassName, String clientType) {
 		if (channelId == null)
 			throw new NullPointerException("channelId cannot be null");
 		session.setAttribute(CHANNELID_KEY_PREFIX + channelId, channelFactoryClassName);
+        session.setAttribute(CHANNEL_CLIENTTYPE_KEY_PREFIX + channelId, clientType);
 	}
 
 	public boolean hasChannelId(String channelId) {
@@ -111,6 +113,12 @@ public class SessionDistributedData implements DistributedData {
 			return null;
 		return (String)session.getAttribute(CHANNELID_KEY_PREFIX + channelId);
 	}
+
+    public String getChannelClientType(String channelId) {
+        if (channelId == null)
+            return null;
+        return (String)session.getAttribute(CHANNEL_CLIENTTYPE_KEY_PREFIX + channelId);
+    }
 
 	public void removeChannelId(String channelId) {
 		if (channelId == null)

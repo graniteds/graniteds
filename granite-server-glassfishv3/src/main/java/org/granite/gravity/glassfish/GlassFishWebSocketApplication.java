@@ -27,7 +27,9 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
+import com.sun.grizzly.websockets.*;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
@@ -35,8 +37,6 @@ import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ContentType;
 
 import com.sun.grizzly.tcp.Request;
-import com.sun.grizzly.websockets.WebSocket;
-import com.sun.grizzly.websockets.WebSocketApplication;
 
 import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.Message;
@@ -72,54 +72,45 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 	@Override
 	public boolean isApplicationRequest(Request request) {
         final String uri = request.requestURI().toString();
-        if (!mapping.matcher(uri).matches())
-        	return false;
-        
-    	request.getParameters().handleQueryParameters();	// Force parse of query parameters
-		String connectMessageId = request.getHeader("connectId");
-		if (connectMessageId == null && request.getParameters().getParameter("connectId") != null)
-			connectMessageId = request.getParameters().getParameter("connectId");
-		String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameters().getParameter("GDSClientId");
-		String sessionId = null;
-
-        if (request.getCookies() != null) {
-            for (int i = 0; i < request.getCookies().getCookieCount(); i++) {
-                if ("JSESSIONID".equals(request.getCookies().getCookie(i).getName())) {
-                    sessionId = request.getCookies().getCookie(i).getValue().getString();
-                    break;
-                }
-            }
-        }
-		String clientType = null;
-		if (request.getHeader("GDSClientType") != null)
-			clientType = request.getHeader("GDSClientType");
-		if (clientType == null && request.getParameters().getParameter("GDSClientType") != null)
-			clientType = request.getParameters().getParameter("GDSClientType");
-		
-		// Utterly hackish and ugly: we create the thread local here because there is no other way to access the request
-		// It will be cleared in onConnect which executes later in the same thread
-		ServletGraniteContext graniteContext = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), 
-				servletContext, sessionId, clientType);
-		if (connectMessageId != null)
-			graniteContext.getRequest().setAttribute("connectId", connectMessageId);
-		if (clientId != null)
-			graniteContext.getRequest().setAttribute("clientId", clientId);
-		
-		return true;
+        return mapping.matcher(uri).matches();
 	}
 
 	@Override
     public void onConnect(WebSocket websocket) {
-		ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
-		HttpServletRequest request = graniteContext.getRequest();
+        if (!(websocket instanceof DefaultWebSocket))
+            throw new IllegalStateException("Only DefaultWebSocket supported");
 
-		GlassFishWebSocketChannelFactory channelFactory = new GlassFishWebSocketChannelFactory(gravity, request.getServletContext());
+		GlassFishWebSocketChannelFactory channelFactory = new GlassFishWebSocketChannelFactory(gravity);
+        HttpServletRequest request = ((DefaultWebSocket)websocket).getRequest();
 		
 		try {
-			String connectMessageId = (String)request.getAttribute("connectId");
-			String clientId = (String)request.getAttribute("clientId");
+            String connectMessageId = request.getHeader("connectId") != null ? request.getHeader("connectId") : request.getParameter("connectId");
+            String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameter("GDSClientId");
+            String clientType = request.getHeader("GDSClientType") != null ? request.getHeader("GDSClientType") : request.getParameter("GDSClientType");
+            String sessionId = null;
+            HttpSession session = request.getSession("true".equals(servletContext.getInitParameter("org.granite.gravity.websocket.forceCreateSession")));
+            if (session != null) {
+                ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
+                        this.servletContext, session, clientType);
 
-            log.debug("WebSocket connection clientId %s", clientId);
+                sessionId = session.getId();
+            }
+            else if (request.getCookies() != null) {
+                for (int i = 0; i < request.getCookies().length; i++) {
+                    if ("JSESSIONID".equals(request.getCookies()[i].getName())) {
+                        sessionId = request.getCookies()[i].getValue();
+                        break;
+                    }
+                }
+                ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
+                        this.servletContext, sessionId, clientType);
+            }
+            else {
+                ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
+                        this.servletContext, (String)null, clientType);
+            }
+
+            log.info("WebSocket connection started %s clientId %s sessionId %s", protocol, clientId, sessionId);
 
             CommandMessage pingMessage = new CommandMessage();
 			pingMessage.setMessageId(connectMessageId != null ? connectMessageId : "OPEN_CONNECTION");
@@ -128,8 +119,11 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 				pingMessage.setClientId(clientId);
 			
 			Message ackMessage = gravity.handleMessage(channelFactory, pingMessage);
-			
+            if (sessionId != null)
+                ackMessage.setHeader("JSESSIONID", sessionId);
+
 			GlassFishWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
+            channel.setSession(session);
 
             String ctype = request.getContentType();
             if (ctype == null && protocol.length() > "org.granite.gravity".length())

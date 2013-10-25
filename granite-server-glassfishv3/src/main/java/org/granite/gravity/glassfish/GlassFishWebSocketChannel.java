@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
 
 import org.granite.config.GraniteConfigListener;
 import org.granite.context.GraniteContext;
@@ -43,6 +44,7 @@ import org.granite.logging.Logger;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFSerializer;
 import org.granite.messaging.jmf.SharedContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ContentType;
 
 import com.sun.grizzly.websockets.DataFrame;
@@ -58,16 +60,18 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 	private static final Logger log = Logger.getLogger(GlassFishWebSocketChannel.class);
 	
 	private WebSocket websocket;
+    private HttpSession session;
 	private Message connectAckMessage;
-	private SharedContext jmfSharedContext;
 	private ContentType contentType;
 	
-	public GlassFishWebSocketChannel(Gravity gravity, String id, GlassFishWebSocketChannelFactory factory, ServletContext servletContext, String clientType) {
+	public GlassFishWebSocketChannel(Gravity gravity, String id, GlassFishWebSocketChannelFactory factory, String clientType) {
     	super(gravity, id, factory, clientType);
-    	
-        this.jmfSharedContext = GraniteConfigListener.getSharedContext(servletContext);
     }
-	
+
+    public void setSession(HttpSession session) {
+        this.session = session;
+    }
+
 	public void setConnectAckMessage(Message ackMessage) {
 		this.connectAckMessage = ackMessage;
 	}
@@ -107,7 +111,7 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 	
 	public void onMessage(WebSocket websocket, byte[] data) {
 		try {
-			initializeRequest(getGravity());
+			initializeRequest();
 			
 			Message[] messages = deserialize(getGravity(), data);
 
@@ -149,9 +153,12 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 		}
 	}
 	
-	private Gravity initializeRequest(Gravity gravity) {
-		SimpleGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>(), clientType);
-		return gravity;
+	private Gravity initializeRequest() {
+        if (session != null)
+            ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), session.getServletContext(), session, clientType);
+        else
+            SimpleGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>(), clientType);
+        return gravity;
 	}
 
 	private Message[] deserialize(Gravity gravity, byte[] data) throws ClassNotFoundException, IOException {
@@ -162,7 +169,7 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 			
 			if (ContentType.JMF_AMF.equals(contentType)) {
 		    	@SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
-				JMFDeserializer deserializer = new JMFDeserializer(is, jmfSharedContext);
+				JMFDeserializer deserializer = new JMFDeserializer(is, gravity.getSharedContext());
 				messages = (Message[])deserializer.readObject();
 			}
 			else {
@@ -186,7 +193,7 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 	        
 	        if (ContentType.JMF_AMF.equals(contentType)) {
 		        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'serializer' is never closed)...
-	            JMFSerializer serializer = new JMFSerializer(os, jmfSharedContext);
+	            JMFSerializer serializer = new JMFSerializer(os, gravity.getSharedContext());
 	            serializer.writeObject(messages);
 	        }
 	        else {

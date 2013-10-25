@@ -8,7 +8,7 @@
     <orderEntry type="library" scope="TEST" name="org.eclipse.jetty:jetty-annotations:8.1.12.v20130726" level="project" />
     <orderEntry type="library" scope="TEST" name="org.eclipse.jetty:jetty-plus:8.1.12.v20130726" level="project" />
     <orderEntry type="library" scope="TEST" name="org.eclipse.jetty:jetty-webapp:8.1.12.v20130726" level="project" />
-    <orderEntry type="library" scope="TEST" name="org.eclipse.jetty:jetty-websocket:8.1.12.v20130726" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.eclipse.jetty:jetty-websocket:8.1.13.v20130916" level="project" />
     <orderEntry type="library" scope="TEST" name="org.jboss.shrinkwrap.container:shrinkwrap-extension-jetty-70:1.0.0-beta-1" level="project" />
     <orderEntry type="module" module-name="granite-server-jetty8" scope="TEST" />
     <orderEntry type="module" module-name="granite-client-java" />

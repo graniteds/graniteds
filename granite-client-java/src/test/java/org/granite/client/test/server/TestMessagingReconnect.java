@@ -66,10 +66,10 @@ public class TestMessagingReconnect {
 
     private static final String APP_NAME = "feed";
 
-    private static String CONTAINER_CLASS_NAME = "org.granite.test.container.jetty8.EmbeddedJetty8";
+    private static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
 
     private static String[] CHANNEL_TYPES = new String[] {
-        "long-polling", "websocket"
+        "websocket" // "long-polling",
     };
 
     @Parameterized.Parameters(name = "container: {0}, encoding: {1}, channel: {2}")
@@ -110,6 +110,7 @@ public class TestMessagingReconnect {
     @AfterClass
     public static void stopContainer() throws Exception {
         container.stop();
+        container.destroy();
         log.info("Container stopped");
     }
 
@@ -121,7 +122,8 @@ public class TestMessagingReconnect {
     }
 
     @Test
-    public void testFeedSingleConsumer() throws Exception {
+    public void testFeedSingleConsumerReconnect() throws Exception {
+        log.info("TestMessagingReconnect.testFeedSingleConsumerReconnect %s - %s", channelType, contentType);
         CyclicBarrier[] barriers = new CyclicBarrier[4];
         barriers[0] = new CyclicBarrier(2);
         barriers[1] = new CyclicBarrier(2);
@@ -147,8 +149,7 @@ public class TestMessagingReconnect {
             Assert.fail("Consumer receive messages before restart failed");
         }
 
-        container.stop();
-        container.start();
+        container.restart();
 
         try {
             barriers[2].await(50, TimeUnit.SECONDS);
@@ -212,8 +213,15 @@ public class TestMessagingReconnect {
             });
 
             try {
-                waitToStop.await(60, TimeUnit.SECONDS);
+                if (!waitToStop.await(20, TimeUnit.SECONDS))
+                    log.error("Consumer %s time out", id);
+            }
+            catch (Exception e) {
+                log.error(e, "Consumer %s interrupted", id);
+            }
+            try {
                 channelFactory.stop();
+                barriers[3].await();
             }
             catch (Exception e) {
                 log.error("Consumer did not terminate correctly", e);
@@ -251,11 +259,6 @@ public class TestMessagingReconnect {
                         @Override
                         public void onResult(ResultEvent event) {
                             log.info("Consumer " + id + ": unsubscribed " + event.getResult());
-                            try {
-                                barriers[3].await();
-                            }
-                            catch (Exception e) {
-                            }
                             waitToStop.countDown();
                         }
 

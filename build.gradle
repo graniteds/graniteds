@@ -1708,6 +1708,7 @@ project('granite-client-java') {
         ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
 
         includes = [ 'org/granite/client/test/server/TestMessaging*' ]
+        excludes = [ 'org/granite/client/test/server/TestMessagingReconnect*' ]
 
         workingDir = rootDir
         reports.junitXml.destination = new File(buildDir, 'test-results/tomcat7')
@@ -1736,6 +1737,7 @@ project('granite-client-java') {
         ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
 
         includes = [ 'org/granite/client/test/server/Test*' ]
+        excludes = [ 'org/granite/client/test/server/TestMessagingReconnect*' ]
 
         workingDir = rootDir
         reports.junitXml.destination = new File(buildDir, 'test-results/glassfishv31')

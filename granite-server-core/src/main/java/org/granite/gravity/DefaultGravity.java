@@ -386,7 +386,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	        DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 	        if (gdd != null) {
         		log.debug("Saving channel id in distributed data: %s", channelId);
-	        	gdd.addChannelId(channelId, channelFactory.getClass().getName());
+	        	gdd.addChannelId(channelId, channelFactory.getClass().getName(), clientType);
 	        }
         }
         catch (Exception e) {
@@ -412,8 +412,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	        	if (gdd != null && gdd.hasChannelId(clientId)) {
 	        		log.debug("Found channel id in distributed data: %s", clientId);
 	        		String channelFactoryClassName = gdd.getChannelFactoryClassName(clientId);
+                    String clientType = gdd.getChannelClientType(clientId);
 	        		channelFactory = (ChannelFactory)TypeUtil.newInstance(channelFactoryClassName, new Class<?>[] { Gravity.class }, new Object[] { this });
-	        		String clientType = GraniteContext.getCurrentInstance().getClientType();
 	        		C channel = channelFactory.newChannel(clientId, clientType);
 	    	    	timeChannel = new TimeChannel<C>(channel);
 	    	        if (channels.putIfAbsent(clientId, timeChannel) == null) {
@@ -725,7 +725,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		        DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 		        if (gdd != null) {
 		            if (!gdd.hasChannelId(channel.getId()))
-		                gdd.addChannelId(channel.getId(), channel.getFactory().getClass().getName());
+		                gdd.addChannelId(channel.getId(), channel.getFactory().getClass().getName(), context.getClientType());
 		            
 		        	if (Boolean.TRUE.toString().equals(destination.getProperties().get("session-selector"))) {
 		        		String selector = gdd.getDestinationSelector(destination.getId());

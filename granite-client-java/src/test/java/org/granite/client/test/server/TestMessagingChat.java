@@ -100,6 +100,7 @@ public class TestMessagingChat {
     @AfterClass
     public static void stopContainer() throws Exception {
         container.stop();
+        container.destroy();
         log.info("Container stopped");
     }
 
@@ -128,6 +129,7 @@ public class TestMessagingChat {
 
     @Test
     public void testChatTextSingleConsumer() throws Exception {
+        log.info("TestMessagingChat.testChatTextSingleConsumer %s - %s", channelType, contentType);
         CyclicBarrier[] barriers = new CyclicBarrier[3];
         barriers[0] = new CyclicBarrier(2);
         barriers[1] = new CyclicBarrier(2);
@@ -138,7 +140,6 @@ public class TestMessagingChat {
             messages[i] = (i+1) + "::" + UUID.randomUUID().toString();
 
         ConsumerThread consumer = new ConsumerThread("C", messages, barriers);
-        consumer.setTimeout(10);
         consumer.start();
 
         try {
@@ -173,6 +174,8 @@ public class TestMessagingChat {
         try {
             barriers[2].await(10, TimeUnit.SECONDS);
             log.info("Consumer unsubscribed and stopped");
+
+            channelFactory.stop();
         }
         catch (TimeoutException e) {
             log.error(e, "Consumer unsubscription timeout");
@@ -187,6 +190,7 @@ public class TestMessagingChat {
 
     @Test
     public void testChatTextMultiConsumer() throws Exception {
+        log.info("TestMessagingChat.testChatTextMultiConsumer %s - %s", channelType, contentType);
         CyclicBarrier[] barriers = new CyclicBarrier[3];
         barriers[0] = new CyclicBarrier(CONSUMER_COUNT+1);
         barriers[1] = new CyclicBarrier(CONSUMER_COUNT+1);
@@ -198,7 +202,6 @@ public class TestMessagingChat {
 
         for (int i = 0; i < CONSUMER_COUNT; i++) {
             ConsumerThread consumer = new ConsumerThread("C" + (i+1), messages, barriers);
-            consumer.setTimeout(10);
             consumer.start();
         }
 
@@ -237,6 +240,8 @@ public class TestMessagingChat {
             barriers[2].await(10, TimeUnit.SECONDS);
             log.info("All consumers unsubscribed and stopped");
             Assert.assertTrue("All messages received by all consumers", success);
+
+            channelFactory.stop();
         }
         catch (TimeoutException e) {
             log.error(e, "Consumers unsubscription timeout");
@@ -262,7 +267,7 @@ public class TestMessagingChat {
         private Thread thread = new Thread(this);
         private ChannelFactory channelFactory;
         private Consumer consumer;
-        private int timeout = 5;
+        private int timeout = 20;
 
         public ConsumerThread(String id, String[] messages, CyclicBarrier[] barriers) {
             this.id = id;
@@ -316,10 +321,11 @@ public class TestMessagingChat {
             });
 
             try {
-                waitToStop.await(timeout, TimeUnit.SECONDS);
+                if (!waitToStop.await(timeout, TimeUnit.SECONDS))
+                    log.error("Consumer %s time out", id);
             }
             catch (Exception e) {
-                log.error(e, "Consumer %s time out", id);
+                log.error(e, "Consumer %s interrupted", id);
             }
             try {
                 channel.stop();

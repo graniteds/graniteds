@@ -29,4 +29,8 @@ public interface EmbeddedContainer {
     void start();
 
     void stop();
+
+    void restart();
+
+    void destroy();
 }

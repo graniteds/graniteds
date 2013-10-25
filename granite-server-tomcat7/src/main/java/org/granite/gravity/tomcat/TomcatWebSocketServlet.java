@@ -67,7 +67,7 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 	@Override
 	protected StreamInbound createWebSocketInbound(String protocol, HttpServletRequest request) {
 		Gravity gravity = GravityManager.getGravity(getServletContext());
-		TomcatWebSocketChannelFactory channelFactory = new TomcatWebSocketChannelFactory(gravity, getServletContext());
+		TomcatWebSocketChannelFactory channelFactory = new TomcatWebSocketChannelFactory(gravity);
 		
 		try {
 			String connectMessageId = request.getHeader("connectId") != null ? request.getHeader("connectId") : request.getParameter("connectId");
@@ -106,8 +106,11 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 				pingMessage.setClientId(clientId);
 			
 			Message ackMessage = gravity.handleMessage(channelFactory, pingMessage);
-			
+            if (sessionId != null)
+                ackMessage.setHeader("JSESSIONID", sessionId);
+
 			TomcatWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
+            channel.setSession(session);
 
             String ctype = request.getContentType();
             if (ctype == null && protocol.length() > "org.granite.gravity".length())
