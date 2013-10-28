@@ -21,12 +21,24 @@
  */
 package org.granite.client.test.server;
 
-import org.granite.client.configuration.SimpleConfiguration;
-import org.granite.client.messaging.*;
-import org.granite.client.messaging.channel.*;
-import org.granite.client.messaging.events.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.granite.client.messaging.RemoteService;
+import org.granite.client.messaging.ResultFaultIssuesResponseListener;
+import org.granite.client.messaging.ServerApp;
+import org.granite.client.messaging.channel.AMFChannelFactory;
+import org.granite.client.messaging.channel.ChannelFactory;
+import org.granite.client.messaging.channel.JMFChannelFactory;
+import org.granite.client.messaging.channel.RemotingChannel;
+import org.granite.client.messaging.events.FaultEvent;
+import org.granite.client.messaging.events.IssueEvent;
+import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.messages.ResponseMessage;
-import org.granite.client.messaging.transport.jetty.JettyWebSocketTransport;
 import org.granite.client.test.server.data.Data;
 import org.granite.client.test.server.data.DataApplication;
 import org.granite.client.test.server.data.DataServiceBean;
@@ -37,16 +49,14 @@ import org.granite.util.ContentType;
 import org.granite.util.TypeUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by william on 30/09/13.
