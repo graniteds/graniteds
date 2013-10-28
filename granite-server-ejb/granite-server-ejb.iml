@@ -15,7 +15,7 @@
     <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
     <orderEntry type="library" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
     <orderEntry type="library" scope="TEST" name="org.apache.openejb:openejb-lite:4.5.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="org.glassfish.main.extras:glassfish-embedded-all:3.1.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.glassfish.main.extras:glassfish-embedded-all:3.1.2.2" level="project" />
     <orderEntry type="library" scope="TEST" name="org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3" level="project" />
     <orderEntry type="library" scope="TEST" name="org.jboss.shrinkwrap:shrinkwrap-extension-openejb:1.0.0-alpha-13" level="project" />
     <orderEntry type="library" scope="TEST" name="org.jboss.shrinkwrap:shrinkwrap-extension-glassfish:1.0.0-alpha-13" level="project" />

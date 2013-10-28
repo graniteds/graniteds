@@ -5,6 +5,7 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" scope="TEST" name="com.sun.grizzly:grizzly-websockets:1.9.51" level="project" />
     <orderEntry type="library" scope="TEST" name="org.glassfish.main.extras:glassfish-embedded-all:3.1.2.2" level="project" />
     <orderEntry type="module" module-name="granite-server-glassfishv3" scope="TEST" />
     <orderEntry type="module-library" scope="TEST">

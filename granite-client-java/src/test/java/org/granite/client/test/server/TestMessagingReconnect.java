@@ -69,7 +69,7 @@ public class TestMessagingReconnect {
     private static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
 
     private static String[] CHANNEL_TYPES = new String[] {
-        "websocket" // "long-polling",
+        "long-polling", "websocket"
     };
 
     @Parameterized.Parameters(name = "container: {0}, encoding: {1}, channel: {2}")

@@ -29,8 +29,10 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * Created by william on 30/09/13.
@@ -39,6 +41,7 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
 
     private static final Logger log = Logger.getLogger(EmbeddedGlassFishv31.class);
 
+    private String glassfishRoot;
     private GlassFishRuntime glassfishRuntime;
     private GlassFish glassfish;
     private String appName;
@@ -56,7 +59,6 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
         war.addAsLibraries(new File("granite-server-glassfishv3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-eclipselink/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.setWebXML(new File("granite-server-glassfishv3/src/test/resources/web-websocket.xml"));
-        war.addAsWebInfResource(new File("granite-server-glassfishv3/src/test/resources/glassfish-web.xml"), "glassfish-web.xml");
 
         appName = war.getName().substring(0, war.getName().lastIndexOf("."));
         File root = File.createTempFile("emb-gfv3", war.getName());
@@ -68,24 +70,41 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
         war.as(ZipExporter.class).exportTo(warFile, true);
     }
 
-    private CountDownLatch waitForStart = new CountDownLatch(1);
+    private CountDownLatch waitForStart;
 
     public void run() {
         try {
             GlassFishProperties serverProps = new GlassFishProperties();
-            // serverProps.setPort("http-listener", 8787);
             String configFileURI = new File("granite-server-glassfishv3/src/test/resources/domain.xml").toURI().toString();
             serverProps.setConfigFileURI(configFileURI);
+            // Reuse the previous tmp install dir if after a restart
+            if (glassfishRoot != null)
+                serverProps.setInstanceRoot(glassfishRoot);
 
             glassfish = glassfishRuntime.newGlassFish(serverProps);
 
+            // Hackish: retrieve the tmp install dir for embedded glassfish
+            if (glassfishRoot == null) {
+                Field f = glassfish.getClass().getDeclaredField("val$gfProps");
+                f.setAccessible(true);
+                GlassFishProperties gfProps = (GlassFishProperties)f.get(glassfish);
+                glassfishRoot = gfProps.getInstanceRoot();
+            }
+
             glassfish.start();
 
-            CommandResult result = glassfish.getCommandRunner().run("set", "configs.config.server-config.network-config.protocols.protocol.http-listener.http.websockets-support-enabled=true");
+            CommandResult enablewsResult = glassfish.getCommandRunner().run("set", "configs.config.server-config.network-config.protocols.protocol.http-listener.http.websockets-support-enabled=true");
+            log.debug("Enable websocket result: %s", enablewsResult.getExitStatus());
 
-            glassfish.getDeployer().deploy(warFile.toURI(), "--name", appName, "--keepstate=true");
+            // Force storage sessions in gf/tmp because the default location generated/jsp/sessions.ser is cleaned up before a deployment (?)
+            File tmp = new File(glassfishRoot, "tmp");
+            tmp.mkdir();
+            CommandResult enablespResult = glassfish.getCommandRunner().run("set", "configs.config.server-config.web-container.session-config.session-manager.manager-properties.session-file-name=" + tmp.getAbsolutePath() + File.separator + "sessions.ser");
+            log.debug("Enable session persistence result: %s", enablespResult.getExitStatus());
 
-            log.info("Deployed applications: " + glassfish.getDeployer().getDeployedApplications());
+            glassfish.getDeployer().deploy(warFile, "--name", appName, "--keepstate=true");
+
+            log.info("Deployed apps: " + glassfish.getDeployer().getDeployedApplications());
 
             waitForStart.countDown();
         }
@@ -95,6 +114,7 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
     }
 
     public void start() {
+        waitForStart = new CountDownLatch(1);
         serverThread = new Thread(this);
         serverThread.start();
         try {
@@ -108,7 +128,6 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
 
     public void stop() {
         try {
-            glassfish.getDeployer().undeploy(appName, "--keepstate=true");
             glassfish.stop();
 
             serverThread.interrupt();
@@ -121,11 +140,8 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
 
     public void restart() {
         try {
-            glassfish.stop();
-            glassfish.start();
-
-            System.out.println("Status: " + glassfish.getStatus());
-            // glassfish.getDeployer().deploy(warFile.toURI(), "--name", appName, "--keepstate=true", "--force=true");
+            stop();
+            start();
         }
         catch (Exception e) {
             throw new RuntimeException("Could not restart embedded glassfish", e);

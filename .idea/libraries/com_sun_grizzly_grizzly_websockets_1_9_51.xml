@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="com.sun.grizzly:grizzly-websockets:1.9.51" type="repository">
+    <properties maven-id="com.sun.grizzly:grizzly-websockets:1.9.51" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-websockets-1.9.51.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
