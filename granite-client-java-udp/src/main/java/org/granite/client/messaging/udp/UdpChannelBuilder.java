@@ -37,6 +37,7 @@ package org.granite.client.messaging.udp;
 import flex.messaging.messages.Message;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.channel.ChannelBuilder;
+import org.granite.client.messaging.channel.ChannelType;
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.channel.RemotingChannel;
 import org.granite.client.messaging.codec.MessagingCodec;
@@ -52,8 +53,6 @@ import java.net.URISyntaxException;
 public class UdpChannelBuilder implements ChannelBuilder {
 
     private String gravityUrlMapping = "/gravityamf/amf.txt";
-
-    public static final String UDP_CHANNEL_TYPE = "udp";
 
     public void setGravityUrlMapping(String gravityUrlMapping) {
         this.gravityUrlMapping = gravityUrlMapping;
@@ -71,7 +70,7 @@ public class UdpChannelBuilder implements ChannelBuilder {
 
     @Override
     public MessagingChannel buildMessagingChannel(String channelType, String id, URI uri, Transport transport, MessagingCodec<Message[]> codec) {
-        if (!channelType.equals(UDP_CHANNEL_TYPE))
+        if (!channelType.equals(ChannelType.UDP))
             return null;
 
         return new UdpMessagingChannelImpl(codec, transport, id, uri);
@@ -79,7 +78,7 @@ public class UdpChannelBuilder implements ChannelBuilder {
 
     @Override
     public MessagingChannel buildMessagingChannel(String channelType, String id, ServerApp serverApp, Transport transport, MessagingCodec<Message[]> codec) {
-        if (!channelType.equals(UDP_CHANNEL_TYPE))
+        if (!channelType.equals(ChannelType.UDP))
             return null;
 
         String uri = (serverApp.getSecure() ? "https" : "http") + "://" + serverApp.getServerName() + ":" + serverApp.getServerPort() + serverApp.getContextRoot() + gravityUrlMapping;

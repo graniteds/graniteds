@@ -114,8 +114,8 @@ public class TestMessagingFeed {
 
     private ChannelFactory buildChannelFactory() {
         ChannelFactory channelFactory = contentType.equals(ContentType.JMF_AMF) ? new JMFChannelFactory() : new AMFChannelFactory();
-        if (channelType.equals(DefaultChannelBuilder.WEBSOCKET_CHANNEL_TYPE))
-            channelFactory.setMessagingTransport(DefaultChannelBuilder.WEBSOCKET_CHANNEL_TYPE, new JettyWebSocketTransport());
+        if (channelType.equals(ChannelType.WEBSOCKET))
+            channelFactory.setMessagingTransport(ChannelType.WEBSOCKET, new JettyWebSocketTransport());
         channelFactory.start();
         return channelFactory;
     }

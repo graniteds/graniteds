@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 
 import org.granite.client.messaging.channel.Channel;
-import org.granite.client.messaging.udp.UdpChannelBuilder;
+import org.granite.client.messaging.channel.ChannelType;
 import org.granite.client.messaging.udp.UdpChannelListener;
 import org.granite.client.messaging.udp.UdpMessagingChannel;
 import org.granite.client.test.server.TestMessagingFeed;
@@ -82,7 +82,7 @@ public class TestUdpMessagingFeed extends TestMessagingFeed {
     private static EmbeddedContainer container;
 
     public TestUdpMessagingFeed(String containerClassName, ContentType contentType) {
-        super(containerClassName, contentType, UdpChannelBuilder.UDP_CHANNEL_TYPE);
+        super(containerClassName, contentType, ChannelType.UDP);
     }
 
     @BeforeClass
