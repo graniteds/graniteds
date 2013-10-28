@@ -38,9 +38,6 @@ import java.net.URISyntaxException;
  */
 public class DefaultChannelBuilder implements ChannelBuilder {
 
-    public static final String LONG_POLLING_CHANNEL_TYPE = "long-polling";
-    public static final String WEBSOCKET_CHANNEL_TYPE = "websocket";
-
     private String graniteUrlMapping = "/graniteamf/amf.txt";
     private String gravityUrlMapping = "/gravityamf/amf.txt";
     private String websocketUrlMapping = "/websocketamf/amf";
@@ -79,7 +76,7 @@ public class DefaultChannelBuilder implements ChannelBuilder {
     }
 
 	public MessagingChannel buildMessagingChannel(String channelType, String id, URI uri, Transport transport, MessagingCodec<Message[]> codec) {
-        if (!(channelType.equals(LONG_POLLING_CHANNEL_TYPE) || channelType.equals(WEBSOCKET_CHANNEL_TYPE)))
+        if (!(channelType.equals(ChannelType.LONG_POLLING) || channelType.equals(ChannelType.WEBSOCKET)))
             return null;
         
         return new BaseAMFMessagingChannel(codec, transport, id, uri);
@@ -87,9 +84,9 @@ public class DefaultChannelBuilder implements ChannelBuilder {
 
     public MessagingChannel buildMessagingChannel(String channelType, String id, ServerApp serverApp, Transport transport, MessagingCodec<Message[]> codec) {
         String uri;
-        if (channelType.equals(LONG_POLLING_CHANNEL_TYPE))
+        if (channelType.equals(ChannelType.LONG_POLLING))
             uri = (serverApp.getSecure() ? "https" : "http") + "://" + serverApp.getServerName() + ":" + serverApp.getServerPort() + serverApp.getContextRoot() + gravityUrlMapping;
-        else if (channelType.equals(WEBSOCKET_CHANNEL_TYPE))
+        else if (channelType.equals(ChannelType.WEBSOCKET))
             uri = (serverApp.getSecure() ? "wss" : "ws") + "://" + serverApp.getServerName() + ":" + serverApp.getServerPort() + serverApp.getContextRoot() + websocketUrlMapping;
         else
             return null;

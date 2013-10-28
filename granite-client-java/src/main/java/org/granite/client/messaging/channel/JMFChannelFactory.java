@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.granite.client.messaging.channel.amf.JMFAMFRemotingChannel;
+import org.granite.client.messaging.channel.amf.JMFRemotingChannel;
 import org.granite.client.messaging.codec.JMFAMF0MessagingCodec;
 import org.granite.client.messaging.codec.JMFAMF3MessagingCodec;
 import org.granite.client.messaging.codec.MessagingCodec;
@@ -128,7 +128,7 @@ public class JMFChannelFactory extends AbstractChannelFactory {
 
 	@Override
 	protected Class<? extends RemotingChannel> getRemotingChannelClass() {
-        return JMFAMFRemotingChannel.class;
+        return JMFRemotingChannel.class;
 	}
 	
 	@SuppressWarnings("unchecked")

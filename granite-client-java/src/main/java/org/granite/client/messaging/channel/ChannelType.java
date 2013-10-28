@@ -19,20 +19,14 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.client.messaging.channel.amf;
-
-import java.net.URI;
-
-import org.granite.client.messaging.codec.JMFAMF3MessagingCodec;
-import org.granite.client.messaging.jmf.ClientSharedContext;
-import org.granite.client.messaging.transport.Transport;
+package org.granite.client.messaging.channel;
 
 /**
  * @author Franck WOLFF
  */
-public class JMFAMFMessagingChannel extends BaseAMFMessagingChannel {
-	
-	public JMFAMFMessagingChannel(Transport transport, ClientSharedContext sharedContext, String id, URI uri) {
-		super(new JMFAMF3MessagingCodec(sharedContext), transport, id, uri);
-	}
+public interface ChannelType {
+    
+	static final String LONG_POLLING = "long-polling";
+    static final String WEBSOCKET = "websocket";
+    static final String UDP = "udp";
 }

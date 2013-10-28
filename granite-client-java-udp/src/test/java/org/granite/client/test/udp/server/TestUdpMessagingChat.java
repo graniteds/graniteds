@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 
 import org.granite.client.messaging.channel.Channel;
-import org.granite.client.messaging.udp.UdpChannelBuilder;
+import org.granite.client.messaging.channel.ChannelType;
 import org.granite.client.messaging.udp.UdpChannelListener;
 import org.granite.client.messaging.udp.UdpMessagingChannel;
 import org.granite.client.test.server.TestMessagingChat;
@@ -80,7 +80,7 @@ public class TestUdpMessagingChat extends TestMessagingChat {
     private static EmbeddedContainer container;
 
     public TestUdpMessagingChat(String containerClassName, ContentType contentType) {
-        super(containerClassName, contentType, UdpChannelBuilder.UDP_CHANNEL_TYPE);
+        super(containerClassName, contentType, ChannelType.UDP);
     }
 
     @BeforeClass

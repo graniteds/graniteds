@@ -28,10 +28,6 @@ import org.granite.tide.data.DataEnabled.PublishMode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-
-
 @Service
 @Transactional
 @DataEnabled(topic="testTopic", params=ObserveParams1.class, publish=PublishMode.ON_SUCCESS, useInterceptor=true)

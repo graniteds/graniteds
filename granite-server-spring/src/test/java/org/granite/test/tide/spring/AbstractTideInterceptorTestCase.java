@@ -21,42 +21,24 @@
  */
 package org.granite.test.tide.spring;
 
-import flex.messaging.messages.Message;
-import flex.messaging.messages.RemotingMessage;
+import javax.servlet.ServletContext;
+
 import org.granite.config.GraniteConfig;
 import org.granite.config.ServletGraniteConfig;
 import org.granite.config.api.Configuration;
 import org.granite.config.api.internal.ConfigurationImpl;
-import org.granite.config.flex.ServicesConfig;
-import org.granite.config.flex.ServletServicesConfig;
 import org.granite.gravity.Gravity;
-import org.granite.messaging.webapp.HttpGraniteContext;
-import org.granite.spring.ServerFilter;
 import org.granite.test.gravity.MockGravity;
-import org.granite.tide.TideServiceInvoker;
-import org.granite.tide.invocation.ContextResult;
-import org.granite.tide.invocation.ContextUpdate;
-import org.granite.tide.invocation.InvocationCall;
-import org.granite.tide.invocation.InvocationResult;
-import org.granite.tide.spring.SpringServiceFactory;
-import org.granite.util.XMap;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.servlet.ServletContext;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import flex.messaging.messages.Message;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -66,10 +48,8 @@ public class AbstractTideInterceptorTestCase implements ApplicationContextAware 
     private MockGravity mockGravity = new MockGravity();
     @Autowired
     private ServletContext servletContext;
-    private ApplicationContext applicationContext;
     
     public void setApplicationContext(ApplicationContext applicationContext) {
-    	this.applicationContext = applicationContext;
     }
     
     @Before
@@ -79,7 +59,6 @@ public class AbstractTideInterceptorTestCase implements ApplicationContextAware 
         cfg.setFlexServicesConfig("/WEB-INF/flex/services-config-spring.xml");
         servletContext.setAttribute(ServletGraniteConfig.GRANITE_CONFIG_CONFIGURATION_KEY, cfg);
         GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(servletContext);
-        ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(servletContext);
     	servletContext.setAttribute(Gravity.class.getName(), mockGravity);
         mockGravity.setGraniteConfig(graniteConfig);
     }

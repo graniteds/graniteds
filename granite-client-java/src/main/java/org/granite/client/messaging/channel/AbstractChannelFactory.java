@@ -243,6 +243,21 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	protected abstract Class<? extends RemotingChannel> getRemotingChannelClass();
 
 	@Override
+	public MessagingChannel newMessagingChannel(String id, String uri) {
+		return newMessagingChannel(ChannelType.LONG_POLLING, id, uri);
+	}
+
+	@Override
+	public MessagingChannel newMessagingChannel(String id, URI uri) {
+		return newMessagingChannel(ChannelType.LONG_POLLING, id, uri);
+	}
+
+	@Override
+	public MessagingChannel newMessagingChannel(String id, ServerApp serverApp) {
+		return newMessagingChannel(ChannelType.LONG_POLLING, id, serverApp);
+	}
+
+	@Override
 	public MessagingChannel newMessagingChannel(String channelType, String id, String uri) {
 		try {
 			return newMessagingChannel(channelType, id, new URI(uri));

@@ -46,18 +46,18 @@ import flex.messaging.messages.Message;
 /**
  * @author Franck WOLFF
  */
-public class JMFAMFRemotingChannel extends AbstractAMFChannel implements RemotingChannel {
+public class JMFRemotingChannel extends AbstractAMFChannel implements RemotingChannel {
 	
 	protected final MessagingCodec<AMF0Message> codec;
 	protected volatile int index = 1;
 
-	public JMFAMFRemotingChannel(Transport transport, ClientSharedContext sharedContext, String id, URI uri, int maxConcurrentRequests) {
+	public JMFRemotingChannel(Transport transport, ClientSharedContext sharedContext, String id, URI uri, int maxConcurrentRequests) {
 		super(transport, id, uri, maxConcurrentRequests);
 		
 		this.codec = new JMFAMF0MessagingCodec(sharedContext);
 	}
 
-    public JMFAMFRemotingChannel(Transport transport, MessagingCodec<AMF0Message> codec, String id, URI uri, int maxConcurrentRequests) {
+    public JMFRemotingChannel(Transport transport, MessagingCodec<AMF0Message> codec, String id, URI uri, int maxConcurrentRequests) {
         super(transport, id, uri, maxConcurrentRequests);
 
         this.codec = codec;

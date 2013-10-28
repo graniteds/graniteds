@@ -62,13 +62,16 @@ public interface ChannelFactory {
 
 	RemotingChannel newRemotingChannel(String id, String uri);
 	RemotingChannel newRemotingChannel(String id, String uri, int maxConcurrentRequests);
+	MessagingChannel newMessagingChannel(String id, String uri);
 	MessagingChannel newMessagingChannel(String channelType, String id, String uri);
 
 	RemotingChannel newRemotingChannel(String id, URI uri);
 	RemotingChannel newRemotingChannel(String id, URI uri, int maxConcurrentRequests);
+	MessagingChannel newMessagingChannel(String id, URI uri);
 	MessagingChannel newMessagingChannel(String channelType, String id, URI uri);
 
     RemotingChannel newRemotingChannel(String id, ServerApp serverApp);
     RemotingChannel newRemotingChannel(String id, ServerApp serverApp, int maxConcurrentRequests);
+    MessagingChannel newMessagingChannel(String id, ServerApp serverApp);
     MessagingChannel newMessagingChannel(String channelType, String id, ServerApp serverApp);
 }

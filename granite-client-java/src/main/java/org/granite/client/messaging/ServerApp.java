@@ -26,7 +26,7 @@ package org.granite.client.messaging;
  */
 public class ServerApp {
 
-    private Boolean secure = false;
+    private boolean secure = false;
     private String serverName = "localhost";
     private int serverPort = 8080;
     private String contextRoot;
@@ -34,18 +34,22 @@ public class ServerApp {
     public ServerApp() {
     }
 
-    public ServerApp(String contextRoot, Boolean secure, String serverName, int serverPort) {
+    public ServerApp(String contextRoot, String serverName, int serverPort) {
+        this(contextRoot, false, serverName, serverPort);
+    }
+
+    public ServerApp(String contextRoot, boolean secure, String serverName, int serverPort) {
         this.secure = secure;
         this.serverName = serverName;
         this.serverPort = serverPort;
         setContextRoot(contextRoot);
     }
 
-    public Boolean getSecure() {
+    public boolean getSecure() {
         return secure;
     }
 
-    public void setSecure(Boolean secure) {
+    public void setSecure(boolean secure) {
         this.secure = secure;
     }
 
