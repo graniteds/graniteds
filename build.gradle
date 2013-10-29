@@ -1579,8 +1579,8 @@ project('granite-client-java') {
     configurations {
         create('testTomcat7Runtime')
         create('testJetty8Runtime')
-        create('testGlassFishv31Runtime')
         create('testGlassFishv31RuntimePatch')
+        create('testGlassFishv31Runtime')
         create('testJBossAS7Runtime')
     }
 
@@ -1616,8 +1616,8 @@ project('granite-client-java') {
                 'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.42',
                 'org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.42'
 
-        testTomcat7Runtime project(':granite-server-tomcat7').sourceSets.test.output
         testTomcat7Runtime project(':granite-server-tomcat7')
+        testTomcat7Runtime project(':granite-server-tomcat7').sourceSets.test.output
 
         testJetty8Runtime 'org.eclipse.jetty:jetty-webapp:8.1.12.v20130726',
                 'org.eclipse.jetty:jetty-plus:8.1.12.v20130726',
@@ -1625,15 +1625,15 @@ project('granite-client-java') {
                 'org.eclipse.jetty:jetty-websocket:8.1.12.v20130726',
                 'org.jboss.shrinkwrap.container:shrinkwrap-extension-jetty-70:1.0.0-beta-1'
 
-        testJetty8Runtime project(':granite-server-jetty8').sourceSets.test.output
         testJetty8Runtime project(':granite-server-jetty8')
+        testJetty8Runtime project(':granite-server-jetty8').sourceSets.test.output
 
         // Patch for proper session interoperability between websockets and http (see https://java.net/jira/browse/GRIZZLY-1289)
         testGlassFishv31RuntimePatch group: 'com.sun.grizzly', name: 'grizzly-websockets', version: '1.9.51', transitive: false
         testGlassFishv31Runtime 'org.glassfish.main.extras:glassfish-embedded-all:3.1.2.2'
 
-        testGlassFishv31Runtime project(':granite-server-glassfishv3').sourceSets.test.output
         testGlassFishv31Runtime project(':granite-server-glassfishv3')
+        testGlassFishv31Runtime project(':granite-server-glassfishv3').sourceSets.test.output
         testGlassFishv31Runtime project(':granite-server-ejb')
         testGlassFishv31Runtime project(':granite-server-eclipselink')
     }

@@ -38,6 +38,7 @@ import org.granite.client.android.messaging.DexRemoteAliasScanner;
 import org.granite.client.android.messaging.transport.LoopjTransport;
 import org.granite.client.messaging.RemoteAliasScanner;
 import org.granite.client.messaging.transport.Transport;
+import org.granite.client.messaging.transport.apache.ApacheAsyncTransport;
 import org.granite.client.platform.Platform;
 import org.granite.messaging.reflect.Reflection;
 
@@ -68,11 +69,11 @@ public class AndroidPlatform extends Platform {
 		return new DexRemoteAliasScanner((Context)context);
 	}
 
-	@Override
-	public Transport newRemotingTransport() {
-		if (!(context instanceof Context))
-			throw new IllegalArgumentException("context must be an Android application context: " + context);
-		
-		return new LoopjTransport((Context)context);
-	}
+    @Override
+    protected void initDefaultTransport() {
+        if (!(context instanceof Context))
+            throw new IllegalArgumentException("context must be an Android application context: " + context);
+
+        defaultTransport = new LoopjTransport((Context)context);
+    }
 }

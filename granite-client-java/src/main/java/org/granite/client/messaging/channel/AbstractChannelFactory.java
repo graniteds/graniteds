@@ -47,7 +47,8 @@ import org.granite.util.ContentType;
 public abstract class AbstractChannelFactory implements ChannelFactory {
 	
 	protected final ContentType contentType;
-	
+
+    private String defaultChannelType = ChannelType.LONG_POLLING;
 	protected Transport remotingTransport = null;
 	protected Transport messagingTransport = null;
     protected Map<String, Transport> messagingTransports = new HashMap<String, Transport>();
@@ -103,6 +104,10 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	    this.aliasRegistry = aliasRegistry;
 	}
 
+    public void setDefaultChannelType(String channelType) {
+        this.defaultChannelType = channelType;
+    }
+
 	public Transport getRemotingTransport() {
 		return remotingTransport;
 	}
@@ -156,16 +161,10 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 			if (messagingTransport == null)
 				messagingTransport = remotingTransport;
 		}
-		else if (!messagingTransport.isStarted() && !messagingTransport.start())
-			throw new TransportException("Could not start messaging transport: " + messagingTransport);
 
-        for (Transport transport : messagingTransports.values()) {
-            if (transport != remotingTransport && transport != messagingTransport) {
-                if (!transport.isStarted() && !transport.start())
-                    throw new TransportException("Could not start messaging transport: " + transport);
-            }
-        }
-		
+        for (Map.Entry<String, Transport> me : Platform.getInstance().getMessagingTransports().entrySet())
+            messagingTransports.put(me.getKey(), me.getValue());
+
 		if (aliasRegistry == null)
 			aliasRegistry = new ClientAliasRegistry();
 		
@@ -244,17 +243,17 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 
 	@Override
 	public MessagingChannel newMessagingChannel(String id, String uri) {
-		return newMessagingChannel(ChannelType.LONG_POLLING, id, uri);
+		return newMessagingChannel(defaultChannelType, id, uri);
 	}
 
 	@Override
 	public MessagingChannel newMessagingChannel(String id, URI uri) {
-		return newMessagingChannel(ChannelType.LONG_POLLING, id, uri);
+		return newMessagingChannel(defaultChannelType, id, uri);
 	}
 
 	@Override
 	public MessagingChannel newMessagingChannel(String id, ServerApp serverApp) {
-		return newMessagingChannel(ChannelType.LONG_POLLING, id, serverApp);
+		return newMessagingChannel(defaultChannelType, id, serverApp);
 	}
 
 	@Override
@@ -270,6 +269,8 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	@Override
 	public MessagingChannel newMessagingChannel(String channelType, String id, URI uri) {
         Transport transport = getMessagingTransport(channelType);
+        if (!transport.isStarted() && !transport.start())
+            throw new TransportException("Could not start messaging transport: " + transport);
         MessagingCodec<Message[]> codec = newMessagingCodec(Message[].class);
         for (ChannelBuilder builder : ServiceLoader.load(ChannelBuilder.class)) {
             MessagingChannel channel = builder.buildMessagingChannel(channelType, id, uri, transport, codec);
@@ -290,6 +291,8 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
     @Override
     public MessagingChannel newMessagingChannel(String channelType, String id, ServerApp serverApp) {
         Transport transport = getMessagingTransport(channelType);
+        if (!transport.isStarted() && !transport.start())
+            throw new TransportException("Could not start messaging transport: " + transport);
         MessagingCodec<Message[]> codec = newMessagingCodec(Message[].class);
         for (ChannelBuilder builder : ServiceLoader.load(ChannelBuilder.class)) {
             MessagingChannel channel = builder.buildMessagingChannel(channelType, id, serverApp, transport, codec);

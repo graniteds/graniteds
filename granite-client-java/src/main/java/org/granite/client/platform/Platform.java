@@ -21,19 +21,24 @@
  */
 package org.granite.client.platform;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.granite.client.configuration.Configuration;
 import org.granite.client.configuration.SimpleConfiguration;
 import org.granite.client.messaging.ExtCosRemoteAliasScanner;
 import org.granite.client.messaging.RemoteAliasScanner;
 import org.granite.client.messaging.StandardRemoteAliasScanner;
+import org.granite.client.messaging.channel.ChannelType;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.client.messaging.transport.apache.ApacheAsyncTransport;
+import org.granite.client.messaging.transport.jetty.JettyWebSocketTransport;
 import org.granite.client.persistence.Persistence;
 import org.granite.logging.Logger;
 import org.granite.messaging.reflect.Reflection;
 import org.granite.scan.ServiceLoader;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -169,14 +174,35 @@ public class Platform {
 	public Configuration newConfiguration() {
 		return new SimpleConfiguration();
 	}
+
+    protected Transport defaultTransport;
+
+    protected void initDefaultTransport() {
+        defaultTransport = new ApacheAsyncTransport();
+    }
 	
 	public Transport newRemotingTransport() {
-		return new ApacheAsyncTransport();
+        initDefaultTransport();
+		return defaultTransport;
 	}
 	
 	public Transport newMessagingTransport() {
 		return null;
 	}
+
+    public Map<String, Transport> getMessagingTransports() {
+        Map<String, Transport> transportMap = new HashMap<String, Transport>();
+        initDefaultTransport();
+        transportMap.put(ChannelType.LONG_POLLING, defaultTransport);
+        try {
+            TypeUtil.forName("org.eclipse.jetty.websocket.WebSocketClient");
+            transportMap.put(ChannelType.WEBSOCKET, new JettyWebSocketTransport());
+        }
+        catch (ClassNotFoundException e) {
+            // Jetty websocket client not found
+        }
+        return transportMap;
+    }
 
 	public Persistence getPersistence() {
 		return persistence;

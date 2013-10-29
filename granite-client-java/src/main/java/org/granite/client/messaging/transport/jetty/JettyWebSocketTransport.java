@@ -31,7 +31,6 @@ import java.util.TimerTask;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocket.Connection;
 import org.eclipse.jetty.websocket.WebSocket.OnBinaryMessage;
 import org.eclipse.jetty.websocket.WebSocketClient;
@@ -309,50 +308,51 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> implement
             }
         }
 
+        // TODO: Periodic check of current connection
         private void scheduleActivityCheck() {
-            activityCheckTimer.schedule(new ActivityCheckTask(), pingDelay);
+//            activityCheckTimer.schedule(new ActivityCheckTask(), pingDelay);
         }
 
-        private class ActivityCheckTask extends TimerTask {
-            @Override
-            public void run() {
-                send(channel, new TransportMessage() {
-                    @Override
-                    public MessagingCodec.ClientType getClientType() {
-                        return null;
-                    }
-
-                    @Override
-                    public String getId() {
-                        return null;
-                    }
-
-                    @Override
-                    public boolean isConnect() {
-                        return false;
-                    }
-
-                    @Override
-                    public String getClientId() {
-                        return null;
-                    }
-
-                    @Override
-                    public String getSessionId() {
-                        return null;
-                    }
-
-                    @Override
-                    public String getContentType() {
-                        return null;
-                    }
-
-                    @Override
-                    public void encode(OutputStream os) throws IOException {
-
-                    }
-                });
-            }
-        }
+//        private class ActivityCheckTask extends TimerTask {
+//            @Override
+//            public void run() {
+//                send(channel, new TransportMessage() {
+//                    @Override
+//                    public MessagingCodec.ClientType getClientType() {
+//                        return null;
+//                    }
+//
+//                    @Override
+//                    public String getId() {
+//                        return null;
+//                    }
+//
+//                    @Override
+//                    public boolean isConnect() {
+//                        return false;
+//                    }
+//
+//                    @Override
+//                    public String getClientId() {
+//                        return null;
+//                    }
+//
+//                    @Override
+//                    public String getSessionId() {
+//                        return null;
+//                    }
+//
+//                    @Override
+//                    public String getContentType() {
+//                        return null;
+//                    }
+//
+//                    @Override
+//                    public void encode(OutputStream os) throws IOException {
+//
+//                    }
+//                });
+//            }
+//        }
     }
 }

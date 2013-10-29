@@ -60,7 +60,7 @@ public class TestMessagingChat {
     private static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
 
     private static String[] CHANNEL_TYPES = new String[] {
-        "long-polling", "websocket"
+        ChannelType.LONG_POLLING, ChannelType.WEBSOCKET
     };
 
     @Parameterized.Parameters(name = "container: {0}, encoding: {1}, channel: {2}")
@@ -106,8 +106,6 @@ public class TestMessagingChat {
 
     private ChannelFactory buildChannelFactory() {
         ChannelFactory channelFactory = contentType.equals(ContentType.JMF_AMF) ? new JMFChannelFactory() : new AMFChannelFactory();
-        if (channelType.equals("websocket"))
-            channelFactory.setMessagingTransport("websocket", new JettyWebSocketTransport());
         channelFactory.start();
         return channelFactory;
     }

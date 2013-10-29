@@ -30,6 +30,8 @@ import org.granite.messaging.AliasRegistry;
 import org.granite.util.ContentType;
 
 /**
+ * ChannelFactory
+ *
  * @author Franck WOLFF
  */
 public interface ChannelFactory {
@@ -42,6 +44,7 @@ public interface ChannelFactory {
 	Object getContext();
 	void setContext(Object context);
 
+    void setDefaultChannelType(String channelType);
     void setDefaultChannelBuilder(ChannelBuilder channelBuilder);
 
 	Transport getRemotingTransport();
