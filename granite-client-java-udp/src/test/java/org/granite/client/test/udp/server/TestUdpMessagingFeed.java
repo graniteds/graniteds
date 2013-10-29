@@ -103,6 +103,7 @@ public class TestUdpMessagingFeed extends TestMessagingFeed {
     @AfterClass
     public static void stopContainer() throws Exception {
         container.stop();
+        container.destroy();
         log.info("Container stopped");
     }
 

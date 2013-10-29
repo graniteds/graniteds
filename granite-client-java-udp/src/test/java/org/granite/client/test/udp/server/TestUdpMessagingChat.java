@@ -101,6 +101,7 @@ public class TestUdpMessagingChat extends TestMessagingChat {
     @AfterClass
     public static void stopContainer() throws Exception {
         container.stop();
+        container.destroy();
         log.info("Container stopped");
     }
 
