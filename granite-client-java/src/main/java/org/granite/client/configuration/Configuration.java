@@ -26,16 +26,44 @@ import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 
 /**
+ * Configuration object for AMF channel factory
  * @author Franck WOLFF
  */
 public interface Configuration {
-	
+
+    /**
+     * Client type (JAVA or AS3) for specific AMF serialization parameters
+     * @return client type
+     */
 	ClientType getClientType();
+
+    /**
+     * Set the client type for specific AMF serialization parameters
+     * @param clientType client type
+     */
 	void setClientType(ClientType clientType);
 
+    /**
+     * GraniteConfig object loaded of built by this configuration
+     * @return granite config
+     */
 	GraniteConfig getGraniteConfig();
+
+    /**
+     * ServicesConfig object loaded of built by this configuration
+     * @return services config
+     */
 	ServicesConfig getServicesConfig();
 
+    /**
+     * Is the configuration loaded ?
+     * @return true if loaded
+     */
     boolean isLoaded();
+
+    /**
+     * Load the configuration
+     * Called by the channel factory during {@link org.granite.client.messaging.channel.ChannelFactory#start}
+     */
 	void load();
 }

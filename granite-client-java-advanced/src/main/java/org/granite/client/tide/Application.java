@@ -37,13 +37,31 @@ package org.granite.client.tide;
 import java.util.Map;
 
 /**
+ * SPI for platform-specific integration
+ *
+ * Allows to define default components available in all contexts or apply specific configurations on components annotated with {@link org.granite.client.tide.ApplicationConfigurable}
+ *
  * @author William DRAI
+ * @see org.granite.client.tide.ApplicationConfigurable
  */
 public interface Application {
 
+    /**
+     * Define a map of beans that will be setup in the context before initialization
+     * @param context Tide context
+     * @param initialBeans map of bean instances keyed by name
+     */
 	public void initContext(Context context, Map<String, Object> initialBeans);
-	
+
+    /**
+     * Configure a bean instance for platform-specific behaviour
+     * @param instance bean instance
+     */
 	public void configure(Object instance);
-	
+
+    /**
+     * Integration with deferred execution of a runnable on the UI thread
+     * @param runnable runnable to execute in the UI thread
+     */
 	public void execute(Runnable runnable);
 }

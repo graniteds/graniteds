@@ -24,6 +24,8 @@ package org.granite.client.messaging.events;
 import org.granite.client.messaging.messages.RequestMessage;
 
 /**
+ * Event dispatched by a channel when the request is timed out
+ *
  * @author Franck WOLFF
  */
 public class TimeoutEvent extends AbstractIssueEvent {
@@ -41,6 +43,10 @@ public class TimeoutEvent extends AbstractIssueEvent {
 		return Type.TIMEOUT;
 	}
 
+    /**
+     * Time at which the time out occurred
+     * @return timeout timestamp
+     */
 	public long getTime() {
 		return time;
 	}

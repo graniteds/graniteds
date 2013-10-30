@@ -45,15 +45,6 @@ public class MockTransport implements Transport {
     }
 
     @Override
-    public void setConfiguration(Configuration config) {
-    }
-
-    @Override
-    public Configuration getConfiguration() {
-        return null;
-    }
-
-    @Override
     public boolean start() {
         return false;
     }
@@ -88,9 +79,5 @@ public class MockTransport implements Transport {
     @Override
     public TransportFuture send(Channel channel, TransportMessage message) throws TransportException {
         return null;
-    }
-
-    @Override
-    public void poll(Channel channel, TransportMessage message) throws TransportException {
     }
 }

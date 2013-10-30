@@ -118,9 +118,9 @@ public class IssueHandler<T> implements Runnable {
         }
         while (m != null);
         
-        serverSession.handleFaultEvent(event, emsg);
+        serverSession.onFaultEvent(event, emsg);
         
-        serverSession.handleFault(context, componentName, operation, emsg);
+        handleIssue(context, emsg);
         
         boolean handled = false;
         Fault fault = new Fault(emsg.getCode(), emsg.getDescription(), emsg.getDetails());
@@ -161,5 +161,8 @@ public class IssueHandler<T> implements Runnable {
         	context.getEventBus().raiseEvent(context, ServerSession.CONTEXT_FAULT, event.getMessage());
         
         serverSession.tryLogout();
+    }
+
+    public void handleIssue(Context context, FaultMessage emsg) {
     }
 }

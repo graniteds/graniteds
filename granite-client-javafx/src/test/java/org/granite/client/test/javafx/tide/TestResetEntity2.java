@@ -49,7 +49,7 @@ import org.junit.Test;
 
 public class TestResetEntity2 {
 
-    private ContextManager contextManager;
+    private SimpleContextManager contextManager;
     private Context ctx;
 	private DataManager dataManager;
     private EntityManager entityManager;

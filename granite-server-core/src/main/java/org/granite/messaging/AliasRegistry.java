@@ -24,13 +24,32 @@ package org.granite.messaging;
 import java.util.Set;
 
 /**
+ * SPI for registry of class name aliases used during AMF/JMF serialization.
+ * An alias registry should store correspondences between server and client class names
+ * The alias registry will scan specified packages to find classes annotated with @RemoteAlias
+ *
  * @author William DRAI
  */
 public interface AliasRegistry {
-	
+
+    /**
+     * Scan the specified packages for aliases classes
+     * This is called when the channel factory starts
+     * @param packageNames
+     */
 	public void scan(Set<String> packageNames);
-    
+
+    /**
+     * Return the client class name for a specified server class alias
+     * @param alias server class name
+     * @return corresponding client class name
+     */
     public String getTypeForAlias(String alias);
-    
+
+    /**
+     * Return the aliased server class name for a specified client class name
+     * @param className client class name
+     * @return corresponding server class name
+     */
     public String getAliasForType(String className);
 }

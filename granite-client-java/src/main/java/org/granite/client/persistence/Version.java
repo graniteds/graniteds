@@ -27,6 +27,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Client-side annotation indicating a version property
+ *
  * @author William DRAI
  */
 @Retention(RetentionPolicy.RUNTIME)

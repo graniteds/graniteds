@@ -75,7 +75,7 @@ import flex.messaging.io.ArrayCollection;
 
 public class TestSimpleCall {
     
-    private ContextManager contextManager;
+    private SimpleContextManager contextManager;
     private Context ctx;
     private ServerSession serverSession;
     

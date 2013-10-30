@@ -25,14 +25,41 @@ import org.granite.client.messaging.Consumer;
 import org.granite.client.messaging.ResponseListener;
 
 /**
+ * SPI for messaging channels
+ * A messaging channel adds some functionality to channel, mostly consumer management
+ *
  * @author Franck WOLFF
  */
 public interface MessagingChannel extends Channel, SessionAwareChannel {
 
+    /**
+     * Set the current session id
+     * Necessary to synchronize session ids between remoting and messaging channels, usually the remoting channel
+     * acts as the master channel which handles authentication and session management and propagated it to other
+     * messaging channels
+     * @param sessionId session id
+     */
 	void setSessionId(String sessionId);
 
+    /**
+     * Register a consumer for this channel
+     * @param consumer consumer
+     * @see org.granite.client.messaging.Consumer
+     */
 	void addConsumer(Consumer consumer);
+
+    /**
+     * Unregister a consumer for this channel
+     * @param consumer consumer
+     * @return true if the consumer was registered before the method was called
+     * @see org.granite.client.messaging.Consumer
+     */
 	boolean removeConsumer(Consumer consumer);
-	
+
+    /**
+     * Disconnect the channel
+     * @param listeners array of listener to notify when the channel is disconnected
+     * @return future that will be triggered when the channel is disconnected
+     */
 	public ResponseMessageFuture disconnect(ResponseListener...listeners);
 }

@@ -25,6 +25,8 @@ import org.granite.client.messaging.messages.RequestMessage;
 import org.granite.client.messaging.messages.ResponseMessage;
 
 /**
+ * Message received from a remoting channel
+ *
  * @author Franck WOLFF
  */
 public abstract class AbstractResponseEvent<M extends ResponseMessage> implements IncomingMessageEvent<M> {
@@ -40,14 +42,26 @@ public abstract class AbstractResponseEvent<M extends ResponseMessage> implement
 		this.response = response;
 	}
 
+    /**
+     * Source request message
+     * @return request message
+     */
 	public RequestMessage getRequest() {
 		return request;
 	}
 
+    /**
+     * Response message
+     * @return response message
+     */
 	public M getResponse() {
 		return response;
 	}
 
+    /**
+     * Response message
+     * @return response message
+     */
 	@Override
 	public M getMessage() {
 		return response;

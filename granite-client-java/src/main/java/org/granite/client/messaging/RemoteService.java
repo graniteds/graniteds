@@ -31,6 +31,25 @@ import org.granite.client.messaging.channel.ResponseMessageFuture;
 import org.granite.client.messaging.messages.requests.InvocationMessage;
 
 /**
+ * RemoteService allows to call a remote service using RPC style
+ * Calling a service is asynchronous and won't block the thread initiating the call.
+ *
+ * <pre>
+ * {@code
+ * RemoteService remoteService = new RemoteService(remotingChannel, "myService");
+ * remoteService.newInvocation("myMethod", arg1, arg2).invoke();
+ * }
+ * </pre>
+ *
+ * It is also possible to chain multiple invocations in one single call:
+ *
+ * <pre>
+ * {@code
+ * RemoteService remoteService = new RemoteService(remotingChannel, "myService");
+ * remoteService.newInvocation("myMethod", arg1, arg2).appendInvocation("myMethod2", arg3).invoke();
+ * }
+ * </pre>
+ *
  * @author Franck WOLFF
  */
 public class RemoteService {
@@ -38,6 +57,11 @@ public class RemoteService {
 	private final Channel channel;
 	private final String id;
 
+    /**
+     * Create a remote service for the specified channel and destination
+     * @param channel messaging channel
+     * @param id remote destination name
+     */
 	public RemoteService(Channel channel, String id) {
 		if (channel == null || id == null)
 			throw new NullPointerException("channel and id cannot be null");
@@ -45,21 +69,46 @@ public class RemoteService {
 		this.id = id;
 	}
 
+    /**
+     * Remoting channel
+     * @return channel
+     */
 	public Channel getChannel() {
 		return channel;
 	}
 
+    /**
+     * Destination id
+     * @return destination id
+     */
 	public String getId() {
 		return id;
 	}
-	
+
+    /**
+     * Create an invocation for this service
+     * @param method remote method name
+     * @param parameters arguments to send
+     * @return fluent invocation object
+     */
 	public RemoteServiceInvocation newInvocation(String method, Object...parameters) {
 		return new RemoteServiceInvocation(this, method, parameters);
 	}
 	
 	public static interface RemoteServiceInvocationChain {
-		
+
+        /**
+         * Append a new invocation to the current chain of invocations
+         * @param method remote method name
+         * @param parameters arguments to send
+         * @return fluent invocation object
+         */
 		RemoteServiceInvocationChain appendInvocation(String method, Object...parameters);
+
+        /**
+         * Execute the chain of invocations
+         * @return future that will be triggered when the chain of invocations has been processed
+         */
 		ResponseMessageFuture invoke();
 	}
 	
@@ -77,23 +126,44 @@ public class RemoteService {
 			this.remoteService = remoteService;
 			this.request = new InvocationMessage(null, remoteService.id, method, parameters);
 		}
-		
+
+        /**
+         * Register a listener for the current invocation
+         * @param listener listener
+         * @return fluent invocation object
+         */
 		public RemoteServiceInvocation addListener(ResponseListener listener) {
 			if (listener != null)
 				this.listeners.add(listener);
 			return this;
 		}
-		
+
+        /**
+         * Registers many listeners for the current invocation
+         * @param listeners array of listener
+         * @return fluent invocation object
+         */
 		public RemoteServiceInvocation addListeners(ResponseListener...listeners) {
 			if (listeners != null && listeners.length > 0)
 				this.listeners.addAll(Arrays.asList(listeners));
 			return this;
 		}
-		
+
+        /**
+         * Set the time to live for the current invocation
+         * @param timeToLiveMillis time to live in milliseconds
+         * @return fluent invocation object
+         */
 		public RemoteServiceInvocation setTimeToLive(long timeToLiveMillis) {
 			return setTimeToLive(timeToLiveMillis, TimeUnit.MILLISECONDS);
 		}
-		
+
+        /**
+         * Set the time to live in any unit for the current invocation
+         * @param timeToLive time to live value
+         * @param unit time to live unit
+         * @return fluent invocation object
+         */
 		public RemoteServiceInvocation setTimeToLive(long timeToLive, TimeUnit unit) {
 			if (timeToLive < 0)
 				throw new IllegalArgumentException("timeToLive cannot be negative");
@@ -102,7 +172,7 @@ public class RemoteService {
 			this.timeToLive = unit.toMillis(timeToLive);
 			return this;
 		}
-		
+
 		@Override
 		public RemoteServiceInvocationChain appendInvocation(String method, Object...parameters) {
 			InvocationMessage message = request;

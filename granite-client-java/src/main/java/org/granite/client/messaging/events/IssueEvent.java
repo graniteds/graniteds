@@ -24,9 +24,15 @@ package org.granite.client.messaging.events;
 import org.granite.client.messaging.messages.RequestMessage;
 
 /**
+ * Event dispatched by a channel when a client-side issue occurs
+ *
  * @author Franck WOLFF
  */
 public interface IssueEvent extends Event {
 
+    /**
+     * Request message
+     * @return request message
+     */
 	RequestMessage getRequest();
 }

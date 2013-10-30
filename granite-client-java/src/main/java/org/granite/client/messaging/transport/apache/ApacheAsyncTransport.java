@@ -37,21 +37,14 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.granite.client.messaging.channel.Channel;
-import org.granite.client.messaging.transport.AbstractTransport;
-import org.granite.client.messaging.transport.HTTPTransport;
-import org.granite.client.messaging.transport.TransportException;
-import org.granite.client.messaging.transport.TransportFuture;
-import org.granite.client.messaging.transport.TransportHttpStatusException;
-import org.granite.client.messaging.transport.TransportIOException;
-import org.granite.client.messaging.transport.TransportMessage;
-import org.granite.client.messaging.transport.TransportStateException;
+import org.granite.client.messaging.transport.*;
 import org.granite.logging.Logger;
 import org.granite.util.PublicByteArrayOutputStream;
 
 /**
  * @author Franck WOLFF
  */
-public class ApacheAsyncTransport extends AbstractTransport<Object> implements HTTPTransport {
+public class ApacheAsyncTransport extends AbstractTransport<Object> {
 	
 	private static final Logger log = Logger.getLogger(ApacheAsyncTransport.class);
 
@@ -213,10 +206,6 @@ public class ApacheAsyncTransport extends AbstractTransport<Object> implements H
         	getStatusHandler().handleException(f);
 			throw f;
 		}
-	}
-	
-	public synchronized void poll(final Channel channel, final TransportMessage message) throws TransportException {
-		throw new TransportException("Not implemented");
 	}
 
 	@Override

@@ -29,10 +29,16 @@ import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TimeoutEvent;
 
 /**
+ * Convenience abstract listener for response events
+ *
  * @author Franck WOLFF
  */
 public abstract class AllInOneResponseListener implements ResponseListener {
 
+    /**
+     * Callback called for any kind of channel event
+     * @param event channel event
+     */
 	public abstract void onEvent(Event event);
 	
 	@Override

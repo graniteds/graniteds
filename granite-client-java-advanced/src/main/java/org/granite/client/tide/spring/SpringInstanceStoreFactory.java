@@ -73,12 +73,6 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 			this.applicationContext = applicationContext;
 		}
 	    
-		@SuppressWarnings("unchecked")
-		@Override
-		public <T> T getNoProxy(String name) {
-			return (T)applicationContext.getBean(name);
-		}
-
 		@Override
 		public <T> T set(String name, T instance) {
 			// Nothing, managed by Spring
@@ -106,7 +100,13 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 			return Arrays.asList(applicationContext.getBeanDefinitionNames());
 		}
 
-		@SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T> T getNoProxy(String name, Context context) {
+            return (T)applicationContext.getBean(name);
+        }
+
+        @SuppressWarnings("unchecked")
 		@Override
 		public <T> T byName(String name, Context context) {
 			return (T)applicationContext.getBean(name);

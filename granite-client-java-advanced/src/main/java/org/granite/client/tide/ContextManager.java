@@ -37,35 +37,104 @@ package org.granite.client.tide;
 import java.util.List;
 
 /**
+ * Main interface for Tide context management
+ * The context manager is meant to be a singleton in the application and should be defined as a singleton in a DI container
+ *
+ * <pre>
+ * {@code
+ * ContextManager contextManager = new SimpleContextManager();
+ * Context context = contextManager.getContext();
+ * ...
+ * }
+ * </pre>
+ *
  * @author William DRAI
  */
 public interface ContextManager {
-	
-    public void setInstanceStoreFactory(InstanceStoreFactory instanceStoreFactory);
-    
+
+    /**
+     * Get the global context
+     * @return global context
+     */
     public Context getContext();
-    
+
+    /**
+     * Get the context from its id
+     * @param contextId context id
+     * @return context
+     */
     public Context getContext(String contextId);
-    
+
+    /**
+     * Get a context from its id with the specified parent id, and create it if it does not exist
+     * @param contextId context id
+     * @param parentContextId parent context id
+     * @param create if true, create a context if not exist
+     * @return the context
+     */
     public Context getContext(String contextId, String parentContextId, boolean create);
-    
+
+    /**
+     * Create a context with the specified id and parent id if it does not exist
+     * @param contextId context id
+     * @param parentContextId parent context id
+     * @return the created context
+     */
     public Context newContext(String contextId, String parentContextId);
-    
+
+    /**
+     * Get or create the context for the specified context id and server conversation flags
+     * @param sourceContext source context
+     * @param contextId conversation context id
+     * @param wasConversationCreated true if the conversation was just created by the last request on the server
+     * @param wasConversationEnded true if the conversation was just ended by the last request on the server
+     * @return the matching context
+     */
     public Context retrieveContext(Context sourceContext, String contextId, boolean wasConversationCreated, boolean wasConversationEnded);
-    
+
+    /**
+     * Update the context id for an existing context
+     *
+     * @param previousContextId previous context id
+     * @param context context to update
+     */
     public void updateContextId(String previousContextId, Context context);
-    
-    public void destroyContext(String contextId, boolean force);
-    
+
+    /**
+     * Destroy a context
+     *
+     * @param contextId context id
+     */
+    public void destroyContext(String contextId);
+
+    /**
+     * Get a list of all conversation contexts
+     *
+     * @return list of conversation contexts
+     */
     public List<Context> getAllContexts();
     
     // function forEachChildContext(parentContext:Context, callback:Function, token:Object = null):void;
 
-    public void destroyContexts(boolean force);
-    
+    /**
+     *  Destroy all contexts
+     */
+    public void destroyContexts();
+
+    /**
+     *  Destroy finished contexts and reset current pending contexts
+     */
     public void destroyFinishedContexts();
-    
+
+    /**
+     * Schedule a context for destruction after the next remote call
+     * @param contextId context id
+     */
     public void addToContextsToDestroy(String contextId);
-    
+
+    /**
+     * Deschedule destruction of context
+     * @param contextId context id
+     */
     public void removeFromContextsToDestroy(String contextId);
 }

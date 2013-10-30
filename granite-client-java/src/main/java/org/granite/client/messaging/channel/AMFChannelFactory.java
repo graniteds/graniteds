@@ -32,28 +32,60 @@ import org.granite.messaging.amf.AMF0Message;
 import org.granite.util.ContentType;
 
 /**
+ * Implementation of a ChannelFactory using AMF serialization
+ *
  * @author Franck WOLFF
  */
 public class AMFChannelFactory extends AbstractChannelFactory {
     
 	private final Configuration defaultConfiguration;
-	
+
+    /**
+     * Create a default AMF channel factory with a basic configuration
+     */
 	public AMFChannelFactory() {
 		this(null, null, null, null);
 	}
-	
+
+    /**
+     * Create a default AMF channel factory with the basic configuration and for the specified platform context
+     * @param context platform context
+     * @see org.granite.client.platform.Platform
+     */
 	public AMFChannelFactory(Object context) {
 		this(context, null, null, null);
 	}
-	
+
+    /**
+     * Create an AMF channel factory with the specified configuration and for the specified platform context
+     * Custom configuration can extend the default SimpleConfiguration
+     * @param context platform context
+     * @param defaultConfiguration configuration
+     * @see org.granite.client.configuration.SimpleConfiguration
+     */
 	public AMFChannelFactory(Object context, Configuration defaultConfiguration) {
 		this(context, null, null, defaultConfiguration);
 	}
 
+    /**
+     * Create an AMF channel factory with the specified transports and for the specified platform context
+     * @param context platform context
+     * @param remotingTransport remoting transport
+     * @param messagingTransport messaging transport
+     */
 	public AMFChannelFactory(Object context, Transport remotingTransport, Transport messagingTransport) {
 		this(context, remotingTransport, messagingTransport, null);
 	}
 
+    /**
+     * Create an AMF channel factory with the specified configuration and transports and for the specified platform context
+     * Custom configuration can extend the default SimpleConfiguration
+     * @param context platform context
+     * @param remotingTransport remoting transport
+     * @param messagingTransport messaging transport
+     * @param defaultConfiguration configuration
+     * @see org.granite.client.configuration.SimpleConfiguration
+     */
 	public AMFChannelFactory(Object context, Transport remotingTransport, Transport messagingTransport, Configuration defaultConfiguration) {
 		super(ContentType.AMF, context, remotingTransport, messagingTransport);
 		

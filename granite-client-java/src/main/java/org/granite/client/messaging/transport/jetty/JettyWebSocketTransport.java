@@ -23,11 +23,9 @@ package org.granite.client.messaging.transport.jetty;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
@@ -36,12 +34,7 @@ import org.eclipse.jetty.websocket.WebSocket.OnBinaryMessage;
 import org.eclipse.jetty.websocket.WebSocketClient;
 import org.eclipse.jetty.websocket.WebSocketClientFactory;
 import org.granite.client.messaging.channel.Channel;
-import org.granite.client.messaging.codec.MessagingCodec;
-import org.granite.client.messaging.transport.AbstractTransport;
-import org.granite.client.messaging.transport.TransportException;
-import org.granite.client.messaging.transport.TransportFuture;
-import org.granite.client.messaging.transport.TransportMessage;
-import org.granite.client.messaging.transport.WebSocketTransport;
+import org.granite.client.messaging.transport.*;
 import org.granite.logging.Logger;
 import org.granite.util.PublicByteArrayOutputStream;
 
@@ -49,7 +42,7 @@ import org.granite.util.PublicByteArrayOutputStream;
 /**
  * @author William DRAI
  */
-public class JettyWebSocketTransport extends AbstractTransport<Object> implements WebSocketTransport {
+public class JettyWebSocketTransport extends AbstractTransport<Object> {
 	
 	private static final Logger log = Logger.getLogger(JettyWebSocketTransport.class);
 
@@ -159,12 +152,7 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> implement
 		
 		return null;
 	}
-	
-	@Override
-	public void poll(final Channel channel, final TransportMessage message) {
-		send(channel, message);
-	}
-	
+
 	private int reconnectAttempts = 0;
 	private TransportMessage connectMessage = null;
     private Timer timer = new Timer("ws-activity-check");

@@ -34,7 +34,6 @@ import org.granite.client.messaging.transport.TransportStatusHandler.NoopEngineS
 public abstract class AbstractTransport<C> implements Transport {
 
 	private volatile C context;
-	private volatile Configuration config;
 	private volatile TransportStatusHandler statusHandler = new LogEngineStatusHandler();
 	
 	protected final List<TransportStopListener> stopListeners = new ArrayList<TransportStopListener>();
@@ -56,16 +55,6 @@ public abstract class AbstractTransport<C> implements Transport {
 	@Override
 	public C getContext() {
 		return context;
-	}
-
-	@Override
-	public void setConfiguration(Configuration config) {
-		this.config = config;
-	}
-
-	@Override
-	public Configuration getConfiguration() {
-		return config;
 	}
 
 	@Override

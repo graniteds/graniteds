@@ -36,16 +36,22 @@ package org.granite.client.tide.impl;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.granite.client.messaging.events.Event;
+import org.granite.client.messaging.events.FaultEvent;
 import org.granite.client.messaging.events.IncomingMessageEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.tide.Context;
+import org.granite.client.tide.data.EntityManager;
+import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.server.ComponentListener;
 import org.granite.client.tide.server.ServerSession;
 import org.granite.client.tide.server.TideMergeResponder;
 import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
+import org.granite.logging.Logger;
 import org.granite.tide.invocation.InvocationResult;
 
 /**
@@ -63,9 +69,20 @@ public class ResultHandler<T> implements Runnable {
 	private final TideResponder<T> tideResponder;
 	private final ComponentListener<T> componentListener;
 	private boolean executed = false;
-	
-	
-	public ResultHandler(ServerSession serverSession, Context sourceContext, String componentName, String operation, 
+
+
+    public ResultHandler(ServerSession serverSession, String componentName, String operation) {
+        this.serverSession = serverSession;
+        this.sourceContext = null;
+        this.componentName = componentName;
+        this.operation = operation;
+        this.event = null;
+        this.info = null;
+        this.tideResponder = null;
+        this.componentListener = null;
+    }
+
+	public ResultHandler(ServerSession serverSession, Context sourceContext, String componentName, String operation,
 			Event event, Object info, TideResponder<T> tideResponder, ComponentListener<T> componentListener) {
 		this.serverSession = serverSession;
 		this.sourceContext = sourceContext;
@@ -116,10 +133,10 @@ public class ResultHandler<T> implements Runnable {
         
         Context context = sourceContext.getContextManager().retrieveContext(sourceContext, null, false, false); // conversationId, wasConversationCreated, wasConversationEnded);
         
-        serverSession.handleResultEvent(event);
+        serverSession.onResultEvent(event);
         
-        serverSession.handleResult(context, componentName, operation, invocationResult, result, 
-            tideResponder instanceof TideMergeResponder<?> ? ((TideMergeResponder<T>)tideResponder).getMergeResultWith() : null);
+        handleResult(context, invocationResult, result,
+                tideResponder instanceof TideMergeResponder<?> ? ((TideMergeResponder<T>) tideResponder).getMergeResultWith() : null);
         if (invocationResult != null)
             result = invocationResult.getResult();
         
@@ -140,9 +157,74 @@ public class ResultHandler<T> implements Runnable {
 //	        if (context.isFinished())
 //	            context.scheduleDestroy();
 //	        
-//	        if (!handled && !serverSession.isLogoutInProgress())
-//	            context.raiseEvent(Tide.CONTEXT_RESULT, result);
-        
+        if (!handled && !serverSession.isLogoutInProgress())
+            context.getEventBus().raiseEvent(context, ServerSession.CONTEXT_RESULT, event instanceof ResultEvent ? ((ResultEvent)event).getMessage() : null);
+
         serverSession.tryLogout();
+    }
+
+
+    private static final Logger log = Logger.getLogger(ResultHandler.class);
+
+    public void handleResult(Context context, InvocationResult invocationResult, Object result, Object mergeWith) {
+        log.debug("result {0}", result);
+
+        List<EntityManager.Update> updates = null;
+        EntityManager entityManager = context.getEntityManager();
+
+        try {
+            // Clear flash context variable for Grails/Spring MVC
+            context.remove("flash");
+
+            MergeContext mergeContext = entityManager.initMerge();
+            mergeContext.setServerSession(serverSession);
+
+            boolean mergeExternal = true;
+            if (invocationResult != null) {
+                mergeExternal = invocationResult.getMerge();
+
+                if (invocationResult.getUpdates() != null && invocationResult.getUpdates().length > 0) {
+                    updates = new ArrayList<EntityManager.Update>(invocationResult.getUpdates().length);
+                    for (Object[] u : invocationResult.getUpdates())
+                        updates.add(EntityManager.Update.forUpdate((String) u[0], u[1]));
+                    entityManager.handleUpdates(mergeContext, null, updates);
+                }
+            }
+
+            // Merges final result object
+            if (result != null) {
+                if (mergeExternal)
+                    result = entityManager.mergeExternal(mergeContext, result, mergeWith, null, null, false);
+                else
+                    log.debug("skipped merge of remote result");
+                if (invocationResult != null)
+                    invocationResult.setResult(result);
+            }
+        }
+        finally {
+            MergeContext.destroy(entityManager);
+        }
+
+        // Dispatch received data update events
+        if (invocationResult != null) {
+            // Dispatch received data update events
+            if (updates != null)
+                entityManager.raiseUpdateEvents(context, updates);
+
+            // TODO: dispatch received context events
+//            List<ContextEvent> events = invocationResult.getEvents();
+//            if (events != null && events.size() > 0) {
+//                for (ContextEvent event : events) {
+//                    if (event.params[0] is Event)
+//                        meta_dispatchEvent(event.params[0] as Event);
+//                    else if (event.isTyped())
+//                        meta_internalRaiseEvent("$TideEvent$" + event.eventType, event.params);
+//                    else
+//                        _tide.invokeObservers(this, TideModuleContext.currentModulePrefix, event.eventType, event.params);
+//                }
+//            }
+        }
+
+        log.debug("result merged into local context");
     }
 }

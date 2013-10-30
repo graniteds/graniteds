@@ -72,7 +72,7 @@ import org.junit.Test;
 
 public class TestPagedQuery {
     
-    private ContextManager contextManager;
+    private SimpleContextManager contextManager;
     private Context ctx;
     private ServerSession serverSession;
     

@@ -34,6 +34,20 @@ import org.granite.client.messaging.messages.requests.UnsubscribeMessage;
 import org.granite.logging.Logger;
 
 /**
+ * Consumer class that allows to receive messages from a remote pub/sub destination
+ *
+ * <pre>
+ * {@code
+ * Consumer consumer = new Consumer(messagingChannel, "myDestination", "myTopic");
+ * consumer.subscribe().get();
+ * consumer.addMessageListener(new TopicMessageListener() {
+ *     public void onMessage(TopicMessageEvent event) {
+ *         System.out.println("Received: " + event.getData());
+ *     }
+ * });
+ * }
+ * </pre>
+ *
  * @author Franck WOLFF
  */
 public class Consumer extends AbstractTopicAgent {
@@ -44,27 +58,56 @@ public class Consumer extends AbstractTopicAgent {
 	
 	private String subscriptionId = null;
 	private String selector = null;
-	
+
+    /**
+     * Create a consumer for the specified channel and destination
+     * @param channel messaging channel
+     * @param destination remote destination
+     * @param topic subtopic to which the producer sends its messages
+     */
 	public Consumer(MessagingChannel channel, String destination, String topic) {
 		super(channel, destination, topic);
 	}
 
+    /**
+     * Message selector for this consumer
+     * @return selector
+     */
 	public String getSelector() {
 		return selector;
 	}
 
+    /**
+     * Set the message selector for this consumer
+     * This must be set before subscribing to the destination
+     * It is necessary to resubscribe to the destination after changing its value
+     * @param selector selector
+     */
 	public void setSelector(String selector) {
 		this.selector = selector;
 	}
-	
+
+    /**
+     * Is this consumer subscribed ?
+     * @return true if subscribed
+     */
 	public boolean isSubscribed() {
 		return subscriptionId != null;
 	}
 
+    /**
+     * Current subscription id received from the server
+     * @return subscription id
+     */
 	public String getSubscriptionId() {
 		return subscriptionId;
 	}
 
+    /**
+     * Subscribe to the remote destination
+     * @param listeners array of listeners notified when the subscription is processed
+     * @return future triggered when subscription is processed
+     */
 	public ResponseMessageFuture subscribe(ResponseListener...listeners) {
 		SubscribeMessage subscribeMessage = new SubscribeMessage(destination, topic, selector);
 		subscribeMessage.getHeaders().putAll(defaultHeaders);
@@ -96,6 +139,11 @@ public class Consumer extends AbstractTopicAgent {
 		return channel.send(subscribeMessage, listeners);
 	}
 
+    /**
+     * Unubscribe from the remote destination
+     * @param listeners array of listeners notified when the unsubscription is processed
+     * @return future triggered when unsubscription is processed
+     */
 	public ResponseMessageFuture unsubscribe(ResponseListener...listeners) {
 		UnsubscribeMessage unsubscribeMessage = new UnsubscribeMessage(destination, topic, subscriptionId);
 		unsubscribeMessage.getHeaders().putAll(defaultHeaders);
@@ -127,18 +175,34 @@ public class Consumer extends AbstractTopicAgent {
 		return channel.send(unsubscribeMessage, listeners);
 	}
 
+    /**
+     * Register a message listener for this consumer
+     * @param listener message listener
+     */
 	public void addMessageListener(TopicMessageListener listener) {
 		listeners.putIfAbsent(listener, Boolean.TRUE);
 	}
-	
+
+    /**
+     * Unregister a message listener for this consumer
+     * @param listener message listener
+     * @return true if the listener was actually removed (if it was registered before)
+     */
 	public boolean removeMessageListener(TopicMessageListener listener) {
 		return listeners.remove(listener) != null;
 	}
-	
+
+    /**
+     * Called when the channel is disconnected
+     */
 	public void onDisconnect() {
 		subscriptionId = null;
 	}
 
+    /**
+     * Called when a message is received on the channel
+     * @param message message received
+     */
 	public void onMessage(TopicMessage message) {
 		for (TopicMessageListener listener : listeners.keySet()) {
 			try {

@@ -69,17 +69,30 @@ public class SimpleContextManager implements ContextManager {
     	this.application = null;
     	this.eventBus = null;
     }
-    
+
+    /**
+     * Create a simple context manager using the specified application
+     * @param application application
+     */
     public SimpleContextManager(Application application) {
     	this.application = application;
     	this.eventBus = new SimpleEventBus();
     }
 
+    /**
+     * Create a simple context manager using the specified application and event bus
+     * @param application application
+     * @param eventBus event bus
+     */
     public SimpleContextManager(Application application, EventBus eventBus) {
     	this.application = application;
     	this.eventBus = eventBus;
     }
-    
+
+    /**
+     * Set the instance store factory for this context manager
+     * @param instanceStoreFactory instance store factory
+     */
     public void setInstanceStoreFactory(InstanceStoreFactory instanceStoreFactory) {
     	this.instanceStoreFactory = instanceStoreFactory;
     }
@@ -102,21 +115,10 @@ public class SimpleContextManager implements ContextManager {
         return contextsById.get(DEFAULT_CONTEXT) == context;
     }
 
-    /**
-     *  Return the global context
-     *  
-     *  @return context
-     */ 
     public Context getContext() {
     	return getContext(null, null, true);
     }
     
-    /**
-     *  Return a context from its id
-     *  
-     *  @param contextId context id
-     *  @return context
-     */ 
     public Context getContext(String contextId) {
         return getContext(contextId, null, true);
     }
@@ -128,13 +130,6 @@ public class SimpleContextManager implements ContextManager {
         return ctx;
     }
     
-    /**
-     *  Return a context from its id
-     *  
-     *  @param contextId context id
-     *  @param create should create when not existing
-     *  @return context
-     */
     public Context getContext(String contextId, String parentContextId, boolean create) {
         Context ctx = contextsById.get(contextId != null ? contextId : DEFAULT_CONTEXT);
         if (ctx == null && create) {
@@ -151,17 +146,10 @@ public class SimpleContextManager implements ContextManager {
         return ctx;
     }
 
-    /**
-     *  Create a new context if it does not exist
-     * 
-     *  @param contextId the requested context id
-     *  @param parentContextId request parent context id
-     *  @return the context
-     */
     public Context newContext(String contextId, String parentContextId) {
         Context ctx = contextsById.get(contextId != null ? contextId : DEFAULT_CONTEXT);
         if (ctx != null && ctx.isFinished()) {
-            ctx.clear(false);
+            ctx.clear();
             contextsById.remove(contextId);
             removeFromContextsToDestroy(contextId);
             ctx = null;
@@ -177,33 +165,22 @@ public class SimpleContextManager implements ContextManager {
         return ctx;
     }
     
-    /**
-     *  Destroy a context
-     * 
-     *  @param contextId context id
-     *  @param force force complete destruction of context
-     */
-    public void destroyContext(String contextId, boolean force) {
+    public void destroyContext(String contextId) {
         Context ctx = contextId != null ? contextsById.get(contextId) : null;
         if (ctx != null) {
             // Destroy child contexts
             for (Context c : contextsById.values()) {
                 if (c.getParentContext() == ctx)
-                    destroyContext(c.getContextId(), force);
+                    destroyContext(c.getContextId());
             }
             
             removeFromContextsToDestroy(contextId);
             ctx.getEventBus().raiseEvent(ctx, CONTEXT_DESTROY);
-            contextsById.get(contextId).clear(force);
+            contextsById.get(contextId).clear();
             contextsById.remove(contextId);
         }
     }     
     
-    /**
-     *  Returns the list of conversation contexts
-     * 
-     *  @return conversation contexts
-     */
     public List<Context> getAllContexts() {
         List<Context> contexts = new ArrayList<Context>();
         for (Entry<String, Context> ectx : contextsById.entrySet()) {
@@ -231,12 +208,7 @@ public class SimpleContextManager implements ContextManager {
 //        }
 //    }       
     
-    /**
-     *  Destroy all contexts
-     * 
-     *  @param force force complete destruction of contexts (all event listeners...), used for testing
-     */
-    public void destroyContexts(boolean force) {
+    public void destroyContexts() {
         contextsToDestroy.clear();
         
         Context globalCtx = contextsById.get(DEFAULT_CONTEXT);
@@ -246,17 +218,14 @@ public class SimpleContextManager implements ContextManager {
                 contextIdsToDestroy.add(ectx.getKey());
         }
         for (String contextId : contextIdsToDestroy)
-        	destroyContext(contextId, force);
+        	destroyContext(contextId);
         
-        globalCtx.clear(force);
+        globalCtx.clear();
     }
     
-    /**
-     *  Destroy finished contexts and reset current pending contexts
-     */
     public void destroyFinishedContexts() {
         for (String contextId : contextsToDestroy)
-            destroyContext(contextId, false);
+            destroyContext(contextId);
         contextsToDestroy.clear();
     }
     

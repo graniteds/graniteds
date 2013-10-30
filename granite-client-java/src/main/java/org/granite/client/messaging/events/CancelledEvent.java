@@ -24,6 +24,8 @@ package org.granite.client.messaging.events;
 import org.granite.client.messaging.messages.RequestMessage;
 
 /**
+ * Event dispatched by a channel when the request is cancelled
+ *
  * @author Franck WOLFF
  */
 public class CancelledEvent extends AbstractIssueEvent {

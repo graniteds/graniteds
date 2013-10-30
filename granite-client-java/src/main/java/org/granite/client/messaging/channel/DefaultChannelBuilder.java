@@ -34,6 +34,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
+ * Default implementation of ChannelBuilder handling the built-in channel types (long polling and websocket)
+ * This can also be used to specify custom url mappings for the server channel uris:
+ *
+ * channelFactory.setChannelBuilder(new DefaultChannelBuilder("/customremoting/amf", "/customgravity/amf", "/customws/amf");
+ * channelFactory.start();
+ *
  * @author William DRAI
  */
 public class DefaultChannelBuilder implements ChannelBuilder {
@@ -42,14 +48,44 @@ public class DefaultChannelBuilder implements ChannelBuilder {
     private String gravityUrlMapping = "/gravityamf/amf.txt";
     private String websocketUrlMapping = "/websocketamf/amf";
 
+    /**
+     * Create a channel builder with conventional defaults for url mappings
+     */
+    public DefaultChannelBuilder() {
+    }
+
+    /**
+     * Create a channel builder with specified url mappings
+     * @param graniteUrlMapping url mapping for remoting
+     * @param gravityUrlMapping url mapping for long polling
+     * @param websocketUrlMapping url mapping for websocket
+     */
+    public DefaultChannelBuilder(String graniteUrlMapping, String gravityUrlMapping, String websocketUrlMapping) {
+        this.graniteUrlMapping = graniteUrlMapping;
+        this.gravityUrlMapping = gravityUrlMapping;
+        this.websocketUrlMapping = websocketUrlMapping;
+    }
+
+    /**
+     * Set url mapping for remoting
+     * @param graniteUrlMapping url mapping
+     */
     public void setGraniteUrlMapping(String graniteUrlMapping) {
         this.graniteUrlMapping = graniteUrlMapping;
     }
 
+    /**
+     * Set url mapping for long polling
+     * @param gravityUrlMapping url mapping
+     */
     public void setGravityUrlMapping(String gravityUrlMapping) {
         this.gravityUrlMapping = gravityUrlMapping;
     }
 
+    /**
+     * Set url mapping for websocket
+     * @param websocketUrlMapping url mapping
+     */
     public void setWebsocketUrlMapping(String websocketUrlMapping) {
         this.websocketUrlMapping = websocketUrlMapping;
     }

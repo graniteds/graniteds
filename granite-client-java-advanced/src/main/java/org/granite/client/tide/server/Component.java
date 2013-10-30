@@ -37,12 +37,25 @@ package org.granite.client.tide.server;
 import java.util.concurrent.Future;
 
 /**
+ * Interface for remote components
+ *
  * @author William DRAI
  */
 public interface Component {
-    
+
+    /**
+     * Component name
+     * @return component name
+     */
     public String getName();
-    
+
+    /**
+     * Call a remote operation on the component
+     * @param operation method name
+     * @param args arguments
+     * @param <T> expected return type
+     * @return future triggered when response is received
+     */
     public <T> Future<T> call(String operation, Object... args);
 
 }

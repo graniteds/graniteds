@@ -24,15 +24,31 @@ package org.granite.client.persistence;
 import org.granite.client.persistence.collection.PersistentCollection.InitializationCallback;
 
 /**
+ * Loader are used to trigger the loading of lazy collections/maps
+ *
  * @author William DRAI
  */
 public interface Loader<T> {
 
+    /**
+     * Called when a lazy collection should be loaded
+     * @param object the collection/map
+     * @param callback a callback to call when loading is finished
+     */
     public void load(T object, InitializationCallback callback);
-    
+
+    /**
+     * Called before starting loading
+     */
     public void onInitializing();
-    
+
+    /**
+     * Called once the loading is done
+     */
     public void onInitialize();
-    
+
+    /**
+     * Called once the unloading is done
+     */
     public void onUninitialize();
 }

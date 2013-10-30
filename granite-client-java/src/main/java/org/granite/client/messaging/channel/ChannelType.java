@@ -22,6 +22,9 @@
 package org.granite.client.messaging.channel;
 
 /**
+ * Convenience constants for all built-in messaging channel types
+ * To be used in {@link ChannelFactory#setMessagingTransport(String,org.granite.client.messaging.transport.Transport)} or {@link ChannelFactory#newMessagingChannel}.
+ *
  * @author Franck WOLFF
  */
 public interface ChannelType {

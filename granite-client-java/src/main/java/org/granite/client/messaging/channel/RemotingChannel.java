@@ -22,6 +22,8 @@
 package org.granite.client.messaging.channel;
 
 /**
+ * SPI for remoting channels
+ *
  * @author Franck WOLFF
  */
 public interface RemotingChannel extends Channel {

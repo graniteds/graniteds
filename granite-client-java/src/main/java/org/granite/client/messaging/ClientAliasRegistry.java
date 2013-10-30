@@ -31,6 +31,9 @@ import org.granite.messaging.AliasRegistry;
 
 
 /**
+ * Client-side implementation of AliasRegistry that scan specified packaged to find classes
+ * annotated with {@link org.granite.client.messaging.RemoteAlias}
+ *
  * @author William DRAI
  */
 public class ClientAliasRegistry implements AliasRegistry {

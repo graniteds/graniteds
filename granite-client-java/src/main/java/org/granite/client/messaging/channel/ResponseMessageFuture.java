@@ -27,15 +27,36 @@ import java.util.concurrent.TimeoutException;
 import org.granite.client.messaging.messages.ResponseMessage;
 
 /**
+ * Future-like interface to synchronously wait for a response
+ *
  * @author Franck WOLFF
  */
 public interface ResponseMessageFuture {
 
+    /**
+     * Cancel the current request
+     * @return true if cancelled
+     */
 	public boolean cancel();
 
+    /**
+     * Wait synchronously for the response
+     * @return response
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws TimeoutException
+     */
 	public ResponseMessage get() throws InterruptedException, ExecutionException, TimeoutException;
 
+    /**
+     * Is the request cancelled ?
+     * @return true if cancelled
+     */
 	public boolean isCancelled();
 
+    /**
+     * Is the request finished ?
+     * @return true if finished
+     */
 	public boolean isDone();
 }

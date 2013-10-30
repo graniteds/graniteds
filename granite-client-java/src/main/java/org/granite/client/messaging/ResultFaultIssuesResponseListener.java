@@ -27,10 +27,17 @@ import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.TimeoutEvent;
 
 /**
+ * Convenience listener class that merges all client-side failure types as a single issue type
+ *
  * @author Franck WOLFF
  */
 public abstract class ResultFaultIssuesResponseListener implements ResponseListener {
 
+    /**
+     * Callback method called when any failure occurs
+     *
+     * @param event issue event
+     */
 	public abstract void onIssue(IssueEvent event);
 
 	@Override

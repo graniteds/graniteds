@@ -44,14 +44,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicHeader;
 import org.granite.client.messaging.channel.Channel;
-import org.granite.client.messaging.transport.AbstractTransport;
-import org.granite.client.messaging.transport.HTTPTransport;
-import org.granite.client.messaging.transport.TransportException;
-import org.granite.client.messaging.transport.TransportFuture;
-import org.granite.client.messaging.transport.TransportHttpStatusException;
-import org.granite.client.messaging.transport.TransportIOException;
-import org.granite.client.messaging.transport.TransportMessage;
-import org.granite.client.messaging.transport.TransportStateException;
+import org.granite.client.messaging.transport.*;
 import org.granite.logging.Logger;
 import org.granite.util.PublicByteArrayOutputStream;
 
@@ -64,7 +57,7 @@ import com.loopj.android.http.PersistentCookieStore;
 /**
  * @author Franck WOLFF
  */
-public class LoopjTransport extends AbstractTransport<Context> implements HTTPTransport {
+public class LoopjTransport extends AbstractTransport<Context> {
 
 	private static final Logger log = Logger.getLogger(LoopjTransport.class);
 	
@@ -197,11 +190,6 @@ public class LoopjTransport extends AbstractTransport<Context> implements HTTPTr
                 throw new UnsupportedOperationException();
             }
         };
-    }
-
-    @Override
-    public void poll(Channel channel, TransportMessage transportMessage) throws TransportException {
-
     }
 
     @Override

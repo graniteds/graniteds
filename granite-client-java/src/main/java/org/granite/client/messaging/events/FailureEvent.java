@@ -24,6 +24,8 @@ package org.granite.client.messaging.events;
 import org.granite.client.messaging.messages.RequestMessage;
 
 /**
+ * Event dispatched by a channel when the request fails due to a client-side communication error (network, serialization...)
+ *
  * @author Franck WOLFF
  */
 public class FailureEvent extends AbstractIssueEvent {
@@ -40,6 +42,10 @@ public class FailureEvent extends AbstractIssueEvent {
 		return Type.FAILURE;
 	}
 
+    /**
+     * Local cause exception
+     * @return cause exception
+     */
 	public Exception getCause() {
 		return cause;
 	}

@@ -93,6 +93,8 @@ import org.granite.client.tide.Identity;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.EntityManager.Update;
 import org.granite.client.tide.data.spi.MergeContext;
+import org.granite.client.tide.impl.FaultHandler;
+import org.granite.client.tide.impl.ResultHandler;
 import org.granite.client.validation.InvalidValue;
 import org.granite.config.GraniteConfig;
 import org.granite.logging.Logger;
@@ -101,6 +103,15 @@ import org.granite.util.ContentType;
 
 
 /**
+ * ServerSession provides an API to manage all communications with the server
+ * It can be setup as a managed bean with Spring or CDI or created manually and attached to a Tide context
+ *
+ * <pre>
+ * {@code
+ * ServerSession serverSession = tideContext.set(new ServerSession("/myapp", "localhost", 8080));
+ * }
+ * </pre>
+ *
  * @author William DRAI
  */
 @ApplicationConfigurable
@@ -112,14 +123,7 @@ public class ServerSession implements ContextAware {
 	public static final String SERVER_TIME_TAG = "org.granite.time";
 	public static final String SESSION_ID_TAG = "org.granite.sessionId";
 	public static final String SESSION_EXP_TAG = "org.granite.sessionExp";
-    public static final String CONVERSATION_TAG = "conversationId";
-    public static final String CONVERSATION_PROPAGATION_TAG = "conversationPropagation";
-    public static final String IS_LONG_RUNNING_CONVERSATION_TAG = "isLongRunningConversation";
-    public static final String WAS_LONG_RUNNING_CONVERSATION_ENDED_TAG = "wasLongRunningConversationEnded";
-    public static final String WAS_LONG_RUNNING_CONVERSATION_CREATED_TAG = "wasLongRunningConversationCreated";
-    public static final String IS_FIRST_CALL_TAG = "org.granite.client.tide.isFirstCall";
-    public static final String IS_FIRST_CONVERSATION_CALL_TAG = "org.granite.client.tide.isFirstConversationCall";
-	
+
     public static final String CONTEXT_RESULT = "org.granite.tide.result";
     public static final String CONTEXT_FAULT = "org.granite.tide.fault";
     
@@ -128,7 +132,7 @@ public class ServerSession implements ContextAware {
 	public static final String SESSION_EXPIRED = "org.granite.client.tide.sessionExpired";
 
 
-    private ServerApp serverApp = new ServerApp();
+    private ServerApp serverApp;
 	private ContentType contentType = ContentType.JMF_AMF;
 	private Class<? extends ChannelFactory> channelFactoryClass = null;
     private Transport remotingTransport = null;
@@ -140,12 +144,11 @@ public class ServerSession implements ContextAware {
 	private Status status = new DefaultStatus();
 	
 	private String sessionId = null;
-	private boolean isFirstCall = true;
-	
+
 	private LogoutState logoutState = new LogoutState();
 		
 	private String destination = "server";
-	private Object appContext = null;
+	private Object platformContext = null;
     private ChannelBuilder defaultChannelBuilder = null;
 	private ChannelFactory channelFactory;
     private RemotingChannel remotingChannel = null;
@@ -158,92 +161,159 @@ public class ServerSession implements ContextAware {
     public ServerSession() throws Exception {
     	// Used for testing
     }
-    
-    public ServerSession(String contextRoot, String serverName, int serverPort) throws Exception {
-    	this(contextRoot, false, serverName, serverPort, null);
+
+    /**
+     * Create a server session for the specified context root and server
+     * @param contextRoot context root
+     * @param serverName server host name
+     * @param serverPort server port
+     * @throws Exception
+     */
+    public ServerSession(String contextRoot, String serverName, int serverPort) {
+    	this(contextRoot, false, serverName, serverPort);
     }
 
-    public ServerSession(String contextRoot, boolean secure, String serverName, int serverPort) throws Exception {
-        this(contextRoot, secure, serverName, serverPort, null);
-    }
-
-    public ServerSession(String contextRoot, Boolean secure, String serverName, int serverPort, String destination) throws Exception {
-        if (destination != null)
-        	this.destination = destination;
+    /**
+     * Create a server session for the specified context root and server
+     * @param contextRoot context root
+     * @param secure server app is secured (https/wss/...)
+     * @param serverName server host name
+     * @param serverPort server port
+     * @throws Exception
+     */
+    public ServerSession(String contextRoot, boolean secure, String serverName, int serverPort) {
         this.serverApp = new ServerApp(contextRoot, secure, serverName, serverPort);
     }
 
-    public ServerSession(ServerApp serverApp) throws Exception {
+    /**
+     * Create a server session for the specified server app
+     * @param serverApp server application definition
+     */
+    public ServerSession(ServerApp serverApp) {
         this.serverApp = serverApp;
     }
 
-    public ServerSession(ServerApp serverApp, String destination) throws Exception {
-        this.serverApp = serverApp;
-        this.destination = destination;
-    }
-
+    /**
+     * Serialization type (default is JMF)
+     * @return content type
+     */
     public ContentType getContentType() {
 		return contentType;
 	}
 
+    /**
+     * Set the serialization type
+     * @param contentType serialization type
+     */
 	public void setContentType(ContentType contentType) {
 		if (contentType == null)
 			throw new NullPointerException("contentType cannot be null");
 		this.contentType = contentType;
 	}
 
+    /**
+     * Set the default channel builder
+     * @param channelBuilder channel builder
+     */
     public void setDefaultChannelBuilder(ChannelBuilder channelBuilder) {
         this.defaultChannelBuilder = channelBuilder;
     }
-	
+
+    /**
+     * Set a custom channel factory class
+     * @param channelFactoryClass channel factory class
+     */
 	public void setChannelFactoryClass(Class<? extends ChannelFactory> channelFactoryClass) {
 	    this.channelFactoryClass = channelFactoryClass;
 	}
 
+    /**
+     * Set the server app for this server session
+     * @param serverApp server application definition
+     */
 	public void setServerApp(ServerApp serverApp) {
         this.serverApp = serverApp;
     }
 
-	public void setDestination(String destination) {
-		this.destination = destination;
-	}
-	
+    /**
+     * Set the Tide context for this server session
+     * (internal method, should be set by the context itself)
+     * @param context Tide context
+     * @see org.granite.client.tide.ContextAware
+     */
 	public void setContext(Context context) {
 		this.context = context;
 	}
+
+    /**
+     * Current Tide context
+     * @return Tide context
+     */
 	public Context getContext() {
 		return this.context;
 	}
-	
-	public void setAppContext(Object appContext) {
-	    this.appContext = appContext;
+
+    /**
+     * Set the platform context for this server session
+     * @param platformContext
+     */
+	public void setPlatformContext(Object platformContext) {
+	    this.platformContext = platformContext;
 	}
 
+    /**
+     * Set an implementation of the Status interface to be notified of server related information
+     * @param status status
+     */
 	public void setStatus(Status status) {
 		this.status = status;
 	}
-	
+
+    /**
+     * Status implementation
+     * @return status
+     */
 	public Status getStatus() {
 		return status;
 	}
 
+    /**
+     * Set the remoting transport
+     * @param transport remoting transport
+     */
 	public void setRemotingTransport(Transport transport) {
 		this.remotingTransport = transport;
 	}
-	
+
+    /**
+     * Set the default messaging transport
+     * @param transport messaging transport
+     */
 	public void setMessagingTransport(Transport transport) {
 		this.messagingTransport = transport;
 	}
 
+    /**
+     * Set the messaging transport for the specified channel type
+     * @param channelType channel type
+     */
     public void setMessagingTransport(String channelType, Transport transport) {
         this.messagingTransports.put(channelType, transport);
     }
 
+    /**
+     * Add a package name to scan for remote aliases
+     * @param packageName package name
+     */
 	public void addRemoteAliasPackage(String packageName) {		
 		this.packageNames.add(packageName);
 	}
-	
-	public void setRemoteAliasPackage(Set<String> packageNames) {
+
+    /**
+     * Reset all package names to scan for remote aliases
+     * @param packageNames package names
+     */
+	public void setRemoteAliasPackages(Set<String> packageNames) {
 		this.packageNames.clear();
 		this.packageNames.addAll(packageNames);
 	}
@@ -255,7 +325,11 @@ public class ServerSession implements ContextAware {
 			return value;
 		return graniteConfig.getConverters().convert(value, expectedType);
 	}
-	
+
+    /**
+     * Configure and start the server session
+     * @throws Exception
+     */
 	@PostConstruct
 	public void start() throws Exception {
 	    if (channelFactory != null)    // Already started
@@ -272,21 +346,21 @@ public class ServerSession implements ContextAware {
 	            configuration.setClientType(ClientType.JAVA);
 	            configuration.load();
 	            graniteConfig = configuration.getGraniteConfig();
-	            channelFactory = constructor.newInstance(appContext, configuration);
+	            channelFactory = constructor.newInstance(platformContext, configuration);
 	        }
 	        catch (NoSuchMethodException e) {
 	            constructor = channelFactoryClass.getConstructor(Object.class);
-                channelFactory = constructor.newInstance(appContext);
+                channelFactory = constructor.newInstance(platformContext);
 	        }	        
 	    }
 	    else if (contentType == ContentType.JMF_AMF)
-			channelFactory = new JMFChannelFactory(appContext);
+			channelFactory = new JMFChannelFactory(platformContext);
 		else {
 			Configuration configuration = Platform.getInstance().newConfiguration();
 			configuration.setClientType(ClientType.JAVA);
 			configuration.load();
 			graniteConfig = configuration.getGraniteConfig();
-			channelFactory = new AMFChannelFactory(appContext, configuration);
+			channelFactory = new AMFChannelFactory(platformContext, configuration);
 		}
         channelFactory.setAliasRegistry(aliasRegistry);
 		channelFactory.setScanPackageNames(packageNames);
@@ -315,7 +389,11 @@ public class ServerSession implements ContextAware {
 
 		sessionExpirationTimer = Executors.newSingleThreadScheduledExecutor();
 	}
-	
+
+    /**
+     * Stop the server session and cleanup resources
+     * @throws Exception
+     */
 	@PreDestroy
 	public void stop()throws Exception {
 		try {
@@ -338,14 +416,36 @@ public class ServerSession implements ContextAware {
 			messagingChannelsByType.clear();
 		}
 	}
-	
-	
+
+    /**
+     * Internal SPI to define how remoting/messaging elements are created
+     */
 	public static interface ServiceFactory {
-		
+
+        /**
+         * Create a remote service for the specified channel and destination
+         * @param remotingChannel channel
+         * @param destination destination name
+         * @return remote service
+         */
 		public RemoteService newRemoteService(RemotingChannel remotingChannel, String destination);
-		
+
+        /**
+         * Create a producer
+         * @param messagingChannel channel
+         * @param destination destination name
+         * @param topic subtopic
+         * @return producer
+         */
 		public Producer newProducer(MessagingChannel messagingChannel, String destination, String topic);
-		
+
+        /**
+         * Create a consumer
+         * @param messagingChannel channel
+         * @param destination destination name
+         * @param topic subtopic
+         * @return consumer
+         */
 		public Consumer newConsumer(MessagingChannel messagingChannel, String destination, String topic);
 	}
 	
@@ -368,14 +468,30 @@ public class ServerSession implements ContextAware {
 	}
 	
 	private ServiceFactory serviceFactory = new DefaultServiceFactory();
-	
+
+    /**
+     * Set a custom service factory to create producer/consumers and remote services
+     * @param serviceFactory service factory
+     */
 	public void setServiceFactory(ServiceFactory serviceFactory) {
 		this.serviceFactory = serviceFactory;
 	}
-	
+
+    /**
+     * Returns remote service for the internal destination
+     * Should generally not be used except for very advanced use, use {@link Component} instead
+     * @return internal remote service
+     */
 	public RemoteService getRemoteService() {
 		return getRemoteService(destination);
 	}
+
+    /**
+     * Returns a remote service for the specified destination
+     * Should generally not be used except for very advanced use, use {@link Component} instead
+     * @param destination destination name
+     * @return remote service
+     */
 	public synchronized RemoteService getRemoteService(String destination) {
 		if (remotingChannel == null)
 			throw new IllegalStateException("Channel not defined for server session");
@@ -388,6 +504,12 @@ public class ServerSession implements ContextAware {
 		return remoteService;
 	}
 
+    /**
+     * Return a messaging channel for the specified type
+     * @param channelType channel type
+     * @return messaging channel
+     * @see org.granite.client.messaging.channel.ChannelType
+     */
     public MessagingChannel getMessagingChannel(String channelType) {
         MessagingChannel messagingChannel = messagingChannelsByType.get(channelType);
         if (messagingChannel != null)
@@ -397,6 +519,13 @@ public class ServerSession implements ContextAware {
         return messagingChannel;
     }
 
+    /**
+     * Build a consumer for the specified channel type and destination
+     * @param channelType channel type
+     * @param destination destination name
+     * @param topic subtopic
+     * @return consumer
+     */
 	public synchronized Consumer getConsumer(String channelType, String destination, String topic) {
         MessagingChannel messagingChannel = getMessagingChannel(channelType);
 		if (messagingChannel == null)
@@ -411,6 +540,13 @@ public class ServerSession implements ContextAware {
 		return consumer instanceof Consumer ? (Consumer)consumer : null;
 	}
 
+    /**
+     * Build a producer for the specified channel type and destination
+     * @param channelType channel type
+     * @param destination destination name
+     * @param topic subtopic
+     * @return producer
+     */
 	public synchronized Producer getProducer(String channelType, String destination, String topic) {
         MessagingChannel messagingChannel = getMessagingChannel(channelType);
         if (messagingChannel == null)
@@ -424,30 +560,23 @@ public class ServerSession implements ContextAware {
 		}
 		return producer instanceof Producer ? (Producer)producer : null;
 	}
-	
-	public boolean isFirstCall() {
-		return isFirstCall;
-	}
-	
+
+    /**
+     * Current remote session id
+     * @return session id
+     */
 	public String getSessionId() {
 		return sessionId;
 	}
-	
-	public void restoreSessionId(String sessionId) {
-		this.sessionId = sessionId;
 
-        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
-			messagingChannel.setSessionId(sessionId);
-	}
-	
+    /**
+     * Is logging out ?
+     * @return true if logout in progress
+     */
 	public boolean isLogoutInProgress() {
 		return logoutState.logoutInProgress;
 	}
-	
-	public void trackCall() {
-		isFirstCall = false;
-	}
-	
+
 	private ScheduledExecutorService sessionExpirationTimer = null;
 	private ScheduledFuture<?> sessionExpirationFuture = null;
 	
@@ -467,8 +596,12 @@ public class ServerSession implements ContextAware {
 		long clientOffset = serverTime - new Date().getTime();
 		sessionExpirationFuture = sessionExpirationTimer.schedule(sessionExpirationTask, clientOffset + sessionExpirationDelay*1000L + 1500L, TimeUnit.MILLISECONDS);
 	}
-	
-	public void handleResultEvent(Event event) {
+
+    /**
+     * Callback called when a remoting response is received
+     * @param event event
+     */
+	public void onResultEvent(Event event) {
 		if (sessionExpirationFuture != null)
 			sessionExpirationFuture.cancel(false);
 		
@@ -494,11 +627,15 @@ public class ServerSession implements ContextAware {
 			    messagingChannel.setSessionId(sessionId);
         }
 		
-		isFirstCall = false;
 		status.setConnected(true);
 	}
-	
-	public void handleFaultEvent(FaultEvent event, FaultMessage emsg) {
+
+    /**
+     * Callback called when a remoting fault is received
+     * @param event fault event
+     * @param emsg fault message
+     */
+	public void onFaultEvent(FaultEvent event, FaultMessage emsg) {
 		if (sessionExpirationFuture != null)
 			sessionExpirationFuture.cancel(false);
 				
@@ -522,8 +659,12 @@ public class ServerSession implements ContextAware {
         if (emsg != null && emsg.getCode().equals(Code.SERVER_CALL_FAILED))
         	status.setConnected(false);            
 	}
-	
-	public void handleIssueEvent(IssueEvent event) {
+
+    /**
+     * Callback called when a remoting failure is received
+     * @param event failure event
+     */
+	public void onIssueEvent(IssueEvent event) {
     	status.setConnected(false);            
 	}
 	
@@ -547,11 +688,19 @@ public class ServerSession implements ContextAware {
 			notifyExceptionListeners(e);
 		}
 	};
-	
+
+    /**
+     * Current remoting transport
+     * @return remoting transport
+     */
 	public Transport getRemotingTransport() {
 		return channelFactory != null ? channelFactory.getRemotingTransport() : null;
 	}
-	
+
+    /**
+     * Current messaging transport
+     * @return messaging transport
+     */
 	public Transport getMessagingTransport() {
 		return channelFactory != null ? channelFactory.getMessagingTransport() : null;
 	}
@@ -559,6 +708,7 @@ public class ServerSession implements ContextAware {
 	
 	/**
 	 * 	Implementation of login
+     * 	Should not be called directly, called by {@link org.granite.client.tide.Identity#login}
 	 * 	
 	 * 	@param username user name
 	 *  @param password password
@@ -571,7 +721,8 @@ public class ServerSession implements ContextAware {
 
 	/**
 	 * 	Implementation of login using a specific charset for username/password encoding
-	 * 	
+     * 	Should not be called directly, called by {@link org.granite.client.tide.Identity#login}
+	 *
 	 * 	@param username user name
 	 *  @param password password
 	 *  @param charset charset used for encoding
@@ -582,12 +733,18 @@ public class ServerSession implements ContextAware {
     	    messagingChannel.setCredentials(new UsernamePasswordCredentials(username, password, charset));
     }
 
+    /**
+     * Called by {@link org.granite.client.tide.Identity} after login has succeeded
+     */
     public void afterLogin() {
 		log.info("Application session authenticated");
 		
 		context.getEventBus().raiseEvent(context, LOGIN);
     }
-    
+
+    /**
+     * Called by {@link org.granite.client.tide.Identity} after session has expired
+     */
     public void sessionExpired() {
 		log.info("Application session expired");
 
@@ -609,21 +766,10 @@ public class ServerSession implements ContextAware {
 		context.getEventBus().raiseEvent(context, SESSION_EXPIRED);		
 		context.getEventBus().raiseEvent(context, LOGOUT);		
     }
-    
-    public void loggedOut(TideRpcEvent event) {
-    	log.info("User logged out");
-    	
-        sessionId = null;
-        if (remotingChannel instanceof SessionAwareChannel)
-            ((SessionAwareChannel)remotingChannel).setSessionId(null);
-        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
-            messagingChannel.setSessionId(null);
-    	
-    	logoutState.loggedOut(event);
-    }
-    
+
 	/**
 	 * 	Implementation of logout
+     * 	Should not be called directly, called by {@link org.granite.client.tide.Identity#logout}
 	 * 	
 	 * 	@param logoutObserver observer that will be notified of logout result
 	 */
@@ -652,14 +798,12 @@ public class ServerSession implements ContextAware {
 	 *  Only if a logout has been requested.
 	 */
 	public void checkWaitForLogout() {
-		isFirstCall = false;
-		
 		logoutState.checkWait();
 	}
 	
 	/**
-	 * 	Try logout. Should be called after all remote operations on a component are finished.
-	 *  The effective logout is done when all remote operations on all components have been notified as finished.
+	 * 	Called after all remote operations on a component are finished.
+	 *  The actual logout is done when all remote operations on all components have been notified as finished.
 	 */
 	public void tryLogout() {
 		if (logoutState.stillWaiting())
@@ -677,9 +821,9 @@ public class ServerSession implements ContextAware {
 					context.callLater(new Runnable() {
 						public void run() {
 							log.info("Application session logged out");
-							
-							handleResult(context, null, "logout", null, null, null);
-							context.getContextManager().destroyContexts(false);
+
+                            new ResultHandler(ServerSession.this, null, "logout").handleResult(context, null, null, null);
+							context.getContextManager().destroyContexts();
 							
 							logoutState.loggedOut(new TideResultEvent<Object>(context, ServerSession.this, null, event.getResult()));
 						}
@@ -691,9 +835,9 @@ public class ServerSession implements ContextAware {
 					context.callLater(new Runnable() {
 						public void run() {
 							log.error("Could not log out %s", event.getDescription());
-							
-							handleFault(context, null, "logout", event.getMessage());
-							
+
+                            new FaultHandler(ServerSession.this, null, "logout").handleFault(context, event.getMessage());
+
 					        Fault fault = new Fault(event.getCode(), event.getDescription(), event.getDetails());
 					        fault.setContent(event.getMessage());
 					        fault.setCause(event.getCause());				        
@@ -707,8 +851,8 @@ public class ServerSession implements ContextAware {
 					context.callLater(new Runnable() {
 						public void run() {
 							log.error("Could not logout %s", event.getType());
-							
-							handleFault(context, null, "logout", null);
+
+                            new FaultHandler(ServerSession.this, null, "logout").handleFault(context, null);
 							
 					        Fault fault = new Fault(Code.SERVER_CALL_FAILED, event.getType().name(), "");
 							logoutState.loggedOut(new TideFaultEvent(context, ServerSession.this, null, fault, null));
@@ -722,95 +866,9 @@ public class ServerSession implements ContextAware {
 		    if (messagingChannel != remotingChannel && messagingChannel.isAuthenticated())
 			    messagingChannel.logout();
         }
-		
-		isFirstCall = true;
 	}
-	
-	
-    /**
-     *  (Almost) abstract method: manages a remote call result
-     *  This should be called by the implementors at the end of the result processing
-     * 
-     * 	@param context source context of the remote call
-     *  @param componentName name of the target component
-     *  @param operation name of the called operation
-     *  @param invocationResult invocation result object
-     *  @param result result object
-     *  @param mergeWith previous value with which the result will be merged
-     */
-    public void handleResult(Context context, String componentName, String operation, InvocationResult invocationResult, Object result, Object mergeWith) {
-        log.debug("result {0}", result);
-        
-        List<Update> updates = null;
-        EntityManager entityManager = context.getEntityManager();
-        
-        try {
-            // Clear flash context variable for Grails/Spring MVC
-            context.remove("flash");
-            
-            MergeContext mergeContext = entityManager.initMerge();
-            mergeContext.setServerSession(this);
-            
-            boolean mergeExternal = true;
-            if (invocationResult != null) {
-                mergeExternal = invocationResult.getMerge();
-                
-                if (invocationResult.getUpdates() != null && invocationResult.getUpdates().length > 0) {
-                    updates = new ArrayList<Update>(invocationResult.getUpdates().length);
-                    for (Object[] u : invocationResult.getUpdates())
-                        updates.add(Update.forUpdate((String)u[0], u[1]));
-                    entityManager.handleUpdates(mergeContext, null, updates);
-                }
-            }
-            
-            // Merges final result object
-            if (result != null) {
-                if (mergeExternal)
-                    result = entityManager.mergeExternal(mergeContext, result, mergeWith, null, null, false);
-                else
-                    log.debug("skipped merge of remote result");
-                if (invocationResult != null)
-                    invocationResult.setResult(result);
-            }
-        }
-        finally {
-            MergeContext.destroy(entityManager);
-        }
 
-        // Dispatch received data update events         
-        if (invocationResult != null) {
-            // Dispatch received data update events
-            if (updates != null)
-                entityManager.raiseUpdateEvents(context, updates);
-            
-            // TODO: dispatch received context events
-//            List<ContextEvent> events = invocationResult.getEvents();
-//            if (events != null && events.size() > 0) {
-//                for (ContextEvent event : events) {
-//                    if (event.params[0] is Event)
-//                        meta_dispatchEvent(event.params[0] as Event);
-//                    else if (event.isTyped())
-//                        meta_internalRaiseEvent("$TideEvent$" + event.eventType, event.params);
-//                    else
-//                        _tide.invokeObservers(this, TideModuleContext.currentModulePrefix, event.eventType, event.params);
-//                }
-//            }
-        }
-        
-        log.debug("result merged into local context");
-    }
 
-    /**
-     *  (almost) abstract method: manages a remote call fault
-     * 	
-     *  @param context source context of the remote call
-     *  @param componentName name of the target component
-     *  @param operation name of the called operation
-     *  @param emsg error message
-     */
-    public void handleFault(Context context, String componentName, String operation, FaultMessage emsg) {
-    }
-	
 	private static class LogoutState extends Observable {
 		
 		private boolean logoutInProgress = false;
@@ -879,20 +937,47 @@ public class ServerSession implements ContextAware {
 			sessionExpired = true;
 		}
 	}
-	
-	
+
+
+    /**
+     * Status notified of network related events
+     */
 	public interface Status {
 
+        /**
+         * Network I/O busy
+         * @return true is busy
+         */
 		public boolean isBusy();
-		
+
+        /**
+         * Set I/O busy, called by transport listeners
+         * @param busy true if busy
+         */
 		public void setBusy(boolean busy);
-		
+
+        /**
+         * Network connected
+         * @return true if connected
+         */
 		public boolean isConnected();
-		
+
+        /**
+         * Set connected state, called by transport listeners
+         * @param connected true if connected
+         */
 		public void setConnected(boolean connected);
-		
+
+        /**
+         * Busy cursor enabled ?
+         * @return true if busy cursor enabled
+         */
 		public boolean isShowBusyCursor();
-		
+
+        /**
+         * Enable/disable busy cursor
+         * @param showBusyCursor true if enabled
+         */
 		public void setShowBusyCursor(boolean showBusyCursor);
 	}
 
@@ -935,7 +1020,11 @@ public class ServerSession implements ContextAware {
 	
 	
 	private long defaultTimeToLive = -1;
-	
+
+    /**
+     * Set default time to live on all channels
+     * @param timeToLive time to live in milliseconds
+     */
 	public void setDefaultTimeToLive(long timeToLive) {
 	    defaultTimeToLive = timeToLive;
 	    

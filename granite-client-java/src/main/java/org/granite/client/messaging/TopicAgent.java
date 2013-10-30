@@ -26,15 +26,33 @@ import java.util.Map;
 import org.granite.client.messaging.channel.MessagingChannel;
 
 /**
+ * Interface for consumer/producer style message agents
+ *
  * @author Franck WOLFF
  */
 public interface TopicAgent {
 
+    /**
+     * Messaging channel to which the agent is attached
+     * @return message channel
+     */
 	MessagingChannel getChannel();
 
+    /**
+     * Name of the remote destination for the topic
+     * @return destination
+     */
 	String getDestination();
 
+    /**
+     * Subtopic for the remote topic
+     * @return topic
+     */
 	String getTopic();
-	
+
+    /**
+     * Default headers added to all messages sent by this agent
+     * @return headers map
+     */
 	Map<String, Object> getDefaultHeaders();
 }

@@ -27,6 +27,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Annotation that indicates the remote name of a client class
+ *
  * @author Franck WOLFF
  */
 @Retention(RetentionPolicy.RUNTIME)

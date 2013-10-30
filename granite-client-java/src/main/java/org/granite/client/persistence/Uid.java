@@ -27,6 +27,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Client-side annotation indicating a uid property
+ *
  * @author Franck WOLFF
  */
 @Retention(RetentionPolicy.RUNTIME)

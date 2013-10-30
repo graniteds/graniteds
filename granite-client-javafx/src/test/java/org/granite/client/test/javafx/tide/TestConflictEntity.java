@@ -56,7 +56,7 @@ import org.junit.Test;
 
 public class TestConflictEntity {
 
-    private ContextManager contextManager;
+    private SimpleContextManager contextManager;
     private Context ctx;
     @SuppressWarnings("unused")
 	private DataManager dataManager;

@@ -40,10 +40,18 @@ public class SimpleConfiguration implements Configuration {
 	private ServicesConfig servicesConfig = null;
 
 	private ClientType clientType = ClientType.AS3;
-	
-	public SimpleConfiguration() {		
+
+    /**
+     * Create a configuration using the default granite-config.xml
+     */
+	public SimpleConfiguration() {
 	}
-	
+
+    /**
+     * Create a configuration using specified config file paths
+     * @param graniteStdConfigPath path of standard config file
+     * @param graniteConfigPath path of custom config file (null if no custom file)
+     */
 	public SimpleConfiguration(String graniteStdConfigPath, String graniteConfigPath) {
 		this.graniteStdConfigPath = graniteStdConfigPath;
 		this.graniteConfigPath = graniteConfigPath;
@@ -56,11 +64,19 @@ public class SimpleConfiguration implements Configuration {
 	public void setClientType(ClientType clientType) {
 		this.clientType = clientType;
 	}
-	
+
+    /**
+     * Set the path of the standard config file
+     * @param graniteConfigPath path
+     */
 	public void setGraniteStdConfigPath(String graniteConfigPath) {
 		this.graniteStdConfigPath = graniteConfigPath;
 	}
-	
+
+    /**
+     * Set the path of the custom config file
+     * @param graniteConfigPath path
+     */
 	public void setGraniteConfigPath(String graniteConfigPath) {
 		this.graniteConfigPath = graniteConfigPath;
 	}
@@ -92,14 +108,26 @@ public class SimpleConfiguration implements Configuration {
 			}
 		}
 	}
-	
-	protected void postLoad(GraniteConfig graniteConfig) {		
+
+    /**
+     * Can be overriden by subclasses to do some post loading customization of the configuration
+     * @param graniteConfig config object loaded
+     */
+	protected void postLoad(GraniteConfig graniteConfig) {
 	}
-	
+
+    /**
+     * GraniteConfig object
+     * @return GraniteConfig object
+     */
 	public GraniteConfig getGraniteConfig() {
 		return graniteConfig;
 	}
-	
+
+    /**
+     * ServicesConfig object
+     * @return ServicesConfig object
+     */
 	public ServicesConfig getServicesConfig() {
 		return servicesConfig;
 	}

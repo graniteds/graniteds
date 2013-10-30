@@ -25,6 +25,8 @@ import org.granite.client.messaging.messages.RequestMessage;
 import org.granite.client.messaging.messages.responses.ResultMessage;
 
 /**
+ * Event for a successful response
+ *
  * @author Franck WOLFF
  */
 public class ResultEvent extends AbstractResponseEvent<ResultMessage> {
@@ -37,7 +39,11 @@ public class ResultEvent extends AbstractResponseEvent<ResultMessage> {
 	public Type getType() {
 		return Type.RESULT;
 	}
-	
+
+    /**
+     * Result data received from the server
+     * @return result object
+     */
 	public Object getResult() {
 		return response.getResult();
 	}

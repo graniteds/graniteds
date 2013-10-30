@@ -28,6 +28,8 @@ import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TimeoutEvent;
 
 /**
+ * Empty response listener that does nothing
+ *
  * @author Franck WOLFF
  */
 public class DefaultResponseListener implements ResponseListener {

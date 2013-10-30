@@ -27,6 +27,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Client-side annotation indicating a persistent entity
+ *
  * @author Franck WOLFF
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -22,6 +22,8 @@
 package org.granite.client.messaging.channel;
 
 /**
+ * Interface for channel credentials
+ *
  * @author Franck WOLFF
  */
 public interface Credentials {

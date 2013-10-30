@@ -23,6 +23,8 @@ package org.granite.client.persistence.collection;
 
 
 /**
+ * Convenient interface giving access to the underlying collection the it is wrapped
+ *
  * @author Franck WOLFF
  */
 public interface UnsafePersistentCollection<C extends PersistentCollection> extends PersistentCollection {

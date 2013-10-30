@@ -24,9 +24,15 @@ package org.granite.client.messaging.events;
 import org.granite.client.messaging.messages.Message;
 
 /**
+ * Event for a message received from a channel
+ *
  * @author Franck WOLFF
  */
 public interface IncomingMessageEvent<M extends Message> extends Event {
 
+    /**
+     * Message received
+     * @return message received
+     */
 	M getMessage();
 }

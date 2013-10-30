@@ -35,9 +35,16 @@
 package org.granite.client.tide;
 
 /**
+ * Interface to be implemented by objects that need to get their name in the context where they are set
+ *
+ * @see org.granite.client.tide.Context
  * @author William DRAI
  */
 public interface NameAware {
 
+    /**
+     * Set the name of this object in its owning context
+     * @param name name
+     */
 	public void setName(String name);
 }

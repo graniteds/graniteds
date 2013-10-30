@@ -52,6 +52,7 @@ import org.granite.client.test.tide.MockInstanceStoreFactory;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextManager;
 import org.granite.client.tide.data.EntityManager;
+import org.granite.client.tide.impl.ResultHandler;
 import org.granite.client.tide.impl.SimpleContextManager;
 import org.granite.client.tide.server.ServerSession;
 import org.junit.Assert;
@@ -62,7 +63,7 @@ import org.junit.Test;
 @SuppressWarnings("unchecked")
 public class TestDirtyCheckEntity {
     
-    private ContextManager contextManager;
+    private SimpleContextManager contextManager;
     private Context ctx;
     private JavaFXDataManager dataManager;
     private EntityManager entityManager;
@@ -148,16 +149,16 @@ public class TestDirtyCheckEntity {
         Contact receivedContact = new Contact(1L, 1L, contact.getUid(), null);
         receivedContact.setPerson(receivedPerson);
         receivedPerson.getContacts().add(receivedContact);
-        
-        serverSession.handleResult(ctx, null, null, null, receivedPerson, null);
+
+        new ResultHandler<Person>(serverSession, null, null).handleResult(ctx, null, receivedPerson, null);
         
         Assert.assertFalse("Contact not dirty", dataManager.isDirtyEntity(contact));
         Assert.assertTrue("Person 2 dirty", dataManager.isDirtyEntity(person2));
         Assert.assertTrue("Context dirty", entityManager.isDirty());
         
         receivedPerson = new Person(2L, 1L, person2.getUid(), null, null);
-        
-        serverSession.handleResult(ctx, null, null, null, receivedPerson, null);
+
+        new ResultHandler<Person>(serverSession, null, null).handleResult(ctx, null, receivedPerson, null);
         Assert.assertFalse("Person 2 dirty", dataManager.isDirtyEntity(person2));
         Assert.assertFalse("Context dirty", entityManager.isDirty());
     }

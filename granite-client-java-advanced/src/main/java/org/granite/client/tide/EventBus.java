@@ -35,9 +35,17 @@
 package org.granite.client.tide;
 
 /**
+ * SPI for event bus integration with the platform or framework
+ *
  * @author William DRAI
  */
 public interface EventBus {
 
+    /**
+     * Raise an event on the bus for the specified context
+     * @param context tide context
+     * @param type String-based event type
+     * @param args array of event parameters
+     */
     public void raiseEvent(Context context, String type, Object... args);
 }

@@ -70,12 +70,23 @@ public class FaultHandler<T> implements Runnable {
 	@SuppressWarnings("unused")
 	private final Object info;
 	private final TideResponder<T> tideResponder;
-	private final ComponentListener<T> componentResponder;
+	private final ComponentListener<T> componentListener;
 	private boolean executed = false;
-	
-	
-	public FaultHandler(ServerSession serverSession, Context sourceContext, String componentName, String operation, Event event, Object info, 
-			TideResponder<T> tideResponder, ComponentListener<T> componentResponder) {
+
+
+    public FaultHandler(ServerSession serverSession, String componentName, String operation) {
+        this.serverSession = serverSession;
+        this.sourceContext = null;
+        this.componentName = componentName;
+        this.operation = operation;
+        this.event = null;
+        this.info = null;
+        this.tideResponder = null;
+        this.componentListener = null;
+    }
+
+	public FaultHandler(ServerSession serverSession, Context sourceContext, String componentName, String operation, Event event, Object info,
+			TideResponder<T> tideResponder, ComponentListener<T> componentListener) {
 		this.serverSession = serverSession;
 		this.sourceContext = sourceContext;
 		this.componentName = componentName;
@@ -83,7 +94,7 @@ public class FaultHandler<T> implements Runnable {
 		this.event = event;
 		this.info = info;
 		this.tideResponder = tideResponder;
-		this.componentResponder = componentResponder;
+		this.componentListener = componentListener;
 	}
 
 	public void run() {
@@ -127,12 +138,12 @@ public class FaultHandler<T> implements Runnable {
 	        }
 	        while (m != null);
 	        
-	        serverSession.handleFaultEvent((FaultEvent)event, emsg);
+	        serverSession.onFaultEvent((FaultEvent) event, emsg);
         }
         else
-	        serverSession.handleIssueEvent((IssueEvent)event);
+	        serverSession.onIssueEvent((IssueEvent) event);
         
-        serverSession.handleFault(context, componentName, operation, emsg);
+        handleFault(context, emsg);
         
         boolean handled = false;
         Fault fault = null;
@@ -155,7 +166,7 @@ public class FaultHandler<T> implements Runnable {
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_TIMED_OUT, null, null, null, null);
         }
         
-        TideFaultEvent faultEvent = new TideFaultEvent(context, serverSession, componentResponder, fault, extendedData);
+        TideFaultEvent faultEvent = new TideFaultEvent(context, serverSession, componentListener, fault, extendedData);
         if (tideResponder != null) {
             tideResponder.fault(faultEvent);
             if (faultEvent.isDefaultPrevented())
@@ -189,5 +200,9 @@ public class FaultHandler<T> implements Runnable {
         	context.getEventBus().raiseEvent(context, ServerSession.CONTEXT_FAULT, event instanceof FaultEvent ? ((FaultEvent)event).getMessage() : null);
         
         serverSession.tryLogout();
+    }
+
+
+    public void handleFault(Context context, FaultMessage emsg) {
     }
 }

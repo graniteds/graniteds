@@ -49,6 +49,8 @@ import org.granite.client.tide.Context;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.PersistenceManager;
 import org.granite.client.tide.data.RemoteInitializer;
+import org.granite.client.tide.impl.FaultHandler;
+import org.granite.client.tide.impl.ResultHandler;
 import org.granite.client.tide.server.ServerSession;
 import org.granite.logging.Logger;
 import org.granite.tide.invocation.InvocationCall;
@@ -163,7 +165,7 @@ public class RemoteInitializerImpl implements RemoteInitializer {
 						entityManager.setUninitializeAllowed(false);
 						
 						// Assumes objects is a PersistentCollection or PersistentMap
-						serverSession.handleResult(context, null, null, (InvocationResult)event.getResult(), ((InvocationResult)event.getResult()).getResult(), null);
+                        new ResultHandler<Object>(serverSession, null, null).handleResult(context, (InvocationResult) event.getResult(), ((InvocationResult) event.getResult()).getResult(), null);
 					}
 					finally {
 						entityManager.setUninitializeAllowed(saveUninitializeAllowed);
@@ -177,8 +179,8 @@ public class RemoteInitializerImpl implements RemoteInitializer {
 			context.callLater(new Runnable() {
 				public void run() {
 					log.error("Fault initializing collection " + ObjectUtil.toString(entity) + " " + event.toString());
-					
-					serverSession.handleFault(context, null, null, event.getMessage());
+
+                    new FaultHandler(serverSession, null, null).handleFault(context, event.getMessage());
 				}
 			});
 		}   	
@@ -188,8 +190,8 @@ public class RemoteInitializerImpl implements RemoteInitializer {
 			context.callLater(new Runnable() {
 				public void run() {
 					log.error("Fault initializing collection " + ObjectUtil.toString(entity) + " " + event.toString());
-					
-					serverSession.handleFault(context, null, null, null);
+
+                    new FaultHandler(serverSession, null, null).handleFault(context, null);
 				}
 			});
 		}   	

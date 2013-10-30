@@ -75,40 +75,30 @@ public interface EntityManager {
      *  Destroys all components/context variables
      */
     public void clear();
-    
+
+    /**
+     * Data manager for this entity manager
+     * @return data manager
+     */
     public DataManager getDataManager();
-    
+
+    /**
+     * Tracking handler for this entity manager
+     * @return tracking handler
+     */
     public TrackingHandler getTrackingHandler();
     
     /**
      *  Allow uninitialize of persistent collections
-     *
      *  @param allowed allow uninitialize of collections
      */
     public void setUninitializeAllowed(boolean allowed);
     
     /**
+     * Allow uninitialize of persistent collections ?
      *  @return allow uninitialize of collections
      */
     public boolean isUninitializeAllowed();
-    
-    
-    public static interface Propagation {
-        
-        public void propagate(Object entity, Function func);
-    }
-    
-    public static interface Function {
-        
-        public void execute(EntityManager entityManager, Object entity);
-    }
-    
-    /**
-     *  Setter for the propagation manager
-     * 
-     *  @param propagation propagation function that will visit child entity managers
-     */
-    public void setEntityManagerPropagation(Propagation propagation);
     
     /**
      *  Setter for the remote initializer implementation
@@ -188,11 +178,32 @@ public interface EntityManager {
      *  @param nullIfAbsent return null if entity not cached in context
      */
     public Object getCachedObject(Object object, boolean nullIfAbsent);
-    
+
+    /**
+     * Return the owner entity for the specified object (collection/map, embedded object or associated object)
+     * @param object an object
+     * @return array containing the owner entity and the property name or null if not found
+     */
     public Object[] getOwnerEntity(Object object);
-    
+
+    /**
+     * Initialize the merge context in the current thread
+     * MergeContext should be released at the end of the process
+     * @return current merge context
+     */
     public MergeContext initMerge();
-    
+
+    /**
+     * Merge an object in the local context
+     *
+     * @param mergeContext current merge context
+     * @param obj object to merge
+     * @param previous previous instance
+     * @param parent parent/owning entity
+     * @param propertyName property name from the owning entity
+     * @param forceUpdate true to force update of the destination object even if versions do not match
+     * @return merged object
+     */
     public Object mergeExternal(final MergeContext mergeContext, Object obj, Object previous, Object parent, String propertyName, boolean forceUpdate);
     
     /**
@@ -282,8 +293,10 @@ public interface EntityManager {
      *  @return saved properties for this entity
      */
     public Map<String, Object> getSavedProperties(Object entity);
-    
-    
+
+    /**
+     * Kinds of updates than can be received from the server
+     */
     public static enum UpdateKind {
         PERSIST,
         UPDATE,
@@ -311,7 +324,10 @@ public interface EntityManager {
         	return DATA_EVENT_PREFIX + name().toLowerCase() + "." + entityClass.getSimpleName();
         }
     }
-    
+
+    /**
+     * Update received from the server
+     */
     public static class Update {
         
         private final UpdateKind kind;
@@ -347,12 +363,24 @@ public interface EntityManager {
      *  @param updates list of data updates
      */
     public void handleUpdates(MergeContext mergeContext, String sourceSessionId, List<Update> updates);
-    
+
+    /**
+     * Dispatch update events on the context
+     * @param context tide context
+     * @param updates list of data updates
+     */
 	public void raiseUpdateEvents(Context context, List<EntityManager.Update> updates);
-	
-    
+
+    /**
+     * Register a listener for data conflicts
+     * @param listener listener
+     */
     public void addListener(DataConflictListener listener);
-    
+
+    /**
+     * Unregister a listener for data conflicts
+     * @param listener listener
+     */
     public void removeListener(DataConflictListener listener);
     
     /**
@@ -385,8 +413,25 @@ public interface EntityManager {
      *  @return true if validation triggered
      */
     public boolean validateObject(Object object, String property, Object value);
-    
-    
+
+
+    public static interface Propagation {
+
+        public void propagate(Object entity, Function func);
+    }
+
+    public static interface Function {
+
+        public void execute(EntityManager entityManager, Object entity);
+    }
+
+    /**
+     *  Set the propagation manager
+     *
+     *  @param propagation propagation function that will visit child entity managers
+     */
+    public void setEntityManagerPropagation(Propagation propagation);
+
     public static interface PropagationPolicy {
         
         public void propagate();

@@ -58,6 +58,17 @@ import org.granite.client.tide.server.TideResultEvent;
 import org.granite.logging.Logger;
 
 /**
+ * Default implementation of remote component proxy
+ * Generated typesafe remote service proxies should extend this class
+ *
+ * Component proxies are meant to be defined in a DI container (Spring/CDI) or directly in the Tide context
+ * <pre>
+ * {@code
+ * Component myComponent = tideContext.set("myComponent", new ComponentImpl(serverSession));
+ * myComponent.call("myMethod", arg1, arg2);
+ * }
+ * </pre>
+ *
  * @author William DRAI
  */
 public class ComponentImpl implements Component, ContextAware, NameAware, InvocationHandler {
@@ -68,31 +79,59 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
     private String name;
     private Context context;
     private final ServerSession serverSession;
-    
-    
+
+
+    /**
+     * Default constructor necessary for testing and CDI proxying...
+     */
     public ComponentImpl() {   
     	this.serverSession = null;
     }
-    
+
+    /**
+     * Create a new proxy attached to the specified server session
+     * @param serverSession server session
+     */
     public ComponentImpl(ServerSession serverSession) {
     	this.serverSession = serverSession;
     }
-    
-    
+
+    /**
+     * Set the remote name of the component
+     * By default the component will use its name in its owning context as the remote name
+     * @param name name
+     */
     public void setName(String name) {
     	this.name = name;
     }
+    /**
+     * Remote name of the component
+     * @return name
+     */
     public String getName() {
     	return name;
     }
-    
+
+    /**
+     * Set the context where the component is set
+     * @param context Tide context
+     */
     public void setContext(Context context) {
     	this.context = context;
-    }    
+    }
+
+    /**
+     * Context where the component is set
+     * @return Tide context
+     */
     protected Context getContext() {
     	return context;
     }
-    
+
+    /**
+     * Server session to which the component is attached
+     * @return server session
+     */
     protected ServerSession getServerSession() {
     	return serverSession;
     }
@@ -110,7 +149,7 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
             args = newArgs;
         }
         
-        return (Future<T>)callComponent(context, operation, args, false);
+        return (Future<T>)callComponent(context, operation, args);
     }
 
     
@@ -119,7 +158,7 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
 		if (!method.getDeclaringClass().isAnnotationPresent(RemoteAlias.class))
 			return method.invoke(proxy, args);
 		
-		return callComponent(getContext(), method.getName(), args, false);
+		return callComponent(getContext(), method.getName(), args);
 	}
 
 
@@ -129,12 +168,11 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
      *  @param context the source context
      *  @param operation name of the called metho
      *  @param args method arguments
-     *  @param withContext add context sync data to call
-     * 
+     *
      *  @return future returning the result of the call
      */
     @SuppressWarnings("unchecked")
-	protected <T> Future<T> callComponent(Context context, String operation, Object[] args, boolean withContext) {
+	protected <T> Future<T> callComponent(Context context, String operation, Object[] args) {
     	context.checkValid();
         
         log.debug("callComponent %s.%s", getName(), operation);
@@ -176,23 +214,23 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
             }
         }
         
-        Future<T> future = invoke(context, this, operation, args, responder, withContext, null);
-
-        // TODO: conversation contexts
-		serverSession.trackCall();
-//        if (remoteConversation != null)
-//            remoteConversation.call();
-        
-        return future;
+        return invoke(context, operation, args, responder);
     }
-    
-    
+
+    /**
+     * Execute the invocation of the remote component
+     * @param context the source context
+     * @param operation method name
+     * @param args method arguments
+     * @param tideResponder Tide responder for the remote call
+     * @param <T> expected type of result
+     * @return future triggered asynchronously when response is received
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <T> Future<T> invoke(Context context, Component component, String operation, Object[] args, TideResponder<T> tideResponder, 
-                           boolean withContext, ComponentListener.Handler<T> handler) {
-        log.debug("invokeComponent %s > %s.%s", context.getContextId(), component.getName() != null ? component.getName() : component.getClass().getName(), operation);
+    protected <T> Future<T> invoke(Context context, String operation, Object[] args, TideResponder<T> tideResponder) {
+        log.debug("invokeComponent %s > %s.%s", context.getContextId(), getName() != null ? getName() : getClass().getName(), operation);
         
-        ComponentListener.Handler h = handler != null ? handler : new ComponentListener.Handler<T>() {            
+        ComponentListener.Handler handler = new ComponentListener.Handler<T>() {
 			@Override
             public Runnable result(Context context, ResultEvent event, Object info, String componentName,
                     String operation, TideResponder<T> tideResponder, ComponentListener<T> componentListener) {
@@ -211,12 +249,12 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
             	return new FaultHandler(serverSession, context, componentName, operation, event, info, tideResponder, componentListener);
             }
         };
-        ComponentListener<T> componentListener = new ComponentListenerImpl<T>(context, h, component, operation, args, null, tideResponder);
+        ComponentListener<T> componentListener = new ComponentListenerImpl<T>(context, handler, this, operation, args, null, tideResponder);
         
         InvocationInterceptor[] interceptors = context.allByType(InvocationInterceptor.class);
         if (interceptors != null) {
             for (InvocationInterceptor interceptor : interceptors)
-                interceptor.beforeInvocation(context, component, operation, args, componentListener);
+                interceptor.beforeInvocation(context, this, operation, args, componentListener);
         }
         
         context.getContextManager().destroyFinishedContexts();
@@ -235,8 +273,13 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
         
         return componentListener.invoke(serverSession);
     }
-    
-    
+
+    /**
+     * Create a result event for this component
+     * @param result result to wrap in an event
+     * @param <T> expected type of the result
+     * @return result event
+     */
     public <T> TideResultEvent<T> newResultEvent(T result) {
     	return new TideResultEvent<T>(getContext(), getServerSession(), null, result);
     }

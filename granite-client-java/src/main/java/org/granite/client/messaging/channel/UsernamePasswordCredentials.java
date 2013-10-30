@@ -27,6 +27,8 @@ import java.nio.charset.Charset;
 import org.granite.util.Base64;
 
 /**
+ * Simple username/password credentials
+ *
  * @author Franck WOLFF
  */
 public final class UsernamePasswordCredentials implements Credentials {
@@ -35,24 +37,47 @@ public final class UsernamePasswordCredentials implements Credentials {
 	private final String password;
 	private final Charset charset;
 
+    /**
+     * Create credentials with the specified username and password
+     * @param username username
+     * @param password password
+     */
 	public UsernamePasswordCredentials(String username, String password) {
 		this(username, password, null);
 	}
 
+    /**
+     * Create credentials with the specified username, password and charset (for localized usernames)
+     * @param username username
+     * @param password password
+     * @param charset charset
+     */
 	public UsernamePasswordCredentials(String username, String password, Charset charset) {
 		this.username = username;
 		this.password = password;
 		this.charset = (charset != null ? charset : Charset.defaultCharset());
 	}
 
+    /**
+     * Current username
+     * @return username
+     */
 	public String getUsername() {
 		return username;
 	}
 
+    /**
+     * Current password
+     * @return password
+     */
 	public String getPassword() {
 		return password;
 	}
 
+    /**
+     * Current charset
+     * @return charset
+     */
 	public Charset getCharset() {
 		return charset;
 	}

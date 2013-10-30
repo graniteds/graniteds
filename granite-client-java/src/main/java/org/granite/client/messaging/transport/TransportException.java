@@ -22,6 +22,8 @@
 package org.granite.client.messaging.transport;
 
 /**
+ * Transport exception occuring during communication
+ *
  * @author Franck WOLFF
  */
 public class TransportException extends RuntimeException {

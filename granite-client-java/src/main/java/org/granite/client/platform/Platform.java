@@ -41,6 +41,12 @@ import org.granite.scan.ServiceLoader;
 import org.granite.util.TypeUtil;
 
 /**
+ * Platform abstracts everything specific to a target framework or platform
+ *
+ * Implementations are looked for in the {@link java.util.ServiceLoader} registry.
+ * The platform implementation must be unique (otherwise a PlatformConfigurationError is throws). To resolve the ambiguity,
+ * the platform class name can also be defined by the system property org.granite.client.platform.Platform.
+ *
  * @author Franck WOLFF
  */
 public class Platform {

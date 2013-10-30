@@ -41,6 +41,8 @@ import org.granite.messaging.annotations.Include;
 import org.granite.messaging.annotations.Serialized;
 
 /**
+ * Reflection provider
+ *
  * @author Franck WOLFF
  */
 public class Reflection {

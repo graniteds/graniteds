@@ -35,6 +35,8 @@
 package org.granite.client.tide;
 
 /**
+ * Interface to be implemented by objects that need to know in which Tide context they are set
+ *
  * @author William DRAI
  */
 public interface ContextAware {

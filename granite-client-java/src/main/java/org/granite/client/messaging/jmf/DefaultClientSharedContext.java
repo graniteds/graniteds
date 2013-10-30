@@ -31,22 +31,43 @@ import org.granite.messaging.jmf.DefaultSharedContext;
 import org.granite.messaging.reflect.Reflection;
 
 /**
+ * Default implementation for a client shared context
+ *
  * @author Franck WOLFF
  */
 public class DefaultClientSharedContext extends DefaultSharedContext implements ClientSharedContext {
-	
+
+    /**
+     * Create a default shared context
+     */
 	public DefaultClientSharedContext() {
 		this(null, null, null, null);
 	}
-	
+
+    /**
+     * Create a shared context with the specified codec registry
+     * @param codecRegistry codec registry
+     */
 	public DefaultClientSharedContext(CodecRegistry codecRegistry) {
 		this(codecRegistry, null, null, null);
 	}
 
+    /**
+     * Create a shared context with the specified codec registry and stored strings
+     * @param codecRegistry codec registry
+     * @param defaultStoredStrings stored strings
+     */
 	public DefaultClientSharedContext(CodecRegistry codecRegistry, List<String> defaultStoredStrings) {
 		this(codecRegistry, defaultStoredStrings, null, null);
 	}
 
+    /**
+     * Create a shared context with the specified parameters
+     * @param codecRegistry codec registry
+     * @param defaultStoredStrings stored strings
+     * @param reflection reflection provider
+     * @param aliasRegistry client alias registry
+     */
 	public DefaultClientSharedContext(CodecRegistry codecRegistry, List<String> defaultStoredStrings, Reflection reflection, AliasRegistry aliasRegistry) {
 		super(codecRegistry, defaultStoredStrings, (reflection != null ? reflection : Platform.reflection()), aliasRegistry);
 	}

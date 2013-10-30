@@ -30,15 +30,59 @@ import org.granite.client.messaging.transport.Transport;
 import org.granite.messaging.amf.AMF0Message;
 
 /**
+ * SPI for builders of remoting and messaging channels
+ * Modules that provide custom channels should also register a ChannelBuilder implementation in the {@link java.util.ServiceLoader} registry
+ * (i.e. a file META-INF/services/org.granite.client.messaging.channel.ChannelBuilder)
+ * The ChannelFactory will look for all registered channel builders and find the first one able to build the requested channel type.
+ * A ChannelBuilder should return null for any of the interface methods it can't fulfill.
+ *
  * @author William DRAI
  */
 public interface ChannelBuilder {
 
+    /**
+     * Build a remoting channel with the specified {@link URI}
+     * @param channelClass channel class
+     * @param id channel id
+     * @param uri channel uri
+     * @param maxConcurrentRequests max concurrent requests
+     * @param transport transport for the channel
+     * @param codec codec to apply to the transmitted messages
+     * @return a new remoting channel
+     */
     RemotingChannel buildRemotingChannel(Class<? extends RemotingChannel> channelClass, String id, URI uri, int maxConcurrentRequests, Transport transport, MessagingCodec<AMF0Message> codec);
 
+    /**
+     * Build a remoting channel with the specified server application {@link org.granite.client.messaging.ServerApp}
+     * @param channelClass channel class
+     * @param id channel id
+     * @param serverApp server application
+     * @param maxConcurrentRequests max concurrent requests
+     * @param transport transport for the channel
+     * @param codec codec to apply to the transmitted messages
+     * @return a new remoting channel
+     */
     RemotingChannel buildRemotingChannel(Class<? extends RemotingChannel> channelClass, String id, ServerApp serverApp, int maxConcurrentRequests, Transport transport, MessagingCodec<AMF0Message> codec);
 
+    /**
+     * Build a messaging channel with the specified {@link URI}
+     * @param channelType channel type {@see ChannelType}
+     * @param id channel id
+     * @param uri channel uri
+     * @param transport transport for the channel
+     * @param codec codec to apply to the transmitted messages
+     * @return a new messaging channel
+     */
 	MessagingChannel buildMessagingChannel(String channelType, String id, URI uri, Transport transport, MessagingCodec<Message[]> codec);
 
+    /**
+     * Build a messaging channel with the specified server application {@link org.granite.client.messaging.ServerApp}
+     * @param channelType channel type {@see ChannelType}
+     * @param id channel id
+     * @param serverApp server application definition
+     * @param transport transport for the channel
+     * @param codec codec to apply to the transmitted messages
+     * @return a new messaging channel
+     */
     MessagingChannel buildMessagingChannel(String channelType, String id, ServerApp serverApp, Transport transport, MessagingCodec<Message[]> codec);
 }

@@ -27,6 +27,8 @@ import org.granite.messaging.AliasRegistry;
 import org.granite.messaging.reflect.Reflection;
 
 /**
+ * Configuration context for serialization
+ *
  * @author Franck WOLFF
  */
 public interface SharedContext {

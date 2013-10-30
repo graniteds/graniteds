@@ -27,6 +27,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Client-side annotation indicating a persistent id
+ *
  * @author William DRAI
  */
 @Retention(RetentionPolicy.RUNTIME)

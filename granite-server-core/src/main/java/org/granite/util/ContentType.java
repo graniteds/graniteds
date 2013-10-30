@@ -22,6 +22,8 @@
 package org.granite.util;
 
 /**
+ * Supported encodings for remoting/messaging channels
+ *
  * @author Franck WOLFF
  */
 public enum ContentType {
@@ -39,10 +41,19 @@ public enum ContentType {
 		this.mimeType = mimeType;
 	}
 
+    /**
+     * Associated MIME type
+     * @return MIME type
+     */
 	public String mimeType() {
 		return mimeType;
 	}
-	
+
+    /**
+     * Lookup the ContentType from a MIME type
+     * @param mimeType MIME type
+     * @return corresponding encoding/content type or null if no content type found
+     */
 	public static ContentType forMimeType(String mimeType) {
 		for (ContentType type : values()) {
 			if (type.mimeType.equals(mimeType))

@@ -42,6 +42,8 @@ import org.granite.util.ContentType;
 import org.granite.util.JMFAMFUtil;
 
 /**
+ * Implementation of a ChannelFactory using JMF serialization
+ *
  * @author Franck WOLFF
  */
 public class JMFChannelFactory extends AbstractChannelFactory {
@@ -51,49 +53,96 @@ public class JMFChannelFactory extends AbstractChannelFactory {
 	private List<ExtendedObjectCodec> extendedCodecs = null;
 	private List<String> defaultStoredStrings = null;
 	private Reflection reflection = null;
-	
+
+    /**
+     * Create a default JMF channel factory with a basic configuration
+     */
 	public JMFChannelFactory() {
 		super(ContentType.JMF_AMF);
 	}
-	
+
+    /**
+     * Create a default JMF channel factory with the basic configuration and for the specified platform context
+     * @param context platform context
+     * @see org.granite.client.platform.Platform
+     */
 	public JMFChannelFactory(Object context) {
 		super(ContentType.JMF_AMF, context);
 	}
 
+    /**
+     * Create an AMF channel factory with the specified configuration and transports and for the specified platform context
+     * @param context platform context
+     * @param sharedContext serialization context
+     * @param remotingTransport remoting transport
+     * @param messagingTransport messaging transport
+     */
 	public JMFChannelFactory(Object context, ClientSharedContext sharedContext, Transport remotingTransport, Transport messagingTransport) {
 		super(ContentType.JMF_AMF, context, remotingTransport, messagingTransport);
 		
 		this.sharedContext = sharedContext;
 	}
 
+    /**
+     * Current shared serialization context
+     * @return shared context
+     */
 	public ClientSharedContext getSharedContext() {
 		return sharedContext;
 	}
 
+    /**
+     * Set current shared serialization context
+     * @param sharedContext shared context
+     */
 	public void setSharedContext(ClientSharedContext sharedContext) {
 		this.sharedContext = sharedContext;
 	}
-	
+
+    /**
+     * Current extended codecs
+     * @return extended codecs
+     */
 	public List<ExtendedObjectCodec> getExtendedCodecs() {
 		return extendedCodecs;
 	}
 
+    /**
+     * Set custom extended codecs
+     * @param extendedCodecs extended codecs
+     */
 	public void setExtendedCodecs(List<ExtendedObjectCodec> extendedCodecs) {
 		this.extendedCodecs = extendedCodecs;
 	}
 
+    /**
+     * Current stored strings
+     * @return stored strings
+     */
 	public List<String> getDefaultStoredStrings() {
 		return defaultStoredStrings;
 	}
 
+    /**
+     * Set stored strings
+     * @param defaultStoredStrings stored strings
+     */
 	public void setDefaultStoredStrings(List<String> defaultStoredStrings) {
 		this.defaultStoredStrings = defaultStoredStrings;
 	}
 
+    /**
+     * Current reflection provider
+     * @return reflection
+     */
 	public Reflection getReflection() {
 		return reflection;
 	}
 
+    /**
+     * Set reflection provider
+     * @param reflection
+     */
 	public void setReflection(Reflection reflection) {
 		this.reflection = reflection;
 	}

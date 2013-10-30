@@ -59,14 +59,6 @@ public class SimpleInstanceStore implements InstanceStore {
     	this.context = context;
     }
     
-    @SuppressWarnings("unchecked")
-    public <T> T getNoProxy(String name) {
-        Object instance = instances.get(name);
-        if (instance instanceof Component)
-            return null;
-        return (T)instance;
-    }
-    
     public <T> T set(String name, T instance) {
     	context.initInstance(instance, name);
         instances.put(name, instance);
@@ -101,6 +93,14 @@ public class SimpleInstanceStore implements InstanceStore {
     			names.add(name);
     	}
     	return names;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getNoProxy(String name, Context context) {
+        Object instance = instances.get(name);
+        if (instance instanceof Component)
+            return null;
+        return (T)instance;
     }
 
     @SuppressWarnings("unchecked")

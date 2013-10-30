@@ -45,6 +45,7 @@ import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextManager;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.spi.DataManager;
+import org.granite.client.tide.impl.ResultHandler;
 import org.granite.client.tide.impl.SimpleContextManager;
 import org.granite.client.tide.server.ServerSession;
 import org.junit.Assert;
@@ -55,7 +56,7 @@ import org.junit.Test;
 @SuppressWarnings("unchecked")
 public class TestResetEntity {
 
-    private ContextManager contextManager;
+    private SimpleContextManager contextManager;
     private Context ctx;
 	private DataManager dataManager;
     private EntityManager entityManager;
@@ -162,7 +163,7 @@ public class TestResetEntity {
         Contact contact = new Contact(1L, 0L, "C1", null);
         contact.setPerson(person);
         contact = (Contact)entityManager.mergeExternalData(contact);
-        serverSession.handleResult(ctx, null, null, null, null, null);
+        new ResultHandler(serverSession, null, null).handleResult(ctx, null, null, null);
         
         contact.setPerson(new Person());
         entityManager.resetEntity(contact);
@@ -174,7 +175,7 @@ public class TestResetEntity {
         c.setPerson(p);
         p.getContacts().add(c);
         person = (Person)entityManager.mergeExternalData(p);
-        serverSession.handleResult(ctx, null, null, null, null, null);
+        new ResultHandler(serverSession, null, null).handleResult(ctx, null, null, null);
         
         person.getContacts().remove(0);
         

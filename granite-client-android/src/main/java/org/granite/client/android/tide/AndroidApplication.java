@@ -53,7 +53,7 @@ public class AndroidApplication extends DefaultApplication {
 	@Override
 	public void configure(Object object) {
 		if (object instanceof ServerSession)
-			((ServerSession)object).setAppContext(activity);
+			((ServerSession)object).setPlatformContext(activity);
 	}
 	
 	@Override

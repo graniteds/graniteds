@@ -22,10 +22,15 @@
 package org.granite.client.messaging.events;
 
 /**
+ * Event dispatched by a channel
+ *
  * @author Franck WOLFF
  */
 public interface Event {
 
+    /**
+     * Types of channel events
+     */
 	public static enum Type {
 		RESULT,
 		FAULT,
@@ -35,6 +40,10 @@ public interface Event {
 		
 		TOPIC
 	}
-	
+
+    /**
+     * Type of the event
+     * @return type of the event
+     */
 	Type getType();
 }

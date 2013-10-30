@@ -25,6 +25,8 @@ import org.granite.client.messaging.ClientAliasRegistry;
 import org.granite.messaging.jmf.SharedContext;
 
 /**
+ * Client-side shared context for serialization support
+ *
  * @author Franck WOLFF
  */
 public interface ClientSharedContext extends SharedContext {

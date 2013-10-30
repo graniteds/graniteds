@@ -81,7 +81,7 @@ public class CDIInstanceStoreFactory implements InstanceStoreFactory {
 	    
 		@SuppressWarnings("unchecked")
 		@Override
-		public <T> T getNoProxy(String name) {
+		public <T> T getNoProxy(String name, Context context) {
 			Set<Bean<?>> beans = beanManager.getBeans(name);
 			if (beans.size() == 0)
 				throw new RuntimeException("Bean not found " + name);
