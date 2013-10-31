@@ -108,7 +108,7 @@ public abstract class AbstractSecurityService implements SecurityService {
     }
 
     /**
-     * Decode credentails encoded in base 64 (in the form of "username:password"), as they have been
+     * Decode credentials encoded in base 64 (in the form of "username:password"), as they have been
      * sent by a RemoteObject.
      * 
      * @param credentials base 64 encoded credentials.

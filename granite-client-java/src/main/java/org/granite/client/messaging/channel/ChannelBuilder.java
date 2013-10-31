@@ -66,7 +66,7 @@ public interface ChannelBuilder {
 
     /**
      * Build a messaging channel with the specified {@link URI}
-     * @param channelType channel type {@see ChannelType}
+     * @param channelType channel type {@link ChannelType}
      * @param id channel id
      * @param uri channel uri
      * @param transport transport for the channel
@@ -77,7 +77,7 @@ public interface ChannelBuilder {
 
     /**
      * Build a messaging channel with the specified server application {@link org.granite.client.messaging.ServerApp}
-     * @param channelType channel type {@see ChannelType}
+     * @param channelType channel type {@link ChannelType}
      * @param id channel id
      * @param serverApp server application definition
      * @param transport transport for the channel
