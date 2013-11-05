@@ -45,6 +45,14 @@ public class ServerApp {
     }
 
     /**
+     * Non secure development localhost application definition
+     * @param contextRoot context root (should start by /)
+     */
+    public ServerApp(String contextRoot) {
+        this(contextRoot, false, "localhost", 8080);
+    }
+
+    /**
      * Non secure server application definition
      * @param contextRoot context root (should start by /)
      * @param serverName server host name
