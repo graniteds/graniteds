@@ -257,17 +257,17 @@ any older versions. Then, restart Eclipse.
 The _Add GraniteDS Nature_ is available for any _open Java project_. When you want to use the builder with your Java project, 
 right-click on the project in your Eclipse package explorer and select __Add GraniteDS Nature__:
 
-image::gb1.jpg
+image::gb1.jpg[]
 
 This action should launch a configuration wizard, whose first step is to select Java source folders for which you want 
 code generation (ie. ActionScript 3 beans that mirror your JavaBeans):     
 
-image::gb2.jpg
+image::gb2.jpg[]
 
 You may select as many Java source folders as you want and configure specific filters and output directories for each of them.
 Just select one of the _Included_, _Excluded_, or _Output_ subnodes  and click on the _Edit_ button.     
 
-image::gb3.jpg
+image::gb3.jpg[]
 
 For inclusion/exclusion patterns, the syntax is similar to the Ant include/exclude ones in fileset and the following rules 
 apply: 
@@ -298,20 +298,20 @@ This is required when your Java classes make references to other classes declare
 Clicking on the _Add project_ button will open a dialog that lists all other  __open Java projects which have 
 the GraniteDS nature__:     
 
-image::gb4.jpg
+image::gb4.jpg[]
 
 The next step is classpath configuration. If you do not use any custom classes in the _Options_ panel  you do not need 
 to change anything here since the classpath is automatically configured with your current selected source folders. 
 In the following picture, the +helloworld/bin+ directory, where Eclipse compiles your Java source, is preselected, 
 as well as all libraries in the build path (eg. Java runtime jars, +ejb3-persistence.jar+ and ++jboss-ejb3x.jar++):
 
-image::gb5.jpg
+image::gb5.jpg[]
 
 The next panel lets you configure custom generation templates. Those templates are a mix of the JSP syntax and the 
 link:$$http://groovy.codehaus.org$$[Groovy language]. If you need specific code generation, you may write your own 
 template, select one template in the displayed tree, and click on the _Edit_ button:
 
-image::gb6.jpg
+image::gb6.jpg[]
 
 In the above example, a +class:+ protocol is used because all standard templates are available in the classpath. 
 Alternatively, you may use the +file:+ protocol to load your template from the filesystem. These templates can be 
@@ -338,7 +338,7 @@ WARNING: when switching from dual templates to a single one, be sure to remove a
 
 The last panel lets you configure various options:   
 
-image::gb7.jpg
+image::gb7.jpg[]
 
 Some explanations: 
 
@@ -377,14 +377,14 @@ Some explanations:
 When you have finished with the wizard, a first generation process will start and you should see something like this 
 in the Eclipse console:     
 
-image::gb10.jpg
+image::gb10.jpg[]
 
 *The GraniteDS Project Properties Panel* 
 
 If you need to change your configuration later, you can right-click on your project, select the _Properties_ item, 
 and you'll be able to modify all GraniteDS Eclipse Builder configuration options: 
 
-image::gb8.jpg
+image::gb8.jpg[]
 
 The panels are exactly the same as those of the wizard and the above documentation applies. 
 
@@ -396,7 +396,7 @@ the Flex project nature, and then the GraniteDS nature; the builder will make su
 the correct order. Otherwise, you may have to change this order. 
 Right-click on your project, select the _Properties_ item, and select the _Builders_ entry: 
 
-image::gb11.jpg
+image::gb11.jpg[]
 
 The order (Java / Granite / Flex) in the above picture is the correct one. 
 
@@ -404,7 +404,7 @@ The order (Java / Granite / Flex) in the above picture is the correct one.
 
 When you have configured your project to use the GraniteDS Eclipse Builder, you may cancel any further generation processes by removing the nature:
 
-image::gb9.jpg
+image::gb9.jpg[]
 
 Note that the hidden configuration file +.granite+ in your project is not removed by this action and you must delete it manually. 
 Otherwise, it will be reused whenever you add the nature again. 

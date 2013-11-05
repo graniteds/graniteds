@@ -88,7 +88,7 @@ public class HelloWorldService {
 
 You should now see something like the following picture under Eclipse: 
 
-image::hwservice.jpg
+image::hwservice.jpg[]
 
 Now let create the Flex client code. Create a new folder named +flex+ by right-clicking on the +helloworld+ project  and selecting _New / Folder_. 
 Create a new file directly in this new folder and name it +HelloWorld.mxml+ by right-clicking on the +flex+ folder and selecting _New / File_. 
@@ -126,11 +126,11 @@ In the file editor, which may be Flah Builder or a simple text editor depending 
 
 You should now see something like the following picture under Eclipse:  
 
-image::hwclient.jpg
+image::hwclient.jpg[]
 
 Now we have to create the two main GraniteDS configuration files +services-config.xml+ and +web.xml+ at the root of the project. You should now see:   
 
-image::config.jpg
+image::config.jpg[]
 
 Copy and paste the following code into these files: 
 
@@ -268,7 +268,7 @@ From top to bottom:
 
 Here is basic flow chart that summarizes the expected communication between the Flex client application and the Java server:  
 
-image::flow.jpg
+image::flow.jpg[]
 
 The last thing to do is to build and deploy the application. 
 
@@ -320,7 +320,7 @@ Copy and paste the following content into it; you may have to modify the propert
 
 You should see something like the following picture:  
 
-image::build.jpg
+image::build.jpg[]
 
 You may now right-click on the +build.xml+ file and select _Run As / Ant Build_. This will launch the build process,  compile the MXML code to an SWF, 
 create a WAR (Web Archive), and copy it into your Tomcat +webapps+ directory. 
@@ -485,7 +485,7 @@ on +startup.bat+, or +startup.sh+ for Unix/Mac users. After a short while, you s
 
 You should now see something like the following picture under Eclipse:  
 
-image::hwservicej.jpg
+image::hwservicej.jpg[]
 
 Now let create the Java client code, for this example we are simply going to create a command line application but we could use any Java view technology, 
 such as Swing, JavaFX, SWT or Android.  
@@ -628,7 +628,7 @@ ifdef::flex[]
 This tutorial shows an evolution of the basic "Hello, world" example application with some Hibernate persistence operations (JPA). When finished and 
 deployed it should look like this picture:  
 
-image::hw1.jpg
+image::hw1.jpg[]
 
 In this picture, you see a small data grid that displays the history of all previous say hello operations. This history is persisted in the database
 by means of a JPA entity bean and those objects are serialized back to the Flex client each time you enter a new name. 
@@ -666,11 +666,11 @@ Right-click on those JBoss jars and select _Build Path / Add to Build Path_.
 
 You should now see something like the following picture under Eclipse:  
  
-image::hw2.jpg
+image::hw2.jpg[]
 
 Right-click on the +java+ source folder, select _New / Class_ and fill the New Java Class dialog as follows: 
 
-image::hw3.jpg
+image::hw3.jpg[]
 
 Copy and paste the following code in the Java editor: 
 
@@ -779,7 +779,7 @@ operations with the +findWelcomeHistory()+ method.
 
 Your Java project should look like that after this step:  
 
-image::hw5.jpg
+image::hw5.jpg[]
 
 Now let create the Flex client code. Create a new folder named +flex+ by right-clicking on the +helloworld2+ project and selecting _New / Folder_. 
 Create a new file directly in this new folder and name it +HelloWorld.mxml+  by right-clicking on the +flex+ folder and selecting _New / File_. 
@@ -837,21 +837,21 @@ We are now going to configure the Granite Eclipse Builder that will generate the
 You can install it directly from the Eclipse marketplace, and restart. In your package explorer, right-click on the +helloworld2+ project and 
 select __Add GraniteDS Nature__:  
 
-image::hw6.jpg
+image::hw6.jpg[]
 
 In the configuration wizard, click on the _Add Folder_ button and select the +java+ source folder:  
 
-image::hw7.jpg
+image::hw7.jpg[]
 
 Select the _Excluded_ subnode and click on the _Edit_ button. In the following dialog, change the _Output Directory_ to +flex+, instead of the default +as3+, 
 and add the  +\*\*/\*Service\*.java+ exclusion pattern, as we don't want code generation for services, just for entities:  
 
-image::hw8.jpg
+image::hw8.jpg[]
 
 After those short configuration steps, you may accept all other default options and click directly on the _Finish_ button in the wizard. 
 The generation process starts and produces two files as shown in the following picture:  
 
-image::hw9.jpg
+image::hw9.jpg[]
 
 There is no need to modify those files for our short example but, if you want to add specific methods to your ActionScript 3 bean, you must put it in 
 the +Welcome.as+ class and not in the +WelcomeBase.as+ class that may be overwritten by subsequent generation processes. 
@@ -1017,7 +1017,7 @@ find detailed documentation on them on the Internet. Here is their contents.  Ag
 
 You should now see something like this in your package explorer:  
 
-image::hw10.jpg
+image::hw10.jpg[]
 
 The last thing to do is to build and deploy the application. 
 

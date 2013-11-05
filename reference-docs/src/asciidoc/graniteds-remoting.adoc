@@ -382,22 +382,20 @@ ifdef::java[]
 [[remoting.remoteservice]]
 ==== RemoteService API
 
-Here is an example on how to execute a remote call on a GraniteDS enabled service. 
+Here is an example on how to execute a remote call on a GraniteDS enabled service:
 
 [source,java]
 ----
 public class HelloController {
 
-	private RemoteService helloService;
-
 	public HelloController() {
-	    ChannelFactory channelFactory = new AMFChannelFactory();
+	    ChannelFactory channelFactory = new JMFChannelFactory();
 	    channelFactory.start();
-	    RemotingChannel channel = channelFactory.newRemotingChannel("my-graniteamf",
+	    RemotingChannel channel = channelFactory.newRemotingChannel("mychannel",
 			new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"));
-		RemoteService srv = new RemoteService(channel, "hello");
+		RemoteService helloService = new RemoteService(channel, "hello");
 
-		srv.newInvocation("sayHello", args[0]).setTimeToLive(5, TimeUnit.SECONDS)
+		helloService.newInvocation("sayHello", args[0]).setTimeToLive(5, TimeUnit.SECONDS)
 			.addListener(new ResultFaultIssuesResponseListener() {
 			         
    			@Override
@@ -419,14 +417,17 @@ public class HelloController {
 }
 ----
 
-The first step consists in initializing the HTTP client implementation that will be used. The default built-in transport implementation +ApacheAsyncTransport+ 
-uses the Apache asynchronous HTTP client, so you just have to create and start this transport. 
+The first step consists in initializing the +ChannelFactory+ that will be used. Channel factories handle low-level
+configuration and manage the underlying network transports and serialization protocols. By default it will use the +ApacheAsyncTransport+
+that uses the Apache asynchronous HTTP client, but this can be changed by configuring the +ChannelFactory+.
+The example defines a +JMFChannelFactory+ (using the JMF protocol), alternatively you can use +AMFChannelFactory+ (AMF protocol).
+Once everything is correctly setup, you just have to call +start()+.
 
-The second step consists in defining the remote channel endpoint, i.e. the server url to which the client will connect. +AMFRemotingChannel+ is the default 
-implementation of a remoting channel that uses the AMF3 protocol and format. 
+The second step consists in defining the remote channel endpoint, i.e. the server url to which the client will connect. This
+just requires a channel id and a URI.
 
-Finally you can create a +RemoteService+ which is basically a client for a particular remote service. It requires the name of the destination (which 
-semantics depends on the target server framework, it can be the name of a Spring bean or the partial name of an EJB). 
+Finally you have to create a +RemoteService+ which is basically a client for a particular remote service. It requires the name of the destination (which
+semantics depends on the target server framework, it can be the name of a Spring bean or the partial JNDI name of an EJB).
 
 Once the +RemoteService+ is initialized, you can execute remote calls through a "fluent" API by creating an invocation with +newInvocation+ and adding 
 result/fault listeners with +addListener+ 
@@ -439,8 +440,8 @@ The listener has to implement the interface +ResponseListener+ which has 5 metho
 * onTimeout
 * onCancelled
 
-The first is obvious, the 4 others are different kinds of erroneous conditions. +onFault+ corresponds to an application or server exception, 
-whereas +onFailure+, +onTimeout+ and +onCancelled+ correspond to network or connection error conditions. 
+The first is obvious, the 4 others are different kinds of failure conditions. +onFault+ corresponds to a server exception,
+whereas +onFailure+, +onTimeout+ and +onCancelled+ correspond to network or client connection failures.
 
 As this can be painful to implement those 5 methods for each call, the convenient abstract class +ResultFaultIssuesResponseListener+ merges the 3 last errors 
 conditions in one single +onIssue+ handler. 
@@ -478,8 +479,8 @@ ifdef::flex[]
 [[remoting.tideremoting.flex]]
 === Using the Tide API
 
-The Tide remoting API is an alternative to the standard +RemoteObject+. It can be used only programmatically in +ActionScript+ and simplifies the 
-handling of asynchronicity by hiding +AsyncToken+ and other internal objects. Note that Tide provides much more than just a different API, it will be detailed
+The Tide remoting API is an alternative to the standard +RemoteObject+. It can be used only programmatically in +ActionScript+ and simplifies the
+handling of asynchronous call by hiding +AsyncToken+ and other internal objects. Note that Tide provides much more than just a different API, it will be detailed
 in the next chapters. 
 
 [NOTE]
@@ -767,20 +768,13 @@ ifdef::java[]
 [[remoting.tideremoting.java]]
 === Using the Tide API
 
-The Tide remoting API is an alternative to the low-level +RemoteService+ API that simplifies the handling of asynchronicity and brings much more features 
+The Tide remoting API is an alternative to the low-level +RemoteService+ API that simplifies the handling of asynchronous calls and brings much more features
 that will be described in the next chapters. 
-
-[NOTE]
-====
-This section describes the usage of the Tide API with a standard AMF provider. When the Tide API is used in conjunction with GraniteDS and Tide-enabled 
-server framework adapters, there are some specificities that are described in the chapters concerning each framework integration (<<ejb3.tide,EJB3>>,  
-<<spring.tide,Spring>>, <<cdi.tide,CDI>>). 
-====
 
 [[remoting.tidebasic.java]]
 ==== Basic remoting
 
-Let's see the same hello example with Tide. Note the usage of the Tide context object which reprensents the client application container.                       
+Let's see the same hello example with Tide. Note the usage of the Tide context object which represents the client application container.
 
 [source,java]
 ----
@@ -788,8 +782,7 @@ public class HelloExample {
 
     public static void main(String[] args) {
     
-    	ContextManager contextManager = new SimpleContextManager(new DefaultApplication());
-    	Context context = contextManager.getContext();
+    	Context context = new SimpleContextManager().getContext();
     	
     	ServerSession serverSession = context.set(new ServerSession("/myapp", "localhost", 8080));
     	serverSession.start();
@@ -818,21 +811,23 @@ public class HelloExample {
 
 This is a bit different than the +RemoteService+ API. It looks like a mostly cosmetic changes, but there are many internal things that differ. 
 
-The core of the Tide framework is the context which contains the various elements of the application. Here we create a simple +ContextManager+ which 
-implements a very minimalistic built-in application container. For more demanding environment, we recommend using the +SpringContextManager+ which will 
-use a Spring application container or the +CDIContextManager+ which will use a CDI/Weld SE container.  
+The core of the Tide framework is the context which contains the various elements of the application. Here we create a simple +SimpleContextManager+ which
+implements a very minimalistic built-in application container. For more complex environments, we recommend using the +SpringContextManager+ which
+integrates with a Spring application container or the +CDIContextManager+ which integrates with a CDI/Weld SE container.
 
 The +Application+ SPI is a simple interface that allows integrating the Tide context with the client UI framework. For example, JavaFX requires that all UI 
 operations are executed in the main UI thread. The JavaFX application implementation will ensure that the asynchronous result handlers of remote calls will 
 be executed in the UI thread so you can do whatever UI operation you need using the received data. This is also necessary as Tide will merge the received
-data with local objects which might possibly have data bindings with UI components.
+data with local objects which might possibly have data bindings to UI components.
 
-The +ServerSession+ encapsulates all communication between the client application and the remote services for a particular server endpoint. 
-Note that here it has to be "attached" manually to the Tide context with +context.set()+. In a Spring environment, it would just have to be declared as a Spring bean.  
+The +ServerSession+ encapsulates all communication between the client application and the remote services for a particular server endpoint, and more
+generally represents a user session with the server (including authentication, session expiration, ...).
+Note that here it has to be "attached" manually to the Tide context with +context.set()+. In a Spring environment, it would simply have to be declared as a Spring bean.
 
 Finally the +Component+ instance represents a client proxy to the actual remote service. The method +call+ executes the remote call and returns a +Future+ 
-object which can be used to get the result. It is also necessary to provide a last argument to the method +call+ which can implement +TideResponder+ 
-and +result+, +fault+. Here we use an untyped +ComponentImpl+ implementation but it's also possible to generate typesafe client proxies from the service interfaces. 
+object which can be used to get the result. It is also necessary to provide a last argument to the method +call+ which should implement +TideResponder+
+and +result+, +fault+. Here we use an untyped +ComponentImpl+ implementation but it's also possible to generate typesafe client proxies which reproduce
+exactly the methods of the service interfaces.
 
 [[remoting.tidebasicdi.java]]
 ==== Basic remoting with dependency injection
@@ -855,12 +850,12 @@ public class Config {
 	
 	@Bean
 	public SpringContextManager contextManager(SpringEventBus eventBus) {
-		return new SpringContextManager(new JavaFXPlatform(eventBus));
+		return new SpringContextManager(new JavaFXApplication(), eventBus));
 	}
 	
 	@Bean(initMethod="start", destroyMethod="stop")
 	public ServerSession serverSession() throws Exception {
-		return new ServerSession("spring", "/test", "localhost", 8080);
+		return new ServerSession("/myapp", "localhost", 8080);
 	}
 	
 	@Bean
@@ -868,7 +863,7 @@ public class Config {
 		return new ComponentImpl(serverSession);
 	}
 	
-	@Bean(initMethod="start")
+	@Bean
 	public App app() {
 		return new App();
 	}
@@ -917,7 +912,7 @@ Once everything is properly wired together, you can simply inject the client pro
 ==== Using the TideResponder Interface
 
 In some cases, you may need to pass some value to the result/fault handler to be able to distinguish different calls on the same method. You can then 
-override the default +TideResponder+ implementation and store a token object: 
+override the default +TideResponder+ implementation and store a token or pass-through object:
 
 [source,java]
 ----
@@ -946,13 +941,18 @@ public void call() {
 }
 ----
 
-In this case, there will be two outputs for each token. Note that as everything is asynchronous, the order of the results is undefined. 
+In this case, there will be two different outputs for each token. Note that as everything is asynchronous, the order of the results is undefined.
+
+----
+Result for secondCall: Hello Barack
+Result for firstCall: Hello Barack
+----
 
 [[remoting.tideasync.java]]
 ==== Simplifying asynchronous interactions
 
 The +TideMergeResponder+ interface is an extension of +TideResponder+ that makes possible to provide a return object that will be merged 
-with the server result. It helps working with the asynchronous nature of remoting by limiting the need for result handlers. 
+with the server result. It helps working with the asynchronous nature of remoting by reducing the need for result handlers.
 
 [source,java]
 ----
@@ -979,19 +979,19 @@ public function call():void {
 ----
 
 This may not seem very useful in this case, but when combined with a data binding mechanism such as the one in JavaFX, that means that you don't have to 
-handle the actual result. By using a JavaFX +ObservableList+ The binding would transparently propagate all incoming remote data to the UI. 
-Note that this kind of automatic merge will work correcly only with mutable objects (so no +String+, +Number+, ...). It is generally the most useful with collections. 
+handle the actual result at all. By using a JavaFX +ObservableList+ The binding would transparently propagate all incoming remote data to the UI.
+Note that this kind of automatic merge will only work with mutable objects (so no +String+, +Number+, ...). It is usually the most useful with collections.
 
 [[remoting.tideexception.java]]
 ==== Global exception handling
 
 The server exceptions can be handled on the client-side by defining a fault callback on each remote call. It works fine on a case by case basis but 
-it is very tedious  and you can always forget a case, in which case the error will be either ignored or result in a global error popup that is not very elegant. 
+it is very tedious and you can always forget a case, in which case the error will be either ignored or result in a global error popup that is not very elegant.
 
 To help dealing with server exceptions, it is possible to define common handlers for particular fault codes on the client-side, and exception converters 
 on the server-side, to convert server exceptions to common fault codes. 
 
-On the server, you have to define an +ExceptionConverter+ class. For example we could write a converter to handle the JPA  +EntityNotFoundException+ 
+On the server, you have to define an +ExceptionConverter+ class. For example we could write a converter to handle the JPA +EntityNotFoundException+
 (in fact there is already a built-in converter for all JPA exceptions): 
 
 [source,java]
@@ -1016,9 +1016,9 @@ public class EntityNotFoundExceptionConverter implements ExceptionConverter {
 }
 ----
 
-This class will intercept all +EntityNotFound+ exceptions on the server-side, and convert it to a  proper +$$ENTITY_NOT_FOUND$$+ fault event. 
+This class will intercept all +EntityNotFound+ exceptions on the server-side, and convert it to a proper +$$ENTITY_NOT_FOUND$$+ fault event.
 
-The argument +finalException+ contains the deepest throwable in the error and can be used to check if some higher level  exception converter should 
+The argument +finalException+ contains the deepest throwable in the error and can be used to check if some higher level exception converter should
 be used to handle the exception. For example, the +HibernateExceptionConverter+ checks if the exception is wrapped in a +PersistenceException+, in which 
 case it lets the JPA +PersistenceExceptionConverter+ accept the exception. 
 

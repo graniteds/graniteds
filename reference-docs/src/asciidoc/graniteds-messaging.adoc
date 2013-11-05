@@ -13,12 +13,13 @@ implementation of a cometd server.
 The WebSocket server implementation uses the native WebSocket capabilities of the deployment application server when available (Tomcat 7.0.29+, GlassFish 3.1.2+, 
 Jetty 8.1.1+) or can alternatively use an embedded Jetty server. 
 
-The WebSocket client is a modified version of the Flash WebSocket client developed by Hiroshi Ichikawa (gimite) that can be found 
-link:$$https://github.com/gimite/web-socket-js$$[here]. 
-
-The WebSocket client uses by default the Jetty WebSocket client library. 
-
-For a basic sample of GDS/Gravity, download +graniteds-\*\*\*.zip+ and import the +$$examples/graniteds_chat$$+ as a new project in Eclipse. 
+ifdef::flex[]
+The Flex WebSocket client is a modified version of the Flash WebSocket client developed by Hiroshi Ichikawa (gimite) that can be found
+link:$$https://github.com/gimite/web-socket-js$$[here].
+endif::flex[]
+ifdef::java[]
+The WebSocket client uses by default the Jetty WebSocket client library.
+endif::java[]
 
 ifdef::flex[]
 [[messaging.example.flex]]
@@ -121,10 +122,10 @@ import org.granite.client.messaging.Producer;
 ...
 
 public void test() {
-	HTTPTransport transport = new ApacheAsyncTransport();		
-	AMFMessagingChannel channel = new AMFMessagingChannel(transport, "gravityamf", new URI("http://localhost:8080/myapp/gravityamf/amf"));	
-	transport.start();
-	
+    ChannelFactory channelFactory = new JMFChannelFactory();
+    channelFactory.start();
+	MessagingChannel channel = channelFactory.newMessagingChannel("mychannel", new URI("http://localhost:8080/myapp/gravityamf/amf"));
+
     Consumer consumer = new Consumer(channel, "chat", "discussion");
 	consumer.addMessageListener(new TopicMessageListener() {
 		@Override
@@ -159,7 +160,7 @@ public void test() {
 ...
 ----
 
-In this code, the producer sends +String+ messages, which could of course be of any type, and the producer receives  +String+ messages as well. 
+In this code, the producer sends +String+ messages, which could of course be of any type, and the consumer receives +String+ messages as well.
 
 The same with a WebSocket channel: 
 
@@ -171,10 +172,10 @@ import org.granite.client.messaging.Producer;
 ...
 
 public void test() {
-	WebSocketTransport transport = new JettyWebSocketTransport();		
-	AMFMessagingChannel channel = new AMFMessagingChannel(transport, "websocketamf", new URI("http://localhost:8080/myapp/websocketamf/amf"));	
-	transport.start();
-	
+    ChannelFactory channelFactory = new JMFChannelFactory();
+    channelFactory.start();
+	MessagingChannel channel = channelFactory.newMessagingChannel(ChannelType.WEBSOCKET, "mychannel", new URI("ws://localhost:8080/myapp/websocketamf/amf"));
+
     Consumer consumer = new Consumer(channel, "chat", "discussion");
 	consumer.addMessageListener(new TopicMessageListener() {
 		@Override
@@ -237,6 +238,8 @@ consumerFrance.destination = "quotes";
 consumerFrance.topic = "/france";
 consumerFrance.subscribe();
 ----
+
+It is necessary to call +subscribe+ again after changing the selector value on the +Consumer+ so the server subscription is correctly updated.
 endif::flex[]
 
 ifdef::java[]
@@ -290,7 +293,9 @@ consumerFrance.subscribe(new ResponseListener() { ... }).get();
 endif::java[]
 
 This consumer will receive all messages that have a header named +COUNTRY+ with the value +France+. Many header values can be combined in the selector with 
-+AND+ and +OR+, and you can use operators. See link:$$http://download.oracle.com/javaee/1.4/api/javax/jms/Message.html$$[JMS documentation] for details. 
++AND+ and +OR+, and you can use operators. See link:$$http://download.oracle.com/javaee/1.4/api/javax/jms/Message.html$$[JMS documentation] for details.
+
+It is necessary to call +subscribe+ again after changing the selector value on the +Consumer+ so the server subscription is correctly updated.
 
 [[messaging.configuration]]
 === Common configuration
@@ -425,7 +430,7 @@ ifdef::flex[]
 The Flash WebSocket implementation requires the use of a Flash socket policy server for security reasons 
 (see link:$$http://www.adobe.com/devnet/flashplayer/articles/socket_policy_files.html$$[here]). 
 
-GraniteDS includes a basic Flash policy server than can be started by simply adding the following to your ++web.xml++:  
+GraniteDS includes a basic Flash policy server than can be started by simply adding the following snippet to your ++web.xml++:
 
 [source,xml]
 ----
@@ -481,8 +486,8 @@ This &lt;gravity&gt; section is purely optional and you may omit it if you accep
 
 Some explanations about these options:
  
-* ++channel-idle-timeout-millis++: the elapsed time after which an idle channel (pure producer or dead client) may be silently unsubcribed and removed by Gravity. 
-    Default is 30 minutes. 
+* ++channel-idle-timeout-millis++: the elapsed time after which an idle channel (pure producer or dead client) may be silently unsubscribed and removed by Gravity.
+    Default is 30 minutes.
 * ++long-polling-timeout-millis++: the elapsed time after which an idle connect request is closed, asking the client to reconnect.
     Default is 20 seconds. Note that setting this value isn't supported in Tomcat/APR configurations. 
 * +thread-pool+ attributes: all options are standard parameters for the Gravity +ThreadPoolExecutor+ instance. 

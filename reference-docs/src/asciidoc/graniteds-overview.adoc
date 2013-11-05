@@ -15,7 +15,7 @@ ifdef::flex[]
 Integration and features stack :  
 
 .Features stack
-image::stack.jpg[Stack]
+image::stack.jpg[Features stack]
 endif::flex[]
 
 GDS has been designed to be lightweight, robust, fast, and highly extensible. 

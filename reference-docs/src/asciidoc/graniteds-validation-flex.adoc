@@ -255,7 +255,7 @@ into an ActionScript 3 model and may be configured in order to copy validation a
 
 With the Eclipse builder, go to the _"Options"_ panel and change the entity factory as shown is the picture below:  
 
-image::bventityfactory.jpg
+image::bventityfactory.jpg[]
 
 With the Ant task, use the +entityfactory+ attribute as follow in your ++build.xml++: 
 
