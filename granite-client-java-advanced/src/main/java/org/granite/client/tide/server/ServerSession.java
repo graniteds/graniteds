@@ -330,7 +330,6 @@ public class ServerSession implements ContextAware {
      * Configure and start the server session
      * @throws Exception
      */
-	@PostConstruct
 	public void start() throws Exception {
 	    if (channelFactory != null)    // Already started
 	        return;
@@ -394,7 +393,6 @@ public class ServerSession implements ContextAware {
      * Stop the server session and cleanup resources
      * @throws Exception
      */
-	@PreDestroy
 	public void stop()throws Exception {
 		try {
 			if (sessionExpirationFuture != null) {
