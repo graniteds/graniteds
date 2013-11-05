@@ -225,6 +225,11 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	
 	@Override
 	public RemotingChannel newRemotingChannel(String id, URI uri, int maxConcurrentRequests) {
+        if (getRemotingTransport() == null)
+            throw new RuntimeException("Remoting transport not defined, start the ChannelFactory first");
+        if (!getRemotingTransport().isStarted() && !getRemotingTransport().start())
+            throw new TransportException("Could not start remoting transport: " + getRemotingTransport());
+
         RemotingChannel channel = defaultChannelBuilder.buildRemotingChannel(getRemotingChannelClass(), id, uri, maxConcurrentRequests, getRemotingTransport(), newMessagingCodec(AMF0Message.class));
 		if (defaultTimeToLive != null)
 			channel.setDefaultTimeToLive(defaultTimeToLive);
@@ -269,6 +274,8 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	@Override
 	public MessagingChannel newMessagingChannel(String channelType, String id, URI uri) {
         Transport transport = getMessagingTransport(channelType);
+        if (transport == null)
+            throw new RuntimeException("No transport defined for channel type " + channelType + ", start the ChannelFactory first");
         if (!transport.isStarted() && !transport.start())
             throw new TransportException("Could not start messaging transport: " + transport);
         MessagingCodec<Message[]> codec = newMessagingCodec(Message[].class);
@@ -291,6 +298,8 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
     @Override
     public MessagingChannel newMessagingChannel(String channelType, String id, ServerApp serverApp) {
         Transport transport = getMessagingTransport(channelType);
+        if (transport == null)
+            throw new RuntimeException("No transport defined for channel type " + channelType + ", start the ChannelFactory first");
         if (!transport.isStarted() && !transport.start())
             throw new TransportException("Could not start messaging transport: " + transport);
         MessagingCodec<Message[]> codec = newMessagingCodec(Message[].class);
