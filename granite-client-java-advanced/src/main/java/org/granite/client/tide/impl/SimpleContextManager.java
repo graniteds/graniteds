@@ -64,10 +64,10 @@ public class SimpleContextManager implements ContextManager {
     private List<String> contextsToDestroy = new ArrayList<String>();
     
     
-    protected SimpleContextManager() {
+    public SimpleContextManager() {
     	// CDI proxying...
-    	this.application = null;
-    	this.eventBus = null;
+    	this.application = new DefaultApplication();
+    	this.eventBus = new SimpleEventBus();
     }
 
     /**
