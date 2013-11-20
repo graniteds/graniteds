@@ -57,13 +57,9 @@ public class JavaFXApplication implements org.granite.client.tide.Application {
 	    context.setDataManager(dataManager);
 	    
 	    try {
-	        TraversableResolver traversableResolver = new JavaFXTraversableResolver(dataManager);
-	        ValidatorFactory validatorFactory = NotifyingValidation.byDefaultProvider().configure().traversableResolver(traversableResolver).buildValidatorFactory();
-	        
-	        initialBeans.put("traversableResolver", traversableResolver);
-	        initialBeans.put("validatorFactory", validatorFactory);
+            new BeanValidationConfiguration().configure(context, initialBeans);
 	    }
-	    catch (Exception e) {
+	    catch (Throwable e) {
 	        // Assume Bean Validation not available
 	        log.info("Bean validation not available, support not configured");
 	    }
@@ -77,5 +73,16 @@ public class JavaFXApplication implements org.granite.client.tide.Application {
 	@Override
     public void execute(Runnable runnable) {
         javafx.application.Platform.runLater(runnable);
+    }
+
+
+    private static final class BeanValidationConfiguration {
+        public void configure(Context context, Map<String, Object> initialBeans) {
+            TraversableResolver traversableResolver = new JavaFXTraversableResolver(context.getDataManager());
+            ValidatorFactory validatorFactory = NotifyingValidation.byDefaultProvider().configure().traversableResolver(traversableResolver).buildValidatorFactory();
+
+            initialBeans.put("traversableResolver", traversableResolver);
+            initialBeans.put("validatorFactory", validatorFactory);
+        }
     }
 }
