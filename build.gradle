@@ -279,6 +279,17 @@ configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith
         }
     }
 
+    if (subproject.tasks.findByName('install') != null) {
+        install {
+            repositories {
+                mavenInstaller {
+                    // Generated dependencies are not suitable for maven pom, remove everything for now
+                    pom.whenConfigured { pom -> pom.dependencies.clear() }
+                }
+            }
+        }
+    }
+
 	uploadArchives {
 		repositories {
 			mavenDeployer {
@@ -929,6 +940,7 @@ project('granite-server-cdi') {
 		compile 'org.jboss.weld:weld-core:1.1.14.Final'
 		compile 'org.jboss.weld.servlet:weld-servlet:1.1.14.Final'
 		compile 'org.jboss.interceptor:jboss-interceptor-core:2.0.0.Final'
+        compile 'org.apache.openwebbeans:openwebbeans-web:1.2.0'
 		
 		compile project(':granite-server-core')
 		
