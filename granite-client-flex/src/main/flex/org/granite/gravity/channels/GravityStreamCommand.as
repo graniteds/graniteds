@@ -53,6 +53,7 @@ package org.granite.gravity.channels {
 
         private static const RECONNECT_INTERVAL_MS_KEY:String = "reconnect-interval-ms";
         private static const RECONNECT_MAX_ATTEMPTS_KEY:String = "reconnect-max-attempts";
+		private static const ENCODE_MESSAGE_BODY_KEY:String = "encode-message-body";
 
         ///////////////////////////////////////////////////////////////////////
         // Constructor.
@@ -84,10 +85,12 @@ package org.granite.gravity.channels {
         override protected function internalQueue(messageResponder:MessageResponder, send:Boolean = true):void {
             var message:IMessage = messageResponder.message;
             if (message && !(message is CommandMessage) && message.body != null) {
-            	message.headers[BYTEARRAY_BODY_HEADER] = true;
-                var data:ByteArray = new ByteArray();
-                data.writeObject(message.body);
-                message.body = data;
+				if (channel.encodeMessageBody) {
+	            	message.headers[BYTEARRAY_BODY_HEADER] = true;
+	                var data:ByteArray = new ByteArray();
+	                data.writeObject(message.body);
+	                message.body = data;
+				}
             }
             super.internalQueue(messageResponder, send);
         }
@@ -110,8 +113,10 @@ package org.granite.gravity.channels {
                 	if (response.body != null) {
                 		if (response.body[RECONNECT_INTERVAL_MS_KEY] != null)
                 			channel.reconnectIntervalMs = Number(response.body[RECONNECT_INTERVAL_MS_KEY]);
-                		if (response.body[RECONNECT_MAX_ATTEMPTS_KEY] != null)
-                			channel.reconnectMaxAttempts = Number(response.body[RECONNECT_MAX_ATTEMPTS_KEY]);
+						if (response.body[RECONNECT_MAX_ATTEMPTS_KEY] != null)
+							channel.reconnectMaxAttempts = Number(response.body[RECONNECT_MAX_ATTEMPTS_KEY]);
+						if (response.body[ENCODE_MESSAGE_BODY_KEY] != null)
+							channel.encodeMessageBody = Boolean(response.body[ENCODE_MESSAGE_BODY_KEY]);
                 	}
                     channel.streamConnectSuccess(this, response.clientId);
                 }

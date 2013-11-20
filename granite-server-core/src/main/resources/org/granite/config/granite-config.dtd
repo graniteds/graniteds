@@ -208,6 +208,7 @@
     max-messages-queued-per-channel CDATA "2147483647"
     reconnect-interval-millis CDATA "30000"
     reconnect-max-attempts CDATA "60"
+    encode-message-body CDATA "false"
 >
 <!ELEMENT thread-pool EMPTY>
 <!ATTLIST thread-pool

@@ -39,6 +39,7 @@ public class GravityConfig implements GraniteConfigReloadListener {
 	public static final int DEFAULT_MAX_MESSAGES_QUEUED_PER_CHANNEL = Integer.MAX_VALUE;
 	public static final long DEFAULT_RECONNECT_INTERVAL_MILLIS = 30000L;
 	public static final int DEFAULT_RECONNECT_MAX_ATTEMPTS = 60;
+	public static final boolean DEFAULT_ENCODE_MESSAGE_BODY = false;
 	public static final int DEFAULT_CORE_POOL_SIZE = 5;
 	public static final int DEFAULT_MAXIMUM_POOL_SIZE = 20;
 	public static final long DEFAULT_KEEP_ALIVE_TIME_MILLIS = 10000L;
@@ -58,6 +59,7 @@ public class GravityConfig implements GraniteConfigReloadListener {
     // Client advices.
     private long reconnectIntervalMillis = DEFAULT_RECONNECT_INTERVAL_MILLIS;
     private int reconnectMaxAttempts = DEFAULT_RECONNECT_MAX_ATTEMPTS;
+    private boolean encodeMessageBody = DEFAULT_ENCODE_MESSAGE_BODY;
     
     // Free configuration options.
     private XMap extra = null;
@@ -92,6 +94,7 @@ public class GravityConfig implements GraniteConfigReloadListener {
 			// Advices sent to clients.
 			reconnectIntervalMillis = config.get("@reconnect-interval-millis", Long.TYPE, DEFAULT_RECONNECT_INTERVAL_MILLIS);
 			reconnectMaxAttempts = config.get("@reconnect-max-attempts", Integer.TYPE, DEFAULT_RECONNECT_MAX_ATTEMPTS);
+			encodeMessageBody = config.get("@encode-message-body", Boolean.TYPE, DEFAULT_ENCODE_MESSAGE_BODY);
 			
 			// Free configuration options.
 			extra = config.getOne("configuration");
@@ -162,6 +165,14 @@ public class GravityConfig implements GraniteConfigReloadListener {
 	}
 	public void setReconnectMaxAttempts(int reconnectMaxAttempts) {
 		this.reconnectMaxAttempts = reconnectMaxAttempts;
+	}
+
+	public boolean isEncodeMessageBody() {
+		return encodeMessageBody;
+	}
+
+	public void setEncodeMessageBody(boolean encodeMessageBody) {
+		this.encodeMessageBody = encodeMessageBody;
 	}
 
 	public XMap getExtra() {

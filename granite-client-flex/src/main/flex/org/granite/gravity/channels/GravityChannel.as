@@ -63,6 +63,7 @@ package org.granite.gravity.channels {
 		// depending on the browser connection timeout.
 		private var _reconnectIntervalMs:Number = 30000;
 		private var _reconnectMaxAttempts:Number = 60;
+		private var _encodeMessageBody:Boolean = false;
 
         ///////////////////////////////////////////////////////////////////////
         // Constructor.
@@ -99,6 +100,13 @@ package org.granite.gravity.channels {
 		}
 		public function get reconnectMaxAttempts():Number {
 			return _reconnectMaxAttempts;
+		}
+		
+		public function set encodeMessageBody(value:Boolean):void {
+			_encodeMessageBody = value;
+		}
+		public function get encodeMessageBody():Boolean {
+			return _encodeMessageBody;
 		}
 		
 		public function get commandUri():String {

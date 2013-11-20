@@ -624,6 +624,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         Map<String, Object> advice = new HashMap<String, Object>();
         advice.put(RECONNECT_INTERVAL_MS_KEY, Long.valueOf(gravityConfig.getReconnectIntervalMillis()));
         advice.put(RECONNECT_MAX_ATTEMPTS_KEY, Long.valueOf(gravityConfig.getReconnectMaxAttempts()));
+        advice.put(ENCODE_MESSAGE_BODY_KEY, Boolean.valueOf(gravityConfig.isEncodeMessageBody()));
         reply.setBody(advice);
         reply.setDestination(message.getDestination());
 
