@@ -413,7 +413,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	        		log.debug("Found channel id in distributed data: %s", clientId);
 	        		String channelFactoryClassName = gdd.getChannelFactoryClassName(clientId);
                     String clientType = gdd.getChannelClientType(clientId);
-	        		channelFactory = (ChannelFactory)TypeUtil.newInstance(channelFactoryClassName, new Class<?>[] { Gravity.class }, new Object[] { this });
+	        		channelFactory = (ChannelFactory<C>)TypeUtil.newInstance(channelFactoryClassName, new Class<?>[] { Gravity.class }, new Object[] { this });
 	        		C channel = channelFactory.newChannel(clientId, clientType);
 	    	    	timeChannel = new TimeChannel<C>(channel);
 	    	        if (channels.putIfAbsent(clientId, timeChannel) == null) {

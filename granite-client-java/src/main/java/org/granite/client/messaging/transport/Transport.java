@@ -21,7 +21,6 @@
  */
 package org.granite.client.messaging.transport;
 
-import org.granite.client.configuration.Configuration;
 import org.granite.client.messaging.channel.Channel;
 
 /**

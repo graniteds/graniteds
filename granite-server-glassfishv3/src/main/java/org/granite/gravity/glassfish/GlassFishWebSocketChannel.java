@@ -30,10 +30,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
-import org.granite.config.GraniteConfigListener;
 import org.granite.context.GraniteContext;
 import org.granite.context.SimpleGraniteContext;
 import org.granite.gravity.AbstractChannel;
@@ -43,7 +41,6 @@ import org.granite.gravity.GravityConfig;
 import org.granite.logging.Logger;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFSerializer;
-import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ContentType;
 

@@ -21,15 +21,27 @@
  */
 package org.granite.client.test.server;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.granite.client.messaging.Consumer;
 import org.granite.client.messaging.ResultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicMessageListener;
-import org.granite.client.messaging.channel.*;
+import org.granite.client.messaging.channel.AMFChannelFactory;
+import org.granite.client.messaging.channel.ChannelFactory;
+import org.granite.client.messaging.channel.ChannelType;
+import org.granite.client.messaging.channel.JMFChannelFactory;
+import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TopicMessageEvent;
-import org.granite.client.messaging.transport.jetty.JettyWebSocketTransport;
 import org.granite.client.test.server.feed.FeedApplication;
 import org.granite.client.test.server.feed.FeedListener;
 import org.granite.client.test.server.feed.Info;
@@ -46,15 +58,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Created by william on 30/09/13.

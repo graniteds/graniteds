@@ -180,7 +180,7 @@ public class RemoteInitializerImpl implements RemoteInitializer {
 				public void run() {
 					log.error("Fault initializing collection " + ObjectUtil.toString(entity) + " " + event.toString());
 
-                    new FaultHandler(serverSession, null, null).handleFault(context, event.getMessage());
+                    new FaultHandler<Object>(serverSession, null, null).handleFault(context, event.getMessage());
 				}
 			});
 		}   	
@@ -191,7 +191,7 @@ public class RemoteInitializerImpl implements RemoteInitializer {
 				public void run() {
 					log.error("Fault initializing collection " + ObjectUtil.toString(entity) + " " + event.toString());
 
-                    new FaultHandler(serverSession, null, null).handleFault(context, null);
+                    new FaultHandler<Object>(serverSession, null, null).handleFault(context, null);
 				}
 			});
 		}   	

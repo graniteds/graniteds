@@ -37,8 +37,6 @@ package org.granite.client.android.platform;
 import org.granite.client.android.messaging.DexRemoteAliasScanner;
 import org.granite.client.android.messaging.transport.LoopjTransport;
 import org.granite.client.messaging.RemoteAliasScanner;
-import org.granite.client.messaging.transport.Transport;
-import org.granite.client.messaging.transport.apache.ApacheAsyncTransport;
 import org.granite.client.platform.Platform;
 import org.granite.messaging.reflect.Reflection;
 

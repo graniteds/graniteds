@@ -39,7 +39,6 @@ import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFSerializer;
-import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.ContentType;
 import org.granite.util.UUIDUtil;
 

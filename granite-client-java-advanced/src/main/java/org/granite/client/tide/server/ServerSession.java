@@ -90,15 +90,11 @@ import org.granite.client.tide.ApplicationConfigurable;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextAware;
 import org.granite.client.tide.Identity;
-import org.granite.client.tide.data.EntityManager;
-import org.granite.client.tide.data.EntityManager.Update;
-import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.impl.FaultHandler;
 import org.granite.client.tide.impl.ResultHandler;
 import org.granite.client.validation.InvalidValue;
 import org.granite.config.GraniteConfig;
 import org.granite.logging.Logger;
-import org.granite.tide.invocation.InvocationResult;
 import org.granite.util.ContentType;
 
 
@@ -822,7 +818,7 @@ public class ServerSession implements ContextAware {
 						public void run() {
 							log.info("Application session logged out");
 
-                            new ResultHandler(ServerSession.this, null, "logout").handleResult(context, null, null, null);
+                            new ResultHandler<Object>(ServerSession.this, null, "logout").handleResult(context, null, null, null);
 							context.getContextManager().destroyContexts();
 							
 							logoutState.loggedOut(new TideResultEvent<Object>(context, ServerSession.this, null, event.getResult()));
@@ -836,7 +832,7 @@ public class ServerSession implements ContextAware {
 						public void run() {
 							log.error("Could not log out %s", event.getDescription());
 
-                            new FaultHandler(ServerSession.this, null, "logout").handleFault(context, event.getMessage());
+                            new FaultHandler<Object>(ServerSession.this, null, "logout").handleFault(context, event.getMessage());
 
 					        Fault fault = new Fault(event.getCode(), event.getDescription(), event.getDetails());
 					        fault.setContent(event.getMessage());
@@ -852,7 +848,7 @@ public class ServerSession implements ContextAware {
 						public void run() {
 							log.error("Could not logout %s", event.getType());
 
-                            new FaultHandler(ServerSession.this, null, "logout").handleFault(context, null);
+                            new FaultHandler<Object>(ServerSession.this, null, "logout").handleFault(context, null);
 							
 					        Fault fault = new Fault(Code.SERVER_CALL_FAILED, event.getType().name(), "");
 							logoutState.loggedOut(new TideFaultEvent(context, ServerSession.this, null, fault, null));

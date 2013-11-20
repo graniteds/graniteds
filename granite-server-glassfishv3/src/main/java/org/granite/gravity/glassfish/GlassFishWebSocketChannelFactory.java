@@ -21,8 +21,6 @@
  */
 package org.granite.gravity.glassfish;
 
-import javax.servlet.ServletContext;
-
 import org.granite.gravity.AbstractChannelFactory;
 import org.granite.gravity.Gravity;
 
