@@ -21,8 +21,6 @@
  */
 package org.granite.gravity.tomcat;
 
-import javax.servlet.ServletContext;
-
 import org.granite.gravity.AbstractChannelFactory;
 import org.granite.gravity.Gravity;
 

@@ -56,8 +56,10 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> {
 	private boolean connected = false;
 	
 	private int maxIdleTime = 3000000;
-    private int pingDelay = 30000;
+    @SuppressWarnings("unused")
+	private int pingDelay = 30000;
 	private int reconnectMaxAttempts = 5;
+    @SuppressWarnings("unused")
 	private int reconnectIntervalMillis = 60000;
 	
 	public void setMaxIdleTime(int maxIdleTime) {
@@ -155,7 +157,8 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> {
 
 	private int reconnectAttempts = 0;
 	private TransportMessage connectMessage = null;
-    private Timer timer = new Timer("ws-activity-check");
+    @SuppressWarnings("unused")
+	private Timer timer = new Timer("ws-activity-check");
 
 	public Future<Connection> connect(final Channel channel, final TransportMessage transportMessage) {
 		if (connectionFuture != null)
@@ -227,7 +230,8 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> {
     private class WebSocketHandler implements OnBinaryMessage {
 
         private final Channel channel;
-        private Timer activityCheckTimer = new Timer();
+        @SuppressWarnings("unused")
+		private Timer activityCheckTimer = new Timer();
 
         public WebSocketHandler(Channel channel) {
             this.channel = channel;

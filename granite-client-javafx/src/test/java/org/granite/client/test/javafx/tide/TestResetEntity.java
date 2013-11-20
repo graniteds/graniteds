@@ -42,7 +42,6 @@ import java.util.List;
 import org.granite.client.javafx.tide.JavaFXApplication;
 import org.granite.client.test.tide.MockInstanceStoreFactory;
 import org.granite.client.tide.Context;
-import org.granite.client.tide.ContextManager;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.spi.DataManager;
 import org.granite.client.tide.impl.ResultHandler;
@@ -163,7 +162,7 @@ public class TestResetEntity {
         Contact contact = new Contact(1L, 0L, "C1", null);
         contact.setPerson(person);
         contact = (Contact)entityManager.mergeExternalData(contact);
-        new ResultHandler(serverSession, null, null).handleResult(ctx, null, null, null);
+        new ResultHandler<Object>(serverSession, null, null).handleResult(ctx, null, null, null);
         
         contact.setPerson(new Person());
         entityManager.resetEntity(contact);
@@ -175,7 +174,7 @@ public class TestResetEntity {
         c.setPerson(p);
         p.getContacts().add(c);
         person = (Person)entityManager.mergeExternalData(p);
-        new ResultHandler(serverSession, null, null).handleResult(ctx, null, null, null);
+        new ResultHandler<Object>(serverSession, null, null).handleResult(ctx, null, null, null);
         
         person.getContacts().remove(0);
         

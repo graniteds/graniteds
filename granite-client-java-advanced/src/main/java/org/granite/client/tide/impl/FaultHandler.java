@@ -64,7 +64,9 @@ public class FaultHandler<T> implements Runnable {
 	
 	private final ServerSession serverSession;
 	private final Context sourceContext;
+	@SuppressWarnings("unused")
 	private final String componentName;
+	@SuppressWarnings("unused")
 	private final String operation;
 	private final Event event;
 	@SuppressWarnings("unused")

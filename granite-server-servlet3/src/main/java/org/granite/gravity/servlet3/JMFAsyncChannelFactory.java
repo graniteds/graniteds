@@ -21,9 +21,7 @@
  */
 package org.granite.gravity.servlet3;
 
-import org.granite.config.GraniteConfigListener;
 import org.granite.gravity.Gravity;
-import org.granite.messaging.jmf.SharedContext;
 
 /**
  * @author Franck WOLFF

@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.granite.client.messaging.events.Event;
-import org.granite.client.messaging.events.FaultEvent;
 import org.granite.client.messaging.events.IncomingMessageEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.tide.Context;
@@ -61,7 +60,9 @@ public class ResultHandler<T> implements Runnable {
 
 	private final ServerSession serverSession;
 	private final Context sourceContext;
+	@SuppressWarnings("unused")
 	private final String componentName;
+	@SuppressWarnings("unused")
 	private final String operation;
 	private final Event event;
 	@SuppressWarnings("unused")
@@ -140,7 +141,6 @@ public class ResultHandler<T> implements Runnable {
         if (invocationResult != null)
             result = invocationResult.getResult();
         
-        @SuppressWarnings("unused")
 		boolean handled = false;
         if (tideResponder != null) {
             TideResultEvent<T> resultEvent = new TideResultEvent<T>(context, serverSession, componentListener, (T)result);

@@ -42,6 +42,7 @@ public interface Gravity extends ShutdownListener {
 
     public static final String RECONNECT_INTERVAL_MS_KEY = "reconnect-interval-ms";
     public static final String RECONNECT_MAX_ATTEMPTS_KEY = "reconnect-max-attempts";
+    public static final String ENCODE_MESSAGE_BODY_KEY = "encode-message-body";
     
     public static final String BYTEARRAY_BODY_HEADER = "GDS_BYTEARRAY_BODY";    
 

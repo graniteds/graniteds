@@ -58,7 +58,6 @@ import org.granite.client.test.tide.MockAMFChannelFactory;
 import org.granite.client.test.tide.MockInstanceStoreFactory;
 import org.granite.client.test.tide.MockServiceFactory;
 import org.granite.client.tide.Context;
-import org.granite.client.tide.ContextManager;
 import org.granite.client.tide.impl.DefaultApplication;
 import org.granite.client.tide.impl.SimpleContextManager;
 import org.granite.client.tide.server.ServerSession;

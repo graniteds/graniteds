@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.messaging.jmf.JMFSerializer;
-import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.ContentType;
 
 /**

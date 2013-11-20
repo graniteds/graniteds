@@ -413,7 +413,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	        		log.debug("Found channel id in distributed data: %s", clientId);
 	        		String channelFactoryClassName = gdd.getChannelFactoryClassName(clientId);
                     String clientType = gdd.getChannelClientType(clientId);
-	        		channelFactory = (ChannelFactory)TypeUtil.newInstance(channelFactoryClassName, new Class<?>[] { Gravity.class }, new Object[] { this });
+	        		channelFactory = (ChannelFactory<C>)TypeUtil.newInstance(channelFactoryClassName, new Class<?>[] { Gravity.class }, new Object[] { this });
 	        		C channel = channelFactory.newChannel(clientId, clientType);
 	    	    	timeChannel = new TimeChannel<C>(channel);
 	    	        if (channels.putIfAbsent(clientId, timeChannel) == null) {
@@ -624,6 +624,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         Map<String, Object> advice = new HashMap<String, Object>();
         advice.put(RECONNECT_INTERVAL_MS_KEY, Long.valueOf(gravityConfig.getReconnectIntervalMillis()));
         advice.put(RECONNECT_MAX_ATTEMPTS_KEY, Long.valueOf(gravityConfig.getReconnectMaxAttempts()));
+        advice.put(ENCODE_MESSAGE_BODY_KEY, Boolean.valueOf(gravityConfig.isEncodeMessageBody()));
         reply.setBody(advice);
         reply.setDestination(message.getDestination());
 

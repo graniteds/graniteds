@@ -21,33 +21,48 @@
  */
 package org.granite.client.test.server;
 
-import org.granite.client.messaging.*;
-import org.granite.client.messaging.channel.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.granite.client.messaging.Consumer;
+import org.granite.client.messaging.Producer;
+import org.granite.client.messaging.ResultIssuesResponseListener;
+import org.granite.client.messaging.ServerApp;
+import org.granite.client.messaging.TopicMessageListener;
+import org.granite.client.messaging.channel.AMFChannelFactory;
+import org.granite.client.messaging.channel.Channel;
+import org.granite.client.messaging.channel.ChannelFactory;
+import org.granite.client.messaging.channel.ChannelType;
+import org.granite.client.messaging.channel.JMFChannelFactory;
+import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TopicMessageEvent;
 import org.granite.client.messaging.messages.ResponseMessage;
 import org.granite.client.messaging.transport.TransportException;
 import org.granite.client.messaging.transport.TransportStatusHandler;
-import org.granite.client.messaging.transport.jetty.JettyWebSocketTransport;
 import org.granite.client.test.server.chat.ChatApplication;
-import org.granite.test.container.Utils;
-import org.granite.test.container.EmbeddedContainer;
 import org.granite.logging.Logger;
+import org.granite.test.container.EmbeddedContainer;
+import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
 import org.granite.util.TypeUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.*;
 
 /**
  * Created by william on 30/09/13.
@@ -273,7 +288,8 @@ public class TestMessagingChat {
             this.barriers = barriers;
         }
 
-        public void setTimeout(int timeout) {
+        @SuppressWarnings("unused")
+		public void setTimeout(int timeout) {
             this.timeout = timeout;
         }
 

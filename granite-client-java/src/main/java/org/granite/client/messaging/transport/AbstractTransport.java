@@ -24,7 +24,6 @@ package org.granite.client.messaging.transport;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.granite.client.configuration.Configuration;
 import org.granite.client.messaging.transport.TransportStatusHandler.LogEngineStatusHandler;
 import org.granite.client.messaging.transport.TransportStatusHandler.NoopEngineStatusHandler;
 

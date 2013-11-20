@@ -21,9 +21,13 @@
  */
 package org.granite.client.test;
 
-import org.granite.client.configuration.Configuration;
 import org.granite.client.messaging.channel.Channel;
-import org.granite.client.messaging.transport.*;
+import org.granite.client.messaging.transport.Transport;
+import org.granite.client.messaging.transport.TransportException;
+import org.granite.client.messaging.transport.TransportFuture;
+import org.granite.client.messaging.transport.TransportMessage;
+import org.granite.client.messaging.transport.TransportStatusHandler;
+import org.granite.client.messaging.transport.TransportStopListener;
 
 /**
 * Created by william on 02/10/13.
