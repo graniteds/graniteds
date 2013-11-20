@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="org.apache.openwebbeans:openwebbeans-web:1.1.0" type="repository">
+    <properties maven-id="org.apache.openwebbeans:openwebbeans-web:1.1.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/openwebbeans-web-1.1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openwebbeans-impl-1.1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javassist-3.12.0.GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/scannotation-1.0.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -498,16 +498,22 @@ public class CDIServiceContext extends TideServiceContext {
     
     
     private static Object unproxy(Object obj) {
-    	// TODO: Works only with Weld !!
-        if (obj instanceof TargetInstanceProxy<?>) {
-        	try {
-        		return ((TargetInstanceProxy<?>)obj).getTargetInstance();
-        	}
-        	catch (IllegalProductException e) {
-        		return null;
-        	}
+        try {
+            // Works only with Weld !!
+            if (obj instanceof TargetInstanceProxy<?>) {
+                try {
+                    return ((TargetInstanceProxy<?>)obj).getTargetInstance();
+                }
+                catch (IllegalProductException e) {
+                    return null;
+                }
+            }
+            return obj;
         }
-        return obj;
+        catch (Throwable t) {
+            // Ignore, stateful support is supposed to work only with Weld
+            return obj;
+        }
     }
     
     /**

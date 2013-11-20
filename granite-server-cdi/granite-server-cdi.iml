@@ -17,6 +17,7 @@
     <orderEntry type="library" name="org.jboss.weld:weld-api:1.1.Final" level="project" />
     <orderEntry type="library" name="org.jboss.weld:weld-spi:1.1.Final" level="project" />
     <orderEntry type="library" name="org.jboss.weld:weld-core:1.1.14.Final" level="project" />
+    <orderEntry type="library" name="org.apache.openwebbeans:openwebbeans-web:1.1.0" level="project" />
     <orderEntry type="library" name="org.jboss.interceptor:jboss-interceptor-core:2.0.0.Final" level="project" />
     <orderEntry type="library" name="org.slf4j:slf4j-api:1.7.3" level="project" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
