@@ -393,7 +393,7 @@ public class ServerSession implements ContextAware {
      * Stop the server session and cleanup resources
      * @throws Exception
      */
-	public void stop()throws Exception {
+	public void stop() throws Exception {
 		try {
 			if (sessionExpirationFuture != null) {
 				sessionExpirationFuture.cancel(false);
@@ -529,7 +529,7 @@ public class ServerSession implements ContextAware {
 		if (messagingChannel == null)
 			throw new IllegalStateException("Channel not defined in server session for type " + channelType + "");
 		
-		String key = destination + '@' + topic;
+		String key = "C:" + destination + '@' + topic;
 		TopicAgent consumer = topicAgents.get(key);
 		if (consumer == null) {
 			consumer = serviceFactory.newConsumer(messagingChannel, destination, topic);
@@ -550,7 +550,7 @@ public class ServerSession implements ContextAware {
         if (messagingChannel == null)
 			throw new IllegalStateException("Channel not defined for server session");
 		
-		String key = destination + '@' + topic;
+		String key = "P:" + destination + '@' + topic;
 		TopicAgent producer = topicAgents.get(key);
 		if (producer == null) {
 			producer = serviceFactory.newProducer(messagingChannel, destination, topic);
