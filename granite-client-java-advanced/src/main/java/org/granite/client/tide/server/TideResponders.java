@@ -35,6 +35,8 @@
 package org.granite.client.tide.server;
 
 /**
+ * Convenience classes to build Tide responders
+ *
  * @author William DRAI
  */
 public class TideResponders {
@@ -62,11 +64,22 @@ public class TideResponders {
 			return mergeWith;
 		}
 	}
-	
+
+    /**
+     * Create an empty responder which does not implement any operation
+     * @param <T> expected result type
+     * @return a new responder
+     */
 	public static <T> TideResponder<T> noop() {
 		return new EmptyTideResponder<T>(null);
 	}
-	
+
+    /**
+     * Create an empty responder which forces the merge of the result with an existing object
+     * @param mergeWith object to merge the result with
+     * @param <T> expected result type
+     * @return a new responder
+     */
 	public static <T> TideMergeResponder<T> mergeWith(T mergeWith) {
 		return new EmptyTideResponder<T>(mergeWith);
 	}
