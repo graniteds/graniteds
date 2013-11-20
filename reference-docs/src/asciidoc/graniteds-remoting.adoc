@@ -982,6 +982,18 @@ This may not seem very useful in this case, but when combined with a data bindin
 handle the actual result at all. By using a JavaFX +ObservableList+ The binding would transparently propagate all incoming remote data to the UI.
 Note that this kind of automatic merge will only work with mutable objects (so no +String+, +Number+, ...). It is usually the most useful with collections.
 
+This can be simplified even further by using the following shortcut:
+
+[source,java]
+----
+private List<Product> products = new ArrayList<Product>();
+
+public function call():void {
+    productService.findAllProducts(TideResponders.mergeWith(products));
+}
+----
+
+
 [[remoting.tideexception.java]]
 ==== Global exception handling
 
