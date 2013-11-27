@@ -108,6 +108,10 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
         this.defaultChannelType = channelType;
     }
 
+    public String getDefaultChannelType() {
+        return defaultChannelType;
+    }
+
 	public Transport getRemotingTransport() {
 		return remotingTransport;
 	}

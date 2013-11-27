@@ -90,6 +90,12 @@ public interface ChannelFactory {
     void setDefaultChannelType(String channelType);
 
     /**
+     * Return the default type of messaging channels (initially ChannelType.LONG_POLLING)
+     * @return default type of messaging channels
+     */
+    String getDefaultChannelType();
+
+    /**
      * Set the default builder for channels
      * A custom channel builder can also be defined to change the default url mappings of the remoting and messaging channels
      * @param channelBuilder the channel builder

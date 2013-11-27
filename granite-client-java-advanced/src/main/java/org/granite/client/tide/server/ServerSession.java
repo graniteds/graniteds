@@ -65,14 +65,7 @@ import org.granite.client.messaging.RemoteService;
 import org.granite.client.messaging.ResultFaultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicAgent;
-import org.granite.client.messaging.channel.AMFChannelFactory;
-import org.granite.client.messaging.channel.ChannelBuilder;
-import org.granite.client.messaging.channel.ChannelFactory;
-import org.granite.client.messaging.channel.JMFChannelFactory;
-import org.granite.client.messaging.channel.MessagingChannel;
-import org.granite.client.messaging.channel.RemotingChannel;
-import org.granite.client.messaging.channel.SessionAwareChannel;
-import org.granite.client.messaging.channel.UsernamePasswordCredentials;
+import org.granite.client.messaging.channel.*;
 import org.granite.client.messaging.codec.MessagingCodec.ClientType;
 import org.granite.client.messaging.events.Event;
 import org.granite.client.messaging.events.FaultEvent;
@@ -146,7 +139,8 @@ public class ServerSession implements ContextAware {
 	private String destination = "server";
 	private Object platformContext = null;
     private ChannelBuilder defaultChannelBuilder = null;
-	private ChannelFactory channelFactory;
+    private String defaultChannelType = null;
+    private ChannelFactory channelFactory;
     private RemotingChannel remotingChannel = null;
     private Map<String, MessagingChannel> messagingChannelsByType = new HashMap<String, MessagingChannel>();
 	protected Map<String, RemoteService> remoteServices = new HashMap<String, RemoteService>();
@@ -213,6 +207,18 @@ public class ServerSession implements ContextAware {
      */
     public void setDefaultChannelBuilder(ChannelBuilder channelBuilder) {
         this.defaultChannelBuilder = channelBuilder;
+        if (channelFactory != null)
+            channelFactory.setDefaultChannelBuilder(defaultChannelBuilder);
+    }
+
+    /**
+     * Set the default channel type for messaging
+     * @param channelType channel type
+     */
+    public void setDefaultChannelType(String channelType) {
+        this.defaultChannelType = channelType;
+        if (channelFactory != null)
+            channelFactory.setDefaultChannelType(defaultChannelType);
     }
 
     /**
@@ -359,6 +365,9 @@ public class ServerSession implements ContextAware {
 		}
         channelFactory.setAliasRegistry(aliasRegistry);
 		channelFactory.setScanPackageNames(packageNames);
+
+        if (defaultChannelType != null)
+            channelFactory.setDefaultChannelType(defaultChannelType);
 		
 		if (remotingTransport != null) {
 			channelFactory.setRemotingTransport(remotingTransport);
@@ -515,12 +524,12 @@ public class ServerSession implements ContextAware {
 
     /**
      * Build a consumer for the specified channel type and destination
-     * @param channelType channel type
      * @param destination destination name
      * @param topic subtopic
+     * @param channelType channel type
      * @return consumer
      */
-	public synchronized Consumer getConsumer(String channelType, String destination, String topic) {
+	public synchronized Consumer getConsumer(String destination, String topic, String channelType) {
         MessagingChannel messagingChannel = getMessagingChannel(channelType);
 		if (messagingChannel == null)
 			throw new IllegalStateException("Channel not defined in server session for type " + channelType + "");
@@ -535,13 +544,23 @@ public class ServerSession implements ContextAware {
 	}
 
     /**
-     * Build a producer for the specified channel type and destination
-     * @param channelType channel type
+     * Build a consumer for the default channel type and destination
      * @param destination destination name
      * @param topic subtopic
+     * @return consumer
+     */
+    public synchronized Consumer getConsumer(String destination, String topic) {
+        return getConsumer(destination, topic, channelFactory.getDefaultChannelType());
+    }
+
+    /**
+     * Build a producer for the specified channel type and destination
+     * @param destination destination name
+     * @param topic subtopic
+     * @param channelType channel type
      * @return producer
      */
-	public synchronized Producer getProducer(String channelType, String destination, String topic) {
+	public synchronized Producer getProducer(String destination, String topic, String channelType) {
         MessagingChannel messagingChannel = getMessagingChannel(channelType);
         if (messagingChannel == null)
 			throw new IllegalStateException("Channel not defined for server session");
@@ -554,6 +573,16 @@ public class ServerSession implements ContextAware {
 		}
 		return producer instanceof Producer ? (Producer)producer : null;
 	}
+
+    /**
+     * Build a producer for the default channel type and destination
+     * @param destination destination name
+     * @param topic subtopic
+     * @return producer
+     */
+    public synchronized Producer getProducer(String destination, String topic) {
+        return getProducer(destination, topic, channelFactory.getDefaultChannelType());
+    }
 
     /**
      * Current remote session id

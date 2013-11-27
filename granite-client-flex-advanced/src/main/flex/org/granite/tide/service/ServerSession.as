@@ -99,6 +99,7 @@ package org.granite.tide.service {
         protected var _roInitialize:RemoteObject = null;
         protected var _rosByDestination:Dictionary = new Dictionary();
         protected var _channelSetsByType:Dictionary = new Dictionary();
+        private var _defaultChannelType:String = ChannelType.LONG_POLLING;
         private var _defaultChannelBuilder:IChannelBuilder = new DefaultChannelBuilder();
 
         private var _initializing:Boolean = true;
@@ -141,6 +142,14 @@ package org.granite.tide.service {
         }
 
         /**
+         * Init the default channel type for messaging
+         * @param channelType
+         */
+        public function set defaultChannelType(channelType:String):void {
+            _defaultChannelType = channelType;
+        }
+
+        /**
          *  RemoteObject destination used
          */
         public function get destination():String {
@@ -174,6 +183,9 @@ package org.granite.tide.service {
 
 
         protected function initChannelSet(type:String):ChannelSet {
+            if (type == null)
+                type = _defaultChannelType;
+
             var channelSet:ChannelSet = _channelSetsByType[type];
             if (channelSet == null) {
                 channelSet = new ChannelSet();
@@ -244,17 +256,19 @@ package org.granite.tide.service {
         }
 
 
-        public function getConsumer(type:String, componentName:String):Consumer {
+        public function getConsumer(componentName:String, topic:String, type:String = null):Consumer {
             var consumer:Consumer = new Consumer();
             consumer.channelSet = initChannelSet(type);
             consumer.destination = componentName;
+            consumer.topic = topic;
             return consumer;
         }
 
-        public function getProducer(type:String, componentName:String):Producer {
+        public function getProducer(componentName:String, topic:String, type:String = null):Producer {
             var producer:Producer = new Producer();
             producer.channelSet = initChannelSet(type);
             producer.destination = componentName;
+            producer.topic = topic;
             return producer;
         }
 
