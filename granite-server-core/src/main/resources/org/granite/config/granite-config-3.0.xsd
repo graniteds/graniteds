@@ -55,6 +55,9 @@
 		<xs:attribute name="url-pattern" type="xs:string"/>
         <xs:attribute name="tide" type="xs:boolean" default="false"/>
         <xs:attribute name="type" type="xs:string" default="server"/>
+        <xs:attribute name="useLong" type="xs:boolean" default="false"/>
+        <xs:attribute name="useBigInteger" type="xs:boolean" default="false"/>
+        <xs:attribute name="useBigDecimal" type="xs:boolean" default="false"/>
     </xs:attributeGroup>
     
     <xs:element name="tide-roles" type="graniteds:multiValuedProperty">

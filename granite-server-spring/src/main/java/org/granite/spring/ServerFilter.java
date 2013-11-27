@@ -21,6 +21,8 @@
  */
 package org.granite.spring;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +41,10 @@ import org.granite.config.flex.Service;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converter;
+import org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer;
+import org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer;
+import org.granite.messaging.amf.io.util.externalizer.Externalizer;
+import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.security.RemotingDestinationSecurizer;
@@ -79,6 +85,9 @@ public class ServerFilter implements InitializingBean, DisposableBean, Applicati
     private List<String> tideTypes = null;
     private List<Class<? extends ExceptionConverter>> exceptionConverters = null;
     private AMF3MessageInterceptor amf3MessageInterceptor;
+    private boolean useLong = false;
+    private boolean useBigInteger = false;
+    private boolean useBigDecimal = false;
     private boolean tide = false;
     private String type = "server";
     
@@ -105,7 +114,20 @@ public class ServerFilter implements InitializingBean, DisposableBean, Applicati
         	SecurityService securityService = securityServices.values().iterator().next();
         	this.graniteConfig.setSecurityService(securityService);
         }
-        
+
+        Map<String, Externalizer> externalizers = context.getBeansOfType(Externalizer.class);
+        for (Externalizer externalizer : externalizers.values())
+            this.graniteConfig.registerExternalizer(externalizer);
+
+        if (useBigDecimal)
+            graniteConfig.setExternalizersByType(BigDecimal.class.getName(), BigDecimalExternalizer.class.getName());
+
+        if (useBigInteger)
+            graniteConfig.setExternalizersByType(BigInteger.class.getName(), BigIntegerExternalizer.class.getName());
+
+        if (useLong)
+            graniteConfig.setExternalizersByType(Long.class.getName(), LongExternalizer.class.getName());
+
         if (tideAnnotations != null) {
         	for (String ta : tideAnnotations) {
         		try {
@@ -270,8 +292,20 @@ public class ServerFilter implements InitializingBean, DisposableBean, Applicati
 	public void setAmf3MessageInterceptor(AMF3MessageInterceptor amf3MessageInterceptor) {
 		this.amf3MessageInterceptor = amf3MessageInterceptor;
 	}
-	
-	public void setTide(boolean tide) {
+
+    public void setUseLong(boolean useLong) {
+        this.useLong = useLong;
+    }
+
+    public void setUseBigInteger(boolean useBigInteger) {
+        this.useBigInteger = useBigInteger;
+    }
+
+    public void setUseBigDecimal(boolean useBigDecimal) {
+        this.useBigDecimal = useBigDecimal;
+    }
+
+    public void setTide(boolean tide) {
 		this.tide = tide;
 	}
 	

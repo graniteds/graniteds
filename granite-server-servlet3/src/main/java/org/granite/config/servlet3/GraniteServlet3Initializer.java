@@ -27,12 +27,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.FilterRegistration;
 import javax.servlet.Servlet;
@@ -65,6 +60,7 @@ import org.granite.gravity.security.GravityDestinationSecurizer;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer;
+import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ExceptionConverter;
@@ -247,7 +243,14 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	    			log.debug("Registered exception converter %s", ec.getClass());
 	    		}
 	    	}
-	    	
+
+            if (configProvider != null) {
+                for (Externalizer ext : configProvider.findInstances(Externalizer.class)) {
+                    graniteConfig.registerExternalizer(ext);
+                    log.debug("Registered externalizer %s", ext.getClass());
+                }
+            }
+
 	    	if (serverFilter.useBigDecimal())
 	    		graniteConfig.setExternalizersByType(BigDecimal.class.getName(), BigDecimalExternalizer.class.getName());
 	    	

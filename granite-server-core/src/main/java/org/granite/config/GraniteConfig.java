@@ -476,6 +476,10 @@ public class GraniteConfig implements ScannedItemHandler {
         
         return null;
     }
+
+    public void registerExternalizer(Externalizer externalizer) {
+        scannedExternalizers.add(externalizer);
+    }
 	
 	public Map<String, Externalizer> getExternalizersByType() {
 		return externalizersByType;
