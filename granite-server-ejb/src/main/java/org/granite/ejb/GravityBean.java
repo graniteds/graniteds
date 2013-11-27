@@ -19,50 +19,47 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.gravity;
+package org.granite.ejb;
 
-import javax.servlet.ServletContext;
-
+import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.ErrorMessage;
+import flex.messaging.messages.Message;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
+import org.granite.gravity.*;
 import org.granite.gravity.adapters.ServiceAdapter;
 import org.granite.gravity.udp.UdpReceiverFactory;
-
-import flex.messaging.messages.AsyncMessage;
-import flex.messaging.messages.Message;
 import org.granite.messaging.jmf.SharedContext;
 
-/**
- * @author William DRAI
- */
-public class GravityProxy implements Gravity {
+import javax.ejb.Local;
+import javax.ejb.Singleton;
 
-	private ServletContext servletContext;
+@Singleton(name="org.granite.ejb.Gravity")
+@Local(Gravity.class)
+public class GravityBean implements Gravity {
 
-    public GravityProxy() {
+    private org.granite.gravity.Gravity gravity;
+
+    public void setGravity(org.granite.gravity.Gravity gravity) {
+        this.gravity = gravity;
     }
 
-	public GravityProxy(ServletContext servletContext) {
-		this.servletContext = servletContext;
-	}
-	
-	protected Gravity getGravity() {
-		return GravityManager.getGravity(servletContext);
-	}
+    private org.granite.gravity.Gravity getGravity() {
+        return gravity;
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Granite/Services configs access.
 
-	public GravityConfig getGravityConfig() {
-    	return getGravity().getGravityConfig();
+    public GravityConfig getGravityConfig() {
+        return getGravity().getGravityConfig();
     }
     public ServicesConfig getServicesConfig() {
-    	return getGravity().getServicesConfig();
+        return getGravity().getServicesConfig();
     }
     public GraniteConfig getGraniteConfig() {
-    	return getGravity().getGraniteConfig();
+        return getGravity().getGraniteConfig();
     }
     public SharedContext getSharedContext() {
         return getGravity().getSharedContext();
@@ -71,73 +68,74 @@ public class GravityProxy implements Gravity {
     ///////////////////////////////////////////////////////////////////////////
     // Properties.
 
-	public boolean isStarted() {
-		return getGravity().isStarted();
-	}
+    public boolean isStarted() {
+        return getGravity().isStarted();
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Operations.
 
     public GraniteContext initThread(String sessionId, String clientType) {
-    	return getGravity().initThread(sessionId, clientType);
+        return getGravity().initThread(sessionId, clientType);
     }
     public void releaseThread() {
-    	getGravity().releaseThread();
+        getGravity().releaseThread();
     }
-	
-	public ServiceAdapter getServiceAdapter(String messageType, String destinationId) {
-		return getGravity().getServiceAdapter(messageType, destinationId);
-	}
 
-	public boolean hasUdpReceiverFactory() {
-		return getGravity().hasUdpReceiverFactory();
-	}
+    public ServiceAdapter getServiceAdapter(String messageType, String destinationId) {
+        return getGravity().getServiceAdapter(messageType, destinationId);
+    }
+
+    public boolean hasUdpReceiverFactory() {
+        return getGravity().hasUdpReceiverFactory();
+    }
     public UdpReceiverFactory getUdpReceiverFactory() {
-		return getGravity().getUdpReceiverFactory();
-	}
-	
+        return getGravity().getUdpReceiverFactory();
+    }
+
     public void start() throws Exception {
-    	getGravity().start();
+        getGravity().start();
     }
     public void reconfigure(GravityConfig gravityConfig, GraniteConfig graniteConfig) {
-    	getGravity().reconfigure(gravityConfig, graniteConfig);
+        getGravity().reconfigure(gravityConfig, graniteConfig);
     }
     public void stop() throws Exception {
-    	getGravity().stop();
+        getGravity().stop();
     }
     public void stop(boolean now) throws Exception {
-    	getGravity().stop(now);
+        getGravity().stop(now);
     }
 
     public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
-    	return getGravity().getChannel(channelFactory, channelId);
+        return getGravity().getChannel(channelFactory, channelId);
     }
     public Channel removeChannel(String channelId, boolean timeout) {
-    	return getGravity().removeChannel(channelId, timeout);
+        return getGravity().removeChannel(channelId, timeout);
     }
     public boolean access(String channelId) {
-    	return getGravity().access(channelId);
+        return getGravity().access(channelId);
     }
     public void execute(AsyncChannelRunner runnable) {
-    	getGravity().execute(runnable);
+        getGravity().execute(runnable);
     }
     public boolean cancel(AsyncChannelRunner runnable) {
-    	return getGravity().cancel(runnable);
+        return getGravity().cancel(runnable);
     }
 
     public Message handleMessage(ChannelFactory<?> channelFactory, Message message) {
-    	return getGravity().handleMessage(channelFactory, message);
+        return getGravity().handleMessage(channelFactory, message);
     }
     public Message handleMessage(ChannelFactory<?> channelFactory, Message message, boolean skipInterceptor) {
-    	return getGravity().handleMessage(channelFactory, message, skipInterceptor);
+        return getGravity().handleMessage(channelFactory, message, skipInterceptor);
     }
     public Message publishMessage(AsyncMessage message) {
-    	return publishMessage(null, message);
+        return publishMessage(null, message);
     }
     public Message publishMessage(Channel fromChannel, AsyncMessage message) {
         if (getGravity() == null)
-            return new ErrorMessage(message, new IllegalStateException("Gravity Proxy not yet ready"));
+            return new ErrorMessage(message, new IllegalStateException("Gravity EJB not yet ready"));
 
-    	return getGravity().publishMessage(fromChannel, message);
+        return getGravity().publishMessage(fromChannel, message);
     }
+
 }

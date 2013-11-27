@@ -22,18 +22,27 @@
 package org.granite.tide.ejb;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
 
+import javax.naming.InitialContext;
 import javax.servlet.ServletContext;
 
 import org.granite.config.ConfigProvider;
+import org.granite.gravity.Gravity;
+import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceFactory;
 
 
 public class EjbConfigProvider implements ConfigProvider {
+
+    private static final Logger log = Logger.getLogger(EjbConfigProvider.class);
+
+    private ServletContext servletContext;
     
-    public EjbConfigProvider(ServletContext servletContext) {        
+    public EjbConfigProvider(ServletContext servletContext) {
+        this.servletContext = servletContext;
     }
 	
 	public Boolean useTide() {
@@ -64,5 +73,18 @@ public class EjbConfigProvider implements ConfigProvider {
 	public Class<? extends Annotation>[] getTideAnnotations() {
 		return new Class[0];
 	}
+
+    public void initGravity(Gravity gravity) {
+        try {
+            // Set reference in EJB proxy if found
+            InitialContext ic = new InitialContext();
+            org.granite.ejb.Gravity gravityEJB = (org.granite.ejb.Gravity)ic.lookup("java:global" + servletContext.getContextPath() + "/org.granite.ejb.Gravity");
+            gravityEJB.setGravity(gravity);
+            log.info("Registered Gravity EJB");
+        }
+        catch (Exception e) {
+            log.debug(e, "Gravity EJB not found");
+        }
+    }
 
 }

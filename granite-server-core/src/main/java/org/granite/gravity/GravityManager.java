@@ -21,22 +21,29 @@
  */
 package org.granite.gravity;
 
+import javax.naming.InitialContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
+import org.granite.config.ConfigProvider;
 import org.granite.config.GraniteConfig;
 import org.granite.config.GraniteConfigListener;
 import org.granite.config.ServletGraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
+import org.granite.logging.Logger;
 import org.granite.util.TypeUtil;
+
+import java.lang.reflect.Method;
 
 /**
  * @author Franck WOLFF
  */
 public class GravityManager {
+
+    private static final Logger log = Logger.getLogger(GravityManager.class);
 
 	private static final String GRAVITY_KEY = Gravity.class.getName();
 	
@@ -84,6 +91,10 @@ public class GravityManager {
 		        try {
 		            gravity.start();
 		            context.setAttribute(GRAVITY_KEY, gravity);
+
+                    if (context.getAttribute(GraniteConfigListener.GRANITE_CONFIG_PROVIDER_ATTRIBUTE) != null)
+                        ((ConfigProvider)context.getAttribute(GraniteConfigListener.GRANITE_CONFIG_PROVIDER_ATTRIBUTE)).initGravity(gravity);
+
 		            GraniteConfigListener.registerShutdownListener(context, gravity);
 		        }
 		        catch (Exception e) {

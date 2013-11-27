@@ -31,12 +31,17 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.servlet.ServletContext;
 
 import org.granite.cdi.CDIUtils;
+import org.granite.cdi.GravityFactory;
 import org.granite.config.ConfigProvider;
+import org.granite.gravity.Gravity;
+import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceFactory;
 
 
 public class CDIConfigProvider implements ConfigProvider {
-	
+
+    private static final Logger log = Logger.getLogger(CDIConfigProvider.class);
+
 	protected BeanManager beanManager;
 
 	public CDIConfigProvider(ServletContext servletContext) {
@@ -55,7 +60,7 @@ public class CDIConfigProvider implements ConfigProvider {
 		return CDIServiceFactory.class;
 	}
 
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
 	public <T> T findInstance(Class<T> type) {
 		Set<Bean<?>> beans = beanManager.getBeans(type);
 		if (beans.size() == 1) {
@@ -86,4 +91,10 @@ public class CDIConfigProvider implements ConfigProvider {
 		return new Class[0];
 	}
 
+    @Override
+    public void initGravity(Gravity gravity) {
+        GravityFactory gravityFactory = findInstance(GravityFactory.class);
+        gravityFactory.setGravity(gravity);
+        log.info("Registered Gravity bean");
+    }
 }

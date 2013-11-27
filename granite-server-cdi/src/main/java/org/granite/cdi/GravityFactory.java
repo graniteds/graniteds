@@ -35,6 +35,7 @@ import javax.servlet.annotation.WebListener;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
+import org.granite.gravity.GravityProxy;
 import org.granite.messaging.webapp.ServletGraniteContext;
 
 
@@ -48,6 +49,8 @@ public class GravityFactory {
 
     private Gravity gravity;
 
+    private GravityProxy gravityProxy = new CDIGravityProxy();
+
 	@Inject
 	Instance<ServletContext> servletContextInstance;
 
@@ -60,24 +63,31 @@ public class GravityFactory {
     
     @Produces
     public Gravity getGravity() {
-        if (gravity != null)
-            return gravity;
+        return gravityProxy;
+    }
 
-        ServletContext servletContext = null;
+    private class CDIGravityProxy extends GravityProxy {
 
-        if (!servletContextInstance.isUnsatisfied()) {
-    		// Use ServletContext exposed with @Default qualifier (by Apache DeltaSpike Servlet for example)
-    		servletContext = servletContextInstance.select(DEFAULT_LITERAL).get();
-    	}
-    	if (servletContext == null) {
-    		// If not found, lookup in GraniteContext
-	    	GraniteContext graniteContext = GraniteContext.getCurrentInstance();
-	    	if (graniteContext == null || !(graniteContext instanceof ServletGraniteContext))
-	    		throw new RuntimeException("Gravity not found: not in a GraniteDS servlet context");
-	    	
-	    	servletContext = ((ServletGraniteContext)graniteContext).getServletContext();
-    	}
-    	
-    	return GravityManager.getGravity(servletContext);
+        @Override
+        protected Gravity getGravity() {
+            if (gravity != null)
+                return gravity;
+
+            ServletContext servletContext = null;
+
+            if (!servletContextInstance.isUnsatisfied()) {
+                // Use ServletContext exposed with @Default qualifier (by Apache DeltaSpike Servlet for example)
+                servletContext = servletContextInstance.select(DEFAULT_LITERAL).get();
+            }
+            if (servletContext == null) {
+                // If not found, lookup in GraniteContext
+                GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+                if (graniteContext != null && graniteContext instanceof ServletGraniteContext)
+                    servletContext = ((ServletGraniteContext)graniteContext).getServletContext();
+            }
+
+            return servletContext != null ? GravityManager.getGravity(servletContext) : null;
+        }
+
     }
 }

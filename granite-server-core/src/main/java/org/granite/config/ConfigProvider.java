@@ -24,6 +24,7 @@ package org.granite.config;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
+import org.granite.gravity.Gravity;
 import org.granite.messaging.service.ServiceFactory;
 
 public interface ConfigProvider {
@@ -41,4 +42,6 @@ public interface ConfigProvider {
 	public Class<? extends Annotation>[] getTideAnnotations();
 	
 	public Class<? extends ServiceFactory> getFactoryClass();
+
+    public void initGravity(Gravity gravity);
 }
