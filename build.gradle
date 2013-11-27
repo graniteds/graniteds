@@ -585,12 +585,6 @@ project('granite-server') {
 	
 	apply plugin: 'java'
 	
-	dependencies {
-		coreProjects.each {
-			compile project(it)
-		}
-	}
-	
 	configurations {
 		create('sources')
 		create('javadoc')
@@ -628,8 +622,6 @@ project('granite-server') {
 	
 	dependencies {
 		javadoc 'log4j:log4j:1.2.17'
-		
-		testCompile 'junit:junit:4.11'
 	}
 
 	javadoc {
