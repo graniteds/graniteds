@@ -69,7 +69,7 @@ public class DataObserver implements ContextAware, NameAware {
     private Context context;
     private ServerSession serverSession = null;
     private EntityManager entityManager = null;
-    private String channelType = "long-polling";
+    private String channelType = null;
     private String destination = null;
     
 	private Consumer consumer = null;
@@ -119,7 +119,7 @@ public class DataObserver implements ContextAware, NameAware {
 	
 	@PostConstruct
 	public void start() {
-        consumer = serverSession.getConsumer(channelType, destination, DATA_OBSERVER_TOPIC_NAME);
+        consumer = serverSession.getConsumer(destination, DATA_OBSERVER_TOPIC_NAME, channelType);
 	}	
 	
 	@PreDestroy
