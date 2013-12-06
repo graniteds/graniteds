@@ -224,24 +224,28 @@ public class PagedQuery<E, F> extends PagedCollection<E> implements Component, P
 	}
 
 	public void setRemoteComponentName(String remoteComponentName) {
-		if (remoteComponentName != this.remoteComponentName) {
+        if (remoteComponentName == null)
+            throw new IllegalArgumentException("remoteComponentName cannot be null");
+
+		if (!remoteComponentName.equals(this.remoteComponentName)) {
 			Object component = context.byName(remoteComponentName);
 			if (component == null || !(component instanceof ComponentImpl)) {
-				this.component = new ComponentImpl(serverSession);
-				((ComponentImpl)this.component).setName(remoteComponentName);
-				((ComponentImpl)this.component).setContext(context);
+				component = new ComponentImpl(serverSession);
 				context.set(remoteComponentName, component);
 			}
 		}
 		else {
-			this.component = new ComponentImpl(serverSession);
-			((ComponentImpl)this.component).setName(remoteComponentName);
-			((ComponentImpl)this.component).setContext(context);
+			component = new ComponentImpl(serverSession);
+            context.set(remoteComponentName, component);
 		}
 	}
 	
 	public void setRemoteComponentClass(Class<? extends ComponentImpl> remoteComponentClass) throws IllegalAccessException, InstantiationException {
-		component = TypeUtil.newInstance(remoteComponentClass, new Class<?>[] { ServerSession.class }, new Object[] { serverSession });
+        component = context.byType(remoteComponentClass);
+        if (component == null) {
+            component = TypeUtil.newInstance(remoteComponentClass, new Class<?>[] { ServerSession.class }, new Object[] { serverSession });
+            context.set(component);
+        }
 	}
 	
 	public void setMethodName(String methodName) {
