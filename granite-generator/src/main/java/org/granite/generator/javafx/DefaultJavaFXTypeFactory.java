@@ -201,7 +201,7 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 
     protected ClientType getFromCache(String key, PropertyType propertyType) {
         if (key == null)
-            throw new NullPointerException("jType must be non null");
+            throw new NullPointerException("key must be non null");
         if (propertyType == PropertyType.PROPERTY)
         	return propertyJava2JavaFXType.get(key);
         else if (propertyType == PropertyType.READONLY_PROPERTY)
@@ -211,7 +211,7 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 
     protected void putInCache(String key, PropertyType propertyType, ClientType javafxType) {
         if (key == null || javafxType == null)
-            throw new NullPointerException("jType and JavaFXType must be non null");
+            throw new NullPointerException("key and javafxType must be non null");
         if (propertyType == PropertyType.PROPERTY)
         	propertyJava2JavaFXType.put(key, javafxType);
         else if (propertyType == PropertyType.READONLY_PROPERTY)

@@ -172,7 +172,36 @@ public class TestGenEntity {
 		Assert.assertTrue("AbstractEntityBase1 contains uid", base.indexOf("private StringProperty uid") >= 0);
 		Assert.assertTrue("AbstractEntityBase1 contains get uid", base.indexOf("public String getUid() {") >= 0);
 	}
-	
+
+    @Test
+    public void testTideTemplateJFXEntityInclude() throws Exception {
+        MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
+        config.setTide(true);
+        config.addFileSetClasses(Entity5.class);
+        JavaGroovyTransformer provider = new JavaGroovyTransformer(config, new MockListener()) {
+            @Override
+            public boolean isOutdated(JavaAs3Input input, GroovyTemplate template, File outputFile, boolean hasBaseTemplate) {
+                return true;
+            }
+        };
+        Generator generator = new Generator(config);
+        generator.add(provider);
+        JavaAs3Input input = new JavaAs3Input(Entity5.class,
+                new File(Entity5.class.getClassLoader().getResource(Entity5.class.getName().replace('.', '/') + ".class").toURI()));
+        JavaAs3Output[] outputs = (JavaAs3Output[])generator.generate(input);
+
+        Assert.assertEquals("Output", 2, outputs.length);
+
+        String sourceBase = Util.readFile(outputs[0].getFile());
+        String source = Util.readFile(outputs[1].getFile());
+
+        Assert.assertTrue("Entity5 contains generatedName", sourceBase.indexOf("private ReadOnlyStringWrapper generatedName =") >= 0);
+        Assert.assertTrue("Entity5 contains generatedNameProperty", sourceBase.indexOf("public ReadOnlyStringProperty generatedNameProperty()") >= 0);
+
+        checkCompile(new JavaSourceCodeObject("org.granite.test.generator.entities.Entity5Base", sourceBase),
+                new JavaSourceCodeObject("org.granite.test.generator.entities.Entity5", source));
+    }
+
 	@Test
 	public void testTideTemplateJFXBean() throws Exception {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();

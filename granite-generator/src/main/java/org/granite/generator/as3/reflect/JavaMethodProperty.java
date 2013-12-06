@@ -87,6 +87,10 @@ public class JavaMethodProperty implements JavaProperty {
         );
     }
 
+    public String getAccess() {
+        return JavaMember.PRIVATE;
+    }
+
     @Override
 	public String getName() {
         return name;

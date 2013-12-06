@@ -103,10 +103,10 @@ public class ${jClass.clientType.name}Base<%
 		if (!jProperty.readable && !jProperty.writable) {%>
 	@SuppressWarnings("unused")<%
 		}
-	    if (jProperty instanceof org.granite.generator.as3.reflect.JavaMember && jProperty.clientType.readOnly) {%>
+	    if (jProperty instanceof org.granite.generator.as3.reflect.JavaProperty && jProperty.clientType.readOnly) {%>
 	${jProperty.access} ${jProperty.clientType.simplePropertyImplTypeName} ${jProperty.name} = ${jProperty.clientType.propertyFactoryName}(this, "${jProperty.name}");<%
 	    }
-	    else if (jProperty instanceof org.granite.generator.as3.reflect.JavaMember && jProperty.clientType.propertyTypeName != null) {%>
+	    else if (jProperty instanceof org.granite.generator.as3.reflect.JavaProperty && jProperty.clientType.propertyTypeName != null) {%>
 	${jProperty.access} ${jProperty.clientType.simplePropertyTypeName} ${jProperty.name} = new ${jProperty.clientType.simplePropertyImplTypeName}(this, "${jProperty.name}");<%
 	    }
 	    else if (jProperty.clientType.propertyTypeName != null) {%>
