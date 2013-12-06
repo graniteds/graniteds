@@ -46,6 +46,8 @@ import javafx.beans.value.ObservableValue;
 
 import javax.inject.Named;
 
+import org.granite.client.tide.Context;
+import org.granite.client.tide.ContextAware;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.PersistenceManager;
 
@@ -53,7 +55,7 @@ import org.granite.client.tide.data.PersistenceManager;
  * @author William DRAI
  */
 @Named
-public class ManagedEntity<T> {
+public class ManagedEntity<T> implements ContextAware {
     
     private ObjectProperty<T> instance = new SimpleObjectProperty<T>(this, "instance");
     
@@ -62,7 +64,10 @@ public class ManagedEntity<T> {
 	
 	private BooleanProperty saved = new SimpleBooleanProperty(this, "saved", true);
 	private BooleanProperty dirty = new SimpleBooleanProperty(this, "dirty", false);
-	
+
+    public ManagedEntity() {
+    }
+
 	public ManagedEntity(EntityManager entityManager) {
 		init(entityManager);
 	}
@@ -129,8 +134,15 @@ public class ManagedEntity<T> {
 			saved.set(newValue != null);
 		}
 	};
-	
+
+    @Override
+    public void setContext(Context context) {
+        init(context.getEntityManager());
+    }
+
 	private void init(EntityManager entityManager) {
+        if (this.entityManager != null)
+            return;
 		this.entityManager = entityManager;
 		this.dataManager = (JavaFXDataManager)entityManager.getDataManager();		
 		this.instance.addListener(entityChangeListener);
