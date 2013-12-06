@@ -124,15 +124,15 @@ public class TideExtension implements Extension {
 	}
 	
 	public void processAfterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager manager) {
-		if (tideInstrumentedBeans == null)
-			return;
-		TideInstrumentedBeans ib = (TideInstrumentedBeans)manager.getReference(tideInstrumentedBeans, TideInstrumentedBeans.class, 
-				manager.createCreationalContext(tideInstrumentedBeans));
-		ib.setBeans(instrumentedBeans);
-		ib.setProducedBeans(producedBeans);
 	}
 	
 	public void processAfterDeploymentValidation(@Observes AfterDeploymentValidation event, BeanManager manager) {
+        if (tideInstrumentedBeans == null)
+            return;
+        TideInstrumentedBeans ib = (TideInstrumentedBeans)manager.getReference(tideInstrumentedBeans, TideInstrumentedBeans.class,
+                manager.createCreationalContext(tideInstrumentedBeans));
+        ib.setBeans(instrumentedBeans);
+        ib.setProducedBeans(producedBeans);
 	}
 	
 
