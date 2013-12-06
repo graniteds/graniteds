@@ -161,7 +161,11 @@ package org.granite.tide.collections {
 		}
 		
 		public function set remoteComponentClass(remoteComponentClass:Class):void {
-			_component = new remoteComponentClass() as Component;
+            _component = _context.byType(remoteComponentClass, true) as Component;
+            if (_component == null) {
+                _context.meta_tide.addComponents([ remoteComponentClass ]);
+                _component = _context.byType(remoteComponentClass, true) as Component;
+            }
 		}
 		
 		public function set methodName(methodName:String):void {
