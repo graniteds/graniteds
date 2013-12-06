@@ -530,6 +530,9 @@ public class ServerSession implements ContextAware {
      * @return consumer
      */
 	public synchronized Consumer getConsumer(String destination, String topic, String channelType) {
+        if (channelType == null)
+            channelType = channelFactory.getDefaultChannelType();
+
         MessagingChannel messagingChannel = getMessagingChannel(channelType);
 		if (messagingChannel == null)
 			throw new IllegalStateException("Channel not defined in server session for type " + channelType + "");
@@ -561,6 +564,9 @@ public class ServerSession implements ContextAware {
      * @return producer
      */
 	public synchronized Producer getProducer(String destination, String topic, String channelType) {
+        if (channelType == null)
+            channelType = channelFactory.getDefaultChannelType();
+
         MessagingChannel messagingChannel = getMessagingChannel(channelType);
         if (messagingChannel == null)
 			throw new IllegalStateException("Channel not defined for server session");
