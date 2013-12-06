@@ -263,7 +263,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
             if (msg.length > 16000) {
                 // Split in ~2000 bytes chunks
                 int count = msg.length / 2000;
-                int chunkSize = messagesArray.length / count;
+                int chunkSize = Math.max(1, messagesArray.length / count);
                 int index = 0;
                 while (index < messagesArray.length) {
                     AsyncMessage[] chunk = Arrays.copyOfRange(messagesArray, index, Math.min(messagesArray.length, index+chunkSize));
