@@ -179,7 +179,7 @@ class MockSimpleCallAsyncToken extends MockSpringAsyncToken {
         if (componentName == "identity" && op == "login") {
             return buildResult(true, []);
         }
-		else if (componentName == null && op == "list") {
+		else if (op == "list") {
 			var first:int = params[1];
 			var max:int = params[2];
 			var coll:ArrayCollection = new ArrayCollection();
