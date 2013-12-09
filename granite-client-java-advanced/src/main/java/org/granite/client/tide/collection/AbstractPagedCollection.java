@@ -93,11 +93,10 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	 */
 	@Override
 	public int size() {
-		if (initialFind())
-	        return 0;
-	    else if (localIndex == null)
-	        return 0;
-		return count;
+        initialFind();
+        if (localIndex != null)
+            return count;
+	    return 0;
 	}
 	
 	/**
@@ -300,7 +299,36 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 		int pageNum = max > 0 ? nextFirst / max : 0;
 		log.debug("handle result page %d (%d - %d)", pageNum, nextFirst, nextLast);
 
-    	if (!initializing) {
+        count = page.getResultCount();
+
+        if (localIndex != null) {
+            List<String> entityNames = new ArrayList<String>();
+            for (int i = 0; i < localIndex.length; i++) {
+                String entityName = localIndex[i].getClass().getSimpleName();
+                if (!entityName.equals(elementName))
+                    entityNames.remove(entityName);
+            }
+        }
+        for (Object o : list) {
+            if (elementClass == null || (o != null && o.getClass().isAssignableFrom(elementClass)))
+                elementClass = (Class<? extends E>)o.getClass();
+        }
+        localIndex = (E[])Array.newInstance(elementClass, list.size());
+        localIndex = list.toArray(localIndex);
+        if (localIndex != null) {
+            for (int i = 0; i < localIndex.length; i++) {
+                String entityName = localIndex[i].getClass().getSimpleName();
+                if (!entityName.equals(elementName))
+                    entityNames.add(entityName);
+            }
+        }
+
+    	if (initializing) {
+            initializing = false;
+
+            getWrappedList().addAll(list);
+        }
+        else {
     		log.debug("Adjusting from %d-%d to %d-%d size %d", AbstractPagedCollection.this.first, AbstractPagedCollection.this.last, nextFirst, nextLast, list.size());
     		// Adjust internal list to expected results without triggering events
 	    	if (nextFirst > AbstractPagedCollection.this.first && nextFirst < AbstractPagedCollection.this.last) {
@@ -334,35 +362,7 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	    		}
 	    	}
     	}
-    	else
-    		getWrappedList().addAll(list);
-		
-		count = page.getResultCount();
-		
-	    initializing = false;
-		
-	    if (localIndex != null) {
-	    	List<String> entityNames = new ArrayList<String>();
-	        for (int i = 0; i < localIndex.length; i++) {
-				String entityName = localIndex[i].getClass().getSimpleName();
-				if (!entityName.equals(elementName))
-					entityNames.remove(entityName);
-	        }
-	    }
-	    for (Object o : list) {
-	    	if (elementClass == null || (o != null && o.getClass().isAssignableFrom(elementClass)))
-	    		elementClass = (Class<? extends E>)o.getClass();
-	    }
-	    localIndex = (E[])Array.newInstance(elementClass, list.size());
-		localIndex = list.toArray(localIndex);
-	    if (localIndex != null) {
-	        for (int i = 0; i < localIndex.length; i++) {
-				String entityName = localIndex[i].getClass().getSimpleName();
-				if (!entityName.equals(elementName))
-					entityNames.add(entityName);
-	        }
-	    }
-	    
+
 		this.first = nextFirst;
 		this.last = nextLast;
 	    
