@@ -297,7 +297,9 @@ public class EntityManagerImpl implements EntityManager {
 	public void detach(Object object, IdentityHashMap<Object, Object> cache, boolean forceRemove) {
 		if (object == null || ObjectUtil.isSimple(object))
 			return;
-		
+        if (!dataManager.isInitialized(object))
+            return;
+
 		if (cache.containsKey(object))
 			return;
 		cache.put(object, object);
@@ -309,26 +311,6 @@ public class EntityManagerImpl implements EntityManager {
 			
 			for (Entry<String, Object> me : values.entrySet())
 				removeReference(me.getValue(), object, me.getKey());
-		}
-		
-		for (Entry<String, Object> me : values.entrySet()) {
-			Object val = me.getValue();
-			
-			if (val instanceof Collection && dataManager.isInitialized(val)) {
-				Collection<?> coll = (Collection<?>)val;
-				for (Object o : coll)
-					detach(o, cache, forceRemove);
-			}
-			else if (val instanceof Map<?, ?> && dataManager.isInitialized(val)) {
-				Map<?, ?> map = (Map<?, ?>)val;
-				for (Entry<?, ?> entry : map.entrySet()) {
-					detach(entry.getKey(), cache, forceRemove);
-					detach(entry.getValue(), cache, forceRemove);
-				}
-			}
-			else if (val != null && !ObjectUtil.isSimple(val) && !(val instanceof Enum)) {
-				detach(val, cache, forceRemove);
-			}
 		}
 	}
     
