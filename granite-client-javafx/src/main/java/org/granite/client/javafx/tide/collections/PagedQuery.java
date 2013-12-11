@@ -91,6 +91,7 @@ public class PagedQuery<E, F> extends PagedCollection<E> implements Component, P
     
     private final ServerSession serverSession;
     private String remoteComponentName = null;
+    private Class<? extends ComponentImpl> remoteComponentClass = null;
     private Context context = null;
 	
     protected String methodName = "find";
@@ -130,6 +131,19 @@ public class PagedQuery<E, F> extends PagedCollection<E> implements Component, P
     
     public void setContext(Context context) {
     	this.context = context;
+
+        if (remoteComponentName != null)
+            setRemoteComponentName(remoteComponentName);
+
+        if (remoteComponentClass != null) {
+            try {
+                setRemoteComponentClass(remoteComponentClass);
+            }
+            catch (Exception e) {
+                throw new RuntimeException("Could not init context", e);
+            }
+        }
+
     	if (component instanceof ContextAware)
     		((ContextAware)component).setContext(context);
     }
@@ -227,20 +241,29 @@ public class PagedQuery<E, F> extends PagedCollection<E> implements Component, P
         if (remoteComponentName == null)
             throw new IllegalArgumentException("remoteComponentName cannot be null");
 
-		if (!remoteComponentName.equals(this.remoteComponentName)) {
-			Object component = context.byName(remoteComponentName);
-			if (component == null || !(component instanceof ComponentImpl)) {
-				component = new ComponentImpl(serverSession);
-				context.set(remoteComponentName, component);
-			}
-		}
-		else {
-			component = new ComponentImpl(serverSession);
+        this.remoteComponentName = remoteComponentName;
+        if (context == null) {
+            this.component = null;
+            return;
+        }
+
+		component = context.byName(remoteComponentName);
+        if (component == null || !(component instanceof ComponentImpl)) {
+            component = new ComponentImpl(serverSession);
             context.set(remoteComponentName, component);
-		}
+        }
 	}
 	
 	public void setRemoteComponentClass(Class<? extends ComponentImpl> remoteComponentClass) throws IllegalAccessException, InstantiationException {
+        if (remoteComponentClass == null)
+            throw new IllegalArgumentException("remoteComponentClass cannot be null");
+
+        this.remoteComponentClass = remoteComponentClass;
+        if (context == null) {
+            component = null;
+            return;
+        }
+
         component = context.byType(remoteComponentClass);
         if (component == null) {
             component = TypeUtil.newInstance(remoteComponentClass, new Class<?>[] { ServerSession.class }, new Object[] { serverSession });
