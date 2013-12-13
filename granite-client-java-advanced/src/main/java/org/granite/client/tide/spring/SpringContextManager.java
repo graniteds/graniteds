@@ -72,6 +72,8 @@ public class SpringContextManager extends SimpleContextManager implements Applic
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 		setInstanceStoreFactory(new SpringInstanceStoreFactory(applicationContext));
+        if (eventBus instanceof SpringEventBus)
+            ((SpringEventBus)eventBus).setApplicationContext(applicationContext);
 	}
 	
 	@Override
@@ -101,9 +103,9 @@ public class SpringContextManager extends SimpleContextManager implements Applic
 		    beanFactory.registerSingleton(entry.getKey(), entry.getValue());
 		beanFactory.registerScope("view", new ViewScope());
 	}
-	
-	
-	private final class SpringDataConflictListener implements DataConflictListener {
+
+
+    private final class SpringDataConflictListener implements DataConflictListener {
 		@Override
 		public void onConflict(EntityManager entityManager, Conflicts conflicts) {
 			TideApplicationEvent event = new TideApplicationEvent(getContext(null), UpdateKind.CONFLICT.eventName(), conflicts);
