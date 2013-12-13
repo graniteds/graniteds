@@ -90,6 +90,7 @@ public class PagedQuery<E, F> extends PagedCollection<E> implements Component, P
     protected Component component = null;
     
     private final ServerSession serverSession;
+    private String componentName = null;
     private String remoteComponentName = null;
     private Class<? extends ComponentImpl> remoteComponentClass = null;
     private Context context = null;
@@ -126,7 +127,7 @@ public class PagedQuery<E, F> extends PagedCollection<E> implements Component, P
     }
 	
     public void setName(String componentName) {
-    	remoteComponentName = componentName;
+    	this.componentName = componentName;
     }
     
     public void setContext(Context context) {
@@ -149,9 +150,11 @@ public class PagedQuery<E, F> extends PagedCollection<E> implements Component, P
     }
     
 	public void init() {
-		component = new ComponentImpl(serverSession);
-		((ComponentImpl)component).setName(remoteComponentName);
-		((ComponentImpl)component).setContext(context);
+        if (component == null) {
+            component = new ComponentImpl(serverSession);
+            ((ComponentImpl)component).setName(componentName);
+            ((ComponentImpl)component).setContext(context);
+        }
 	}
 	
 	
