@@ -117,12 +117,10 @@ public class DataObserver implements ContextAware, NameAware {
 			this.destination = name;
 	}
 	
-	@PostConstruct
 	public void start() {
         consumer = serverSession.getConsumer(destination, DATA_OBSERVER_TOPIC_NAME, channelType);
 	}	
 	
-	@PreDestroy
 	public void stop() {
 		if (consumer.isSubscribed())
 			unsubscribe();
