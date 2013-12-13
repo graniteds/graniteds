@@ -43,6 +43,7 @@ import java.util.Map;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.InstanceStore;
 import org.granite.client.tide.InstanceStoreFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -109,12 +110,22 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
         @SuppressWarnings("unchecked")
 		@Override
 		public <T> T byName(String name, Context context) {
-			return (T)applicationContext.getBean(name);
+            try {
+    			return (T)applicationContext.getBean(name);
+            }
+            catch (NoSuchBeanDefinitionException e) {
+            }
+            return null;
 		}
 
 		@Override
 		public <T> T byType(Class<T> type, Context context) {
-			return applicationContext.getBean(type);
+            try {
+			    return applicationContext.getBean(type);
+            }
+            catch (NoSuchBeanDefinitionException e) {
+            }
+            return null;
 		}
 		
 		@SuppressWarnings("unchecked")
