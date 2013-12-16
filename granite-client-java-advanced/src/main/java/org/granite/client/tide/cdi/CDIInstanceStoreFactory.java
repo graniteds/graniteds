@@ -84,7 +84,7 @@ public class CDIInstanceStoreFactory implements InstanceStoreFactory {
 		public <T> T getNoProxy(String name, Context context) {
 			Set<Bean<?>> beans = beanManager.getBeans(name);
 			if (beans.size() == 0)
-				throw new RuntimeException("Bean not found " + name);
+				return null;
 			if (beans.size() > 1)
 				throw new RuntimeException("Ambiguous beans found " + name);
 			Bean<?> bean = beans.iterator().next();
@@ -97,7 +97,7 @@ public class CDIInstanceStoreFactory implements InstanceStoreFactory {
 		public <T> T byName(String name, Context context) {
 			Set<Bean<?>> beans = beanManager.getBeans(name);
 			if (beans.size() == 0)
-				throw new RuntimeException("Bean not found " + name);
+				return null;
 			if (beans.size() > 1)
 				throw new RuntimeException("Ambiguous beans found " + name);
 			Bean<?> bean = beans.iterator().next();
@@ -110,7 +110,7 @@ public class CDIInstanceStoreFactory implements InstanceStoreFactory {
 		public <T> T byType(Class<T> type, Context context) {
 			Set<Bean<?>> beans = beanManager.getBeans(type);
 			if (beans.size() == 0)
-				throw new RuntimeException("Bean not found " + type);
+				return null;
 			if (beans.size() > 1)
 				throw new RuntimeException("Ambiguous beans found " + type);
 			Bean<?> bean = beans.iterator().next();
