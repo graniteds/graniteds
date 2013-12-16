@@ -81,13 +81,15 @@ public class DataObserver implements ContextAware, NameAware {
     
 	public DataObserver(ServerSession serverSession) {
 		this.serverSession = serverSession;
-		this.entityManager = serverSession.getContext().getEntityManager();
+        if (serverSession.getContext() != null)
+		    this.entityManager = serverSession.getContext().getEntityManager();
 	}
 
     public DataObserver(String channelType, ServerSession serverSession) {
         this.channelType = channelType;
         this.serverSession = serverSession;
-        this.entityManager = serverSession.getContext().getEntityManager();
+        if (serverSession.getContext() != null)
+            this.entityManager = serverSession.getContext().getEntityManager();
     }
 
 	public DataObserver(ServerSession serverSession, EntityManager entityManager) {
@@ -109,7 +111,9 @@ public class DataObserver implements ContextAware, NameAware {
     }
 
 	public void setContext(Context context) {
-		this.context = context;
+        this.context = context;
+        if (this.entityManager == null)
+            this.entityManager = context.getEntityManager();
 	}
 	
 	public void setName(String name) {
