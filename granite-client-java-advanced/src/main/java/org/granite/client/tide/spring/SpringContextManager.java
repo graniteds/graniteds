@@ -98,6 +98,7 @@ public class SpringContextManager extends SimpleContextManager implements Applic
 		EntityManager entityManager = getContext().getEntityManager();
 		entityManager.addListener(new SpringDataConflictListener());
 		beanFactory.registerSingleton("entityManager", entityManager);
+        beanFactory.registerSingleton("eventBus", eventBus);
 		beanFactory.registerSingleton("dataManager", getContext().getDataManager());
 		for (Entry<String, Object> entry : getContext().getInitialBeans().entrySet())
 		    beanFactory.registerSingleton(entry.getKey(), entry.getValue());
