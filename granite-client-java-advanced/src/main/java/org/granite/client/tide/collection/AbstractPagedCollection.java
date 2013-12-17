@@ -323,38 +323,44 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
             }
         }
 
+        int previousFirst = this.first;
+        int previousLast = this.last;
+
+        this.first = nextFirst;
+        this.last = nextLast;
+
     	if (initializing) {
             initializing = false;
 
             getWrappedList().addAll(list);
         }
         else {
-    		log.debug("Adjusting from %d-%d to %d-%d size %d", AbstractPagedCollection.this.first, AbstractPagedCollection.this.last, nextFirst, nextLast, list.size());
+    		log.debug("Adjusting from %d-%d to %d-%d size %d", previousFirst, previousLast, nextFirst, nextLast, list.size());
     		// Adjust internal list to expected results without triggering events
-	    	if (nextFirst > AbstractPagedCollection.this.first && nextFirst < AbstractPagedCollection.this.last) {
-    			getInternalWrappedList().subList(0, Math.min(getInternalWrappedList().size(), nextFirst - AbstractPagedCollection.this.first)).clear();
-	    		for (int i = 0; i < nextFirst - AbstractPagedCollection.this.first && AbstractPagedCollection.this.last - nextFirst + i < list.size(); i++) {
-	    			E elt = list.get(AbstractPagedCollection.this.last - nextFirst + i);
+	    	if (nextFirst > previousFirst && nextFirst < previousLast) {
+    			getInternalWrappedList().subList(0, Math.min(getInternalWrappedList().size(), nextFirst - previousFirst)).clear();
+	    		for (int i = 0; i < nextFirst - previousFirst && previousLast - nextFirst + i < list.size(); i++) {
+	    			E elt = list.get(previousLast - nextFirst + i);
     				getInternalWrappedList().add(elt);
 	    		}
 	    	}
-	    	else if (nextFirst == AbstractPagedCollection.this.first && nextLast > AbstractPagedCollection.this.last) {
-	    		for (int i = 0; i < (nextLast-nextFirst)-(AbstractPagedCollection.this.last-AbstractPagedCollection.this.first) && AbstractPagedCollection.this.last + i < list.size(); i++) {
-	    			E elt = list.get(AbstractPagedCollection.this.last + i);
+	    	else if (nextFirst == previousFirst && nextLast > previousLast) {
+	    		for (int i = 0; i < (nextLast-nextFirst)-(previousLast-previousFirst) && previousLast + i < list.size(); i++) {
+	    			E elt = list.get(previousLast + i);
     				getInternalWrappedList().add(elt);
 	    		}
 	    	}
-	    	else if (nextLast > AbstractPagedCollection.this.first && nextLast < AbstractPagedCollection.this.last) {
-	    		if (nextLast-AbstractPagedCollection.this.first < getInternalWrappedList().size())
-	    			getInternalWrappedList().subList(nextLast-AbstractPagedCollection.this.first, getInternalWrappedList().size()).clear();
+	    	else if (nextLast > previousFirst && nextLast < previousLast) {
+	    		if (nextLast-previousFirst < getInternalWrappedList().size())
+	    			getInternalWrappedList().subList(nextLast-previousFirst, getInternalWrappedList().size()).clear();
 	    		else
 	    			getInternalWrappedList().clear();
-	    		for (int i = 0; i < AbstractPagedCollection.this.first - nextFirst && i < list.size(); i++) {
+	    		for (int i = 0; i < previousFirst - nextFirst && i < list.size(); i++) {
 	    			E elt = list.get(i);
     				getInternalWrappedList().add(i, elt);
 	    		}
 	    	}
-	    	else if (nextFirst >= AbstractPagedCollection.this.last || nextLast <= AbstractPagedCollection.this.first) {
+	    	else if (nextFirst >= this.last || nextLast <= previousFirst) {
 	    		getInternalWrappedList().clear();
 	    		for (int i = 0; i < list.size(); i++) {
 	    			E elt = list.get(i);
@@ -363,9 +369,6 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	    	}
     	}
 
-		this.first = nextFirst;
-		this.last = nextLast;
-	    
 		pendingRanges.clear();
 		
 		firePageChange(event);
