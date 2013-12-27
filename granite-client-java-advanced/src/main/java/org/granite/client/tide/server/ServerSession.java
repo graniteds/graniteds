@@ -53,8 +53,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.inject.Named;
 
 import org.granite.client.configuration.Configuration;
@@ -65,7 +63,14 @@ import org.granite.client.messaging.RemoteService;
 import org.granite.client.messaging.ResultFaultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicAgent;
-import org.granite.client.messaging.channel.*;
+import org.granite.client.messaging.channel.AMFChannelFactory;
+import org.granite.client.messaging.channel.ChannelBuilder;
+import org.granite.client.messaging.channel.ChannelFactory;
+import org.granite.client.messaging.channel.JMFChannelFactory;
+import org.granite.client.messaging.channel.MessagingChannel;
+import org.granite.client.messaging.channel.RemotingChannel;
+import org.granite.client.messaging.channel.SessionAwareChannel;
+import org.granite.client.messaging.channel.UsernamePasswordCredentials;
 import org.granite.client.messaging.codec.MessagingCodec.ClientType;
 import org.granite.client.messaging.events.Event;
 import org.granite.client.messaging.events.FaultEvent;

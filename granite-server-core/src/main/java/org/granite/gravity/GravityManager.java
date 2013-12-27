@@ -21,7 +21,6 @@
  */
 package org.granite.gravity;
 
-import javax.naming.InitialContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -33,17 +32,12 @@ import org.granite.config.GraniteConfigListener;
 import org.granite.config.ServletGraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
-import org.granite.logging.Logger;
 import org.granite.util.TypeUtil;
-
-import java.lang.reflect.Method;
 
 /**
  * @author Franck WOLFF
  */
 public class GravityManager {
-
-    private static final Logger log = Logger.getLogger(GravityManager.class);
 
 	private static final String GRAVITY_KEY = Gravity.class.getName();
 	

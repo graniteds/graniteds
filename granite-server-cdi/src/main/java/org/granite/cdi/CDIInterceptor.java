@@ -38,7 +38,6 @@ import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.messaging.webapp.HttpServletRequestParamWrapper;
-import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.tide.cdi.ConversationState;
 import org.granite.tide.cdi.EventState;
 import org.granite.tide.cdi.SessionState;
