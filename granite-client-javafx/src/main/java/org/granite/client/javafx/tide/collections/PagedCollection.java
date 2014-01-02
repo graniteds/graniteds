@@ -91,9 +91,9 @@ public abstract class PagedCollection<E> extends AbstractPagedCollection<E> impl
 	@Override
 	@PreDestroy
 	public void clear() {
-		helper.clear();
-		pageChangeHelper.clear();
 		super.clear();
+        helper.clear();
+        pageChangeHelper.clear();
 	}
 	
 	
@@ -124,7 +124,7 @@ public abstract class PagedCollection<E> extends AbstractPagedCollection<E> impl
 	}
 	
 	public void firePageChange(TideRpcEvent event) {
-		fireItemsUpdated(0, this.last-this.first);
+		fireItemsUpdated(0, Math.min(this.count, this.last)-this.first);
 		pageChangeHelper.fireEvent(this, event);
 	}
 	
@@ -138,6 +138,8 @@ public abstract class PagedCollection<E> extends AbstractPagedCollection<E> impl
 	}
 	
 	public void fireItemsUpdated(final int from, final int to) {
+        if (to <= from)
+            return;
 		ListChangeListener.Change<E> change = new ListChangeListener.Change<E>(wrappedList) {
 			@Override
 			public int getFrom() {
@@ -199,7 +201,7 @@ public abstract class PagedCollection<E> extends AbstractPagedCollection<E> impl
 
 		@Override
 		public int getRemovedSize() {
-			return wrappedChange.getRemovedSize();
+            return wrappedChange.getRemovedSize();
 		}
 
 		@Override
