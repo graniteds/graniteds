@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="net.sf.extcos:extcos:0.3b" type="repository">
+    <properties maven-id="net.sf.extcos:extcos:0.3b" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/extcos-0.3b.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-api-1.6.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-all-3.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

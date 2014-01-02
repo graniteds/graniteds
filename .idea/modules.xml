@@ -14,6 +14,8 @@
       <module fileurl="file://$PROJECT_DIR$/granite-client-java-udp/granite-client-java-udp.iml" filepath="$PROJECT_DIR$/granite-client-java-udp/granite-client-java-udp.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java-udp/tests-tomcat7/granite-client-java-udp-tests-tomcat7.iml" filepath="$PROJECT_DIR$/granite-client-java-udp/tests-tomcat7/granite-client-java-udp-tests-tomcat7.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-javafx/granite-client-javafx.iml" filepath="$PROJECT_DIR$/granite-client-javafx/granite-client-javafx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-eclipse/granite-eclipse.iml" filepath="$PROJECT_DIR$/granite-eclipse/granite-eclipse.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-eclipse/granite-eclipse-builder/granite-eclipse-builder.iml" filepath="$PROJECT_DIR$/granite-eclipse/granite-eclipse-builder/granite-eclipse-builder.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-generator/granite-generator.iml" filepath="$PROJECT_DIR$/granite-generator/granite-generator.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-generator-eclipse/granite-generator-eclipse.iml" filepath="$PROJECT_DIR$/granite-generator-eclipse/granite-generator-eclipse.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-server/granite-server.iml" filepath="$PROJECT_DIR$/granite-server/granite-server.iml" />

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <relativePath>../granite-eclipse-parent/pom.xml</relativePath>
+	<groupId>org.graniteds</groupId>
+	<artifactId>granite-eclipse-parent</artifactId>
+	<version>@granitedsEclipseVersion@</version>
+  </parent>
+  
+  <groupId>org.graniteds.eclipse</groupId>
+  <artifactId>org.granite.builder</artifactId>
+  <packaging>eclipse-feature</packaging>
+
+</project>

@@ -20,6 +20,8 @@ include 'granite-generator-share'
 include 'granite-generator'
 include 'granite-generator-eclipse'
 
+include 'granite-eclipse'
+
 include 'granite-server-ejb'
 include 'granite-server-cdi'
 include 'granite-server-spring'

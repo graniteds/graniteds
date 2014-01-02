@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <relativePath>../granite-eclipse-parent/pom.xml</relativePath>
+	<groupId>org.graniteds</groupId>
+	<artifactId>granite-eclipse-parent</artifactId>
+	<version>@granitedsEclipseVersion@</version>
+  </parent>
+  
+  <groupId>org.granite.eclipse</groupId>
+  <artifactId>org.granite.eclipse.repository</artifactId>
+  <packaging>eclipse-repository</packaging>
+
+  <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh</artifactId>
+        <version>2.5</version>
+      </extension>
+    </extensions>
+  </build>
+  
+  <profiles>
+    <profile>
+      <id>upload</id>		
+	  <build>
+		<plugins>
+		 <plugin>
+		  <groupId>org.codehaus.mojo</groupId>
+		  <artifactId>wagon-maven-plugin</artifactId>
+		  <version>1.0-beta-4</version>
+		  <executions>
+		   <execution>
+			<id>upload</id>
+			<phase>install</phase>
+			<goals>
+			 <goal>upload</goal>
+			</goals>
+			<configuration>
+			 <fromDir>${project.build.directory}/repository/</fromDir>
+			 <includes>**</includes>
+			 <toDir>/tmp/update-site</toDir>
+			 <url>sftp://granitedataservices.com</url>
+			 <serverId>graniteds-update-site</serverId>
+			</configuration>
+		   </execution>
+		  </executions>
+		 </plugin>
+		</plugins>
+	   </build>
+    </profile>
+  </profiles>
+
+</project>

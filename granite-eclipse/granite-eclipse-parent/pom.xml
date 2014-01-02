@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.graniteds</groupId>
+  <artifactId>granite-eclipse-parent</artifactId>
+  <version>@granitedsEclipseVersion@</version>
+  <packaging>pom</packaging>
+  
+  <properties>
+    <tycho.version>0.19.0</tycho.version>
+  </properties>
+  
+  <modules>
+	<module>../granite-eclipse-builder</module>
+	<module>../granite-eclipse-feature</module>
+	<module>../granite-eclipse-repository</module>
+  </modules>
+
+  <repositories>
+	<repository>
+		<id>indigo</id>
+		<layout>p2</layout>
+		<url>http://download.eclipse.org/releases/indigo</url>
+	</repository>
+  </repositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-maven-plugin</artifactId>
+        <version>${tycho.version}</version>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

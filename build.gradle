@@ -823,7 +823,8 @@ project('granite-generator-eclipse') {
 		}
 	}
 
-    def pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.0.SNAPSHOT')
+    def timestamp = new Date().format('yyyyMMddHHmmss')
+    def pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.' + timestamp)
 
     task pluginJar(type: Jar) {
         archiveName = 'org.granite.builder_' + pluginVersion + '.jar'
@@ -865,6 +866,94 @@ project('granite-generator-eclipse') {
 
     jar {
         it.dependsOn 'pluginJar', 'featureJar'
+    }
+}
+
+// Generator Eclipse plugins
+project('granite-eclipse') {
+
+    description = 'GraniteDS Eclipse plugins'
+
+    configurations {
+        create('lib')
+        create('mvn')
+
+        lib { transitive = false }
+    }
+
+    dependencies {
+
+        lib project(':granite-generator')
+        lib project(':granite-generator-share')
+
+        lib 'antlr:antlr:2.7.7',
+                'asm:asm:2.2.3',
+                'org.codehaus.groovy:groovy:1.6.4',
+                'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
+                'javax.jdo:jdo2-api:2.3-eb',
+                'xpp3:xpp3:1.1.4c',
+                'com.thoughtworks.xstream:xstream:1.3.1'
+
+        mvn 'org.apache.maven:maven-ant-tasks:2.1.3'
+    }
+
+    beforeEvaluate {
+        copy {
+            into ('granite-eclipse-builder/lib')
+            from configurations.lib
+            rename { it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null }
+        }
+    }
+
+    task buildUpdateSite << {
+        mkdir 'build/tycho'
+
+        def timestamp = new Date().format('yyyyMMddHHmmss')
+        def pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.' + timestamp)
+
+        copy {
+            into ('build/tycho')
+            from project(':granite-eclipse').files('.')
+            include 'granite-eclipse-*/**'
+            exclude '**/*.jar'
+            filter(ReplaceTokens, tokens: [ granitedsEclipseVersion: pluginVersion ] )
+        }
+        copy {
+            into ('build/tycho')
+            from project(':granite-eclipse').files('.')
+            include 'granite-eclipse-*/**/*.jar'
+        }
+
+        def mvnHome = mavenHome
+        if (!mvnHome)
+            mvnHome = System.env['MAVEN_HOME']
+        if (!mvnHome) {
+            println 'MAVEN_HOME not set, disable build of Eclipse plugin'
+        }
+        else {
+            ant.taskdef(name: 'mvn', classname: 'org.apache.maven.artifact.ant.Mvn', classpath: configurations.mvn.asPath)
+
+            ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+                arg(value: 'install')
+            }
+        }
+    }
+
+    task uploadUpdateSite << {
+        def mvnHome = mavenHome
+        if (!mvnHome)
+            mvnHome = System.env['MAVEN_HOME']
+        if (!mvnHome) {
+            println 'MAVEN_HOME not set, disable build of Eclipse plugin'
+        }
+        else {
+            ant.taskdef(name: 'mvn', classname: 'org.apache.maven.artifact.ant.Mvn', classpath: configurations.mvn.asPath)
+
+            ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+                arg(value: 'install')
+                arg(value: '-Pupload')
+            }
+        }
     }
 }
 
