@@ -605,7 +605,9 @@ project('granite-server') {
 	}
 	
 	jar {
+        def server = it
 		coreProjects.each {
+            server.dependsOn it + ':classes'
 			from project(it).sourceSets.main.output.classesDir
 			from project(it).sourceSets.main.output.resourcesDir
 		}
@@ -899,7 +901,7 @@ project('granite-eclipse') {
 
     beforeEvaluate {
         copy {
-            into ('granite-eclipse-builder/lib')
+            into project(':granite-eclipse').file('granite-eclipse-builder/lib')
             from configurations.lib
             rename { it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null }
         }
