@@ -22,12 +22,16 @@
 package org.granite.test.tide.framework
 {
 
+    import flash.net.registerClassAlias;
     import flash.utils.getQualifiedClassName;
 
     import mx.collections.ArrayCollection;
+    import mx.core.FlexVersion;
+    import mx.core.mx_internal;
 
     import mx.messaging.messages.AsyncMessage;
     import mx.messaging.messages.ErrorMessage;
+    import mx.utils.RPCObjectUtil;
 
     import org.flexunit.Assert;
     import org.granite.persistence.PersistentSet;
@@ -59,7 +63,7 @@ package org.granite.test.tide.framework
 			entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
 			Assert.assertEquals("(" + getQualifiedClassName(entity.test) + ") [ Uninitialized collection for object: null test ]", Util.toString(entity.test));
         }
-		
+
 		private function tideToString(value:Object, namespaceURIs:Array = null, exclude:Array = null):String {
 			return BaseContext.toString(value);
 		}
@@ -73,8 +77,14 @@ package org.granite.test.tide.framework
             Assert.assertNotNull("toString", s);
         }
 
+        private static function isApacheFlex():Boolean {
+            return FlexVersion.CURRENT_VERSION >= 0x04100000;
+        }
+
         [Test]
         public function testToStringMessage():void {
+            if (!isApacheFlex())
+                return;
             var message:AsyncMessage = new AsyncMessage();
             var entity:Object = new Object();
             entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
@@ -87,6 +97,8 @@ package org.granite.test.tide.framework
 
         [Test]
         public function testToStringMessage2():void {
+            if (!isApacheFlex())
+                return;
             var message:AsyncMessage = new AsyncMessage();
             var entity:Object = new Object();
             entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
@@ -100,6 +112,8 @@ package org.granite.test.tide.framework
 
         [Test]
         public function testToStringMessage3():void {
+            if (!isApacheFlex())
+                return;
             var message:AsyncMessage = new AsyncMessage();
             var entity:Object = new Object();
             entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
@@ -119,6 +133,8 @@ package org.granite.test.tide.framework
 
         [Test]
         public function testToStringMessage4():void {
+            if (!isApacheFlex())
+                return;
             var message:AsyncMessage = new AsyncMessage();
             var entity:Object = new Object();
             entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
@@ -144,6 +160,8 @@ package org.granite.test.tide.framework
 
         [Test]
         public function testToStringMessage5a():void {
+            if (!isApacheFlex())
+                return;
             var message:ErrorMessage = new ErrorMessage();
             message.faultCode = "Security.Failed";
             message.faultDetail = "Bla bla";
@@ -159,6 +177,8 @@ package org.granite.test.tide.framework
 
         [Test]
         public function testToStringMessage5b():void {
+            if (!isApacheFlex())
+                return;
             var message:ErrorMessage = new ErrorMessage();
             message.faultCode = "Security.Failed";
             message.faultDetail = "Bla bla";
