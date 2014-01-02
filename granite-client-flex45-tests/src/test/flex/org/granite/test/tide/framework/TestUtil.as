@@ -21,8 +21,17 @@
  */
 package org.granite.test.tide.framework
 {
+
+    import flash.utils.getQualifiedClassName;
+
+    import mx.collections.ArrayCollection;
+
+    import mx.messaging.messages.AsyncMessage;
+    import mx.messaging.messages.ErrorMessage;
+
     import org.flexunit.Assert;
     import org.granite.persistence.PersistentSet;
+    import org.granite.test.tide.Person;
     import org.granite.test.util.Util;
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
@@ -48,11 +57,156 @@ package org.granite.test.tide.framework
 			
 			var entity:Object = new Object();
 			entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
-			Assert.assertEquals("Uninitialized collection for object: null test", Util.toString(entity.test));
+			Assert.assertEquals("(" + getQualifiedClassName(entity.test) + ") [ Uninitialized collection for object: null test ]", Util.toString(entity.test));
         }
 		
 		private function tideToString(value:Object, namespaceURIs:Array = null, exclude:Array = null):String {
 			return BaseContext.toString(value);
 		}
+
+
+        [Test]
+        public function testRPCObjectUtil():void {
+            var message:AsyncMessage = new AsyncMessage();
+
+            var s:String = message.toString();
+            Assert.assertNotNull("toString", s);
+        }
+
+        [Test]
+        public function testToStringMessage():void {
+            var message:AsyncMessage = new AsyncMessage();
+            var entity:Object = new Object();
+            entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
+            message.body = entity;
+
+            var s:String = message.toString();
+            Assert.assertTrue(s.indexOf("[ Uninitialized collection for object: null test ]") > 0);
+            Assert.assertFalse("Not initialized", entity.test.isInitialized());
+        }
+
+        [Test]
+        public function testToStringMessage2():void {
+            var message:AsyncMessage = new AsyncMessage();
+            var entity:Object = new Object();
+            entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
+            entity.ref = entity;
+            message.body = entity;
+
+            var s:String = message.toString();
+            Assert.assertTrue(s.indexOf("[ Uninitialized collection for object: null test ]") > 0);
+            Assert.assertFalse("Not initialized", entity.test.isInitialized());
+        }
+
+        [Test]
+        public function testToStringMessage3():void {
+            var message:AsyncMessage = new AsyncMessage();
+            var entity:Object = new Object();
+            entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
+            entity.ref = entity;
+            entity.test2 = new TestObject();
+            entity.test3 = new TestObject2();
+            message.body = entity;
+
+            var s:String = message.toString();
+            Assert.assertTrue(s.indexOf("[ Uninitialized collection for object: null test ]") > 0);
+            Assert.assertFalse("Not initialized", entity.test.isInitialized());
+            Assert.assertTrue(s.indexOf("Bla") > 0);
+
+            var s2:String = message.toString();
+            Assert.assertEquals("Same", s, s2);
+        }
+
+        [Test]
+        public function testToStringMessage4():void {
+            var message:AsyncMessage = new AsyncMessage();
+            var entity:Object = new Object();
+            entity.test = new PersistentCollection(null, null, "test", new PersistentSet(false));
+            entity.ref = entity;
+            entity.test2 = new TestObject();
+            entity.test3 = new TestObject2();
+            entity.test3.test2 = new TestObject2();
+            entity.test3.test2.test2 = new TestObject3();
+            entity.test4 = new Person();
+            entity.test4.contacts = new ArrayCollection();
+            entity.test4.contacts.addItem(message);
+            message.body = entity;
+
+            var s:String = message.toString();
+            Assert.assertTrue(s.indexOf("[ Uninitialized collection for object: null test ]") > 0);
+            Assert.assertFalse("Not initialized", entity.test.isInitialized());
+            Assert.assertTrue(s.indexOf("Bla") > 0);
+            Assert.assertTrue(s.indexOf("blu") > 0);
+
+            var s2:String = message.toString();
+            Assert.assertEquals("Same", s, s2);
+        }
+
+        [Test]
+        public function testToStringMessage5a():void {
+            var message:ErrorMessage = new ErrorMessage();
+            message.faultCode = "Security.Failed";
+            message.faultDetail = "Bla bla";
+            message.faultString = "Blo blo";
+
+            var s:String = message.toString();
+            Assert.assertTrue(s.indexOf("Bla bla") > 0);
+            Assert.assertTrue(s.indexOf("Blo blo") > 0);
+
+            var s2:String = message.toString();
+            Assert.assertEquals("Same", s, s2);
+        }
+
+        [Test]
+        public function testToStringMessage5b():void {
+            var message:ErrorMessage = new ErrorMessage();
+            message.faultCode = "Security.Failed";
+            message.faultDetail = "Bla bla";
+            message.faultString = "Blo blo";
+            var person:Person = new Person();
+            person.contacts = new PersistentSet(false);
+            message.extendedData = {
+                test: new TestObject(),
+                test2: new TestObject2(),
+                test3: person,
+                test4: new PersistentSet(false)
+            };
+
+            var s:String = message.toString();
+            Assert.assertTrue(s.indexOf(getQualifiedClassName(person.contacts)) > 0);
+            Assert.assertFalse("Not initialized", message.extendedData.test4.isInitialized());
+            Assert.assertTrue(s.indexOf("Bla bla") > 0);
+            Assert.assertTrue(s.indexOf("Blo blo") > 0);
+            Assert.assertTrue(s.indexOf("test2") > 0);
+
+            var s2:String = message.toString();
+            Assert.assertEquals("Same", s, s2);
+        }
     }
+}
+
+import mx.utils.RPCObjectUtil;
+
+class TestObject {
+
+    public function toString():String {
+        return "Bla";
+    }
+}
+
+
+class TestObject2 {
+
+    public var test:String = "blo";
+    public var test2:Object;
+
+    public function toString():String {
+        return RPCObjectUtil.toString(this);
+    }
+}
+
+
+class TestObject3 {
+
+    public var test2:String = "blu";
 }

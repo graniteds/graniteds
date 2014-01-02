@@ -41,7 +41,8 @@ package org.granite.tide {
     import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
     import flash.utils.getQualifiedClassName;
-    
+    import flash.xml.XMLNode;
+
     import mx.binding.utils.BindingUtils;
     import mx.binding.utils.ChangeWatcher;
     import mx.collections.IList;
@@ -56,6 +57,7 @@ package org.granite.tide {
     import mx.rpc.AsyncToken;
     import mx.utils.ObjectProxy;
     import mx.utils.ObjectUtil;
+    import mx.utils.RPCObjectUtil;
     import mx.utils.object_proxy;
     
     import org.granite.collections.IPersistentCollection;
@@ -1717,6 +1719,9 @@ package org.granite.tide {
         }
 
 
+        public static var avoidToString:Dictionary = new Dictionary();
+        private static var _toStringState:Object = { indent: 0, cache: null, refCount: 0 };
+
         /**
          *  Convenient toString implementation which avoids triggering collection initialization
          *
@@ -1724,59 +1729,153 @@ package org.granite.tide {
          *  @return toString
          */ 
         public static function toString(object:Object):String {
-        	if (object == null)
-        		return "null";
-        	
-            if (object is IEntity && object.hasOwnProperty("id")) {
-            	var em:IEntityManager = Managed.getEntityManager(IEntity(object));
-            	var cid:String = (em != null 
-            		? (Object(em).contextId != null 
-            			? " (" + Object(em).contextId + ")" 
-            			: " (global)")
-            		: " (no ctx)");
+            var saveToStringState:Object = { indent: _toStringState.indent, cache: _toStringState.cache, refCount: _toStringState.refCount };
+            try {
+                if (object == null)
+                    return "null";
 
-				try {
-	            	if (!object.meta::isInitialized())
-		                return "Uninitialized entity: " + getQualifiedClassName(object) + ":" + object.id + cid;
-	            }
-	            catch (e:ReferenceError) {
-	            	// Entity does not implement meta:isInitialized()
-	            }
-            	return getQualifiedClassName(object) + ":" + object.id + cid;
-            }
-            
-            var s:String;
-            var i:int;
-            if (object == null)
-                return "null";
-            else if (object is Array) {
-                s = "Array [";
-                var a:Array = object as Array;
-                for (i = 0; i < a.length; i++) {
-                    if (i > 0)
-                        s += ", ";
-                    s += BaseContext.toString(a[i]);
+                var s:String;
+                var i:int;
+                if (object is Array) {
+                    s = "(Array) [";
+                    var a:Array = object as Array;
+                    _toStringState.indent += 2;
+                    for (i = 0; i < a.length; i++) {
+                        s = newline(s, _toStringState.indent);
+                        s += BaseContext.toString(a[i]);
+                    }
+                    _toStringState.indent -= 2;
+                    s += "]";
+                    return s;
                 }
-                s += "]";
-                return s;
-            }
-            else if (object is IPersistentCollection && !IPersistentCollection(object).isInitialized()) {
+                else if (object is IPersistentCollection && !IPersistentCollection(object).isInitialized()) {
+                    return "(" + getQualifiedClassName(object) + ") [ " + object.toString() + " ]";
+                }
+                else if (object is IList) {
+                    s = "(" + getQualifiedClassName(object) + ") [";
+                    var l:IList = object as IList;
+                    for (i = 0; i < l.length; i++) {
+                        if (i > 0)
+                            s += ", ";
+                        s += BaseContext.toString(l.getItemAt(i));
+                    }
+                    s += "]";
+                    return s;
+                }
+
+                if (object is IEntity && object.hasOwnProperty("id")) {
+                    var em:IEntityManager = Managed.getEntityManager(IEntity(object));
+                    var cid:String = (em != null
+                            ? (Object(em).contextId != null
+                            ? " (" + Object(em).contextId + ")"
+                            : " (global)")
+                            : " (no ctx)");
+
+                    try {
+                        if (!object.meta::isInitialized())
+                            return "Uninitialized entity: " + getQualifiedClassName(object) + ":" + object.id + cid;
+                    }
+                    catch (e:ReferenceError) {
+                        // Entity does not implement meta:isInitialized()
+                    }
+                    return "(" + getQualifiedClassName(object) + " )#" + object.id + cid;
+                }
+
+                var type:String = typeof(object);
+                switch (type) {
+                    case "boolean":
+                    case "number": {
+                        return object.toString();
+                    }
+
+                    case "string": {
+                        return "\"" + object.toString() + "\"";
+                    }
+
+                    case "xml": {
+                        return object.toString();
+                    }
+
+                    case "object": {
+                        if (object is Date)
+                            return object.toString();
+                        else if (object is XMLNode)
+                            return object.toString();
+                        else if (object is Class)
+                            return "(" + getQualifiedClassName(object) + ")";
+                        else if (!(object is Array)) {
+                            if (!avoidToString[getQualifiedClassName(object)] && object.toString !== Object['toString'])
+                                break;
+
+                            var classInfo:Object = ObjectUtil.getClassInfo(object, null,
+                                    { includeReadOnly: true, uris: null, includeTransient: false });
+
+                            var properties:Array = classInfo.properties;
+                            var s:String = "(" + classInfo.name + ")";
+
+                            if (_toStringState.cache == null) {
+                                _toStringState.refCount = 0;
+                                _toStringState.cache = new Dictionary(true);
+                            }
+
+                            var refId:Object = _toStringState.cache[object];
+                            if (refId != null) {
+                                s += "#" + int(refId);
+                                return s;
+                            }
+
+                            if (object != null) {
+                                s += "#" + _toStringState.refCount.toString();
+                                _toStringState.cache[object] = _toStringState.refCount++;
+                            }
+
+                            var prop:*;
+                            _toStringState.indent += 2;
+
+                            var length:int = properties.length;
+                            for (var j:int = 0; j < length; j++) {
+                                s = newline(s, _toStringState.indent);
+                                prop = properties[j];
+                                s += prop.toString() + " = ";
+                                try {
+                                    s += BaseContext.toString(object[prop]);
+                                }
+                                catch (e:Error) {
+                                    // Ignore, output unknown value
+                                    s += "?";
+                                }
+                            }
+                            _toStringState.indent -= 2;
+                            return s;
+                        }
+                        break;
+                    }
+
+                    default: {
+                        return "(" + type + ")";
+                    }
+                }
+
                 return object.toString();
             }
-            else if (object is IList) {
-                s = getQualifiedClassName(object) + " [";
-                var l:IList = object as IList;
-                for (i = 0; i < l.length; i++) {
-                    if (i > 0)
-                        s += ", ";
-                    s += BaseContext.toString(l.getItemAt(i));
+            finally {
+                _toStringState.indent = saveToStringState.indent;
+                if (_toStringState.indent == 0) {
+                    _toStringState.cache = null;
+                    _toStringState.refCount = 0;
                 }
-                s += "]";
-                return s;
             }
-            return object.toString();
+
+            return "";
         }
-        
+
+        private static function newline(str:String, length:int = 0):String {
+            var result:String = str + "\n";
+            for (var i:int = 0; i < length; i++)
+                result += " ";
+            return result;
+        }
+
         
         /**
          *  Equality for objects, using uid property when possible

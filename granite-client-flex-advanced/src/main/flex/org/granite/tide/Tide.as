@@ -160,6 +160,7 @@ package org.granite.tide {
 			DescribeTypeCache.registerCacheHandler("componentInfo", componentInfoHandler);
 			
 			try {
+                // Register lazy-aware toString method for RPC logging
 				RPCObjectUtil['externalToString'](tideToString);
 			}
 			catch (e:Error) {
@@ -183,9 +184,24 @@ package org.granite.tide {
 		    
 	        addComponent("meta_dirty", Boolean);
 		}
+
+        private var _toStringReentrant:Object = null;
 		
 		private function tideToString(value:Object, namespaceURIs:Array = null, exclude:Array = null):String {
-			return BaseContext.toString(value);
+            var saveToStringReentrant:Object = _toStringReentrant;
+            try {
+                if (_toStringReentrant === value) {
+                    // toString() of this object uses RPCObjectUtil, don't use it to avoid infinite recursion...
+                    BaseContext.avoidToString[getQualifiedClassName(value)] = true;
+                }
+
+                _toStringReentrant = value;
+                return BaseContext.toString(value);
+            }
+            finally {
+                _toStringReentrant = saveToStringReentrant;
+            }
+            return null;
 		}
 
 
