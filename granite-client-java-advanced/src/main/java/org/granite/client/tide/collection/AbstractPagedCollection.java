@@ -142,14 +142,15 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	@Override
 	@PreDestroy
 	public void clear() {
+        clearLocalIndex();
+        first = 0;
+        last = first+max;
+        count = 0;
+        getWrappedList().clear();
 		initializing = true;
 		initSent = false;
-		getInternalWrappedList().clear();
-		clearLocalIndex();
-		first = 0;
-		last = first+max;
-		fullRefresh = false;
-		filterRefresh = false;
+        fullRefresh = false;
+        filterRefresh = false;
 	}
 	
 	
@@ -515,7 +516,7 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 		if (localIndex != null) {
 			for (int i = 0; i < localIndex.length; i++) {
 				if (o.equals(localIndex[i]))
-					return first+i;;
+					return first+i;
 			}
 		}
 		return -1;
