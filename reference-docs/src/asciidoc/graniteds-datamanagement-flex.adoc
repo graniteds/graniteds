@@ -198,8 +198,8 @@ Object(myEntity.myCollection).withInitialized(function(collection:IList):void {
 
 Lazy loading greatly helps in limiting the amount of data that is transferred between the server and the client. 
 When receiving data from the server, the lazy-loading state is managed by the JPA engine depending on what is done by the service, so only the necessary data is sent. 
-When sending objects to the server, the lazy-loading state depends on what has been or not loaded on the client context. 
-As the lifespan of the entities in the client context is much longer than in stateless services, there is a good chance that after a few time of running application, 
+When sending objects to the server, the lazy-loading state depends on what has been loaded or not in the client context.
+As the lifespan of the entities in the client context is much longer than in stateless services, there is a good chance that after a few time of running an application,
 the whole object graph will be loaded on the client. That means that passing an entity as an argument to a remote method call will send the fully loaded object graph, 
 whenever maybe a single property has been modified on the main entity. For example : 
 
@@ -212,7 +212,7 @@ public function savePerson():void {
 }   
 ----
 
-Obviously this is not very efficient. You can now ask Tide to limit the object graph before sending it. It can be done manually in Flex with the following API : 
+Obviously this is not very efficient. You can tell Tide to fold the object graph before sending it. It can be done manually in Flex with the following API :
 
 [source,actionscript]
 ----
@@ -233,7 +233,7 @@ personService.save(uperson);    // This will send the Person object with only th
 
 Tide uses the client data tracking (the same used for dirty checking, see <<data.dirtycheck,below>>) to determine which parts of the graph need to be sent. 
 
-If you need to uninitialize more than one argument for a remote call, you have to use the same +EntityGraphUninitializer+. 
+If you need to uninitialize more than one argument for a remote call, you must use the same +EntityGraphUninitializer+.
 It is important because the uninitializer copies the entities in a temporary context before uninitializing their associations so the normal context keeps unchanged, 
 and all processed entities have to share this same temporary context.  
 
@@ -245,7 +245,7 @@ uperson2 = egu.uninitializeEntityGraph(person2);
 personService.save(uperson1, uperson2);    
 ----
 
-Calling the +EntityGraphUninitializer+ manually is a bit tedious and ugly, so there is a cleaner possibility when you are using  generated typesafe service proxies. 
+Calling the +EntityGraphUninitializer+ manually is a bit tedious and ugly, so there is a cleaner possibility when you are using generated typesafe service proxies.
 You can annotate your service method arguments with +@org.granite.tide.data.Lazy+ : 
 
 [source,java]
@@ -264,8 +264,157 @@ Tide.getInstance().addComponents([UninitializeArgumentPreprocessor]);
 
 Once you have done this, all calls to +PersonService.save()+ will automatically use a properly uninitialized version of the +person+ argument. 
 
-This new feature cannot be yet applied to local context variables (mostly used with Seam or CDI stateful components). Only method arguments can be processed, 
-but this should cover be the vast majority of use cases. 
+[[data.changesets]]
+=== Change Sets
+
+In most cases, end users update very few properties of an object graph at the same time so it's not very efficient to send the full graph to the server for merging,
+even folded and uninitialized as much as possible. To handle this very common use case, Tide provides the change set feature which consists in
+building a diff object representing only the actual updates on the object graph and only send this diff. As with reverse lazy loading, it can be used
+manually or automated through some annotations and configuration.
+
+This feature can work when sending objects from the client, or when dispatching updates from the server. In this case, GraniteDS has to integrate more
+deeply into the JPA provider to build the change set objects. The server-to-client change sets are currently implemented only for Hibernate 3 and Hibernate 4.
+
+*Client to server change sets*
+
+Usually, when a user does some changes on an entity, the application will execute something like this to send the changes to the server :
+
+[source,actionscript]
+----
+public function savePerson():void {
+    person.lastName = "Test";
+    personService.save(person);
+    // This will send all loaded collections associated to the Person object
+}
+----
+
+To build a +ChangeSet+ for a particular entity instead of sending the whole graph, you can use the +ChangeSetBuilder+ API :
+
+[source,actionscript]
+----
+var csperson:ChangeSet = new ChangeSetBuilder(tideContext).buildEntityChangeSet(person);
+personService.applyChangeSet(csperson);
+----
+
+Tide will use the client data tracking to determine what has been modified since last server update and build a diff object.
+Note that it's also possible to build the complete +ChangeSet+ for the whole local entity context :
+
+[source,actionscript]
+----
+var csfull:ChangeSet = new ChangeSetBuilder(tideContext).buildChangeSet();
+entityService.applyChangeSet(csfull);
+----
+
+If you have to build change sets for many arguments at the same time, you should use the same +ChangeSetBuilder+ to ensure they
+use the same temporary merge context:
+
+[source,actionscript]
+----
+var csb:ChangeSetBuilder = new ChangeSetBuilder(tideContext);
+var csperson:ChangeSet = csb.buildEntityChangeSet(person);
+var cscompany:ChangeSet = csb.buildEntityChangeSet(company);
+personService.savePersonCompany(csperson, cscompany);
+----
+
+Obviously that means that the server method that is called knows what to do with the +ChangeSet+ objects. Tide provides the
++ChangeSetApplier+ API that can be used on the server :
+
+[source,java]
+----
+public void applyChangeSet(ChangeSet changeSet) {
+    new ChangeSetApplier(new JPAPersistenceAdapter(entityManager)).applyChanges(changeSet);
+}
+----
+
+As its name indicates, the +JPAPersistenceAdapter+ expects a JPA entity manager. If you are using the Hibernate native
+Session API, you can use the +HibernatePersistenceAdapter+. It's quite easy if needed to implement a custom adapter for other
+kinds of persistence providers by implementing the +TidePersistenceAdapter+ interface.
+
+*Automatic build of change sets on the client*
+
+Calling the +ChangeSetBuilder+ manually is a bit tedious and ugly, so there is a cleaner possibility when you are using generated typesafe service proxies.
+You can annotate your service method arguments with +@org.granite.tide.data.Lazy+ :
+
+[source,java]
+----
+public void save(@Lazy Person person) {
+}
+----
+
+Gas3 will then generate a +\[Lazy\]+ annotation on your service methods (so take care that you have added the +\[Lazy\]+ annotation to your Flex metadata compilation
+configuration). Next in the Flex application, register the +ChangeArgumentPreprocessor+ component in Tide as follows :
+
+[source,actionscript]
+----
+Tide.getInstance().addComponents([ChangeArgumentPreprocessor]);
+----
+
+Once you have done this, all calls to +PersonService.save()+ will automatically use a +ChangeSet+ for the argument +person+.
+Note that this cannot be used in conjuction with reverse lazy loading but completely replaces it.
+
+*Automatic server merge of change sets (Hibernate 3.x only)*
+
+When using Hibernate 3.x it's possible to further simplify this process by enabling a specific merge event listener. When configured, it
+allows to apply an incoming +ChangeSet+ with any method using +EntityManager.merge()+ of the underlying entity. For example,
+
+[source,java]
+----
+public void save(Person person) {
+    entityManager.merge(person);
+}
+----
+
+When this method is called with an incoming +ChangeSet+, GraniteDS will use a special converter to transform the +ChangeSet+ to a
+Javassist proxy which can be accepted by the method call. Then the merge listener will intercept this proxy and apply the change
+instead of letting Hibernate do its normal merge. It's important to note that this can work only with +merge()+ and not with any
+other JPA +EntityManager+/Hibernate +Session+ method.
+
+The configuration on the Hibernate side depends on the way the +SessionFactory+/+EntityManagerFactory+ is configured but simply
+consists in setting up the event listener +org.granite.tide.hibernate.HibernateDataChangeMergeListener+ for the event +merge+.
+
+[source,java]
+----
+configuration.setListener("merge", new HibernateDataChangeMergeListener());
+----
+
+With Hibernate XML config:
+
+[source,xml]
+----
+<hibernate-configuration>
+    <session-factory>
+       ...
+        <event type="merge">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangeMergeListener"/>
+        </event>
+    </session-factory>
+</hibernate-configuration>
+----
+
+And with Spring:
+
+[source,xml]
+----
+<bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="hibernateProperties">
+        <props>
+            <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+            <prop key="hibernate.show_sql">false</prop>
+            <prop key="hibernate.hbm2ddl.auto">update</prop>
+        </props>
+    </property>
+    <property name="eventListeners">
+        <map>
+            <entry key="merge">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangeMergeListener"/></list>
+            </entry>
+        </map>
+    </property>
+    ...
+</bean>
+----
 
 [[data.dirtycheck]]
 === Dirty checking and conflict handling
@@ -304,7 +453,7 @@ Finally you can check the dirty state of the whole data context with the propert
 
 [WARNING]
 ====
-This +dirty+ flag is reliable when using optimistic locking. The only way for Tide to know that an entity instance has actually been changed on the server 
+This +dirty+ flag is reliable only when combined with optimistic locking. The only way for Tide to know that an entity instance has actually been changed on the server
 is to check that its +@Version+ field has been incremented. 
 ====
 
@@ -681,7 +830,7 @@ The return object must be a map containing four properties:
 Alternatively you can also return a result of type +org.granite.tide.data.model.Page+. That implies a compile dependency of your services on a GraniteDS API, 
 which may not be suitable. If necessary you can define your own page class and use a converter to translate from your server class to the client +Page+ class. 
 
-If you are using Spring Data, you can simply return an instance of the +Page+ class of Spring Data and let GraniteDS do the conversation 
+If you are using Spring Data, you can simply return an instance of the +Page+ class of Spring Data and let GraniteDS do the conversion
 between GraniteDS +Page+ and Spring Data +Page+. You can also use +PageRequest+ as an argument instead of +firstResult+, +maxResults+...
 
 The following code snippet is a quick and dirty implementation and can be used as a base for other implementations 
@@ -1007,7 +1156,14 @@ And with Spring:
 </bean>
 ----
 
-Then add the Tide data annotation on all services, example here with a Spring service: 
+For Hibernate 4.x, the way of declaring these listeners has completely changed and uses the +ServiceLoader+ API.
+You will have to add the following file in +META-INF/services/org.hibernate.integrator.spi.Integrator+ of your application jar:
+
+----
+org.granite.tide.hibernate4.Hibernate4Integrator
+----
+
+Then add the Tide data annotation on all services, example here with a Spring service:
 
 [source,java]
 ----
@@ -1017,8 +1173,8 @@ public interface MyService {
 }
 ----
 
-It's generally recommended to put the annotation on the service interface but it can also work when defined on the service implementation. 
-Note that even services that only read data should be annotated this +@DataEnabled+ because they also participate in the construction  of the message selector. 
+It's generally recommended to put the annotation on the service interface but it can also work when defined on the service implementation.
+Note that even services that only read data should be annotated this +@DataEnabled+ because they also participate in the construction  of the message selector.
 
 The attributes of this annotations are:
  
@@ -1251,3 +1407,96 @@ you will ensure that only successful database updates will be dispatched.
     <adapter ref="jms"/>
 </destination>
 ----
+
+*Server to client change sets*
+
+Limiting the amount of data sent by one client to the server is important, but it's even more important to limit the amount of data sent
+from the server to the clients as the same change object can possibly be sent to a lot of clients when using real-time updates.
+
+GraniteDS can handle this with Hibernate 3.x by integrating with the Hibernate core through a specific native listener.
+From Hibernate 3.6+, the +HibernateDataChangePublishListener+ must be used instead of the standard JPA listener to publish changes
+instead of complete object graphs. The alternative +Hibernate35DataChangePublishListener+ must be used with older Hibernate 3.5+ versions.
+
+[source,java]
+----
+Configuration configuration = new Configuration();
+...
+configuration.setListener("post-insert", new HibernateDataChangePublishListener());
+configuration.setListener("post-update", new HibernateDataChangePublishListener());
+configuration.setListener("post-delete", new HibernateDataChangePublishListener());
+configuration.setListener("pre-collection-update", new HibernateDataChangePublishListener());
+configuration.setListener("flush-entity", new HibernateDataChangePublishListener());
+----
+
+With Hibernate XML config:
+
+[source,xml]
+----
+<hibernate-configuration>
+    <session-factory>
+       ...
+        <event type="post-insert">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/>
+        </event>
+        <event type="post-update">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/>
+        </event>
+        <event type="post-delete">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/>
+        </event>
+        <event type="pre-collection-update">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/>
+        </event>
+        <event type="flush-entity">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/>
+        </event>
+    </session-factory>
+</hibernate-configuration>
+----
+
+And with Spring:
+
+[source,xml]
+----
+<bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="hibernateProperties">
+        <props>
+            <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+            <prop key="hibernate.show_sql">false</prop>
+            <prop key="hibernate.hbm2ddl.auto">update</prop>
+        </props>
+    </property>
+    <property name="eventListeners">
+        <map>
+            <entry key="post-insert">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/></list>
+            </entry>
+            <entry key="post-update">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/></list>
+            </entry>
+            <entry key="post-delete">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/></list>
+            </entry>
+            <entry key="pre-collection-update">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/></list>
+            </entry>
+            <entry key="flush-entity">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/></list>
+            </entry>
+        </map>
+    </property>
+    ...
+</bean>
+----
+
+Once this is configured, it's also necessary to configure the client to be able to merge these incoming +ChangeSet+ objects
+correctly. This can be done easily by setting up the +ChangeSetMerger+ components.
+
+[source,actionscript]
+----
+Tide.getInstance().addComponents([ChangeSetMerger]);
+----
+
+When all this is set up, *all* server to client updates will be sent as +ChangeSet+ objects.
