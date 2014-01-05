@@ -3,34 +3,9 @@
 [[graniteds.gettingstarted]]
 == Getting Started
 
-This section introduces:
- 
-* GraniteDS software requirements. 
-ifdef::flex[]
-* Various example projects using the different kind of services (POJO, EJB 3, Seam, Spring, and Guice) that may help you in choosing the right technology 
-    and starting a Flex/GDS project. 
-* The complete setup of a basic "Hello, world" GDS project using Flex 3 SDK, Eclipse, and Tomcat.
-endif::flex[]
-ifdef::java[] 
-* The complete setup of a basic "Hello, world" GDS project using Java, Eclipse, and Tomcat.
-endif::java[] 
-* A modification of the sample "Hello, world" project in order to demonstrate basic GDS support of Hibernate with the help of Eclipse plugins. 
-
-[[gettingstarted.requirements]]
-=== Requirements (Free Tools)
-
-You need at least the following four free development tools:
- 
-* _Java 6+_ (5+ supported): link:$$http://java.sun.com/javase/downloads/index.jsp$$[Download Sun JDK] and install it. 
-* __Eclipse 3.2+__: link:$$http://www.eclipse.org/downloads/$$[Download Eclipse] and unzip it somewhere (NOTE: It is always a good idea to avoid paths with whitespace). 
-    You may, of course, use another IDE, but you will not be able to use Eclipse specific plugins and example projects.
-ifdef::flex[] 
-* _Flex 4.5 SDK_ (3+ supported): Download link:$$http://www.adobe.com/devnet/flex/flex-sdk-download.html$$[Flex SDK] and unzip it somewhere (NOTE: idem), 
-    say +$$/flex_sdk_4$$+.
-
-You may also read and follow the recommendations in this 
-link:$$http://blog.brokenfunction.com/2007/01/29/how-to-develop-for-flash-on-any-os-for-free/$$[excellent article] in order to customize your development environment. 
-endif::flex[] 
+This section is a very entry level introduction to GraniteDS and simply demonstrates the basic setup and usage of the framework
+with the traditional "Hello, world" application.
+For more real life guides, you can check the _Getting Started_ section of the web site http://www.granitedataservices.com/community/getting-started/[here].
 
 ifdef::flex[]
 [[gettingstarted.helloworld.flex]]
@@ -54,14 +29,14 @@ if you don't want to copy-paste the code in the following sections below.
 
 In order to create, build, and deploy this sample application you need these free tools:
  
-* _Java 6+_ (5+ working): Download link:$$http://java.sun.com/javase/downloads/index.jsp$$[Sun JDK] and install it. 
-* __Eclipse 3.5+__: Download link:$$http://www.eclipse.org/downloads/$$[Eclipse] and unzip it somewhere.             
-* __Flex 4.6 SDK__: Download link:$$http://www.adobe.com/devnet/flex/flex-sdk-download.html$$[Flex 4.6 SDK] and unzip it somewhere. 
-    For example, +$$/flex_4_6_sdk$$+ (for Windows users: ++$$C:\Dev\flex_4_6_sdk$$++).             
-* __Tomcat 7+__: Download link:$$http://tomcat.apache.org/download-70.cgi$$[Tomcat] and unzip it somewhere. For example, +/apache-tomcat-7.0.29+ 
+* __Java 6+__: Download link:$$http://www.oracle.com/technetwork/java/javase/downloads/index.html$$[Oracle JDK] and install it.
+* __Eclipse 3.5+__: Download link:$$http://www.eclipse.org/downloads/$$[Eclipse] and unzip it somewhere.
+* __Flex 4.6 SDK__: Download link:$$http://www.adobe.com/devnet/flex/flex-sdk-download.html$$[Flex 4.6 SDK] and unzip it somewhere.
+    For example, +$$/home/flex_sdk_4_6$$+ (for Windows users: ++$$C:\Dev\flex_sdk_4_6$$++).
+* __Tomcat 7+__: Download link:$$http://tomcat.apache.org/download-70.cgi$$[Apache Tomcat] and unzip it somewhere. For example, +/home/apache-tomcat-7.0.29+
     (for Windows users: ++C:\Dev\apache-tomcat-7.0.29++). 
-* __granite-server.jar__: You may take it from any of the GraniteDS sample applications or from GraniteDS source distribution in the +libraries/server+ folder.
-    Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
+* __granite-server.jar__: You may take it from the GraniteDS distribution in the +libraries/server+ folder.
+    Download it link:$$http://www.granitedataservices.com/community/before-downloading/$$[here].
 
 Creation of the project in Eclipse: 
 
@@ -283,8 +258,8 @@ Copy and paste the following content into it; you may have to modify the propert
 <project name="hello-world" default="deploy">
 
     <!-- Modify FLEX_HOME/TOMCAT_HOME properties to reflect your environment -->
-    <property name="FLEX_HOME" value="/flex_sdk_3"/>
-    <property name="TOMCAT_HOME" value="/apache-tomcat-6.0.18"/>
+    <property name="FLEX_HOME" value="/home/flex_sdk_4_6"/>
+    <property name="TOMCAT_HOME" value="/home/apache-tomcat-6.0.18"/>
     
     <!-- Declare Flex Ant tasks (such as mxmlc used below) -->
     <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
@@ -325,7 +300,7 @@ image::build.jpg[]
 You may now right-click on the +build.xml+ file and select _Run As / Ant Build_. This will launch the build process,  compile the MXML code to an SWF, 
 create a WAR (Web Archive), and copy it into your Tomcat +webapps+ directory. 
 
-Finally start Tomcat and test the application. To start Tomcat, go to the directory +bin+ just under your Tomcat installation directory, +/apache-tomcat-7.0.29/bin+  
+Finally start Tomcat and test the application. To start Tomcat, go to the directory +bin+ just under your Tomcat installation directory, +/home/apache-tomcat-7.0.29/bin+
 for example, and double-click on +startup.bat+, or +startup.sh+ for Unix/Mac users. After a short while, you should  see in the console that Tomcat has started. 
 You may now point your Web browser to link:$$http://localhost:8080/helloworld/$$[+http://localhost:8080/helloworld/+]. 
 
@@ -348,14 +323,14 @@ The client program will pass its argument to the remote service and display the 
 
 In order to create, build, and deploy this sample application you need these free tools:
  
-* _Java 6+_ (6+ working): Download link:$$http://java.sun.com/javase/downloads/index.jsp$$[Sun JDK] and install it. 
-* __Eclipse 3.5+__: Download link:$$http://www.eclipse.org/downloads/$$[Eclipse] and unzip it somewhere.             
-* __Tomcat 7+__: Download link:$$http://tomcat.apache.org/download-70.cgi/$$[Tomcat] and unzip it somewhere. 
-    For example, +/apache-tomcat-7.0.29+ (for Windows users: ++C:\apache-tomcat-7.0.29++). 
-* __granite-server.jar__: You may take it from the GraniteDS distribution in the +libraries/server+ folder.
-    Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
-* _granite-client-java.jar_: You may take it from any of the GraniteDS sample applications or from GraniteDS source distribution in the +libraries/java-client+ folder.
-    Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
+* __Java 6+__: Download link:$$http://www.oracle.com/technetwork/java/javase/downloads/index.html$$[Oracle JDK] and install it.
+* __Eclipse 3.5+__: Download link:$$http://www.eclipse.org/downloads/$$[Eclipse] and unzip it somewhere.
+* __Tomcat 7+__: Download link:$$http://tomcat.apache.org/download-70.cgi/$$[Apache Tomcat] and unzip it somewhere.
+    For example, +/home/apache-tomcat-7.0.29+ (for Windows users: ++C:\Dev\apache-tomcat-7.0.29++).
+* __granite-server.jar__: You may get it from the GraniteDS distribution in the +libraries/server+ folder.
+    Download it link:$$http://www.granitedataservices.com/community/before-downloading/$$[here].
+* __granite-client-java.jar__: You may get it from the GraniteDS distribution in the +libraries/java-client+ folder.
+    Download it link:$$http://www.granitedataservices.com/community/before-downloading/$$[here].
 
 Creation of the project in Eclipse: 
 
@@ -457,7 +432,7 @@ project and copy/paste the following content into it; you may have to modify +$$
 <project name="hello-world" default="deploy">
 
     <!-- Modify TOMCAT_HOME properties to reflect your environment -->
-    <property name="TOMCAT_HOME" value="/apache-tomcat-7.0.29"/>
+    <property name="TOMCAT_HOME" value="/home/apache-tomcat-7.0.29"/>
     
     <!-- Build a war suitable for Tomcat (and other) -->
     <target name="war">
@@ -480,7 +455,7 @@ project and copy/paste the following content into it; you may have to modify +$$
 You may now right-click on the +build.xml+ file and select _Run As / Ant Build_. This will launch the build process, create a WAR (Web Archive), 
 and copy it into your Tomcat +webapps+ directory. 
 
-Then start Tomcat. Go to the directory +bin+ just under your Tomcat installation directory, +/apache-tomcat-7.0.29/bin+ for example, and double-click 
+Then start Tomcat. Go to the directory +bin+ just under your Tomcat installation directory, +/home/apache-tomcat-7.0.29/bin+ for example, and double-click
 on +startup.bat+, or +startup.sh+ for Unix/Mac users. After a short while, you should see in the console that Tomcat has started. 
 
 You should now see something like the following picture under Eclipse:  
@@ -502,16 +477,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.granite.client.messaging.RemoteService;
 import org.granite.client.messaging.ResultFaultIssuesResponseListener;
-import org.granite.client.messaging.channel.amf.AMFRemotingChannel;
+import org.granite.client.messaging.channel.RemotingChannel;
+import org.granite.client.messaging.channel.amf.JMFChannelFactory;
 import org.granite.client.messaging.events.FaultEvent;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
-import org.granite.client.messaging.transport.apache.ApacheAsyncTransport;
 
 public class HelloWorldClient {
     
 	public static void main(String[] args) throws Exception {
-        AMFChannelFactory channelFactory = new AMFChannelFactory();
+        JMFChannelFactory channelFactory = new JMFChannelFactory();
         channelFactory.start();
 		RemotingChannel channel = channelFactory.newRemotingChannel("graniteamf", new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"), 2);		
 		RemoteService service = new RemoteService(channel, "helloWorldService");
@@ -539,12 +514,12 @@ public class HelloWorldClient {
 
 You will also need to add a few libraries in a +lib+ folder and add them to the build path of the project with __Right Click/Build Path/Add to Builder Path__: 
 
-* +granite-client.jar+
-* +httpclient-4.3-beta1.jar+
-* +httpcore-4.2-beta2.jar+
-* +httpcore-nio-4.3-beta2.jar+
-* +httpasyncclient-4.0-beta4.jar+
-* +commons-logging-1.1.1.jar+
+* +granite-client-java.jar+
+* +httpclient-4.3.1.jar+
+* +httpcore-4.3.jar+
+* +httpcore-nio-4.3.jar+
+* +httpasyncclient-4.0.jar+
+* +commons-logging-1.1.3.jar+
 * +commons-codec-1.6.jar+
 
 You may now run the Java application in Eclipse by right-clicking the class +HelloWorldClient+ and _Run As.../Java Application_.
@@ -583,14 +558,14 @@ url mapping for GraniteDS, but any other can work.
 
 [source,java]
 ----
-AMFChannelFactory channelFactory = new AMFChannelFactory();
+JMFChannelFactory channelFactory = new JMFChannelFactory();
 channelFactory.start();
 RemotingChannel channel = channelFactory.newRemotingChannel("graniteamf",
 	new URI("http://localhost:8080/helloworld/graniteamf/amf.txt"));
 RemoteService srv = new RemoteService(channel, "helloWorldService");        
 ----
 
-This is the initialization part of the GraniteDS Java client. It requires creating and starting a channel factory with the desired protocol (here AMF),
+This is the initialization part of the GraniteDS Java client. It requires creating and starting a channel factory with the desired protocol (here JMF),
 creating a remoting channel and a +RemoteService+ whose target destination matches the destination declared earlier in the server configuration.
 
 [source,java]
@@ -640,17 +615,17 @@ link:$$http://www.graniteds.org/confluence/download/attachments/16875663/hellowo
 
 In order to create, build, and deploy this sample application you need these free tools:
  
-* _Java 5+_ (6+ working): Download link:$$http://java.sun.com/javase/downloads/index.jsp$$[Sun JDK] and install it. 
-* __Eclipse 3.3+__: Download link:$$http://www.eclipse.org/downloads/$$[Eclipse] and unzip it somewhere.             
+* __Java 7+__: Download link:$$http://www.oracle.com/technetwork/java/javase/downloads/index.html$$[Oracle JDK] and install it.
+* __Eclipse 3.5+__: Download link:$$http://www.eclipse.org/downloads/$$[Eclipse] and unzip it somewhere.
 * __Flex 4.6 SDK__: Download link:$$http://www.adobe.com/devnet/flex/flex-sdk-download.html$$[Flex 4.6 SDK] and unzip it somewhere. 
-    For example, +$$/flex_4_6_sdk$$+ (for Windows users: ++$$C:\Dev\flex_4_6_sdk$$++).             
-* __JBoss 4.2.3.GA__: Download link:$$http://www.jboss.org/jbossas/downloads/$$[JBoss] and unzip it somewhere. For example, +/jboss-4.2.3.GA+ 
+    For example, +$$/home/flex_sdk_4_6$$+ (for Windows users: ++$$C:\Dev\flex_sdk_4_6$$++).
+* __JBoss 4.2.3.GA__: Download link:$$http://www.jboss.org/jbossas/downloads/$$[JBoss] and unzip it somewhere. For example, +/home/jboss-4.2.3.GA+
     (for Windows users: ++C:\Dev\jboss-4.2.3.GA++). 
 * _granite-server.jar_, _granite-server-ejb.jar_, _granite-server-hibernate.jar_: You may take it from GraniteDS distribution in the +libraries/server+ folder.
-    Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
+    Download it link:$$http://www.granitedataservices.com/community/before-downloading/$$[here].
 * _granite-client-flex.swc_: You may take it from GraniteDS distribution in the +libraries/flex-client+ folder.
-    Download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here].             
-* __GraniteDS Eclipse Builder__: You may download it link:$$http://www.graniteds.org/confluence/display/DOWNLOAD$$[here] 
+    Download it link:$$http://www.granitedataservices.com/community/before-downloading/$$[here].
+* __GraniteDS Eclipse Builder__: You may download it link:$$http://www.granitedataservices.com/community/before-downloading/$$[here]
     (follow these installation instructions <<graniteds.gas3,here>>). 
 
 
@@ -661,7 +636,7 @@ Because we are going to have two types of sources, Java and Flex MXML, it is bet
 You can do this by right-clicking on the +src+ source folder and selecting _Refactor / Rename_. 
 
 Create a new directory named +lib+ at the root of this project and put +granite-server.jar+, +granite-server-ejb.jar+, +granite-server-hibernate.jar+,
-+granite-client-flex.swc+ into it. Also add these two JBoss jars: +ejb3-persistence.jar+ and +jboss-ejb3x.jar+, which you will find in the +/jboss-4.2.3.GA/server/default/lib+ directory.
++granite-client-flex.swc+ into it. Also add these two JBoss jars: +ejb3-persistence.jar+ and +jboss-ejb3x.jar+, which you will find in the +jboss-4.2.3.GA/server/default/lib+ directory.
 Right-click on those JBoss jars and select _Build Path / Add to Build Path_. 
 
 You should now see something like the following picture under Eclipse:  
@@ -1032,8 +1007,8 @@ the properties +$$FLEX_HOME$$+ and +$$TOMCAT_HOME$$+ to reflect your environment
 <project name="hello-world" default="deploy">
 
     <!-- Modify FLEX_HOME/JBOSS_HOME properties to reflect your environment -->
-    <property name="FLEX_HOME" value="/flex_4_6_sdk"/>
-    <property name="JBOSS_HOME" value="/jboss-4.2.3.GA"/>
+    <property name="FLEX_HOME" value="/home/flex_sdk_4_6"/>
+    <property name="JBOSS_HOME" value="/home/jboss-4.2.3.GA"/>
     
     <!-- Declare Flex Ant tasks (such as mxmlc used below) -->
     <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
@@ -1102,6 +1077,6 @@ You may now right-click on the +build.xml+ file and select _Run As / Ant Build_.
 create an ear (Enterprise ARchive) and copy it into your JBoss +deploy+ directory. 
 
 Finally start JBoss and test the application. To start JBoss, go to the directory +bin+ just under your JBoss installation directory, 
-+/jboss-4.2.3.GA/bin+ for example, and double-click on +run.bat+, or +run.sh+ for Unix/Mac users. After a short while, you should see in the console 
++/home/jboss-4.2.3.GA/bin+ for example, and double-click on +run.bat+, or +run.sh+ for Unix/Mac users. After a short while, you should see in the console
 that JBoss has started. You may now point your Web browser to link:$$http://localhost:8080/helloworld/$$[+http://localhost:8080/helloworld/+]. 
 endif::flex[]
