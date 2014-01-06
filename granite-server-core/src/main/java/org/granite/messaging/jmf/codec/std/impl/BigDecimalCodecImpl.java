@@ -47,6 +47,9 @@ public class BigDecimalCodecImpl extends AbstractIntegerStringCodec<BigDecimal> 
 	public void encode(OutputContext ctx, BigDecimal v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
+		// Should we compact the magnitude (vs.speed)?
+		// v = v.stripTrailingZeros();
+		
 		int scale = v.scale();
 		byte[] magnitude = v.unscaledValue().toByteArray();
 

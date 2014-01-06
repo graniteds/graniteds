@@ -2,7 +2,7 @@
 <feature
       id="org.granite.builder"
       label="GraniteDS Gas3 Builder"
-      version="@granitedsEclipseVersion@"
+      version="0.0.0.CHANGE_ME"
       provider-name="GraniteDS">
 
    <description url="http://www.graniteds.org">
@@ -10,7 +10,7 @@
    </description>
 
    <copyright url="http://www.graniteds.org">
-  GRANITE DATA SERVICES
+      GRANITE DATA SERVICES
   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
 
   This file is part of the Granite Data Services Platform.
@@ -32,7 +32,7 @@
    </copyright>
 
    <license url="http://www.gnu.org/licenses/lgpl-2.1.html">
-                  GNU LESSER GENERAL PUBLIC LICENSE
+      GNU LESSER GENERAL PUBLIC LICENSE
                        Version 2.1, February 1999
 
  Copyright (C) 1991, 1999 Free Software Foundation, Inc.
@@ -87,7 +87,7 @@ permission to copy, distribute and/or modify the library.
 there is no warranty for the free library.  Also, if the library is
 modified by someone else and passed on, the recipients should know
 that what they have is not the original version, so that the original
-author's reputation will not be affected by problems that might be
+author&apos;s reputation will not be affected by problems that might be
 introduced by others.
 
   Finally, software patents pose a constant threat to the existence of
@@ -112,8 +112,8 @@ entire combination fits its criteria of freedom.  The Lesser General
 Public License permits more lax criteria for linking other code with
 the library.
 
-  We call this license the "Lesser" General Public License because it
-does Less to protect the user's freedom than the ordinary General
+  We call this license the &quot;Lesser&quot; General Public License because it
+does Less to protect the user&apos;s freedom than the ordinary General
 Public License.  It also provides other free software developers Less
 of an advantage over competing non-free programs.  These disadvantages
 are the reason we use the ordinary General Public License for many
@@ -136,13 +136,13 @@ operating system, as well as its variant, the GNU/Linux operating
 system.
 
   Although the Lesser General Public License is Less protective of the
-users' freedom, it does ensure that the user of a program that is
+users&apos; freedom, it does ensure that the user of a program that is
 linked with the Library has the freedom and the wherewithal to run
 that program using a modified version of the Library.
 
   The precise terms and conditions for copying, distribution and
 modification follow.  Pay close attention to the difference between a
-"work based on the library" and a "work that uses the library".  The
+&quot;work based on the library&quot; and a &quot;work that uses the library&quot;.  The
 former contains code derived from the library, whereas the latter must
 be combined with the library in order to run.
 
@@ -152,22 +152,22 @@ be combined with the library in order to run.
   0. This License Agreement applies to any software library or other
 program which contains a notice placed by the copyright holder or
 other authorized party saying it may be distributed under the terms of
-this Lesser General Public License (also called "this License").
-Each licensee is addressed as "you".
+this Lesser General Public License (also called &quot;this License&quot;).
+Each licensee is addressed as &quot;you&quot;.
 
-  A "library" means a collection of software functions and/or data
+  A &quot;library&quot; means a collection of software functions and/or data
 prepared so as to be conveniently linked with application programs
 (which use some of those functions and data) to form executables.
 
-  The "Library", below, refers to any such software library or work
-which has been distributed under these terms.  A "work based on the
-Library" means either the Library or any derivative work under
+  The &quot;Library&quot;, below, refers to any such software library or work
+which has been distributed under these terms.  A &quot;work based on the
+Library&quot; means either the Library or any derivative work under
 copyright law: that is to say, a work containing the Library or a
 portion of it, either verbatim or with modifications and/or translated
 straightforwardly into another language.  (Hereinafter, translation is
-included without limitation in the term "modification".)
+included without limitation in the term &quot;modification&quot;.)
 
-  "Source code" for a work means the preferred form of the work for
+  &quot;Source code&quot; for a work means the preferred form of the work for
 making modifications to it.  For a library, complete source code means
 all the source code for all modules it contains, plus any associated
 interface definition files, plus the scripts used to control compilation
@@ -181,7 +181,7 @@ on the Library (independent of the use of the Library in a tool for
 writing it).  Whether that is true depends on what the Library does
 and what the program that uses the Library does.
 
-  1. You may copy and distribute verbatim copies of the Library's
+  1. You may copy and distribute verbatim copies of the Library&apos;s
 complete source code as you receive it, in any medium, provided that
 you conspicuously and appropriately publish on each copy an
 appropriate copyright notice and disclaimer of warranty; keep intact
@@ -273,17 +273,17 @@ compelled to copy the source along with the object code.
 
   5. A program that contains no derivative of any portion of the
 Library, but is designed to work with the Library by being compiled or
-linked with it, is called a "work that uses the Library".  Such a
+linked with it, is called a &quot;work that uses the Library&quot;.  Such a
 work, in isolation, is not a derivative work of the Library, and
 therefore falls outside the scope of this License.
 
-  However, linking a "work that uses the Library" with the Library
+  However, linking a &quot;work that uses the Library&quot; with the Library
 creates an executable that is a derivative of the Library (because it
-contains portions of the Library), rather than a "work that uses the
-library".  The executable is therefore covered by this License.
+contains portions of the Library), rather than a &quot;work that uses the
+library&quot;.  The executable is therefore covered by this License.
 Section 6 states terms for distribution of such executables.
 
-  When a "work that uses the Library" uses material from a header file
+  When a &quot;work that uses the Library&quot; uses material from a header file
 that is part of the Library, the object code for the work may be a
 derivative work of the Library even though the source code is not.
 Whether this is true is especially significant if the work can be
@@ -303,10 +303,10 @@ Any executables containing that work also fall under Section 6,
 whether or not they are linked directly with the Library itself.
 
   6. As an exception to the Sections above, you may also combine or
-link a "work that uses the Library" with the Library to produce a
+link a &quot;work that uses the Library&quot; with the Library to produce a
 work containing portions of the Library, and distribute that work
 under terms of your choice, provided that the terms permit
-modification of the work for the customer's own use and reverse
+modification of the work for the customer&apos;s own use and reverse
 engineering for debugging such modifications.
 
   You must give prominent notice with each copy of the work that the
@@ -321,8 +321,8 @@ of these things:
     machine-readable source code for the Library including whatever
     changes were used in the work (which must be distributed under
     Sections 1 and 2 above); and, if the work is an executable linked
-    with the Library, with the complete machine-readable "work that
-    uses the Library", as object code and/or source code, so that the
+    with the Library, with the complete machine-readable &quot;work that
+    uses the Library&quot;, as object code and/or source code, so that the
     user can modify the Library and then relink to produce a modified
     executable containing the modified Library.  (It is understood
     that the user who changes the contents of definitions files in the
@@ -331,7 +331,7 @@ of these things:
 
     b) Use a suitable shared library mechanism for linking with the
     Library.  A suitable mechanism is one that (1) uses at run time a
-    copy of the library already present on the user's computer system,
+    copy of the library already present on the user&apos;s computer system,
     rather than copying library functions into the executable, and (2)
     will operate properly with a modified version of the library, if
     the user installs one, as long as the modified version is
@@ -349,8 +349,8 @@ of these things:
     e) Verify that the user has already received a copy of these
     materials or that you have already sent this user a copy.
 
-  For an executable, the required form of the "work that uses the
-Library" must include any data and utility programs needed for
+  For an executable, the required form of the &quot;work that uses the
+Library&quot; must include any data and utility programs needed for
 reproducing the executable from it.  However, as a special exception,
 the materials to be distributed need not include anything that is
 normally distributed (in either source or binary form) with the major
@@ -401,7 +401,7 @@ the Library or works based on it.
 Library), the recipient automatically receives a license from the
 original licensor to copy, distribute, link with or modify the Library
 subject to these terms and conditions.  You may not impose any further
-restrictions on the recipients' exercise of the rights granted herein.
+restrictions on the recipients&apos; exercise of the rights granted herein.
 You are not responsible for enforcing compliance by third parties with
 this License.
 
@@ -451,7 +451,7 @@ but may differ in detail to address new problems or concerns.
 
 Each version is given a distinguishing version number.  If the Library
 specifies a version number of this License which applies to it and
-"any later version", you have the option of following the terms and
+&quot;any later version&quot;, you have the option of following the terms and
 conditions either of that version or of any later version published by
 the Free Software Foundation.  If the Library does not specify a
 license version number, you may choose any version ever published by
@@ -471,7 +471,7 @@ and reuse of software generally.
   15. BECAUSE THE LIBRARY IS LICENSED FREE OF CHARGE, THERE IS NO
 WARRANTY FOR THE LIBRARY, TO THE EXTENT PERMITTED BY APPLICABLE LAW.
 EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR
-OTHER PARTIES PROVIDE THE LIBRARY "AS IS" WITHOUT WARRANTY OF ANY
+OTHER PARTIES PROVIDE THE LIBRARY &quot;AS IS&quot; WITHOUT WARRANTY OF ANY
 KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
 PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE
@@ -514,7 +514,7 @@ DAMAGES.
          id="org.granite.builder"
          download-size="0"
          install-size="0"
-         version="@granitedsEclipseVersion@"
+         version="0.0.0.CHANGE_ME"
          unpack="false"/>
 
 </feature>

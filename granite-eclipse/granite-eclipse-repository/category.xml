@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.granite.builder_@granitedsEclipseVersion@.jar" id="org.granite.builder" version="@granitedsEclipseVersion@">
+   <feature url="features/org.granite.builder_0.0.0.CHANGE_ME.jar" id="org.granite.builder" version="0.0.0.CHANGE_ME">
       <category name="org.granite.tools"/>
    </feature>
    <category-def name="org.granite.tools" label="GraniteDS Eclipse Tools"/>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>granite-eclipse</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+	</buildSpec>
+    <natures>
+		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
+	</natures>
+</projectDescription>

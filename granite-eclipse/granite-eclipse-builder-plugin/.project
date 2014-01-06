@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>granite-eclipse-builder</name>
+	<name>granite-eclipse-builder-plugin</name>
 	<comment>GraniteDS Code Generator Eclipse Plugin</comment>
 	<projects>
 	</projects>

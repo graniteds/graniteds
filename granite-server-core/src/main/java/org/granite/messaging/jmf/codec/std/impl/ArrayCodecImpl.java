@@ -290,7 +290,6 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 					os.write(bits >> 8);
 					os.write(bits >> 16);
 					os.write(bits >> 24);
-					
 				}
 				break;
 			}
@@ -564,16 +563,30 @@ public class ArrayCodecImpl extends AbstractIntegerStringCodec<Object> implement
 				
 				case JMF_FLOAT: {
 					float[] a = new float[length];
-					for (int i = 0; i < length; i++)
-						a[i] = FloatCodecImpl.readFloatData(ctx, jmfComponentType);
+					for (int i = 0; i < length; i++) {
+						int bits = ctx.safeRead();
+						bits |= ctx.safeRead() << 8;
+						bits |= ctx.safeRead() << 16;
+						bits |= ctx.safeRead() << 24;
+						a[i] = Float.intBitsToFloat(bits);
+					}
 					v = a;
 					break;
 				}
 				
 				case JMF_DOUBLE: {
 					double[] a = new double[length];
-					for (int i = 0; i < length; i++)
-						a[i] = DoubleCodecImpl.readDoubleData(ctx, jmfComponentType);
+					for (int i = 0; i < length; i++) {
+						long bits = ctx.safeRead();
+						bits |= ((long)ctx.safeRead()) << 8;
+						bits |= ((long)ctx.safeRead()) << 16;
+						bits |= ((long)ctx.safeRead()) << 24;
+						bits |= ((long)ctx.safeRead()) << 32;
+						bits |= ((long)ctx.safeRead()) << 40;
+						bits |= ((long)ctx.safeRead()) << 48;
+						bits |= ((long)ctx.safeRead()) << 56;
+						a[i] = Double.longBitsToDouble(bits);
+					}
 					v = a;
 					break;
 				}
