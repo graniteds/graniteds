@@ -228,7 +228,7 @@ ValidatorFactory.getInstance().validate(bean, [MyGroup]);
 ValidatorFactory.getInstance().validate(bean, [Default, MyGroup]);
 ----
 
-You may of course specify mutliple groups in the constraint annotation, for example +\[Size(min="2", max="10", goups="path.to.MyGroup, path.to.MyOtherGroup")\]+. 
+You may of course specify mutliple groups in the constraint annotation, for example +[Size(min="2", max="10", goups="path.to.MyGroup, path.to.MyOtherGroup")]+.
 Because the group interface references in the annotations  must be fully qualified, it may be annoying to always specify the complete path to each group interface, 
 and you may use the namespace resolver available in the +ValidatorFactory+ instance: 
 
@@ -407,7 +407,7 @@ By default, in addition to returning an array of +ConstraintViolations+, the val
 provided that the bean that holds the property is an +IEventDispatcher+. These events are instances of the +ConstraintViolationEvent+ class and are 
 dispatched between two ++ValidationEvent++s events (start and end). 
 
-Because ActionScript 3 beans annotated with the +\[Bindable\]+ annotation are automatically compiled as +IEventDispatcher+ implementations, generated 
+Because ActionScript 3 beans annotated with the +[Bindable]+ annotation are automatically compiled as +IEventDispatcher+ implementations, generated
 beans (or other bindable beans written manually) will dispatch constraint events. You may then listen validation events dispatched by a bean if you 
 register your event listeners as follow: 
 

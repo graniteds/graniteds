@@ -806,7 +806,7 @@ better compile time error checking and auto completion in your IDE:
 </mx:Application>
 ----
 
-It is possible to benefit from even more type safety by using the annotation +\[Inject\]+ instead of +In+. When using this annotation, the full class name 
+It is possible to benefit from even more type safety by using the annotation +[Inject]+ instead of +[In]+. When using this annotation, the full class name
 is used to find the target bean in the Spring context instead of the bean name. 
 
 [source,xml]

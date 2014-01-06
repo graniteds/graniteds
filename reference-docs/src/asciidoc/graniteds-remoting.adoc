@@ -536,7 +536,7 @@ Let's see the same hello example with Tide. Note the usage of the Tide context o
 ==== Basic remoting with dependency injection
 
 This example can be cleaned up by using the dependency injection feature of the Tide framework (see <<tide.remoting,here>> for more details). 
-Basically you can inject a client proxy for a remote destination with the annotation +\[In\]+. 
+Basically you can inject a client proxy for a remote destination with the annotation +[In]+.
 
 [source,xml]
 ----

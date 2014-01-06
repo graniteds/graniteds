@@ -13,7 +13,7 @@ Tide provides an integration between the Flex/LCDS concept of managed entities a
 In particular, Tide maintains a client-side cache of entity instances and ensures that every instance is unique in the Flex client context. 
 To achieve this, it requires a unique identifier on each entity class. This is why GraniteDS supports the concept of managed entities. 
 
-All entities marked as +\[Managed\]+ are considered as corresponding to Hibernate/JPA managed entities on the server. 
+All entities marked as +[Managed]+ are considered as corresponding to Hibernate/JPA managed entities on the server.
 It is possible to do the same by implementing +IEntity+ and extending +EventDispatcher+. The managed entities delegate all operations on their getters/setters 
 to the Tide context to which they belong so all changes can be tracked. 
 
@@ -254,7 +254,7 @@ public void save(@Lazy Person person) {
 }
 ----
 
-Gas3 will then generate a +\[Lazy\]+ annotation on your service methods (so take care that you have added the +\[Lazy\]+ annotation to your Flex metadata compilation 
+Gas3 will then generate a +[Lazy]+ annotation on your service methods (so take care that you have added the +[Lazy]+ annotation to your Flex metadata compilation
 configuration). Next in the Flex application, register the +UninitializeArgumentPreprocessor+ component in Tide as follows : 
 
 [source,actionscript]
@@ -265,7 +265,7 @@ Tide.getInstance().addComponents([UninitializeArgumentPreprocessor]);
 Once you have done this, all calls to +PersonService.save()+ will automatically use a properly uninitialized version of the +person+ argument. 
 
 [[data.changesets]]
-=== Change Sets
+=== Change sets
 
 In most cases, end users update very few properties of an object graph at the same time so it's not very efficient to send the full graph to the server for merging,
 even folded and uninitialized as much as possible. To handle this very common use case, Tide provides the change set feature which consists in
@@ -273,7 +273,7 @@ building a diff object representing only the actual updates on the object graph 
 manually or automated through some annotations and configuration.
 
 This feature can work when sending objects from the client, or when dispatching updates from the server. In this case, GraniteDS has to integrate more
-deeply into the JPA provider to build the change set objects. The server-to-client change sets are currently implemented only for Hibernate 3 and Hibernate 4.
+deeply into the JPA provider to build the change set objects. The server-to-client change sets are currently implemented only for Hibernate 3.5+.
 
 *Client to server change sets*
 
@@ -316,8 +316,8 @@ var cscompany:ChangeSet = csb.buildEntityChangeSet(company);
 personService.savePersonCompany(csperson, cscompany);
 ----
 
-Obviously that means that the server method that is called knows what to do with the +ChangeSet+ objects. Tide provides the
-+ChangeSetApplier+ API that can be used on the server :
+Obviously any of these client operations mean that the server method that is called knows what to do with the +ChangeSet+ objects.
+Tide provides the +ChangeSetApplier+ API that can be used on the server :
 
 [source,java]
 ----
@@ -341,7 +341,7 @@ public void save(@Lazy Person person) {
 }
 ----
 
-Gas3 will then generate a +\[Lazy\]+ annotation on your service methods (so take care that you have added the +\[Lazy\]+ annotation to your Flex metadata compilation
+Gas3 will then generate a +[Lazy]+ annotation on your service methods (so take care that you have added the +[Lazy]+ annotation to your Flex metadata compilation
 configuration). Next in the Flex application, register the +ChangeArgumentPreprocessor+ component in Tide as follows :
 
 [source,actionscript]

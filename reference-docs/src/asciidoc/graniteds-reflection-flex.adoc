@@ -201,7 +201,7 @@ var type:Type = Type.forName("path.to.MyClass");
 var annotations:Array = type.getAnnotatedFields(false, "Bindable", "MyAnnotation");
 ----
 
-This code will return all fields annotated by at least one of the +\[Bindable\]+ or +\[MyAnnotation\]+ annotations. 
+This code will return all fields annotated by at least one of the +[Bindable]+ or +[MyAnnotation]+ annotations.
 
 [[reflection.call]]
 === Calling Constructors or Methods, and Getting or Setting Properties

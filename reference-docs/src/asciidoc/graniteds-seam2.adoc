@@ -567,7 +567,7 @@ it can be useful to disable the synchronization between client and server for ce
 This is possible by using +Seam.getInstance().setComponentRemoteSync(variableName, false)+ expressions. 
 
 Note that remote synchronization of all variables received from the server is enabled by default. 
-Variables that are outjected from client components can be remote-enabled with +\[Out(remote="true")\]+. 
+Variables that are outjected from client components can be remote-enabled with +[Out(remote="true")]+.
 
 [[seam2.tideserveroutjection]]
 ==== Integration with Variable Outjection
@@ -1144,7 +1144,7 @@ Seam.getInstance().addComponentWithFactory("people", PagedQuery, { maxResults: 4
 
 To change filter parameters values on the client-side, you just have to set values on the restriction object (here ++examplePerson++) in the context. 
 Tide tracks the changes on the object on the Flex side and will update the server filter instance accordingly. 
-+PagedQuery+ implicitly forces the detected restriction variables to be synchronized remotely with the server so you don't have to do +\[Out(remote="true")\]+ 
++PagedQuery+ implicitly forces the detected restriction variables to be synchronized remotely with the server so you don't have to do +[Out(remote="true")]+
 or +Seam.getInstance().setComponentRemoteSync("examplePerson", true)+ manually. 
 
 For example, you can use a filter like this : 

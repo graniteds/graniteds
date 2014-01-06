@@ -63,7 +63,7 @@ In a first iteration, we do everything in one simple MXML:
 ----
 
 This is almost exactly the same example that we have seen in the <<remoting.tideremoting,Tide Remoting>> chapter. In this first step we see only 
-the injection feature of Tide with the annotation +\[In\]+ that can be placed on any writeable property of the component  (public or with a setter). 
+the injection feature of Tide with the annotation +[In]+ that can be placed on any writeable property of the component  (public or with a setter).
 
 Tide will by default consider any injection point with a type +Component+ (or any type extending ++Component++) as a remoting injection and will create 
 and inject a client proxy for a service named +helloService+ (by default the name of the property is used as the name of the injected component).  
@@ -119,8 +119,8 @@ iteration we want at least to separate the application initialization part and t
 </mx:Panel>
 ----
 
-This is a bit better, the main UI is now defined in its own MXML. Tide has not much to do here, but note that we have added the +\[Name\]+ metadata annotation 
-on the MXML to instruct Tide that it has to manage the component and inject the dependencies on properties marked with +\[In\]+. This was not necessary 
+This is a bit better, the main UI is now defined in its own MXML. Tide has not much to do here, but note that we have added the +[Name]+ metadata annotation
+on the MXML to instruct Tide that it has to manage the component and inject the dependencies on properties marked with +[In]+. This was not necessary
 in the initial case because the main application itself is always registered as a component managed by Tide (under the name ++application++). 
 
 The next step is to decouple our UI component from the server interaction, so we can for example reuse the same UI component in another context or simplify 
@@ -212,8 +212,8 @@ We have to configure the controller in the main MXML and use it in the view:
 </mx:Panel>
 ----
 
-This is already quite clean, and completely typesafe. The annotation +\[Inject\]+ indicates that Tide should inject any managed component which class 
-extends or implements the specified type, contrary to the annotation +\[In\]+ that is used to inject a  component by name. 
+This is already quite clean, and completely typesafe. The annotation +[Inject]+ indicates that Tide should inject any managed component which class
+extends or implements the specified type, contrary to the annotation +[In]+ that is used to inject a  component by name.
 Here the instance of +HelloController+ will be injected, in a test case you could easily configure an alternative +TestHelloController+ implementing 
 the same interface. 
 
@@ -344,11 +344,11 @@ Lastly we configure the new model component and dispatch the custom event from t
 
 The main difference here is that we use an event to communicate between the view and the controller. This would allow for example many controllers 
 to react to the same user action. The view does not know which component will handle the event, and the controllers simply specify that they are 
-interested in the event +HelloEvent+ with the annotation +\[Observer\]+ on a public handler method. Tide automatically wires the dispatcher and the 
+interested in the event +HelloEvent+ with the annotation +[Observer]+ on a public handler method. Tide automatically wires the dispatcher and the
 observers through its event bus by matching the event type.  
 
 Note that the +HelloEvent+ class extends a (pseudo) abstract class of the Tide framework. If you don't want any such dependency, you can use any Flex event 
-but then you have to add an annotation +\[ManagedEvent\]+ on the dispatcher to instruct Tide which events it has to manage. 
+but then you have to add an annotation +[ManagedEvent]+ on the dispatcher to instruct Tide which events it has to manage.
 See more below in the section <<tide.eventbus,Event Bus>>. 
 
 Now we have a completely decoupled and testable architecture, however everything is wired typesafely, meaning that any error will be detected at 
@@ -534,7 +534,7 @@ If no component has been registered with a particular name, +tideContext.someNam
 In particular +tideContext.someName+ will return +null+ only if a component named +someName+ has been configured with the metadata +autoCreate+ set to +false+.  
 ====
 
-When using dependency injection annotations (++\[In\]++, ++\[Out\]++ and ++\[Inject\]++) on component properties, Tide implicitly registers a component 
+When using dependency injection annotations (++[In]++, ++[Out]++ and ++[Inject]++) on component properties, Tide implicitly registers a component
 of the target type when it is a concrete class (not an interface): 
 
 [source,actionscript]
@@ -555,7 +555,7 @@ of a component interface.
 
 The last case is the one of UI components that are added and removed from the Flex stage. One of the things that Tide does at initialization time 
 in the method +initApplication()+ is registering listeners for the Flex events +add+ and +remove+. On the +add+ event, it automatically registers any 
-component annotated with +\[Name\]+ and puts its instance in the context. It also removes the instance from the context when getting the +remove+ event. 
+component annotated with +[Name]+ and puts its instance in the context. It also removes the instance from the context when getting the +remove+ event.
 
 Note that this behaviour can incur a significant performance penalty due to the ridiculously slow implementation of reflection in ActionScript 3 
 so it can be disabled by +Tide.getInstance().initApplication(false)+. You will then have to wire the UI components manually.  
@@ -564,9 +564,9 @@ so it can be disabled by +Tide.getInstance().initApplication(false)+. You will t
 === Dependency Injection
 
 Once you have configured all components of the application, the Tide framework is able to inject the correct component instances for you anywhere you 
-specify that you have a dependency by using one of the annotations +\[In\]+ or +\[Inject\]+. 
+specify that you have a dependency by using one of the annotations +[In]+ or +[Inject]+.
 
-The annotation +\[In\]+ indicates a name-based injection point, meaning that Tide will assign the instance of the component with the specified name: 
+The annotation +[In]+ indicates a name-based injection point, meaning that Tide will assign the instance of the component with the specified name:
 
 [source,actionscript]
 ----
@@ -581,7 +581,7 @@ public class MyInjectedComponent {
 
 [WARNING]
 ====
-Due to limitations in AS3 reflection, properties annotated with +\[In\]+ must be public or have a public setter (or use a custom  Flex namespace). 
+Due to limitations in AS3 reflection, properties annotated with +[In]+ must be public or have a public setter (or use a custom  Flex namespace).
 ====
 
 It is important to note that injection in Tide is not done statically at instantiation time. It is implemented as a Flex data binding between the 
@@ -620,7 +620,7 @@ public var myComponent:IMyComponent;
 This ensures that +myComponent+ will never be +null+. 
 
 Tide also supports the concept of outjection, meaning that a component can publish some of its state to the context. This can be done with the 
-annotation +\[Out\]+, and just works in a similar way as injection by creating a data binding between the outjecting component and the context: 
+annotation +[Out]+, and just works in a similar way as injection by creating a data binding between the outjecting component and the context:
 
 [source,actionscript]
 ----
@@ -637,7 +637,7 @@ public class MyOutjectingComponent {
 ----
 
 In this case, Tide will create a binding from +myOutjectingComponent.myComponent+ to +tideContext.myComponent+. It is important that outjected 
-properties are +\[Bindable\]+ because this is how data binding is able to propagate the value to listeners. 
+properties are +[Bindable]+ because this is how data binding is able to propagate the value to listeners.
 The method +doSomething+ will change the value of +myComponent+ in the context and also propagate it to all components having it in one of their injection points. 
 
 With server frameworks that support bijection (only Seam for now), you can also mark the outjection as remote, so Tide will also propagate the value 
@@ -714,8 +714,8 @@ This is very convenient but note that it's relatively fragile and difficult to m
 of name conflicts in the global context. Here you would have to ensure that no other component use the name +message+ for another purpose. 
 This problem can however be limited by defining proper naming conventions (for example with a prefix per module, or per use case). 
 
-Specifying an injection point with +\[In\]+ is also based on string names and thus not typesafe. Alternatively you can (and should whenever possible) 
-use the annotation +\[Inject\]+ that specifies a type-based injection point. Tide will lookup any component that extend or implement the specified type 
+Specifying an injection point with +[In]+ is also based on string names and thus not typesafe. Alternatively you can (and should whenever possible)
+use the annotation +[Inject]+ that specifies a type-based injection point. Tide will lookup any component that extend or implement the specified type
 and inject an instance of this component:  
 
 [source,actionscript]
@@ -731,13 +731,13 @@ public class MyInjectedComponent {
 
 Here no name is used, Tide uses only the target type +IMyComponent+ to match with a registered component. If more than one component match the type, 
 the result is undefined and the first registered component will be selected. It is thus recommended to register only one component for each interface 
-used in injection points and to avoid too generic types in injection points (e.g. +\[Inject\] public var bla:Object+ will generally not be very useful).  
+used in injection points and to avoid too generic types in injection points (e.g. +[Inject] public var bla:Object+ will generally not be very useful).
 
 However it can be useful to register many component implementations for the same interface in the case of service registries. You can define a 
 service interface, register many implementations, and then retrieve all registered implementations with +tideContext.allByType(IMyService)+. 
 This is for example how Tide handles exception converters or message interceptors internally.  
 
-You can also inject the context object to which the component belongs with either +\[In\]+ or +\[Inject\]+ by specifying the source type +Context+ 
+You can also inject the context object to which the component belongs with either +[In]+ or +[Inject]+ by specifying the source type +Context+
 or +BaseContext+. This will always be a static injection (i.e. not a binding) because the context of a component instance cannot change. 
 
 [source,actionscript]
@@ -747,9 +747,9 @@ public var myContext:Context;
 ----
 
 Tide manages the lifecycle of the components (instantiation and destruction) and provides a means to react to these events with the annotations 
-+\[PostConstruct\]+ and +\[Destroy\]+ than can be put on any public method without argument of the component and will be called by Tide on 
-the corresponding events. +\[PostConstruct\]+ is called after all injections and internal initializations have been done so it can been used 
-to do some custom initialization of a component instance. +\[Destroy\]+ can be used to cleanup used resources. 
++[PostConstruct]+ and +[Destroy]+ than can be put on any public method without argument of the component and will be called by Tide on
+the corresponding events. +[PostConstruct]+ is called after all injections and internal initializations have been done so it can been used
+to do some custom initialization of a component instance. +[Destroy]+ can be used to cleanup used resources.
 
 [source,actionscript]
 ----
@@ -772,7 +772,7 @@ public class MyComponent {
 === Event Bus
 
 We have already seen in the previous section how the Tide context can server as a centralized bus to propagate events between managed components. 
-The +\[In\]+ and +\[Out\]+ annotations were used to define a kind of publish/subscribe model for events of type +PropertyChangeEvent+. 
+The +[In]+ and +[Out]+ annotations were used to define a kind of publish/subscribe model for events of type +PropertyChangeEvent+.
 
 However other kinds of events can be propagated though the event bus. Tide automatically registers itself as listener to managed events on all 
 managed components, and forwards the events it receives to interested observers by matching the event with the observer definition. 
@@ -782,7 +782,7 @@ Let's see in a first step what kind of events can be managed:
 * Events of class +org.granite.tide.events.TideUIEvent+ are considered as untyped events and only their name is used to match against observers.
 * Events of type +org.granite.tide.events.TideUIEvent+ (or ++$$TideUIEvent.TIDE_EVENT$$++), in particular all events
     extending the +AbstractTideEvent+ class are considered as typed events and only their class is used to match against observers.
-* Events declared with the +\[ManagedEvent\]+ annotation on the dispatcher component are also matched by their type.
+* Events declared with the +[ManagedEvent]+ annotation on the dispatcher component are also matched by their type.
 	        
 There are two ways of dispatching untyped events: 
 
@@ -875,14 +875,14 @@ public class MyComponent extends EventDispatcher {
 }
 ----
 
-Note that this second option is more vulnerable to typing errors because you have to write the event name in the +\[ManagedEvent\]+ annotation 
+Note that this second option is more vulnerable to typing errors because you have to write the event name in the +[ManagedEvent]+ annotation
 and the Flex compiler does not enforce any control in the annotations. 
 
 Now that you know how to dispatch an event that Tide will be able to manage, let's see how to tell Tide what to do with this event. The key for this 
-is the annotation +\[Observer\]+ that can be put on any public method of a component and will be called when  
+is the annotation +[Observer]+ that can be put on any public method of a component and will be called when
 
 Once again there are a few possibilities to observe events passed through the bus. For untyped events, you have to specify the name of the event you want 
-to observe in the +\[Observer("myEvent")\]+ annotation. The target observer method can either have a single argument of type +TideContextEvent+, 
+to observe in the +[Observer("myEvent")]+ annotation. The target observer method can either have a single argument of type +TideContextEvent+,
 or a list of arguments that will be set with the arguments of the source ++TideUIEvent++: 
 
 [source,actionscript]
@@ -907,7 +907,7 @@ public function eventHandler(arg1:Object, arg2:Object):void {
 }
 ----
 
-One method can listen to more than one event type by specifying multiple +\[Observer\]+ annotations: 
+One method can listen to more than one event type by specifying multiple +[Observer]+ annotations:
 
 [source,actionscript]
 ----
@@ -938,22 +938,22 @@ public function eventHandler(event:MyEvent):void {
 }
 ----
 
-The match will always be done on the event class, so there is nothing to declare in the +\[Observer\]+ annotation. Note that this is recommended 
+The match will always be done on the event class, so there is nothing to declare in the +[Observer]+ annotation. Note that this is recommended
 to use this kind of typed events for coarse grained events in your application, otherwise this can lead to a proliferation of event classes. 
 Future versions of Tide may allow for more specific matching on the handler method allowing the reuse of the same event class in different use cases. 
 
-There are other possibilities than the annotation +\[Observer\]+ to register event observers: 
+There are other possibilities than the annotation +[Observer]+ to register event observers:
 
 * +Tide.getInstance().addEventObserver("myEvent", "myComponent", "myMethod")+ can be used to register the method +myMethod+
             of the component +myComponent+ as observer for the event +myEvent+. This is exactly equivalent as putting the
-            annotation +\[Observer("myEvent")\]+ on the method.
+            annotation +[Observer("myEvent")]+ on the method.
             
 * +Tide.getInstance().addContextEventListener("myEvent", listener)+ can be used to directly register an event listener method for a 
             particular event. It can also be called from the context object with +tideContext.addContextEventListener("myEvent", listener)+.
              
 If a component has registered an observer for an event and is not instantiated when the event is raised, it will be automatically instantiated, 
-unless it is marked as +\[Name("myComponent", autoCreate="false")\]+. It is however possible to disable this automatic instantiation for a 
-particular observer with +\[Observer("myEvent", create="false")\]+. In this case the target component instance will react to the event only if 
+unless it is marked as +[Name("myComponent", autoCreate="false")]+. It is however possible to disable this automatic instantiation for a
+particular observer with +[Observer("myEvent", create="false")]+. In this case the target component instance will react to the event only if
 it already exists in the context. 
 
 [[tide.conversations]]
@@ -978,7 +978,7 @@ a conversation context and the global context:
 +       
 [WARNING]
 ====
-Note that in this case all parameters of the event must be serializable (annotated with ++\[RemoteClass\]++) because the parameters 
+Note that in this case all parameters of the event must be serializable (annotated with +[RemoteClass]+) because the parameters
 are cloned when passed from one context to another
 ====
 
@@ -988,7 +988,7 @@ are cloned when passed from one context to another
     accessed by its name from any conversation context: if +myComponent+ is the name of a global component, 
 	+tideContext.myComponent+ will always return the instance of the global component for any existing context.
 	       
-* Similarly when using injection, it is possible to inject a global component instance in a conversation component instance with ++\[In\]++:	       
+* Similarly when using injection, it is possible to inject a global component instance in a conversation component instance with ++[In]++:
 +
 [source,actionscript]
 ----
@@ -1083,7 +1083,7 @@ The use case is that we want to open a new tab to display a customer record when
             
 . Tide creates a new context with the specified id, instantiates the controller component and calls the observer method +viewRecord+. 
             
-. The controller uses an injected view that is instantiated and managed by Tide (with the ++\[In(create="true")\]++), sets it
+. The controller uses an injected view that is instantiated and managed by Tide (with the ++[In(create="true")]++), sets it
   +record+ property and adds it to the main tab navigator. Note that we could have outjected the record from the controller and 
   injected it in the view but  If the user clicks on many elements in the list, one tab will be created for each element.  
 
@@ -1174,7 +1174,7 @@ map property +params+. The following events are dispatched:
            
 * ++org.granite.tide.plugin.logout++: Dispatched when the user logs out.
 
-Here is an example of a simple (and useless) plugin that traces the creation of all components annotated with ++\[Trace\]++: 
+Here is an example of a simple (and useless) plugin that traces the creation of all components annotated with ++[Trace]++:
 
 [source,actionscript]
 ----
@@ -1207,7 +1207,7 @@ public class TideTrace implements ITidePlugin {
 === Security
 
 There is not much Tide can do concerning security, however it is possible to declare that a particular component can exists only when the user 
-is authenticated so its state cannot be accessed or modified from unauthorized users. You can use +\[Name("myComponent", restrict="true")\]+ on 
+is authenticated so its state cannot be accessed or modified from unauthorized users. You can use +[Name("myComponent", restrict="true")]+ on
 a component to specify this. 
 
  Tide will then automatically clear all data of the restricted components when the user logs out and the session becomes anonymous.         
@@ -1299,11 +1299,11 @@ Tide.getInstance().initApplication();
 Tide.getInstance().addPlugin(TideUrlMapping.getInstance()); 	       	      
 ----
 
-You will also need to keep the annotation +\[Path\]+ in your compilation options in Flash Builder / Ant / Maven. 
+You will also need to keep the annotation +[Path]+ in your compilation options in Flash Builder / Ant / Maven.
 
 Once enabled, the plugin will listen to browser url changes, and split the url after # in two parts. 
 The part before the first slash will identify the  target controller, and the part after the first slash will determine the target method. 
-In the previous example, the controller has to be annotated with +\[Path("product")\]+ and the method with +\[Path("display/tv")\]+ : 
+In the previous example, the controller has to be annotated with +[Path("product")]+ and the method with +[Path("display/tv")]+ :
 
 [source,actionscript]
 ----

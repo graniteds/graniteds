@@ -239,7 +239,7 @@ Gas3 does not support inner classes except of enum type. You must declare your c
 if you want them to be correctly handled by the generator. 
 
 Gas3 never deletes any file. However, when you remove or rename a Java class which is in the scope of the generator, 
-the corresponding AS3 classes are renamed to +<ClassName>\[Base\].as.<System Current Millis>.hid+. 
+the corresponding AS3 classes are renamed to +<ClassName>[Base].as.<System Current Millis>.hid+.
 This can lead to helpful Flex compilation errors if these classes where used anywhere else in your Flex source code. 
 
 Due to the absence of abstract classes in ActionScript 3, some inheritance models cannot be generated correctly. 
@@ -325,7 +325,7 @@ Clicking the _Use LCDS_ button will configure Adobe LCDS specific templates for 
 remove all templates for enum and remote destination services. It will also configure a LCDS specific +AS3TypeFactory+ 
 in the "Options" panel (see picture below). 
 The LCDS templates generate AS3 beans that can be either [Bindable] (default) or [Managed]. 
-If you need [Managed] beans, use the following parameter with your include pattern: +\[managed=true\]+. 
+If you need [Managed] beans, use the following parameter with your include pattern: +[managed=true]+.
 For example, your include patterns could be: 
 
 * path/to/managed/beans/*.java[managed=true]
