@@ -1,9 +1,6 @@
 package org.granite.test.util;
 
-import java.net.URI;
-
 import org.granite.util.URIUtil;
-
 import org.junit.Assert;
 import org.junit.Test;
 

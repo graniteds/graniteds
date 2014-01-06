@@ -83,7 +83,7 @@ import flex.messaging.io.ArrayCollection;
 /**
  * @author Franck WOLFF
  */
-@SuppressWarnings({ "unchecked", "unused", "boxing" })
+@SuppressWarnings({ "unchecked", "unused", "boxing", "rawtypes" })
 public class DefaultConvertersTest {
 	
     private Number[] arrayOfNumbers = new Number[] {
