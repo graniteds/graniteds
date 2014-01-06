@@ -12,8 +12,8 @@
   </properties>
   
   <modules>
-	<module>../granite-eclipse-builder</module>
-	<module>../granite-eclipse-feature</module>
+	<module>../granite-eclipse-builder-plugin</module>
+	<module>../granite-eclipse-builder-feature</module>
 	<module>../granite-eclipse-repository</module>
   </modules>
 

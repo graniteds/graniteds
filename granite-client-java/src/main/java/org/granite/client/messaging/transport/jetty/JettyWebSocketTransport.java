@@ -157,7 +157,6 @@ public class JettyWebSocketTransport extends AbstractTransport<Object> {
 
 	private int reconnectAttempts = 0;
 	private TransportMessage connectMessage = null;
-    @SuppressWarnings("unused")
 	// private Timer timer = new Timer("ws-activity-check");
 
 	public Future<Connection> connect(final Channel channel, final TransportMessage transportMessage) {
