@@ -117,7 +117,7 @@ public class DoubleCodecImpl extends AbstractStandardCodec<Double> implements Do
 			else if (v == (float)v) {
 				os.write(0x40 | jmfType);
 				
-				int bits = Float.floatToIntBits((float)v);
+				int bits = Float.floatToRawIntBits((float)v);
 				os.write(bits);
 				os.write(bits >> 8);
 				os.write(bits >> 16);
@@ -130,7 +130,7 @@ public class DoubleCodecImpl extends AbstractStandardCodec<Double> implements Do
 			else {
 				os.write(jmfType);
 				
-				long bits = Double.doubleToLongBits(v);
+				long bits = Double.doubleToRawLongBits(v);
 				os.write((int)bits);
 				os.write((int)(bits >> 8));
 				os.write((int)(bits >> 16));

@@ -106,12 +106,12 @@ public class FloatCodecImpl extends AbstractStandardCodec<Float> implements Floa
 	}
 	
 	public static float readFloatData(InputContext ctx, int type) throws IOException {
-		int i = ctx.safeRead();
+		int bits = ctx.safeRead();
 		
-		i |= ctx.safeRead() << 8;
-		i |= ctx.safeRead() << 16;
-		i |= ctx.safeRead() << 24;
+		bits |= ctx.safeRead() << 8;
+		bits |= ctx.safeRead() << 16;
+		bits |= ctx.safeRead() << 24;
 		
-		return Float.intBitsToFloat(i);
+		return Float.intBitsToFloat(bits);
 	}
 }
