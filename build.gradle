@@ -18,6 +18,17 @@ buildscript {
 group = 'org.graniteds'
 version = granitedsVersion
 
+// https://gist.github.com/JonasGroeger/7620911
+def gitFolder = "$projectDir/.git/"
+def takeFromHash = 12
+def head = new File(gitFolder + "HEAD").text.split(":") // .git/HEAD
+def isCommit = head.length == 1 // e5a7c79edabbf7dd39888442df081b1c9d8e88fd
+if(isCommit) return head[0].trim().take(takeFromHash) // e5a7c79edabb
+def refHead = new File(gitFolder + head[1].trim()) // .git/refs/heads/master
+def hash = refHead.text.trim().take takeFromHash
+
+def pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.' + hash)
+
 ext.javadocLinks = [
 	"http://download.oracle.com/javase/1.5.0/docs/api/",
 	"http://docs.oracle.com/javaee/6/api",
@@ -806,9 +817,6 @@ project('granite-eclipse') {
     }
 
     task buildUpdateSite(dependsOn: 'build') << {
-        def timestamp = new Date().format('yyyyMMddHHmmss')
-        def pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.' + timestamp)
-
         def mvnHome = mavenHome
         if (!mvnHome)
             mvnHome = System.env['MAVEN_HOME']
@@ -828,8 +836,6 @@ project('granite-eclipse') {
             ant.mvn(pom: project(':granite-eclipse').file('granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
                 arg(value: 'install')
             }
-
-            project(':granite-eclipse').artifacts.add('eclipse', project(':granite-eclipse').file('granite-eclipse-builder-plugin/target/org.granite.builder-' + pluginVersion + '.jar'))
         }
     }
 
@@ -843,7 +849,7 @@ project('granite-eclipse') {
         else {
             ant.taskdef(name: 'mvn', classname: 'org.apache.maven.artifact.ant.Mvn', classpath: configurations.mvn.asPath)
 
-            ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+            ant.mvn(pom: project(':granite-eclipse').file('granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
                 arg(value: 'install')
                 arg(value: '-Pupload')
             }
@@ -1969,7 +1975,7 @@ project('dist') {
     def serverCoreProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-server') && coreProjects.contains(it.path) }
     def javaClientProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-client-java') || it.name.startsWith('granite-client-android') }
     def flexClientProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-client-flex') && !it.name.endsWith('-tests') }
-    def generatorProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-generator') && it.name.indexOf('eclipse') < 0 }
+    def generatorProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-generator') }
 
 	dependencies {
 		server serverProjects
@@ -1986,7 +1992,7 @@ project('dist') {
             'org.eclipse.jetty:jetty-websocket:8.1.+'
 	}
 	
-	task dist(type: Zip) {
+	task dist(type: Zip, dependsOn: ':granite-eclipse:build') {
 		archiveName = 'graniteds-dist-' + granitedsVersion + '.zip'
 
         into ('graniteds-' + granitedsVersion)
@@ -2023,12 +2029,12 @@ project('dist') {
 		}
 		
 		into ('tools') {
-			from configurations.generator
             from project(':granite-eclipse').configurations.lib
             rename { it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null }
         }
+
         into ('tools/eclipse') {
-            from project(':granite-eclipse').configurations.eclipse.allArtifacts.find { it.file.name.startsWith('org.granite.builder') }.file
+            from project(':granite-eclipse').file('granite-eclipse-builder-plugin/target/org.granite.builder-' + pluginVersion + '.jar')
         }
 
         (serverProjects + serverCoreProjects + javaClientProjects).each { subproject ->
