@@ -772,6 +772,7 @@ project('granite-eclipse') {
     configurations {
         create('lib')
         create('mvn')
+        create('eclipse')
 
         lib { transitive = false }
     }
@@ -785,13 +786,16 @@ project('granite-eclipse') {
                 'xpp3:xpp3:1.1.4c',
                 'com.thoughtworks.xstream:xstream:1.3.1'
 
+        lib project(':granite-generator')
+        lib project(':granite-generator-share')
+
         mvn 'org.apache.maven:maven-ant-tasks:2.1.3'
     }
 
     build {
         it.dependsOn ':granite-generator:jar'
         it.dependsOn ':granite-generator-share:jar'
-
+    } << {
         copy {
             into project(':granite-eclipse').file('granite-eclipse-builder-plugin/lib')
             from configurations.lib
@@ -799,40 +803,11 @@ project('granite-eclipse') {
                 it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null
             }
         }
-
-        project(':granite-generator').configurations.each { println it }
-
-        project(':granite-generator').configurations.archives.each { println it }
-
-        copy {
-            into project(':granite-eclipse').file('granite-eclipse-builder/lib')
-            from project(':granite-generator').configurations.archives
-            from project(':granite-generator-share').configurations.archives
-            rename {
-                println it
-                it.file.name.startsWith('granite-generator') ? it.file.name.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null
-            }
-        }
     }
 
     task buildUpdateSite(dependsOn: 'build') << {
-        mkdir 'build/tycho'
-
         def timestamp = new Date().format('yyyyMMddHHmmss')
         def pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.' + timestamp)
-
-        copy {
-            into ('build/tycho')
-            from project(':granite-eclipse').files('.')
-            include 'granite-eclipse-*/**'
-            exclude '**/*.jar'
-            filter(ReplaceTokens, tokens: [ granitedsEclipseVersion: pluginVersion ] )
-        }
-        copy {
-            into ('build/tycho')
-            from project(':granite-eclipse').files('.')
-            include 'granite-eclipse-*/**/*.jar'
-        }
 
         def mvnHome = mavenHome
         if (!mvnHome)
@@ -843,9 +818,18 @@ project('granite-eclipse') {
         else {
             ant.taskdef(name: 'mvn', classname: 'org.apache.maven.artifact.ant.Mvn', classpath: configurations.mvn.asPath)
 
-            ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+            mkdir project(':granite-eclipse').file('granite-eclipse-builder-plugin/bin')
+
+            ant.mvn(pom: project(':granite-eclipse').file('granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+                arg(value: 'tycho-versions:set-version')
+                arg(value: '-DnewVersion=' + pluginVersion)
+            }
+
+            ant.mvn(pom: project(':granite-eclipse').file('granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
                 arg(value: 'install')
             }
+
+            project(':granite-eclipse').artifacts.add('eclipse', project(':granite-eclipse').file('granite-eclipse-builder-plugin/target/org.granite.builder-' + pluginVersion + '.jar'))
         }
     }
 
@@ -2043,9 +2027,9 @@ project('dist') {
             from project(':granite-eclipse').configurations.lib
             rename { it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null }
         }
-        // into ('tools/eclipse') {
-        //    from project(':granite-generator-eclipse').configurations.archives.allArtifacts.find { it.file.name.startsWith('org.granite.builder') }.file
-        // }
+        into ('tools/eclipse') {
+            from project(':granite-eclipse').configurations.eclipse.allArtifacts.find { it.file.name.startsWith('org.granite.builder') }.file
+        }
 
         (serverProjects + serverCoreProjects + javaClientProjects).each { subproject ->
             subproject.configurations.archives.allArtifacts.findAll { it.classifier == 'sources' }.each { artifact ->

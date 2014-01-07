@@ -4,6 +4,8 @@ bin/
 bin-debug/
 /build
 build/
+/target
+target/
 test-classes/
 /.settings
 /doc
