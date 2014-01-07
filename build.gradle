@@ -1999,7 +1999,7 @@ project('dist') {
             'org.eclipse.jetty:jetty-websocket:8.1.+'
 	}
 	
-	task dist(type: Zip, dependsOn: ':granite-eclipse:build') {
+	task dist(type: Zip, dependsOn: ':granite-eclipse:buildUpdateSite') {
 		archiveName = 'graniteds-dist-' + granitedsVersion + '.zip'
 
         into ('graniteds-' + granitedsVersion)
