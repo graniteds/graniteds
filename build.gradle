@@ -19,15 +19,22 @@ group = 'org.graniteds'
 version = granitedsVersion
 
 // https://gist.github.com/JonasGroeger/7620911
-def gitFolder = "$projectDir/.git/"
-def takeFromHash = 12
-def head = new File(gitFolder + "HEAD").text.split(":") // .git/HEAD
-def isCommit = head.length == 1 // e5a7c79edabbf7dd39888442df081b1c9d8e88fd
-if(isCommit) return head[0].trim().take(takeFromHash) // e5a7c79edabb
-def refHead = new File(gitFolder + head[1].trim()) // .git/refs/heads/master
-def hash = refHead.text.trim().take takeFromHash
+def timestamp = new Date().format('yyyyMMddHHmmss')
+try {
+    // Try to get timestamp of last git commit
+    def gitFolder = "$projectDir/.git/"
+    def takeFromHash = 12
+    def head = new File(gitFolder + "HEAD").text.split(":") // .git/HEAD
+    def isCommit = head.length == 1 // e5a7c79edabbf7dd39888442df081b1c9d8e88fd
+    if(isCommit) return head[0].trim().take(takeFromHash) // e5a7c79edabb
+    def refHead = new File(gitFolder + head[1].trim()) // .git/refs/heads/master
+    timestamp = new Date(refHead.lastModified()).format('yyyyMMddHHmmss')
+}
+catch (Exception e) {
+    // Ignore
+}
 
-def pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.' + hash)
+def pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.' + timestamp)
 
 ext.javadocLinks = [
 	"http://download.oracle.com/javase/1.5.0/docs/api/",
