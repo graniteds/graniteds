@@ -305,7 +305,7 @@ public class SpringSecurity3Service extends AbstractSecurityService {
     	if (springFilterNotApplied)
     		SecurityContextHolder.clearContext();
     }
-
+    
     protected boolean isUserInRole(Authentication authentication, String role) {
         for (GrantedAuthority ga : authentication.getAuthorities()) {
             if (ga.getAuthority().matches(role))
