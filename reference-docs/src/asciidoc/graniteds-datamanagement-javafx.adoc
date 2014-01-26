@@ -746,10 +746,10 @@ The attributes of this annotations are:
  
 * ++topic++: the name of the messaging topic that will be used to dispatch updates. Obviously this is the one we declared just before in +services-config.xml+. 
 * ++publish++: the publishing mode. +PublishMode.MANUAL+ means that you will have to trigger the dispatch manually, for example in an interceptor. 
-    +$$PublishMode.ON_SUCCESS$$+ means that Tide will automatically dispatch the updates on any successful call. 
-    +$$PublishMode.ON_COMMIT$$+ is not yet implemented. 
-* ++params++: a filter class that will define to which updates are sent to which clients. By default there is no filtering, otherwise see below 
-    for a more detailed explanation. 
+    +$$PublishMode.ON_SUCCESS$$+ means that Tide will automatically dispatch the updates on any successful call. +$$PublishMode.ON_COMMIT$$+ means that Tide will
+    dispatch the updates upon transaction commit (and inside the current transaction).
+*  ++params++: a filter class that will define to which updates are sent to which clients. By default there is no filtering,
+    otherwise see below for a more detailed explanation.
 
 *Publishing filters*
 
