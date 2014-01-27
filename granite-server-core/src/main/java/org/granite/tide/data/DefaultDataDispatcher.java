@@ -79,6 +79,9 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 			sessionId = graniteContext.getSessionId();
 		}
 		else {
+            if (gravity == null)
+                gravity = GravityManager.getGravity(((ServletGraniteContext)graniteContext).getServletContext());
+
 			if (gravity == null) {
 				log.debug("Gravity not defined, data dispatch disabled");
 				return;

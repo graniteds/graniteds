@@ -21,22 +21,16 @@
  */
 package org.granite.tide.spring;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
-import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataEnabled;
-import org.granite.tide.data.DataEnabled.PublishMode;
 import org.granite.tide.data.DataUpdatePostprocessor;
-import org.granite.tide.data.TideSynchronizationManager;
-import org.granite.util.TypeUtil;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Spring AOP interceptor to handle publishing of data changes instead of relying on the default behaviour
@@ -46,127 +40,54 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  *  
  * @author William DRAI
  */
-public class TideDataPublishingInterceptor implements MethodInterceptor {
+public class TideDataPublishingInterceptor implements MethodInterceptor, InitializingBean {
 	
 	private static final Logger log = Logger.getLogger(TideDataPublishingInterceptor.class);
 	
 	private Gravity gravity;
 	private DataUpdatePostprocessor dataUpdatePostprocessor;
 	
-	private Map<String, TideSynchronizationManager> syncsMap = new HashMap<String, TideSynchronizationManager>();
-	
-	public TideDataPublishingInterceptor() {
-		try {
-			syncsMap.put("org.springframework.orm.hibernate3.SessionHolder", TypeUtil.newInstance("org.granite.tide.spring.Hibernate3SynchronizationManager", TideSynchronizationManager.class));
-		}
-		catch (Throwable e) {
-			// Hibernate 3 not present
-		}
-		try {
-			syncsMap.put("org.springframework.orm.hibernate4.SessionHolder", TypeUtil.newInstance("org.granite.tide.spring.Hibernate4SynchronizationManager", TideSynchronizationManager.class));
-		}
-		catch (Throwable e) {
-			// Hibernate 4 not present
-		}
-		try {
-			syncsMap.put("org.springframework.orm.jpa.EntityManagerHolder", TypeUtil.newInstance("org.granite.tide.spring.JPASynchronizationManager", TideSynchronizationManager.class));
-		}
-		catch (Throwable e) {
-			// JPA not present
-		}
-	}
-	
+	private TideDataPublishingWrapper tideDataPublishingWrapper = null;
+
 	
 	public void setGravity(Gravity gravity) {
 		this.gravity = gravity;
 	}
+
+    public void setTideDataPublishingWrapper(TideDataPublishingWrapper tideDataPublishingWrapper) {
+        this.tideDataPublishingWrapper = tideDataPublishingWrapper;
+    }
 	
 	@Autowired(required=false)
 	public void setDataUpdatePostprocessor(DataUpdatePostprocessor dataUpdatePostprocessor) {
 		this.dataUpdatePostprocessor = dataUpdatePostprocessor;
 	}
-	
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if (tideDataPublishingWrapper == null)
+            tideDataPublishingWrapper = new TideDataPublishingWrapper(gravity, dataUpdatePostprocessor);
+    }
+
     public Object invoke(final MethodInvocation invocation) throws Throwable {
     	DataEnabled dataEnabled = invocation.getThis().getClass().getAnnotation(DataEnabled.class);
     	if (dataEnabled == null || !dataEnabled.useInterceptor())
     		return invocation.proceed();
-    	
-    	boolean shouldRemoveContextAtEnd = DataContext.get() == null;
-    	boolean shouldInitContext = shouldRemoveContextAtEnd || DataContext.isNull();
-    	boolean onCommit = false;
-    	
-    	if (shouldInitContext) {
-    		DataContext.init(gravity, dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
-    		if (dataUpdatePostprocessor != null)
-    			DataContext.get().setDataUpdatePostprocessor(dataUpdatePostprocessor);
-    	}
-    	
-        DataContext.observe();
-        try {
-        	if (dataEnabled.publish().equals(PublishMode.ON_COMMIT) && !TransactionSynchronizationManager.isCurrentTransactionReadOnly()) {
-        		 if (TransactionSynchronizationManager.isSynchronizationActive()) {
-        			 boolean registered = false;
-        			 for (Object resource : TransactionSynchronizationManager.getResourceMap().values()) {
-        				 if (syncsMap.containsKey(resource.getClass().getName())) {
-        					 registered = syncsMap.get(resource.getClass().getName()).registerSynchronization(resource, shouldRemoveContextAtEnd);
-        					 break;
-        				 }
-        			 }
-        			 if (!registered)
-        				 TransactionSynchronizationManager.registerSynchronization(new DataPublishingTransactionSynchronization(shouldRemoveContextAtEnd));
-        			 else if (shouldRemoveContextAtEnd)
-						 TransactionSynchronizationManager.registerSynchronization(new DataContextCleanupTransactionSynchronization());
-        			 onCommit = true;
-        		 }
-        		 else {
-        			 log.error("Could not register synchronization for ON_COMMIT publish mode, check that the Spring PlatformTransactionManager supports it "
-        					 + "and that the order of the TransactionInterceptor is lower than the order of TideDataPublishingInterceptor");
-        		 }
-        	}
-        	
-        	Object ret = invocation.proceed();
-        	
-        	DataContext.publish(PublishMode.ON_SUCCESS);
-        	return ret;
-        }
-        finally {
-        	if (shouldRemoveContextAtEnd && !onCommit)
-        		DataContext.remove();
-        }
-    }
-    
-    private static class DataPublishingTransactionSynchronization extends TransactionSynchronizationAdapter {
-    	
-    	private boolean removeContext = false;
-    	
-    	public DataPublishingTransactionSynchronization(boolean removeContext) {
-    		this.removeContext = removeContext;
-    	}
 
-		@Override
-		public void beforeCommit(boolean readOnly) {
-			if (!readOnly)
-				DataContext.publish(PublishMode.ON_COMMIT);
-		}
-		
-		@Override
-		public void beforeCompletion() {
-			if (removeContext)
-				DataContext.remove();
-		}
-		
-		@Override
-		public void afterCompletion(int status) {
-			if (removeContext)
-				DataContext.remove();
-		}
-    }
-
-    private static class DataContextCleanupTransactionSynchronization extends TransactionSynchronizationAdapter {
-    	
-		@Override
-		public void afterCompletion(int status) {
-			DataContext.remove();
-		}
+        return tideDataPublishingWrapper.execute(dataEnabled, new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                try {
+                    return invocation.proceed();
+                }
+                catch (Exception e) {
+                    throw e;
+                }
+                catch (Throwable t) {
+                    // Not sure what to do in case of a throwable
+                    throw new RuntimeException("Data publishing error", t);
+                }
+            }
+        });
     }
 }
