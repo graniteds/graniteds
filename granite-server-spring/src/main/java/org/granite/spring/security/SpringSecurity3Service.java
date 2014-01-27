@@ -81,13 +81,12 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
 	
     private ApplicationContext applicationContext = null;
     private ApplicationEventPublisher eventPublisher = null;
-	private AuthenticationManager authenticationManager = null;
+    private AuthenticationExtension authenticationExtension = new DefaultAuthenticationExtension();
 	private AuthenticationTrustResolver authenticationTrustResolver = new AuthenticationTrustResolverImpl();
 	private SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 	private AbstractSpringSecurity3Interceptor securityInterceptor = null;
 	private SessionAuthenticationStrategy sessionAuthenticationStrategy = new SessionFixationProtectionStrategy();
 	private PasswordEncoder passwordEncoder = null;
-	private String authenticationManagerBeanName = null;
 	private boolean allowAnonymousAccess = false;
 	private Method getRequest = null;
 	private Method getResponse = null;
@@ -109,13 +108,19 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
+
+    public void setAuthenticationExtension(AuthenticationExtension authenticationExtension) {
+        if (authenticationExtension == null)
+            throw new NullPointerException("AuthenticationBuilder cannot be null");
+        this.authenticationExtension = authenticationExtension;
+    }
 	
 	public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
 		this.eventPublisher = eventPublisher;
 	}
 	
 	public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-		this.authenticationManager = authenticationManager;
+        authenticationExtension.setAuthenticationManager(authenticationManager);
 	}
 	
 	public void setAuthenticationTrustResolver(AuthenticationTrustResolver authenticationTrustResolver) {
@@ -146,8 +151,10 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
 
     public void configure(Map<String, String> params) {
         log.debug("Configuring with parameters %s: ", params);
+
         if (params.containsKey("authentication-manager-bean-name"))
-        	authenticationManagerBeanName = params.get("authentication-manager-bean-name");
+        	authenticationExtension.setAuthenticationManagerBeanName(params.get("authentication-manager-bean-name"));
+
         if (Boolean.TRUE.toString().equals(params.get("allow-anonymous-access")))
         	allowAnonymousAccess = true;
     }
@@ -159,60 +166,66 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
         	log.info("Login from non HTTP granite context ignored");
         	return;
         }
-        
+
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
+        boolean springFilterNotApplied = graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null;
 
+        ApplicationContext appContext = applicationContext != null ? applicationContext
+                : WebApplicationContextUtils.getWebApplicationContext(graniteContext.getServletContext());
+        if (appContext == null)
+            throw new IllegalStateException("No application context defined for Spring security service");
+        authenticationExtension.setApplicationContext(appContext);
+        
         String user = decodedCredentials.get(0);
         String password = decodedCredentials.get(1);
         if (passwordEncoder != null)
         	password = passwordEncoder.encodePassword(password, null);
-        Authentication auth = new UsernamePasswordAuthenticationToken(user, password);
         
-        ApplicationContext appContext = applicationContext != null ? applicationContext 
-        		: WebApplicationContextUtils.getWebApplicationContext(graniteContext.getServletContext());
+        Authentication auth = authenticationExtension.buildAuthentication(user, password);
         
-        if (appContext != null) {
-        	lookupAuthenticationManager(appContext, authenticationManagerBeanName);
-            
-            try {
-                Authentication authentication = authenticationManager.authenticate(auth);
-                
-                if (authentication != null && !authenticationTrustResolver.isAnonymous(authentication)) {
-                	try {
-                		sessionAuthenticationStrategy.onAuthentication(authentication, httpRequest, graniteContext.getResponse());
-                    } 
-                	catch (SessionAuthenticationException e) {
-                        log.debug(e, "SessionAuthenticationStrategy rejected the authentication object");
-                        SecurityContextHolder.clearContext();
-                        handleAuthenticationExceptions(e);
-                        return;
-                    }                
+        AuthenticationManager authenticationManager = authenticationExtension.selectAuthenticationManager(auth);
+        
+        try {
+            Authentication authentication = authenticationManager.authenticate(auth);
+
+            if (authentication != null && !authenticationTrustResolver.isAnonymous(authentication)) {
+                try {
+                    sessionAuthenticationStrategy.onAuthentication(authentication, httpRequest, graniteContext.getResponse());
                 }
-                
-		    	log.debug("Define authentication and save to repo: %s", authentication != null ? authentication.getName() : "none");
-                HttpRequestResponseHolder holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
-    	        SecurityContext securityContext = securityContextRepository.loadContext(holder);
-    	        securityContext.setAuthentication(authentication);
-    	        SecurityContextHolder.setContext(securityContext);
-	            try {
-	            	securityContextRepository.saveContext(securityContext, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
-	            }
-	            catch (Exception e) {
-	            	log.error(e, "Could not save context after authentication");
-	            }
-	            
-	            if (eventPublisher != null)
-	            	eventPublisher.publishEvent(new AuthenticationSuccessEvent(authentication));
-	            
-	            endLogin(credentials, charset);
-            } 
-            catch (AuthenticationException e) {
-            	handleAuthenticationExceptions(e);
+                catch (SessionAuthenticationException e) {
+                    log.debug(e, "SessionAuthenticationStrategy rejected the authentication object");
+                    SecurityContextHolder.clearContext();
+                    handleAuthenticationExceptions(e);
+                    return;
+                }
             }
-            finally {
-        		log.debug("Clear authentication");
-	            SecurityContextHolder.clearContext();
+
+            log.debug("Define authentication and save to repo: %s", authentication != null ? authentication.getName() : "none");
+            HttpRequestResponseHolder holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
+            SecurityContext securityContext = securityContextRepository.loadContext(holder);
+            securityContext.setAuthentication(authentication);
+            SecurityContextHolder.setContext(securityContext);
+            try {
+                securityContextRepository.saveContext(securityContext, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
+            }
+            catch (Exception e) {
+                log.error(e, "Could not save context after authentication");
+            }
+
+            if (eventPublisher != null)
+                eventPublisher.publishEvent(new AuthenticationSuccessEvent(authentication));
+
+            endLogin(credentials, charset);
+        }
+        catch (AuthenticationException e) {
+            handleAuthenticationExceptions(e);
+        }
+        finally {
+            // Should not cleanup when authentication managed by the Spring filter
+            if (springFilterNotApplied) {
+                log.debug("Clear authentication after login");
+                SecurityContextHolder.clearContext();
             }
         }
 
@@ -225,63 +238,38 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
         
     	throw SecurityServiceException.newAuthenticationFailedException(e.getMessage());
     }
-    
-    public void lookupAuthenticationManager(ApplicationContext ctx, String authenticationManagerBeanName) throws SecurityServiceException {
-    	if (this.authenticationManager != null)
-    		return;
-    	
-    	Map<String, AuthenticationManager> authManagers = BeanFactoryUtils.beansOfTypeIncludingAncestors(ctx, AuthenticationManager.class);
-    	
-        if (authenticationManagerBeanName != null) {
-        	this.authenticationManager = authManagers.get(authenticationManagerBeanName);
-        	if (authenticationManager == null) {
-        		log.error("AuthenticationManager bean not found " + authenticationManagerBeanName);
-        		throw SecurityServiceException.newAuthenticationFailedException("Authentication failed");
-        	}
-        	return;
-        }
-        else if (authManagers.size() > 1) {
-        	log.error("More than one AuthenticationManager beans found, specify which one to use in Spring config <graniteds:security-service authentication-manager='myAuthManager'/> or in granite-config.xml <security type='org.granite.spring.security.SpringSecurity3Service'><param name='authentication-manager-bean-name' value='myAuthManager'/></security>");
-    		throw SecurityServiceException.newAuthenticationFailedException("Authentication failed");
-        }
-        
-    	this.authenticationManager = authManagers.values().iterator().next();
-    }
 
     
     public Object authorize(AbstractSecurityContext context) throws Exception {
         log.debug("Authorize %s on destination %s (secured: %b)", context, context.getDestination().getId(), context.getDestination().isSecured());
-
+        
         startAuthorization(context);
         
         ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
         
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         HttpRequestResponseHolder holder = null;
-        
-        if (graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null) {
-        	if (graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED) == null) {
-		        holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
-		        SecurityContext contextBeforeChainExecution = securityContextRepository.loadContext(holder);
-			    SecurityContextHolder.setContext(contextBeforeChainExecution);
-			    if (isAuthenticated(authentication)) {
-			    	log.debug("Restore authentication: %s", authentication.getName());
-			    	contextBeforeChainExecution.setAuthentication(authentication);
-			    }
-			    else {
-			    	authentication = contextBeforeChainExecution.getAuthentication();
-			    	log.debug("Restore authentication from repository: %s", authentication != null ? authentication.getName() : "none");
-			    }
-			    
-			    graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, 0);
-        	}
-        	else {
-        		log.debug("Increment service reentrance counter");
-			    graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, (Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED)+1);
-        	}
-        }
-        
+
+    	boolean springFilterNotApplied = graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null;
+        boolean reentrant = graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED) != null;
+        // Manage security context here only if the Spring security filter has not already been applied and if we are not reentrant
         try {
+	        if (springFilterNotApplied && !reentrant) {
+	        	holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
+                SecurityContext contextBeforeChainExecution = securityContextRepository.loadContext(holder);
+                SecurityContextHolder.setContext(contextBeforeChainExecution);
+                graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, true);
+                
+                if (isAuthenticated(authentication)) {
+                    log.debug("Thread was already authenticated: %s", authentication.getName());
+                    contextBeforeChainExecution.setAuthentication(authentication);
+                }
+                else {
+                    authentication = contextBeforeChainExecution.getAuthentication();
+                    log.debug("Restore authentication from repository: %s", authentication != null ? authentication.getName() : "none");
+                }
+            }
+	        
 	        if (context.getDestination().isSecured()) {
 	            if (!isAuthenticated(authentication) || (!allowAnonymousAccess && authentication instanceof AnonymousAuthenticationToken)) {
 	                log.debug("User not authenticated!");
@@ -310,27 +298,17 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
             throw e;
         }
         finally {
-            if (graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null) {
-            	if ((Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED) == 0) {
-		            SecurityContext contextAfterChainExecution = SecurityContextHolder.getContext();
-            		log.debug("Clear authentication and save to repo: %s", contextAfterChainExecution.getAuthentication() != null ? contextAfterChainExecution.getAuthentication().getName() : "none");
-		            SecurityContextHolder.clearContext();
-		            try {
-		            	securityContextRepository.saveContext(contextAfterChainExecution, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
-		            }
-		            catch (Exception e) {
-		            	log.error(e, "Could not extract wrapped context from holder");
-		            }
-		            graniteContext.getRequest().removeAttribute(SECURITY_SERVICE_APPLIED);
-            	}
-            	else if (graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED) == null) {
-            		log.debug("Clear authentication");
-		            SecurityContextHolder.clearContext();
-            	}
-            	else {
-            		log.debug("Decrement service reentrance counter");
-            		graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, (Integer)graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED)-1);
-            	}
+            if (springFilterNotApplied && !reentrant) {
+	            SecurityContext contextAfterChainExecution = SecurityContextHolder.getContext();
+        		log.debug("Clear authentication and save to repo: %s", contextAfterChainExecution.getAuthentication() != null ? contextAfterChainExecution.getAuthentication().getName() : "none");
+	            SecurityContextHolder.clearContext();
+	            try {
+	            	securityContextRepository.saveContext(contextAfterChainExecution, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
+	            }
+	            catch (Exception e) {
+	            	log.error(e, "Could not extract wrapped context from holder");
+	            }
+	            graniteContext.getRequest().removeAttribute(SECURITY_SERVICE_APPLIED);
             }
         }
     }
@@ -341,12 +319,17 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
     }
 
     public void logout() {
-    	ServletGraniteContext context = (ServletGraniteContext)GraniteContext.getCurrentInstance();
-    	HttpSession session = context.getSession(false);
-    	if (session != null && securityContextRepository.containsContext(context.getRequest()))    		
-    		session.invalidate();
+    	ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
+    	boolean springFilterNotApplied = graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null;
+    	HttpSession session = graniteContext.getSession(false);
+
+    	if (session != null && securityContextRepository.containsContext(graniteContext.getRequest())) {
+            authenticationExtension.endSession(session);
+            session.invalidate();
+        }
         
-    	SecurityContextHolder.clearContext();
+    	if (springFilterNotApplied)
+    		SecurityContextHolder.clearContext();
     }
 
     protected boolean isUserInRole(Authentication authentication, String role) {
@@ -388,4 +371,55 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
         }
     }
 
+
+    public static class DefaultAuthenticationExtension implements AuthenticationExtension {
+
+        private ApplicationContext applicationContext = null;
+        private AuthenticationManager authenticationManager = null;
+        private String authenticationManagerBeanName = null;
+
+        public void setApplicationContext(ApplicationContext applicationContext) {
+            this.applicationContext = applicationContext;
+        }
+
+        public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+            this.authenticationManager = authenticationManager;
+        }
+
+        public void setAuthenticationManagerBeanName(String authenticationManagerBeanName) {
+            this.authenticationManagerBeanName = authenticationManagerBeanName;
+        }
+
+        @Override
+        public Authentication buildAuthentication(String user, String password) {
+            return new UsernamePasswordAuthenticationToken(user, password);
+        }
+
+        @Override
+        public AuthenticationManager selectAuthenticationManager(Authentication authentication) {
+            if (this.authenticationManager != null)
+                return this.authenticationManager;
+
+            Map<String, AuthenticationManager> authManagers = BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, AuthenticationManager.class);
+
+            if (authenticationManagerBeanName != null) {
+                AuthenticationManager authenticationManager = authManagers.get(authenticationManagerBeanName);
+                if (authenticationManager == null) {
+                    log.error("AuthenticationManager bean not found " + authenticationManagerBeanName);
+                    throw SecurityServiceException.newAuthenticationFailedException("Authentication failed");
+                }
+                return authenticationManager;
+            }
+            else if (authManagers.size() > 1) {
+                log.error("More than one AuthenticationManager beans found, specify which one to use in Spring config <graniteds:security-service authentication-manager='myAuthManager'/> or in granite-config.xml <security type='org.granite.spring.security.SpringSecurity3Service'><param name='authentication-manager-bean-name' value='myAuthManager'/></security>");
+                throw SecurityServiceException.newAuthenticationFailedException("Authentication failed");
+            }
+
+            return authManagers.values().iterator().next();
+        }
+
+        @Override
+        public void endSession(HttpSession session) {
+        }
+    }
 }

@@ -53,11 +53,11 @@ import org.granite.client.util.WeakIdentityHashMap;
 @Named
 public class Identity extends BaseIdentity {
 	
-    protected Identity() {
-    	// CDI proxying...
+    public Identity() {
+    	// proxying...
     }
     
-    public Identity(final ServerSession serverSession) {
+    public Identity(ServerSession serverSession) {
     	super(serverSession);
     }
         

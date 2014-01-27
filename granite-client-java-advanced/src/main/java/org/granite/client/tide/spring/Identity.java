@@ -50,6 +50,10 @@ import org.granite.client.tide.server.TideResponder;
 @Named
 public class Identity extends BaseIdentity {
 
+    public Identity() {
+        // proxying
+    }
+
     public Identity(final ServerSession serverSession) {
     	super(serverSession);
     }

@@ -126,6 +126,7 @@
       	</xs:complexType>
     </xs:element>
     <xs:attributeGroup name="attlist.SecurityService">
+        <xs:attribute name="authentication-extension" type="xs:string"/>
         <xs:attribute name="authentication-manager" type="xs:string"/>
         <xs:attribute name="allow-anonymous-access" type="xs:boolean" default="false"/>
         <xs:attribute name="authentication-trust-resolver" type="xs:string"/>

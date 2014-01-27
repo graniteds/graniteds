@@ -65,7 +65,32 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
 	
 	private BooleanProperty loggedIn = new SimpleBooleanProperty(this, "loggedIn");
 	private StringProperty username = new ReadOnlyStringWrapper(this, "username", null);
-	
+
+
+    public BaseIdentity() {
+        // proxying...
+    }
+
+    public BaseIdentity(ServerSession serverSession) {
+        super(serverSession);
+
+        final ServerSession localServerSession = serverSession;
+        this.loggedIn.set(false);
+        this.loggedIn.addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
+                if (Boolean.TRUE.equals(newValue)) {
+                    initSecurityCache();
+                    localServerSession.afterLogin();
+                }
+                else {
+                    BaseIdentity.this.username.set(null);
+                    clearSecurityCache();
+                }
+            }
+        });
+    }
+
 
 	public BooleanProperty loggedInProperty() {
 		return loggedIn;
@@ -86,31 +111,7 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
 	public String getUsername() {
 		return username.get();
 	}
-	
-	
-    protected BaseIdentity() {
-    	// CDI proxying...
-    }
-    
-    public BaseIdentity(final ServerSession serverSession) {
-    	super(serverSession);
-    	
-    	this.loggedIn.set(false);
-    	this.loggedIn.addListener(new ChangeListener<Boolean>() {
-			@Override
-			public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
-				if (Boolean.TRUE.equals(newValue)) {
-					initSecurityCache();
-					serverSession.afterLogin();
-				}
-				else {
-					BaseIdentity.this.username.set(null);
-			        clearSecurityCache();
-				}
-			}
-        });
-    }
-    
+
     /**
      * 	Triggers a remote call to check is user is currently logged in
      *  Can be used at application startup to handle browser refresh cases
