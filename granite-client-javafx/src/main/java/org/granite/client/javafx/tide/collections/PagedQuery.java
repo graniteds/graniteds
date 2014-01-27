@@ -289,9 +289,8 @@ public class PagedQuery<E, F> extends PagedCollection<E> implements Component, P
 	 *	@param first	: index of first required result
 	 *  @param last     : index of last required result
 	 */
-	protected void find(int first, int last) {
-		super.find(first, last);
-		
+	@Override
+	protected Future<?> find(int first, int last) {
 		int max = 0;
 		if (this.initializing && this.max > 0)
 			max = this.max;
@@ -309,10 +308,10 @@ public class PagedQuery<E, F> extends PagedCollection<E> implements Component, P
 			}
 		}
 		
-		doFind(filter, first, max, findResponder);
+		return doFind(filter, first, max, findResponder);
 	}
 	
-	protected synchronized void doFind(Object filter, int first, int max, PagedCollectionResponder findResponder) {
+	protected synchronized Future<?> doFind(Object filter, int first, int max, PagedCollectionResponder findResponder) {
 		// Force evaluation of max, results and count
 		if (sortAdapter != null)
 			sortAdapter.retrieve(sortInfo);
@@ -340,11 +339,9 @@ public class PagedQuery<E, F> extends PagedCollection<E> implements Component, P
 		
 		if (usePage) {
 			PageInfo pageInfo = new PageInfo(first, max, order, desc);
-			component.call(methodName, new Object[] { filter, pageInfo, findResponder });
+			return component.call(methodName, new Object[] { filter, pageInfo, findResponder });
 		}
-		else {
-			component.call(methodName, new Object[] { filter, first, max, order, desc, findResponder });
-		}
+		return component.call(methodName, new Object[] { filter, first, max, order, desc, findResponder });
 	}
 	
 	@Override

@@ -42,12 +42,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.annotation.PreDestroy;
 
 import org.granite.client.tide.data.EntityManager.UpdateKind;
 import org.granite.client.tide.events.TideEvent;
 import org.granite.client.tide.events.TideEventObserver;
+import org.granite.client.tide.impl.FutureResult;
 import org.granite.client.tide.server.TideFaultEvent;
 import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
@@ -74,6 +76,8 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
     
 	protected boolean fullRefresh = false;
 	protected boolean filterRefresh = false;
+	
+	private boolean cancelPendingCalls = false;
 	
 
 	public AbstractPagedCollection() {
@@ -125,6 +129,13 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 		if (this.elementName != null)
 			entityNames.add(this.elementName);
 	}
+	
+	
+	public void setCancelPendingCalls(boolean cancel) {
+		this.cancelPendingCalls = cancel;
+	}
+	
+	
 
 	@Override
 	public void handleEvent(TideEvent event) {
@@ -155,17 +166,27 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	
 	
 	private List<Integer[]> pendingRanges = new ArrayList<Integer[]>();
+	private List<Future<?>> pendingCalls = new ArrayList<Future<?>>();
+	
+	
+	private void executeFind(int first, int last) {
+		log.debug("find from %d to %d", first, last);
+		
+		if (cancelPendingCalls) {
+			for (Future<?> pendingCall : pendingCalls)
+				pendingCall.cancel(true);
+		}
+		
+		pendingRanges.add(0, new Integer[] { first, last });
+		pendingCalls.add(0, find(first, last));
+	}
 	
 	/**
 	 *	Abstract method: trigger a results query for the current filter
 	 *	@param first	: index of first required result
 	 *  @param last     : index of last required result
 	 */
-	protected void find(int first, int last) {
-		log.debug("find from %d to %d", first, last);
-		
-		pendingRanges.add(new Integer[] { first, last });
-	}
+	protected abstract Future<?> find(int first, int last);
 	
 	
 	/**
@@ -186,6 +207,7 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	public boolean refresh() {
 		// Recheck sort fields to listen for asc/desc change events
 		pendingRanges.clear();
+		pendingCalls.clear();
 		
 		if (fullRefresh) {
 			log.debug("full refresh");
@@ -203,7 +225,7 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 			log.debug("refresh");			
         
 		if (!initialFind())
-			find(first, last);
+			executeFind(first, last);
 		return true;
 	}
 	
@@ -213,7 +235,7 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 		
 		if (!initSent) {
 			log.debug("initial find");
-			find(0, max);
+			executeFind(0, max);
 			initSent = true;
 		}
 		return true;
@@ -243,8 +265,10 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	 *  Notify listeners of remote page result
 	 *  
 	 *  @param event the remote event (ResultEvent or FaultEvent)
+	 *  @param previousFirst index of first element before last updated list
+	 *  @param previousLast index of last element before last updated list
 	 */
-	protected abstract void firePageChange(TideRpcEvent event);
+	protected abstract void firePageChange(TideRpcEvent event, int previousFirst, int previousLast);
 	
 	
 	/**
@@ -280,10 +304,13 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	protected void handleResult(Page<E> page, TideResultEvent<?> event, int first, int max) {
 		List<E> list = page.getResultList();
 		
+		int pendingIndex = -1;
 		for (Iterator<Integer[]> ipr = pendingRanges.iterator(); ipr.hasNext(); ) {
 			Integer[] pr = ipr.next();
+			pendingIndex++;
 			if (pr[0] == first && pr[1] == first+max) {
 				ipr.remove();
+				pendingCalls.remove(pendingIndex);
 				break;
 			}
 		}
@@ -293,6 +320,9 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 		    	this.max = page.getMaxResults();
 		    initialize(event);
 		}
+		
+		if (pendingIndex > 0)
+			return;
 		
 		int nextFirst = page.getFirstResult();
 		int nextLast = nextFirst + page.getMaxResults();
@@ -369,10 +399,8 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	    		}
 	    	}
     	}
-
-		pendingRanges.clear();
 		
-		firePageChange(event);
+		firePageChange(event, previousFirst, previousLast);
 	}
 	
 	/**
@@ -383,7 +411,7 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	 *  @param max max elements requested
 	 */
 	protected void findFault(TideFaultEvent event, int first, int max) {
-		handleFault(event);
+		handleFault(event, first, max);
 	}
 	
 	/**
@@ -391,13 +419,16 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	 * 
 	 *  @param event the fault event
 	 */
-	protected void handleFault(TideFaultEvent event) {
+	protected void handleFault(TideFaultEvent event, int first, int max) {
 		log.debug("findFault: %s", event);
 		
+		int pendingIndex = -1;
 		for (Iterator<Integer[]> ipr = pendingRanges.iterator(); ipr.hasNext(); ) {
 			Integer[] pr = ipr.next();
+			pendingIndex++;
 			if (pr[0] == first && pr[1] == first+max) {
 				ipr.remove();
+				pendingCalls.remove(pendingIndex);
 				break;
 			}
 		}
@@ -405,7 +436,7 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 		if (initializing)
 			initSent = false;
 		
-		firePageChange(event);
+		firePageChange(event, this.first, this.last);
 	}
 	
 	
@@ -478,7 +509,7 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 			    nla = count;
 		}
 		log.debug("request find for index " + index);
-		find(nfi, nla);
+		executeFind(nfi, nla);
 		return null;
 	}
 	
