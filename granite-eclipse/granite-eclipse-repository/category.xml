@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.granite.builder_3.0.1.20140107015326.jar" id="org.granite.builder" version="3.0.1.20140107015326">
+   <description name="GraniteDS Tools Update Site" url="http://www.granitedataservices.com/public/update-site">
+       GraniteDS Tools Update Site
+   </description>
+   <feature url="features/org.granite.builder_3.0.2.20140107015326.jar" id="org.granite.builder" version="3.0.2.20140107015326">
       <category name="org.granite.tools"/>
    </feature>
    <category-def name="org.granite.tools" label="GraniteDS Eclipse Tools"/>
