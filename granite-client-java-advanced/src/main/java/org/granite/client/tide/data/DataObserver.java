@@ -123,7 +123,7 @@ public class DataObserver implements ContextAware, NameAware {
 	}	
 	
 	public void stop() {
-		if (consumer.isSubscribed())
+		if (consumer != null && consumer.isSubscribed())
 			unsubscribe();
 	}
 	
@@ -132,17 +132,24 @@ public class DataObserver implements ContextAware, NameAware {
 	 * 	Subscribe the data topic
 	 */
 	public void subscribe() {
+		if (consumer == null)
+			throw new IllegalStateException("Cannot subscribe, DataObserver " + this.destination + " not started");
+		
 		consumer.addMessageListener(messageListener);
 	    consumer.subscribe(subscriptionListener);
 	    serverSession.checkWaitForLogout();
 	}
 	
 	public void unsubscribe() {
-		if (consumer.isSubscribed()) {
-			consumer.removeMessageListener(messageListener);
-			consumer.unsubscribe(unsubscriptionListener);
-		    serverSession.checkWaitForLogout();
-		}
+		if (consumer == null)
+			throw new IllegalStateException("Cannot unsubscribe, DataObserver " + this.destination + " not started");
+		
+		if (!consumer.isSubscribed())
+			return;
+		
+		consumer.removeMessageListener(messageListener);
+		consumer.unsubscribe(unsubscriptionListener);
+	    serverSession.checkWaitForLogout();
 	}
 	
 	private ResponseListener subscriptionListener = new SubscriptionListenerImpl(); 
