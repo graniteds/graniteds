@@ -42,8 +42,6 @@ import java.util.concurrent.Callable;
  */
 public class TideDataPublishingWrapper {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Logger log = Logger.getLogger(TideDataPublishingWrapper.class);
 
     private Map<String, TideSynchronizationManager> syncsMap = new HashMap<String, TideSynchronizationManager>();

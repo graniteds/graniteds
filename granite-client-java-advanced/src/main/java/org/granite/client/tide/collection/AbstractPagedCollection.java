@@ -49,7 +49,6 @@ import javax.annotation.PreDestroy;
 import org.granite.client.tide.data.EntityManager.UpdateKind;
 import org.granite.client.tide.events.TideEvent;
 import org.granite.client.tide.events.TideEventObserver;
-import org.granite.client.tide.impl.FutureResult;
 import org.granite.client.tide.server.TideFaultEvent;
 import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;

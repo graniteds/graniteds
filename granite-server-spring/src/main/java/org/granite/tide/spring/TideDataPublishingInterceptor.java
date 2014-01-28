@@ -26,7 +26,6 @@ import java.util.concurrent.Callable;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.granite.gravity.Gravity;
-import org.granite.logging.Logger;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataUpdatePostprocessor;
 import org.springframework.beans.factory.InitializingBean;
@@ -42,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TideDataPublishingInterceptor implements MethodInterceptor, InitializingBean {
 	
-	private static final Logger log = Logger.getLogger(TideDataPublishingInterceptor.class);
+	//private static final Logger log = Logger.getLogger(TideDataPublishingInterceptor.class);
 	
 	private Gravity gravity;
 	private DataUpdatePostprocessor dataUpdatePostprocessor;
