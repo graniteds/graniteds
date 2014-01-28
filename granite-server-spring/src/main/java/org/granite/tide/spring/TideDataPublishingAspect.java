@@ -21,18 +21,17 @@
  */
 package org.granite.tide.spring;
 
+import java.util.concurrent.Callable;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.granite.gravity.Gravity;
-import org.granite.logging.Logger;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataUpdatePostprocessor;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
-
-import java.util.concurrent.Callable;
 
 /**
  * Spring AOP AspectJ aspect to handle publishing of data changes instead of relying on the default behaviour
@@ -43,7 +42,7 @@ import java.util.concurrent.Callable;
 @Aspect
 public class TideDataPublishingAspect implements Ordered, InitializingBean {
 	
-	private static final Logger log = Logger.getLogger(TideDataPublishingAspect.class);
+	//private static final Logger log = Logger.getLogger(TideDataPublishingAspect.class);
 
 	private int order = 0;
 	private Gravity gravity;

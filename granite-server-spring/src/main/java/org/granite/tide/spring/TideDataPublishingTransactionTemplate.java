@@ -25,7 +25,6 @@ package org.granite.tide.spring;
 import java.util.concurrent.Callable;
 
 import org.granite.gravity.Gravity;
-import org.granite.logging.Logger;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataUpdatePostprocessor;
 import org.springframework.beans.factory.InitializingBean;
@@ -46,7 +45,7 @@ public class TideDataPublishingTransactionTemplate extends TransactionTemplate i
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger log = Logger.getLogger(TideDataPublishingTransactionTemplate.class);
+    //private static final Logger log = Logger.getLogger(TideDataPublishingTransactionTemplate.class);
 
     private Gravity gravity;
     private DataUpdatePostprocessor dataUpdatePostprocessor;
