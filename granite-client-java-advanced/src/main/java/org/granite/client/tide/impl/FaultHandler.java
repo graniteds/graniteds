@@ -165,7 +165,7 @@ public class FaultHandler<T> implements Runnable {
         }
         else if (event.getType() == Type.CANCELLED) {
         	fault = new Fault(Code.CLIENT_CALL_CANCELLED, null, null);
-        	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_TIMED_OUT, null, null, null, null);
+        	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_CANCELLED, null, null, null, null);
         }
         
         TideFaultEvent faultEvent = new TideFaultEvent(context, serverSession, componentListener, fault, extendedData);

@@ -748,7 +748,8 @@ gravity.publishMessage(message);
 ----
 
 It you need to simulate a publish from the client subscribed in the current session, you can get the +clientId+ in the session attribute named 
-+org.granite.gravity.channel.clientId.{destination}+ and set it in the message. 
+++org.granite.gravity.channel.clientId.\{destination\}++ and set it in the message.
+
 
 *Server to Client Messaging with JMS*
 

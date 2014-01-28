@@ -154,7 +154,7 @@ public class ServerSession implements ContextAware {
 	
 	
     public ServerSession() throws Exception {
-    	// Used for testing
+    	// Used for testing/proxying
     }
 
     /**
@@ -699,7 +699,8 @@ public class ServerSession implements ContextAware {
      * @param event failure event
      */
 	public void onIssueEvent(IssueEvent event) {
-    	status.setConnected(false);            
+		if (event.getType() != IssueEvent.Type.CANCELLED)
+			status.setConnected(false);            
 	}
 	
 	private final TransportStatusHandler statusHandler = new TransportStatusHandler() {

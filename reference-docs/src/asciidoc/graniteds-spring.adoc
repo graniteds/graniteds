@@ -1172,7 +1172,7 @@ You can also define a secure destination by specifying a list of roles required 
     <graniteds:roles>
         <graniteds:role>ROLE_ADMIN</graniteds:role>
     </graniteds:roles>
-<graniteds:messaging-destination/>       
+</graniteds:messaging-destination>
 ----
 
 .JMS Topic 

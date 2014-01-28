@@ -43,7 +43,11 @@ public class SecurityServiceBeanDefinitionParser extends AbstractSingleBeanDefin
             element.setAttribute(ID_ATTRIBUTE, "org.granite.spring.security.SpringSecurity3Service");
     	
     	builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-    	
+
+        String authenticationExtension = element.getAttribute("authentication-extension");
+        if (authenticationExtension != null && authenticationExtension.trim().length() > 0)
+            builder.addPropertyReference("authenticationExtension", authenticationExtension);
+
         String authenticationManager = element.getAttribute("authentication-manager");
         if (authenticationManager != null && authenticationManager.trim().length() > 0)
         	builder.addPropertyReference("authenticationManager", authenticationManager);

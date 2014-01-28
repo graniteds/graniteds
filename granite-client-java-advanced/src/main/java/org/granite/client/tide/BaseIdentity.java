@@ -58,6 +58,17 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
 	private String username;
 	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
+
+    public BaseIdentity() {
+        // proxying
+    }
+
+    public BaseIdentity(ServerSession serverSession) {
+        super(serverSession);
+
+        loggedIn = false;
+    }
+
 	public boolean isLoggedIn() {
 		return loggedIn;
 	}
@@ -86,14 +97,7 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
 		if ((username == null && oldUsername != null) || (username != null && !username.equals(oldUsername)))
 			pcs.firePropertyChange("username", oldUsername, username);
 	}
-	
-    
-    public BaseIdentity(final ServerSession serverSession) {
-    	super(serverSession);
-    	
-    	loggedIn = false;
-    }
-    
+
     /**
      * 	Triggers a remote call to check is user is currently logged in
      *  Can be used at application startup to handle browser refresh cases

@@ -123,7 +123,7 @@ public abstract class PagedCollection<E> extends AbstractPagedCollection<E> impl
 		pageChangeHelper.removeListener(listener);
 	}
 	
-	public void firePageChange(TideRpcEvent event) {
+	public void firePageChange(TideRpcEvent event, int previousFirst, int previousLast) {
 		fireItemsUpdated(0, Math.min(this.count, this.last)-this.first);
 		pageChangeHelper.fireEvent(this, event);
 	}
@@ -138,7 +138,7 @@ public abstract class PagedCollection<E> extends AbstractPagedCollection<E> impl
 	}
 	
 	public void fireItemsUpdated(final int from, final int to) {
-        if (to <= from)
+        if (to < from)
             return;
 		ListChangeListener.Change<E> change = new ListChangeListener.Change<E>(wrappedList) {
 			@Override

@@ -75,6 +75,8 @@ package org.granite.tide.data {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.data.DataObserver");
 
+        private static const DATA_TOPIC:String = "tideDataTopic";
+
         private var _serverSession:ServerSession = null;
         private var _type:String = null;
         private var _componentName:String = null;
@@ -128,8 +130,7 @@ package org.granite.tide.data {
             if (_componentName == null)
                 return;
 
-	        _consumer = _serverSession.getConsumer(_type, _componentName);
-            _consumer.topic = "tideDataTopic";
+	        _consumer = _serverSession.getConsumer(_componentName, DATA_TOPIC, _type);
 		}
 		
 		public function meta_clear():void {

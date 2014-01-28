@@ -63,6 +63,8 @@ package org.granite.tide.events {
 	public class EventRouter extends EventDispatcher implements IComponent, IEventInterceptor {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.events.EventRouter");
+
+        private static const EVENT_TOPIC:String = "tideEventTopic";
 		
 		private var _consumer:Consumer = null;
 		private var _producer:Producer = null;
@@ -116,11 +118,9 @@ package org.granite.tide.events {
             if (_componentName == null)
                 return;
 
-	        _consumer = _serverSession.getConsumer(_type, _componentName);
-            _consumer.topic = "tideEventTopic";
+	        _consumer = _serverSession.getConsumer(_componentName, EVENT_TOPIC, _type);
 
-	        _producer = _serverSession.getProducer(_type, _componentName);
-            _producer.topic = "tideEventTopic";
+	        _producer = _serverSession.getProducer(_componentName, EVENT_TOPIC, _type);
 		}
 		
 		public function meta_clear():void {

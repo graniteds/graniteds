@@ -108,7 +108,7 @@ package org.granite.tide {
 		    _tide.addEventListener(Tide.PLUGIN_LOGIN_FAULT, loginFault);
 		    _tide.addEventListener(Tide.PLUGIN_LOGOUT, logout);
 		    
-	        _consumer = _tide.mainServerSession.getConsumer(DefaultChannelBuilder.LONG_POLLING, _destination);
+	        _consumer = _tide.mainServerSession.getConsumer(_destination, null);
 
 		    log.info("Tide async proxy initialized");
 		}
