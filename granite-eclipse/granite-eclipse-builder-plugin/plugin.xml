@@ -39,7 +39,7 @@
                 </and>
             </visibility>
             <action
-                    icon="bin/icons/gds16.gif"
+                    icon="icons/gds16.gif"
                     label="Add GraniteDS Nature"
                     class="org.granite.builder.ToggleNatureAction"
                     enablesFor="+"
@@ -55,7 +55,7 @@
                 <objectState name="projectNature" value="org.granite.builder.granitenature"/>
             </visibility>
             <action
-                    icon="bin/icons/gds16.gif"
+                    icon="icons/gds16.gif"
                     label="Remove GraniteDS Nature"
                     class="org.granite.builder.ToggleNatureAction"
                     enablesFor="+"
