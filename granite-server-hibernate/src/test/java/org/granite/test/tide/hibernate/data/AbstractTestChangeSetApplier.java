@@ -23,9 +23,11 @@ package org.granite.test.tide.hibernate.data;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
@@ -216,7 +218,55 @@ public abstract class AbstractTestChangeSetApplier {
 			Assert.assertSame("Associations", p, c.getPerson());
 		close();
 	}
-	
+
+    @Test
+    public void testSimpleChangesGDS1232() throws Exception {
+        initPersistence();
+
+        Person1 p = new Person1(null, null, "P1");
+        p.setFirstName("test");
+        p.setLastName("test");
+        p.setSalutation(Person1.Salutation.Mr);
+        open();
+        p = save(p);
+        Contact1 c = new Contact1(null, null, "C1");
+        c.setEmail("test@test.com");
+        Address a = new Address(null, null, "A1");
+        c.setAddress(a);
+        c.setPerson(p);
+        c = save(c);
+        flush();
+        Long personId = p.getId();
+        Long contactId = c.getId();
+        close();
+
+        open();
+
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("org/granite/test/tide/data/enterprise/granite-config.xml");
+        GraniteConfig graniteConfig = new GraniteConfig(null, is, null, "test");
+        ServicesConfig servicesConfig = new ServicesConfig(null, null, false);
+        SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+
+        ChangeSet changeSet = new ChangeSet();
+        Change change = new Change(Person1.class.getName(), personId, 0L, "P1");
+        // Force order of changes: null first
+        Field f = Change.class.getDeclaredField("changes");
+        f.setAccessible(true);
+        f.set(change, new LinkedHashMap<String, Object>());
+        change.getChanges().put("salutation", null);
+        change.getChanges().put("mainContact", new ChangeRef(Contact1.class.getName(), "C1", contactId));
+        changeSet.setChanges(new Change[] { change });
+
+        new ChangeSetApplier(newPersistenceAdapter()).applyChanges(changeSet);
+        flush();
+
+        p = find(Person1.class, personId);
+        c = find(Contact1.class, contactId);
+        Assert.assertSame("Property applied", c, p.getMainContact());
+        Assert.assertNull("Property applied", p.getSalutation());
+        close();
+    }
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testSimpleChangesList() throws Exception {
