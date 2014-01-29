@@ -49,9 +49,13 @@ public class GravityServletUtil {
     public static void init(ServletConfig config) throws ServletException {
     	GravityManager.start(config);
     }
-    
 
-	///////////////////////////////////////////////////////////////////////////
+    public static void rejectJMFContentType(HttpServletRequest request) throws ServletException {
+        if (ContentType.JMF_AMF.mimeType().equals(request.getContentType()))
+            throw new ServletException("JMF not supported, use Servlet 3 AsyncServlet");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
 	// Connect messages management (request attribute).
 	
 	public static void setConnectMessage(HttpServletRequest request, Message connect) {

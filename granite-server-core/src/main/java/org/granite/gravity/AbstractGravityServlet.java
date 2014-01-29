@@ -77,6 +77,10 @@ public class AbstractGravityServlet extends HttpServlet {
 
 	///////////////////////////////////////////////////////////////////////////
 	// AMF (de)serialization methods.
+
+    protected void rejectJMFContentType(HttpServletRequest request) throws ServletException {
+        GravityServletUtil.rejectJMFContentType(request);
+    }
 	
 	protected Gravity initializeRequest(Gravity gravity, HttpServletRequest request, HttpServletResponse response) {
 		return GravityServletUtil.initializeRequest(getServletConfig(), gravity, request, response);
