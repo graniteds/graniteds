@@ -28,6 +28,7 @@ import org.granite.context.GraniteContext;
 import org.granite.gravity.adapters.ServiceAdapter;
 
 import flex.messaging.messages.AsyncMessage;
+import flex.messaging.messages.ErrorMessage;
 import flex.messaging.messages.Message;
 
 /**
@@ -93,31 +94,62 @@ public class GravityProxy implements Gravity {
     }
 
     public Channel getChannel(String channelId) {
-    	return getGravity().getChannel(channelId);
+    	Gravity gravity = getGravity();
+    	if (gravity == null)
+    		return null;
+    	return gravity.getChannel(channelId);
     }
     public Channel removeChannel(String channelId) {
+    	Gravity gravity = getGravity();
+    	if (gravity == null)
+    		return null;
     	return getGravity().removeChannel(channelId);
     }
     public boolean access(String channelId) {
-    	return getGravity().access(channelId);
+    	// Should probably throw an exception, not intended to be used through the proxy
+    	Gravity gravity = getGravity();
+    	if (gravity == null)
+    		return false;
+    	return gravity.access(channelId);
     }
     public void execute(AsyncChannelRunner runnable) {
-    	getGravity().execute(runnable);
+    	// Should probably throw an exception, not intended to be used through the proxy
+    	Gravity gravity = getGravity();
+    	if (gravity == null)
+    		return;
+    	gravity.execute(runnable);
     }
     public boolean cancel(AsyncChannelRunner runnable) {
-    	return getGravity().cancel(runnable);
+    	// Should probably throw an exception, not intended to be used through the proxy
+    	Gravity gravity = getGravity();
+    	if (gravity == null)
+    		return false;
+    	return gravity.cancel(runnable);
     }
-
+    
     public Message handleMessage(Message message) {
-    	return getGravity().handleMessage(message);
+    	// Should probably throw an exception, not intended to be used through the proxy
+    	Gravity gravity = getGravity();
+    	if (gravity == null)
+    		return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
+    	return gravity.handleMessage(message);
     }
     public Message handleMessage(Message message, boolean skipInterceptor) {
-    	return getGravity().handleMessage(message, skipInterceptor);
+    	Gravity gravity = getGravity();
+    	if (gravity == null)
+    		return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
+    	return gravity.handleMessage(message, skipInterceptor);
     }
     public Message publishMessage(AsyncMessage message) {
-    	return getGravity().publishMessage(message);
+    	Gravity gravity = getGravity();
+    	if (gravity == null)
+    		return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
+    	return gravity.publishMessage(message);
     }
     public Message publishMessage(Channel fromChannel, AsyncMessage message) {
-    	return getGravity().publishMessage(fromChannel, message);
+    	Gravity gravity = getGravity();
+    	if (gravity == null)
+    		return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
+    	return gravity.publishMessage(fromChannel, message);
     }
 }
