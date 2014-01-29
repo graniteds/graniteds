@@ -37,23 +37,16 @@ package org.granite.tide.collections {
     import flash.events.Event;
     import flash.events.IEventDispatcher;
     
-    import mx.binding.utils.BindingUtils;
     import mx.collections.*;
     import mx.collections.errors.ItemPendingError;
-    import mx.core.IPropertyChangeNotifier;
     import mx.core.IUID;
     import mx.core.mx_internal;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.events.PropertyChangeEvent;
-    import mx.events.PropertyChangeEventKind;
     import mx.logging.ILogger;
     import mx.logging.Log;
-    import mx.rpc.events.FaultEvent;
-    import mx.rpc.events.ResultEvent;
-    import mx.utils.ArrayUtil;
-    import mx.utils.ObjectUtil;
-    
+
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
     import org.granite.tide.events.TideContextEvent;
@@ -140,7 +133,6 @@ package org.granite.tide.collections {
 		    log.debug("create collection");
 			super();
 			var sort:Sort = new Sort();
-			sort.compareFunction = nullCompare;
 			sort.fields = [];
 			this.sort = sort;
 			_ipes = null;
@@ -157,9 +149,9 @@ package org.granite.tide.collections {
 			_componentName = componentName;
 			_context = context;
 		}
-		
-		
-		/**
+
+
+        /**
 		 *	Get total number of elements
 		 *  
 		 *  @return collection total length
@@ -264,13 +256,10 @@ package org.granite.tide.collections {
 		public override function refresh():Boolean {
 			// Recheck sort fields to listen for asc/desc change events
 			// (AdvancedDataGrid does not dispatch sortChanged when only asc/desc is changed)
-			if (sort != null) {
-				sort.compareFunction = nullCompare;
-				if (sort.fields != null && sort.fields.length != _sortFieldListenersSet) {
-					for each (var field:Object in sort.fields)
-						field.addEventListener("descendingChanged", sortFieldChangeHandler, false, 0, true);
-					_sortFieldListenersSet = sort.fields.length;
-				}
+			if (sort != null && sort.fields != null && sort.fields.length != _sortFieldListenersSet) {
+                for each (var field:Object in sort.fields)
+                    field.addEventListener("descendingChanged", sortFieldChangeHandler, false, 0, true);
+                _sortFieldListenersSet = sort.fields.length;
 			}
 			
 			// _ipes = null;
@@ -337,8 +326,6 @@ package org.granite.tide.collections {
 		 * 	@param event sort event
 		 */
 		private function sortChangedHandler(event:Event):void {
-			if (this.sort != null)
-				this.sort.compareFunction = nullCompare;	// Force compare function to do nothing as we use server-side sorting
 		    _fullRefresh = true;
 		}
 		
@@ -376,7 +363,8 @@ package org.granite.tide.collections {
 		 */
 		protected function initialize(event:TideResultEvent):void {
 		}
-		
+
+
 		/**
 		 * 	@private
 		 *	Event handler for results query
@@ -400,9 +388,6 @@ package org.granite.tide.collections {
 		 */
 		protected function handleResult(result:Object, event:TideResultEvent = null):void {
 			list = result.resultList as IList;
-			
-			if (this.sort != null)
-				this.sort.compareFunction = nullCompare;	// Avoid automatic sorting
 			
 			var expectedFirst:int = 0;
 			var expectedLast:int = 0;
@@ -513,12 +498,11 @@ package org.granite.tide.collections {
     		    _ipes = nextIpes;
     		}
 			
-//		    _ipes = null;
-		    
 		    if (event != null)
 		    	dispatchEvent(new CollectionEvent(COLLECTION_PAGE_CHANGE, false, false, RESULT, -1, -1, [ event ]));
 		    
 		    if (dispatchRefresh) {
+                // Hack with tempSort to prevent from client sorting during refresh
 		        _tempSort = new NullSort();
 	        	saveThrowIpe = _throwIpe;
 				try {
@@ -537,54 +521,11 @@ package org.granite.tide.collections {
 		    if (dispatchReset)
 		    	dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
 		}
-		
-		
-//		public override function dispatchEvent(event:Event):Boolean {
-//			if (_tempSort is NullSort && event is CollectionEvent && CollectionEvent(event).kind == CollectionEventKind.REFRESH)
-//				CollectionEvent(event).kind = CollectionEventKind.RESET;
-//			return super.dispatchEvent(event);
-//		} 
-    	
-		
+
+
+		// Hack with tempSort to prevent from client sorting during refresh
 		private var _tempSort:NullSort = null;
-    	
-    	// All this ugly hack because ListCollectionView.revision is private
-        mx_internal override function getBookmarkIndex(bookmark:CursorBookmark):int {
-        	var saveThrowIpe:Boolean = _throwIpe;
-            _throwIpe = false;
-            var index:int = super.getBookmarkIndex(bookmark);
-            _throwIpe = saveThrowIpe;
-            return index;
-        }
- 
- 
-		// Override get/set list/dispatch/reset^M
-		// to avoid the call to reset() in ListCollectionView when the received list^M
-		// is updated^M
-		public override function dispatchEvent(event:Event):Boolean {
-			if (event.type == "listChanged")
-				return false;
-			return super.dispatchEvent(event);
-		}
-		
-		private var _settingList:Boolean = false;
-		
-		public override function set list(value:IList):void {
-			try {
-				_settingList = true;
-				super.list = value;
-			}
-			finally {
-				_settingList = false;
-			}
-		}
-		
-		mx_internal override function reset():void {
-			if (_settingList)
-				return;
-			super.mx_internal::reset();
-		}
-																							
+
         CONFIG::flex40 {
             [Bindable("sortChanged")]
             public override function get sort():Sort {
@@ -622,7 +563,22 @@ package org.granite.tide.collections {
                 super.sort = newSort;
             }
         }
-		
+
+
+        // All this ugly hack because ListCollectionView.revision is private
+        mx_internal override function getBookmarkIndex(bookmark:CursorBookmark):int {
+            var saveThrowIpe:Boolean = _throwIpe;
+            _throwIpe = false;
+            try {
+                var index:int = super.getBookmarkIndex(bookmark);
+            }
+            finally {
+                _throwIpe = saveThrowIpe;
+            }
+            return index;
+        }
+
+
 		/**
 		 *  @private
 		 *	Event handler for results fault
@@ -830,22 +786,6 @@ package org.granite.tide.collections {
 			}
 			
 			return -1;
-		}
-		
-		
-		private function nullCompare(o1:Object, o2:Object, fields:Array = null):int {
-			if (o1 is IUID && o2 is IUID) {
-				if (IUID(o1).uid == IUID(o2).uid)
-					return 0;
-				return 1;
-			}
-			// GDS-523
-			if (o1 != null && o2 != null && o1.hasOwnProperty(uidProperty) && o2.hasOwnProperty(uidProperty)) {
-				if (o1[uidProperty] == o2[uidProperty])
-					return 0;
-				return 1;
-			}
-			return 0;
 		}
 		
 		
