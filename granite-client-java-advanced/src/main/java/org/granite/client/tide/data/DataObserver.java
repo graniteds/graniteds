@@ -70,6 +70,8 @@ public class DataObserver implements ContextAware, NameAware {
     private String destination = null;
     
 	private Consumer consumer = null;
+	private boolean subscribing = false;
+	private boolean unsubscribing = false;
 
 	
     protected DataObserver() {
@@ -121,6 +123,7 @@ public class DataObserver implements ContextAware, NameAware {
 
 	public void start() {
         consumer = serverSession.getConsumer(destination, DATA_OBSERVER_TOPIC_NAME, channelType);
+		unsubscribing = false;
 	}	
 	
 	public void stop() {
@@ -134,22 +137,27 @@ public class DataObserver implements ContextAware, NameAware {
 	/**
 	 * 	Subscribe the data topic
 	 */
-	public void subscribe() {
+	public synchronized void subscribe() {
 		if (consumer == null)
 			throw new IllegalStateException("Cannot subscribe, DataObserver " + this.destination + " not started");
 		
+		if (subscribing)
+			return;
+		
+		subscribing = true;
 		consumer.addMessageListener(messageListener);
 	    consumer.subscribe(subscriptionListener);
 	    serverSession.checkWaitForLogout();
 	}
 	
-	public void unsubscribe() {
+	public synchronized void unsubscribe() {
 		if (consumer == null)
 			throw new IllegalStateException("Cannot unsubscribe, DataObserver " + this.destination + " not started");
 		
-		if (!consumer.isSubscribed())
+		if (!consumer.isSubscribed() || unsubscribing)
 			return;
 		
+		unsubscribing = true;
 		consumer.removeMessageListener(messageListener);
 		consumer.unsubscribe(unsubscriptionListener);
 	    serverSession.checkWaitForLogout();
@@ -163,6 +171,7 @@ public class DataObserver implements ContextAware, NameAware {
 		public void onResult(ResultEvent event) {
 			log.info("Destination %s subscribed sid: %s", destination, consumer.getSubscriptionId());
 			
+			subscribing = false;
 			serverSession.tryLogout();
 		}
 
@@ -170,6 +179,7 @@ public class DataObserver implements ContextAware, NameAware {
 		public void onFault(FaultEvent event) {
 			log.error("Destination %s could not be subscribed: %s", destination, event.getCode());
 			
+			subscribing = false;
 			serverSession.tryLogout();
 		}
 
@@ -177,6 +187,7 @@ public class DataObserver implements ContextAware, NameAware {
 		public void onIssue(IssueEvent event) {
 			log.error("Destination %s could not be subscribed: %s", destination, event.getType());
 			
+			subscribing = false;
 			serverSession.tryLogout();
 		}
 	}
@@ -186,6 +197,7 @@ public class DataObserver implements ContextAware, NameAware {
 		public void onResult(ResultEvent event) {
 			log.info("Destination %s unsubscribed", destination);
 			
+			unsubscribing = false;
 			serverSession.tryLogout();
 		}
 
@@ -193,6 +205,7 @@ public class DataObserver implements ContextAware, NameAware {
 		public void onFault(FaultEvent event) {
 			log.error("Destination %s could not be unsubscribed: %s", destination, event.getCode());
 			
+			unsubscribing = false;
 			serverSession.tryLogout();
 		}
 
@@ -200,6 +213,7 @@ public class DataObserver implements ContextAware, NameAware {
 		public void onIssue(IssueEvent event) {
 			log.error("Destination %s could not be unsubscribed: %s", destination, event.getType());
 			
+			unsubscribing = false;
 			serverSession.tryLogout();
 		}
 	}
