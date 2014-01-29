@@ -1,15 +1,15 @@
+:linkattrs:
 :imagesdir: ./images
 
 [preface]
 == Project overview
 
-ifdef::flex[]
-_Granite Data Services_ (GraniteDS) is a comprehensive development and integration platform for building Flex / Java EE RIA applications.
-endif::flex[]
-ifdef::java[]
-_Granite Data Services_ (GraniteDS) is a comprehensive development and integration platform for building RIA applications with a Java EE backend and a Java/JavaFX frontend.
-endif::java[]
-The framework is completely open source and released partly under the LGPL 2.1 license, partly under a dual GPL 3 / commercial license for some advanced features.
+_Granite Data Services_ (GraniteDS) is an event-driven, cross-framework, Application Client Container (ACC), for building
+Flex, JavaFX and native Android client applications connected to a Java EE backend.
+
+The platform is completely open source and released under the http://www.gnu.org/licenses/lgpl-2.1.html[LGPL 2.1, window="_blank"] license,
+with the exception of some advanced modules released under a dual http://www.gnu.org/licenses/gpl.html[GPL 3.0, window="_blank"] /
+http://www.granitedataservices.com/enterprise/licenses[Commercial SLA, window="_blank"].
 
 ifdef::flex[]
 Integration and features stack :  
@@ -22,17 +22,26 @@ GDS has been designed to be lightweight, robust, fast, and highly extensible.
 
 The main features of GraniteDS are : 
 
-* An implementation of the <<graniteds.remoting,Adobe AMF remoting>> protocol and of the AMF3 data format, with out-of-the-box adapters 
-	   for all usual Java frameworks.   
-* An implementation of a <<graniteds.messaging,messaging>> framework based supporting Comet and Websocket transports 
-	   which can connect to JMS servers.
-* A <<graniteds.datamanagement,data management framework>> which simplifies the handling and synchronization of persistent data through
-	   client and server applications.  
+* A built-in <<graniteds.remoting,remoting>> API abstracting over all major Java EE frameworks (Spring, EJB, CDI) and JPA engines
+	(Hibernate, OpenJPA, EclipseLink, DataNucleus).
+* A built-in real-time <<graniteds.messaging,messaging>> API abstracting over Comet, Websocket and UDP transports, 
+	which can integrate with JMS servers.
+* A <<graniteds.datamanagement,data management framework>> which handles the synchronization of persistent data between
+	client and server applications.
+ifdef::flex[]
+* A <<graniteds.gas3,code generation tool>> which replicates your data model and service components into a type-safe, bindable, client-side API.
+endif::flex[]
+ifdef::java[]
+* A <<graniteds.gfx, code generation tool>> which replicates your data model and service components into a type-safe, bindable, client-side API.
+endif::java[]
+* The implementation of two fast and compact binary serialization protocols (<<graniteds.datamanagement,AMF3  and JMF data formats>>),
+	supporting arbitrary complex data graphs.
 
 === Who we are
 
 The core development team is Franck Wolff and William Drai, two engineers from Granite Data Services. 
-Many people have contributed to GraniteDS by giving ideas, patches or new features. If you feel you should be listed below, please email link:$$http://www.graniteds.org/confluence/display/~fwolff$$[me]. 
+Many people have contributed to GraniteDS by giving ideas, patches or new features. If you feel you should be listed below,
+please http://www.granitedataservices.com/contact-us/[contact us, window="_blank"]. 
 
 Spring integration::
 * Igor SAZHNEV: Initial Spring service factory implementation and Java Enum externalizer.
