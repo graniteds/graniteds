@@ -1811,7 +1811,7 @@ package org.granite.tide {
                                     { includeReadOnly: true, uris: null, includeTransient: false });
 
                             var properties:Array = classInfo.properties;
-                            var s:String = "(" + classInfo.name + ")";
+                            s = "(" + classInfo.name + ")";
 
                             if (_toStringState.cache == null) {
                                 _toStringState.refCount = 0;

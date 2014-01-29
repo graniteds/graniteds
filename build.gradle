@@ -1778,6 +1778,7 @@ project('granite-client-java-advanced') {
 	
 	dependencies {
 		compile project(':granite-client-java')
+        compile project(':granite-server-core')
 		
 		testCompile project(':granite-client-java').sourceSets.test.output
 	}
@@ -1892,6 +1893,7 @@ project('granite-client-android') {
 		compile files('lib/android-async-http-1.4.3.jar')
 		
 		compile project(':granite-client-java')
+        compile project(':granite-server-core')
 
 		testCompile project(':granite-client-java').sourceSets.test.output
 		

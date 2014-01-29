@@ -295,14 +295,27 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 		            			securityServiceClassName = "org.granite.messaging.service.security.GlassFishV3SecurityService";
 		        			}
 		        			catch (ClassNotFoundException e3) {
-		        				securityServiceClassName = "org.granite.messaging.service.security.Tomcat7SecurityService";
+                                try {
+                                    TypeUtil.forName("io.undertow.server.HttpServerExchange");
+                                    securityServiceClassName = "org.granite.messaging.service.security.UndertowSecurityService";
+                                }
+                                catch (ClassNotFoundException e4) {
+                                    try {
+                                        TypeUtil.forName("org.apache.catalina.connector.Request");
+		        				        securityServiceClassName = "org.granite.messaging.service.security.Tomcat7SecurityService";
+                                    }
+                                    catch (ClassNotFoundException e5) {
+                                        log.warn(e5, "No suitable security service implementation could be detected");
+                                    }
+                                }
 		        			}
 		    			}
 		        		try {
-		        			graniteConfig.setSecurityService((SecurityService)TypeUtil.newInstance(securityServiceClassName));
+                            if (securityServiceClassName != null)
+		        			    graniteConfig.setSecurityService((SecurityService)TypeUtil.newInstance(securityServiceClassName));
 		            	}
 		            	catch (Exception e) {
-		            		throw new ServletException("Could not setup security service " + securityServiceClassName, e);
+		            		log.error(e, "Could not setup security service " + securityServiceClassName);
 		            	}
 	    			}
 	    		}
