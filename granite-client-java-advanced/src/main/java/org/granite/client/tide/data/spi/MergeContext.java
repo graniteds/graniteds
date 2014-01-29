@@ -43,6 +43,7 @@ import java.util.Set;
 
 import org.granite.client.tide.data.Conflicts;
 import org.granite.client.tide.data.EntityManager;
+import org.granite.client.tide.data.impl.ObjectUtil;
 import org.granite.client.tide.server.ServerSession;
 
 /**
@@ -229,8 +230,12 @@ public class MergeContext {
 	public int getMergeStackSize() {
 		return this.mergeStack.size();
 	}
-	
-	public Object getSavedProperties(Object object) {
+
+    public Object mergeExternal(Object object, Object dest, Object parent, String propertyName) {
+        return entityManager.mergeExternal(this, object, dest, parent, propertyName, false);
+    }
+
+	public Map<String, Object> getSavedProperties(Object object) {
 		return dirtyCheckContext.getSavedProperties(object);
 	}
 	
@@ -248,6 +253,14 @@ public class MergeContext {
     
     public void clearCache() {
         this.entityCache = null;
+    }
+
+    public DataManager getDataManager() {
+        return entityManager.getDataManager();
+    }
+
+    public boolean objectEquals(Object o1, Object o2) {
+        return ObjectUtil.objectEquals(entityManager.getDataManager(), o1, o2);
     }
     
     private Set<Object> getVersionChangeCache() {
@@ -274,5 +287,9 @@ public class MergeContext {
 
     public boolean isUninitializeAllowed() {
         return this.entityManager.isUninitializeAllowed();
+    }
+
+    public void setUninitializeAllowed(boolean uninitializeAllowed) {
+        this.entityManager.setUninitializeAllowed(uninitializeAllowed);
     }
 }

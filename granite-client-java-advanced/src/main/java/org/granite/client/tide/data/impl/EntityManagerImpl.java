@@ -267,8 +267,49 @@ public class EntityManagerImpl implements EntityManager {
         if (removeFromCache)
             entitiesByUid.remove(dataManager.getCacheKey(entity));
     }
-    
-    
+
+
+    public void attach(Object object) {
+        internalAttach(object, new IdentityHashMap<Object, Object>());
+    }
+
+    private void internalAttach(Object object, IdentityHashMap<Object, Object> cache) {
+        if (object == null || isSimple(object))
+            return;
+
+        if (cache.containsKey(object))
+            return;
+        cache.put(object, object);
+
+        if (isEntity(object))
+            attachEntity(object);
+
+        for (Map.Entry<String, Object> me : dataManager.getPropertyValues(object, false, true).entrySet()) {
+            String p = me.getKey();
+            Object val = me.getValue();
+            if (!dataManager.isInitialized(val))
+                continue;
+
+            if (val instanceof Collection<?>) {
+                for (Object o : ((Collection<?>)val))
+                    internalAttach(o, cache);
+            }
+            else if (val instanceof Map<?, ?>) {
+                for (Map.Entry<?, ?> e : ((Map<?, ?>)val).entrySet()) {
+                    internalAttach(e.getKey(), cache);
+                    internalAttach(e.getValue(), cache);
+                }
+            }
+            else if (!isSimple(val))
+                internalAttach(val, cache);
+        }
+    }
+
+    public static boolean isSimple(Object object) {
+        return ObjectUtil.isSimple(object) || object instanceof Enum || object instanceof byte[] || object instanceof Value;
+    }
+
+
     /**
      *  {@inheritDoc}
      */
@@ -1666,8 +1707,15 @@ public class EntityManagerImpl implements EntityManager {
             mergeContext.setResolvingConflict(false);
         }
     }
-    
-    
+
+
+    /**
+     *  {@inheritDoc}
+     */
+    public Map<Object, Map<String, Object>> getSavedProperties() {
+        return dirtyCheckContext.getSavedProperties();
+    }
+
     /**
      *  {@inheritDoc}
      */

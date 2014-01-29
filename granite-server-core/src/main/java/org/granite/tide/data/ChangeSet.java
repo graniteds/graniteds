@@ -35,22 +35,34 @@ public class ChangeSet implements Externalizable {
     private static final long serialVersionUID = 1L;
 
 	private Change[] changes = new Change[0];
+    private final boolean local;
 	
 	
-	public ChangeSet() {		
+	public ChangeSet() {
+        this.local = false;
 	}
 	
 	public ChangeSet(Change[] changes) {
 		this.changes = changes;
+        this.local = false;
 	}
-	
-	public Change[] getChanges() {
+
+    public ChangeSet(Change[] changes, boolean local) {
+        this.changes = changes;
+        this.local = local;
+    }
+
+    public Change[] getChanges() {
 		return changes;
 	}
 	
 	public void setChanges(Change[] changes) {
 		this.changes = changes;
 	}
+
+    public boolean isLocal() {
+        return local;
+    }
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(changes);

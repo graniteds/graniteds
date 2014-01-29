@@ -96,7 +96,11 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
             dataManager.notifyEntityDirtyChange(entity, oldDirtyEntity, newDirtyEntity);
         return newDirtyEntity;
     }
-    
+
+    public Map<Object, Map<String, Object>> getSavedProperties() {
+        return savedProperties;
+    }
+
     public Map<String, Object> getSavedProperties(Object entity) {
         return savedProperties.get(entity);
     }

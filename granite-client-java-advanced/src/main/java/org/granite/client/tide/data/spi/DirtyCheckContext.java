@@ -60,6 +60,8 @@ public interface DirtyCheckContext {
 
     public boolean isEntityDeepChanged(Object entity);
 
+    public Map<Object, Map<String, Object>> getSavedProperties();
+
     public Map<String, Object> getSavedProperties(Object localEntity);
     
     public void addUnsaved(Object entity);

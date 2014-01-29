@@ -71,7 +71,7 @@ public abstract class AbstractDataManager implements DataManager {
     }
     
     public boolean isEntity(Object entity) {
-    	return entity != null && persistence.isEntity(entity.getClass());
+    	return entity != null && persistence.isEntity(entity instanceof Class<?> ? (Class<?>)entity : entity.getClass());
     }
     
     public Object getId(Object entity) {
@@ -80,8 +80,8 @@ public abstract class AbstractDataManager implements DataManager {
     
     public boolean hasIdProperty(Object entity) {
     	if (entity == null)
-    		return false;
-    	return persistence.hasIdProperty(entity.getClass());
+            throw new IllegalArgumentException("entity should not be null");
+    	return persistence.hasIdProperty(entity instanceof Class<?> ? (Class<?>)entity : entity.getClass());
     }
     
     public String getDetachedState(Object entity) {
@@ -94,14 +94,14 @@ public abstract class AbstractDataManager implements DataManager {
     
     public boolean hasVersionProperty(Object entity) {
     	if (entity == null)
-    		return false;
-    	return persistence.hasVersionProperty(entity.getClass());
+            throw new IllegalArgumentException("entity should not be null");
+    	return persistence.hasVersionProperty(entity instanceof Class<?> ? (Class<?>)entity : entity.getClass());
     }
     
     public String getVersionPropertyName(Object entity) {
     	if (entity == null)
-    		return null;
-    	Property property = persistence.getVersionProperty(entity.getClass());
+            throw new IllegalArgumentException("entity should not be null");
+    	Property property = persistence.getVersionProperty(entity instanceof Class<?> ? (Class<?>)entity : entity.getClass());
     	return property != null ? property.getName() : null;
     }
     

@@ -21,6 +21,8 @@
  */
 package org.granite.tide.data;
 
+import org.granite.messaging.reflect.Reflection;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -43,9 +45,11 @@ public class Change implements Externalizable {
     private Serializable id;
     private Number version;
     private Map<String, Object> changes;
+    private boolean local;
 	
     
     public Change() {
+        this.local = false;
     }
     
     public Change(String className, Serializable id, Number version, String uid) {
@@ -54,6 +58,16 @@ public class Change implements Externalizable {
     	this.version = version;
     	this.uid = uid;
     	this.changes = new HashMap<String, Object>();
+        this.local = false;
+    }
+
+    public Change(String className, Serializable id, Number version, String uid, boolean local) {
+        this.className = className;
+        this.id = id;
+        this.version = version;
+        this.uid = uid;
+        this.changes = new HashMap<String, Object>();
+        this.local = local;
     }
 
 	public String getClassName() {
@@ -76,6 +90,10 @@ public class Change implements Externalizable {
 		return changes;
 	}
 
+    public boolean isLocal() {
+        return local;
+    }
+
 	public void addCollectionChanges(String propertyName, CollectionChange[] collChanges) {
 		CollectionChanges existingChanges = (CollectionChanges)changes.get(propertyName);
 		if (existingChanges == null)
@@ -87,8 +105,8 @@ public class Change implements Externalizable {
 		    existingChanges.setChanges(newChanges);
 		}
 	}
-	
-	@Override
+
+    @Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getClassName()).append(':').append(getUid()).append(":").append(getId()).append(':').append(getVersion()).append("={");

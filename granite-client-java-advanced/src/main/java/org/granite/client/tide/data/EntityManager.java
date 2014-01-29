@@ -273,6 +273,12 @@ public interface EntityManager {
      *  @param entityManager conversation entity manager
      */
     public void mergeInEntityManager(EntityManager entityManager);
+
+    /**
+     * Attach an entity graph in the current entity manager
+     * @param entity
+     */
+    public void attach(Object entity);
     
     /**
      *  Discard changes of entity from last version received from the server
@@ -285,7 +291,14 @@ public interface EntityManager {
      *  Discard changes of all cached entities from last version received from the server
      */ 
     public void resetAllEntities();
-    
+
+    /**
+     *  Current map of saved properties for the the context
+     *
+     *  @return saved properties
+     */
+    public Map<Object, Map<String, Object>> getSavedProperties();
+
     /**
      *  Current map of saved properties for the specified entity
      *  @param entity an entity

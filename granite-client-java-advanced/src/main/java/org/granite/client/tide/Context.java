@@ -363,4 +363,12 @@ public class Context {
     public void markAsFinished() {
         this.finished = true;
     }
+
+
+    private static int tmpContextId = 1;
+
+    public Context newTemporaryContext() {
+        return new Context(getContextManager(), null, "$$TMP$$" + (tmpContextId++));
+    }
+
 }

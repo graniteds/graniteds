@@ -21,10 +21,7 @@
  */
 package org.granite.tide.data;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataUtils {
 	
@@ -33,8 +30,49 @@ public class DataUtils {
 		listDiff.diff();
 		return listDiff.getOps();
 	}
-	
-	private static class ListDiff {
+
+    public static List<Object[]> diffColls(Collection<?> oldColl, Collection<?> newColl) {
+        List<Object[]> ops = new ArrayList<Object[]>();
+        for (Object newElt : newColl) {
+            if (!oldColl.contains(newElt))
+                ops.add(new Object[] { 1, null, newElt });
+        }
+        for (Object oldElt : oldColl) {
+            if (!newColl.contains(oldElt))
+                ops.add(new Object[] { -1, null, oldElt });
+        }
+
+        return ops;
+    }
+
+    public static List<Object[]> diffMaps(Map<?, ?> oldMap, Map<?, ?> newMap) {
+        List<Object[]> ops = new ArrayList<Object[]>();
+        for (Object newKey : newMap.keySet()) {
+            if (!oldMap.containsKey(newKey))
+                ops.add(new Object[] { 1, newKey, newMap.get(newKey) });
+            else {
+                Object oldValue = oldMap.get(newKey);
+                if (oldValue != newMap.get(newKey))
+                    ops.add(new Object[] { 0, newKey, newMap.get(newKey) });
+            }
+        }
+        for (Object oldKey : oldMap.keySet()) {
+            if (!newMap.containsKey(oldKey))
+                ops.add(new Object[] { -1, oldKey, oldMap.get(oldKey) });
+        }
+
+        return ops;
+    }
+
+    public static Map<?, ?> convertMapSnapshot(List<Object[]> snapshot) {
+        Map<Object, Object> map = new HashMap<Object, Object>();
+        for (Object[] s : snapshot)
+            map.put(s[0], s[1]);
+        return map;
+    }
+
+
+    private static class ListDiff {
 		
 		private final List<?> oldList;
 		private final List<?> newList;
