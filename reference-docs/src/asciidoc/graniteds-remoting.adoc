@@ -4,7 +4,7 @@
 == Remoting and serialization
 
 ifdef::flex[]
-Data serialization between a Flex client application and a Java EE server may use three kinds of transfer encodings:
+Data serialization between a Flex client application and a Java EE server can use three kinds of transfer encodings:
  
 * XML (HttpService)
 * SOAP (WebService)
@@ -12,42 +12,55 @@ Data serialization between a Flex client application and a Java EE server may us
 
 According to all available benchmarks, the last option, AMF3 with +RemoteObject+, is the faster and most efficient. Additionally it allows to work with 
 strongly typed objects in the Flex application and thus is more maintainable. GraniteDS provides a full implementation of the AMF3 protocol and a set 
-of adapters suitable for remote calls to POJO, EJB 3, Seam, Spring, and Guice services. 
+of adapters suitable for remote calls to POJO, Spring, EJB 3, Seam and CDI services. 
 
 However, standard AMF serialization/deserialization does not provide any way, either with LiveCycle Data Services/BlazeDS or with GraniteDS, to transfer 
 private or protected data fields. Only non-static, non-transient public fields, either those with public getter and setter or with a public declaration,  
 are taken into account. This limitation applies to both Java and ActionScript 3 classes. 
 
-To preserve strong and secure data encapsulation of your beans while serializing their private internal state - such as a version number in entity beans — 
-GraniteDS provides a specific serialization mechanism called externalization. See <<remoting.externalization,corresponding section>> for details. 
+To preserve strong and secure data encapsulation of your beans while serializing their private internal state - such as a version number in entity beans -
+GraniteDS provides a specific serialization mechanism called externalization. It also allows, for example, to serialize JPA entities without triggering
+initialization of all lazy properties. See <<remoting.externalization,corresponding section>> for details. 
 
-Data serialization between a client application and a Java EE server may use different kinds of transfer encodings, including XML, JSON, Java serialization, or 
-various other serialization frameworks. GraniteDS provides an implementation of the Adobe AMF3 (ActionScript Message Format) binary encoding which is very 
-compact, fast and efficient. Other formats may be added later but AMF3 is a really easy-to-use and performant format. 
+*More about the AMF3 serialization format*
 
-The AMF3 format allows for serialization of strongly typed objects. GraniteDS adds the concept of externalization to transform the serialized objects 
-before and after they are serialized. This allows for example to serialize JPA entities without triggering initialization of all lazy properties.  
+AMF3 is a very compact binary format for data serialization/deserialization and remote method invocation. A key feature of this format is that it preserves 
+the entire graph of your data without duplicating identical objects (contrary to JSON for example).
+
+For example, if A1 and A2 contain a reference to the same B1, 
+the serialization of A1 and A2 does not duplicate B1. The target client VM will contain exactly the same data graph with only one B1 referenced by one A1 and one A2.
+Furthermore, there is no risk of infinite recursion if the data graph contains circular references. For example, if B1 contains the set of A# that references B1. 
+AMF3 messages are sent as a part of a AMF0 envelope and body.
+
+GraniteDS implements an AMF3 serializer/deserializer and relies on some code borrowed from the
+link:$$http://sourceforge.net/projects/openamf/$$[OpenAMF] project for AMF0 serialization/deserialization. The AMF0 and AMF3 specifications are now public.
+You may download them link:$$http://download.macromedia.com/pub/labs/amf/amf3_spec_121207.pdf$$[here]. You will need a Macromedia or Adobe account. 
 endif::flex[]
 
 ifdef::java[]
-When building a JavaFX client, you can then easily deserialize these entities to a properly JavaFX-bindable bean having the same properties. 
-This way the client and server parts of the application are cleanly separated, the JavaFX bean does not have any dependency (even internal runtime) on 
-the JPA provider and the JPA entity having no dependency on the JavaFX binding API.
+Data serialization between a Java/JavaFX client application and a Java EE server uses a fast and compact serialization format called
+Java Message Format (JMF). JMF preserves the entire state of transfered objects and deals with arbitrary complex data graphs. JMF takes care of
+of uninitialized properties of JPA entities and does not trigger initialization: lazy members are serialized as uninitialized and sending back
+such entities back to the server preserves this characteristic (a lazy collection is lazy, not null).
+
+When building a JavaFX client and with the help of the <<graniteds.gfx, GFX>> code generator, you can easily deserialize these entities to a properly
+JavaFX-bindable bean having the same properties. This way the client and server parts of the application are cleanly separated, the JavaFX bean does
+not have any dependency (even internal runtime) on the JPA provider and the JPA entity having no dependency on the JavaFX binding API.
+
+*More about the JMF serialization format*
+
+JMF is inspired by the AMF serialization format and designed with the following goals in mind:
+
+* Compactness: serialized data must be as small as possible (even more than with AMF).
+* Completeness: circular references must be correctly handled, everything that should be serialized must be serialized.
+* Accuracy: no trans-typing, no pointless conversions, unless explicitly wanted.
+* Extensibility: it must be possible to plug dedicated codecs for specific data types.
+* Observability: data flow must be understandable by programs that have no knowledge of what is serialized.
+* Security: only data that are meant to be serialized must be serialized.
+* Speed: serialization must be as fast as possible (but without breaking the previous goals).
+
+In typical usage, JMF can be up to 3 times smaller than AMF and up to 8 times smaller than the standard Java serialization.
 endif::java[] 
-
-*The AMF3 format*
-
-AMF3 is a very compact binary format for data serialization/deserialization and remote method invocation. A key feature of this format is that it preserves 
-the entire graph of your data without duplicating identical objects (contrary to JSON for example). For example, if A1 and A2 contain a reference to the same B1, 
-the serialization of A1 and A2 does not duplicate B1.  The target client VM will contain exactly the same data graph with only one B1 referenced by one A1 and one A2.
-Furthermore, there is no risk of infinite recursion if the data graph contains circular references. For example, if B1 contains the set of A# that references B1. 
-AMF3 messages are sent as a part of a AMF0 envelope and body. GraniteDS implements an AMF3 serializer/deserializer and relies on some code borrowed 
-from the link:$$http://sourceforge.net/projects/openamf/$$[OpenAMF] project for AMF0 serialization/deserialization. The AMF0 and AMF3 specifications are now public.
-You may download them link:$$http://download.macromedia.com/pub/labs/amf/amf3_spec_121207.pdf$$[here]. You will need a Macromedia or Adobe account. 
-
-*The JMF format*
-
-TODO
 
 ifdef::flex[]
 [[remoting.remoteobject]]
