@@ -7,7 +7,7 @@
     <relativePath>../granite-eclipse-parent/pom.xml</relativePath>
 	<groupId>org.graniteds</groupId>
 	<artifactId>granite-eclipse-parent</artifactId>
-	<version>3.0.2.20140107015326</version>
+	<version>3.0.2.qualifier</version>
   </parent>
   
   <groupId>org.graniteds.eclipse</groupId>
