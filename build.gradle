@@ -33,7 +33,11 @@ catch (Exception e) {
     // Ignore
 }
 
-def pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.' + timestamp)
+def pluginVersion
+if (granitedsVersion.indexOf('-SNAPSHOT') > 0)
+    pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.v' + timestamp)
+else
+    pluginVersion = granitedsVersion.substring(granitedsVersion.lastIndexOf('.')) + '.v' + timestamp
 
 ext.javadocLinks = [
 	"http://download.oracle.com/javase/1.5.0/docs/api/",
@@ -820,6 +824,14 @@ project('granite-eclipse') {
                 it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null
             }
         }
+
+        mkdir project(':granite-eclipse').file('/build/tycho')
+
+        copy {
+            into project(':granite-eclipse').file('build/tycho')
+            from project(':granite-eclipse').file('.')
+            include 'granite-eclipse-*/**'
+        }
     }
 
     task buildUpdateSite(dependsOn: 'build') << {
@@ -832,14 +844,14 @@ project('granite-eclipse') {
         else {
             ant.taskdef(name: 'mvn', classname: 'org.apache.maven.artifact.ant.Mvn', classpath: configurations.mvn.asPath)
 
-            mkdir project(':granite-eclipse').file('granite-eclipse-builder-plugin/bin')
+            mkdir project(':granite-eclipse').file('build/tycho/granite-eclipse-builder-plugin/bin')
 
-            ant.mvn(pom: project(':granite-eclipse').file('granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+            ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
                 arg(value: 'tycho-versions:set-version')
                 arg(value: '-DnewVersion=' + pluginVersion)
             }
 
-            ant.mvn(pom: project(':granite-eclipse').file('granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+            ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
                 arg(value: 'install')
             }
         }
@@ -855,7 +867,7 @@ project('granite-eclipse') {
         else {
             ant.taskdef(name: 'mvn', classname: 'org.apache.maven.artifact.ant.Mvn', classpath: configurations.mvn.asPath)
 
-            ant.mvn(pom: project(':granite-eclipse').file('granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+            ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
                 arg(value: 'install')
                 arg(value: '-Pupload')
             }
@@ -2040,7 +2052,7 @@ project('dist') {
         }
 
         into ('tools/eclipse') {
-            from project(':granite-eclipse').file('granite-eclipse-builder-plugin/target/org.granite.builder-' + pluginVersion + '.jar')
+            from project(':granite-eclipse').file('build/tycho/granite-eclipse-builder-plugin/target/org.granite.builder-' + pluginVersion + '.jar')
         }
 
         (serverProjects + serverCoreProjects + javaClientProjects).each { subproject ->
