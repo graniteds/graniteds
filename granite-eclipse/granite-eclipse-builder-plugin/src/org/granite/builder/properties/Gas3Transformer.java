@@ -49,4 +49,20 @@ public class Gas3Transformer implements Validable {
 		if (type == null)
 			results.getErrors().add("transformer: type cannot be null");
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Gas3Transformer))
+			return false;
+		if (type == null)
+			return (((Gas3Transformer)obj).type == null);
+		return type.equals(((Gas3Transformer)obj).type);
+	}
+
+	@Override
+	public int hashCode() {
+		return (type == null ? 0 : type.hashCode());
+	}
 }

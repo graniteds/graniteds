@@ -30,22 +30,29 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.granite.builder.GraniteBuilderContext;
 import org.granite.builder.properties.Gas3Template;
+import org.granite.builder.properties.Gas3Transformer;
 import org.granite.builder.properties.GraniteProperties;
 import org.granite.builder.util.SWTUtil;
 import org.granite.generator.TemplateUri;
 import org.granite.generator.as3.DefaultAs3TypeFactory;
+import org.granite.generator.as3.JavaAs3GroovyTransformer;
 import org.granite.generator.as3.LCDSAs3TypeFactory;
 import org.granite.generator.as3.reflect.JavaType.Kind;
+import org.granite.generator.java.DefaultJavaTypeFactory;
+import org.granite.generator.java.JavaGroovyTransformer;
+import org.granite.generator.java.template.JavaTemplateUris;
+import org.granite.generator.javafx.DefaultJavaFXTypeFactory;
+import org.granite.generator.javafx.template.JavaFXTemplateUris;
 import org.granite.generator.template.StandardTemplateUris;
 
 /**
@@ -118,7 +125,7 @@ public class TemplatesPanel extends Composite {
 		
 		Composite buttons = new Composite(this, SWT.NONE);
 		buttons.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-		buttons.setLayout(new FillLayout(SWT.VERTICAL));
+		buttons.setLayout(new GridLayout(1, false));
 		
 		final Button editButton = SWTUtil.newButton(buttons, "Edit...", false, new SelectionAdapter() {
 			@Override
@@ -133,14 +140,38 @@ public class TemplatesPanel extends Composite {
 				removeTemplatesHandler(e);
 			}
 		});
+
+		///////////////////////////////////////////////////////////////////////
+		// Flex
 		
-		SWTUtil.newButton(buttons, "Reset to default", true, new SelectionAdapter() {
+        Group flexGroup = new Group(buttons, SWT.SHADOW_ETCHED_IN);
+        flexGroup.setText("Flex:");
+        flexGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        flexGroup.setLayout(new GridLayout(1, false));
+
+		SWTUtil.newButton(flexGroup, "Basic", true, new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				properties.getGas3().setAs3TypeFactory(DefaultAs3TypeFactory.class.getName());
+				properties.getGas3().setTransformer(new Gas3Transformer(JavaAs3GroovyTransformer.class.getName()));
 				
-				properties.getGas3().getTemplates().clear();
-				properties.getGas3().getTemplates().addAll(GraniteProperties.getDefaultProperties().getGas3().getTemplates());
+				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
+				template.setUri(StandardTemplateUris.ENTITY, false);
+				template.setUri(StandardTemplateUris.ENTITY_BASE, true);
+				
+				template = properties.getGas3().getTemplate(Kind.REMOTE_DESTINATION);
+				template.setUri(StandardTemplateUris.REMOTE, false);
+				template.setUri(StandardTemplateUris.REMOTE_BASE, true);
+				
+				template = properties.getGas3().getTemplate(Kind.BEAN);
+				template.setUri(StandardTemplateUris.BEAN, false);
+				template.setUri(StandardTemplateUris.BEAN_BASE, true);
+
+				template = properties.getGas3().getTemplate(Kind.INTERFACE);
+				template.setUri(StandardTemplateUris.INTERFACE, false);
+
+				template = properties.getGas3().getTemplate(Kind.ENUM);
+				template.setUri(StandardTemplateUris.ENUM, false);
 				
 				for (TreeItem item : templatesTree.getItems())
 					item.dispose();
@@ -150,10 +181,11 @@ public class TemplatesPanel extends Composite {
 			}
 		});
 		
-		SWTUtil.newButton(buttons, "Use Tide", true, new SelectionAdapter() {
+		SWTUtil.newButton(flexGroup, "Tide", true, new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				properties.getGas3().setAs3TypeFactory(DefaultAs3TypeFactory.class.getName());
+				properties.getGas3().setTransformer(new Gas3Transformer(JavaAs3GroovyTransformer.class.getName()));
 
 				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
 				template.setUri(StandardTemplateUris.ENTITY, false);
@@ -167,6 +199,9 @@ public class TemplatesPanel extends Composite {
 				template.setUri(StandardTemplateUris.BEAN, false);
 				template.setUri(StandardTemplateUris.TIDE_BEAN_BASE, true);
 
+				template = properties.getGas3().getTemplate(Kind.INTERFACE);
+				template.setUri(StandardTemplateUris.INTERFACE, false);
+
 				template = properties.getGas3().getTemplate(Kind.ENUM);
 				template.setUri(StandardTemplateUris.ENUM, false);
 
@@ -178,10 +213,11 @@ public class TemplatesPanel extends Composite {
 			}
 		});
 		
-		SWTUtil.newButton(buttons, "Use LCDS", true, new SelectionAdapter() {
+		SWTUtil.newButton(flexGroup, "LCDS", true, new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				properties.getGas3().setAs3TypeFactory(LCDSAs3TypeFactory.class.getName());
+				properties.getGas3().setTransformer(new Gas3Transformer(JavaAs3GroovyTransformer.class.getName()));
 
 				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
 				template.setUri(StandardTemplateUris.BEAN, false);
@@ -194,9 +230,156 @@ public class TemplatesPanel extends Composite {
 				template.setUri(StandardTemplateUris.BEAN, false);
 				template.setUri(StandardTemplateUris.LCDS_BEAN_BASE, true);
 
+				template = properties.getGas3().getTemplate(Kind.INTERFACE);
+				template.setUri(StandardTemplateUris.INTERFACE, false);
+
 				template = properties.getGas3().getTemplate(Kind.ENUM);
 				template.setUris("");
 				
+				for (TreeItem item : templatesTree.getItems())
+					item.dispose();
+				
+				initialized = false;
+				initializeContent();
+			}
+		});
+
+		///////////////////////////////////////////////////////////////////////
+		// JavaFX
+		
+        Group javafxGroup = new Group(buttons, SWT.SHADOW_ETCHED_IN);
+        javafxGroup.setText("JavaFX:");
+        javafxGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        javafxGroup.setLayout(new GridLayout(1, false));
+
+        SWTUtil.newButton(javafxGroup, "Basic", true, new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				properties.getGas3().setAs3TypeFactory(DefaultJavaFXTypeFactory.class.getName());
+				properties.getGas3().setTransformer(new Gas3Transformer(JavaGroovyTransformer.class.getName()));
+
+				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
+				template.setUri(JavaFXTemplateUris.ENTITY, false);
+				template.setUri(JavaFXTemplateUris.ENTITY_BASE, true);
+				
+				template = properties.getGas3().getTemplate(Kind.REMOTE_DESTINATION);
+				template.setUri(JavaFXTemplateUris.REMOTE, false);
+				template.setUri(JavaFXTemplateUris.REMOTE_BASE, true);
+				
+				template = properties.getGas3().getTemplate(Kind.BEAN);
+				template.setUri(JavaFXTemplateUris.BEAN, false);
+				template.setUri(JavaFXTemplateUris.BEAN_BASE, true);
+
+				template = properties.getGas3().getTemplate(Kind.INTERFACE);
+				template.setUri(JavaFXTemplateUris.INTERFACE, false);
+
+				template = properties.getGas3().getTemplate(Kind.ENUM);
+				template.setUri(JavaFXTemplateUris.ENUM, false);
+
+				for (TreeItem item : templatesTree.getItems())
+					item.dispose();
+				
+				initialized = false;
+				initializeContent();
+			}
+		});
+
+        SWTUtil.newButton(javafxGroup, "Tide", true, new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				properties.getGas3().setAs3TypeFactory(DefaultJavaFXTypeFactory.class.getName());
+				properties.getGas3().setTransformer(new Gas3Transformer(JavaGroovyTransformer.class.getName()));
+
+				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
+				template.setUri(JavaFXTemplateUris.ENTITY, false);
+				template.setUri(JavaFXTemplateUris.TIDE_ENTITY_BASE, true);
+				
+				template = properties.getGas3().getTemplate(Kind.REMOTE_DESTINATION);
+				template.setUri(JavaFXTemplateUris.TIDE_REMOTE, false);
+				template.setUri(JavaFXTemplateUris.TIDE_REMOTE_BASE, true);
+				
+				template = properties.getGas3().getTemplate(Kind.BEAN);
+				template.setUri(JavaFXTemplateUris.BEAN, false);
+				template.setUri(JavaFXTemplateUris.TIDE_BEAN_BASE, true);
+
+				template = properties.getGas3().getTemplate(Kind.INTERFACE);
+				template.setUri(JavaFXTemplateUris.INTERFACE, false);
+
+				template = properties.getGas3().getTemplate(Kind.ENUM);
+				template.setUri(JavaFXTemplateUris.ENUM, false);
+
+				for (TreeItem item : templatesTree.getItems())
+					item.dispose();
+				
+				initialized = false;
+				initializeContent();
+			}
+		});
+
+		///////////////////////////////////////////////////////////////////////
+		// Java/Android
+		
+        Group javaGroup = new Group(buttons, SWT.SHADOW_ETCHED_IN);
+        javaGroup.setText("Java/Android:");
+        javaGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        javaGroup.setLayout(new GridLayout(1, false));
+
+        SWTUtil.newButton(javaGroup, "Basic", true, new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				properties.getGas3().setAs3TypeFactory(DefaultJavaTypeFactory.class.getName());
+				properties.getGas3().setTransformer(new Gas3Transformer(JavaGroovyTransformer.class.getName()));
+
+				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
+				template.setUri(JavaTemplateUris.ENTITY, false);
+				template.setUri(JavaTemplateUris.ENTITY_BASE, true);
+				
+				template = properties.getGas3().getTemplate(Kind.REMOTE_DESTINATION);
+				template.setUri(JavaTemplateUris.REMOTE, false);
+				template.setUri(JavaTemplateUris.REMOTE_BASE, true);
+				
+				template = properties.getGas3().getTemplate(Kind.BEAN);
+				template.setUri(JavaTemplateUris.BEAN, false);
+				template.setUri(JavaTemplateUris.BEAN_BASE, true);
+
+				template = properties.getGas3().getTemplate(Kind.INTERFACE);
+				template.setUri(JavaTemplateUris.INTERFACE, false);
+
+				template = properties.getGas3().getTemplate(Kind.ENUM);
+				template.setUri(JavaTemplateUris.ENUM, false);
+
+				for (TreeItem item : templatesTree.getItems())
+					item.dispose();
+				
+				initialized = false;
+				initializeContent();
+			}
+		});
+
+        SWTUtil.newButton(javaGroup, "Tide", true, new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				properties.getGas3().setAs3TypeFactory(DefaultJavaTypeFactory.class.getName());
+				properties.getGas3().setTransformer(new Gas3Transformer(JavaGroovyTransformer.class.getName()));
+
+				Gas3Template template = properties.getGas3().getTemplate(Kind.ENTITY);
+				template.setUri(JavaTemplateUris.ENTITY, false);
+				template.setUri(JavaTemplateUris.TIDE_ENTITY_BASE, true);
+				
+				template = properties.getGas3().getTemplate(Kind.REMOTE_DESTINATION);
+				template.setUri(JavaTemplateUris.TIDE_REMOTE, false);
+				template.setUri(JavaTemplateUris.TIDE_REMOTE_BASE, true);
+				
+				template = properties.getGas3().getTemplate(Kind.BEAN);
+				template.setUri(JavaTemplateUris.BEAN, false);
+				template.setUri(JavaTemplateUris.TIDE_BEAN_BASE, true);
+
+				template = properties.getGas3().getTemplate(Kind.INTERFACE);
+				template.setUri(JavaTemplateUris.INTERFACE, false);
+
+				template = properties.getGas3().getTemplate(Kind.ENUM);
+				template.setUri(JavaTemplateUris.ENUM, false);
+
 				for (TreeItem item : templatesTree.getItems())
 					item.dispose();
 				

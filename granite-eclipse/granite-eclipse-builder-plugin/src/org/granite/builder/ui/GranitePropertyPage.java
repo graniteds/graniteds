@@ -142,8 +142,7 @@ public class GranitePropertyPage extends PropertyPage {
         properties.getGas3().setAs3TypeFactory(optionsPanel.getAs3TypeFactory());
         properties.getGas3().setEntityFactory(optionsPanel.getEntityFactory());
         properties.getGas3().setRemoteDestinationFactory(optionsPanel.getRemoteDestinationFactory());
-        properties.getGas3().getTransformers().clear();
-        properties.getGas3().getTransformers().add(new Gas3Transformer(optionsPanel.getTransformer()));
+        properties.getGas3().setTransformer(new Gas3Transformer(optionsPanel.getTransformer()));
         properties.getGas3().getTranslators().clear();
         properties.getGas3().getTranslators().addAll(optionsPanel.getTranslators());
         properties.getGas3().setDebugEnabled(optionsPanel.isDebugEnabled());
