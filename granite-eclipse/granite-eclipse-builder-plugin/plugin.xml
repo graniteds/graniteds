@@ -95,11 +95,23 @@
     </extension>
 
     <extension
-            id="org.granite.generator.ant.AntJavaFXTaskExtension"
+            id="org.granite.generator.java.AntJavaTaskExtension"
+            name="Gja Ant Task"
+            point="org.eclipse.ant.core.antTasks">
+        <antTask
+                class="org.granite.generator.java.AntJavaTask"
+                eclipseRuntime="false"
+                headless="true"
+                name="gja"
+                library="lib/granite-generator.jar"/>
+    </extension>
+
+    <extension
+            id="org.granite.generator.javafx.AntJavaFXTaskExtension"
             name="Gfx Ant Task"
             point="org.eclipse.ant.core.antTasks">
         <antTask
-                class="org.granite.generator.ant.AntJavaFXTask"
+                class="org.granite.generator.javafx.AntJavaFXTask"
                 eclipseRuntime="false"
                 headless="true"
                 name="gfx"
