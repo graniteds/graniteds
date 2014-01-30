@@ -27,10 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.granite.gravity.AbstractGravityServlet;
-import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
-import org.granite.gravity.GravityManager;
+import org.granite.gravity.*;
 import org.granite.logging.Logger;
 import org.mortbay.jetty.RetryRequest;
 import org.mortbay.util.ajax.Continuation;
@@ -54,7 +51,9 @@ public class GravityJettyServlet extends AbstractGravityServlet {
         
     	log.debug("doPost: from %s:%d", request.getRemoteAddr(), request.getRemotePort());
 
-		Gravity gravity = GravityManager.getGravity(getServletContext());
+        rejectJMFContentType(request);
+
+        Gravity gravity = GravityManager.getGravity(getServletContext());
 		ContinuationChannelFactory channelFactory = new ContinuationChannelFactory(gravity);
 		
 		try {

@@ -88,13 +88,16 @@ public class GravityWebLogicServlet extends AbstractAsyncServlet {
 
 	@Override
 	protected boolean doRequest(RequestResponseKey key) throws IOException, ServletException {
-		Gravity gravity = GravityManager.getGravity(getServletContext());
-		WebLogicChannelFactory channelFactory = new WebLogicChannelFactory(gravity);
-        
+
 		HttpServletRequest request = key.getRequest();
 		HttpServletResponse response = key.getResponse();
-		
-		try {
+
+        GravityServletUtil.rejectJMFContentType(request);
+
+        Gravity gravity = GravityManager.getGravity(getServletContext());
+        WebLogicChannelFactory channelFactory = new WebLogicChannelFactory(gravity);
+
+        try {
             GravityServletUtil.initializeRequest(getServletConfig(), gravity, request, response);
 
             Message[] amf3Requests = GravityServletUtil.deserialize(gravity, request);

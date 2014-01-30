@@ -110,33 +110,58 @@ public class GravityProxy implements Gravity {
     }
 
     public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
-    	return getGravity().getChannel(channelFactory, channelId);
+        Gravity gravity = getGravity();
+        if (gravity == null)
+            return null;
+    	return gravity.getChannel(channelFactory, channelId);
     }
     public Channel removeChannel(String channelId, boolean timeout) {
-    	return getGravity().removeChannel(channelId, timeout);
+        Gravity gravity = getGravity();
+        if (gravity == null)
+            return null;
+    	return gravity.removeChannel(channelId, timeout);
     }
     public boolean access(String channelId) {
-    	return getGravity().access(channelId);
+        Gravity gravity = getGravity();
+        if (gravity == null)
+            return false;
+    	return gravity.access(channelId);
     }
     public void execute(AsyncChannelRunner runnable) {
-    	getGravity().execute(runnable);
+        Gravity gravity = getGravity();
+        if (gravity == null)
+            return;
+    	gravity.execute(runnable);
     }
     public boolean cancel(AsyncChannelRunner runnable) {
-    	return getGravity().cancel(runnable);
+        Gravity gravity = getGravity();
+        if (gravity == null)
+            return false;
+    	return gravity.cancel(runnable);
     }
 
     public Message handleMessage(ChannelFactory<?> channelFactory, Message message) {
-    	return getGravity().handleMessage(channelFactory, message);
+        // Should probably throw an exception, not intended to be used through the proxy
+        Gravity gravity = getGravity();
+        if (gravity == null)
+            return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
+    	return gravity.handleMessage(channelFactory, message);
     }
     public Message handleMessage(ChannelFactory<?> channelFactory, Message message, boolean skipInterceptor) {
-    	return getGravity().handleMessage(channelFactory, message, skipInterceptor);
+        // Should probably throw an exception, not intended to be used through the proxy
+        Gravity gravity = getGravity();
+        if (gravity == null)
+            return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
+        return gravity.handleMessage(channelFactory, message, skipInterceptor);
     }
     public Message publishMessage(AsyncMessage message) {
     	return publishMessage(null, message);
     }
     public Message publishMessage(Channel fromChannel, AsyncMessage message) {
-        if (getGravity() == null)
-            return new ErrorMessage(message, new IllegalStateException("Gravity Proxy not yet ready"));
+        // Should probably throw an exception, not intended to be used through the proxy
+        Gravity gravity = getGravity();
+        if (gravity == null)
+            return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
 
     	return getGravity().publishMessage(fromChannel, message);
     }

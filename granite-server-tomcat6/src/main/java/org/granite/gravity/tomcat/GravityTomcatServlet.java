@@ -54,11 +54,13 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
 	@Override
     public boolean handleRequest(CometEvent event, InputStream content) throws IOException, ServletException {
 
-		Gravity gravity = GravityManager.getGravity(getServletContext());
-		TomcatChannelFactory channelFactory = new TomcatChannelFactory(gravity);
-		
-    	HttpServletRequest request = event.getHttpServletRequest();
+        HttpServletRequest request = event.getHttpServletRequest();
         HttpServletResponse response = event.getHttpServletResponse();
+
+        rejectJMFContentType(request);
+
+        Gravity gravity = GravityManager.getGravity(getServletContext());
+		TomcatChannelFactory channelFactory = new TomcatChannelFactory(gravity);
 
         try {
             initializeRequest(gravity, request, response);

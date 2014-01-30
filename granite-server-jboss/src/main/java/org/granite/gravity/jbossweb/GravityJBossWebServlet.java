@@ -54,11 +54,13 @@ public class GravityJBossWebServlet extends AbstractHttpEventServlet {
 	@Override
     public boolean handleRequest(HttpEvent event, InputStream content) throws IOException, ServletException {
 
-		Gravity gravity = GravityManager.getGravity(getServletContext());
-		JBossWebChannelFactory channelFactory = new JBossWebChannelFactory(gravity);
-
     	HttpServletRequest request = event.getHttpServletRequest();
         HttpServletResponse response = event.getHttpServletResponse();
+
+        rejectJMFContentType(request);
+
+        Gravity gravity = GravityManager.getGravity(getServletContext());
+        JBossWebChannelFactory channelFactory = new JBossWebChannelFactory(gravity);
 
         try {
             initializeRequest(gravity, request, response);
