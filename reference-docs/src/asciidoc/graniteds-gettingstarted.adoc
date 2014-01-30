@@ -3,5 +3,5 @@
 [[graniteds.gettingstarted]]
 == Getting Started
 
-You can find some getting started guides focused on various use cases of the framework on the _Getting Started_ section of the
+You can find getting started guides focused on various use cases of the framework in the _Getting Started_ section of the
 web site http://www.granitedataservices.com/community/getting-started/[here].
