@@ -825,7 +825,7 @@ project('granite-eclipse') {
             }
         }
 
-        mkdir project(':granite-eclipse').file('/build/tycho')
+        mkdir project(':granite-eclipse').file('build/tycho')
 
         copy {
             into project(':granite-eclipse').file('build/tycho')
