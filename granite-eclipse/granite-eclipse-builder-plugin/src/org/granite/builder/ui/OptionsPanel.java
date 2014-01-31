@@ -37,6 +37,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
@@ -102,9 +103,9 @@ public class OptionsPanel extends Composite implements PropertyChangeListener {
 	
 	public String getTransformer() {
 		if (!initialized) {
-			if (properties.getGas3().getTransformers().isEmpty())
+			if (properties.getGas3().getTransformer() == null)
 				return "";
-			return properties.getGas3().getTransformers().get(0).getType();
+			return properties.getGas3().getTransformer().getType();
 		}
 		return transformer.getText();
 	}
@@ -162,13 +163,14 @@ public class OptionsPanel extends Composite implements PropertyChangeListener {
 	        if (properties.getGas3().getRemoteDestinationFactory() != null)
 	        	remoteDestinationFactory.setText(properties.getGas3().getRemoteDestinationFactory());
 	        
-	        if (!properties.getGas3().getTransformers().isEmpty())
-	        	transformer.setText(properties.getGas3().getTransformers().get(0).getType());
+	        if (properties.getGas3().getTransformer() != null)
+	        	transformer.setText(properties.getGas3().getTransformer().getType());
 	        
 	        for (Gas3Translator translator : properties.getGas3().getTranslators())
 	        	translators.add(translator.getJava() + TRANSLATOR_SEPARATOR + translator.getAs3());
 	        
 	        debugEnabled.setSelection(properties.getGas3().isDebugEnabled());
+	        
 	        flexConfig.setSelection(properties.getGas3().isFlexConfig());
 	        externalizeLong.setSelection(properties.getGas3().isExternalizeLong());
 	        externalizeBigInteger.setSelection(properties.getGas3().isExternalizeBigInteger());
@@ -281,16 +283,21 @@ public class OptionsPanel extends Composite implements PropertyChangeListener {
         debugEnabled = new Button(this, SWT.CHECK);
         debugEnabled.setText("Show debug information in console");
         
-        flexConfig = new Button(this, SWT.CHECK);
+        Group flexOptionsGroup = new Group(this, SWT.SHADOW_ETCHED_IN);
+        flexOptionsGroup.setText("Flex only options:");
+        flexOptionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        flexOptionsGroup.setLayout(new GridLayout(1, false));
+        
+        flexConfig = new Button(flexOptionsGroup, SWT.CHECK);
         flexConfig.setText("Generate a Flex Builder configuration file");
         
-        externalizeLong = new Button(this, SWT.CHECK);
+        externalizeLong = new Button(flexOptionsGroup, SWT.CHECK);
         externalizeLong.setText("Use org.granite.math.Long");
         
-        externalizeBigInteger = new Button(this, SWT.CHECK);
+        externalizeBigInteger = new Button(flexOptionsGroup, SWT.CHECK);
         externalizeBigInteger.setText("Use org.granite.math.BigInteger");
         
-        externalizeBigDecimal = new Button(this, SWT.CHECK);
+        externalizeBigDecimal = new Button(flexOptionsGroup, SWT.CHECK);
         externalizeBigDecimal.setText("Use org.granite.math.BigDecimal");
         
         SWTUtil.newButton(this, "Reset to default values", true, new SelectionAdapter() {
@@ -301,7 +308,7 @@ public class OptionsPanel extends Composite implements PropertyChangeListener {
 				as3TypeFactory.setText(defaultGas3.getAs3TypeFactory());
 				entityFactory.setText(defaultGas3.getEntityFactory());
 				remoteDestinationFactory.setText(defaultGas3.getRemoteDestinationFactory());
-				transformer.setText(defaultGas3.getTransformers().get(0).getType());
+				transformer.setText(defaultGas3.getTransformer().getType());
 				debugEnabled.setSelection(false);
 				flexConfig.setSelection(false);
 				externalizeLong.setSelection(false);

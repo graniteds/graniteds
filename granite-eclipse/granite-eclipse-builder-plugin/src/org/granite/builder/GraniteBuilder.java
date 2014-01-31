@@ -117,7 +117,8 @@ public class GraniteBuilder extends IncrementalProjectBuilder {
 	        BuilderConsole.setDebugEnabled(config.getProperties().getGas3().isDebugEnabled());
 	                
 	        if (generator.isEmpty()) {
-	        	for (Gas3Transformer gas3Transformer : config.getProperties().getGas3().getTransformers()) {
+	        	Gas3Transformer gas3Transformer = config.getProperties().getGas3().getTransformer();
+	        	if (gas3Transformer != null) {
 	            	try {
 	            		Transformer<?,?,?> transformer = BuilderUtil.newInstance(Transformer.class, gas3Transformer.getType(), config.getClassLoader());
 	            		transformer.setListener(listener);

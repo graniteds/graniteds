@@ -247,8 +247,20 @@ public class Gas3 implements Validable {
 		}
 		return null;
 	}
+	
+	public Gas3Transformer getTransformer() {
+		return (getTransformers().isEmpty() ? null : transformers.get(0));
+	}
+	
+	public void setTransformer(Gas3Transformer transformer) {
+		Gas3Transformer old = getTransformer();
+		getTransformers().clear();
+		getTransformers().add(transformer);
+		if (_pcs != null)
+			_pcs.firePropertyChange("transformer", old, transformer);
+	}
 
-	public List<Gas3Transformer> getTransformers() {
+	protected List<Gas3Transformer> getTransformers() {
 		if (transformers == null)
 			transformers = new ArrayList<Gas3Transformer>();
 		return transformers;

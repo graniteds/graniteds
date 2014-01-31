@@ -136,6 +136,8 @@ public class SWTUtil {
     }
     
     public static void setTreeItemText(TreeItem item, String text) {
+    	text = StringUtil.unNull(text);
+
     	if (item.getData(VALUE_KEY) != null) {
 	    	String prefix = StringUtil.unNull((String)item.getData(PREFIX_KEY));
 	    	String empty = StringUtil.unNull((String)item.getData(EMPTY_KEY));
