@@ -199,7 +199,7 @@ public class OptionsPanel extends Composite implements PropertyChangeListener {
         uid.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         label = new Label(this, SWT.NONE);
-        label.setText("As3TypeFactory class:");
+        label.setText("TypeFactory class:");
         
         as3TypeFactory = new Text(this, SWT.BORDER);
         as3TypeFactory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
