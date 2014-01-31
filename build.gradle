@@ -37,7 +37,7 @@ def pluginVersion
 if (granitedsVersion.indexOf('-SNAPSHOT') > 0)
     pluginVersion = granitedsVersion.replace('-SNAPSHOT', '.v' + timestamp)
 else
-    pluginVersion = granitedsVersion.substring(granitedsVersion.lastIndexOf('.')) + '.v' + timestamp
+    pluginVersion = granitedsVersion.substring(0, granitedsVersion.lastIndexOf('.')) + '.v' + timestamp
 
 ext.javadocLinks = [
 	"http://download.oracle.com/javase/1.5.0/docs/api/",
@@ -845,6 +845,8 @@ project('granite-eclipse') {
             ant.taskdef(name: 'mvn', classname: 'org.apache.maven.artifact.ant.Mvn', classpath: configurations.mvn.asPath)
 
             mkdir project(':granite-eclipse').file('build/tycho/granite-eclipse-builder-plugin/bin')
+
+            println 'Building update site for plugin version ' + pluginVersion
 
             ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
                 arg(value: 'tycho-versions:set-version')
