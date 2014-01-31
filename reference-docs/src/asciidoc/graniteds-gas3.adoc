@@ -194,7 +194,7 @@ generated without any "Base" class and overwritten each time you have modified t
 
 [WARNING]
 ====
-Note: Do not modify manually generated ActionScript 3 interface or enum classes ! 
+Note: Do not modify manually generated ActionScript 3 interface or enum classes! 
 ====
 
 Here are the details for (re)generation conditions: 
@@ -249,8 +249,11 @@ Due to the absence of abstract classes in ActionScript 3, some inheritance model
 
 *Installation* 
 
-Download +$$org.granite.builder_\*\*\*.jar$$+ and drop it in your Eclipse +plugins+ directory, making sure to remove 
-any older versions. Then, restart Eclipse. 
+Use our dedicated update site +http://www.granitedataservices.com/public/update-site/+ with the "Install
+New Software..." feature of Eclipse.
+
+Alternatively, you can download +$$org.granite.builder-***.jar$$+ and drop it in your Eclipse +plugins+ directory,
+making sure to remove any older versions. Then, restart Eclipse.
 
 *Adding the GraniteDS Nature and Configuration Wizard*
 
@@ -260,7 +263,7 @@ right-click on the project in your Eclipse package explorer and select __Add Gra
 image::gb1.jpg[]
 
 This action should launch a configuration wizard, whose first step is to select Java source folders for which you want 
-code generation (ie. ActionScript 3 beans that mirror your JavaBeans):     
+code generation (ie. ActionScript3 beans that mirror your server-side Java beans):     
 
 image::gb2.jpg[]
 
@@ -274,13 +277,14 @@ apply:
 
 * If you do not configure any exclusion and inclusion patterns, all Java classes in the folder are used for the generation.
 * If a class is matched by an exclusion pattern, it will be ignored even if it is matched by another inclusion pattern. 
-	In the example, +\*\*/\*Service\*.java+ will match any Java class which contains the Service string in its name and 
-	which is in any subdirectory of the selected source folder. 
+
+For example, the +$$**/*Service*.java$$+ pattern will match any Java class which contains the +Service+ string in its name and 
+which is in any subdirectory of the selected source folders (see previous panel). 
 
 Inclusion patterns let you specify arbitrary parameters which will be passed as a Map<String, String> to the concerned 
 template (ie. the one which is handling the kind of Java file which matches the include pattern). 
-For example, you can specify an include pattern as follow: +\*\*/\*Service\*.java\[param1=value1,param2=value2\]+. 
-In the template, for each file matching the +\*\*/\*Service\*.java+ pattern, you will then have access to a specific 
+For example, you can specify an include pattern as follow: +$$**/*Service*.java[param1=value1,param2=value2]$$+. 
+In the template, for each file matching the +$$**/*Service*.java$$+ pattern, you will then have access to a specific 
 variable named +fAttributes+, a map containing two keys "param1" and "param2", bound to their respective values "value1" 
 and "values2". 
 
@@ -292,6 +296,9 @@ For each selected Java source folder you may also configure specific output dire
 * ++Base Output Directory++: An optional directory relative to your project directory where so-called "Base" 
     generated ActionsScript 3 classes are put. If left empty, the output directory above is used for both "Base" and inherited 
     ActionScript 3 classes. See <<gas3.classes,here>> for this distinction.
+
+TIP: output directories and base output directories can be absolute or relative to the current project directory. If you
+want to generate classes in another project, you can use a path like +$$../client-project/src$$+.
       
 The next step in the wizard allows you to configure Java project dependencies. 
 This is required when your Java classes make references to other classes declared in other Java projects. 
@@ -318,23 +325,31 @@ Alternatively, you may use the +file:+ protocol to load your template from the f
 specified either by using absolute paths (eg. ++file:/absolute/path/to/mytemplate.gsp++) or paths relative to your 
 current Eclipse project root directory (eg. ++path/to/mytemplate.gsp++). 
 
-Clicking the _Use Tide_ button will configure Tide specific templates for entity beans. Use it if you are configuring 
-the builder for a Tide project. 
+On the right, in the _Flex_ section, your different options are:
 
-Clicking the _Use LCDS_ button will configure Adobe LCDS specific templates for basic beans and entity beans, and 
-remove all templates for enum and remote destination services. It will also configure a LCDS specific +AS3TypeFactory+ 
-in the "Options" panel (see picture below). 
-The LCDS templates generate AS3 beans that can be either [Bindable] (default) or [Managed]. 
-If you need [Managed] beans, use the following parameter with your include pattern: +[managed=true]+.
-For example, your include patterns could be: 
+* _Basic_: templates are configured for Flex applications that do not use the Tide framework, but just basic
+	Flex remoting / messaging features.
 
-* path/to/managed/beans/*.java[managed=true]
-* path/to/bindable/beans/*.java 
+* _Tide_: templates are configured for Tide applications, with [Managed] entity beans (allowing
+	<<data.lazyloading, transparent lazy-loading>>) and remote services that use
+	<<remoting.tideremoting.flex, Tide responders>>. 
 
+* _LCDS_: templates are configured for Adobe LCDS applications, with basic beans and entity beans. Clicking this button
+	will remove all templates for enum and remote destination services. It will also configure a LCDS specific +AS3TypeFactory+ 
+	in the "Options" panel.
++
 If you want to use a single file generation policy (ie. no "Base" and inherited files), you can reconfigure the templates 
 by using +class:org/granite/generator/template/lcdsStandaloneBean.gsp+ as the only template, removing the base template. 
-
++
 WARNING: when switching from dual templates to a single one, be sure to remove and backup any previously generated files.  
++
+The LCDS templates generate AS3 beans that can be either [Bindable] (default) or [Managed]. If you need [Managed] beans,
+use the following parameter with your include pattern: +[managed=true]+.
++
+For example, your include patterns could be: 
++
+** +path/to/managed/beans/*.java[managed=true]+
+** +path/to/bindable/beans/*.java+ 
 
 The last panel lets you configure various options:   
 
@@ -346,7 +361,7 @@ Some explanations:
     the name of the Java field that contains this UID; use the same name in all your beans. 
 	Default is to search for field named +uid+.
             
-* ++AS3TypeFactory Class++: You may use this option to configure a custom factory for special type support. 
+* ++TypeFactory Class++: You may use this option to configure a custom factory for special type support. 
     See <<ext.customtypes,Handling Custom Data Types>> for a detailed example. If you configure this, 
     you must add your class in the _Classpath_ panel.
             
@@ -424,9 +439,10 @@ used in the project (easing refactoring) and to ensure that any manual editing y
 
 *Installation in Eclipse* 
 
-Download +$$org.granite.builder_\*\*\*.jar$$+, and drop it in your Eclipse +plugins+ directory  (remove any older version and restart Eclipse). 
-The _Add GraniteDS Nature_ option should now be available if you right-click on your Java project and the +gas3+ Ant task should be ready to use in your 
-+build.xml+ file under Eclipse. 
+See the <<gas3.eclipse, Eclipse plugin installation>> above.
+
+The +gas3+ Ant task is now ready to be use in any of your +build.xml+ files under Eclipse and without declaring a
+specific Ant task with +taskdef+. 
 
 *Standalone Installation* 
 
@@ -534,10 +550,10 @@ If you use a special +Java2As3+ converter, you must take care of packages transl
 *Groovy Templates*  
 
 Gas3 generation relies on Groovy templates. You may plug your own templates in by using one of the advanced options attributes below. 
-For example, you could add a +entitytemplate="/absolute/path/to/my/groovy/entityTemplate.gsp"+ attribute to the +gas3+ node. You can also specify paths 
+For example, you could add a +$$entitytemplate="/absolute/path/to/my/groovy/entityTemplate.gsp"$$+ attribute to the +gas3+ node. You can also specify paths 
 to your custom templates relative to the current Ant project +basedir+ directory. 
 If you want to see the Groovy code of the default templates, just unpack +granite-generator.jar+ in the +lib+ directory of the plugin, and look 
-for +org/granite/generator/template/\*\[Base\].gsp+ files. 
+for +$$org/granite/generator/template/*[Base].gsp$$+ files. 
 
 
 *Advanced Options (Gas3 XML Attributes)* 

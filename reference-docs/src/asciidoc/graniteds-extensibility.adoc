@@ -3,6 +3,7 @@
 [[graniteds.extensibility]]
 == Extensibilty
 
+ifdef::flex[]
 [[extensibility.customtypes]]
 === Handling custom data types
 
@@ -138,6 +139,7 @@ Then, declare this new factory in the Gas3 task (here for example in an Ant buil
 ----
 
 When using the GraniteDS Eclipse Builder, you may declare it in the _Options_ panel and add your class in the +Classpath+ panel. 
+endif::flex[]
 
 [[extensibility.security]]
 === Writing a security service
@@ -266,6 +268,7 @@ adding an implementation in the application archive with a +META-INF/beans.xml+ 
 Take care that some of the GraniteDS server frameworks integrations (CDI and Seam) already provide their own message interceptors. If you need to do something else, 
 you will have to override the existing interceptor and call +super.before+ and +super.after+. 
 
+ifdef::flex[]
 [[extensibility.classdescriptors]]
 === Custom Java or ActionScript3 Class Descriptors
 
@@ -405,6 +408,7 @@ Then, you have to register this deserializer in ++granite-config.xml++:
 
 You may of course extend +org.granite.messaging.amf.io.AMF3Serializer+ or +org.granite.messaging.amf.io.AMF3Deserializer+  to override only some parts of 
 the default AMF3 (de)serialization process, as all methods in thoses classes are public or protected. 
+endif::flex[]
 
 [[extensibility.invocationlisteners]]
 === ServiceInvocationListener (Advanced use only)

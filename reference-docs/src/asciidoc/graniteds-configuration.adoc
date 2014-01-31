@@ -28,26 +28,26 @@ where to look for them:
 +granite-config.xml+ contains all the internal configuration of the framework. It can contain the following sections:
  
 * ++<granite scan="true">++: instructs GraniteDS to scan application archives and to automatically register the configuration elements it discovers.
+ifdef::flex[]
 * ++<amf3-deserializer type="com.myapp.custom.CustomAMF3Deserializer">++: registers a custom deserializer that should implement
 		  the interface +java.io.ObjectInput+. The default is +org.granite.messaging.amf.io.AMF3Deserializer+.
-		  
 * ++<amf3-serializer type="com.myapp.custom.CustomAMF3Serializer">++: registers a custom serializer that should implement
           the interface +java.io.ObjectOutput+. The default is +org.granite.messaging.amf.io.AMF3Serializer+.
-          
+endif::flex[]         
 * ++<amf3-message-interceptor type="">++: registers an optional message interceptor that will be called for each received/sent message. 
           The interceptor must implement +org.granite.messaging.amf.process.AMF3MessageInterceptor+.
-          
+ifdef::flex[]
 * ++<class-getter type="">++: registers a class getter that should implement +org.granite.messaging.amf.io.util.ClassGetter+.
-          
+endif::flex[]         
 * ++<converters>++: registers a list of data converters that should implement +org.granite.messaging.amf.io.convert.Converter+.
-          
+ifdef::flex[]
 * ++<descriptors>++: registers a list of type descriptors that should extend either 
           +org.granite.messaging.amf.io.util.ActionScriptClassDescriptor+ or 
           +org.granite.messaging.amf.io.util.JavaClassDescriptor+.
-          
+endif::flex[]         
 * ++<exception-converters>++: registers a list of exception converters that should implement
           +org.granite.messaging.service.ExceptionConverter+.
-          
+ifdef::flex[]
 * ++<externalizers>++: registers custom externalizers that should implement
           +org.granite.messaging.amf.io.util.externalizer.Externalizer+. See also <<remoting.extconfig,here>>.
 +
@@ -59,24 +59,20 @@ where to look for them:
     <externalizer type=""/>
 </externalizers>      
 ----
-
+endif::flex[]         
 * ++<gravity>++: configures the Gravity internal parameters. See <<messaging.configadvanced,here>>.
-          
+ifdef::flex[]
 * ++<instantiators>++: registers custom instantiators that should implement 
           +org.granite.messaging.amf.io.util.instantiator.AbstractInstantiator+.
-          
+endif::flex[]         
 * ++<invocation-listener type="">++: registers an invocation listener that will be called at each invocation and should 
           implement +org.granite.messaging.service.ServiceInvocationListener+.
-          
 * ++<message-selector>++: registers a custom message selector implementation that should implement
           +org.granite.gravity.selector.MessageSelector+. 3 implementations are available, the default is +GravityMessageSelector+.
-          
 * ++<method-matcher type="">++: registers a custom method matcher that should implement
           +org.granite.messaging.service.MethodMatcher+.
-          
 * ++<security>++: registers a custom security service that should implement
           +org.granite.messaging.service.security.SecurityService+.
-          
 * ++<tide-components>++: registers a list of component matchers to enable remote access for Tide service factories. There are 4 
           ways or enabling or diabling access to Tide components:
 +
@@ -117,21 +113,20 @@ A channel definition mostly contains the endpoint url and the client channel imp
 </channels>
 ----
 
-GraniteDS supports 4 implementations of the Flex ++Channel++:
+GraniteDS supports 4 implementations of ++Channel++:
   
 *  ++mx.messaging.channels.AMFChannel++: standard HTTP remoting channel. 
-
 *  ++mx.messaging.channels.SecureAMFChannel++: standard HTTPS remoting channel. 
-
 *  ++org.granite.gravity.channels.GravityChannel++: standard HTTP messaging channel. 
-
 *  ++org.granite.gravity.channels.SecureGravityChannel++: standard HTTPS messaging channel. 
 
 
 [[config.configfactories]]
 ==== Factories
 
-A factory defines a way to tell GraniteDS how to route incoming remoting calls to a server component. A factory should implement +org.granite.messaging.service.ServiceFactory+. The +factory+ definition can also have configuration options in the section ++properties++: 
+A factory defines a way to tell GraniteDS how to route incoming remoting calls to a server component. A factory
+should implement +org.granite.messaging.service.ServiceFactory+. The +factory+ definition can also have configuration
+options in the section ++properties++: 
 
 [source,xml]
 ----
