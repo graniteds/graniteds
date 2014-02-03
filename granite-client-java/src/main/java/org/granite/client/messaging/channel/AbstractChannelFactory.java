@@ -168,6 +168,7 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 				messagingTransport = remotingTransport;
 		}
 
+        messagingTransports.put(defaultChannelType, messagingTransport);
         for (Map.Entry<String, Transport> me : Platform.getInstance().getMessagingTransports().entrySet())
             messagingTransports.put(me.getKey(), me.getValue());
 

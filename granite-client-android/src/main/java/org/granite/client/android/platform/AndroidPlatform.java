@@ -69,7 +69,7 @@ public class AndroidPlatform extends Platform {
 	}
 
     @Override
-    protected Transport createDefaultTransport() {
+    public Transport newRemotingTransport() {
         if (!(context instanceof Context))
             throw new IllegalArgumentException("context must be an Android application context: " + context);
 
