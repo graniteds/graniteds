@@ -16,6 +16,8 @@
       <root url="jar://$PROJECT_DIR$/lib/xml-apis-1.0.b2.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../sources/hibernate-core-4.0.1.Final-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

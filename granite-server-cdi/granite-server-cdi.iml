@@ -19,13 +19,13 @@
     <orderEntry type="library" name="org.jboss.weld:weld-core:1.1.14.Final" level="project" />
     <orderEntry type="library" name="org.apache.openwebbeans:openwebbeans-web:1.1.0" level="project" />
     <orderEntry type="library" name="org.jboss.interceptor:jboss-interceptor-core:2.0.0.Final" level="project" />
-    <orderEntry type="library" name="org.slf4j:slf4j-api:1.7.3" level="project" />
+    <orderEntry type="library" name="org.slf4j:slf4j-api:1.7.5" level="project" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
     <orderEntry type="library" scope="TEST" name="org.hibernate:hibernate-core:3.6.10.Final" level="project" />
     <orderEntry type="library" scope="TEST" name="org.hibernate:hibernate-entitymanager:3.6.10.Final" level="project" />
     <orderEntry type="library" scope="TEST" name="org.jboss.weld.se:weld-se-core:1.1.14.Final" level="project" />
     <orderEntry type="library" scope="TEST" name="javax.el:el-api:2.2" level="project" />
-    <orderEntry type="library" scope="TEST" name="org.hsqldb:hsqldb:2.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.hsqldb:hsqldb:2.3.1" level="project" />
     <orderEntry type="library" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
   </component>
 </module>

@@ -1,0 +1,27 @@
+<component name="libraryTable">
+  <library name="org.eclipse.jetty:jetty-annotations:8.1.14.v20131031" type="repository">
+    <properties maven-id="org.eclipse.jetty:jetty-annotations:8.1.14.v20131031" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jetty-annotations-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-jndi-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-server-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.servlet-3.0.0.v201112011016.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-continuation-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-http-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-io-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-util-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.mail.glassfish-1.4.1.v201005082020.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.activation-1.1.0.v201105071233.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-plus-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.transaction-1.1.1.v201105210645.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-webapp-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-xml-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-servlet-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-security-8.1.14.v20131031.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.annotation-1.1.0.v201108011116.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.objectweb.asm-3.1.0.v200803061910.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

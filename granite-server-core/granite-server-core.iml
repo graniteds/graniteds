@@ -15,7 +15,7 @@
     <orderEntry type="library" exported="" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
     <orderEntry type="library" name="javax.jdo:jdo2-api:2.3-eb" level="project" />
     <orderEntry type="library" name="javassist:javassist:3.12.1.GA" level="project" />
-    <orderEntry type="library" exported="" name="org.slf4j:slf4j-api:1.7.3" level="project" />
+    <orderEntry type="library" exported="" name="org.slf4j:slf4j-api:1.7.5" level="project" />
     <orderEntry type="library" exported="" name="log4j:log4j:1.2.17" level="project" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
   </component>
