@@ -21,9 +21,9 @@
  */
 package org.granite.messaging.service.security;
 
-//import io.undertow.security.api.SecurityContext;
-//import io.undertow.server.HttpServerExchange;
-//import io.undertow.servlet.spec.HttpServletRequestImpl;
+import io.undertow.security.api.SecurityContext;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.servlet.spec.HttpServletRequestImpl;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
 
@@ -48,11 +48,11 @@ public class UndertowSecurityService extends AbstractSecurityService {
         HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = context.getRequest();
 
-//        HttpServerExchange exchange = ((HttpServletRequestImpl)httpRequest).getExchange();
-//        SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
-//        boolean loggedIn = securityContext.login(decoded[0], decoded[1]);
-//        if (!loggedIn)
-//            throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
+        HttpServerExchange exchange = ((HttpServletRequestImpl)httpRequest).getExchange();
+        SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
+        boolean loggedIn = securityContext.login(decoded[0], decoded[1]);
+        if (!loggedIn)
+            throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
 
         endLogin(credentials, charset);
     }
@@ -61,38 +61,38 @@ public class UndertowSecurityService extends AbstractSecurityService {
 
         startAuthorization(context);
 
-//        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
-//        HttpServletRequest httpRequest = graniteContext.getRequest();
-//        HttpServerExchange exchange = ((HttpServletRequestImpl)httpRequest).getExchange();
-//        HttpSession session = httpRequest.getSession(false);
-//
-//        Principal principal = null;
-//        if (session != null) {
-//            if (exchange.getAttachment(SecurityContext.ATTACHMENT_KEY) == null)
-//                tryRelogin();
-//        }
-//
-//        if (context.getDestination().isSecured()) {
-//            if (principal == null) {
-//                if (httpRequest.getRequestedSessionId() != null) {
-//                    HttpSession httpSession = httpRequest.getSession(false);
-//                    if (httpSession == null || httpRequest.getRequestedSessionId().equals(httpSession.getId()))
-//                        throw SecurityServiceException.newSessionExpiredException("Session expired");
-//                }
-//                throw SecurityServiceException.newNotLoggedInException("User not logged in");
-//            }
-//
-//            boolean accessDenied = true;
-//            for (String role : context.getDestination().getRoles()) {
-//                if (httpRequest.isUserInRole(role)) {
-//                    accessDenied = false;
-//                    break;
-//                }
-//            }
-//            if (accessDenied)
-//                throw SecurityServiceException.newAccessDeniedException("User not in required role");
-//        }
-//
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpServletRequest httpRequest = graniteContext.getRequest();
+        HttpServerExchange exchange = ((HttpServletRequestImpl)httpRequest).getExchange();
+        HttpSession session = httpRequest.getSession(false);
+
+        Principal principal = null;
+        if (session != null) {
+            if (exchange.getAttachment(SecurityContext.ATTACHMENT_KEY) == null)
+                tryRelogin();
+        }
+
+        if (context.getDestination().isSecured()) {
+            if (principal == null) {
+                if (httpRequest.getRequestedSessionId() != null) {
+                    HttpSession httpSession = httpRequest.getSession(false);
+                    if (httpSession == null || httpRequest.getRequestedSessionId().equals(httpSession.getId()))
+                        throw SecurityServiceException.newSessionExpiredException("Session expired");
+                }
+                throw SecurityServiceException.newNotLoggedInException("User not logged in");
+            }
+
+            boolean accessDenied = true;
+            for (String role : context.getDestination().getRoles()) {
+                if (httpRequest.isUserInRole(role)) {
+                    accessDenied = false;
+                    break;
+                }
+            }
+            if (accessDenied)
+                throw SecurityServiceException.newAccessDeniedException("User not in required role");
+        }
+
         try {
             return endAuthorization(context);
         }
@@ -108,18 +108,18 @@ public class UndertowSecurityService extends AbstractSecurityService {
     }
 
     public void logout() throws SecurityServiceException {
-//        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
-//        HttpServletRequest httpRequest = graniteContext.getRequest();
-//        HttpServerExchange exchange = ((HttpServletRequestImpl)httpRequest).getExchange();
-//        SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
-//
-//        securityContext.logout();
-//
-//        HttpSession session = httpRequest.getSession(false);
-//        if (session != null) {
-//            endLogout();
-//
-//            session.invalidate();
-//        }
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        HttpServletRequest httpRequest = graniteContext.getRequest();
+        HttpServerExchange exchange = ((HttpServletRequestImpl)httpRequest).getExchange();
+        SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
+
+        securityContext.logout();
+
+        HttpSession session = httpRequest.getSession(false);
+        if (session != null) {
+            endLogout();
+
+            session.invalidate();
+        }
     }
 }
