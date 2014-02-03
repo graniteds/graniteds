@@ -153,14 +153,16 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	public void start() {
 		Platform platform = Platform.getInstance();
 		platform.setContext(context);
-		
+
 		if (remotingTransport == null)
 			remotingTransport = Platform.getInstance().newRemotingTransport();
 		
 		if (!remotingTransport.isStarted() && !remotingTransport.start())
 			throw new TransportException("Could not start remoting transport: " + remotingTransport);
-		
-		if (messagingTransport == null) {
+
+        defaultChannelType = Platform.getInstance().defaultChannelType();
+
+        if (messagingTransport == null) {
 			messagingTransport = Platform.getInstance().newMessagingTransport();
 			if (messagingTransport == null)
 				messagingTransport = remotingTransport;

@@ -181,10 +181,19 @@ public class Platform {
 		return new SimpleConfiguration();
 	}
 
-    protected Transport defaultTransport;
+    private Transport defaultTransport;
 
-    protected void initDefaultTransport() {
-        defaultTransport = new ApacheAsyncTransport();
+    private synchronized void initDefaultTransport() {
+    	if (defaultTransport == null)
+    		defaultTransport = createDefaultTransport();
+    }
+
+    protected Transport createDefaultTransport() {
+        return new ApacheAsyncTransport();
+    }
+
+    public String defaultChannelType() {
+        return ChannelType.LONG_POLLING;
     }
 	
 	public Transport newRemotingTransport() {

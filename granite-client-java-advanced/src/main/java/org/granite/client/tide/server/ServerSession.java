@@ -524,6 +524,7 @@ public class ServerSession implements ContextAware {
             return messagingChannel;
 
         messagingChannel = channelFactory.newMessagingChannel(channelType, channelType + "amf", serverApp);
+        messagingChannelsByType.put(channelType, messagingChannel);
         return messagingChannel;
     }
 
