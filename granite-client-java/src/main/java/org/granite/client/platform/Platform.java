@@ -181,25 +181,20 @@ public class Platform {
 		return new SimpleConfiguration();
 	}
 
-    protected Transport defaultTransport;
-
-    protected void initDefaultTransport() {
-        defaultTransport = new ApacheAsyncTransport();
+    public String defaultChannelType() {
+        return ChannelType.LONG_POLLING;
     }
-	
-	public Transport newRemotingTransport() {
-        initDefaultTransport();
-		return defaultTransport;
-	}
-	
-	public Transport newMessagingTransport() {
-		return null;
-	}
+
+    public Transport newRemotingTransport() {
+        return new ApacheAsyncTransport();
+    }
+
+    public Transport newMessagingTransport() {
+        return null;
+    }
 
     public Map<String, Transport> getMessagingTransports() {
         Map<String, Transport> transportMap = new HashMap<String, Transport>();
-        initDefaultTransport();
-        transportMap.put(ChannelType.LONG_POLLING, defaultTransport);
         try {
             TypeUtil.forName("org.eclipse.jetty.websocket.WebSocketClient");
             transportMap.put(ChannelType.WEBSOCKET, new JettyWebSocketTransport());

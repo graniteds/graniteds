@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="com.sun.grizzly:grizzly-websockets:1.9.59" type="repository">
+    <properties maven-id="com.sun.grizzly:grizzly-websockets:1.9.59" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-websockets-1.9.59.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-utils-1.9.59.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-lzma-1.9.59.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-http-1.9.59.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-framework-1.9.59.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-rcm-1.9.59.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-portunif-1.9.59.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-http-servlet-1.9.59.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

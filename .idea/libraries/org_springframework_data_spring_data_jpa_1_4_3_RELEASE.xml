@@ -1,9 +1,9 @@
 <component name="libraryTable">
-  <library name="org.springframework.data:spring-data-jpa:1.4.1.RELEASE" type="repository">
-    <properties maven-id="org.springframework.data:spring-data-jpa:1.4.1.RELEASE" />
+  <library name="org.springframework.data:spring-data-jpa:1.4.3.RELEASE" type="repository">
+    <properties maven-id="org.springframework.data:spring-data-jpa:1.4.3.RELEASE" />
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/spring-data-jpa-1.4.1.RELEASE.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/spring-data-commons-1.6.1.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-data-jpa-1.4.3.RELEASE.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/spring-data-commons-1.6.3.RELEASE.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/spring-core-3.1.4.RELEASE.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/spring-asm-3.1.4.RELEASE.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/spring-beans-3.1.4.RELEASE.jar!/" />

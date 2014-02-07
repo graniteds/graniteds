@@ -14,8 +14,8 @@
     <orderEntry type="module" module-name="granite-client-java" />
     <orderEntry type="module" module-name="granite-client-java-advanced" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
-    <orderEntry type="library" scope="TEST" name="org.slf4j:slf4j-api:1.7.3" level="project" />
-    <orderEntry type="library" scope="TEST" name="org.slf4j:slf4j-log4j12:1.7.3" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.slf4j:slf4j-api:1.7.5" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.slf4j:slf4j-log4j12:1.7.5" level="project" />
     <orderEntry type="module" module-name="granite-server-servlet3" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3" level="project" />
   </component>
