@@ -183,22 +183,24 @@ ifdef::flex[]
 [[setup.swcs]]
 === Client libraries and setup
 
-GraniteDS comes with two client +swc+ libraries that must be linked with your Flex application. 
-The main library +granite.swc+ should be linked with the standard mode (__linked into code__), 
-but the core internal library ++granite-essentials.swc++ must be linked with the compiler option ++-include-libraries++. 
-When using the Tide client framework, you will also have to specify to the Flex compiler some annotations 
-that should be kept in the ++swf++ for runtime usage.  
-The following sections describe in more details these various options for different development environments. 
+GraniteDS comes with three client +swc+ libraries:
 
-[NOTE]
-====
-Due to API changes since the Flex SDK 4.5, there is a different version of the +granite.swc+ library compiled 
-and compatible with the Flex SDK 4.5+. It is named +granite-flex45.swc+ and must be used instead of the default +granite.swc+. 
-====
+* +$$granite-client-flex-***.swc$$+ _(required)_: GraniteDS core library that must be fully included into
+	your SWF/AIR application (_you must use the compiler option ++-include-libraries++_).
+
+* +$$granite-client-flex45-advanced-***.swc$$+ _(optional)_: GraniteDS advanced library for Flex 4.5 and above
+	applications. Use it if you want to use the Tide framework, bean validation, big numbers, etc. This library
+	can be linked with standard / default mode.
+
+* +$$granite-client-flex-advanced-***.swc$$+ _(optional)_: same as the above but for Flex 3 or 4 applications
+	(below version 4.5).
+
+When using the Tide client framework, you will also have to specify to the Flex compiler some annotations 
+that should be kept in the +swf+ at runtime.
 
 When using a +services-config.xml+ file, it's necessary to use the compiler option +-services path/to/services-config.xml+ 
-so the Flex SDK itself can handle the creation of the channel and other remoting objects. 
-If you don't use this option, you will have to specify manually a channel and endpoint for each destination in ActionScript 3 : 
+so the Flex SDK itself can handle the creation of the channel and other remoting objects. If you don't use this option, you
+will have to specify manually a channel and endpoint for each destination in ActionScript 3 : 
 
 [source,actionscript]
 ----
@@ -259,15 +261,22 @@ The following XML code defines a typical target to build a Flex/GraniteDS applic
      	<keep-as3-metadata name="PostConstruct"/>
      	<keep-as3-metadata name="Destroy"/>
 
-     	<!-- All granite-essentials.swc classes must be included in the output swf -->
+     	<!-- All granite-client-flex-***.swc classes must be included in the output swf -->
         <compiler.include-libraries dir="${gds.build}" append="true">
-        	<include name="granite-essentials.swc" />
+        	<include name="granite-client-flex-***.swc" />
         </compiler.include-libraries>
 
-     	<!-- Actually used only granite.swc classes are included in the output swf -->
+     	<!-- Only granite-client-flex45-advanced-***.swc that are actually used in your
+     		application are included in the output swf -->
      	<compiler.library-path dir="${gds.build}" append="true">
-     		<include name="granite.swc"/>
+     		<include name="granite-client-flex45-advanced-***.swc"/>
      	</compiler.library-path>
+     	
+     	<!-- Flex before version 4.5 setup:
+     	<compiler.library-path dir="${gds.build}" append="true">
+     		<include name="granite-client-flex-advanced-***.swc"/>
+     	</compiler.library-path>
+     	-->
      </mxmlc>
  </target>       
 ----
