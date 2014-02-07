@@ -46,8 +46,6 @@ public class BigIntegerCodecImpl extends AbstractIntegerStringCodec<BigInteger> 
 	public void encode(OutputContext ctx, BigInteger v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		ctx.addToStoredObjects(v);
-		
 		byte[] magnitude = v.toByteArray();
 
 		IntegerComponents ics = intComponents(magnitude.length);

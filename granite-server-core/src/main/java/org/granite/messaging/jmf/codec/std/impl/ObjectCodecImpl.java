@@ -28,16 +28,18 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
-import java.util.List;
 
 import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.JMFEncodingException;
+import org.granite.messaging.jmf.JMFObjectInputStream;
+import org.granite.messaging.jmf.JMFObjectOutputStream;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.codec.StandardCodec;
 import org.granite.messaging.jmf.codec.std.ObjectCodec;
+import org.granite.messaging.reflect.ClassDescriptor;
 import org.granite.messaging.reflect.Property;
 
 /**
@@ -85,32 +87,60 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 				throw new NotSerializableException(v.getClass().getName());
 			
 			ctx.addToStoredObjects(v);
-			
-			ExtendedObjectCodec extendedCodec = ctx.getSharedContext().getCodecRegistry().findExtendedEncoder(ctx, v);
-			
-			String className = (
-				extendedCodec != null ?
-				extendedCodec.getEncodedClassName(ctx, v) :
-				ctx.getAlias(v.getClass().getName())
-			);
-			
-			writeString(ctx, className, TYPE_HANDLER);
-			
-			if (extendedCodec != null)
-				extendedCodec.encode(ctx, v);
-			else if (v instanceof Externalizable && !Proxy.isProxyClass(v.getClass()))
-				((Externalizable)v).writeExternal(ctx);
-			else
-				encodeSerializable(ctx, (Serializable)v);
 
-			os.write(JMF_OBJECT_END);
+			ExtendedObjectCodec extendedCodec = ctx.getSharedContext().getCodecRegistry().findExtendedEncoder(ctx, v);
+			if (extendedCodec != null) {
+				writeString(ctx, extendedCodec.getEncodedClassName(ctx, v), TYPE_HANDLER);
+				extendedCodec.encode(ctx, v);
+				os.write(JMF_OBJECT_END);
+			}
+			else {
+				ClassDescriptor desc = ctx.getReflection().getDescriptor(v.getClass());
+				
+				while (desc != null && desc.hasWriteReplaceMethod()) {
+					Object replacement = desc.invokeWriteReplaceMethod(v);
+					if (replacement == null)
+						throw new JMFEncodingException(desc.getCls() + ".writeReplace() method returned null");
+					if (replacement.getClass() == v.getClass())
+						throw new JMFEncodingException(desc.getCls() + ".writeReplace() method returned an instance of the same class");
+					
+					ClassDescriptor replacementDesc = ctx.getReflection().getDescriptor(replacement.getClass());
+					if (replacementDesc == null || !replacementDesc.hasReadResolveMethod()) {
+						throw new JMFEncodingException(
+							desc.getCls() +
+							".writeReplace() method returned an object that has no readResolve() method: " +
+							(replacementDesc == null ? "null" : replacementDesc.getCls())
+						);
+					}
+					
+					v = replacement;
+					desc = replacementDesc;
+				}
+
+				writeString(ctx, ctx.getAlias(v.getClass().getName()), TYPE_HANDLER);
+				if (v instanceof Externalizable && !Proxy.isProxyClass(v.getClass()))
+					((Externalizable)v).writeExternal(ctx);
+				else
+					encodeSerializable(ctx, (Serializable)v, desc);
+				os.write(JMF_OBJECT_END);
+			}
 		}
 	}
 	
-	protected void encodeSerializable(OutputContext ctx, Serializable v) throws IOException, IllegalAccessException, InvocationTargetException {
-		List<Property> properties = ctx.getReflection().findSerializableProperties(v.getClass());
-		for (Property property : properties)
-			ctx.getAndWriteProperty(v, property);
+	protected void encodeSerializable(OutputContext ctx, Serializable v, ClassDescriptor desc)
+		throws IOException, IllegalAccessException, InvocationTargetException {
+		
+		ClassDescriptor parentDesc = desc.getParent(); 
+		
+		if (parentDesc != null)
+			encodeSerializable(ctx, v, parentDesc);
+		
+		if (desc.hasWriteObjectMethod())
+			desc.invokeWriteObjectMethod(new JMFObjectOutputStream(ctx, desc, v), v);
+		else {
+			for (Property property : desc.getSerializableProperties())
+				ctx.getAndWriteProperty(v, property);
+		}
 	}
 	
 	public Object decode(InputContext ctx, int parameterizedJmfType)
@@ -146,15 +176,47 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 				if (!Serializable.class.isAssignableFrom(cls))
 					throw new NotSerializableException(cls.getName());
 				
-				if (Externalizable.class.isAssignableFrom(cls)) {
-					v = ctx.getReflection().newInstance(cls);
+				v = ctx.getReflection().newInstance(cls);
+
+				ClassDescriptor desc = ctx.getReflection().getDescriptor(cls);
+				if (desc == null || !desc.hasReadResolveMethod()) {
 					ctx.addSharedObject(v);
-					((Externalizable)v).readExternal(ctx);
+					
+					if (Externalizable.class.isAssignableFrom(cls))
+						((Externalizable)v).readExternal(ctx);
+					else
+						decodeSerializable(ctx, (Serializable)v);
 				}
 				else {
-					v = ctx.getReflection().newInstance(cls);
-					ctx.addSharedObject(v);
-					decodeSerializable(ctx, (Serializable)v);
+					int index = ctx.addUnresolvedSharedObject(className);
+					
+					if (Externalizable.class.isAssignableFrom(cls))
+						((Externalizable)v).readExternal(ctx);
+					else
+						decodeSerializable(ctx, (Serializable)v);
+					
+					do {
+						Object resolved = desc.invokeReadResolveMethod(v);
+						if (resolved == null)
+							throw new JMFEncodingException(desc.getCls() + ".readResolve() method returned null");
+						if (resolved.getClass() == v.getClass())
+							throw new JMFEncodingException(desc.getCls() + ".readResolve() method returned an instance of the same class");
+						
+						ClassDescriptor resolvedDesc = ctx.getReflection().getDescriptor(resolved.getClass());
+						if (resolvedDesc == null || !resolvedDesc.hasWriteReplaceMethod()) {
+							throw new JMFEncodingException(
+								desc.getCls() +
+								".readResolve() method returned an object that has no writeReplace() method: " +
+								(resolvedDesc == null ? "null" : resolvedDesc.getCls())
+							);
+						}
+						
+						v = resolved;
+						desc = resolvedDesc;
+					}
+					while (desc.hasReadResolveMethod());
+					
+					ctx.setUnresolvedSharedObject(index, v);
 				}
 			}
 			
@@ -165,13 +227,28 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 		
 		return v;
 	}
-	
+
 	protected void decodeSerializable(InputContext ctx, Serializable v)
 		throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException {
 
-		List<Property> properties = ctx.getReflection().findSerializableProperties(v.getClass());
-		for (Property property : properties)
-			ctx.readAndSetProperty(v, property);
+		ClassDescriptor desc = ctx.getReflection().getDescriptor(v.getClass());
+		decodeSerializable(ctx, v, desc);
+	}
+	
+	protected void decodeSerializable(InputContext ctx, Serializable v, ClassDescriptor desc)
+		throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException {
+
+		ClassDescriptor parentDesc = desc.getParent(); 
+		
+		if (parentDesc != null)
+			decodeSerializable(ctx, v, parentDesc);
+		
+		if (desc.hasReadObjectMethod())
+			desc.invokeReadObjectMethod(new JMFObjectInputStream(ctx, desc, v), v);
+		else {
+			for (Property property : desc.getSerializableProperties())
+				ctx.readAndSetProperty(v, property);
+		}
 	}
 
 	public void dump(DumpContext ctx, int parameterizedJmfType) throws IOException {

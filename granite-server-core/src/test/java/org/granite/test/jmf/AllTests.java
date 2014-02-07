@@ -32,7 +32,7 @@ import org.junit.runners.Suite.SuiteClasses;
 		TestJMFDate.class, TestJMFDouble.class, TestJMFEnum.class,
 		TestJMFFloat.class, TestJMFHashMap.class, TestJMFHashSet.class,
 		TestJMFInteger.class, TestJMFLong.class, TestJMFPropertiesOrder.class,
-		TestJMFShort.class, TestJMFSqlDate.class, TestJMFString.class })
+		TestJMFSerializable.class, TestJMFShort.class, TestJMFSqlDate.class, TestJMFString.class })
 public class AllTests {
 
 }

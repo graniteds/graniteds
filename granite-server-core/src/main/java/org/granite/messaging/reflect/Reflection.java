@@ -55,7 +55,7 @@ public class Reflection {
 	protected final BypassConstructorAllocator instanceFactory;
 	protected final Comparator<Property> lexicalPropertyComparator;
 	
-	protected final ConcurrentMap<Class<?>, List<Property>> serializablePropertiesCache;
+	protected final ConcurrentMap<Class<?>, ClassDescriptor> descriptorCache;
 	protected final ConcurrentMap<SinglePropertyKey, Property> singlePropertyCache;
 	
 	public Reflection(ClassLoader classLoader) {
@@ -82,12 +82,20 @@ public class Reflection {
 			}
 		};
 		
-		this.serializablePropertiesCache = new ConcurrentHashMap<Class<?>, List<Property>>();
+		this.descriptorCache = new ConcurrentHashMap<Class<?>, ClassDescriptor>();
 		this.singlePropertyCache = new ConcurrentHashMap<SinglePropertyKey, Property>();
 	}
 	
 	public ClassLoader getClassLoader() {
 		return (classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader());
+	}
+
+	public BypassConstructorAllocator getInstanceFactory() {
+		return instanceFactory;
+	}
+
+	public Comparator<Property> getLexicalPropertyComparator() {
+		return lexicalPropertyComparator;
 	}
 
 	public Class<?> loadClass(String className) throws ClassNotFoundException {
@@ -124,26 +132,25 @@ public class Reflection {
 		return null;
 	}
 	
-	public List<Property> findSerializableProperties(Class<?> cls) throws SecurityException {
-		List<Property> serializableProperties = serializablePropertiesCache.get(cls);
-		
-		if (serializableProperties == null) {
-			List<Class<?>> hierarchy = new ArrayList<Class<?>>();
-			for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass())
-				hierarchy.add(c);
-			
-			serializableProperties = new ArrayList<Property>();
-			for (int i = hierarchy.size() - 1; i >= 0; i--) {
-				Class<?> c = hierarchy.get(i);
-				serializableProperties.addAll(findSerializableDeclaredProperties(c));
-			}
-			serializableProperties = Collections.unmodifiableList(serializableProperties);
-			List<Property> previous = serializablePropertiesCache.putIfAbsent(cls, serializableProperties);
-			if (previous != null)
-				serializableProperties = previous;
+	public ClassDescriptor getDescriptor(Class<?> cls) {
+		if (cls == null || cls == Object.class || !isRegularClass(cls))
+			return null;
+
+		ClassDescriptor descriptor = descriptorCache.get(cls);
+		if (descriptor == null) {
+			descriptor = new ClassDescriptor(this, cls);
+			ClassDescriptor previousDescriptor = descriptorCache.putIfAbsent(cls, descriptor);
+			if (previousDescriptor != null)
+				descriptor = previousDescriptor;
 		}
-		
-		return serializableProperties;
+		return descriptor;
+	}
+	
+	public List<Property> findSerializableProperties(Class<?> cls) throws SecurityException {
+		ClassDescriptor descriptor = getDescriptor(cls);
+		if (descriptor == null)
+			return Collections.emptyList();
+		return descriptor.getInheritedSerializableProperties();
 	}
 	
 	protected FieldProperty newFieldProperty(Field field) {
@@ -245,7 +252,7 @@ public class Reflection {
 				try {
 					field = c.getDeclaredField(name);
 				}
-				catch (Exception e) {
+				catch (NoSuchFieldException e) {
 					continue;
 				}
 				
@@ -314,7 +321,7 @@ public class Reflection {
 								try {
 									getter = cls.getMethod("get" + name);
 								}
-								catch (Exception e) {
+								catch (NoSuchMethodException e) {
 									try {
 										getter = cls.getMethod("is" + name);
 									}
@@ -348,7 +355,7 @@ public class Reflection {
 							try {
 								setter = cls.getMethod("set" + name);
 							}
-							catch (Exception e) {
+							catch (NoSuchMethodException e) {
 							}
 							
 							if (setter != null && (setter.getModifiers() & Modifier.STATIC) != 0 &&
@@ -383,16 +390,21 @@ public class Reflection {
 		return (property != NULL_PROPERTY ? property : null);
 	}
 	
-	protected static interface SinglePropertyKey {
+	protected static abstract class SinglePropertyKey {
+
+		protected final Class<?> cls;
+		
+		public SinglePropertyKey(Class<?> cls) {
+			this.cls = cls;
+		}
 	}
 	
-	protected static class AnnotatedPropertyKey implements SinglePropertyKey {
+	protected static class AnnotatedPropertyKey extends SinglePropertyKey {
 		
-		private final Class<?> cls;
 		private final Class<? extends Annotation> annotationClass;
 		
 		public AnnotatedPropertyKey(Class<?> cls, Class<? extends Annotation> annotationClass) {
-			this.cls = cls;
+			super(cls);
 			this.annotationClass = annotationClass;
 		}
 
@@ -406,7 +418,7 @@ public class Reflection {
 
 		@Override
 		public int hashCode() {
-			return cls.hashCode() + annotationClass.hashCode();
+			return (31 * cls.hashCode()) + annotationClass.hashCode();
 		}
 
 		@Override
@@ -420,14 +432,13 @@ public class Reflection {
 		}
 	}
 	
-	protected static class NameTypePropertyKey implements SinglePropertyKey {
+	protected static class NameTypePropertyKey extends SinglePropertyKey {
 		
-		private final Class<?> cls;
 		private final String name;
 		private final Class<?> type;
 
 		public NameTypePropertyKey(Class<?> cls, String name, Class<?> type) {
-			this.cls = cls;
+			super(cls);
 			this.name = name;
 			this.type = type;
 		}
@@ -446,7 +457,7 @@ public class Reflection {
 
 		@Override
 		public int hashCode() {
-			return cls.hashCode() + name.hashCode() + type.hashCode();
+			return (31 * (31 * cls.hashCode()) + name.hashCode()) + type.hashCode();
 		}
 
 		@Override
