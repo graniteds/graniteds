@@ -27,7 +27,7 @@ public class BeanReadResolve implements Serializable {
 			new BigDecimal(4),
 			new Dummy(),
 			dummy,
-			new LinkedHashMap<>()
+			new LinkedHashMap<Object, Object>()
 		};
 	}
 	
