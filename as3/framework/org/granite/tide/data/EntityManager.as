@@ -458,8 +458,15 @@ package org.granite.tide.data {
                 return null;
             
             for (var i:int = 0; i < refs.length; i++) {
-                if (refs[i] is Array && refs[i][0] is String)
-                    return [ _entitiesByUID.get(refs[i][0] as String), refs[i][1] ];
+                if (refs[i] is Array && refs[i][0] is String) {
+					var owner:Object = _entitiesByUID.get(refs[i][0] as String);
+					if (owner == null) {	// Owner has probably been garbage collected
+						refs.splice(i, 1);
+						i--;
+					}
+					else
+	                    return [ owner, refs[i][1] ];
+				}
             }
             return null;
         }
@@ -474,11 +481,18 @@ package org.granite.tide.data {
             var refs:Array = _entityReferences[object];
             if (!refs)
                 return null;
-
+			
             var owners:Array = [];
             for (var i:int = 0; i < refs.length; i++) {
-                if (refs[i] is Array && refs[i][0] is String)
-                    owners.push([ _entitiesByUID.get(refs[i][0] as String), refs[i][1] ]);
+                if (refs[i] is Array && refs[i][0] is String) {
+					var owner:Object = _entitiesByUID.get(refs[i][0] as String);
+					if (owner == null) {	// Owner has probably been garbage collected
+						refs.splice(i, 1);
+						i--;
+					}
+					else
+	                    owners.push([ owner, refs[i][1] ]);
+				}
             }
             return owners;
         }
