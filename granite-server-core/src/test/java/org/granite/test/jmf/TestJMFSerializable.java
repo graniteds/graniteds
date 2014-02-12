@@ -118,7 +118,7 @@ public class TestJMFSerializable implements JMFConstants {
 		BeanWriteReplace[] beans = new BeanWriteReplace[]{bean, bean};
 		clone = serializeDeserialize(beans);
 		Assert.assertTrue(clone != null && clone.getClass().isArray() && clone.getClass().getComponentType() == BeanWriteReplace.class);
-		Assert.assertEquals(beans.length, ((BeanWriteReplace[])beans).length);
+		Assert.assertEquals(beans.length, ((BeanWriteReplace[])clone).length);
 		Assert.assertEquals(beans[0].getValue(), ((BeanWriteReplace[])clone)[0].getValue());
 		Assert.assertTrue(((BeanWriteReplace[])clone)[0] == ((BeanWriteReplace[])clone)[1]);
 	}
