@@ -21,6 +21,8 @@
  */
 package org.granite.util;
 
+import org.granite.logging.Logger;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
@@ -83,7 +85,8 @@ public abstract class TypeUtil {
         } catch (IllegalArgumentException e) {
             throw new InstantiationException(e.getMessage());
         } catch (InvocationTargetException e) {
-            throw new InstantiationException(e.getMessage());
+            Logger.getLogger(TypeUtil.class).error(e, "Could not create instance of type %s", type.getName());
+            throw new InstantiationException(e.getTargetException().getMessage());
         }
         return instance;
     }
