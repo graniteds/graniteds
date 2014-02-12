@@ -36,6 +36,7 @@ package org.granite.client.test.javafx.jmf;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -661,22 +662,22 @@ public class TestJMFHibernate {
 		
 		collection = serializeAndDeserializeServerToServer(sortedSet, false);
 		Assert.assertTrue(collection instanceof PersistentSortedSet);
-		Assert.assertTrue(((PersistentSortedSet)collection).wasInitialized());
+		Assert.assertTrue(((PersistentSortedSet) collection).wasInitialized());
 		Assert.assertFalse(((PersistentSortedSet)collection).isDirty());
 		Assert.assertFalse(((PersistentSortedSet)collection).isEmpty());
 		Assert.assertTrue(((PersistentSortedSet)collection).size() == 3);
 		
 		collection = serializeAndDeserializeServerToClient(sortedSet, false);
 		Assert.assertTrue(collection instanceof org.granite.client.persistence.collection.PersistentSortedSet);
-		Assert.assertTrue(((org.granite.client.persistence.collection.PersistentSortedSet<?>)collection).wasInitialized());
-		Assert.assertFalse(((org.granite.client.persistence.collection.PersistentSortedSet<?>)collection).isDirty());
+		Assert.assertTrue(((org.granite.client.persistence.collection.PersistentSortedSet<?>) collection).wasInitialized());
+		Assert.assertFalse(((org.granite.client.persistence.collection.PersistentSortedSet<?>) collection).isDirty());
 		Assert.assertFalse(((org.granite.client.persistence.collection.PersistentSortedSet<?>)collection).isEmpty());
 		Assert.assertTrue(((org.granite.client.persistence.collection.PersistentSortedSet<?>)collection).size() == 3);
 		
 		collection = serializeAndDeserializeClientToServer(collection, false);
 		Assert.assertTrue(collection instanceof PersistentSortedSet);
-		Assert.assertTrue(((PersistentSortedSet)collection).wasInitialized());
-		Assert.assertFalse(((PersistentSortedSet)collection).isDirty());
+		Assert.assertTrue(((PersistentSortedSet) collection).wasInitialized());
+		Assert.assertFalse(((PersistentSortedSet) collection).isDirty());
 		Assert.assertFalse(((PersistentSortedSet)collection).isEmpty());
 		Assert.assertTrue(((PersistentSortedSet)collection).size() == 3);
 		
@@ -826,45 +827,82 @@ public class TestJMFHibernate {
 		Assert.assertTrue(((PersistentSortedMap)collection).size() == 3);
 	}
 
-	@SuppressWarnings("cast")
-	@Test
-	public void testEntity() throws ClassNotFoundException, IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		clientAliasRegistry.registerAlias(ClientEntity.class);
-		clientAliasRegistry.registerAlias(ClientCollectionEntity.class);
+    @SuppressWarnings("cast")
+    @Test
+    public void testEntity() throws ClassNotFoundException, IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        clientAliasRegistry.registerAlias(ClientEntity.class);
+        clientAliasRegistry.registerAlias(ClientCollectionEntity.class);
 
-		final Integer id = Integer.valueOf(3);
-		final String uid = UUID.randomUUID().toString();
-		final Integer version = Integer.valueOf(2);
-		final String name = "John Doe";
-		
-		ServerEntity serverEntity = new ServerEntity(id, version);
-		serverEntity.setUid(uid);
-		serverEntity.setName(name);
-		serverEntity.getList().add(new ServerCollectionEntity(10, 11));
-		
-		Persistence persistence = Platform.persistence();
-		
-		Object clientEntity = serializeAndDeserializeServerToClient(serverEntity, true);
-		Assert.assertTrue(clientEntity instanceof ClientEntity);
-		Assert.assertTrue(persistence.isInitialized(clientEntity));
-		Assert.assertNull(persistence.getDetachedState(clientEntity));
-		Assert.assertEquals(id, ((ClientEntity)clientEntity).getId());
-		Assert.assertEquals(uid, persistence.getUid(clientEntity));
-		Assert.assertEquals(version, persistence.getVersion(clientEntity));
-		Assert.assertEquals(name, ((ClientEntity)clientEntity).getName());
-		Assert.assertTrue(persistence.isInitialized(((ClientEntity)clientEntity).getList()));
-		Assert.assertTrue(((ClientEntity)clientEntity).getList().size() == 1);
-		Assert.assertTrue(((ClientEntity)clientEntity).getList().get(0) instanceof ClientCollectionEntity);
-		
-		Object serverEntityCopy = serializeAndDeserializeClientToServer(clientEntity, true);
-		Assert.assertTrue(serverEntityCopy instanceof ServerEntity);
-		Assert.assertEquals(id, ((ServerEntity)serverEntityCopy).getId());
-		Assert.assertEquals(uid, ((ServerEntity)serverEntityCopy).getUid());
-		Assert.assertEquals(version, ((ServerEntity)serverEntityCopy).getVersion());
-		Assert.assertEquals(name, ((ServerEntity)serverEntityCopy).getName());
-		Assert.assertTrue(((ServerEntity)serverEntityCopy).getList().size() == 1);
-		Assert.assertTrue(((ServerEntity)serverEntityCopy).getList().get(0) instanceof ServerCollectionEntity);
-	}
+        final Integer id = Integer.valueOf(3);
+        final String uid = UUID.randomUUID().toString();
+        final Integer version = Integer.valueOf(2);
+        final String name = "John Doe";
+
+        ServerEntity serverEntity = new ServerEntity(id, version);
+        serverEntity.setUid(uid);
+        serverEntity.setName(name);
+        serverEntity.getList().add(new ServerCollectionEntity(10, 11));
+
+        Persistence persistence = Platform.persistence();
+
+        Object clientEntity = serializeAndDeserializeServerToClient(serverEntity, true);
+        Assert.assertTrue(clientEntity instanceof ClientEntity);
+        Assert.assertTrue(persistence.isInitialized(clientEntity));
+        Assert.assertNull(persistence.getDetachedState(clientEntity));
+        Assert.assertEquals(id, ((ClientEntity)clientEntity).getId());
+        Assert.assertEquals(uid, persistence.getUid(clientEntity));
+        Assert.assertEquals(version, persistence.getVersion(clientEntity));
+        Assert.assertEquals(name, ((ClientEntity)clientEntity).getName());
+        Assert.assertTrue(persistence.isInitialized(((ClientEntity)clientEntity).getList()));
+        Assert.assertTrue(((ClientEntity)clientEntity).getList().size() == 1);
+        Assert.assertTrue(((ClientEntity)clientEntity).getList().get(0) instanceof ClientCollectionEntity);
+
+        Object serverEntityCopy = serializeAndDeserializeClientToServer(clientEntity, true);
+        Assert.assertTrue(serverEntityCopy instanceof ServerEntity);
+        Assert.assertEquals(id, ((ServerEntity)serverEntityCopy).getId());
+        Assert.assertEquals(uid, ((ServerEntity)serverEntityCopy).getUid());
+        Assert.assertEquals(version, ((ServerEntity)serverEntityCopy).getVersion());
+        Assert.assertEquals(name, ((ServerEntity)serverEntityCopy).getName());
+        Assert.assertTrue(((ServerEntity)serverEntityCopy).getList().size() == 1);
+        Assert.assertTrue(((ServerEntity)serverEntityCopy).getList().get(0) instanceof ServerCollectionEntity);
+    }
+
+    @SuppressWarnings("cast")
+    @Test
+    public void testEntityArray() throws ClassNotFoundException, IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        clientAliasRegistry.registerAlias(ClientEntity.class);
+        clientAliasRegistry.registerAlias(ClientCollectionEntity.class);
+
+        ServerEntity[] serverArray = new ServerEntity[10];
+        for (int id = 1; id <= 10; id++) {
+            final String uid = UUID.randomUUID().toString();
+            final Integer version = Integer.valueOf(2);
+            final String name = "John Doe";
+    
+            ServerEntity serverEntity = new ServerEntity(id, version);
+            serverEntity.setUid(uid);
+            serverEntity.setName(name);
+            serverEntity.getList().add(new ServerCollectionEntity(10, 11));
+
+            serverArray[id-1] = serverEntity;
+        }
+
+        Persistence persistence = Platform.persistence();
+
+        Object clientArray = serializeAndDeserializeServerToClient(serverArray, true);
+
+        Assert.assertTrue(clientArray instanceof ClientEntity[]);
+        for (int i = 0; i < Array.getLength(clientArray); i++) {
+            ClientEntity clientEntity = (ClientEntity)Array.get(clientArray, i);
+            Assert.assertEquals(Integer.valueOf(i+1), clientEntity.getId());
+            Assert.assertTrue(persistence.isInitialized(clientEntity.getList()));
+            Assert.assertTrue(clientEntity.getList().size() == 1);
+            Assert.assertTrue(clientEntity.getList().get(0) instanceof ClientCollectionEntity);
+        }
+
+        Object serverArrayCopy = serializeAndDeserializeClientToServer(clientArray, true);
+        Assert.assertTrue(serverArrayCopy instanceof ServerEntity[]);
+    }
 
 	@SuppressWarnings("cast")
 	@Test
