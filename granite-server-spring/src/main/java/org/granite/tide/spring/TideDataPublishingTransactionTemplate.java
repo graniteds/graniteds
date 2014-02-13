@@ -27,6 +27,7 @@ import java.util.concurrent.Callable;
 import org.granite.gravity.Gravity;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataUpdatePostprocessor;
+import org.granite.util.ThrowableCallable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.TransactionException;
@@ -98,11 +99,22 @@ public class TideDataPublishingTransactionTemplate extends TransactionTemplate i
 
         @Override
         public T doInTransaction(final TransactionStatus status) {
-            return tideDataPublishingWrapper.execute(dataEnabled, new Callable<T>() {
-                public T call() throws Exception {
-                    return action.doInTransaction(status);
-                }
-            });
+            try {
+                return tideDataPublishingWrapper.execute(dataEnabled, new ThrowableCallable<T>() {
+                    public T call() throws Throwable {
+                        return action.doInTransaction(status);
+                    }
+                });
+            }
+            catch (Error e) {
+                throw e;
+            }
+            catch (RuntimeException e) {
+                throw e;
+            }
+            catch (Throwable t) {
+                throw new RuntimeException("Error in transaction", t);
+            }
         }
     }
 }

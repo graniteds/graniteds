@@ -29,13 +29,13 @@ import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataEnabled.PublishMode;
 import org.granite.tide.data.DataUpdatePostprocessor;
 import org.granite.tide.data.TideSynchronizationManager;
+import org.granite.util.ThrowableCallable;
 import org.granite.util.TypeUtil;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * Common class to implement data enabled interceptors
@@ -84,7 +84,7 @@ public class TideDataPublishingWrapper {
         this.dataUpdatePostprocessor = dataUpdatePostprocessor;
     }
 
-    public <T> T execute(DataEnabled dataEnabled, Callable<T> action) {
+    public <T> T execute(DataEnabled dataEnabled, ThrowableCallable<T> action) throws Throwable {
         boolean shouldRemoveContextAtEnd = DataContext.get() == null;
         boolean shouldInitContext = shouldRemoveContextAtEnd || DataContext.isNull();
         boolean onCommit = false;
@@ -129,11 +129,6 @@ public class TideDataPublishingWrapper {
 
             DataContext.publish(PublishMode.ON_SUCCESS);
             return ret;
-        }
-        catch (Exception e) {
-            if (e instanceof RuntimeException)
-                throw (RuntimeException)e;
-            throw new RuntimeException("Data publishing error", e);
         }
         finally {
             if (shouldRemoveContextAtEnd && !onCommit)

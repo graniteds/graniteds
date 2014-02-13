@@ -28,6 +28,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.granite.gravity.Gravity;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataUpdatePostprocessor;
+import org.granite.util.ThrowableCallable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,19 +74,10 @@ public class TideDataPublishingInterceptor implements MethodInterceptor, Initial
     	if (dataEnabled == null || !dataEnabled.useInterceptor())
     		return invocation.proceed();
 
-        return tideDataPublishingWrapper.execute(dataEnabled, new Callable<Object>() {
+        return tideDataPublishingWrapper.execute(dataEnabled, new ThrowableCallable<Object>() {
             @Override
-            public Object call() throws Exception {
-                try {
-                    return invocation.proceed();
-                }
-                catch (Exception e) {
-                    throw e;
-                }
-                catch (Throwable t) {
-                    // Not sure what to do in case of a throwable
-                    throw new RuntimeException("Data publishing error", t);
-                }
+            public Object call() throws Throwable {
+                return invocation.proceed();
             }
         });
     }
