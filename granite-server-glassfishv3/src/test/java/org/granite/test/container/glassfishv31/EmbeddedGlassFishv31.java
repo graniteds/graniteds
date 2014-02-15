@@ -48,17 +48,13 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
     private File warFile;
     private Thread serverThread;
 
-    public EmbeddedGlassFishv31(WebArchive war) throws Exception {
-        this(war, false);
-    }
-
     public EmbeddedGlassFishv31(WebArchive war, boolean persistSessions) throws Exception {
         BootstrapProperties bootstrapProps = new BootstrapProperties();
         glassfishRuntime = GlassFishRuntime.bootstrap(bootstrapProps);
 
         war.addAsLibraries(new File("granite-server-glassfishv3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-eclipselink/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
-        war.setWebXML(new File("granite-server-glassfishv3/src/test/resources/web-websocket.xml"));
+        initWar(war);
 
         appName = war.getName().substring(0, war.getName().lastIndexOf("."));
         File root = File.createTempFile("emb-gfv3", war.getName());
@@ -70,13 +66,15 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
         war.as(ZipExporter.class).exportTo(warFile, true);
     }
 
+    protected void initWar(WebArchive war) {
+        war.setWebXML(new File("granite-server-glassfishv3/src/test/resources/web-websocket.xml"));
+    }
+
     private CountDownLatch waitForStart;
 
     public void run() {
         try {
             GlassFishProperties serverProps = new GlassFishProperties();
-            String configFileURI = new File("granite-server-glassfishv3/src/test/resources/domain.xml").toURI().toString();
-            serverProps.setConfigFileURI(configFileURI);
             // Reuse the previous tmp install dir if after a restart
             if (glassfishRoot != null)
                 serverProps.setInstanceRoot(glassfishRoot);
@@ -93,14 +91,24 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
 
             glassfish.start();
 
+            CommandResult setHttpPortResult = glassfish.getCommandRunner().run("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=8787");
+            log.debug("Set http port result: %s", setHttpPortResult.getExitStatus());
+            CommandResult enableHttpResult = glassfish.getCommandRunner().run("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true");
+            log.debug("Enabled http result: %s", enableHttpResult.getExitStatus());
+            CommandResult setHttpsPortResult = glassfish.getCommandRunner().run("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=8989");
+            log.debug("Set https port result: %s", setHttpsPortResult.getExitStatus());
+            CommandResult disableHttpsResult = glassfish.getCommandRunner().run("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=false");
+            log.debug("Disable https result: %s", disableHttpsResult.getExitStatus());
+
             CommandResult enablewsResult = glassfish.getCommandRunner().run("set", "configs.config.server-config.network-config.protocols.protocol.http-listener.http.websockets-support-enabled=true");
             log.debug("Enable websocket result: %s", enablewsResult.getExitStatus());
 
-            // Force storage sessions in gf/tmp because the default location generated/jsp/sessions.ser is cleaned up before a deployment (?)
+            // Force storage of sessions in gf/tmp because the default location generated/jsp/sessions.ser is cleaned up before a deployment (?)
             File tmp = new File(glassfishRoot, "tmp");
             tmp.mkdir();
-            CommandResult enablespResult = glassfish.getCommandRunner().run("set", "configs.config.server-config.web-container.session-config.session-manager.manager-properties.session-file-name=" + tmp.getAbsolutePath() + File.separator + "sessions.ser");
-            log.debug("Enable session persistence result: %s", enablespResult.getExitStatus());
+            String sessionFileName = tmp.getAbsolutePath() + File.separator + "sessions.ser";
+            CommandResult enablespResult = glassfish.getCommandRunner().run("set", "configs.config.server-config.web-container.session-config.session-manager.manager-properties.session-file-name=" + sessionFileName);
+            log.debug("Enable session persistence in %s result: %s", sessionFileName, enablespResult.getExitStatus());
 
             glassfish.getDeployer().deploy(warFile, "--name", appName, "--keepstate=true");
 

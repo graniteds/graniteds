@@ -50,7 +50,7 @@ public class MockTransport implements Transport {
 
     @Override
     public boolean start() {
-        return false;
+        return true;
     }
 
     @Override
