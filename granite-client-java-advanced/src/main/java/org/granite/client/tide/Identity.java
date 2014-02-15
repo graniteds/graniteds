@@ -49,7 +49,7 @@ public interface Identity {
 	
     public Future<String> checkLoggedIn(final TideResponder<String> tideResponder);
     
-    public void login(final String username, String password, final TideResponder<String> tideResponder);
+    public Future<String> login(final String username, String password, final TideResponder<String> tideResponder);
     
     public void logout(final TideResponder<Void> tideResponder);    
 }

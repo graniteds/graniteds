@@ -41,7 +41,9 @@ public @interface ActiveMQTopicDestination {
 	boolean sessionSelector() default false;
 	
 	String name();
-	
+
+    public String[] securityRoles() default {};
+
 	Class<? extends GravityDestinationSecurizer> securizer() default GravityDestinationSecurizer.class;
 	
     String connectionFactory();

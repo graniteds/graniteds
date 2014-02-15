@@ -41,6 +41,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Future;
 
+import org.granite.client.messaging.RemoteAlias;
 import org.granite.client.messaging.messages.responses.FaultMessage;
 import org.granite.client.messaging.messages.responses.FaultMessage.Code;
 import org.granite.client.tide.impl.ComponentImpl;
@@ -52,7 +53,7 @@ import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
 
 
-public abstract class BaseIdentity extends ComponentImpl implements Identity, ExceptionHandler {
+public class BaseIdentity extends ComponentImpl implements Identity, ExceptionHandler {
 	
 	private boolean loggedIn;
 	private String username;
@@ -140,32 +141,38 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
     }
     
     
-    public void login(final String username, String password, final TideResponder<String> tideResponder) {
+    public Future<String> login(final String username, String password, final TideResponder<String> tideResponder) {
     	getServerSession().login(username, password);
     	
     	clearSecurityCache();
-    	
+
+        Future<String> loggedIn = null;
     	try {
     	    // Force synchronous operation to prevent issues with Spring session fixation protection
     	    // so next remote calls use the correct session id
-    	    checkLoggedIn(tideResponder).get();
+    	    loggedIn = checkLoggedIn(tideResponder);
+            loggedIn.get();
     	}
     	catch (Exception e) {
     	}
+        return loggedIn;
     }
 
-    public void login(final String username, String password, Charset charset, final TideResponder<String> tideResponder) {
+    public Future<String> login(final String username, String password, Charset charset, final TideResponder<String> tideResponder) {
     	getServerSession().login(username, password, charset);
     	
     	clearSecurityCache();
-    	
+
+        Future<String> loggedIn = null;
     	try {
     	    // Force synchronous operation to prevent issues with Spring session fixation protection
     	    // so next remote calls use the correct session id
-    	    checkLoggedIn(tideResponder).get();
+    	    loggedIn = checkLoggedIn(tideResponder);
+            loggedIn.get();
     	}
     	catch (Exception e) {
     	}
+        return loggedIn;
     }
     
     
@@ -183,7 +190,7 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
 				        tideResponder.fault((TideFaultEvent)event);
 		        }
 			}
-    	};
+            	};
     	
     	getServerSession().logout(observer);
     }

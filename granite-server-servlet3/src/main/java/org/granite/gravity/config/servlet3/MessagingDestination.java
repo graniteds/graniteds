@@ -39,6 +39,8 @@ public @interface MessagingDestination {
 	boolean noLocal() default true;
 	
 	boolean sessionSelector() default false;
-	
+
+    public String[] securityRoles() default {};
+
 	Class<? extends GravityDestinationSecurizer> securizer() default GravityDestinationSecurizer.class;
 }

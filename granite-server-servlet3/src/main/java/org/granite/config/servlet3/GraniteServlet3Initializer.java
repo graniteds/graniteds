@@ -29,12 +29,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-import javax.servlet.FilterRegistration;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
+import javax.servlet.*;
 import javax.servlet.annotation.HandlesTypes;
 
 import org.granite.config.ConfigProvider;
@@ -74,6 +69,7 @@ import org.granite.messaging.service.tide.TideComponentNameMatcher;
 import org.granite.messaging.service.tide.TideComponentTypeMatcher;
 import org.granite.messaging.webapp.AMFMessageFilter;
 import org.granite.messaging.webapp.AMFMessageServlet;
+import org.granite.tide.simple.SimpleServiceContext;
 import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 
@@ -123,6 +119,21 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 			catch (ClassNotFoundException e) {
 				servletContext.log("Could not setup GravityAsyncServlet", e);
 			}
+
+//            if (servletContext.getServletRegistration("WebSocketServlet") == null) {
+//                try {
+//                    TypeUtil.forName("javax.websocket.server.ServerEndpointConfig");
+//                    try {
+//                        servletContext.addListener(TypeUtil.forName("org.granite.gravity.servlet3.websocket.GravityWebSocketDeployer", ServletContextListener.class));
+//                    }
+//                    catch (ClassNotFoundException f) {
+//                        servletContext.log("Could not setup WebSocket deployer", f);
+//                    }
+//                }
+//                catch (ClassNotFoundException e) {
+//                    // No JSR 356 websocket support detected
+//                }
+//            }
 		}
 	}
 	
@@ -191,11 +202,9 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
                 }
             }
 	        
-	        if (factoryClass == null) {
-	        	factoryClass = SimpleServiceFactory.class;
-	        	useTide = false;
-	        }
-	        
+	        if (factoryClass == null)
+	        	factoryClass = useTide ? org.granite.tide.simple.SimpleServiceFactory.class : SimpleServiceFactory.class;
+
 	    	for (Class<?> ti : tideInterfaces) {
 	    		try {
 	    			graniteConfig.getTideComponentMatchers().add(new TideComponentInstanceOfMatcher(ti.getName(), false));
@@ -404,7 +413,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 		        	servicesConfig.addService(service);
 	        	}
 	            
-	        	if (factoryClass.getName().equals("org.granite.tide.ejb.EjbServiceFactory"))
+	        	if (factoryClass.getName().equals("org.granite.tide.ejb.EjbServiceFactory") || factoryClass.getName().equals("org.granite.tide.simple.SimpleServiceFactory"))
 	        		servicesConfig.scan(null);
 	        	
 	        	log.info("Registered Tide " + factoryClass + " service factory and " + type + " destination");
@@ -456,6 +465,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	        		messagingDestination.setId(field.getName());
 	        		messagingDestination.setNoLocal(md.noLocal());
 	        		messagingDestination.setSessionSelector(md.sessionSelector());
+                    messagingDestination.setRoles(Arrays.asList(md.securityRoles()));
 	        		initSecurizer(messagingDestination, md.securizer(), configProvider);
 	        		messagingDestination.initServices(servicesConfig);
 	        	}
@@ -465,6 +475,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	        		messagingDestination.setId(field.getName());
 	        		messagingDestination.setNoLocal(md.noLocal());
 	        		messagingDestination.setSessionSelector(md.sessionSelector());
+                    messagingDestination.setRoles(Arrays.asList(md.securityRoles()));
 	        		initSecurizer(messagingDestination, md.securizer(), configProvider);
 	        		messagingDestination.initServices(servicesConfig);
 	        		messagingDestination.setName(md.name());
@@ -481,6 +492,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	        		messagingDestination.setId(field.getName());
 	        		messagingDestination.setNoLocal(md.noLocal());
 	        		messagingDestination.setSessionSelector(md.sessionSelector());
+                    messagingDestination.setRoles(Arrays.asList(md.securityRoles()));
 	        		initSecurizer(messagingDestination, md.securizer(), configProvider);
 	        		messagingDestination.initServices(servicesConfig);
 	        		messagingDestination.setName(md.name());
