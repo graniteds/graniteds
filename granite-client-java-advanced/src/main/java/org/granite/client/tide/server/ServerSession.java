@@ -730,7 +730,7 @@ public class ServerSession implements ContextAware {
      * @return remoting transport
      */
 	public Transport getRemotingTransport() {
-		return channelFactory != null ? channelFactory.getRemotingTransport() : null;
+		return channelFactory != null ? channelFactory.getRemotingTransport() : remotingTransport;
 	}
 
     /**
@@ -738,7 +738,7 @@ public class ServerSession implements ContextAware {
      * @return messaging transport
      */
 	public Transport getMessagingTransport() {
-		return channelFactory != null ? channelFactory.getMessagingTransport() : null;
+		return channelFactory != null ? channelFactory.getMessagingTransport() : messagingTransport;
 	}
 	
 	
