@@ -157,9 +157,6 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 		if (remotingTransport == null)
 			remotingTransport = Platform.getInstance().newRemotingTransport();
 		
-		if (!remotingTransport.isStarted() && !remotingTransport.start())
-			throw new TransportException("Could not start remoting transport: " + remotingTransport);
-
         defaultChannelType = Platform.getInstance().defaultChannelType();
 
         if (messagingTransport == null) {
@@ -168,9 +165,12 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 				messagingTransport = remotingTransport;
 		}
 
-        messagingTransports.put(defaultChannelType, messagingTransport);
-        for (Map.Entry<String, Transport> me : Platform.getInstance().getMessagingTransports().entrySet())
-            messagingTransports.put(me.getKey(), me.getValue());
+        if (!messagingTransports.containsKey(defaultChannelType))
+            messagingTransports.put(defaultChannelType, messagingTransport);
+        for (Map.Entry<String, Transport> me : Platform.getInstance().getMessagingTransports().entrySet()) {
+            if (!messagingTransports.containsKey(me.getKey()))
+                messagingTransports.put(me.getKey(), me.getValue());
+        }
 
 		if (aliasRegistry == null)
 			aliasRegistry = new ClientAliasRegistry();
@@ -245,6 +245,11 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 
     @Override
     public RemotingChannel newRemotingChannel(String id, ServerApp serverApp, int maxConcurrentRequests) {
+        if (getRemotingTransport() == null)
+            throw new RuntimeException("Remoting transport not defined, start the ChannelFactory first");
+        if (!getRemotingTransport().isStarted() && !getRemotingTransport().start())
+            throw new TransportException("Could not start remoting transport: " + getRemotingTransport());
+
         RemotingChannel channel = defaultChannelBuilder.buildRemotingChannel(getRemotingChannelClass(), id, serverApp, maxConcurrentRequests, getRemotingTransport(), newMessagingCodec(AMF0Message.class));
         if (defaultTimeToLive != null)
             channel.setDefaultTimeToLive(defaultTimeToLive);
