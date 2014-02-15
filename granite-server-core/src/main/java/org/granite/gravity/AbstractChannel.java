@@ -213,7 +213,8 @@ public abstract class AbstractChannel implements Channel {
 		try {
 			if (receivedQueue.size() + 1 > gravity.getGravityConfig().getMaxMessagesQueuedPerChannel())
 				throw new MessageReceivingException(message, "Could not queue message (channel's queue is full) for channel: " + this);
-			
+
+            log.debug("Channel %s queue message %s for client %s", getId(), message.getMessageId(), message.getClientId());
 			receivedQueue.add(message);
 		}
 		finally {
@@ -363,7 +364,7 @@ public abstract class AbstractChannel implements Channel {
 				message.setCorrelationId(correlationId);
 				messagesArray[i++] = message;
 			}
-			
+
 			// Setup serialization context (thread local)
 	        GraniteContext context = HttpGraniteContext.createThreadIntance(
 	            gravity.getGraniteConfig(), gravity.getServicesConfig(),
@@ -391,7 +392,7 @@ public abstract class AbstractChannel implements Channel {
 	        return true; // Messages were delivered, http context isn't valid anymore.
 		}
 		catch (IOException e) {
-			log.warn(e, "Could not send messages to channel: %s (retrying later)", this);
+			log.warn(e, "Could not send messages to channel: %s (retrying later)", getId());
 			
 			GravityConfig gravityConfig = getGravity().getGravityConfig();
 			if (gravityConfig.isRetryOnError()) {
@@ -400,7 +401,7 @@ public abstract class AbstractChannel implements Channel {
 					if (receivedQueue.size() + messages.size() > gravityConfig.getMaxMessagesQueuedPerChannel()) {
 						log.warn(
 							"Channel %s has reached its maximum queue capacity %s (throwing %s messages)",
-							this,
+							getId(),
 							gravityConfig.getMaxMessagesQueuedPerChannel(),
 							messages.size()
 						);

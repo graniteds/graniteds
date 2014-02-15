@@ -143,9 +143,11 @@ public class SimpleServiceAdapter extends ServiceAdapter {
                     String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
                     String selector = (String)message.getHeader(CommandMessage.SELECTOR_HEADER);
                     if (subscriptionId == null)
-                    	log.warn("No subscriptionId for subscription message");
+                        log.warn("Channel %s no subscriptionId for subscription message", fromChannel.getId());
                     else
                     	topic.subscribe(fromChannel, message.getDestination(), subscriptionId, selector, noLocal);
+
+                    log.debug("Channel %s subscribed to destination %s subscriptionId %s selector %s", fromChannel.getId(), message.getDestination(), subscriptionId, selector);
 
                     reply = new AcknowledgeMessage(message);
                 }
@@ -167,9 +169,10 @@ public class SimpleServiceAdapter extends ServiceAdapter {
             if (topic != null) {
                 subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
                 if (subscriptionId == null)
-                	log.warn("No subscriptionId for unsubscription message");
+                	log.warn("Channel %s no subscriptionId for unsubscription message", fromChannel.getId());
                 else
                 	topic.unsubscribe(fromChannel, subscriptionId);
+                log.debug("Channel %s unsubscribed subscriptionId %s", fromChannel.getId(), subscriptionId);
             }
 
             reply = new AcknowledgeMessage(message);

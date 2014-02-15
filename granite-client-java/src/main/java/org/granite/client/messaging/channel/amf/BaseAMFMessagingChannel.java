@@ -82,7 +82,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	public void setSessionId(String sessionId) {
 		if ((sessionId == null && this.sessionId != null) || (sessionId != null && !sessionId.equals(this.sessionId))) {
 			this.sessionId = sessionId;
-			log.info("Messaging channel sessionId %s", sessionId);
+			log.info("Messaging channel %s set sessionId %s", clientId, sessionId);
 		}				
 	}
 
@@ -214,7 +214,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 				}
 
                 if (messages.length == 0)
-                    log.info("Received empty message array !!");
+                    log.debug("Channel %s: received empty message array !!", clientId);
 				
 				for (Message message : messages) {
 					if (!(message instanceof AsyncMessage))
@@ -225,7 +225,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 					if (consumer != null)
 						consumer.onMessage(convertFromAmf((AsyncMessage)message));
 					else
-						log.warn("No consumer for subscriptionId: %s", subscriptionId);
+						log.warn("Channel %s: no consumer for subscriptionId: %s", clientId, subscriptionId);
 				}
 			}
 		}
@@ -239,8 +239,18 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		return null;
 	}
 
-	@Override
+    @Override
+    protected void internalStop() {
+        super.internalStop();
+
+        cancelReconnectTimerTask();
+    }
+
+    @Override
 	public void onError(TransportMessage message, Exception e) {
+        if (!isStarted())
+            return;
+
 		super.onError(message, e);
 		
 		if (message != null && connectMessageId.compareAndSet(message.getId(), null))
@@ -254,6 +264,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	}
 	
 	protected void scheduleReconnectTimerTask() {
+        log.debug("Channel %s schedule reconnect", getId());
 		ReconnectTimerTask task = new ReconnectTimerTask();
 		
 		ReconnectTimerTask previousTask = reconnectTimerTask.getAndSet(task);

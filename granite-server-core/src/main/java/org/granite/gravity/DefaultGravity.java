@@ -407,7 +407,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		TimeChannel<C> timeChannel = (TimeChannel<C>)channels.get(clientId);
         if (timeChannel == null) {
 	        // Look for existing channel id/subscriptions in distributed data (clustering).
-        	try {
+            log.debug("Lookup channel %s in distributed data", clientId);
+            try {
 	        	DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 	        	if (gdd != null && gdd.hasChannelId(clientId)) {
 	        		log.debug("Found channel id in distributed data: %s", clientId);
@@ -725,8 +726,10 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 		        
 		        DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 		        if (gdd != null) {
-		            if (!gdd.hasChannelId(channel.getId()))
+		            if (!gdd.hasChannelId(channel.getId())) {
 		                gdd.addChannelId(channel.getId(), channel.getFactory().getClass().getName(), context.getClientType());
+                        log.debug("Stored channel %s in distributed data", channel.getId());
+                    }
 		            
 		        	if (Boolean.TRUE.toString().equals(destination.getProperties().get("session-selector"))) {
 		        		String selector = gdd.getDestinationSelector(destination.getId());
@@ -782,8 +785,8 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         GraniteConfig config = context.getGraniteConfig();
         try {
             if (config.hasSecurityService() && config.getSecurityService().acceptsContext())
-            	return (Message)config.getSecurityService().authorize(invocationContext);
-        	
+                return (Message)config.getSecurityService().authorize(invocationContext);
+
             return (Message)invocationContext.invoke();
         }
         catch (Exception e) {

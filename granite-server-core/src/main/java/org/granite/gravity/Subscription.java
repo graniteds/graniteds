@@ -124,6 +124,7 @@ public class Subscription implements Serializable {
         if (selector == null || selector.accept(message)) {
             try {
         		message.setHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER, subscriptionId);
+                log.debug("Channel %s deliver message to subscription %s", channel.getId(), subscriptionId);
 				getChannel().receive(message);
 	            return true;
 			} catch (MessageReceivingException e) {

@@ -170,6 +170,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			
 			tokensMap.clear();
 			tokensQueue.clear();
+            internalStop();
 			
 			Thread thread = this.senderThread;
 			senderThread = null;
@@ -184,6 +185,10 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		return false;
 	}
 
+    protected void internalStop() {
+    }
+
+
 	@Override
 	public void run() {
 
@@ -195,10 +200,13 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 					continue;
 
 				if (!pinged) {
-					ResultMessage result = sendBlockingToken(new PingMessage(clientId), token);
+                    PingMessage pingMessage = new PingMessage(clientId);
+                    log.debug("Channel %s send ping %s with clientId %s", id, pingMessage.getId(), clientId);
+					ResultMessage result = sendBlockingToken(pingMessage, token);
 					if (result == null)
 						continue;
 					clientId = result.getClientId();
+                    log.debug("Channel %s pinged clientId %s", id, clientId);
 					pinged = true;
 				}
 
@@ -219,7 +227,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 				break;
 			}
 			catch (Exception e) {
-				log.error(e, "Channel %s got an unexepected exception.", id);
+				log.error(e, "Channel %s got an unexpected exception.", id);
 			}
 		}
 	}
@@ -276,7 +284,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 				dependentToken.dispatchFault(faultMessage);
 			}
 			else
-				throw new RuntimeException("Unknow response message type: " + response);
+				throw new RuntimeException("Unknown response message type: " + response);
 			
 		}
 		catch (InterruptedException e) {
