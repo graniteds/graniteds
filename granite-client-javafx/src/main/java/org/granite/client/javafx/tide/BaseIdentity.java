@@ -154,18 +154,21 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
     }
     
     
-    public void login(final String username, String password, final TideResponder<String> tideResponder) {
+    public Future<String> login(final String username, String password, final TideResponder<String> tideResponder) {
     	getServerSession().login(username, password);
     	
     	clearSecurityCache();
-    	
-    	try {
+
+        Future<String> loggedIn = null;
+        try {
     	    // Force synchronous operation to prevent issues with Spring session fixation protection
     	    // so next remote calls use the correct session id
-    	    checkLoggedIn(tideResponder).get();
+    	    loggedIn = checkLoggedIn(tideResponder);
+            loggedIn.get();
     	}
     	catch (Exception e) {
     	}
+        return loggedIn;
     }
 
     public void login(final String username, String password, Charset charset, final TideResponder<String> tideResponder) {

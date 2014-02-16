@@ -28,7 +28,6 @@ import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceFactory;
 import org.granite.messaging.service.ServiceInvoker;
 import org.granite.scan.ScannedItemHandler;
-import org.granite.tide.TideServiceContext;
 import org.granite.tide.TideServiceInvoker;
 
 import java.util.Collections;

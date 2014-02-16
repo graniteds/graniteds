@@ -31,7 +31,6 @@ import org.granite.tide.TideServiceContext;
 import org.granite.tide.annotations.BypassTideMerge;
 import org.granite.tide.async.AsyncPublisher;
 import org.granite.tide.data.DataContext;
-import org.granite.tide.invocation.ContextEvent;
 import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationResult;
 import org.granite.tide.util.AbstractContext;

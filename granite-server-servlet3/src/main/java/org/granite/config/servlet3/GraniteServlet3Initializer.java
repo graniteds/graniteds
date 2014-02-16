@@ -465,7 +465,8 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	        		messagingDestination.setId(field.getName());
 	        		messagingDestination.setNoLocal(md.noLocal());
 	        		messagingDestination.setSessionSelector(md.sessionSelector());
-                    messagingDestination.setRoles(Arrays.asList(md.securityRoles()));
+                    if (md.securityRoles().length > 0)
+                        messagingDestination.setRoles(Arrays.asList(md.securityRoles()));
 	        		initSecurizer(messagingDestination, md.securizer(), configProvider);
 	        		messagingDestination.initServices(servicesConfig);
 	        	}
@@ -475,7 +476,8 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	        		messagingDestination.setId(field.getName());
 	        		messagingDestination.setNoLocal(md.noLocal());
 	        		messagingDestination.setSessionSelector(md.sessionSelector());
-                    messagingDestination.setRoles(Arrays.asList(md.securityRoles()));
+                    if (md.securityRoles().length > 0)
+                        messagingDestination.setRoles(Arrays.asList(md.securityRoles()));
 	        		initSecurizer(messagingDestination, md.securizer(), configProvider);
 	        		messagingDestination.initServices(servicesConfig);
 	        		messagingDestination.setName(md.name());
@@ -492,7 +494,8 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	        		messagingDestination.setId(field.getName());
 	        		messagingDestination.setNoLocal(md.noLocal());
 	        		messagingDestination.setSessionSelector(md.sessionSelector());
-                    messagingDestination.setRoles(Arrays.asList(md.securityRoles()));
+                    if (md.securityRoles().length > 0)
+                        messagingDestination.setRoles(Arrays.asList(md.securityRoles()));
 	        		initSecurizer(messagingDestination, md.securizer(), configProvider);
 	        		messagingDestination.initServices(servicesConfig);
 	        		messagingDestination.setName(md.name());
