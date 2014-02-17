@@ -662,11 +662,8 @@ public class JMSServiceAdapter extends ServiceAdapter {
             }
 
             public void setSelector(String selector) throws Exception {
-                if (jmsConsumer != null) {
-                    jmsConsumer.close();
-                    jmsConsumer = null;
-                }
-                
+                close();
+
                 connect(selector);
                 log.debug("Changed selector to %s for JMS Consumer of channel %s", selector, channel.getId());
             }
