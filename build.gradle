@@ -1776,13 +1776,52 @@ project('granite-client-java') {
 // Java Advanced client library
 project('granite-client-java-advanced') {
 	description = 'GraniteDS Advanced Java client'
-	
+
+    configurations {
+        create('testTomcat7Runtime')
+    }
+
 	dependencies {
 		compile project(':granite-client-java')
         compile project(':granite-server-core')
 		
-		testCompile project(':granite-client-java').sourceSets.test.output
+        testCompile project(':granite-server-servlet3')
+
+        testCompile 'org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:1.0.2.Final'
+
+        testCompile project(':granite-client-java').sourceSets.test.output
+        testCompile project(':granite-server-core')
+        testCompile project(':granite-server-core').sourceSets.test.output
+
+        testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3'
+
+        testTomcat7Runtime 'org.apache.tomcat.embed:tomcat-embed-core:7.0.42',
+                'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.42',
+                'org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.42'
+
+        testTomcat7Runtime project(':granite-server-tomcat7')
+        testTomcat7Runtime project(':granite-server-tomcat7').sourceSets.test.output
 	}
+
+    task testTomcat7(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-tomcat7:jar' ]) {
+        systemProperties = [ 'container.className' : 'org.granite.test.container.tomcat7.EmbeddedTomcat7' ]
+        ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
+
+        includes = [ 'org/granite/client/test/tide/server/Test*' ]
+
+        workingDir = rootDir
+        reports.junitXml.destination = new File(buildDir, 'test-results/tomcat7')
+        reports.html.destination = new File(buildDir, 'reports/tests/tomcat7')
+
+        // Add Tomcat jars to the classpath
+        classpath = project.sourceSets.test.runtimeClasspath + project.configurations.testTomcat7Runtime
+    }
+
+    test {
+        it.dependsOn 'testTomcat7'
+
+        excludes = [ 'org/granite/client/test/tide/server/Test*' ]
+    }
 }
 
 // UDP Integration for Gravity (Java client)
