@@ -66,6 +66,8 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
         tomcat = new Tomcat();
         tomcat.setPort(8787);
         tomcat.setBaseDir(tomcatHome.getAbsolutePath());
+        tomcat.addUser("user", "user");
+        tomcat.addRole("user", "user");
         host = tomcat.getHost();
         host.setAppBase(appBase.getAbsolutePath());
         host.setAutoDeploy(false);

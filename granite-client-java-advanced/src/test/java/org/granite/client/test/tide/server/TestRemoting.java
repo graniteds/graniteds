@@ -69,28 +69,26 @@ public class TestRemoting {
 
     private static final Logger log = Logger.getLogger(TestRemoting.class);
 
-    @Parameterized.Parameters(name = "container: {0}, encoding: {1}, channel: {2}")
+    @Parameterized.Parameters(name = "container: {0}, encoding: {1}")
     public static Iterable<Object[]> data() {
         return ContainerTestUtil.data();
     }
 
     private ContentType contentType;
-    private String channelType;
     protected static EmbeddedContainer container;
 
     private Context context = new SimpleContextManager().getContext();
 
-    private static final ServerApp SERVER_APP_APP = new ServerApp("/chat", false, "localhost", 8787);
+    private static final ServerApp SERVER_APP_APP = new ServerApp("/remoting", false, "localhost", 8787);
 
-    public TestRemoting(String containerClassName, ContentType contentType, String channelType) {
+    public TestRemoting(String containerClassName, ContentType contentType) {
         this.contentType = contentType;
-        this.channelType = channelType;
     }
 
     @BeforeClass
     public static void startContainer() throws Exception {
         // Build a chat server application
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "chat.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "remoting.war");
         war.addClass(TestService.class);
         war.addClass(RemotingApplication.class);
         war.addAsWebInfResource(new File("granite-client-java-advanced/src/test/resources/META-INF/services-config.properties"), "classes/META-INF/services-config.properties");

@@ -67,7 +67,7 @@ public class TestMessagingChat {
 
     @Parameterized.Parameters(name = "container: {0}, encoding: {1}, channel: {2}")
     public static Iterable<Object[]> data() {
-        return ContainerTestUtil.data();
+        return ContainerTestUtil.data(ContainerTestUtil.CHANNEL_TYPES_NO_WEBSOCKET);
     }
 
     private ContentType contentType;

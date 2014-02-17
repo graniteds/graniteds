@@ -27,16 +27,26 @@ public class ContainerTestUtil {
 
     public static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
 
-    public static String[] CHANNEL_TYPES = new String[] {
-        // ChannelType.LONG_POLLING, ChannelType.WEBSOCKET
-        ChannelType.WEBSOCKET
+    public static String[] CHANNEL_TYPES_ALL = new String[] {
+        ChannelType.LONG_POLLING, ChannelType.WEBSOCKET
+    };
+    public static String[] CHANNEL_TYPES_NO_WEBSOCKET = new String[] {
+        ChannelType.LONG_POLLING
     };
 
     public static List<Object[]> data() {
+        return data(null);
+    }
+
+    public static List<Object[]> data(String[] channelTypes) {
         List<Object[]> params = new ArrayList<Object[]>();
         for (ContentType contentType : Arrays.asList(ContentType.JMF_AMF, ContentType.AMF)) {
-            for (String channelType : CHANNEL_TYPES) {
-                params.add(new Object[] { CONTAINER_CLASS_NAME, contentType, channelType });
+            if (channelTypes == null)
+                params.add(new Object[] { CONTAINER_CLASS_NAME, contentType });
+            else {
+                for (String channelType : channelTypes) {
+                    params.add(new Object[] { CONTAINER_CLASS_NAME, contentType, channelType });
+                }
             }
         }
         return params;
@@ -56,7 +66,7 @@ public class ContainerTestUtil {
         ServerSession serverSession = context.set("serverSession", new ServerSession(serverApp));
         serverSession.setContentType(contentType);
 
-        for (String channelType : CHANNEL_TYPES) {
+        for (String channelType : CHANNEL_TYPES_ALL) {
             if (System.getProperty(channelType + ".transport.className") != null) {
                 try {
                     serverSession.setMessagingTransport(channelType, TypeUtil.newInstance(System.getProperty(channelType + ".transport.className"), Transport.class));
