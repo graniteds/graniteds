@@ -75,6 +75,9 @@ public class ChangeSetApplier {
 
 
     protected Object mergeObject(Object entity, Set<Object> cache) {
+        if (entity == null)
+            return null;
+
         ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
         Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
         
