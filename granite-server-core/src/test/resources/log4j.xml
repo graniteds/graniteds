@@ -20,35 +20,30 @@
       <param name="Target" value="System.out"/>
 
       <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-5p [%c{1}] %m%n"/>
+         <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-5p [%t] [%c{1}] %m%n"/>
       </layout>
    </appender>
 
-   <!-- 
-   <category name="org.hibernate">
-      <priority value="DEBUG"/>
-   </category>
-   -->
+    <logger name="org.granite.gravity.adapters.SimpleServiceAdapter">
+        <level value="DEBUG"/>
+    </logger>
+    <logger name="org.granite.gravity.websocket.AbstractWebSocketChannel">
+        <level value="DEBUG"/>
+    </logger>
+    <logger name="org.granite.gravity.servlet3.websocket">
+        <level value="DEBUG"/>
+    </logger>
+    <logger name="org.granite.gravity.jetty9">
+        <level value="DEBUG"/>
+    </logger>
+    <logger name="org.granite.gravity.Gravity">
+        <level value="DEBUG"/>
+    </logger>
+    <logger name="org.granite.client.messaging">
+        <level value="DEBUG"/>
+    </logger>
 
-   <!-- 
-   <category name="org.jboss.seam">
-      <priority value="DEBUG"/>
-   </category>
-   -->
-   
-   <!-- 
-   <category name="org.jboss.ejb3">
-      <priority value="DEBUG"/>
-   </category>
-   -->
-
-   <!-- 
-   <category name="org.jboss.kernel">
-      <priority value="DEBUG"/>
-   </category>
-   -->
-
-   <root>
+    <root>
       <priority value="INFO"/>
       <appender-ref ref="CONSOLE"/>
    </root>
