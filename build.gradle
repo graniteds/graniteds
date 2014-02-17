@@ -1668,6 +1668,7 @@ project('granite-client-java') {
 		'org/granite/tide/async/*.java',
 		'org/granite/tide/data/*.java',
 		'org/granite/tide/util/*.java',
+		'org/granite/tide/simple/*.java',
 		'org/granite/tide/validators/*.java',
 		'org/granite/messaging/amf/process/*Processor.java',
 		'org/granite/messaging/amf/io/convert/impl/GAE*.java',
