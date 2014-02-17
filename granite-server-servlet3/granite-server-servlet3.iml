@@ -11,7 +11,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="granite-server-core" exported="" />
-    <orderEntry type="library" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="org.jboss.spec.javax.websocket:jboss-websocket-api_1.0_spec:1.0.0.Final" level="project" />
   </component>
 </module>
 

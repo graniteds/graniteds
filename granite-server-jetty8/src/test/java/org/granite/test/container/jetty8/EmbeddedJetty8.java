@@ -55,10 +55,6 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
         "org.eclipse.jetty.annotations.AnnotationConfiguration"
     };
 
-    public EmbeddedJetty8(WebArchive war) throws Exception {
-        this(war, false);
-    }
-
     public EmbeddedJetty8(WebArchive war, boolean persistSessions) throws Exception {
         jetty = new Server();
         Connector connector = new SelectChannelConnector();

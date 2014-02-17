@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="org.jboss.spec.javax.websocket:jboss-websocket-api_1.0_spec:1.0.0.Final" type="repository">
+    <properties maven-id="org.jboss.spec.javax.websocket:jboss-websocket-api_1.0_spec:1.0.0.Final" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jboss-websocket-api_1.0_spec-1.0.0.Final.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ideaLibSources/jboss-websocket-api_1.0_spec-1.0.0.Final-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

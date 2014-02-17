@@ -23,7 +23,6 @@ package org.granite.client.test.server;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -34,11 +33,8 @@ import org.granite.client.messaging.Consumer;
 import org.granite.client.messaging.ResultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicMessageListener;
-import org.granite.client.messaging.channel.AMFChannelFactory;
 import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.channel.ChannelFactory;
-import org.granite.client.messaging.channel.ChannelType;
-import org.granite.client.messaging.channel.JMFChannelFactory;
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
@@ -50,7 +46,6 @@ import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
-import org.granite.util.TypeUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
@@ -70,20 +65,9 @@ public class TestMessagingFeed {
 
     private static final String APP_NAME = "feed";
 
-    private static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
-
-    private static String[] CHANNEL_TYPES = new String[] {
-        ChannelType.LONG_POLLING, ChannelType.WEBSOCKET
-    };
-
     @Parameterized.Parameters(name = "container: {0}, encoding: {1}, channel: {2}")
     public static Iterable<Object[]> data() {
-        List<Object[]> params = new ArrayList<Object[]>();
-        for (ContentType contentType : Arrays.asList(ContentType.JMF_AMF, ContentType.AMF)) {
-            for (String channelType : CHANNEL_TYPES)
-                params.add(new Object[] { CONTAINER_CLASS_NAME, contentType, channelType });
-        }
-        return params;
+        return ContainerTestUtil.data();
     }
 
     private ContentType contentType;
@@ -105,7 +89,7 @@ public class TestMessagingFeed {
         war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
 
-        container = (EmbeddedContainer)TypeUtil.newInstance(CONTAINER_CLASS_NAME, new Class<?>[] { WebArchive.class, boolean.class }, new Object[] { war, false });
+        container = ContainerTestUtil.newContainer(war, false);
         container.start();
         log.info("Container started");
     }
@@ -115,12 +99,6 @@ public class TestMessagingFeed {
         container.stop();
         container.destroy();
         log.info("Container stopped");
-    }
-
-    private ChannelFactory buildChannelFactory() {
-        ChannelFactory channelFactory = contentType.equals(ContentType.JMF_AMF) ? new JMFChannelFactory() : new AMFChannelFactory();
-        channelFactory.start();
-        return channelFactory;
     }
 
     @Test
@@ -222,6 +200,7 @@ public class TestMessagingFeed {
 
         public ConsumerThread(String id, CyclicBarrier[] barriers) {
             this.id = id;
+            thread.setName(id);
             this.barriers = barriers;
         }
 
@@ -233,21 +212,21 @@ public class TestMessagingFeed {
 
         @Override
         public void run() {
-            channelFactory = buildChannelFactory();
-            MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP);
+            channelFactory = ContainerTestUtil.buildChannelFactory(contentType);
+            MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf-" + id, SERVER_APP);
 
             consumer = new Consumer(channel, "feed", "feed");
             consumer.addMessageListener(new ConsumerMessageListener());
             consumer.subscribe(new ResultIssuesResponseListener() {
                 @Override
                 public void onResult(ResultEvent event) {
-                    log.info("Consumer " + id + ": subscribed " + event.getResult());
+                    log.info("Consumer %s: subscribed %s", id, event.getResult());
                     waitForChannel(consumer.getChannel(), barriers[0]);
                 }
 
                 @Override
                 public void onIssue(IssueEvent event) {
-                    log.error("Consumer " + id + ": subscription failed " + event.toString());
+                    log.error("Consumer %s: subscription failed %s", id, event.toString());
                 }
             });
 
@@ -259,12 +238,15 @@ public class TestMessagingFeed {
                 log.error(e, "Consumer %s interrupted", id);
             }
             try {
+                log.info("Consumer %s stopping", id);
                 channel.stop();
                 channelFactory.stop();
+                log.info("Consumer %s stopped", id);
+
                 barriers[2].await();
             }
             catch (Exception e) {
-                log.error("Consumer did not terminate correctly", e);
+                log.error(e, "Consumer %s did not terminate correctly", id);
             }
         }
 
@@ -272,29 +254,29 @@ public class TestMessagingFeed {
             @Override
             public void onMessage(TopicMessageEvent event) {
                 Info info = (Info)event.getData();
-                log.info("Consumer " + id + ": received message " + event.getData());
+                log.info("Consumer %s: received message %s", id, event.getData());
                 received.add(info);
 
                 if (received.size() == 10) {
-                    log.info("Consumer " + id + ": received all messages");
-                    // All messages received
+                    log.info("Consumer %s: received all messages", id);
+                    // All messages received, wait for other consumers before unsubscribing
                     try {
                         barriers[1].await();
                     }
                     catch (Exception e) {
-                        Thread.currentThread().interrupt();
+                        log.info(e, "Consumer %s interrupted waiting for others", id);
                     }
 
                     consumer.unsubscribe(new ResultIssuesResponseListener() {
                         @Override
                         public void onResult(ResultEvent event) {
-                            log.info("Consumer " + id + ": unsubscribed " + event.getResult());
+                            log.info("Consumer %s: unsubscribed %s", id, event.getResult());
                             waitToStop.countDown();
                         }
 
                         @Override
                         public void onIssue(IssueEvent event) {
-                            log.error("Consumer " + id + ": unsubscription failed " + event.toString());
+                            log.error("Consumer %s: unsubscription failed %s", id, event.toString());
                         }
                     });
                 }

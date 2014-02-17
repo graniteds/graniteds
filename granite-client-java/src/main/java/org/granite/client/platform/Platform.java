@@ -33,7 +33,8 @@ import org.granite.client.messaging.StandardRemoteAliasScanner;
 import org.granite.client.messaging.channel.ChannelType;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.client.messaging.transport.apache.ApacheAsyncTransport;
-import org.granite.client.messaging.transport.jetty.JettyWebSocketTransport;
+import org.granite.client.messaging.transport.jetty9.JettyStdWebSocketTransport;
+import org.granite.client.messaging.transport.jetty9.JettyWebSocketTransport;
 import org.granite.client.persistence.Persistence;
 import org.granite.logging.Logger;
 import org.granite.messaging.reflect.Reflection;
@@ -196,11 +197,24 @@ public class Platform {
     public Map<String, Transport> getMessagingTransports() {
         Map<String, Transport> transportMap = new HashMap<String, Transport>();
         try {
-            TypeUtil.forName("org.eclipse.jetty.websocket.WebSocketClient");
-            transportMap.put(ChannelType.WEBSOCKET, new JettyWebSocketTransport());
+            TypeUtil.forName("org.eclipse.jetty.websocket.jsr356.JettyClientContainerProvider");
+            transportMap.put(ChannelType.WEBSOCKET, new JettyStdWebSocketTransport());
         }
-        catch (ClassNotFoundException e) {
-            // Jetty websocket client not found
+        catch (Throwable e1) {
+            try {
+                TypeUtil.forName("org.eclipse.jetty.websocket.client.WebSocketClient");
+                transportMap.put(ChannelType.WEBSOCKET, new JettyWebSocketTransport());
+            }
+            catch (Throwable e2) {
+                // Jetty 9 websocket client not found
+                try {
+                    TypeUtil.forName("org.eclipse.jetty.websocket.WebSocketClientFactory");
+                    transportMap.put(ChannelType.WEBSOCKET, new org.granite.client.messaging.transport.jetty.JettyWebSocketTransport());
+                }
+                catch (Throwable e3) {
+                    // Jetty 8 websocket client not found
+                }
+            }
         }
         return transportMap;
     }

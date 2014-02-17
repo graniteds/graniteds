@@ -1,0 +1,29 @@
+<component name="libraryTable">
+  <library name="org.eclipse.jetty:jetty-annotations:9.1.1.v20140108" type="repository">
+    <properties maven-id="org.eclipse.jetty:jetty-annotations:9.1.1.v20140108" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jetty-annotations-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-jndi-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-plus-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-webapp-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-xml-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-util-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-servlet-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-security-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-server-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.servlet-api-3.1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-http-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jetty-io-9.1.1.v20140108.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.annotation-api-1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-4.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-commons-4.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/asm-tree-4.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ideaLibSources/jetty-util-9.1.1.v20140108-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/jetty-webapp-9.1.1.v20140108-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/jetty-server-9.1.1.v20140108-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

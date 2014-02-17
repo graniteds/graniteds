@@ -17,8 +17,9 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" scope="TEST" name="org.eclipse.jetty.websocket:websocket-client:9.1.1.v20140108" level="project" />
     <orderEntry type="module" module-name="granite-server-eclipselink" scope="TEST" />
-    <orderEntry type="module" module-name="granite-client-java" />
+    <orderEntry type="module" module-name="granite-client-java" scope="TEST" />
   </component>
 </module>
 

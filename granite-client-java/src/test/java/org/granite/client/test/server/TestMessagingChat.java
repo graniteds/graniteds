@@ -37,12 +37,9 @@ import org.granite.client.messaging.Producer;
 import org.granite.client.messaging.ResultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicMessageListener;
-import org.granite.client.messaging.channel.AMFChannelFactory;
 import org.granite.client.messaging.channel.Channel;
 //import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.channel.ChannelFactory;
-import org.granite.client.messaging.channel.ChannelType;
-import org.granite.client.messaging.channel.JMFChannelFactory;
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
@@ -55,7 +52,6 @@ import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
-import org.granite.util.TypeUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
@@ -73,20 +69,9 @@ public class TestMessagingChat {
 
     private static final Logger log = Logger.getLogger(TestMessagingChat.class);
 
-    private static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
-
-    private static String[] CHANNEL_TYPES = new String[] {
-        ChannelType.LONG_POLLING, ChannelType.WEBSOCKET
-    };
-
     @Parameterized.Parameters(name = "container: {0}, encoding: {1}, channel: {2}")
     public static Iterable<Object[]> data() {
-        List<Object[]> params = new ArrayList<Object[]>();
-        for (ContentType contentType : Arrays.asList(ContentType.JMF_AMF, ContentType.AMF)) {
-            for (String channelType : CHANNEL_TYPES)
-                params.add(new Object[] { CONTAINER_CLASS_NAME, contentType, channelType });
-        }
-        return params;
+        return ContainerTestUtil.data();
     }
 
     private ContentType contentType;
@@ -98,6 +83,8 @@ public class TestMessagingChat {
     public TestMessagingChat(String containerClassName, ContentType contentType, String channelType) {
         this.contentType = contentType;
         this.channelType = channelType;
+
+        System.out.println("log4j: " + getClass().getResource("log4j.properties"));
     }
 
     @BeforeClass
@@ -108,7 +95,7 @@ public class TestMessagingChat {
         war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
 
-        container = (EmbeddedContainer)TypeUtil.newInstance(CONTAINER_CLASS_NAME, new Class<?>[] { WebArchive.class, boolean.class }, new Object[] { war, false });
+        container = ContainerTestUtil.newContainer(war, false);
         container.start();
         log.info("Container started");
     }
@@ -120,15 +107,9 @@ public class TestMessagingChat {
         log.info("Container stopped");
     }
 
-    private ChannelFactory buildChannelFactory() {
-        ChannelFactory channelFactory = contentType.equals(ContentType.JMF_AMF) ? new JMFChannelFactory() : new AMFChannelFactory();
-        channelFactory.start();
-        return channelFactory;
-    }
-
     @Test
     public void testTextProducer() throws Exception {
-        ChannelFactory channelFactory = buildChannelFactory();
+        ChannelFactory channelFactory = ContainerTestUtil.buildChannelFactory(contentType);
         MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP_APP);
         Producer producer = new Producer(channel, "chat", "chat");
         ResponseMessage message = producer.publish("test").get();
@@ -165,7 +146,7 @@ public class TestMessagingChat {
             Assert.fail("Consumer subscription failed");
         }
 
-        ChannelFactory channelFactory = buildChannelFactory();
+        ChannelFactory channelFactory = ContainerTestUtil.buildChannelFactory(contentType);
         MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP_APP);
         Producer producer = new Producer(channel, "chat", "chat");
 
@@ -228,13 +209,13 @@ public class TestMessagingChat {
             Assert.fail("Consumers not subscribed");
         }
 
-        ChannelFactory channelFactory = buildChannelFactory();
-        MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP_APP);
+        ChannelFactory channelFactory = ContainerTestUtil.buildChannelFactory(contentType);
+        MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf-P", SERVER_APP_APP);
         Producer producer = new Producer(channel, "chat", "chat");
 
         for (int i = 0; i < MSG_COUNT; i++) {
             log.info("Producer sent message " + messages[i]);
-            // TODO: Test does not always pass with a too small delay between message ???
+            // TODO: Test does not always pass with a too small delay between messages ???
             Thread.sleep(5);
             producer.publish(messages[i]);
         }
@@ -285,6 +266,7 @@ public class TestMessagingChat {
 
         public ConsumerThread(String id, String[] messages, CyclicBarrier[] barriers) {
             this.id = id;
+            thread.setName(id);
             this.messages = Arrays.asList(messages);
             this.barriers = barriers;
         }
@@ -302,8 +284,8 @@ public class TestMessagingChat {
 
         @Override
         public void run() {
-            channelFactory = buildChannelFactory();
-            final MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP_APP);
+            ChannelFactory channelFactory = ContainerTestUtil.buildChannelFactory(contentType);
+            MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf-" + id, SERVER_APP_APP);
             channel.getTransport().setStatusHandler(new TransportStatusHandler() {
                 @Override
                 public void handleIO(boolean active) {
@@ -311,7 +293,7 @@ public class TestMessagingChat {
 
                 @Override
                 public void handleException(TransportException e) {
-                    log.error(e, "Consumer " + id + " transport exception");
+                    log.error(e, "Consumer %s transport exception", id);
                 }
             });
 
@@ -320,7 +302,7 @@ public class TestMessagingChat {
             consumer.subscribe(new ResultIssuesResponseListener() {
                 @Override
                 public void onResult(ResultEvent event) {
-                    log.info("Consumer %s: subscribed %s", id, event.getResult());
+                    log.info("Consumer %s: subscribed %s - %s", id, event.getMessage().getClientId(), event.getResult());
                     waitForChannel(consumer.getChannel(), barriers[0]);
                 }
 
@@ -344,12 +326,13 @@ public class TestMessagingChat {
                 log.error(e, "Consumer %s interrupted", id);
             }
             try {
+                log.info("Consumer %s stopping", id);
                 channel.stop();
                 channelFactory.stop();
                 barriers[2].await();
             }
             catch (Exception e) {
-                log.error("Consumer did not terminate correctly", e);
+                log.error(e, "Consumer %s did not terminate correctly", id);
             }
         }
 
@@ -366,10 +349,10 @@ public class TestMessagingChat {
                             barriers[1].await();
                         }
                         catch (InterruptedException e) {
-                            log.info(e, "Consumer %s interrupted during message reception", id);
+                            log.info(e, "Consumer %s interrupted waiting for others", id);
                         }
                         catch (BrokenBarrierException e) {
-                            log.info(e, "Consumer %s broken barrier during message reception", id);
+                            log.info(e, "Consumer %s interrupted waiting for others", id);
                         }
 
                         consumer.unsubscribe(new ResultIssuesResponseListener() {

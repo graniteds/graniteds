@@ -39,6 +39,7 @@ import org.granite.client.messaging.events.FaultEvent;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.messages.ResponseMessage;
+import org.granite.client.messaging.messages.responses.FaultMessage;
 import org.granite.client.test.server.data.Data;
 import org.granite.client.test.server.data.DataApplication;
 import org.granite.client.test.server.data.DataServiceBean;
@@ -46,7 +47,6 @@ import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
-import org.granite.util.TypeUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -54,6 +54,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -66,13 +67,11 @@ public class TestRemotingData {
 
     private static final Logger log = Logger.getLogger(TestRemotingData.class);
 
-    private static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
-
     @Parameterized.Parameters(name = "container: {0}, encoding: {1}")
     public static Iterable<Object[]> data() {
         List<Object[]> params = new ArrayList<Object[]>();
         for (ContentType contentType : Arrays.asList(ContentType.JMF_AMF, ContentType.AMF)) {
-            params.add(new Object[] { CONTAINER_CLASS_NAME, contentType });
+            params.add(new Object[] { ContainerTestUtil.CONTAINER_CLASS_NAME, contentType });
         }
         return params;
     }
@@ -97,7 +96,7 @@ public class TestRemotingData {
         war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-ejb/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
 
-        container = (EmbeddedContainer)TypeUtil.newInstance(CONTAINER_CLASS_NAME, new Class<?>[] { WebArchive.class, boolean.class }, new Object[] { war, false });
+        container = ContainerTestUtil.newContainer(war, false);
         container.start();
         log.info("Container started");
     }
@@ -190,5 +189,14 @@ public class TestRemotingData {
             }
         }
         Assert.assertTrue("Created data for async call found", found);
+    }
+
+    @Test
+    public void testCallFailedRuntimeException() throws Exception {
+        RemoteService remoteService = new RemoteService(channel, "dataService");
+
+        ResponseMessage failResult = remoteService.newInvocation("fail").invoke().get();
+
+        Assert.assertTrue("Call failed", failResult instanceof FaultMessage);
     }
 }

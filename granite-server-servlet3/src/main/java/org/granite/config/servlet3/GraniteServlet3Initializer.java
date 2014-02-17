@@ -129,20 +129,20 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 				servletContext.log("Could not setup GravityAsyncServlet", e);
 			}
 
-//            if (servletContext.getServletRegistration("WebSocketServlet") == null) {
-//                try {
-//                    TypeUtil.forName("javax.websocket.server.ServerEndpointConfig");
-//                    try {
-//                        servletContext.addListener(TypeUtil.forName("org.granite.gravity.servlet3.websocket.GravityWebSocketDeployer", ServletContextListener.class));
-//                    }
-//                    catch (ClassNotFoundException f) {
-//                        servletContext.log("Could not setup WebSocket deployer", f);
-//                    }
-//                }
-//                catch (ClassNotFoundException e) {
-//                    // No JSR 356 websocket support detected
-//                }
-//            }
+            if (servletContext.getServletRegistration("WebSocketServlet") == null) {
+                try {
+                    TypeUtil.forName("javax.websocket.server.ServerEndpointConfig");
+                    try {
+                        servletContext.addListener(TypeUtil.forName("org.granite.gravity.servlet3.websocket.GravityWebSocketDeployer", ServletContextListener.class));
+                    }
+                    catch (ClassNotFoundException f) {
+                        servletContext.log("Could not setup WebSocket deployer", f);
+                    }
+                }
+                catch (ClassNotFoundException e) {
+                    // No JSR 356 websocket support detected
+                }
+            }
 		}
 	}
 	

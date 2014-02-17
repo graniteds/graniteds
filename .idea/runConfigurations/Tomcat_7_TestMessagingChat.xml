@@ -8,12 +8,12 @@
     </extension>
     <module name="granite-client-java-tests-tomcat7" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-    <option name="ALTERNATIVE_JRE_PATH" value="" />
+    <option name="ALTERNATIVE_JRE_PATH" value="$PROJECT_DIR$/../../jdk1.7.0_45" />
     <option name="PACKAGE_NAME" value="org.granite.client.test.server" />
     <option name="MAIN_CLASS_NAME" value="org.granite.client.test.server.TestMessagingChat" />
     <option name="METHOD_NAME" value="" />
     <option name="TEST_OBJECT" value="class" />
-    <option name="VM_PARAMETERS" value="-ea -Dcontainer.className=org.granite.test.container.tomcat7.EmbeddedTomcat7" />
+    <option name="VM_PARAMETERS" value="-ea -Dcontainer.className=org.granite.test.container.tomcat7.EmbeddedTomcat7 -Dwebsocket.transport.className=org.granite.client.messaging.transport.jetty.JettyWebSocketTransport" />
     <option name="PARAMETERS" value="" />
     <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
     <option name="ENV_VARIABLES" />
@@ -23,7 +23,13 @@
     </option>
     <envs />
     <patterns />
+    <RunnerSettings RunnerId="Debug">
+      <option name="DEBUG_PORT" value="" />
+      <option name="TRANSPORT" value="0" />
+      <option name="LOCAL" value="true" />
+    </RunnerSettings>
     <RunnerSettings RunnerId="Run" />
+    <ConfigurationWrapper RunnerId="Debug" />
     <ConfigurationWrapper RunnerId="Run" />
     <method />
   </configuration>

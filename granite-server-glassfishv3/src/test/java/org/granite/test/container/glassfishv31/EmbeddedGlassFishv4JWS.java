@@ -1,0 +1,53 @@
+/**
+ *   GRANITE DATA SERVICES
+ *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+ *
+ *   This file is part of the Granite Data Services Platform.
+ *
+ *   Granite Data Services is free software; you can redistribute it and/or
+ *   modify it under the terms of the GNU Lesser General Public
+ *   License as published by the Free Software Foundation; either
+ *   version 2.1 of the License, or (at your option) any later version.
+ *
+ *   Granite Data Services is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ *   General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public
+ *   License along with this library; if not, write to the Free Software
+ *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ *   USA, or see <http://www.gnu.org/licenses/>.
+ */
+package org.granite.test.container.glassfishv31;
+
+import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.GlassFish;
+import org.glassfish.embeddable.GlassFishProperties;
+import org.glassfish.embeddable.GlassFishRuntime;
+import org.granite.logging.Logger;
+import org.granite.test.container.EmbeddedContainer;
+import org.granite.test.container.Utils;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Created by william on 30/09/13.
+ */
+public class EmbeddedGlassFishv4JWS extends EmbeddedGlassFishv31 {
+
+    public EmbeddedGlassFishv4JWS(WebArchive war, boolean persistSessions) throws Exception {
+        super(war, persistSessions);
+    }
+
+    @Override
+    protected void initWar(WebArchive war) {
+        war.setWebXML(new File("granite-server-glassfishv3/src/test/resources/web-websocket-std.xml"));
+    }
+}

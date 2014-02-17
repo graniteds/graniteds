@@ -23,7 +23,6 @@ package org.granite.client.test.server;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -34,10 +33,7 @@ import org.granite.client.messaging.Consumer;
 import org.granite.client.messaging.ResultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicMessageListener;
-import org.granite.client.messaging.channel.AMFChannelFactory;
 import org.granite.client.messaging.channel.ChannelFactory;
-import org.granite.client.messaging.channel.ChannelType;
-import org.granite.client.messaging.channel.JMFChannelFactory;
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
@@ -49,7 +45,6 @@ import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
-import org.granite.util.TypeUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
@@ -69,20 +64,9 @@ public class TestMessagingReconnect {
 
     private static final String APP_NAME = "feed";
 
-    private static String CONTAINER_CLASS_NAME = System.getProperty("container.className");
-
-    private static String[] CHANNEL_TYPES = new String[] {
-        ChannelType.LONG_POLLING, ChannelType.WEBSOCKET
-    };
-
     @Parameterized.Parameters(name = "container: {0}, encoding: {1}, channel: {2}")
     public static Iterable<Object[]> data() {
-        List<Object[]> params = new ArrayList<Object[]>();
-        for (ContentType contentType : Arrays.asList(ContentType.JMF_AMF, ContentType.AMF)) {
-            for (String channelType : CHANNEL_TYPES)
-                params.add(new Object[] { CONTAINER_CLASS_NAME, contentType, channelType });
-        }
-        return params;
+        return ContainerTestUtil.data();
     }
 
     private ContentType contentType;
@@ -105,7 +89,7 @@ public class TestMessagingReconnect {
         war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsWebInfResource(new File("granite-client-java/src/test/resources/granite-config-server-reconnect.xml"), "granite/granite-config.xml");
 
-        container = (EmbeddedContainer)TypeUtil.newInstance(CONTAINER_CLASS_NAME, new Class<?>[] { WebArchive.class, boolean.class }, new Object[] { war, true });
+        container = ContainerTestUtil.newContainer(war, true);
         container.start();
         log.info("Container started");
     }
@@ -115,12 +99,6 @@ public class TestMessagingReconnect {
         container.stop();
         container.destroy();
         log.info("Container stopped");
-    }
-
-    private ChannelFactory buildChannelFactory() {
-        ChannelFactory channelFactory = contentType.equals(ContentType.JMF_AMF) ? new JMFChannelFactory() : new AMFChannelFactory();
-        channelFactory.start();
-        return channelFactory;
     }
 
     @Test
@@ -181,6 +159,7 @@ public class TestMessagingReconnect {
 
         public ConsumerThread(String id, CyclicBarrier[] barriers) {
             this.id = id;
+            thread.setName(id);
             this.barriers = barriers;
         }
 
@@ -192,7 +171,7 @@ public class TestMessagingReconnect {
 
         @Override
         public void run() {
-            channelFactory = buildChannelFactory();
+            channelFactory = ContainerTestUtil.buildChannelFactory(contentType);
             final MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP);
 
             consumer = new Consumer(channel, "feed", "feed");
@@ -200,7 +179,7 @@ public class TestMessagingReconnect {
             consumer.subscribe(new ResultIssuesResponseListener() {
                 @Override
                 public void onResult(ResultEvent event) {
-                    log.info("Consumer " + id + ": subscribed " + channel.getClientId());
+                    log.info("Consumer %s: subscribed %s", id, channel.getClientId());
                     try {
                         barriers[0].await();
                     }
@@ -210,7 +189,7 @@ public class TestMessagingReconnect {
 
                 @Override
                 public void onIssue(IssueEvent event) {
-                    log.error("Consumer " + id + ": subscription failed " + event.toString());
+                    log.error("Consumer %s: subscription failed %s", id, event.toString());
                 }
             });
 
@@ -226,7 +205,7 @@ public class TestMessagingReconnect {
                 barriers[3].await();
             }
             catch (Exception e) {
-                log.error("Consumer did not terminate correctly", e);
+                log.error(e, "Consumer %s did not terminate correctly", id);
             }
         }
 
@@ -234,11 +213,11 @@ public class TestMessagingReconnect {
             @Override
             public void onMessage(TopicMessageEvent event) {
                 Info info = (Info)event.getData();
-                log.info("Consumer " + id + ": received message " + event.getData());
+                log.info("Consumer %s: received message %s", id, event.getData());
                 received.add(info);
 
                 if (received.size() == 10) {
-                    log.info("Consumer " + id + ": received all messages before restart");
+                    log.info("Consumer %s: received all messages before restart", id);
                     // All messages received
                     try {
                         barriers[1].await();
@@ -248,7 +227,7 @@ public class TestMessagingReconnect {
                     }
                 }
                 else if (received.size() == 20) {
-                    log.info("Consumer " + id + ": received all messages after restart");
+                    log.info("Consumer %s: received all messages after restart", id);
                     // All messages received
                     try {
                         barriers[2].await();
@@ -260,13 +239,13 @@ public class TestMessagingReconnect {
                     consumer.unsubscribe(new ResultIssuesResponseListener() {
                         @Override
                         public void onResult(ResultEvent event) {
-                            log.info("Consumer " + id + ": unsubscribed " + event.getResult());
+                            log.info("Consumer %s: unsubscribed %s", id, event.getResult());
                             waitToStop.countDown();
                         }
 
                         @Override
                         public void onIssue(IssueEvent event) {
-                            log.error("Consumer " + id + ": unsubscription failed " + event.toString());
+                            log.error("Consumer %s: unsubscription failed %s", id, event.toString());
                         }
                     });
                 }

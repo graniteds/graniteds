@@ -32,7 +32,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Created by william on 30/09/13.
@@ -45,10 +44,6 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
     private File appBase;
     private File warFile;
     private Thread serverThread;
-
-    public EmbeddedTomcat7(WebArchive war) throws Exception {
-        this(war, false);
-    }
 
     public EmbeddedTomcat7(WebArchive war, boolean persistSessions) throws Exception {
         tomcatHome = File.createTempFile("emb-t7-", "");
@@ -75,7 +70,7 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
         host.setConfigClass(EmbeddedContextConfig.class.getCanonicalName());
 
         war.addAsLibraries(new File("granite-server-tomcat7/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
-        war.setWebXML(new File("granite-server-tomcat7/src/test/resources/web-websocket.xml"));
+        initWar(war);
 
         warFile = new File(appBase, war.getName());
         if (warFile.exists())
@@ -83,6 +78,10 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
 
         war.as(ZipExporter.class).exportTo(warFile, true);
         tomcat.addWebapp("/" + warFile.getName().substring(0, warFile.getName().lastIndexOf(".")), warFile.getAbsolutePath());
+    }
+
+    protected void initWar(WebArchive war) {
+        war.setWebXML(new File("granite-server-tomcat7/src/test/resources/web-websocket.xml"));
     }
 
     private CountDownLatch waitForStart = new CountDownLatch(1);
@@ -155,4 +154,5 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
             }
             path.delete();
         }
-    }}
+    }
+}

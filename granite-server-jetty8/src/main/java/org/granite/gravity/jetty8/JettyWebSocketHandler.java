@@ -37,6 +37,7 @@ import org.granite.util.ContentType;
 import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.Message;
 
+
 public class JettyWebSocketHandler extends WebSocketHandler {
 	
 	private static final Logger log = Logger.getLogger(JettyWebSocketHandler.class);
