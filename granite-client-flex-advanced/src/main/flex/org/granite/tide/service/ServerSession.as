@@ -728,7 +728,7 @@ package org.granite.tide.service {
 
             dispatchEvent(new TidePluginEvent(Tide.PLUGIN_LOGOUT, { serverSession: this }));
 
-            if (ro.channelSet) {
+            if (ro.channelSet && ro.channelSet.authenticated) {
                 var asyncToken:AsyncToken = ro.channelSet.logout();	// Workaround described in BLZ-310
                 asyncToken.addResponder(new Responder(logoutComplete, logoutFault));
                 checkWaitForLogout();
