@@ -22,6 +22,7 @@
 package org.granite.messaging.service.security;
 
 import io.undertow.security.api.SecurityContext;
+import io.undertow.security.impl.SecurityContextImpl;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.spec.HttpServletRequestImpl;
 import org.granite.context.GraniteContext;
@@ -68,7 +69,7 @@ public class UndertowSecurityService extends AbstractSecurityService {
 
         Principal principal = null;
         if (session != null) {
-            if (exchange.getAttachment(SecurityContext.ATTACHMENT_KEY) == null)
+            if (exchange.getSecurityContext() == null)
                 tryRelogin();
         }
 
@@ -111,7 +112,7 @@ public class UndertowSecurityService extends AbstractSecurityService {
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
         HttpServletRequest httpRequest = graniteContext.getRequest();
         HttpServerExchange exchange = ((HttpServletRequestImpl)httpRequest).getExchange();
-        SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
+        SecurityContext securityContext = exchange.getSecurityContext();
 
         securityContext.logout();
 
