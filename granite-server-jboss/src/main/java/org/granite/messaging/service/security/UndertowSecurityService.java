@@ -50,7 +50,7 @@ public class UndertowSecurityService extends AbstractSecurityService {
         HttpServletRequest httpRequest = context.getRequest();
 
         HttpServerExchange exchange = ((HttpServletRequestImpl)httpRequest).getExchange();
-        SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
+        SecurityContext securityContext = exchange.getSecurityContext();
         boolean loggedIn = securityContext.login(decoded[0], decoded[1]);
         if (!loggedIn)
             throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
