@@ -47,7 +47,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="io.undertow:undertow-servlet:1.0.0.Beta30" level="project" />
+    <orderEntry type="library" name="io.undertow:undertow-servlet:1.0.0.Final" level="project" />
   </component>
 </module>
 
