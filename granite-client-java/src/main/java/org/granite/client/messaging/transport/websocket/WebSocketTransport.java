@@ -34,6 +34,7 @@ import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
 import javax.websocket.Extension;
 import javax.websocket.HandshakeResponse;
+import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 import java.io.IOException;
@@ -133,10 +134,8 @@ public abstract class WebSocketTransport extends AbstractWebSocketTransport<Sess
 
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
-//                if (transportMessage.getSessionId() != null)
-//                    webSocketClient.getCookieStore().add(channel.getUri(), new HttpCookie("JSESSIONID", transportMessage.getSessionId()));
-//
-//                request.setCookiesFrom(webSocketClient.getCookieStore());
+                if (transportMessage.getSessionId() != null)
+                   headers.put("Cookie", Collections.singletonList("JSESSIONID=" + transportMessage.getSessionId()));
 
                 headers.put("connectId", Collections.singletonList(transportMessage.getId()));
                 headers.put("GDSClientType", Collections.singletonList(transportMessage.getClientType().toString()));
@@ -151,7 +150,7 @@ public abstract class WebSocketTransport extends AbstractWebSocketTransport<Sess
         }
     }
 
-    public class GravityWebSocketEndpoint extends Endpoint {
+    public class GravityWebSocketEndpoint extends Endpoint implements MessageHandler.Whole<byte[]> {
 
         private Channel channel;
 
@@ -161,7 +160,13 @@ public abstract class WebSocketTransport extends AbstractWebSocketTransport<Sess
 
         @Override
         public void onOpen(Session session, EndpointConfig endpointConfig) {
+            session.addMessageHandler(this);
             WebSocketTransport.this.onConnect(channel, session);
+        }
+
+        @Override
+        public void onMessage(byte[] data) {
+            WebSocketTransport.this.onBinaryMessage(channel, data, 0, data.length);
         }
 
         @Override
@@ -221,7 +226,7 @@ public abstract class WebSocketTransport extends AbstractWebSocketTransport<Sess
         return new WebSocketTransportData();
     }
 
-	public static class WebSocketTransportData extends TransportData<Session> {
+	private class WebSocketTransportData extends TransportData<Session> {
 		
 		private Session session = null;
 

@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="org.apache.tomcat.embed:tomcat-embed-jasper:7.0.52" type="repository">
+    <properties maven-id="org.apache.tomcat.embed:tomcat-embed-jasper:7.0.52" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-embed-jasper-7.0.52.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-embed-core-7.0.52.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-embed-el-7.0.52.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ecj-4.3.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

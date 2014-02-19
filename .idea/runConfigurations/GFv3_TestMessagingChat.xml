@@ -13,7 +13,7 @@
     <option name="MAIN_CLASS_NAME" value="org.granite.client.test.server.TestMessagingChat" />
     <option name="METHOD_NAME" value="" />
     <option name="TEST_OBJECT" value="class" />
-    <option name="VM_PARAMETERS" value="-ea -Dcontainer.className=org.granite.test.container.glassfishv31.EmbeddedGlassFishv31 -Dwebsocket.transport.className=org.granite.client.messaging.transport.jetty9.JettyWebSocketTransport" />
+    <option name="VM_PARAMETERS" value="-ea -Dcontainer.className=org.granite.test.container.glassfishv31.EmbeddedGlassFishv31 -Dchannel.types=long-polling,websocket-jetty9" />
     <option name="PARAMETERS" value="" />
     <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
     <option name="ENV_VARIABLES" />

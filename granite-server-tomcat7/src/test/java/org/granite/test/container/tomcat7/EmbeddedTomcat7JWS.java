@@ -28,9 +28,9 @@ import java.io.File;
 /**
  * Created by william on 30/09/13.
  */
-public class EmbeddedTomcat8JWS extends EmbeddedTomcat7 {
+public class EmbeddedTomcat7JWS extends EmbeddedTomcat7 {
 
-    public EmbeddedTomcat8JWS(WebArchive war, boolean persistSessions) throws Exception {
+    public EmbeddedTomcat7JWS(WebArchive war, boolean persistSessions) throws Exception {
         super(war, persistSessions);
     }
 

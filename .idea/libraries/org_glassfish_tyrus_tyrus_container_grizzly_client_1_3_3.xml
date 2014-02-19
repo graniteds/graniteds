@@ -1,0 +1,20 @@
+<component name="libraryTable">
+  <library name="org.glassfish.tyrus:tyrus-container-grizzly-client:1.3.3" type="repository">
+    <properties maven-id="org.glassfish.tyrus:tyrus-container-grizzly-client:1.3.3" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/tyrus-container-grizzly-client-1.3.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-framework-2.3.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-http-server-2.3.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/grizzly-http-2.3.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tyrus-client-1.3.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tyrus-core-1.3.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tyrus-spi-1.3.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.websocket-api-1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/tyrus-container-grizzly-client-1.3.3-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/tyrus-client-1.3.3-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

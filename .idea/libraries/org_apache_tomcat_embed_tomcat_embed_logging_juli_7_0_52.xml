@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.52" type="repository">
+    <properties maven-id="org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.52" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/tomcat-embed-logging-juli-7.0.52.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -5,9 +5,9 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="TEST" name="org.apache.tomcat.embed:tomcat-embed-core:7.0.42" level="project" />
-    <orderEntry type="library" scope="TEST" name="org.apache.tomcat.embed:tomcat-embed-jasper:7.0.42" level="project" />
-    <orderEntry type="library" scope="TEST" name="org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.42" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.apache.tomcat.embed:tomcat-embed-core:7.0.52" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.apache.tomcat.embed:tomcat-embed-jasper:7.0.52" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.52" level="project" />
     <orderEntry type="module" module-name="granite-server-udp" scope="TEST" />
     <orderEntry type="module" module-name="granite-server-tomcat7" scope="TEST" />
     <orderEntry type="module" module-name="granite-client-java" />

@@ -13,6 +13,7 @@
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-jetty8/granite-client-java-tests-jetty8.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-jetty8/granite-client-java-tests-jetty8.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-jetty9/granite-client-java-tests-jetty9.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-jetty9/granite-client-java-tests-jetty9.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-tomcat7/granite-client-java-tests-tomcat7.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-tomcat7/granite-client-java-tests-tomcat7.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-tomcat7b/granite-client-java-tests-tomcat7b.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-tomcat7b/granite-client-java-tests-tomcat7b.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-tomcat8/granite-client-java-tests-tomcat8.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-tomcat8/granite-client-java-tests-tomcat8.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java-udp/granite-client-java-udp.iml" filepath="$PROJECT_DIR$/granite-client-java-udp/granite-client-java-udp.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java-udp/tests-tomcat7/granite-client-java-udp-tests-tomcat7.iml" filepath="$PROJECT_DIR$/granite-client-java-udp/tests-tomcat7/granite-client-java-udp-tests-tomcat7.iml" />

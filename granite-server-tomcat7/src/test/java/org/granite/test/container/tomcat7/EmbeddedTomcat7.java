@@ -21,7 +21,9 @@
  */
 package org.granite.test.container.tomcat7;
 
+import org.apache.catalina.Context;
 import org.apache.catalina.Host;
+import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.CatalinaProperties;
 import org.apache.catalina.startup.Tomcat;
 import org.granite.test.container.Utils;

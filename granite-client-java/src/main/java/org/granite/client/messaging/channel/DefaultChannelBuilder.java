@@ -112,7 +112,7 @@ public class DefaultChannelBuilder implements ChannelBuilder {
     }
 
 	public MessagingChannel buildMessagingChannel(String channelType, String id, URI uri, Transport transport, MessagingCodec<Message[]> codec) {
-        if (!(channelType.equals(ChannelType.LONG_POLLING) || channelType.equals(ChannelType.WEBSOCKET)))
+        if (!(channelType.startsWith(ChannelType.LONG_POLLING) || channelType.startsWith(ChannelType.WEBSOCKET)))
             return null;
         
         return new BaseAMFMessagingChannel(codec, transport, id, uri);
@@ -120,9 +120,9 @@ public class DefaultChannelBuilder implements ChannelBuilder {
 
     public MessagingChannel buildMessagingChannel(String channelType, String id, ServerApp serverApp, Transport transport, MessagingCodec<Message[]> codec) {
         String uri;
-        if (channelType.equals(ChannelType.LONG_POLLING))
+        if (channelType.startsWith(ChannelType.LONG_POLLING))
             uri = (serverApp.getSecure() ? "https" : "http") + "://" + serverApp.getServerName() + ":" + serverApp.getServerPort() + serverApp.getContextRoot() + gravityUrlMapping;
-        else if (channelType.equals(ChannelType.WEBSOCKET))
+        else if (channelType.startsWith(ChannelType.WEBSOCKET))
             uri = (serverApp.getSecure() ? "wss" : "ws") + "://" + serverApp.getServerName() + ":" + serverApp.getServerPort() + serverApp.getContextRoot() + websocketUrlMapping;
         else
             return null;

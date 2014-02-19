@@ -38,7 +38,9 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * @author Franck WOLFF
+ * Note: MUST implement ServerApplicationConfig to force Tomcat 7.0.52+ to initialize ServerContainer
+ *
+ * @author wdrai
  */
 public class GravityWebSocketDeployer implements ServletContextListener {
 
