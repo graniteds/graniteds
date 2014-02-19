@@ -45,6 +45,8 @@ public class EmbeddedJetty9 implements Runnable, EmbeddedContainer {
 
     private static final Logger log = Logger.getLogger(EmbeddedJetty9.class);
 
+    private WebArchive war;
+    private boolean persistSessions;
     private Server jetty;
     private WebAppContext webAppContext;
     private Thread serverThread;
@@ -67,22 +69,10 @@ public class EmbeddedJetty9 implements Runnable, EmbeddedContainer {
             jetty.setConnectors(new Connector[]{connector});
             jetty.setHandler(new HandlerCollection(true));
 
+            this.war = war;
             war.addAsLibraries(new File("granite-server-jetty9/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
             initWar(war);
-
-            webAppContext = war.as(ShrinkWrapWebAppContext.class);
-            webAppContext.setExtractWAR(true);
-            webAppContext.setParentLoaderPriority(true);
-            webAppContext.setContextPath("/" + war.getName().substring(0, war.getName().lastIndexOf(".")));
-            webAppContext.setConfigurationClasses(CONFIGURATION_CLASSES);
-            webAppContext.setPersistTempDirectory(true);
-            if (persistSessions) {
-                HashSessionManager sessionManager = new HashSessionManager();
-                sessionManager.setStoreDirectory(new File("granite-server-jetty9/build/tmp/jetty/sessions"));
-                sessionManager.setLazyLoad(false);
-                webAppContext.setSessionHandler(new SessionHandler(sessionManager));
-            }
-            ((HandlerCollection)jetty.getHandler()).addHandler(webAppContext);
+            this.persistSessions = persistSessions;
         }
         catch (Exception e) {
             log.error(e, "Could not create Embedded Jetty 9");
@@ -100,6 +90,19 @@ public class EmbeddedJetty9 implements Runnable, EmbeddedContainer {
     public void run() {
         try {
             jetty.start();
+            webAppContext = war.as(ShrinkWrapWebAppContext.class);
+            webAppContext.setExtractWAR(true);
+            webAppContext.setParentLoaderPriority(true);
+            webAppContext.setContextPath("/" + war.getName().substring(0, war.getName().lastIndexOf(".")));
+            webAppContext.setConfigurationClasses(CONFIGURATION_CLASSES);
+            webAppContext.setPersistTempDirectory(true);
+            if (persistSessions) {
+                HashSessionManager sessionManager = new HashSessionManager();
+                sessionManager.setStoreDirectory(new File("granite-server-jetty9/build/tmp/jetty/sessions"));
+                sessionManager.setLazyLoad(false);
+                webAppContext.setSessionHandler(new SessionHandler(sessionManager));
+            }
+            ((HandlerCollection)jetty.getHandler()).addHandler(webAppContext);
             webAppContext.start();
 
             waitForStart.countDown();
@@ -126,6 +129,8 @@ public class EmbeddedJetty9 implements Runnable, EmbeddedContainer {
     public void stop() {
         try {
             webAppContext.stop();
+            ((HandlerCollection)jetty.getHandler()).removeHandler(webAppContext);
+            webAppContext.destroy();
             jetty.stop();
             serverThread.interrupt();
         }

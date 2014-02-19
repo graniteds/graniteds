@@ -83,8 +83,6 @@ public class TestMessagingChat {
     public TestMessagingChat(String containerClassName, ContentType contentType, String channelType) {
         this.contentType = contentType;
         this.channelType = channelType;
-
-        System.out.println("log4j: " + getClass().getResource("log4j.properties"));
     }
 
     @BeforeClass

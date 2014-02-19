@@ -18,6 +18,7 @@
     <JAVADOC />
     <SOURCES>
       <root url="jar://$PROJECT_DIR$/lib/websocket-server-9.1.2.v20140210-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/jetty-servlet-9.1.2.v20140210-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

@@ -27,8 +27,6 @@ public class GravityWebSocketConfigurator extends ServerEndpointConfig.Configura
 
     @Override
     public void modifyHandshake(ServerEndpointConfig config, HandshakeRequest request, HandshakeResponse response) {
-        log.debug("WebSocket configurator handshake %s", config);
-
         // Tomcat websocket impl returns request headers in lowercase ????
         String connectMessageId = request.getHeaders().get("connectId") != null
                 ? request.getHeaders().get("connectId").get(0)
@@ -47,6 +45,8 @@ public class GravityWebSocketConfigurator extends ServerEndpointConfig.Configura
                     : (request.getParameterMap().get("GDSClientType") != null ? request.getParameterMap().get("GDSClientType").get(0) : null));
 
         HttpSession session = (HttpSession)request.getHttpSession();
+
+        log.debug("WebSocket configurator handshake ackId %s clientId %s sessionId %s", connectMessageId, clientId, session != null ? session.getId() : "(none)");
 
         String ctype = request.getHeaders().get("Content-Type") != null
                 ? request.getHeaders().get("Content-Type").get(0)

@@ -76,8 +76,6 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
 
 	@Override
 	public TransportFuture send(final Channel channel, final TransportMessage message) {
-        System.out.println("send before sync");
-
         TransportData<S> transportData = null;
         boolean pending = false;
 
@@ -119,8 +117,6 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
                 }
             }
         }
-        System.out.println("send after sync");
-
         return null;
 	}
 
@@ -151,12 +147,10 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
     }
 
     protected void onConnect(Channel channel, S connection) {
-        System.out.println("onConnect before sync");
         synchronized (channel) {
             reconnectAttempts = 0;
             ((TransportData<S>)channel.getTransportData()).connect(connection);
         }
-        System.out.println("onConnect after sync");
         send(channel, null);
     }
 
@@ -182,7 +176,6 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
         }
 
         if (connected) {
-            System.out.println("onClose before sync");
             synchronized (channel) {
                 if (waitBeforeReconnect || reconnectAttempts >= reconnectMaxAttempts) {
                     connected = false;
@@ -201,7 +194,6 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
                 connected = true;
                 connect(channel, connectMessage);
             }
-            System.out.println("onClose after sync");
         }
     }
 

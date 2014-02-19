@@ -1845,7 +1845,7 @@ project('granite-client-java') {
     task testTomcat7JWS(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-tomcat7:jar' ]) {
         systemProperties = [
                 'container.className' : 'org.granite.test.container.tomcat7.EmbeddedTomcat7JWS',
-                'channel.types' : 'long-polling,websocket-jetty9,websocket-std-jetty9,websocket-std-tyrus'
+                'channel.types' : 'long-polling,websocket-std-jetty9,websocket-std-tyrus'
         ]
         ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
 
@@ -1907,7 +1907,7 @@ project('granite-client-java') {
     task testJetty9(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-jetty9:jar' ]) {
         systemProperties = [
             'container.className' : 'org.granite.test.container.jetty9.EmbeddedJetty9',
-            'channel.types' : 'long-polling,websocket-jetty9,websocket-std-jetty9,websocket-std-tyrus'
+            'channel.types' : 'long-polling,websocket-jetty9,websocket-std-tyrus'
         ]
         ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
 
@@ -1928,7 +1928,7 @@ project('granite-client-java') {
     task testJetty9JWS(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-jetty9:jar' ]) {
         systemProperties = [
                 'container.className' : 'org.granite.test.container.jetty9.EmbeddedJetty9JWS',
-                'channel.types' : 'long-polling,websocket-jetty9,websocket-std-jetty9,websocket-std-tyrus'
+                'channel.types' : 'long-polling,websocket-std-jetty9,websocket-std-tyrus'
         ]
         ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
 
@@ -1949,7 +1949,7 @@ project('granite-client-java') {
     task testGlassFishv31(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-ejb:jar', ':granite-server-glassfishv3:jar' ]) {
         systemProperties = [
                 'container.className' : 'org.granite.test.container.glassfishv31.EmbeddedGlassFishv31',
-                'channel.types' : 'long-polling,websocket-jetty9,websocket-std-jetty9'
+                'channel.types' : 'long-polling,websocket-std-jetty9'
         ]
         ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
 
@@ -1970,7 +1970,7 @@ project('granite-client-java') {
     task testGlassFishv4JWS(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-ejb:jar', ':granite-server-glassfishv3:jar' ]) {
         systemProperties = [
                 'container.className' : 'org.granite.test.container.glassfishv31.EmbeddedGlassFishv4JWS',
-                'channel.types' : 'long-polling,websocket-jetty9,websocket-std-jetty9'
+                'channel.types' : 'long-polling,websocket-std-jetty9'
         ]
         ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
 
