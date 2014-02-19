@@ -133,7 +133,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
                 try {
                     TypeUtil.forName("javax.websocket.server.ServerEndpointConfig");
                     try {
-                        servletContext.addListener(TypeUtil.forName("org.granite.gravity.servlet3.websocket.GravityWebSocketDeployer", ServletContextListener.class));
+                        servletContext.addListener(TypeUtil.forName("org.granite.gravity.websocket.GravityWebSocketDeployer", ServletContextListener.class));
                     }
                     catch (ClassNotFoundException f) {
                         servletContext.log("Could not setup WebSocket deployer", f);

@@ -19,7 +19,7 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.gravity.servlet3.websocket;
+package org.granite.gravity.websocket;
 
 import org.granite.gravity.AbstractChannelFactory;
 import org.granite.gravity.Gravity;

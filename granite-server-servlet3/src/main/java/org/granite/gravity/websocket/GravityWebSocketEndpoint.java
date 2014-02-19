@@ -1,4 +1,4 @@
-package org.granite.gravity.servlet3.websocket;
+package org.granite.gravity.websocket;
 
 import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.Message;

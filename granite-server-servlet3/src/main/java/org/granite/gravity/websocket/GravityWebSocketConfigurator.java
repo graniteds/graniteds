@@ -1,4 +1,4 @@
-package org.granite.gravity.servlet3.websocket;
+package org.granite.gravity.websocket;
 
 import org.granite.logging.Logger;
 import org.granite.util.ContentType;

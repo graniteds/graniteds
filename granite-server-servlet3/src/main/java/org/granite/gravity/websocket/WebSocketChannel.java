@@ -19,13 +19,12 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.gravity.servlet3.websocket;
+package org.granite.gravity.websocket;
 
 import javax.websocket.CloseReason;
 import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 import org.granite.gravity.Gravity;
-import org.granite.gravity.websocket.AbstractWebSocketChannel;
 import org.granite.logging.Logger;
 
 import java.io.IOException;

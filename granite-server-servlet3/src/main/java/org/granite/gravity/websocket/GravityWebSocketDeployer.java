@@ -19,23 +19,15 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.gravity.servlet3.websocket;
+package org.granite.gravity.websocket;
 
 import org.granite.gravity.*;
-import org.granite.logging.Logger;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.websocket.DeploymentException;
-import javax.websocket.Endpoint;
-import javax.websocket.server.ServerApplicationConfig;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * Note: MUST implement ServerApplicationConfig to force Tomcat 7.0.52+ to initialize ServerContainer

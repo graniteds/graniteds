@@ -30,7 +30,7 @@
     <logger name="org.granite.gravity.websocket.AbstractWebSocketChannel">
         <level value="DEBUG"/>
     </logger>
-    <logger name="org.granite.gravity.servlet3.websocket">
+    <logger name="org.granite.gravity.websocket">
         <level value="DEBUG"/>
     </logger>
     <logger name="org.granite.gravity.jetty9">
