@@ -7,10 +7,11 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/src/main/resources/META-INF/services" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="granite-server-core" exported="" />
+    <orderEntry type="module" module-name="granite-server-core" scope="PROVIDED" />
     <orderEntry type="library" scope="PROVIDED" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="org.jboss.spec.javax.websocket:jboss-websocket-api_1.0_spec:1.0.0.Final" level="project" />
   </component>

@@ -52,6 +52,7 @@ import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
 
 
+@RemoteAlias("org.granite.tide.security.ServerIdentity")
 public class BaseIdentity extends ComponentImpl implements Identity, ExceptionHandler {
 	
 	private boolean loggedIn;

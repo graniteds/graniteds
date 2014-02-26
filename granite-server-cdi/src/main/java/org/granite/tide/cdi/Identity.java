@@ -23,13 +23,15 @@ package org.granite.tide.cdi;
 
 import org.granite.context.GraniteContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.tide.security.ServerIdentity;
 
 
 /**
  * @author William DRAI
  */
-public class Identity  {
+public class Identity implements ServerIdentity {
         
+    @Override
     public String isLoggedIn() {
     	GraniteContext context = GraniteContext.getCurrentInstance();
     	if (context != null && ((HttpGraniteContext)context).getRequest().getUserPrincipal() != null)

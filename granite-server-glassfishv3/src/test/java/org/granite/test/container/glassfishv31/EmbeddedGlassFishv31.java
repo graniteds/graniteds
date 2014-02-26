@@ -21,6 +21,7 @@
  */
 package org.granite.test.container.glassfishv31;
 
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.embeddable.*;
 import org.granite.test.container.Utils;
 import org.granite.test.container.EmbeddedContainer;
@@ -29,10 +30,10 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 /**
  * Created by william on 30/09/13.
@@ -52,8 +53,11 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
         BootstrapProperties bootstrapProps = new BootstrapProperties();
         glassfishRuntime = GlassFishRuntime.bootstrap(bootstrapProps);
 
+        war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
+        war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-glassfishv3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-eclipselink/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
+        war.addAsLibraries(new File("granite-server-beanvalidation/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         initWar(war);
 
         appName = war.getName().substring(0, war.getName().lastIndexOf("."));
@@ -89,7 +93,14 @@ public class EmbeddedGlassFishv31 implements Runnable, EmbeddedContainer {
                 glassfishRoot = gfProps.getInstanceRoot();
             }
 
+            System.setProperty("java.security.auth.login.config", new File(glassfishRoot, "config/login.conf").getAbsolutePath());
+
             glassfish.start();
+
+            File keyfile = new File(glassfishRoot, "config/keyfile");
+            FileWriter fw = new FileWriter(keyfile, true);
+            fw.append("user;{SSHA256}H8JVaF8jYUhFVKVRt+8z45K4swj8P+64uFmrLPMeS2W6Bm1qzpYLfg==;user");
+            fw.close();
 
             CommandResult setHttpPortResult = glassfish.getCommandRunner().run("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=8787");
             log.debug("Set http port result: %s", setHttpPortResult.getExitStatus());

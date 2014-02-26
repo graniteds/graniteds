@@ -38,6 +38,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.RequestFacade;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 
 /**
  * @author Franck WOLFF
@@ -59,71 +60,118 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
         }
     }
 
-    protected Field getRequestField() {
-        return requestField;
+
+    public void configure(Map<String, String> params) {
     }
 
-    
-    public void configure(Map<String, String> params) {
+
+    @Override
+    public void prelogin(HttpSession session, Object httpRequest) {
+        if (session == null) // Cannot prelogin() without a session
+            return;
+
+        if (session.getAttribute(AuthenticationContext.class.getName()) instanceof Tomcat7AuthenticationContext)
+            return;
+
+        Request request = getRequest((HttpServletRequest)httpRequest);
+        Realm realm = getRealm(request);
+
+        Tomcat7AuthenticationContext authorizationContext = new Tomcat7AuthenticationContext(realm);
+        session.setAttribute(AuthenticationContext.class.getName(), authorizationContext);
     }
 
     
     public void login(Object credentials, String charset) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials, charset);
 
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
-        HttpServletRequest httpRequest = context.getRequest();
-        Request request = getRequest(httpRequest);
-        Realm realm = getRealm(request);
+        ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
+        Principal principal = null;
+        Request request = null;
 
-        Principal principal = realm.authenticate(decoded[0], decoded[1]);
+        if (graniteContext instanceof HttpGraniteContext) {
+            HttpServletRequest httpRequest = graniteContext.getRequest();
+            request = getRequest(httpRequest);
+            Realm realm = getRealm(request);
+
+            Tomcat7AuthenticationContext authenticationContext = new Tomcat7AuthenticationContext(realm);
+            principal = authenticationContext.authenticate(decoded[0], decoded[1]);
+            if (principal != null)
+                graniteContext.getSession().setAttribute(AuthenticationContext.class.getName(), authenticationContext);
+        }
+        else {
+            AuthenticationContext authenticationContext = (AuthenticationContext)graniteContext.getSession().getAttribute(AuthenticationContext.class.getName());
+            if (authenticationContext != null)
+                principal = authenticationContext.authenticate(decoded[0], decoded[1]);
+        }
+
         if (principal == null)
             throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
 
-        request.setAuthType(AUTH_TYPE);
-        request.setUserPrincipal(principal);
+        if (graniteContext instanceof HttpGraniteContext) {
+            request.setAuthType(AUTH_TYPE);
+            request.setUserPrincipal(principal);
 
-        Session session = request.getSessionInternal();
-        session.setAuthType(AUTH_TYPE);
-        session.setPrincipal(principal);
-        session.setNote(Constants.SESS_USERNAME_NOTE, decoded[0]);
-        session.setNote(Constants.SESS_PASSWORD_NOTE, decoded[1]);
-        
+            Session session = request.getSessionInternal();
+            session.setAuthType(AUTH_TYPE);
+            session.setPrincipal(principal);
+            session.setNote(Constants.SESS_USERNAME_NOTE, decoded[0]);
+            session.setNote(Constants.SESS_PASSWORD_NOTE, decoded[1]);
+        }
+
         endLogin(credentials, charset);
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {
 
         startAuthorization(context);
-        
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
-        HttpServletRequest httpRequest = graniteContext.getRequest();
-        Request request = getRequest(httpRequest);
-        Session session = request.getSessionInternal(false);
 
+        ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
+        HttpServletRequest httpRequest = null;
+        AuthenticationContext authenticationContext = null;
         Principal principal = null;
-        if (session != null) {
-            request.setAuthType(session.getAuthType());
-        	principal = session.getPrincipal();
-        	if (principal == null && tryRelogin())
-        		principal = session.getPrincipal();
-        }
 
-        request.setUserPrincipal(principal);
+        if (graniteContext instanceof HttpGraniteContext) {
+            httpRequest = graniteContext.getRequest();
+            Request request = getRequest(httpRequest);
+            Session session = request.getSessionInternal(false);
+
+            if (session != null) {
+                request.setAuthType(session.getAuthType());
+                principal = session.getPrincipal();
+                if (principal == null && tryRelogin())
+                    principal = session.getPrincipal();
+            }
+            request.setUserPrincipal(principal);
+        }
+        else {
+            HttpSession session = graniteContext.getSession(false);
+            if (session != null) {
+                authenticationContext = (AuthenticationContext)session.getAttribute(AuthenticationContext.class.getName());
+                if (authenticationContext != null)
+                    principal = authenticationContext.getPrincipal();
+            }
+        }
 
         if (context.getDestination().isSecured()) {
             if (principal == null) {
-                if (httpRequest.getRequestedSessionId() != null) {
+                if (httpRequest != null && httpRequest.getRequestedSessionId() != null) {
                     HttpSession httpSession = httpRequest.getSession(false);
-                    if (httpSession == null || httpRequest.getRequestedSessionId().equals(httpSession.getId()))
+                    if (httpSession == null || !httpRequest.getRequestedSessionId().equals(httpSession.getId()))
                         throw SecurityServiceException.newSessionExpiredException("Session expired");
                 }
                 throw SecurityServiceException.newNotLoggedInException("User not logged in");
             }
 
+            if (httpRequest == null && authenticationContext == null)
+                throw SecurityServiceException.newNotLoggedInException("No authorization context");
+
             boolean accessDenied = true;
             for (String role : context.getDestination().getRoles()) {
-                if (request.isUserInRole(role)) {
+                if (httpRequest != null && httpRequest.isUserInRole(role)) {
+                    accessDenied = false;
+                    break;
+                }
+                if (authenticationContext != null && authenticationContext.isUserInRole(role)) {
                     accessDenied = false;
                     break;
                 }
@@ -147,18 +195,29 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
     }
 
     public void logout() throws SecurityServiceException {
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
+        if (graniteContext instanceof HttpGraniteContext) {
+            Session session = getSession(graniteContext.getRequest(), false);
+            if (session != null && session.getPrincipal() != null) {
+                session.setAuthType(null);
+                session.setPrincipal(null);
+                session.removeNote(Constants.SESS_USERNAME_NOTE);
+                session.removeNote(Constants.SESS_PASSWORD_NOTE);
 
-        Session session = getSession(context.getRequest(), false);
-        if (session != null && session.getPrincipal() != null) {
-            session.setAuthType(null);
-            session.setPrincipal(null);
-            session.removeNote(Constants.SESS_USERNAME_NOTE);
-            session.removeNote(Constants.SESS_PASSWORD_NOTE);
-            
-            endLogout();
-            
-            session.expire();
+                endLogout();
+
+                session.expire();
+            }
+        }
+        else {
+            HttpSession session = graniteContext.getSession();
+            if (session != null) {
+                session.removeAttribute(AuthenticationContext.class.getName());
+
+                endLogout();
+
+                session.invalidate();
+            }
         }
     }
 
@@ -178,7 +237,8 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
             request = (HttpServletRequest)((HttpServletRequestWrapper)request).getRequest();
         try {
             return (Request)requestField.get(request);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException("Could not get tomcat request", e);
         }
     }
@@ -196,4 +256,29 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
 
         return realm;
     }
+
+
+    public static class Tomcat7AuthenticationContext implements AuthenticationContext {
+
+        private final Realm realm;
+        private Principal principal;
+
+        public Tomcat7AuthenticationContext(Realm realm) {
+            this.realm = realm;
+        }
+
+        public Principal authenticate(String username, String password) {
+            principal = realm.authenticate(username, password);
+            return principal;
+        }
+
+        public Principal getPrincipal() {
+            return principal;
+        }
+
+        public boolean isUserInRole(String role) {
+            return realm.hasRole(null, principal, role);
+        }
+    }
+
 }

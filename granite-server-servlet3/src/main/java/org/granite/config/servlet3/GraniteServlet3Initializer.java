@@ -70,7 +70,6 @@ import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ExceptionConverter;
 import org.granite.messaging.service.ServiceFactory;
-import org.granite.messaging.service.SimpleServiceFactory;
 import org.granite.messaging.service.security.RemotingDestinationSecurizer;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.tide.TideComponentAnnotatedWithMatcher;
@@ -79,6 +78,7 @@ import org.granite.messaging.service.tide.TideComponentNameMatcher;
 import org.granite.messaging.service.tide.TideComponentTypeMatcher;
 import org.granite.messaging.webapp.AMFMessageFilter;
 import org.granite.messaging.webapp.AMFMessageServlet;
+import org.granite.tide.simple.SimpleServiceFactory;
 import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 
@@ -212,7 +212,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
             }
 	        
 	        if (factoryClass == null)
-	        	factoryClass = useTide ? org.granite.tide.simple.SimpleServiceFactory.class : SimpleServiceFactory.class;
+	        	factoryClass = useTide ? SimpleServiceFactory.class : org.granite.messaging.service.SimpleServiceFactory.class;
 
 	    	for (Class<?> ti : tideInterfaces) {
 	    		try {

@@ -1,8 +1,10 @@
 package org.granite.gravity.websocket;
 
+import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.granite.util.ContentType;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;
@@ -47,6 +49,10 @@ public class GravityWebSocketConfigurator extends ServerEndpointConfig.Configura
         HttpSession session = (HttpSession)request.getHttpSession();
 
         log.debug("WebSocket configurator handshake ackId %s clientId %s sessionId %s", connectMessageId, clientId, session != null ? session.getId() : "(none)");
+
+        Gravity gravity = (Gravity)config.getUserProperties().get("gravity");
+        if (gravity.getGraniteConfig().getSecurityService() != null)
+            gravity.getGraniteConfig().getSecurityService().prelogin(session, request);
 
         String ctype = request.getHeaders().get("Content-Type") != null
                 ? request.getHeaders().get("Content-Type").get(0)

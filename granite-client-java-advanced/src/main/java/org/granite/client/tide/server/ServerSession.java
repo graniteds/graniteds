@@ -850,7 +850,7 @@ public class ServerSession implements ContextAware {
 		    return;
 		}
 		
-		if (remotingChannel.isAuthenticated()) {
+		if (remotingChannel != null && remotingChannel.isAuthenticated()) {
 			remotingChannel.logout(new ResultFaultIssuesResponseListener() {
 				@Override
 				public void onResult(final ResultEvent event) {

@@ -10,11 +10,13 @@
       <module fileurl="file://$PROJECT_DIR$/granite-client-java-advanced/granite-client-java-advanced.iml" filepath="$PROJECT_DIR$/granite-client-java-advanced/granite-client-java-advanced.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-glassfishv3/granite-client-java-tests-glassfishv3.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-glassfishv3/granite-client-java-tests-glassfishv3.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-glassfishv4/granite-client-java-tests-glassfishv4.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-glassfishv4/granite-client-java-tests-glassfishv4.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-jbossas7/granite-client-java-tests-jbossas7.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-jbossas7/granite-client-java-tests-jbossas7.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-jetty8/granite-client-java-tests-jetty8.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-jetty8/granite-client-java-tests-jetty8.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-jetty9/granite-client-java-tests-jetty9.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-jetty9/granite-client-java-tests-jetty9.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-tomcat7/granite-client-java-tests-tomcat7.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-tomcat7/granite-client-java-tests-tomcat7.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-tomcat7b/granite-client-java-tests-tomcat7b.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-tomcat7b/granite-client-java-tests-tomcat7b.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-tomcat8/granite-client-java-tests-tomcat8.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-tomcat8/granite-client-java-tests-tomcat8.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-client-java/tests-wildfly/granite-client-java-tests-wildfly.iml" filepath="$PROJECT_DIR$/granite-client-java/tests-wildfly/granite-client-java-tests-wildfly.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java-udp/granite-client-java-udp.iml" filepath="$PROJECT_DIR$/granite-client-java-udp/granite-client-java-udp.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-java-udp/tests-tomcat7/granite-client-java-udp-tests-tomcat7.iml" filepath="$PROJECT_DIR$/granite-client-java-udp/tests-tomcat7/granite-client-java-udp-tests-tomcat7.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-client-javafx/granite-client-javafx.iml" filepath="$PROJECT_DIR$/granite-client-javafx/granite-client-javafx.iml" />
@@ -48,6 +50,7 @@
       <module fileurl="file://$PROJECT_DIR$/granite-server-toplink/granite-server-toplink.iml" filepath="$PROJECT_DIR$/granite-server-toplink/granite-server-toplink.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-server-udp/granite-server-udp.iml" filepath="$PROJECT_DIR$/granite-server-udp/granite-server-udp.iml" />
       <module fileurl="file://$PROJECT_DIR$/granite-server-weblogic/granite-server-weblogic.iml" filepath="$PROJECT_DIR$/granite-server-weblogic/granite-server-weblogic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/granite-server-wildfly/granite-server-wildfly.iml" filepath="$PROJECT_DIR$/granite-server-wildfly/granite-server-wildfly.iml" />
       <module fileurl="file://$PROJECT_DIR$/reference-docs/reference-docs.iml" filepath="$PROJECT_DIR$/reference-docs/reference-docs.iml" />
     </modules>
   </component>

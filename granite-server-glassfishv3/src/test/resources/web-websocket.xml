@@ -53,4 +53,7 @@
         <url-pattern>/websocketamf/*</url-pattern>
     </servlet-mapping>
 
+    <security-role>
+        <role-name>user</role-name>
+    </security-role>
 </web-app>

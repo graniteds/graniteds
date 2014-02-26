@@ -518,7 +518,32 @@ project('granite-server-jboss') {
         compile files('lib/jbossmq.jar')							// Used by JBossMQSelector impl
 
         compile project(':granite-server-core')
+
+        testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3',
+                'org.jboss.as:jboss-as-embedded:7.1.3.Final',
+                'org.jboss.as:jboss-as-server:7.1.3.Final'
+
+        testCompile project(':granite-server-core').sourceSets.test.output
 	}
+}
+
+// WildFly support (gravity)
+project('granite-server-wildfly') {
+
+    description = 'GraniteDS WildFly support server library'
+
+    dependencies {
+
+        compile 'io.undertow:undertow-servlet:1.0.0.Final',      // Used by WildFly security service
+                'io.undertow:undertow-core:1.0.0.Final'
+
+        compile project(':granite-server-core')
+
+        testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3',
+                'org.wildfly:wildfly-embedded:8.0.0.Final'
+
+        testCompile project(':granite-server-core').sourceSets.test.output
+    }
 }
 
 // GlassFish v2 support (security)
@@ -540,7 +565,8 @@ project('granite-server-glassfishv3') {
 	
 	dependencies {
 		compile 'javax.servlet:javax.servlet-api:3.0.1'			// Must add because catalina comes with 2.5
-		compile 'org.apache.tomcat:catalina:6.0.32'
+        compile group: 'org.glassfish.main.web', name: 'web-core', version: '3.1.2.2', transitive: false
+        compile group: 'org.glassfish.main.security', name: 'websecurity', version: '3.1.2.2', transitive: false
 		compile 'com.sun.grizzly:grizzly-utils:1.9.59'
 		compile 'com.sun.grizzly:grizzly-websockets:1.9.59'
 		
@@ -608,7 +634,9 @@ def coreProjects = [
         ':granite-server-tomcat7',
         ':granite-server-jetty6',
         ':granite-server-jetty8',
+        ':granite-server-jetty9',
         ':granite-server-jboss',
+        ':granite-server-wildfly',
         ':granite-server-glassfishv2',
         ':granite-server-glassfishv3',
         ':granite-server-weblogic',
@@ -1618,6 +1646,7 @@ project('granite-client-java') {
         create('testJetty8ClientRuntime')
         create('testJetty9ClientRuntime')
         create('testTyrusClientRuntime')
+
         create('testTomcat7Runtime')
         // create('testTomcat8Runtime')
         create('testJetty8Runtime')
@@ -1751,6 +1780,8 @@ project('granite-client-java') {
 		'org/granite/tide/data/*.java',
 		'org/granite/tide/util/*.java',
 		'org/granite/tide/simple/*.java',
+        'org/granite/tide/pojo/*.java',
+        'org/granite/tide/security/*.java',
 		'org/granite/tide/validators/*.java',
 		'org/granite/messaging/amf/process/*Processor.java',
 		'org/granite/messaging/amf/io/convert/impl/GAE*.java',
@@ -1814,6 +1845,7 @@ project('granite-client-java') {
         && !f.name.matches('.*websocket-api.*\\.jar')
         && !f.name.matches('.*ejb-api.*\\.jar')
         && !f.name.matches('.*jpa.*api.*\\.jar')
+        && !f.name.matches('.*validation.*api.*\\.jar')
         && !f.name.matches('.*jms-api.*\\.jar')
         && !f.name.matches('.*cdi-api.*\\.jar')
         && !f.name.matches('.*transaction-api.*\\.jar')
@@ -1837,9 +1869,6 @@ project('granite-client-java') {
 
         // Add Tomcat jars to the classpath
         classpath = project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes) + project.configurations.testJetty8ClientRuntime + project.configurations.testTomcat7Runtime
-
-        println 'Tomcat 7 classpath'
-        classpath.each { println it.name }
     }
 
     task testTomcat7JWS(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-tomcat7:jar' ]) {
@@ -1859,9 +1888,6 @@ project('granite-client-java') {
         // Add Tomcat jars to the classpath
         classpath = (project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes)
             + project.configurations.testJetty9ClientRuntime + project.configurations.testTyrusClientRuntime + project.configurations.testTomcat7Runtime)
-
-        println 'Tomcat 7 JWS classpath'
-        classpath.each { println it.name }
     }
 
 //    task testTomcat8JWS(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-tomcat7:jar' ]) {
@@ -1899,9 +1925,6 @@ project('granite-client-java') {
 
         // Add Jetty jars to the classpath but exclude jetty 9
         classpath = project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes) + project.configurations.testJetty8ClientRuntime + project.configurations.testJetty8Runtime
-
-        println 'Jetty 8 classpath'
-        classpath.each { println it.name }
     }
 
     task testJetty9(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-jetty9:jar' ]) {
@@ -1920,9 +1943,6 @@ project('granite-client-java') {
         // Add Jetty jars to the classpath (excluding jar from client compile classpath)
         classpath = (project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes)
             + project.configurations.testJetty9ClientRuntime + project.configurations.testTyrusClientRuntime + project.configurations.testJetty9Runtime)
-
-        println 'Jetty 9 classpath'
-        classpath.each { println it.name }
     }
 
     task testJetty9JWS(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-jetty9:jar' ]) {
@@ -1941,15 +1961,12 @@ project('granite-client-java') {
         // Add Jetty jars to the classpath (excluding jar from client compile classpath)
         classpath = (project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes)
             + project.configurations.testJetty9ClientRuntime + project.configurations.testTyrusClientRuntime + project.configurations.testJetty9Runtime)
-
-        println 'Jetty 9 JWS classpath'
-        classpath.each { println it.name }
     }
 
     task testGlassFishv31(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-ejb:jar', ':granite-server-glassfishv3:jar' ]) {
         systemProperties = [
                 'container.className' : 'org.granite.test.container.glassfishv31.EmbeddedGlassFishv31',
-                'channel.types' : 'long-polling,websocket-std-jetty9'
+                'channel.types' : 'websocket-std-jetty9'    // long-polling fails randomly on GF 3.1
         ]
         ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
 
@@ -1962,9 +1979,6 @@ project('granite-client-java') {
         // Add GlassFish jars to the classpath (excluding jar from client compile classpath)
         classpath = (project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes) + project.configurations.testJetty9ClientRuntime
                 + project.configurations.testGlassFishv31RuntimePatch + project.configurations.testGlassFishv31Runtime)
-
-        println 'GlassFish v3.1 classpath'
-        classpath.each { println it.name }
     }
 
     task testGlassFishv4JWS(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-ejb:jar', ':granite-server-glassfishv3:jar' ]) {
@@ -1983,9 +1997,6 @@ project('granite-client-java') {
         // Add GlassFish jars to the classpath (excluding jar from client compile classpath)
         classpath = (project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes) + project.configurations.testJetty9ClientRuntime
                 + project.configurations.testGlassFishv4Runtime)
-
-        println 'GlassFish v4 JWS classpath'
-        classpath.each { println it.name }
     }
 
     test {
@@ -2000,7 +2011,14 @@ project('granite-client-java-advanced') {
 	description = 'GraniteDS Advanced Java client'
 
     configurations {
+        create('testJetty8ClientRuntime')
+        create('testJetty9ClientRuntime')
+        create('testTyrusClientRuntime')
+
         create('testTomcat7Runtime')
+        create('testJBossAS7Runtime')
+        create('testWildFly8Runtime')
+        create('testGlassFishv4Runtime')
     }
 
 	dependencies {
@@ -2009,24 +2027,76 @@ project('granite-client-java-advanced') {
 
         compile 'org.springframework:spring-context:3.1.4.RELEASE'
         compile 'javax.validation:validation-api:1.0.0.GA'
-		
-        testCompile project(':granite-server-servlet3')
+
+        testRuntime 'org.slf4j:slf4j-api:1.7.5',
+                'org.slf4j:slf4j-log4j12:1.7.5'
+
+        testCompile(project(':granite-server-servlet3'))
 
         testCompile 'org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:1.0.2.Final'
 
+        testCompile project(':granite-client-java').sourceSets.main.output
         testCompile project(':granite-client-java').sourceSets.test.output
-        testCompile project(':granite-server-core')
+        testCompile project(':granite-server-core').sourceSets.main.output
         testCompile project(':granite-server-core').sourceSets.test.output
 
         testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3'
+
+        testTyrusClientRuntime 'org.glassfish.tyrus:tyrus-container-grizzly-client:1.4'
+
+        testJetty8ClientRuntime 'org.eclipse.jetty:jetty-websocket:8.1.14.v20131031',
+                'org.eclipse.jetty:jetty-io:8.1.14.v20131031',
+                'org.eclipse.jetty:jetty-client:8.1.14.v20131031',
+                'org.eclipse.jetty:jetty-util:8.1.14.v20131031'
+
+        testJetty9ClientRuntime 'org.eclipse.jetty.websocket:websocket-client:9.1.2.v20140210',
+                'org.eclipse.jetty.websocket:javax-websocket-client-impl:9.1.2.v20140210'
 
         testTomcat7Runtime 'org.apache.tomcat.embed:tomcat-embed-core:7.0.52',
                 'org.apache.tomcat.embed:tomcat-embed-jasper:7.0.52',
                 'org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.52'
 
-        testTomcat7Runtime project(':granite-server-tomcat7')
+        testTomcat7Runtime(project(':granite-server-tomcat7')) { transitive = false }
         testTomcat7Runtime project(':granite-server-tomcat7').sourceSets.test.output
+
+        testJBossAS7Runtime 'org.jboss.as:jboss-as-embedded:7.1.3.Final'
+
+        testJBossAS7Runtime(project(':granite-server-tomcat7')) { transitive = false }
+        testJBossAS7Runtime project(':granite-server-tomcat7').sourceSets.test.output
+        testJBossAS7Runtime(project(':granite-server-jboss')) { transitive = false }
+        testJBossAS7Runtime project(':granite-server-jboss').sourceSets.test.output
+
+        testWildFly8Runtime 'org.wildfly:wildfly-embedded:8.0.0.Final',
+                'org.jboss.logging:jboss-logging:3.1.4.GA'
+
+        testWildFly8Runtime(project(':granite-server-jboss')) { transitive = false }
+        testWildFly8Runtime project(':granite-server-jboss').sourceSets.test.output
+        testWildFly8Runtime(project(':granite-server-wildfly')) { transitive = false }
+        testWildFly8Runtime project(':granite-server-wildfly').sourceSets.test.output
+
+        testGlassFishv4Runtime 'org.glassfish.main.extras:glassfish-embedded-all:4.0'
+
+        testGlassFishv4Runtime(project(':granite-server-glassfishv3')) { transitive = false }
+        testGlassFishv4Runtime project(':granite-server-glassfishv3').sourceSets.test.output
+        testGlassFishv4Runtime(project(':granite-server-eclipselink')) { transitive = false }
 	}
+
+    def runtimeExcludes = { f ->
+        (!f.name.matches('jetty-.*\\.jar')
+                && !f.name.matches('websocket-.*\\.jar')
+                && !f.name.matches('javax-websocket-.*\\.jar')
+                && !f.name.matches('.*tyrus.*\\.jar')
+                && !f.name.matches('.*servlet-api.*\\.jar')
+                && !f.name.matches('.*websocket-api.*\\.jar')
+                && !f.name.matches('.*ejb-api.*\\.jar')
+                && !f.name.matches('.*jpa.*api.*\\.jar')
+                && !f.name.matches('.*validation.*api.*\\.jar')
+                && !f.name.matches('.*jms-api.*\\.jar')
+                && !f.name.matches('.*cdi-api.*\\.jar')
+                && !f.name.matches('.*transaction-api.*\\.jar')
+                && !f.name.matches('asm-.*-3.*\\.jar')
+                && !f.name.matches('extcos.*\\.jar'))
+    }
 
     task testTomcat7(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-tomcat7:jar' ]) {
         systemProperties = [ 'container.className' : 'org.granite.test.container.tomcat7.EmbeddedTomcat7' ]
@@ -2039,11 +2109,68 @@ project('granite-client-java-advanced') {
         reports.html.destination = new File(buildDir, 'reports/tests/tomcat7')
 
         // Add Tomcat jars to the classpath
-        classpath = project.sourceSets.test.runtimeClasspath + project.configurations.testTomcat7Runtime
+        classpath = project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes) + project.configurations.testJetty8ClientRuntime + project.configurations.testTomcat7Runtime
+    }
+
+    task testJBossAS7(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-tomcat7:jar', ':granite-server-jboss:jar' ]) {
+        systemProperties = [
+                'container.className' : 'org.granite.test.container.jbossas.EmbeddedJBossAS',
+                'channel.types' : 'long-polling',
+                'jboss.home' : jbossas7Home
+        ]
+        ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
+
+        includes = [ 'org/granite/client/test/tide/server/Test*' ]
+
+        workingDir = rootDir
+        reports.junitXml.destination = new File(buildDir, 'test-results/jbossas7')
+        reports.html.destination = new File(buildDir, 'reports/tests/jbossas7')
+
+        // Add JBoss AS jars to the classpath
+        def cpjbossas = project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes) + project.configurations.testJBossAS7Runtime
+        classpath = cpjbossas.filter { !it.name.startsWith('granite-server') && !it.name.startsWith('granite-client') }
+    }
+
+    task testWildFly8(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-jboss:jar', ':granite-server-wildfly:jar' ]) {
+        systemProperties = [
+                'container.className' : 'org.granite.test.container.wildfly.EmbeddedWildFly',
+                'websocket.transport.className' : 'org.granite.client.messaging.transport.jetty9.JettyStdWebSocketTransport',
+                'java.util.logging.manager' : 'org.jboss.logmanager.LogManager',
+                'jboss.home' : wildflyHome
+        ]
+        ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
+
+        includes = [ 'org/granite/client/test/tide/server/Test*' ]
+
+        workingDir = rootDir
+        reports.junitXml.destination = new File(buildDir, 'test-results/wildfly')
+        reports.html.destination = new File(buildDir, 'reports/tests/wildfly')
+
+        // Add WildFly jars to the classpath
+        def cpwildfly = project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes) + project.configurations.testJetty9ClientRuntime + project.configurations.testWildFly8Runtime
+        classpath = cpwildfly.filter { !it.name.startsWith('granite-server') && !it.name.startsWith('granite-client') }
+    }
+
+    task testGlassFishv4(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-glassfishv3:jar' ]) {
+        systemProperties = [
+                'container.className' : 'org.granite.test.container.glassfishv31.EmbeddedGlassFishv4JWS',
+                'websocket.transport.className' : 'org.granite.client.messaging.transport.jetty9.JettyWebSocketTransport'
+        ]
+        ignoreFailures = true       // Don't break the build on test failures so bamboo can get the test results
+
+        includes = [ 'org/granite/client/test/tide/server/Test*' ]
+
+        workingDir = rootDir
+        reports.junitXml.destination = new File(buildDir, 'test-results/glassfishv4')
+        reports.html.destination = new File(buildDir, 'reports/tests/glassfishv4')
+
+        // Add GlassFish jars to the classpath (excluding jar from client compile classpath)
+        classpath = (project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes) + project.configurations.testJetty9ClientRuntime
+                + project.configurations.testGlassFishv4Runtime)
     }
 
     test {
-        it.dependsOn 'testTomcat7'
+        it.dependsOn 'testTomcat7', 'testJBossAS7', 'testWildFly8', 'testGlassFishv4'
 
         excludes = [ 'org/granite/client/test/tide/server/Test*' ]
     }

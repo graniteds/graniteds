@@ -30,12 +30,20 @@ public class ContainerTestUtil {
     public static String[] CHANNEL_TYPES_NO_WEBSOCKET = new String[] {
         ChannelType.LONG_POLLING
     };
+    public static String[] CHANNEL_TYPES_WEBSOCKET = new String[] {
+        ChannelType.WEBSOCKET
+    };
 
     public static List<Object[]> data() {
         return data(null);
     }
 
     public static List<Object[]> data(String[] channelTypes) {
+        if (channelTypes != null) {
+            String ct = System.getProperty("channel.types");
+            if (ct != null)
+                channelTypes = ct.split(",");
+        }
         List<Object[]> params = new ArrayList<Object[]>();
         for (ContentType contentType : Arrays.asList(ContentType.JMF_AMF, ContentType.AMF)) {
             if (channelTypes == null)

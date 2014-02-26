@@ -34,4 +34,18 @@
         <url-pattern>/websocketamf/*</url-pattern>
     </servlet-mapping>
 
+    <filter>
+        <filter-name>CreateSessionFilter</filter-name>
+        <filter-class>org.granite.clustering.CreateSessionFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>CreateSessionFilter</filter-name>
+        <url-pattern>/gravityamf/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>CreateSessionFilter</filter-name>
+        <url-pattern>/websocketamf/*</url-pattern>
+    </filter-mapping>
+
 </web-app>

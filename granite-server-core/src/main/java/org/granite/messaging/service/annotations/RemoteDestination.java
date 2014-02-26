@@ -56,9 +56,9 @@ public @interface RemoteDestination {
     public Class<? extends RemotingDestinationSecurizer> securizer() default RemotingDestinationSecurizer.class;
     
     /**
-     * Used for pojo services only.
+     * Used for simple services only.
      * 
-     * @return the scope for pojo service (default is "session").
+     * @return the scope for simple service (default is "session").
      */
     public String scope() default "session";
 }

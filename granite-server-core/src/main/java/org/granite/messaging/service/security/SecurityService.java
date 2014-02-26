@@ -21,6 +21,8 @@
  */
 package org.granite.messaging.service.security;
 
+import javax.servlet.http.HttpSession;
+import java.security.Principal;
 import java.util.Map;
 
 /**
@@ -29,6 +31,8 @@ import java.util.Map;
 public interface SecurityService {
 
     public void configure(Map<String, String> params);
+
+    public void prelogin(HttpSession session, Object request);
 
     public void login(Object credentials) throws SecurityServiceException;
 
@@ -41,4 +45,14 @@ public interface SecurityService {
     public void logout() throws SecurityServiceException;
     
     public void handleSecurityException(SecurityServiceException e);
+
+
+    public static interface AuthenticationContext {
+
+        public Principal authenticate(String username, String password);
+
+        public Principal getPrincipal();
+
+        public boolean isUserInRole(String role);
+    }
 }

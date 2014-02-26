@@ -22,21 +22,26 @@
 package org.granite.tide.simple;
 
 import org.granite.context.GraniteContext;
+import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
-
-import java.io.Serializable;
+import org.granite.tide.security.ServerIdentity;
 
 
 /**
  * @author William DRAI
  */
-public class SimpleIdentity implements Serializable {
+public class SimpleIdentity implements ServerIdentity {
 
-    private static final long serialVersionUID = 1L;
-    
-        
+    private static final Logger log = Logger.getLogger(SimpleIdentity.class);
+
+    @Override
     public String isLoggedIn() {
+        log.debug("isLoggedIn()");
+
     	GraniteContext context = GraniteContext.getCurrentInstance();
+        if (!(context instanceof HttpGraniteContext))
+            throw new IllegalStateException("Cannot call isLoggedIn() outside a http remoting request");
+
     	if (context != null && ((HttpGraniteContext)context).getRequest().getUserPrincipal() != null)
     		return ((HttpGraniteContext)context).getRequest().getUserPrincipal().getName();    	
     	return null;
@@ -44,7 +49,9 @@ public class SimpleIdentity implements Serializable {
     
     
     public boolean hasRole(String role) {
-    	GraniteContext context = GraniteContext.getCurrentInstance();
+        log.debug("hasRole(%s)", role);
+
+        GraniteContext context = GraniteContext.getCurrentInstance();
     	if (context == null || !(context instanceof HttpGraniteContext))
     		return false;
     	

@@ -21,6 +21,7 @@
  */
 package org.granite.gravity.tomcat;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -30,6 +31,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.websocket.StreamInbound;
 import org.apache.catalina.websocket.WebSocketServlet;
+import org.apache.catalina.websocket.WsHttpServletRequestWrapper;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
@@ -47,6 +49,16 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 	private static final long serialVersionUID = 1L;
 	
 	private static final Logger log = Logger.getLogger(TomcatWebSocketServlet.class);
+
+    private static Field requestField = null;
+    static {
+        try {
+            requestField = WsHttpServletRequestWrapper.class.getDeclaredField("request");
+            requestField.setAccessible(true);
+        }
+        catch (NoSuchFieldException e) {
+        }
+    }
 	
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -75,8 +87,9 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 			String clientType = request.getHeader("GDSClientType") != null ? request.getHeader("GDSClientType") : request.getParameter("GDSClientType");
 			String sessionId = null;
 			HttpSession session = request.getSession(false);
+            ServletGraniteContext graniteContext = null;
 			if (session != null) {
-		        ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), 
+                graniteContext = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
 		        	getServletContext(), session, clientType);
 		        
 				sessionId = session.getId();
@@ -87,17 +100,17 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 						sessionId = request.getCookies()[i].getValue();
 						break;
 					}
-				}				
-				
-				ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), 
+				}
+
+                graniteContext = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
 	        		getServletContext(), sessionId, clientType); 
 			}
             else {
-                ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
+                graniteContext = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
                         getServletContext(), (String)null, clientType);
             }
-			
-			log.info("WebSocket connection started %s clientId %s sessionId %s", protocol, clientId, sessionId);
+
+            log.info("WebSocket connection started %s clientId %s sessionId %s", protocol, clientId, sessionId);
 			
 			CommandMessage pingMessage = new CommandMessage();
 			pingMessage.setMessageId(connectMessageId != null ? connectMessageId : "OPEN_CONNECTION");
@@ -111,6 +124,15 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 
 			TomcatWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
             channel.setSession(session);
+
+            if (gravity.getGraniteConfig().getSecurityService() != null) {
+                try {
+                    gravity.getGraniteConfig().getSecurityService().prelogin(session, request instanceof WsHttpServletRequestWrapper ? requestField.get(request) : request);
+                }
+                catch (IllegalAccessException e) {
+                    log.warn(e, "Could not get internal request object");
+                }
+            }
 
             String ctype = request.getContentType();
             if (ctype == null && protocol.length() > "org.granite.gravity".length())

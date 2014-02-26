@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
+import com.sun.web.security.RealmAdapter;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Server;
@@ -43,6 +44,7 @@ import org.apache.catalina.connector.Request;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 
 
 /**
@@ -135,27 +137,79 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
             throw new NullPointerException("Could not find GlassFish V3 container for: " + (serviceId != null ? serviceId : "(default)"));
     }
 
+
+    @Override
+    public void prelogin(HttpSession session, Object httpRequest) {
+        if (session == null) // Cannot prelogin() without a session
+            return;
+
+        if (session.getAttribute(AuthenticationContext.class.getName()) instanceof GlassFishV3AuthenticationContext)
+            return;
+
+        HttpServletRequest request = null;
+        if (httpRequest instanceof HttpServletRequest)
+            request = (HttpServletRequest)httpRequest;
+        else {
+            if (httpRequest.getClass().getName().equals("org.glassfish.tyrus.core.RequestContext")) {   // Websocket
+                Field f = null;
+                try {
+                    f = httpRequest.getClass().getDeclaredField("isUserInRoleDelegate");
+                    f.setAccessible(true);
+                    Object delegate = f.get(httpRequest);
+                    f = delegate.getClass().getDeclaredField("val$httpServletRequest");
+                    f.setAccessible(true);
+                    request = (HttpServletRequest)f.get(delegate);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("Could not get internal undertow exchange", e);
+                }
+            }
+        }
+        Request req = getRequest(request);
+        RealmAdapter realm = getRealm(request);
+
+        GlassFishV3AuthenticationContext authorizationContext = new GlassFishV3AuthenticationContext(req.getWrapper().getServletName(), realm);
+        session.setAttribute(AuthenticationContext.class.getName(), authorizationContext);
+    }
+
+
     public void login(Object credentials, String charset) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials, charset);
 
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
-        HttpServletRequest httpRequest = context.getRequest();
+        ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
+        Principal principal = null;
+        Request request = null;
 
-        Request request = getRequest(httpRequest);
-        Realm realm = request.getContext().getRealm();
+        if (graniteContext instanceof HttpGraniteContext) {
+            HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+            HttpServletRequest httpRequest = context.getRequest();
+            request = getRequest(httpRequest);
+            RealmAdapter realm = (RealmAdapter)request.getContext().getRealm();
 
-        Principal principal = authenticate(realm, decoded[0], decoded[1]);
+            GlassFishV3AuthenticationContext authenticationContext = new GlassFishV3AuthenticationContext(request.getWrapper().getServletName(), realm);
+            principal = authenticationContext.authenticate(decoded[0], decoded[1]);
+            if (principal != null)
+                graniteContext.getSession().setAttribute(AuthenticationContext.class.getName(), authenticationContext);
+        }
+        else {
+            AuthenticationContext authenticationContext = (AuthenticationContext)graniteContext.getSession().getAttribute(AuthenticationContext.class.getName());
+            if (authenticationContext != null)
+                principal = authenticationContext.authenticate(decoded[0], decoded[1]);
+        }
+
         if (principal == null)
             throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
-        
-        request.setAuthType(AUTH_TYPE);
-        request.setUserPrincipal(principal);
 
-        Session session = request.getSessionInternal();
-        session.setAuthType(AUTH_TYPE);
-        session.setPrincipal(principal);
-        session.setNote(Constants.SESS_USERNAME_NOTE, decoded[0]);
-        session.setNote(Constants.SESS_PASSWORD_NOTE, decoded[1]);
+        if (graniteContext instanceof HttpGraniteContext) {
+            request.setAuthType(AUTH_TYPE);
+            request.setUserPrincipal(principal);
+
+            Session session = request.getSessionInternal();
+            session.setAuthType(AUTH_TYPE);
+            session.setPrincipal(principal);
+            session.setNote(Constants.SESS_USERNAME_NOTE, decoded[0]);
+            session.setNote(Constants.SESS_PASSWORD_NOTE, decoded[1]);
+        }
         
         endLogin(credentials, charset);
     }
@@ -164,33 +218,53 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
 
         startAuthorization(context);
 
-        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
-        HttpServletRequest httpRequest = graniteContext.getRequest();
-        Request request = getRequest(httpRequest);
-        Session session = request.getSessionInternal(false);
-        
+        ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
+        HttpServletRequest httpRequest = null;
+        AuthenticationContext authenticationContext = null;
         Principal principal = null;
-        if (session != null) {
-        	request.setAuthType(session.getAuthType());
-        	principal = session.getPrincipal();
-        	if (principal == null && tryRelogin())
-        		principal = session.getPrincipal();
+
+        if (graniteContext instanceof HttpGraniteContext) {
+            httpRequest = graniteContext.getRequest();
+            Request request = getRequest(httpRequest);
+            Session session = request.getSessionInternal(false);
+        
+            if (session != null) {
+                request.setAuthType(session.getAuthType());
+                principal = session.getPrincipal();
+                if (principal == null && tryRelogin())
+                    principal = session.getPrincipal();
+            }
+            request.setUserPrincipal(principal);
         }
-        request.setUserPrincipal(principal);
+        else {
+            HttpSession session = graniteContext.getSession(false);
+            if (session != null) {
+                authenticationContext = (AuthenticationContext)session.getAttribute(AuthenticationContext.class.getName());
+                if (authenticationContext != null)
+                    principal = authenticationContext.getPrincipal();
+            }
+        }
 
         if (context.getDestination().isSecured()) {
             if (principal == null) {
-                if (httpRequest.getRequestedSessionId() != null) {
+                if (httpRequest != null && httpRequest.getRequestedSessionId() != null) {
                     HttpSession httpSession = httpRequest.getSession(false);
-                    if (httpSession == null || httpRequest.getRequestedSessionId().equals(httpSession.getId()))
+                    if (httpSession == null || !httpRequest.getRequestedSessionId().equals(httpSession.getId()))
                         throw SecurityServiceException.newSessionExpiredException("Session expired");
                 }
                 throw SecurityServiceException.newNotLoggedInException("User not logged in");
             }
-            
+
+            if (httpRequest == null && authenticationContext == null)
+                throw SecurityServiceException.newNotLoggedInException("No authorization context");
+
             boolean accessDenied = true;
             for (String role : context.getDestination().getRoles()) {
-                if (httpRequest.isUserInRole(role)) {
+                if (httpRequest != null && httpRequest.isUserInRole(role)) {
+                    accessDenied = false;
+                    break;
+                }
+                if (authenticationContext != null && authenticationContext.isUserInRole(role)) {
                     accessDenied = false;
                     break;
                 }
@@ -213,25 +287,31 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
     }
 
     public void logout() throws SecurityServiceException {
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
 
-        Session session = getSession(context.getRequest(), false);
-        if (session != null && session.getPrincipal() != null) {
-            session.setAuthType(null);
-            session.setPrincipal(null);
-            session.removeNote(Constants.SESS_USERNAME_NOTE);
-            session.removeNote(Constants.SESS_PASSWORD_NOTE);
-            
-            endLogout();
-            
-            session.expire();
+        if (graniteContext instanceof HttpGraniteContext) {
+            Session session = getSession(graniteContext.getRequest(), false);
+            if (session != null && session.getPrincipal() != null) {
+                session.setAuthType(null);
+                session.setPrincipal(null);
+                session.removeNote(Constants.SESS_USERNAME_NOTE);
+                session.removeNote(Constants.SESS_PASSWORD_NOTE);
+
+                endLogout();
+
+                session.expire();
+            }
         }
-    }
+        else {
+            HttpSession session = graniteContext.getSession();
+            if (session != null) {
+                session.removeAttribute(AuthenticationContext.class.getName());
 
-    protected Principal getPrincipal(HttpServletRequest httpRequest) {
-    	Request request = getRequest(httpRequest);
-        Session session = request.getSessionInternal(false);
-        return (session != null ? session.getPrincipal() : null);
+                endLogout();
+
+                session.invalidate();
+            }
+        }
     }
 
     protected Session getSession(HttpServletRequest httpRequest, boolean create) {
@@ -249,8 +329,34 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
         }
     }
 
-    protected Realm getRealm(HttpServletRequest request) {
+    protected RealmAdapter getRealm(HttpServletRequest request) {
     	Request creq = getRequest(request);
-        return creq.getContext().getRealm();
+        return (RealmAdapter)creq.getContext().getRealm();
+    }
+
+
+    public static class GlassFishV3AuthenticationContext implements AuthenticationContext {
+
+        private final String securityServletName;
+        private final RealmAdapter realm;
+        private Principal principal;
+
+        public GlassFishV3AuthenticationContext(String securityServletName, RealmAdapter realm) {
+            this.securityServletName = securityServletName;
+            this.realm = realm;
+        }
+
+        public Principal authenticate(String username, String password) {
+            principal = GlassFishV3SecurityService.authenticate(realm, username, password);
+            return principal;
+        }
+
+        public Principal getPrincipal() {
+            return principal;
+        }
+
+        public boolean isUserInRole(String role) {
+            return realm.hasRole(securityServletName, principal, role);
+        }
     }
 }

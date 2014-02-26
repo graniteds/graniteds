@@ -22,6 +22,9 @@
       <root url="jar://$PROJECT_DIR$/lib/org.objectweb.asm-3.1.0.v200803061910.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Downloads/jetty-server-8.1.14.v20131031-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/jetty-security-8.1.14.v20131031-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

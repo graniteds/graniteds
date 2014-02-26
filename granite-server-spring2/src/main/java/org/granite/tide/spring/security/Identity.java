@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.granite.tide.security.ServerIdentity;
 import org.granite.tide.annotations.TideEnabled;
 import org.springframework.security.Authentication;
 import org.springframework.security.GrantedAuthority;
@@ -42,12 +43,12 @@ import org.springframework.util.StringUtils;
  * 	Adapted from the Spring security JSP taglib
  */
 @TideEnabled
-public class Identity {
+public class Identity implements ServerIdentity {
         
     public Identity() {
     }
-    
-    
+
+    @Override
     public String isLoggedIn() {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     	if (auth != null && !(auth instanceof AnonymousAuthenticationToken))

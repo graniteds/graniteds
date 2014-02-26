@@ -5,11 +5,49 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="TEST" name="org.glassfish.main.extras:glassfish-embedded-all:4.0" level="project" />
-    <orderEntry type="module" module-name="granite-server-glassfishv3" scope="TEST" />
+    <orderEntry type="module-library" scope="TEST">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../bin/test/granite-client-java" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="TEST">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../bin/production/granite-client-java" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="TEST">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../bin/production/granite-client-java-advanced" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="TEST">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../bin/test/granite-client-java-advanced" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" scope="TEST" name="org.apache.httpcomponents:httpasyncclient:4.0" level="project" />
     <orderEntry type="library" scope="TEST" name="org.eclipse.jetty.websocket:websocket-client:9.1.1.v20140108" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.eclipse.jetty.websocket:javax-websocket-client-impl:9.1.2.v20140210" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.glassfish.main.extras:glassfish-embedded-all:4.0" level="project" />
+    <orderEntry type="module" module-name="granite-server-servlet3" scope="TEST" />
+    <orderEntry type="module" module-name="granite-server-glassfishv3" scope="TEST" />
     <orderEntry type="module" module-name="granite-server-eclipselink" scope="TEST" />
-    <orderEntry type="module" module-name="granite-client-java" scope="TEST" />
   </component>
 </module>
 

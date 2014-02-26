@@ -44,6 +44,7 @@ import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
+import org.jboss.shrinkwrap.api.ConfigurationBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
@@ -54,6 +55,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Enumeration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -67,7 +71,7 @@ public class TestMessagingChat {
 
     @Parameterized.Parameters(name = "container: {0}, encoding: {1}, channel: {2}")
     public static Iterable<Object[]> data() {
-        return ContainerTestUtil.data(ContainerTestUtil.CHANNEL_TYPES_NO_WEBSOCKET);
+        return ContainerTestUtil.data(ContainerTestUtil.CHANNEL_TYPES_ALL);
     }
 
     private ContentType contentType;
@@ -88,8 +92,8 @@ public class TestMessagingChat {
         // Build a chat server application
         WebArchive war = ShrinkWrap.create(WebArchive.class, "chat.war");
         war.addClass(ChatApplication.class);
-        war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
-        war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
+        File gfweb = new File("granite-server-glassfishv3/src/test/resources/glassfish-web.xml");
+        war.addAsWebInfResource(gfweb, "glassfish-web.xml");
 
         container = ContainerTestUtil.newContainer(war, false);
         container.start();
@@ -119,7 +123,7 @@ public class TestMessagingChat {
         ServerSession serverSession = ContainerTestUtil.buildServerSession(context, SERVER_APP_APP, contentType);
         Identity identity = context.set("identity", new BaseIdentity(serverSession));
 
-        String user = identity.login("user", "user", TideResponders.<String>noop()).get();
+        String user = identity.login("user", "user00", TideResponders.<String>noop()).get();
         Assert.assertEquals("Logged in", "user", user);
 
         Producer producer = serverSession.getProducer("secureChat", "chat", channelType);
@@ -179,7 +183,7 @@ public class TestMessagingChat {
         Consumer consumer = serverSession.getConsumer("secureChat", "chat", channelType);
         Identity identity = context.set("identity", new BaseIdentity(serverSession));
 
-        String user = identity.login("user", "user", TideResponders.<String>noop()).get();
+        String user = identity.login("user", "user00", TideResponders.<String>noop()).get();
         Assert.assertEquals("Logged in", "user", user);
 
         final CountDownLatch waitForSubscribe2 = new CountDownLatch(1);

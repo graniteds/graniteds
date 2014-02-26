@@ -130,6 +130,10 @@ public class ServletGraniteContext extends GraniteContext {
     		request = new BasicRequest();
     	return request;
     }
+
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
+    }
     
     public HttpServletResponse getResponse() {
     	if (response == null)

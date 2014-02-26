@@ -92,8 +92,6 @@ public class TestRemotingData {
         war.addClasses(DataApplication.class, Data.class, DataServiceBean.class);
         war.addAsWebInfResource(new File("granite-client-java/src/test/resources/META-INF/persistence.xml"), "classes/META-INF/persistence.xml");
         war.addAsWebInfResource(new File("granite-client-java/src/test/resources/META-INF/services-config.properties"), "classes/META-INF/services-config.properties");
-        war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
-        war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-ejb/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
 
         container = ContainerTestUtil.newContainer(war, false);

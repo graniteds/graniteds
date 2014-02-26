@@ -39,6 +39,8 @@ import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -135,7 +137,7 @@ public abstract class WebSocketTransport extends AbstractWebSocketTransport<Sess
             @Override
             public void beforeRequest(Map<String, List<String>> headers) {
                 if (transportMessage.getSessionId() != null)
-                   headers.put("Cookie", Collections.singletonList("JSESSIONID=" + transportMessage.getSessionId()));
+                    headers.put("Cookie", Collections.singletonList("JSESSIONID=" + transportMessage.getSessionId()));
 
                 headers.put("connectId", Collections.singletonList(transportMessage.getId()));
                 headers.put("GDSClientType", Collections.singletonList(transportMessage.getClientType().toString()));

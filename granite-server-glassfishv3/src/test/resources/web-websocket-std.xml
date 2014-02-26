@@ -37,5 +37,8 @@
         <filter-name>CreateSessionFilter</filter-name>
         <url-pattern>/websocketamf/*</url-pattern>
     </filter-mapping>
-
+    
+    <security-role>
+        <role-name>user</role-name>
+    </security-role>
 </web-app>

@@ -63,7 +63,7 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
         tomcat = new Tomcat();
         tomcat.setPort(8787);
         tomcat.setBaseDir(tomcatHome.getAbsolutePath());
-        tomcat.addUser("user", "user");
+        tomcat.addUser("user", "user00");
         tomcat.addRole("user", "user");
         host = tomcat.getHost();
         host.setAppBase(appBase.getAbsolutePath());
@@ -71,6 +71,8 @@ public class EmbeddedTomcat7 implements Runnable, EmbeddedContainer {
         host.setDeployOnStartup(true);
         host.setConfigClass(EmbeddedContextConfig.class.getCanonicalName());
 
+        war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
+        war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-tomcat7/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         initWar(war);
 

@@ -784,8 +784,12 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         // Check security 2 (security service).
         GraniteConfig config = context.getGraniteConfig();
         try {
-            if (config.hasSecurityService() && config.getSecurityService().acceptsContext())
-                return (Message)config.getSecurityService().authorize(invocationContext);
+            if (config.hasSecurityService()) {
+                if (config.getSecurityService().acceptsContext())
+                    return (Message)config.getSecurityService().authorize(invocationContext);
+
+                throw SecurityServiceException.newNotLoggedInException("User not logged in");
+            }
 
             return (Message)invocationContext.invoke();
         }

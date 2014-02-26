@@ -50,7 +50,6 @@ import org.granite.client.messaging.transport.TransportStatusHandler;
 import org.granite.client.test.server.chat.ChatApplication;
 import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
-import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -90,8 +89,6 @@ public class TestMessagingChat {
         // Build a chat server application
         WebArchive war = ShrinkWrap.create(WebArchive.class, "chat.war");
         war.addClass(ChatApplication.class);
-        war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
-        war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
 
         container = ContainerTestUtil.newContainer(war, false);
         container.start();

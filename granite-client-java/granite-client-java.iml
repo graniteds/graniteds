@@ -22,7 +22,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" exported="" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
+    <orderEntry type="library" name="org.jboss.spec:jboss-javaee-all-6.0:3.0.2.Final" level="project" />
     <orderEntry type="library" name="org.apache.httpcomponents:httpasyncclient:4.0" level="project" />
     <orderEntry type="library" name="org.eclipse.jetty:jetty-websocket:8.1.14.v20131031" level="project" />
     <orderEntry type="library" name="org.eclipse.jetty.websocket:websocket-client:9.1.1.v20140108" level="project" />

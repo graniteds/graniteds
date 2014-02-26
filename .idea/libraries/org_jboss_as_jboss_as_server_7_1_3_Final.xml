@@ -1,0 +1,48 @@
+<component name="libraryTable">
+  <library name="org.jboss.as:jboss-as-server:7.1.3.Final" type="repository">
+    <properties maven-id="org.jboss.as:jboss-as-server:7.1.3.Final" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-server-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-controller-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-dmr-1.1.1.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-controller-client-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-protocol-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-logging-3.1.2.GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-marshalling-1.3.15.GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-remoting-3.2.8.SP1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xnio-api-3.0.6.GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-sasl-1.0.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-threads-2.0.0.GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xnio-nio-3.0.6.GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-build-config-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-modules-1.1.3.GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-msc-1.0.2.GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/staxmapper-1.1.0.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-domain-http-interface-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-domain-management-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-common-core-2.2.17.GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/httpserver-1.0.1.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-deployment-repository-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-vfs-3.1.0.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-embedded-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jandex-1.0.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-platform-mbean-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-process-controller-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-logmanager-1.3.2.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/tools.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-remoting-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-network-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-threads-7.1.3.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-invocation-1.1.1.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/log4j-jboss-logmanager-1.0.1.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jboss-stdio-1.0.1.GA.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/jboss-as-server-7.1.3.Final-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/jboss-modules-1.1.3.GA-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/jboss-as-controller-client-7.1.3.Final-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/jboss-as-controller-7.1.3.Final-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

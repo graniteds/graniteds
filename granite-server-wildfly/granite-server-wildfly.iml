@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="granite-server-core" />
+    <orderEntry type="library" name="io.undertow:undertow-servlet:1.0.0.Final" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.wildfly:wildfly-embedded:8.0.0.CR1" level="project" />
+  </component>
+</module>
+

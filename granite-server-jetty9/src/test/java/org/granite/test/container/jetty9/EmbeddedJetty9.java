@@ -70,6 +70,8 @@ public class EmbeddedJetty9 implements Runnable, EmbeddedContainer {
             jetty.setHandler(new HandlerCollection(true));
 
             this.war = war;
+            war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
+            war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
             war.addAsLibraries(new File("granite-server-jetty9/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
             initWar(war);
             this.persistSessions = persistSessions;

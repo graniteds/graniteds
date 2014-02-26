@@ -10,7 +10,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="granite-server-core" />
+    <orderEntry type="module" module-name="granite-server-core" scope="PROVIDED" />
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
@@ -47,7 +47,9 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" scope="PROVIDED" name="io.undertow:undertow-servlet:1.0.0.Final" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="org.jboss.as:jboss-as-embedded:7.1.3.Final" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="org.jboss.as:jboss-as-server:7.1.3.Final" level="project" />
+    <orderEntry type="library" scope="TEST" name="org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3" level="project" />
   </component>
 </module>
 

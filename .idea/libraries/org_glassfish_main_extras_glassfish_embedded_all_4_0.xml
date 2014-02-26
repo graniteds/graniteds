@@ -7,7 +7,12 @@
     </CLASSES>
     <JAVADOC />
     <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../sources/websecurity-4.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../sources/websecurity-4.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../sources/web-core-4.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../sources/security-ee-4.0-sources.jar!/" />
       <root url="jar://$USER_HOME$/.ideaLibSources/glassfish-embedded-all-4.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../sources/web-core-4.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

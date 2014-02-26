@@ -25,16 +25,17 @@ import java.io.Serializable;
 
 import org.granite.context.GraniteContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.tide.security.ServerIdentity;
 
 
 /**
  * @author William DRAI
  */
-public class EjbIdentity implements Serializable {
+public class EjbIdentity implements ServerIdentity, Serializable {
 
     private static final long serialVersionUID = 1L;
     
-        
+    @Override
     public String isLoggedIn() {
     	GraniteContext context = GraniteContext.getCurrentInstance();
     	if (context != null && ((HttpGraniteContext)context).getRequest().getUserPrincipal() != null)

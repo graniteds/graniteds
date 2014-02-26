@@ -48,6 +48,11 @@ public abstract class AbstractSecurityService implements SecurityService {
 
     public static final String AUTH_TYPE = "granite-security";
 
+
+    public void prelogin(HttpSession session, Object request) {
+    }
+
+
     /**
      * A default implementation of the basic login method, passing null as the extra charset
      * parameter. Mainly here for compatibility purpose.
@@ -104,7 +109,7 @@ public abstract class AbstractSecurityService implements SecurityService {
      * @return true is a {@link HttpGraniteContext} is mandated
      */
     public boolean acceptsContext() {
-    	return GraniteContext.getCurrentInstance() instanceof HttpGraniteContext;
+    	return GraniteContext.getCurrentInstance() instanceof ServletGraniteContext;
     }
 
     /**

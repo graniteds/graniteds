@@ -5,12 +5,13 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="granite-client-java" scope="TEST" />
+    <orderEntry type="module" module-name="granite-client-java-advanced" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="com.sun.grizzly:grizzly-websockets:1.9.51" level="project" />
     <orderEntry type="library" scope="TEST" name="org.glassfish.main.extras:glassfish-embedded-all:3.1.2.2" level="project" />
     <orderEntry type="module" module-name="granite-server-glassfishv3" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="org.eclipse.jetty.websocket:websocket-client:9.1.1.v20140108" level="project" />
     <orderEntry type="module" module-name="granite-server-eclipselink" scope="TEST" />
-    <orderEntry type="module" module-name="granite-client-java" scope="TEST" />
   </component>
 </module>
 

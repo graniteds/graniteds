@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSession;
 
 import org.granite.context.GraniteContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 import org.mortbay.jetty.HttpConnection;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.security.UserRealm;
@@ -98,7 +99,7 @@ public class Jetty6SecurityService extends AbstractSecurityService {
         if (principal == null) {
             if (httpRequest.getRequestedSessionId() != null) {
                 HttpSession httpSession = httpRequest.getSession(false);
-                if (httpSession == null || httpRequest.getRequestedSessionId().equals(httpSession.getId()))
+                if (httpSession == null || !httpRequest.getRequestedSessionId().equals(httpSession.getId()))
                     throw SecurityServiceException.newSessionExpiredException("Session expired");
             }
             throw SecurityServiceException.newNotLoggedInException("User not logged in");
@@ -146,5 +147,11 @@ public class Jetty6SecurityService extends AbstractSecurityService {
         realm.disassociate(httpRequest.getUserPrincipal());
         
         endLogout();
+    }
+
+
+    @Override
+    public boolean acceptsContext() {
+        return GraniteContext.getCurrentInstance() instanceof HttpGraniteContext;
     }
 }

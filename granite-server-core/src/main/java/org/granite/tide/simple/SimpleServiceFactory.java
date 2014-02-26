@@ -32,14 +32,15 @@ import org.granite.scan.ScannedItemHandler;
 import org.granite.tide.TideServiceInvoker;
 
 import flex.messaging.messages.RemotingMessage;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * @author Franck WOLFF
  */
 public class SimpleServiceFactory extends ServiceFactory {
-
-    public static final String ENTITY_MANAGER_FACTORY_JNDI_NAME = "entity-manager-factory-jndi-name";
-    public static final String ENTITY_MANAGER_JNDI_NAME = "entity-manager-jndi-name";
 
     public static ScannedItemHandler getScannedItemHandler() {
         return SimpleScannedItemHandler.instance(true);
@@ -64,7 +65,6 @@ public class SimpleServiceFactory extends ServiceFactory {
         	return invoker;
         
         SimpleServiceContext tideContext = new SimpleServiceContext();
-        
         invoker = new TideServiceInvoker<SimpleServiceFactory>(destination, this, tideContext);
         cache.put(key, invoker);
         return invoker;

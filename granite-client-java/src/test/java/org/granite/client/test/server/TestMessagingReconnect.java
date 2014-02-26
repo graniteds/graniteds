@@ -85,8 +85,6 @@ public class TestMessagingReconnect {
         // Build a feed server application
         WebArchive war = ShrinkWrap.create(WebArchive.class, APP_NAME + ".war");
         war.addClasses(FeedApplication.class, FeedListener.class, Info.class);
-        war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
-        war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsWebInfResource(new File("granite-client-java/src/test/resources/granite-config-server-reconnect.xml"), "granite/granite-config.xml");
 
         container = ContainerTestUtil.newContainer(war, true);

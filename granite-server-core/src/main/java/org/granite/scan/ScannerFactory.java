@@ -45,18 +45,18 @@ public class ScannerFactory {
         		throw new RuntimeException("Could not create VFSScanner", e);
         	}
         }
-        if (isVFS3Available() && !isEmbedded() && isJBoss(6)) {
-        	log.debug("Using VFS3 aware scanner");
+        if (isVFS3Available()) {
         	try {
         		Class<?> vfsScannerClass = ScannerFactory.class.getClassLoader().loadClass("org.granite.scan.VFS3Scanner");
-        		return (Scanner)vfsScannerClass.getConstructor(ScannedItemHandler.class, String.class).newInstance(handler, marker);        		
+                log.debug("Using VFS3 aware scanner");
+        		return (Scanner)vfsScannerClass.getConstructor(ScannedItemHandler.class, String.class).newInstance(handler, marker);
         	}
         	catch (Exception e) {
-        		throw new RuntimeException("Could not create VFS3Scanner", e);
+                // Not found, probably embedded
         	}
         }
         
-    	log.debug("Using default Scanner");
+    	log.debug("Using default scanner");
     	return new URLScanner(handler, marker);
 	}
    
@@ -114,12 +114,19 @@ public class ScannerFactory {
 	
 	private static boolean isEmbedded() {
 		try {
-			Class.forName("org.jboss.embedded.Bootstrap");
+			ScannerFactory.class.getClassLoader().loadClass("org.jboss.embedded.Bootstrap");
 			log.trace("JBoss Embedded detected");
 			return true;
 		}
 		catch (Throwable t) {
-			return false;
+            try {
+                ScannerFactory.class.getClassLoader().loadClass("org.jboss.as.embedded.EmbeddedServerFactory");
+                log.trace("JBoss AS 7+ Embedded detected");
+                return true;
+            }
+            catch (Throwable t2) {
+            }
 		}
+        return false;
 	}
 }
