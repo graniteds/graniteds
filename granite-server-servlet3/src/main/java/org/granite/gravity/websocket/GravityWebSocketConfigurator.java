@@ -52,7 +52,7 @@ public class GravityWebSocketConfigurator extends ServerEndpointConfig.Configura
 
         Gravity gravity = (Gravity)config.getUserProperties().get("gravity");
         if (gravity.getGraniteConfig().getSecurityService() != null)
-            gravity.getGraniteConfig().getSecurityService().prelogin(session, request);
+            gravity.getGraniteConfig().getSecurityService().prelogin(session, request, null);
 
         String ctype = request.getHeaders().get("Content-Type") != null
                 ? request.getHeaders().get("Content-Type").get(0)

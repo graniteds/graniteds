@@ -66,13 +66,23 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
 
 
     @Override
-    public void prelogin(HttpSession session, Object httpRequest) {
+    public void prelogin(HttpSession session, Object httpRequest, String servletName) {
         if (session == null) // Cannot prelogin() without a session
             return;
 
         if (session.getAttribute(AuthenticationContext.class.getName()) instanceof Tomcat7AuthenticationContext)
             return;
 
+        if (httpRequest.getClass().getName().equals("org.apache.tomcat.websocket.server.WsHandshakeRequest")) {
+            try {
+                Field f = httpRequest.getClass().getDeclaredField("request");
+                f.setAccessible(true);
+                httpRequest = f.get(httpRequest);
+            }
+            catch (Exception e) {
+                throw new RuntimeException("Could not unwrap Tomcat request from ws handshake", e);
+            }
+        }
         Request request = getRequest((HttpServletRequest)httpRequest);
         Realm realm = getRealm(request);
 
@@ -278,6 +288,9 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
 
         public boolean isUserInRole(String role) {
             return realm.hasRole(null, principal, role);
+        }
+
+        public void logout() {
         }
     }
 

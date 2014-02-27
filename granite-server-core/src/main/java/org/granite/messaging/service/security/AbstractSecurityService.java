@@ -49,7 +49,7 @@ public abstract class AbstractSecurityService implements SecurityService {
     public static final String AUTH_TYPE = "granite-security";
 
 
-    public void prelogin(HttpSession session, Object request) {
+    public void prelogin(HttpSession session, Object request, String servletName) {
     }
 
 

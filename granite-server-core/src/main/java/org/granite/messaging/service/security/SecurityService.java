@@ -32,7 +32,7 @@ public interface SecurityService {
 
     public void configure(Map<String, String> params);
 
-    public void prelogin(HttpSession session, Object request);
+    public void prelogin(HttpSession session, Object request, String servletName);
 
     public void login(Object credentials) throws SecurityServiceException;
 
@@ -54,5 +54,7 @@ public interface SecurityService {
         public Principal getPrincipal();
 
         public boolean isUserInRole(String role);
+
+        public void logout();
     }
 }

@@ -106,6 +106,9 @@ public class JettyWebSocketCreator implements WebSocketCreator {
 
             log.info("WebSocket connection started %s connectId %s clientId %s ackClientId %s sessionId %s", protocol, pingMessage.getMessageId(), clientId, ackMessage.getClientId(), sessionId);
 
+            if (gravity.getGraniteConfig().getSecurityService() != null)
+                gravity.getGraniteConfig().getSecurityService().prelogin(session, servletUpgradeRequest.getHttpServletRequest(), null);
+
             JettyWebSocketChannel channel = gravity.getChannel(channelFactory, (String)ackMessage.getClientId());
             channel.setSession(session);
 

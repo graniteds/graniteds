@@ -5,6 +5,43 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" scope="TEST">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../bin/test/granite-client-java" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="TEST">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../bin/production/granite-client-java" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="TEST">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../bin/test/granite-client-java-advanced" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="TEST">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../bin/production/granite-client-java-advanced" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" scope="TEST" name="org.apache.httpcomponents:httpasyncclient:4.0" level="project" />
     <orderEntry type="library" scope="TEST" name="org.eclipse.jetty:jetty-server:9.1.2.v20140210" level="project" />
     <orderEntry type="library" scope="TEST" name="org.eclipse.jetty:jetty-plus:9.1.2.v20140210" level="project" />
     <orderEntry type="library" scope="TEST" name="org.eclipse.jetty:jetty-annotations:9.1.2.v20140210" level="project" />
@@ -15,8 +52,8 @@
     <orderEntry type="library" scope="TEST" name="org.slf4j:slf4j-log4j12:1.7.5" level="project" />
     <orderEntry type="library" scope="TEST" name="log4j:log4j:1.2.17" level="project" />
     <orderEntry type="library" scope="TEST" name="org.eclipse.jetty.websocket:websocket-client:9.1.1.v20140108" level="project" />
+    <orderEntry type="module" module-name="granite-server-servlet3" scope="TEST" />
     <orderEntry type="module" module-name="granite-server-jetty9" scope="TEST" />
-    <orderEntry type="module" module-name="granite-client-java" scope="TEST" />
   </component>
 </module>
 

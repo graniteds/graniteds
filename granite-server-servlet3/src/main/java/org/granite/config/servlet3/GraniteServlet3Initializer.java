@@ -293,50 +293,22 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	    	if (graniteConfig.getSecurityService() == null) {
 	    		String securityServiceClassName = null;
 	    		// Try auto-detect
-	    		try {
-	    			TypeUtil.forName("org.mortbay.jetty.Request");
-	    			securityServiceClassName = "org.granite.messaging.service.security.Jetty6SecurityService";
-	    		}
-	    		catch (ClassNotFoundException e1) {
-	    			try {
-	    				TypeUtil.forName("org.eclipse.jetty.server.Request");
-	        			securityServiceClassName = "org.granite.messaging.service.security.Jetty7SecurityService";
-	    			}
-	    			catch (ClassNotFoundException e1b) {
-		    			try {
-		    				TypeUtil.forName("weblogic.servlet.security.ServletAuthentication");
-		    				securityServiceClassName = "org.granite.messaging.service.security.WebLogicSecurityService";
-		    			}
-		    			catch (ClassNotFoundException e2) {
-		        			try {
-		        				TypeUtil.forName("com.sun.appserv.server.LifecycleEvent");
-		            			securityServiceClassName = "org.granite.messaging.service.security.GlassFishV3SecurityService";
-		        			}
-		        			catch (ClassNotFoundException e3) {
-                                try {
-                                    TypeUtil.forName("io.undertow.server.HttpServerExchange");
-                                    securityServiceClassName = "org.granite.messaging.service.security.UndertowSecurityService";
-                                }
-                                catch (ClassNotFoundException e4) {
-                                    try {
-                                        TypeUtil.forName("org.apache.catalina.connector.Request");
-		        				        securityServiceClassName = "org.granite.messaging.service.security.Tomcat7SecurityService";
-                                    }
-                                    catch (ClassNotFoundException e5) {
-                                        log.warn(e5, "No suitable security service implementation could be detected");
-                                    }
-                                }
-		        			}
-		    			}
-		        		try {
-                            if (securityServiceClassName != null)
-		        			    graniteConfig.setSecurityService((SecurityService)TypeUtil.newInstance(securityServiceClassName));
-		            	}
-		            	catch (Exception e) {
-		            		log.error(e, "Could not setup security service " + securityServiceClassName);
-		            	}
-	    			}
-	    		}
+                for (Map.Entry<String, String> entry : securityServicesMap.entrySet()) {
+                    try {
+                        TypeUtil.forName(entry.getKey());
+                        securityServiceClassName = entry.getValue();
+                        break;
+                    }
+                    catch (ClassNotFoundException e) {
+                    }
+                }
+                try {
+                    if (securityServiceClassName != null)
+                        graniteConfig.setSecurityService((SecurityService)TypeUtil.newInstance(securityServiceClassName));
+                }
+                catch (Exception e) {
+                    log.error(e, "Could not setup security service " + securityServiceClassName);
+                }
 	    	}
 	        
 	        if (!serverFilter.amf3MessageInterceptor().equals(AMF3MessageInterceptor.class)) {
@@ -450,8 +422,19 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 			catch (Throwable t) {
 			}
 			return false;
-		}		
-	    
+		}
+
+        private static Map<String, String> securityServicesMap = new LinkedHashMap<String, String>();
+        static {
+            securityServicesMap.put("org.mortbay.jetty.Request", "org.granite.messaging.service.security.Jetty6SecurityService");
+            securityServicesMap.put("org.eclipse.jetty.websocket.servlet.PostUpgradedHttpServletRequest", "org.granite.messaging.service.security.Jetty9SecurityService");
+            securityServicesMap.put("org.eclipse.jetty.server.Authentication", "org.granite.messaging.service.security.Jetty8SecurityService");
+            securityServicesMap.put("weblogic.servlet.security.ServletAuthentication", "org.granite.messaging.service.security.WebLogicSecurityService");
+            securityServicesMap.put("com.sun.appserv.server.LifecycleEvent", "org.granite.messaging.service.security.GlassFishV3SecurityService");
+            securityServicesMap.put("io.undertow.server.HttpServerExchange", "org.granite.messaging.service.security.UndertowSecurityService");
+            securityServicesMap.put("org.apache.catalina.connector.Request", "org.granite.messaging.service.security.Tomcat7SecurityService");
+        }
+
 	    private static void initSecurizer(AbstractMessagingDestination messagingDestination, Class<? extends GravityDestinationSecurizer> securizerClass, ConfigProvider configProvider) {
 			if (securizerClass != GravityDestinationSecurizer.class) {
 				if (configProvider != null)

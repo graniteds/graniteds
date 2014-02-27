@@ -21,12 +21,15 @@
  */
 package org.granite.test.container.jetty8;
 
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.granite.test.container.Utils;
 import org.granite.test.container.EmbeddedContainer;
@@ -42,6 +45,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
 
+    private WebArchive war;
+    private boolean persistSessions;
     private Server jetty;
     private WebAppContext webAppContext;
     private Thread serverThread;
@@ -63,6 +68,7 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
         jetty.setConnectors(new Connector[]{connector});
         jetty.setHandler(new HandlerCollection(true));
 
+        this.war = war;
         war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-servlet3/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsLibraries(new File("granite-server-jetty8/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
@@ -73,19 +79,7 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
         war.addAsLibrary(Utils.findJarContainingResource("META-INF/maven/org.eclipse.jetty/jetty-plus/pom.xml"));
         war.addAsLibrary(Utils.findJarContainingResource("META-INF/maven/org.eclipse.jetty/jetty-annotations/pom.xml"));
         war.setWebXML(new File("granite-server-jetty8/src/test/resources/web-websocket.xml"));
-
-        webAppContext = war.as(ShrinkWrapWebAppContext.class);
-        webAppContext.setExtractWAR(true);
-        webAppContext.setParentLoaderPriority(true);
-        webAppContext.setContextPath("/" + war.getName().substring(0, war.getName().lastIndexOf(".")));
-        webAppContext.setConfigurationClasses(CONFIGURATION_CLASSES);
-        if (persistSessions) {
-            HashSessionManager sessionManager = new HashSessionManager();
-            sessionManager.setStoreDirectory(new File("granite-server-jetty8/build/tmp/jetty/sessions"));
-            sessionManager.setLazyLoad(false);
-            webAppContext.setSessionHandler(new SessionHandler(sessionManager));
-        }
-        ((HandlerCollection)jetty.getHandler()).addHandler(webAppContext);
+        this.persistSessions = persistSessions;
     }
 
     private CountDownLatch waitForStart = new CountDownLatch(1);
@@ -93,6 +87,21 @@ public class EmbeddedJetty8 implements Runnable, EmbeddedContainer {
     public void run() {
         try {
             jetty.start();
+            webAppContext = war.as(ShrinkWrapWebAppContext.class);
+            webAppContext.setExtractWAR(true);
+            webAppContext.setParentLoaderPriority(true);
+            webAppContext.setContextPath("/" + war.getName().substring(0, war.getName().lastIndexOf(".")));
+            webAppContext.setConfigurationClasses(CONFIGURATION_CLASSES);
+            if (persistSessions) {
+                HashSessionManager sessionManager = new HashSessionManager();
+                sessionManager.setStoreDirectory(new File("granite-server-jetty8/build/tmp/jetty/sessions"));
+                sessionManager.setLazyLoad(false);
+                webAppContext.setSessionHandler(new SessionHandler(sessionManager));
+            }
+            HashLoginService loginService = new HashLoginService();
+            loginService.putUser("user", Credential.getCredential("user00"), new String[] { "user" });
+            webAppContext.getSecurityHandler().setLoginService(loginService);
+            ((HandlerCollection)jetty.getHandler()).addHandler(webAppContext);
             webAppContext.start();
 
             waitForStart.countDown();

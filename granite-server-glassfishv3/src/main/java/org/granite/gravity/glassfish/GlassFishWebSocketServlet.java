@@ -52,12 +52,14 @@ public class GlassFishWebSocketServlet extends HttpServlet {
 		GravityServletUtil.init(config);
 		Gravity gravity = GravityManager.getGravity(getServletContext());
 		String mapping = null;
+        String servletName = null;
 		for (ServletRegistration sr : getServletContext().getServletRegistrations().values()) {
 			if (!sr.getClassName().equals(getClass().getName()))
 				continue;
-			mapping = sr.getMappings().iterator().next(); 
+            servletName = sr.getName();
+			mapping = sr.getMappings().iterator().next();
 		}
-		app = new GlassFishWebSocketApplication(getServletContext(), gravity, mapping);
+		app = new GlassFishWebSocketApplication(getServletContext(), gravity, mapping, servletName);
 		try {
 			WebSocketEngine.getEngine().register(getServletContext().getContextPath(), mapping, app);
 		}

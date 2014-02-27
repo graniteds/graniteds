@@ -73,7 +73,8 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
 
     @Override
     protected void sendBytes(byte[] msg) throws IOException {
-        session.getBasicRemote().sendBinary(ByteBuffer.wrap(msg));
+        if (session != null && session.isOpen())
+            session.getBasicRemote().sendBinary(ByteBuffer.wrap(msg));
     }
 
 	public void close() {

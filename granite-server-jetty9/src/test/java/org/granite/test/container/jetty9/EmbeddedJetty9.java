@@ -21,12 +21,14 @@
  */
 package org.granite.test.container.jetty9;
 
+import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
@@ -104,6 +106,9 @@ public class EmbeddedJetty9 implements Runnable, EmbeddedContainer {
                 sessionManager.setLazyLoad(false);
                 webAppContext.setSessionHandler(new SessionHandler(sessionManager));
             }
+            HashLoginService loginService = new HashLoginService();
+            loginService.putUser("user", Credential.getCredential("user00"), new String[] { "user" });
+            webAppContext.getSecurityHandler().setLoginService(loginService);
             ((HandlerCollection)jetty.getHandler()).addHandler(webAppContext);
             webAppContext.start();
 

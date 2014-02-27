@@ -63,7 +63,7 @@ public class SimpleServiceFactory extends ServiceFactory {
         ServiceInvoker<?> invoker = (ServiceInvoker<?>)cache.get(key);
         if (invoker != null)
         	return invoker;
-        
+
         SimpleServiceContext tideContext = new SimpleServiceContext();
         invoker = new TideServiceInvoker<SimpleServiceFactory>(destination, this, tideContext);
         cache.put(key, invoker);

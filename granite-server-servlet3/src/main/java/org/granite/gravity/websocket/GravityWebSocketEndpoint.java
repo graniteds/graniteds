@@ -90,10 +90,16 @@ public class GravityWebSocketEndpoint extends Endpoint {
 
     @Override
     public void onError(Session session, Throwable error) {
-        WebSocketChannel channel = (WebSocketChannel)session.getUserProperties().get("channel");
-        if (channel != null)
-            channel.onWebSocketError(error);
-        else
+        try {
+            WebSocketChannel channel = (WebSocketChannel)session.getUserProperties().get("channel");
+            if (channel != null)
+                channel.onWebSocketError(error);
+            else
+                log.error(error, "WebSocket error for session %s", session.getId());
+        }
+        catch (Exception e) {
+            // Tomcat does not give access to userProperties in error handler ???
             log.error(error, "WebSocket error for session %s", session.getId());
+        }
     }
 }

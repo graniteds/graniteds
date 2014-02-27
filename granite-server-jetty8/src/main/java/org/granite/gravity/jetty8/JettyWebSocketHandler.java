@@ -83,7 +83,10 @@ public class JettyWebSocketHandler extends WebSocketHandler {
             }
 			
 			log.info("WebSocket connection started %s clientId %s sessionId %s", protocol, clientId, sessionId);
-			
+
+            if (gravity.getGraniteConfig().getSecurityService() != null)
+                gravity.getGraniteConfig().getSecurityService().prelogin(session, request, null);
+
 			CommandMessage pingMessage = new CommandMessage();
 			pingMessage.setMessageId(connectMessageId != null ? connectMessageId : "OPEN_CONNECTION");
 			pingMessage.setOperation(CommandMessage.CLIENT_PING_OPERATION);

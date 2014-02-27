@@ -49,13 +49,15 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 	private final ServletContext servletContext;
 	private final Gravity gravity;
 	private final Pattern mapping;
+    private final String servletName;
     private String protocol;
 
 
-	public GlassFishWebSocketApplication(ServletContext servletContext, Gravity gravity, String mapping) {
+	public GlassFishWebSocketApplication(ServletContext servletContext, Gravity gravity, String mapping, String servletName) {
 		this.servletContext = servletContext;
 		this.gravity = gravity;
 		this.mapping = Pattern.compile(".*" + mapping.replace("*", ".*") + "$");
+        this.servletName = servletName;
 	}
 
 	@Override
@@ -111,6 +113,9 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
             }
 
             log.info("WebSocket connection started %s clientId %s sessionId %s", protocol, clientId, sessionId);
+
+            if (gravity.getGraniteConfig().getSecurityService() != null)
+                gravity.getGraniteConfig().getSecurityService().prelogin(session, request, servletName);
 
             CommandMessage pingMessage = new CommandMessage();
 			pingMessage.setMessageId(connectMessageId != null ? connectMessageId : "OPEN_CONNECTION");

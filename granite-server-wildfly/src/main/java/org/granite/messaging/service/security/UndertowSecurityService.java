@@ -45,7 +45,7 @@ public class UndertowSecurityService extends AbstractSecurityService {
 
 
     @Override
-    public void prelogin(HttpSession session, Object request) {
+    public void prelogin(HttpSession session, Object request, String servletName) {
         if (session == null) // Cannot prelogin() without a session
             return;
 
@@ -141,6 +141,9 @@ public class UndertowSecurityService extends AbstractSecurityService {
                 throw SecurityServiceException.newNotLoggedInException("User not logged in");
             }
 
+            if (httpRequest == null && authenticationContext == null)
+                throw SecurityServiceException.newNotLoggedInException("No authorization context");
+
             boolean accessDenied = true;
             for (String role : context.getDestination().getRoles()) {
                 if (httpRequest != null && httpRequest.isUserInRole(role)) {
@@ -216,6 +219,10 @@ public class UndertowSecurityService extends AbstractSecurityService {
 
         public boolean isUserInRole(String role) {
             return securityContext.getAuthenticatedAccount().getRoles().contains(role);
+        }
+
+        public void logout() {
+            securityContext.logout();
         }
     }
 }

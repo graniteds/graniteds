@@ -41,6 +41,7 @@ import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.connector.Request;
+import org.apache.catalina.core.StandardContext;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.HttpGraniteContext;
@@ -139,7 +140,7 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
 
 
     @Override
-    public void prelogin(HttpSession session, Object httpRequest) {
+    public void prelogin(HttpSession session, Object httpRequest, String servletName) {
         if (session == null) // Cannot prelogin() without a session
             return;
 
@@ -147,10 +148,29 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
             return;
 
         HttpServletRequest request = null;
-        if (httpRequest instanceof HttpServletRequest)
-            request = (HttpServletRequest)httpRequest;
+        RealmAdapter realm = null;
+        if (httpRequest.getClass().getName().equals("com.sun.grizzly.websockets.ServerNetworkHandler$WSServletRequestImpl")) {
+            Field f = null;
+            try {
+                f = httpRequest.getClass().getDeclaredField("glassfishSupport");
+                f.setAccessible(true);
+                Object gfs = f.get(httpRequest);
+                f = gfs.getClass().getDeclaredField("context");
+                f.setAccessible(true);
+                Object ctx = f.get(gfs);
+                f = ctx.getClass().getDeclaredField("context");
+                f.setAccessible(true);
+                StandardContext sc = (StandardContext)f.get(ctx);
+                realm = (RealmAdapter)sc.getRealm();
+            }
+            catch (Exception e) {
+                throw new RuntimeException("Could not get internal glassfish v3 request", e);
+            }
+        }
         else {
-            if (httpRequest.getClass().getName().equals("org.glassfish.tyrus.core.RequestContext")) {   // Websocket
+            if (httpRequest instanceof HttpServletRequest)
+                request = (HttpServletRequest)httpRequest;
+            else if (httpRequest.getClass().getName().equals("org.glassfish.tyrus.core.RequestContext")) {   // Websocket/Tyrus
                 Field f = null;
                 try {
                     f = httpRequest.getClass().getDeclaredField("isUserInRoleDelegate");
@@ -161,14 +181,14 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
                     request = (HttpServletRequest)f.get(delegate);
                 }
                 catch (Exception e) {
-                    throw new RuntimeException("Could not get internal undertow exchange", e);
+                    throw new RuntimeException("Could not get internal glassfish v3 / tyrus request", e);
                 }
             }
+            servletName = getRequest(request).getWrapper().getServletName();
+            realm = getRealm(request);
         }
-        Request req = getRequest(request);
-        RealmAdapter realm = getRealm(request);
 
-        GlassFishV3AuthenticationContext authorizationContext = new GlassFishV3AuthenticationContext(req.getWrapper().getServletName(), realm);
+        GlassFishV3AuthenticationContext authorizationContext = new GlassFishV3AuthenticationContext(servletName, realm);
         session.setAttribute(AuthenticationContext.class.getName(), authorizationContext);
     }
 
@@ -357,6 +377,10 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
 
         public boolean isUserInRole(String role) {
             return realm.hasRole(securityServletName, principal, role);
+        }
+
+        public void logout() {
+            realm.logout();
         }
     }
 }

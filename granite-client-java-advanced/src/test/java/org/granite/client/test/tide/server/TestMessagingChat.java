@@ -92,8 +92,6 @@ public class TestMessagingChat {
         // Build a chat server application
         WebArchive war = ShrinkWrap.create(WebArchive.class, "chat.war");
         war.addClass(ChatApplication.class);
-        File gfweb = new File("granite-server-glassfishv3/src/test/resources/glassfish-web.xml");
-        war.addAsWebInfResource(gfweb, "glassfish-web.xml");
 
         container = ContainerTestUtil.newContainer(war, false);
         container.start();

@@ -127,7 +127,7 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 
             if (gravity.getGraniteConfig().getSecurityService() != null) {
                 try {
-                    gravity.getGraniteConfig().getSecurityService().prelogin(session, request instanceof WsHttpServletRequestWrapper ? requestField.get(request) : request);
+                    gravity.getGraniteConfig().getSecurityService().prelogin(session, request instanceof WsHttpServletRequestWrapper ? requestField.get(request) : request, getServletConfig().getServletName());
                 }
                 catch (IllegalAccessException e) {
                     log.warn(e, "Could not get internal request object");

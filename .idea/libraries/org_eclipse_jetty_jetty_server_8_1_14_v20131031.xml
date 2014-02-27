@@ -10,8 +10,6 @@
       <root url="jar://$PROJECT_DIR$/lib/jetty-util-8.1.14.v20131031.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES>
-      <root url="jar://$USER_HOME$/Downloads/jetty-server-8.1.14.v20131031-sources.jar!/" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>
