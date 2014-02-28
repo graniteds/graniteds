@@ -21,36 +21,12 @@
  */
 package org.granite.gravity.glassfish;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-
-import javax.servlet.http.HttpSession;
-
-import org.granite.context.GraniteContext;
-import org.granite.context.SimpleGraniteContext;
-import org.granite.gravity.AbstractChannel;
-import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
-import org.granite.gravity.GravityConfig;
-import org.granite.gravity.websocket.AbstractWebSocketChannel;
-import org.granite.logging.Logger;
-import org.granite.messaging.jmf.JMFDeserializer;
-import org.granite.messaging.jmf.JMFSerializer;
-import org.granite.messaging.webapp.ServletGraniteContext;
-import org.granite.util.ContentType;
-
 import com.sun.grizzly.websockets.DataFrame;
 import com.sun.grizzly.websockets.WebSocket;
 import com.sun.grizzly.websockets.WebSocketListener;
-
-import flex.messaging.messages.AsyncMessage;
-import flex.messaging.messages.Message;
+import org.granite.gravity.GravityInternal;
+import org.granite.gravity.websocket.AbstractWebSocketChannel;
+import org.granite.logging.Logger;
 
 
 public class GlassFishWebSocketChannel extends AbstractWebSocketChannel implements WebSocketListener {
@@ -59,7 +35,7 @@ public class GlassFishWebSocketChannel extends AbstractWebSocketChannel implemen
 	
 	private WebSocket websocket;
 
-	public GlassFishWebSocketChannel(Gravity gravity, String id, GlassFishWebSocketChannelFactory factory, String clientType) {
+	public GlassFishWebSocketChannel(GravityInternal gravity, String id, GlassFishWebSocketChannelFactory factory, String clientType) {
     	super(gravity, id, factory, clientType);
     }
 

@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
 
@@ -61,7 +62,7 @@ public class GravityGAEServlet extends AbstractGravityServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		Gravity gravity = GravityManager.getGravity(getServletContext());
+        GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		GAEChannelFactory channelFactory = new GAEChannelFactory((GAEGravity)gravity);
 		
 		try {

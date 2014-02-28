@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
 
 import weblogic.servlet.http.AbstractAsyncServlet;
@@ -53,7 +53,7 @@ public class WebLogicChannel extends AbstractChannel {
     private final AtomicReference<RequestResponseKey> key = new AtomicReference<RequestResponseKey>();
 
     
-	public WebLogicChannel(Gravity gravity, String id, WebLogicChannelFactory factory, String clientType) {
+	public WebLogicChannel(GravityInternal gravity, String id, WebLogicChannelFactory factory, String clientType) {
 		super(gravity, id, factory, clientType);
 	}
 	

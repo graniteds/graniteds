@@ -81,6 +81,10 @@ public class Subscription implements Serializable {
         return channel;
     }
 
+    public String getDestination() {
+        return destination;
+    }
+
     public String getSubTopicId() {
         return subTopicId;
     }

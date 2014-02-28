@@ -82,19 +82,19 @@ public class AbstractGravityServlet extends HttpServlet {
         GravityServletUtil.rejectJMFContentType(request);
     }
 	
-	protected Gravity initializeRequest(Gravity gravity, HttpServletRequest request, HttpServletResponse response) {
+	protected GravityInternal initializeRequest(GravityInternal gravity, HttpServletRequest request, HttpServletResponse response) {
 		return GravityServletUtil.initializeRequest(getServletConfig(), gravity, request, response);
 	}
 
-	protected Message[] deserialize(Gravity gravity, HttpServletRequest request) throws ClassNotFoundException, IOException, ServletException {
+	protected Message[] deserialize(GravityInternal gravity, HttpServletRequest request) throws ClassNotFoundException, IOException, ServletException {
 		return GravityServletUtil.deserialize(gravity, request);
 	}
 	
-	protected Message[] deserialize(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException, ServletException {
+	protected Message[] deserialize(GravityInternal gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException, ServletException {
 		return GravityServletUtil.deserialize(gravity, request, is);
 	}
 	
-	protected void serialize(Gravity gravity, HttpServletResponse response, Message[] messages) throws IOException {
+	protected void serialize(GravityInternal gravity, HttpServletResponse response, Message[] messages) throws IOException {
 		GravityServletUtil.serialize(gravity, response, messages);
 	}
 	

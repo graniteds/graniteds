@@ -3,7 +3,7 @@ package org.granite.gravity.websocket;
 import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.Message;
 import org.granite.context.GraniteContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ContentType;
@@ -30,7 +30,7 @@ public class GravityWebSocketEndpoint extends Endpoint {
 
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-        Gravity gravity = (Gravity)endpointConfig.getUserProperties().get("gravity");
+        GravityInternal gravity = (GravityInternal)endpointConfig.getUserProperties().get("gravity");
         ServletContext servletContext = (ServletContext)endpointConfig.getUserProperties().get("servletContext");
 
         String connectMessageId = config.connectMessageId;

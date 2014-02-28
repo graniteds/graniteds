@@ -22,11 +22,11 @@
 package org.granite.gravity.glassfish;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 
 public class GlassFishWebSocketChannelFactory extends AbstractChannelFactory<GlassFishWebSocketChannel> {
 	
-	public GlassFishWebSocketChannelFactory(Gravity gravity) {
+	public GlassFishWebSocketChannelFactory(GravityInternal gravity) {
 		super(gravity);
 	}
 

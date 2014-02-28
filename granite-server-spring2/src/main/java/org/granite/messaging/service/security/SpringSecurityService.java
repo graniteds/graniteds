@@ -22,6 +22,7 @@
 package org.granite.messaging.service.security;
 
 import java.lang.reflect.InvocationTargetException;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,7 @@ public class SpringSecurityService extends AbstractSecurityService {
 		this.securityInterceptor = securityInterceptor;
 	}
     
-    public void login(Object credentials, String charset) {
+    public Principal login(Object credentials, String charset) {
         List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials, charset));
 
         HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
@@ -82,6 +83,7 @@ public class SpringSecurityService extends AbstractSecurityService {
         String user = decodedCredentials.get(0);
         String password = decodedCredentials.get(1);
         Authentication auth = new UsernamePasswordAuthenticationToken(user, password);
+        Principal principal = null;
 
         ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(
             httpRequest.getSession().getServletContext()
@@ -93,6 +95,8 @@ public class SpringSecurityService extends AbstractSecurityService {
                 Authentication authentication = authenticationManager.authenticate(auth);
                 SecurityContext securityContext = SecurityContextHolder.getContext();
                 securityContext.setAuthentication(authentication);
+                if (authentication.getPrincipal() instanceof Principal)
+                    principal = (Principal)authentication.getPrincipal();
                 SecurityContextHolder.setContext(securityContext);
                 saveSecurityContextInSession(securityContext, 0);
 
@@ -104,6 +108,8 @@ public class SpringSecurityService extends AbstractSecurityService {
         }
 
         log.debug("User %s logged in", user);
+
+        return principal;
     }
     
     protected void handleAuthenticationExceptions(AuthenticationException e) {

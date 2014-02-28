@@ -94,7 +94,7 @@ public class GlassFishSecurityService extends AbstractSecurityService {
             throw new NullPointerException("Could not find Tomcat container for: " + (serviceId != null ? serviceId : "(default)"));
     }
 
-    public void login(Object credentials, String charset) throws SecurityServiceException {
+    public Principal login(Object credentials, String charset) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials, charset);
 
         HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
@@ -116,6 +116,8 @@ public class GlassFishSecurityService extends AbstractSecurityService {
         session.setNote(Constants.SESS_PASSWORD_NOTE, decoded[1]);
         
         endLogin(credentials, charset);
+
+        return principal;
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {

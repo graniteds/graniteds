@@ -21,25 +21,24 @@
  */
 package org.granite.gravity.glassfish;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import com.sun.grizzly.websockets.*;
+import com.sun.grizzly.tcp.Request;
+import com.sun.grizzly.websockets.DefaultWebSocket;
+import com.sun.grizzly.websockets.WebSocket;
+import com.sun.grizzly.websockets.WebSocketApplication;
+import flex.messaging.messages.CommandMessage;
+import flex.messaging.messages.Message;
 import org.granite.context.GraniteContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ContentType;
 
-import com.sun.grizzly.tcp.Request;
-
-import flex.messaging.messages.CommandMessage;
-import flex.messaging.messages.Message;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 
 public class GlassFishWebSocketApplication extends WebSocketApplication {
@@ -47,13 +46,13 @@ public class GlassFishWebSocketApplication extends WebSocketApplication {
 	private static final Logger log = Logger.getLogger(GlassFishWebSocketApplication.class);
 	
 	private final ServletContext servletContext;
-	private final Gravity gravity;
+	private final GravityInternal gravity;
 	private final Pattern mapping;
     private final String servletName;
     private String protocol;
 
 
-	public GlassFishWebSocketApplication(ServletContext servletContext, Gravity gravity, String mapping, String servletName) {
+	public GlassFishWebSocketApplication(ServletContext servletContext, GravityInternal gravity, String mapping, String servletName) {
 		this.servletContext = servletContext;
 		this.gravity = gravity;
 		this.mapping = Pattern.compile(".*" + mapping.replace("*", ".*") + "$");

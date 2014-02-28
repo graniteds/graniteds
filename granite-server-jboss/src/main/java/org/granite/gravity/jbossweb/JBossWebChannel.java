@@ -21,19 +21,17 @@
  */
 package org.granite.gravity.jbossweb;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import flex.messaging.messages.Message;
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 
-import flex.messaging.messages.Message;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Franck WOLFF
@@ -44,7 +42,7 @@ public class JBossWebChannel extends AbstractChannel {
 
     private final AtomicReference<HttpEvent> event = new AtomicReference<HttpEvent>();
 
-    public JBossWebChannel(Gravity gravity, String id, JBossWebChannelFactory factory, String clientType) {
+    public JBossWebChannel(GravityInternal gravity, String id, JBossWebChannelFactory factory, String clientType) {
         super(gravity, id, factory, clientType);
     }
     

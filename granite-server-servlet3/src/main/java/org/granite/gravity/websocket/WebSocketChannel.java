@@ -21,12 +21,12 @@
  */
 package org.granite.gravity.websocket;
 
+import org.granite.gravity.GravityInternal;
+import org.granite.logging.Logger;
+
 import javax.websocket.CloseReason;
 import javax.websocket.MessageHandler;
 import javax.websocket.Session;
-import org.granite.gravity.Gravity;
-import org.granite.logging.Logger;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -38,7 +38,7 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
 	private Session session;
 
 	
-	public WebSocketChannel(Gravity gravity, String id, WebSocketChannelFactory factory, String clientType) {
+	public WebSocketChannel(GravityInternal gravity, String id, WebSocketChannelFactory factory, String clientType) {
     	super(gravity, id, factory, clientType);
 
         log.debug("Create channel %s", getId());

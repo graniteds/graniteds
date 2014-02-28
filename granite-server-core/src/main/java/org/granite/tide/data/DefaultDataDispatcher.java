@@ -29,6 +29,7 @@ import org.granite.clustering.DistributedDataFactory;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.ServletGraniteContext;
@@ -113,7 +114,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 				
 				message.setHeader(CommandMessage.SELECTOR_HEADER, dataSelector);
 				
-				gravity.handleMessage(null, message, true);
+				gravity.handleMessage(message, true);
 				
 				log.debug("Topic %s data selector changed: %s", topicName, dataSelector);
 			}
@@ -130,7 +131,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 		
 		Message resultMessage = null;
 		if (clientId != null) {
-			Channel channel = gravity.getChannel(null, clientId);
+			Channel channel = gravity.findConnectedChannelByClientId(clientId);
 			message.setClientId(clientId);
 			resultMessage = gravity.publishMessage(channel, message);
 		}

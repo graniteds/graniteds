@@ -22,14 +22,14 @@
 package org.granite.gravity.jbossweb;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author Franck WOLFF
  */
 public class JBossWebChannelFactory extends AbstractChannelFactory<JBossWebChannel> {
 	
-	public JBossWebChannelFactory(Gravity gravity) {
+	public JBossWebChannelFactory(GravityInternal gravity) {
 		super(gravity);
 	}
 

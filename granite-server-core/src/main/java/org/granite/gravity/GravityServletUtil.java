@@ -82,7 +82,7 @@ public class GravityServletUtil {
 	///////////////////////////////////////////////////////////////////////////
 	// AMF (de)serialization methods.
 	
-	public static Gravity initializeRequest(ServletConfig config, Gravity gravity, HttpServletRequest request, HttpServletResponse response) {
+	public static GravityInternal initializeRequest(ServletConfig config, GravityInternal gravity, HttpServletRequest request, HttpServletResponse response) {
         HttpGraniteContext.createThreadIntance(
             gravity.getGraniteConfig(), gravity.getServicesConfig(),
             config.getServletContext(), request, response
@@ -90,7 +90,7 @@ public class GravityServletUtil {
         return gravity;
 	}
 
-	public static Message[] deserialize(Gravity gravity, HttpServletRequest request) throws ClassNotFoundException, IOException {
+	public static Message[] deserialize(GravityInternal gravity, HttpServletRequest request) throws ClassNotFoundException, IOException {
 		InputStream is = request.getInputStream();
 		try {
 			return deserialize(gravity, request, is);
@@ -100,7 +100,7 @@ public class GravityServletUtil {
 		}
 	}
 	
-	public static Message[] deserialize(Gravity gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException {
+	public static Message[] deserialize(GravityInternal gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException {
 		ObjectInput amf3Deserializer = gravity.getGraniteConfig().newAMF3Deserializer(is);
         Object[] objects = (Object[])amf3Deserializer.readObject();
         Message[] messages = new Message[objects.length];
@@ -109,7 +109,7 @@ public class GravityServletUtil {
         return messages;
 	}
 	
-	public static void serialize(Gravity gravity, HttpServletResponse response, Message[] messages) throws IOException {
+	public static void serialize(GravityInternal gravity, HttpServletResponse response, Message[] messages) throws IOException {
 		OutputStream os = null;
 		try {
             // For SDK 2.0.1_Hotfix2+ (LCDS 2.5+).

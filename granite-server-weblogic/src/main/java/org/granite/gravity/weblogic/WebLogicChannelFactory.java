@@ -22,14 +22,14 @@
 package org.granite.gravity.weblogic;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author Franck WOLFF
  */
 public class WebLogicChannelFactory extends AbstractChannelFactory<WebLogicChannel> {
 
-	public WebLogicChannelFactory(Gravity gravity) {
+	public WebLogicChannelFactory(GravityInternal gravity) {
 		super(gravity);
 	}
 

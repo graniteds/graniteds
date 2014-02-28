@@ -32,10 +32,10 @@ public class ChannelTimerTask extends TimerTask {
 
     private static final Logger log = Logger.getLogger(ChannelTimerTask.class);
 
-	private final Gravity gravity;
+	private final GravityInternal gravity;
 	private final String channelId;
 	
-	public ChannelTimerTask(Gravity gravity, String channelId) {
+	public ChannelTimerTask(GravityInternal gravity, String channelId) {
 		this.gravity = gravity;
 		this.channelId = channelId;
 	}

@@ -77,8 +77,8 @@ public class TestRemoting {
     public static void startContainer() throws Exception {
         // Build a chat server application
         WebArchive war = ShrinkWrap.create(WebArchive.class, "remoting.war");
-        war.addClass(TestService.class);
         war.addClass(RemotingApplication.class);
+        war.addClass(TestService.class);
         war.addAsWebInfResource(new File("granite-client-java-advanced/src/test/resources/META-INF/services-config.properties"), "classes/META-INF/services-config.properties");
 
         container = ContainerTestUtil.newContainer(war, false);

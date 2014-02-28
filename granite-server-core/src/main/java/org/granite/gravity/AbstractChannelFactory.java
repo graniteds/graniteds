@@ -27,13 +27,13 @@ package org.granite.gravity;
  */
 public abstract class AbstractChannelFactory<C extends Channel> implements ChannelFactory<C> {
 
-	private Gravity gravity = null;
+	private GravityInternal gravity = null;
 	
-	public AbstractChannelFactory(Gravity gravity) {
+	public AbstractChannelFactory(GravityInternal gravity) {
 		this.gravity = gravity;
 	}
 	
-	public Gravity getGravity() {
+	public GravityInternal getGravity() {
 		return gravity;
 	}
 

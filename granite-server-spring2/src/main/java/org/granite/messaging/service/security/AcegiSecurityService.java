@@ -22,6 +22,7 @@
 package org.granite.messaging.service.security;
 
 import java.lang.reflect.InvocationTargetException;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,7 @@ public class AcegiSecurityService extends AbstractSecurityService {
         log.debug("Configuring with parameters (NOOP) %s: ", params);
     }
 
-    public void login(Object credentials, String charset) {
+    public Principal login(Object credentials, String charset) {
         List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials, charset));
 
         HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
@@ -70,6 +71,7 @@ public class AcegiSecurityService extends AbstractSecurityService {
         String user = decodedCredentials.get(0);
         String password = decodedCredentials.get(1);
         Authentication auth = new UsernamePasswordAuthenticationToken(user, password);
+        Principal principal = null;
 
         ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(
             httpRequest.getSession().getServletContext()
@@ -80,6 +82,8 @@ public class AcegiSecurityService extends AbstractSecurityService {
             try {
                 Authentication authentication = authenticationManager.authenticate(auth);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                if (authentication instanceof Principal)
+                    principal = (Principal)authentication.getPrincipal();
                 httpRequest.getSession().setAttribute(SPRING_AUTHENTICATION_TOKEN, authentication);
 
                 endLogin(credentials, charset);
@@ -90,6 +94,8 @@ public class AcegiSecurityService extends AbstractSecurityService {
         }
 
         log.debug("User %s logged in", user);
+
+        return principal;
     }
     
     protected void handleAuthenticationExceptions(AuthenticationException e) {

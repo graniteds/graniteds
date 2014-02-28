@@ -21,20 +21,18 @@
  */
 package org.granite.gravity.jbossweb;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import flex.messaging.messages.Message;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 
-import flex.messaging.messages.Message;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author Franck WOLFF
@@ -59,7 +57,7 @@ public class GravityJBossWebServlet extends AbstractHttpEventServlet {
 
         rejectJMFContentType(request);
 
-        Gravity gravity = GravityManager.getGravity(getServletContext());
+        GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
         JBossWebChannelFactory channelFactory = new JBossWebChannelFactory(gravity);
 
         try {
@@ -146,7 +144,7 @@ public class GravityJBossWebServlet extends AbstractHttpEventServlet {
     		HttpServletRequest request = event.getHttpServletRequest();
         	Message connect = getConnectMessage(request);
         	if (connect != null) { // This should be a timeout.
-        		Gravity gravity = GravityManager.getGravity(getServletContext());
+        		GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		        String channelId = (String)connect.getClientId();
 				JBossWebChannelFactory channelFactory = new JBossWebChannelFactory(gravity);
 	            JBossWebChannel channel = gravity.getChannel(channelFactory, channelId);

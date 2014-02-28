@@ -22,10 +22,15 @@
 package org.granite.gravity;
 
 import java.io.Serializable;
+import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,7 +70,7 @@ import flex.messaging.messages.Message;
  * @author William DRAI
  * @author Franck WOLFF
  */
-public class DefaultGravity implements Gravity, DefaultGravityMBean {
+public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityMBean {
 
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
@@ -526,6 +531,14 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     ///////////////////////////////////////////////////////////////////////////
     // Incoming message handling.
 
+    public Message handleMessage(Message message) {
+        return handleMessage(null, message, false);
+    }
+
+    public Message handleMessage(Message message, boolean skipInterceptor) {
+        return handleMessage(null, message, skipInterceptor);
+    }
+
     public Message handleMessage(final ChannelFactory<?> channelFactory, Message message) {
     	return handleMessage(channelFactory, message, false);
     }
@@ -550,7 +563,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 	
 	            case CommandMessage.LOGIN_OPERATION:
 	            case CommandMessage.LOGOUT_OPERATION:
-	                return handleSecurityMessage(command);
+	                return handleSecurityMessage(channelFactory, command);
 	
 	            case CommandMessage.CLIENT_PING_OPERATION:
 	                return handlePingMessage(channelFactory, command);
@@ -606,6 +619,68 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     	GraniteContext.release();
 	}
 
+    public List<Channel> getConnectedChannels() {
+        List<Channel> channels = new ArrayList<Channel>();
+        for (TimeChannel timeChannel : this.channels.values()) {
+            channels.add(timeChannel.getChannel());
+        }
+        return channels;
+    }
+
+    public Set<Principal> getConnectedUsers() {
+        Set<Principal> userPrincipals = new HashSet<Principal>();
+        for (TimeChannel timeChannel : this.channels.values()) {
+            if (timeChannel.getChannel().getUserPrincipal() != null)
+                userPrincipals.add(timeChannel.getChannel().getUserPrincipal());
+        }
+        return userPrincipals;
+    }
+
+    public List<Channel> getConnectedChannelsByDestination(String destination) {
+        List<Channel> channels = new ArrayList<Channel>();
+        for (TimeChannel timeChannel : this.channels.values()) {
+            for (Subscription subscription : timeChannel.getChannel().getSubscriptions()) {
+                if (destination.equals(subscription.getDestination())) {
+                    channels.add(timeChannel.getChannel());
+                    break;
+                }
+            }
+        }
+        return channels;
+    }
+
+    public Set<Principal> getConnectedUsersByDestination(String destination) {
+        Set<Principal> userPrincipals = new HashSet<Principal>();
+        for (TimeChannel timeChannel : this.channels.values()) {
+            for (Subscription subscription : timeChannel.getChannel().getSubscriptions()) {
+                if (destination.equals(subscription.getDestination())) {
+                    userPrincipals.add(timeChannel.getChannel().getUserPrincipal());
+                    break;
+                }
+            }
+        }
+        return userPrincipals;
+    }
+
+    public List<Channel> findConnectedChannelsByUser(String name) {
+        List<Channel> channels = new ArrayList<Channel>();
+        for (TimeChannel timeChannel : this.channels.values()) {
+            if (timeChannel.getChannel().getUserPrincipal() != null && timeChannel.getChannel().getUserPrincipal().getName().equals(name))
+                channels.add(timeChannel.getChannel());
+        }
+        return channels;
+    }
+
+    public Channel findConnectedChannelByClientId(String clientId) {
+        if (clientId == null)
+            return null;
+
+        TimeChannel<?> timeChannel = channels.get(clientId);
+        if (timeChannel != null)
+            return timeChannel.getChannel();
+        return null;
+    }
+
 	public Message publishMessage(AsyncMessage message) {
     	return publishMessage(serverChannel, message);
     }
@@ -634,7 +709,7 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         return reply;
     }
 
-    private Message handleSecurityMessage(CommandMessage message) {
+    private Message handleSecurityMessage(final ChannelFactory<?> channelFactory, CommandMessage message) {
         GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
 
         Message response = null;
@@ -646,10 +721,20 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
         else {
             SecurityService securityService = config.getSecurityService();
             try {
-                if (message.isLoginOperation())
-                    securityService.login(message.getBody(), (String)message.getHeader(Message.CREDENTIALS_CHARSET_HEADER));
-                else
+                Channel channel = getChannel(channelFactory, (String)message.getClientId());
+
+                if (message.isLoginOperation()) {
+                    Principal principal = securityService.login(message.getBody(), (String)message.getHeader(Message.CREDENTIALS_CHARSET_HEADER));
+
+                    if (channel != null)
+                        channel.setUserPrincipal(principal);
+                }
+                else {
                     securityService.logout();
+
+                    if (channel != null)
+                        channel.setUserPrincipal(null);
+                }
             }
             catch (Exception e) {
                 if (e instanceof SecurityServiceException)
@@ -671,24 +756,24 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
     }
 
     private Message handleConnectMessage(final ChannelFactory<?> channelFactory, CommandMessage message) {
-        Channel client = getChannel(channelFactory, (String)message.getClientId());
+        Channel channel = getChannel(channelFactory, (String)message.getClientId());
 
-        if (client == null)
+        if (channel == null)
             return handleUnknownClientMessage(message);
 
         return null;
     }
 
     private Message handleDisconnectMessage(final ChannelFactory<?> channelFactory, CommandMessage message) {
-        Channel client = getChannel(channelFactory, (String)message.getClientId());
-        if (client == null)
+        Channel channel = getChannel(channelFactory, (String)message.getClientId());
+        if (channel == null)
             return handleUnknownClientMessage(message);
 
-        removeChannel(client.getId(), false);
+        removeChannel(channel.getId(), false);
 
         AcknowledgeMessage reply = new AcknowledgeMessage(message);
         reply.setDestination(message.getDestination());
-        reply.setClientId(client.getId());
+        reply.setClientId(channel.getId());
         return reply;
     }
 
@@ -935,12 +1020,12 @@ public class DefaultGravity implements Gravity, DefaultGravityMBean {
 
 		private static final long serialVersionUID = 1L;
 		
-		public ServerChannel(Gravity gravity, String channelId, ChannelFactory<ServerChannel> factory, String clientType) {
+		public ServerChannel(GravityInternal gravity, String channelId, ChannelFactory<ServerChannel> factory, String clientType) {
     		super(gravity, channelId, factory, clientType);
     	}
 
 		@Override
-		public Gravity getGravity() {
+		public GravityInternal getGravity() {
 			return gravity;
 		}
 		

@@ -32,6 +32,7 @@ import org.granite.context.SimpleGraniteContext;
 import org.granite.gravity.DefaultGravityFactory;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityConfig;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.gravity.adapters.JMSServiceAdapter;
 import org.granite.messaging.jmf.DefaultSharedContext;
@@ -71,7 +72,7 @@ public class TestTideMessaging extends AbstractJUnit4SpringContextTests {
 	
 	@Test
     public void testConfigGDS1043() throws Exception {
-		Gravity gravity = GravityManager.getGravity(servletContext);
+        GravityInternal gravity = (GravityInternal)GravityManager.getGravity(servletContext);
 		
 		JMSServiceAdapter adapter = (JMSServiceAdapter)gravity.getServiceAdapter(AsyncMessage.class.getName(), "testTopic");
 		

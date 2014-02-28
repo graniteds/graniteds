@@ -24,6 +24,7 @@ package org.granite.gravity.adapters;
 import org.granite.config.flex.Destination;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
 import org.granite.util.TypeUtil;
@@ -40,7 +41,7 @@ public abstract class ServiceAdapter {
     private static final Logger log = Logger.getLogger(ServiceAdapter.class);
 
     private String id;
-    private Gravity gravity;
+    private GravityInternal gravity;
     private Destination destination;
     private Object adapterState;
     private SecurityPolicy securityPolicy = new DefaultSecurityPolicy();
@@ -53,10 +54,10 @@ public abstract class ServiceAdapter {
         this.id = id;
     }
 
-    public Gravity getGravity() {
+    public GravityInternal getGravity() {
         return gravity;
     }
-    public void setGravity(Gravity gravity) {
+    public void setGravity(GravityInternal gravity) {
         this.gravity = gravity;
     }
 

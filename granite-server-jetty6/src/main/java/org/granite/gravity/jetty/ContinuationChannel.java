@@ -21,15 +21,14 @@
  */
 package org.granite.gravity.jetty;
 
+import flex.messaging.messages.AsyncMessage;
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityConfig;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.MessageReceivingException;
 import org.granite.logging.Logger;
 import org.mortbay.util.ajax.Continuation;
-
-import flex.messaging.messages.AsyncMessage;
 
 /**
  * @author William DRAI
@@ -40,7 +39,7 @@ public class ContinuationChannel extends AbstractChannel {
 
     private Continuation continuation = null;
 
-    public ContinuationChannel(Gravity gravity, String id, ContinuationChannelFactory factory, String clientType) {
+    public ContinuationChannel(GravityInternal gravity, String id, ContinuationChannelFactory factory, String clientType) {
     	super(gravity, id, factory, clientType);
     }
 

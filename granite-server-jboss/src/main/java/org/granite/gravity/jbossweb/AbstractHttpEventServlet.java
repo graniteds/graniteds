@@ -21,17 +21,16 @@
  */
 package org.granite.gravity.jbossweb;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 import org.jboss.servlet.http.HttpEventServlet;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author Franck WOLFF

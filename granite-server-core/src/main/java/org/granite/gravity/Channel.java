@@ -21,6 +21,7 @@
  */
 package org.granite.gravity;
 
+import java.security.Principal;
 import java.util.Collection;
 
 
@@ -34,8 +35,11 @@ public interface Channel {
     public String getId();
     
     public String getClientType();
+
+    public Principal getUserPrincipal();
+    public void setUserPrincipal(Principal principal);
     
-    public Gravity getGravity();
+    public GravityInternal getGravity();
     
     public ChannelFactory<?> getFactory();
 

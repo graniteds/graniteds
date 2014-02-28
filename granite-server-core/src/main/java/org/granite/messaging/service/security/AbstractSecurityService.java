@@ -22,6 +22,7 @@
 package org.granite.messaging.service.security;
 
 import java.io.UnsupportedEncodingException;
+import java.security.Principal;
 import java.util.Date;
 
 import javax.servlet.http.HttpSession;
@@ -59,8 +60,8 @@ public abstract class AbstractSecurityService implements SecurityService {
      * 
      * @param credentials the login:password pair (must be a base64/ISO-8859-1 encoded string).
      */
-    public void login(Object credentials) throws SecurityServiceException {
-    	login(credentials, null);
+    public Principal login(Object credentials) throws SecurityServiceException {
+    	return login(credentials, null);
 	}
 
 	/**

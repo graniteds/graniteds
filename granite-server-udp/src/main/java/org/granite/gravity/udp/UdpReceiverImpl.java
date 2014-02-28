@@ -43,6 +43,7 @@ import org.granite.context.GraniteContext;
 import org.granite.context.SimpleGraniteContext;
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.MessageReceivingException;
 import org.granite.gravity.udp.UdpReceiver;
 import org.granite.logging.Logger;
@@ -81,7 +82,7 @@ public class UdpReceiverImpl implements UdpReceiver {
 
 	public void receive(AsyncMessage message) throws MessageReceivingException {
 		AbstractChannel gravityChannel = udpChannel.getGravityChannel();
-		Gravity gravity = gravityChannel.getGravity();
+		GravityInternal gravity = gravityChannel.getGravity();
 		
 		message.setCorrelationId(connect.getMessageId());
         GraniteContext context = SimpleGraniteContext.createThreadInstance(

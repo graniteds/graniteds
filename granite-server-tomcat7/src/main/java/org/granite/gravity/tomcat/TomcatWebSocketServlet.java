@@ -33,7 +33,7 @@ import org.apache.catalina.websocket.StreamInbound;
 import org.apache.catalina.websocket.WebSocketServlet;
 import org.apache.catalina.websocket.WsHttpServletRequestWrapper;
 import org.granite.context.GraniteContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.gravity.GravityServletUtil;
 import org.granite.logging.Logger;
@@ -78,7 +78,7 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 	
 	@Override
 	protected StreamInbound createWebSocketInbound(String protocol, HttpServletRequest request) {
-		Gravity gravity = GravityManager.getGravity(getServletContext());
+		GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		TomcatWebSocketChannelFactory channelFactory = new TomcatWebSocketChannelFactory(gravity);
 		
 		try {

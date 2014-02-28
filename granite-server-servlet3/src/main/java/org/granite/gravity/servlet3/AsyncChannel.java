@@ -21,19 +21,17 @@
  */
 package org.granite.gravity.servlet3;
 
-import java.util.concurrent.atomic.AtomicReference;
+import flex.messaging.messages.Message;
+import org.granite.gravity.AbstractChannel;
+import org.granite.gravity.AbstractGravityServlet;
+import org.granite.gravity.AsyncHttpContext;
+import org.granite.gravity.GravityInternal;
+import org.granite.logging.Logger;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.granite.gravity.AbstractChannel;
-import org.granite.gravity.AbstractGravityServlet;
-import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
-import org.granite.logging.Logger;
-
-import flex.messaging.messages.Message;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Franck WOLFF
@@ -44,7 +42,7 @@ public class AsyncChannel extends AbstractChannel {
     
     private final AtomicReference<AsyncContext> asyncContext = new AtomicReference<AsyncContext>();
 
-	public AsyncChannel(Gravity gravity, String id, AsyncChannelFactory factory, String clientType) {
+	public AsyncChannel(GravityInternal gravity, String id, AsyncChannelFactory factory, String clientType) {
         super(gravity, id, factory, clientType);
 	}
 

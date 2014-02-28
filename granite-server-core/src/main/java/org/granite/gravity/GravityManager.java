@@ -83,13 +83,13 @@ public class GravityManager {
 				}
 		
 		        try {
-		            gravity.start();
+                    gravity.start();
 		            context.setAttribute(GRAVITY_KEY, gravity);
 
                     if (context.getAttribute(GraniteConfigListener.GRANITE_CONFIG_PROVIDER_ATTRIBUTE) != null)
                         ((ConfigProvider)context.getAttribute(GraniteConfigListener.GRANITE_CONFIG_PROVIDER_ATTRIBUTE)).initGravity(gravity);
 
-		            GraniteConfigListener.registerShutdownListener(context, gravity);
+		            GraniteConfigListener.registerShutdownListener(context, ((GravityInternal)gravity));
 		        }
 		        catch (Exception e) {
 		            throw new ServletException("Gravity initialization error", e);

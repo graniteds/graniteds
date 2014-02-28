@@ -35,7 +35,7 @@ public abstract class AsyncChannelRunner implements Runnable {
 		this.channel = channel;
 	}
 	
-	public final boolean queue(Gravity gravity) {
+	public final boolean queue(GravityInternal gravity) {
 		if (queued.getAndSet(true))
 			return false;
 		gravity.execute(this);

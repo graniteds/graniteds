@@ -24,6 +24,7 @@ package org.granite.tide.seam.async;
 import static org.jboss.seam.annotations.Install.FRAMEWORK;
 
 import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.tide.async.AsyncPublisher;
 import org.jboss.seam.ScopeType;
@@ -51,12 +52,12 @@ public class SeamAsyncPublisher implements AsyncPublisher {
     
     public static final String DESTINATION_NAME = "seamAsync";
     
-    private Gravity getGravity() {
-        return GravityManager.getGravity(ServletLifecycle.getServletContext());
+    private GravityInternal getGravity() {
+        return (GravityInternal)GravityManager.getGravity(ServletLifecycle.getServletContext());
     }
 
     public void initThread() {
-    	Gravity gravity = getGravity();
+        GravityInternal gravity = getGravity();
     	if (gravity == null)
     		throw new RuntimeException("Gravity service not configured, it is required for asynchronous event publishing");
     	
@@ -69,6 +70,6 @@ public class SeamAsyncPublisher implements AsyncPublisher {
         message.setDestination(DESTINATION_NAME);
         message.setBody(body);
         
-        getGravity().publishMessage(message);
+        ((Gravity)getGravity()).publishMessage(message);
     }
 }

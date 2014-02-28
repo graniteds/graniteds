@@ -31,10 +31,13 @@ import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.messages.ResponseMessage;
 import org.granite.client.messaging.messages.responses.FaultMessage;
 import org.granite.client.test.tide.server.chat.ChatApplication;
+import org.granite.client.test.tide.server.chat.ChatService;
 import org.granite.client.tide.BaseIdentity;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.Identity;
+import org.granite.client.tide.impl.ComponentImpl;
 import org.granite.client.tide.impl.SimpleContextManager;
+import org.granite.client.tide.server.Component;
 import org.granite.client.tide.server.ServerSession;
 import org.granite.client.tide.server.TideFaultEvent;
 import org.granite.client.tide.server.TideResponder;
@@ -57,7 +60,9 @@ import org.junit.runners.Parameterized;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -92,6 +97,8 @@ public class TestMessagingChat {
         // Build a chat server application
         WebArchive war = ShrinkWrap.create(WebArchive.class, "chat.war");
         war.addClass(ChatApplication.class);
+        war.addClass(ChatService.class);
+        war.addAsWebInfResource(new File("granite-client-java-advanced/src/test/resources/META-INF/services-config.properties"), "classes/META-INF/services-config.properties");
 
         container = ContainerTestUtil.newContainer(war, false);
         container.start();
@@ -130,7 +137,6 @@ public class TestMessagingChat {
         Assert.assertNotNull("Message has clientId", message.getClientId());
 
         final CountDownLatch waitForLogout = new CountDownLatch(1);
-
         identity.logout(new TideResponder<Void>() {
             @Override
             public void result(TideResultEvent<Void> event) {
@@ -180,6 +186,7 @@ public class TestMessagingChat {
         ServerSession serverSession = ContainerTestUtil.buildServerSession(context, SERVER_APP_APP, contentType);
         Consumer consumer = serverSession.getConsumer("secureChat", "chat", channelType);
         Identity identity = context.set("identity", new BaseIdentity(serverSession));
+        Component chatService = context.set("chatService", new ComponentImpl(serverSession));
 
         String user = identity.login("user", "user00", TideResponders.<String>noop()).get();
         Assert.assertEquals("Logged in", "user", user);
@@ -206,9 +213,24 @@ public class TestMessagingChat {
         Assert.assertFalse("Consumer not logged in", notLoggedIn[0]);
         Assert.assertTrue("Consumer subscribed", consumer.isSubscribed());
 
+        Collection<String> users = (Collection<String>)chatService.call("getConnectedUsers").get();
+        Assert.assertTrue("User connected", users.contains("user"));
+
         consumer.unsubscribe().get();
 
-        identity.logout(TideResponders.<Void>noop());
+        final CountDownLatch waitForLogout = new CountDownLatch(1);
+        identity.logout(new TideResponder<Void>() {
+            @Override
+            public void result(TideResultEvent<Void> event) {
+                waitForLogout.countDown();
+            }
+
+            @Override
+            public void fault(TideFaultEvent event) {
+
+            }
+        });
+        waitForLogout.await(10000, TimeUnit.MILLISECONDS);
 
         serverSession.stop();
     }

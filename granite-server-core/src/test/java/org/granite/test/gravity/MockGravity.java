@@ -39,6 +39,10 @@ import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
 import org.granite.messaging.jmf.SharedContext;
 
+import java.security.Principal;
+import java.util.List;
+import java.util.Set;
+
 public class MockGravity implements Gravity {
 
     private GraniteConfig graniteConfig;
@@ -53,21 +57,6 @@ public class MockGravity implements Gravity {
     public void resetLastMessage() {
         lastMessage = null;
     }
-	
-	public boolean access(String arg0) {
-		return false;
-	}
-
-	public boolean cancel(AsyncChannelRunner arg0) {
-		return false;
-	}
-
-	public void execute(AsyncChannelRunner arg0) {
-	}
-
-	public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
-		return null;
-	}
 
     public void setGraniteConfig(GraniteConfig graniteConfig) {
         this.graniteConfig = graniteConfig;
@@ -93,25 +82,13 @@ public class MockGravity implements Gravity {
 		return null;
 	}
 
-	public ServiceAdapter getServiceAdapter(String arg0, String arg1) {
+	public Message handleMessage(Message message) {
 		return null;
 	}
 
-	public Message handleMessage(Message arg0) {
-		return null;
-	}
-
-	public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message) {
-		return null;
-	}
-
-	public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message, boolean b) {
-		return null;
-	}
-
-	public GraniteContext initThread(String sessionId, String clientType) {
-		return null;
-	}
+    public Message handleMessage(Message message, boolean skip) {
+        return null;
+    }
 
 	public boolean isStarted() {
 		return false;
@@ -130,13 +107,6 @@ public class MockGravity implements Gravity {
 	public void reconfigure(GravityConfig arg0, GraniteConfig arg1) {
 	}
 
-	public void releaseThread() {
-	}
-
-	public Channel removeChannel(String arg0) {
-		return null;
-	}
-
 	public void start() throws Exception {
 	}
 
@@ -147,17 +117,32 @@ public class MockGravity implements Gravity {
 	}
 
     @Override
-    public boolean hasUdpReceiverFactory() {
-        return false;
-    }
-
-    @Override
-    public UdpReceiverFactory getUdpReceiverFactory() {
+    public List<Channel> getConnectedChannels() {
         return null;
     }
 
     @Override
-    public Channel removeChannel(String clientId, boolean timeout) {
+    public Set<Principal> getConnectedUsers() {
+        return null;
+    }
+
+    @Override
+    public List<Channel> getConnectedChannelsByDestination(String destination) {
+        return null;
+    }
+
+    @Override
+    public Set<Principal> getConnectedUsersByDestination(String destination) {
+        return null;
+    }
+
+    @Override
+    public List<Channel> findConnectedChannelsByUser(String name) {
+        return null;
+    }
+
+    @Override
+    public Channel findConnectedChannelByClientId(String clientId) {
         return null;
     }
 }

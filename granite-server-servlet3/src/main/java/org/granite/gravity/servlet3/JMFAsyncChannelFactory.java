@@ -21,14 +21,14 @@
  */
 package org.granite.gravity.servlet3;
 
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author Franck WOLFF
  */
 public class JMFAsyncChannelFactory extends AsyncChannelFactory {
 
-	public JMFAsyncChannelFactory(Gravity gravity) {
+	public JMFAsyncChannelFactory(GravityInternal gravity) {
 		super(gravity);
 	}
 

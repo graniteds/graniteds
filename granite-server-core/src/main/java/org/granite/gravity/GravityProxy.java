@@ -34,6 +34,10 @@ import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
 import org.granite.messaging.jmf.SharedContext;
 
+import java.security.Principal;
+import java.util.List;
+import java.util.Set;
+
 /**
  * @author William DRAI
  */
@@ -75,85 +79,65 @@ public class GravityProxy implements Gravity {
 		return getGravity().isStarted();
 	}
 
+    @Override
+    public void start() throws Exception {
+        getGravity().start();
+    }
+
+    @Override
+    public void reconfigure(GravityConfig gravityConfig, GraniteConfig graniteConfig) {
+        getGravity().reconfigure(gravityConfig, graniteConfig);
+    }
+
+    @Override
+    public void stop() throws Exception {
+        getGravity().stop();
+    }
+
+    @Override
+    public void stop(boolean now) throws Exception {
+        getGravity().stop(now);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Operations.
 
-    public GraniteContext initThread(String sessionId, String clientType) {
-    	return getGravity().initThread(sessionId, clientType);
+    @Override
+    public List<Channel> getConnectedChannels() {
+        return getGravity().getConnectedChannels();
     }
-    public void releaseThread() {
-    	getGravity().releaseThread();
+    @Override
+    public Set<Principal> getConnectedUsers() {
+        return getGravity().getConnectedUsers();
     }
-	
-	public ServiceAdapter getServiceAdapter(String messageType, String destinationId) {
-		return getGravity().getServiceAdapter(messageType, destinationId);
-	}
-
-	public boolean hasUdpReceiverFactory() {
-		return getGravity().hasUdpReceiverFactory();
-	}
-    public UdpReceiverFactory getUdpReceiverFactory() {
-		return getGravity().getUdpReceiverFactory();
-	}
-	
-    public void start() throws Exception {
-    	getGravity().start();
+    @Override
+    public List<Channel> getConnectedChannelsByDestination(String destination) {
+        return getGravity().getConnectedChannelsByDestination(destination);
     }
-    public void reconfigure(GravityConfig gravityConfig, GraniteConfig graniteConfig) {
-    	getGravity().reconfigure(gravityConfig, graniteConfig);
+    @Override
+    public Set<Principal> getConnectedUsersByDestination(String destination) {
+        return getGravity().getConnectedUsersByDestination(destination);
     }
-    public void stop() throws Exception {
-    	getGravity().stop();
-    }
-    public void stop(boolean now) throws Exception {
-    	getGravity().stop(now);
+    @Override
+    public List<Channel> findConnectedChannelsByUser(String name) {
+        return getGravity().findConnectedChannelsByUser(name);
     }
 
-    public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
-        Gravity gravity = getGravity();
-        if (gravity == null)
-            return null;
-    	return gravity.getChannel(channelFactory, channelId);
-    }
-    public Channel removeChannel(String channelId, boolean timeout) {
-        Gravity gravity = getGravity();
-        if (gravity == null)
-            return null;
-    	return gravity.removeChannel(channelId, timeout);
-    }
-    public boolean access(String channelId) {
-        Gravity gravity = getGravity();
-        if (gravity == null)
-            return false;
-    	return gravity.access(channelId);
-    }
-    public void execute(AsyncChannelRunner runnable) {
-        Gravity gravity = getGravity();
-        if (gravity == null)
-            return;
-    	gravity.execute(runnable);
-    }
-    public boolean cancel(AsyncChannelRunner runnable) {
-        Gravity gravity = getGravity();
-        if (gravity == null)
-            return false;
-    	return gravity.cancel(runnable);
+    @Override
+    public Channel findConnectedChannelByClientId(String clientId) {
+        return getGravity().findConnectedChannelByClientId(clientId);
     }
 
-    public Message handleMessage(ChannelFactory<?> channelFactory, Message message) {
-        // Should probably throw an exception, not intended to be used through the proxy
-        Gravity gravity = getGravity();
-        if (gravity == null)
-            return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
-    	return gravity.handleMessage(channelFactory, message);
+    @Override
+    public Message handleMessage(Message message) {
+        return getGravity().handleMessage(message);
     }
-    public Message handleMessage(ChannelFactory<?> channelFactory, Message message, boolean skipInterceptor) {
-        // Should probably throw an exception, not intended to be used through the proxy
-        Gravity gravity = getGravity();
-        if (gravity == null)
-            return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
-        return gravity.handleMessage(channelFactory, message, skipInterceptor);
+
+    @Override
+    public Message handleMessage(Message message, boolean skipInterceptor) {
+        return getGravity().handleMessage(message, skipInterceptor);
     }
+
     public Message publishMessage(AsyncMessage message) {
     	return publishMessage(null, message);
     }

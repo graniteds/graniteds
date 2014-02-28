@@ -21,24 +21,22 @@
  */
 package org.granite.gravity.jetty8;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import flex.messaging.messages.AsyncMessage;
+import flex.messaging.messages.Message;
 import org.eclipse.jetty.continuation.Continuation;
 import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.continuation.ContinuationThrowable;
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.gravity.GravityServletUtil;
 import org.granite.logging.Logger;
 
-import flex.messaging.messages.AsyncMessage;
-import flex.messaging.messages.Message;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @author William DRAI
@@ -57,7 +55,7 @@ public class GravityJettyServlet extends AbstractGravityServlet {
 
         rejectJMFContentType(request);
 
-        Gravity gravity = GravityManager.getGravity(getServletContext());
+        GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		ContinuationChannelFactory channelFactory = new ContinuationChannelFactory(gravity);
 		
 		try {

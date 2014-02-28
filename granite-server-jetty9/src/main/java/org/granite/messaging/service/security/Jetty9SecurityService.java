@@ -79,7 +79,7 @@ public class Jetty9SecurityService extends AbstractSecurityService {
     }
 
 
-    public void login(Object credentials, String charset) throws SecurityServiceException {
+    public Principal login(Object credentials, String charset) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials, charset);
 
         ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
@@ -106,6 +106,8 @@ public class Jetty9SecurityService extends AbstractSecurityService {
             throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
 
         endLogin(credentials, charset);
+
+        return principal;
     }
 
 

@@ -24,6 +24,7 @@ package org.granite.seam21.security;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +55,7 @@ public class Seam21SecurityService extends AbstractSecurityService {
     }
 
     @SuppressWarnings("deprecation")
-	public void login(Object credentials, String charset) throws SecurityServiceException {
+	public Principal login(Object credentials, String charset) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials, charset);
         
         Contexts.getSessionContext().set("org.granite.seam.login", Boolean.TRUE);
@@ -95,6 +96,8 @@ public class Seam21SecurityService extends AbstractSecurityService {
             
             throw SecurityServiceException.newInvalidCredentialsException("User authentication failed");
         }
+
+        return identity.getPrincipal();
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {

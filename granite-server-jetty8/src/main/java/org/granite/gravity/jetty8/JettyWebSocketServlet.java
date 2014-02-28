@@ -21,14 +21,14 @@
  */
 package org.granite.gravity.jetty8;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketHandler;
 import org.eclipse.jetty.websocket.WebSocketServlet;
 import org.granite.gravity.GravityServletUtil;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
 
 public class JettyWebSocketServlet extends WebSocketServlet {

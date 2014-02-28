@@ -21,18 +21,17 @@
  */
 package org.granite.gravity.glassfish;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.http.HttpServlet;
-
-import org.granite.gravity.Gravity;
+import com.sun.grizzly.websockets.WebSocketApplication;
+import com.sun.grizzly.websockets.WebSocketEngine;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.gravity.GravityServletUtil;
 import org.granite.logging.Logger;
 
-import com.sun.grizzly.websockets.WebSocketApplication;
-import com.sun.grizzly.websockets.WebSocketEngine;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.http.HttpServlet;
 
 
 public class GlassFishWebSocketServlet extends HttpServlet {
@@ -50,7 +49,7 @@ public class GlassFishWebSocketServlet extends HttpServlet {
 		super.init(config);
 		
 		GravityServletUtil.init(config);
-		Gravity gravity = GravityManager.getGravity(getServletContext());
+        GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		String mapping = null;
         String servletName = null;
 		for (ServletRegistration sr : getServletContext().getServletRegistrations().values()) {

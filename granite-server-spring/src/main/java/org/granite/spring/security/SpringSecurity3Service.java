@@ -23,6 +23,7 @@ package org.granite.spring.security;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -159,12 +160,12 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
         	allowAnonymousAccess = true;
     }
     
-    public void login(Object credentials, String charset) {
+    public Principal login(Object credentials, String charset) {
         List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials, charset));
         
         if (!(GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)) {
         	log.info("Login from non HTTP granite context ignored");
-        	return;
+        	return null;
         }
 
         HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
@@ -183,6 +184,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
         	password = passwordEncoder.encodePassword(password, null);
         
         Authentication auth = authenticationExtension.buildAuthentication(user, password);
+        Principal principal = null;
         
         AuthenticationManager authenticationManager = authenticationExtension.selectAuthenticationManager(auth);
         
@@ -197,7 +199,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
                     log.debug(e, "SessionAuthenticationStrategy rejected the authentication object");
                     SecurityContextHolder.clearContext();
                     handleAuthenticationExceptions(e);
-                    return;
+                    return null;
                 }
             }
 
@@ -206,6 +208,8 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
             SecurityContext securityContext = securityContextRepository.loadContext(holder);
             securityContext.setAuthentication(authentication);
             SecurityContextHolder.setContext(securityContext);
+            if (authentication instanceof Principal)
+                principal = (Principal)authentication.getPrincipal();
             try {
                 securityContextRepository.saveContext(securityContext, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
             }
@@ -230,6 +234,8 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
         }
 
         log.debug("User %s logged in", user);
+
+        return principal;
     }
     
     protected void handleAuthenticationExceptions(AuthenticationException e) {

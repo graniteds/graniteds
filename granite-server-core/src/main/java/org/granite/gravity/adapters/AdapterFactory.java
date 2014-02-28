@@ -31,7 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.granite.config.flex.Adapter;
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
 import org.granite.util.TypeUtil;
@@ -51,13 +51,13 @@ public class AdapterFactory implements Serializable {
     private static final Logger log = Logger.getLogger(AdapterFactory.class);
     private static final ReentrantLock lock = new ReentrantLock();
 
-    private Gravity gravity;
+    private GravityInternal gravity;
     private Map<String, ServiceAdapter> adaptersCache = new ConcurrentHashMap<String, ServiceAdapter>();
     private List<ServiceAdapter> adapters = new ArrayList<ServiceAdapter>();
     private static Class<SimpleServiceAdapter> defaultAdapterClass = SimpleServiceAdapter.class;
 
 
-    public AdapterFactory(Gravity gravity) {
+    public AdapterFactory(GravityInternal gravity) {
         this.gravity = gravity;
     }
 

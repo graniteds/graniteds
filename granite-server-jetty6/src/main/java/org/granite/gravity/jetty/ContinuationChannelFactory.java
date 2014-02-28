@@ -22,14 +22,14 @@
 package org.granite.gravity.jetty;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author William DRAI
  */
 public class ContinuationChannelFactory extends AbstractChannelFactory<ContinuationChannel> {
 	
-	public ContinuationChannelFactory(Gravity gravity) {
+	public ContinuationChannelFactory(GravityInternal gravity) {
 		super(gravity);
 	}
 

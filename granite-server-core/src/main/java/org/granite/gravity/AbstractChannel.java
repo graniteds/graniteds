@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.net.SocketException;
+import java.security.Principal;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,12 +60,13 @@ public abstract class AbstractChannel implements Channel {
     protected final String id;
     protected final String sessionId;
 	protected final String clientType;
-    protected final Gravity gravity;
+    protected final GravityInternal gravity;
     protected final ChannelFactory<? extends Channel> factory;
     // protected final ServletConfig servletConfig;
     
     protected final ConcurrentMap<String, Subscription> subscriptions = new ConcurrentHashMap<String, Subscription>();
-    
+    protected Principal userPrincipal;
+
     protected LinkedList<AsyncPublishedMessage> publishedQueue = new LinkedList<AsyncPublishedMessage>();
     protected final Lock publishedQueueLock = new ReentrantLock();
 
@@ -79,7 +81,7 @@ public abstract class AbstractChannel implements Channel {
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
 
-    protected AbstractChannel(Gravity gravity, String id, ChannelFactory<? extends Channel> factory, String clientType) {        
+    protected AbstractChannel(GravityInternal gravity, String id, ChannelFactory<? extends Channel> factory, String clientType) {
         if (id == null)
         	throw new NullPointerException("id cannot be null");
         
@@ -116,7 +118,7 @@ public abstract class AbstractChannel implements Channel {
 		return factory;
 	}
 	
-	public Gravity getGravity() {
+	public GravityInternal getGravity() {
 		return gravity;
 	}
 
@@ -132,6 +134,13 @@ public abstract class AbstractChannel implements Channel {
     
     public Subscription removeSubscription(String subscriptionId) {
     	return subscriptions.remove(subscriptionId);
+    }
+
+    public Principal getUserPrincipal() {
+        return userPrincipal;
+    }
+    public void setUserPrincipal(Principal principal) {
+        this.userPrincipal = principal;
     }
 
 	public void publish(AsyncPublishedMessage message) throws MessagePublishingException {
@@ -189,7 +198,7 @@ public abstract class AbstractChannel implements Channel {
 		if (message == null)
 			throw new NullPointerException("message cannot be null");
 		
-		Gravity gravity = getGravity();
+		GravityInternal gravity = getGravity();
 
 		if (udpReceiver != null) {
 			if (udpReceiver.isClosed())
@@ -310,7 +319,7 @@ public abstract class AbstractChannel implements Channel {
 	
 	public boolean runReceived(AsyncHttpContext asyncHttpContext) {
 		
-		Gravity gravity = getGravity();
+		GravityInternal gravity = getGravity();
 		
 		if (asyncHttpContext != null && gravity.hasUdpReceiverFactory()) {
 			UdpReceiverFactory factory = gravity.getUdpReceiverFactory();
@@ -451,7 +460,7 @@ public abstract class AbstractChannel implements Channel {
     
     public void destroy(boolean timeout) {
     	try {
-	    	Gravity gravity = getGravity();
+	    	GravityInternal gravity = getGravity();
 			gravity.cancel(publisher);
 			gravity.cancel(receiver);
 	

@@ -21,27 +21,24 @@
  */
 package org.granite.gravity;
 
+import flex.messaging.messages.AsyncMessage;
+import flex.messaging.messages.Message;
 import org.granite.config.GraniteConfig;
 import org.granite.config.ShutdownListener;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.adapters.ServiceAdapter;
 import org.granite.gravity.udp.UdpReceiverFactory;
-
-import flex.messaging.messages.AsyncMessage;
-import flex.messaging.messages.Message;
 import org.granite.messaging.jmf.SharedContext;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
  * @author Franck WOLFF
  */
-public interface Gravity {
+public interface GravityInternal extends ShutdownListener {
 
     ///////////////////////////////////////////////////////////////////////////
     // Granite/Services configs access.
@@ -52,6 +49,21 @@ public interface Gravity {
     public SharedContext getSharedContext();
 
     ///////////////////////////////////////////////////////////////////////////
+    // Constants.
+
+    public static final String RECONNECT_INTERVAL_MS_KEY = "reconnect-interval-ms";
+    public static final String RECONNECT_MAX_ATTEMPTS_KEY = "reconnect-max-attempts";
+    public static final String ENCODE_MESSAGE_BODY_KEY = "encode-message-body";
+    
+    public static final String BYTEARRAY_BODY_HEADER = "GDS_BYTEARRAY_BODY";    
+
+    ///////////////////////////////////////////////////////////////////////////
+    // UDP support.
+    
+    public boolean hasUdpReceiverFactory();
+    public UdpReceiverFactory getUdpReceiverFactory();
+
+    ///////////////////////////////////////////////////////////////////////////
     // Properties.
 
 	public boolean isStarted();
@@ -59,21 +71,17 @@ public interface Gravity {
     ///////////////////////////////////////////////////////////////////////////
     // Operations.
 
-    public void start() throws Exception;
-    public void reconfigure(GravityConfig gravityConfig, GraniteConfig graniteConfig);
-    public void stop() throws Exception;
-    public void stop(boolean now) throws Exception;
+    public GraniteContext initThread(String sessionId, String clientType);
+    public void releaseThread();
+	
+	public ServiceAdapter getServiceAdapter(String messageType, String destinationId);
+	
+    public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String clientId);
+    public Channel removeChannel(String clientId, boolean timeout);
+    public boolean access(String clientId);
+    public void execute(AsyncChannelRunner runnable);
+    public boolean cancel(AsyncChannelRunner runnable);
 
-    public List<Channel> getConnectedChannels();
-    public Set<Principal> getConnectedUsers();
-    public List<Channel> getConnectedChannelsByDestination(String destination);
-    public Set<Principal> getConnectedUsersByDestination(String destination);
-    public List<Channel> findConnectedChannelsByUser(String name);
-    public Channel findConnectedChannelByClientId(String clientId);
-
-    public Message handleMessage(Message message);
-    public Message handleMessage(Message message, boolean skipInterceptor);
-
-    public Message publishMessage(AsyncMessage message);
-    public Message publishMessage(Channel fromChannel, AsyncMessage message);
+    public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message);
+    public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message, boolean skipInterceptor);
 }

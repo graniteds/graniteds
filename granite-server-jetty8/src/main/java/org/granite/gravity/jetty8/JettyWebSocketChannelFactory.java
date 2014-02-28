@@ -22,11 +22,11 @@
 package org.granite.gravity.jetty8;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 
 public class JettyWebSocketChannelFactory extends AbstractChannelFactory<JettyWebSocketChannel> {
 	
-	public JettyWebSocketChannelFactory(Gravity gravity) {
+	public JettyWebSocketChannelFactory(GravityInternal gravity) {
 		super(gravity);
 	}
 

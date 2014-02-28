@@ -4,7 +4,6 @@ import org.granite.gravity.Gravity;
 import org.granite.logging.Logger;
 import org.granite.util.ContentType;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;

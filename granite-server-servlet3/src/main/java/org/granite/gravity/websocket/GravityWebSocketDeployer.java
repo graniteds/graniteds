@@ -21,7 +21,8 @@
  */
 package org.granite.gravity.websocket;
 
-import org.granite.gravity.*;
+import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityManager;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;

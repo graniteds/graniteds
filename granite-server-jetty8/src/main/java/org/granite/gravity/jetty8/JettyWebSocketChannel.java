@@ -21,13 +21,13 @@
  */
 package org.granite.gravity.jetty8;
 
-import java.io.IOException;
-
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocket.OnBinaryMessage;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.websocket.AbstractWebSocketChannel;
 import org.granite.logging.Logger;
+
+import java.io.IOException;
 
 
 public class JettyWebSocketChannel extends AbstractWebSocketChannel implements WebSocket, OnBinaryMessage {
@@ -37,7 +37,7 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
 	private Connection connection;
 
 	
-	public JettyWebSocketChannel(Gravity gravity, String id, JettyWebSocketChannelFactory factory, String clientType) {
+	public JettyWebSocketChannel(GravityInternal gravity, String id, JettyWebSocketChannelFactory factory, String clientType) {
     	super(gravity, id, factory, clientType);
     }
 

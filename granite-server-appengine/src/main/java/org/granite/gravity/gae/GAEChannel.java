@@ -22,6 +22,7 @@
 package org.granite.gravity.gae;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,6 +64,7 @@ public class GAEChannel implements Channel, Serializable {
     protected final GAEChannelFactory factory;
 
     private final Map<String, Subscription> subscriptions = new HashMap<String, Subscription>();
+    private Principal userPrincipal;
     private final long expiration;
 
 
@@ -169,6 +171,13 @@ public class GAEChannel implements Channel, Serializable {
     
     public Subscription removeSubscription(String subscriptionId) {
     	return subscriptions.remove(subscriptionId);
+    }
+
+    public Principal getUserPrincipal() {
+        return userPrincipal;
+    }
+    public void setUserPrincipal(Principal principal) {
+        this.userPrincipal = principal;
     }
 
     

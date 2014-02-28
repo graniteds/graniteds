@@ -21,19 +21,17 @@
  */
 package org.granite.gravity.tomcat;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import flex.messaging.messages.Message;
 import org.apache.catalina.CometEvent;
 import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
 
-import flex.messaging.messages.Message;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Franck WOLFF
@@ -45,7 +43,7 @@ public class TomcatChannel extends AbstractChannel {
     private final AtomicReference<CometEvent> event = new AtomicReference<CometEvent>();
 
     
-    public TomcatChannel(Gravity gravity, String id, TomcatChannelFactory factory, String clientType) {
+    public TomcatChannel(GravityInternal gravity, String id, TomcatChannelFactory factory, String clientType) {
         super(gravity, id, factory, clientType);
     }
     

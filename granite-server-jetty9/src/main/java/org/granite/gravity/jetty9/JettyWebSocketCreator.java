@@ -27,7 +27,7 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.granite.context.GraniteContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.ServletGraniteContext;
@@ -57,8 +57,8 @@ public class JettyWebSocketCreator implements WebSocketCreator {
         }
         if (protocol == null)
             return null;
-    	
-		Gravity gravity = GravityManager.getGravity(servletContext);
+
+        GravityInternal gravity = (GravityInternal)GravityManager.getGravity(servletContext);
 		JettyWebSocketChannelFactory channelFactory = new JettyWebSocketChannelFactory(gravity);
 		
 		try {

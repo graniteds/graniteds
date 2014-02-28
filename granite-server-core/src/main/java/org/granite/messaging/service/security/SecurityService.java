@@ -34,9 +34,9 @@ public interface SecurityService {
 
     public void prelogin(HttpSession session, Object request, String servletName);
 
-    public void login(Object credentials) throws SecurityServiceException;
+    public Principal login(Object credentials) throws SecurityServiceException;
 
-    public void login(Object credentials, String charset) throws SecurityServiceException;
+    public Principal login(Object credentials, String charset) throws SecurityServiceException;
 
     public Object authorize(AbstractSecurityContext context) throws Exception;
 

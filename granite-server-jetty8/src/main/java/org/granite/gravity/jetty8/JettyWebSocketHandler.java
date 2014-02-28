@@ -21,21 +21,20 @@
  */
 package org.granite.gravity.jetty8;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
+import flex.messaging.messages.CommandMessage;
+import flex.messaging.messages.Message;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketHandler;
 import org.granite.context.GraniteContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ContentType;
 
-import flex.messaging.messages.CommandMessage;
-import flex.messaging.messages.Message;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 
 public class JettyWebSocketHandler extends WebSocketHandler {
@@ -51,8 +50,8 @@ public class JettyWebSocketHandler extends WebSocketHandler {
     public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) {
     	if (!protocol.startsWith("org.granite.gravity"))
     		return null;
-    	
-		Gravity gravity = GravityManager.getGravity(servletContext);
+
+        GravityInternal gravity = (GravityInternal)GravityManager.getGravity(servletContext);
 		JettyWebSocketChannelFactory channelFactory = new JettyWebSocketChannelFactory(gravity);
 		
 		try {

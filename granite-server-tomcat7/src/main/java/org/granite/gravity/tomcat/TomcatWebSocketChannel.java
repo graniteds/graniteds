@@ -24,7 +24,7 @@ package org.granite.gravity.tomcat;
 import org.apache.catalina.websocket.MessageInbound;
 import org.apache.catalina.websocket.StreamInbound;
 import org.apache.catalina.websocket.WsOutbound;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.websocket.AbstractWebSocketChannel;
 import org.granite.logging.Logger;
 
@@ -41,7 +41,7 @@ public class TomcatWebSocketChannel extends AbstractWebSocketChannel {
 	private WsOutbound connection;
 
 	
-	public TomcatWebSocketChannel(Gravity gravity, String id, TomcatWebSocketChannelFactory factory, String clientType) {
+	public TomcatWebSocketChannel(GravityInternal gravity, String id, TomcatWebSocketChannelFactory factory, String clientType) {
     	super(gravity, id, factory, clientType);
     }
 

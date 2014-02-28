@@ -26,14 +26,15 @@ import flex.messaging.messages.ErrorMessage;
 import flex.messaging.messages.Message;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
-import org.granite.context.GraniteContext;
-import org.granite.gravity.*;
-import org.granite.gravity.adapters.ServiceAdapter;
-import org.granite.gravity.udp.UdpReceiverFactory;
+import org.granite.gravity.Channel;
+import org.granite.gravity.GravityConfig;
 import org.granite.messaging.jmf.SharedContext;
 
 import javax.ejb.Local;
 import javax.ejb.Singleton;
+import java.security.Principal;
+import java.util.List;
+import java.util.Set;
 
 @Singleton(name="org.granite.ejb.Gravity")
 @Local(Gravity.class)
@@ -75,22 +76,29 @@ public class GravityBean implements Gravity {
     ///////////////////////////////////////////////////////////////////////////
     // Operations.
 
-    public GraniteContext initThread(String sessionId, String clientType) {
-        return getGravity().initThread(sessionId, clientType);
+    @Override
+    public List<Channel> getConnectedChannels() {
+        return getGravity().getConnectedChannels();
     }
-    public void releaseThread() {
-        getGravity().releaseThread();
+    @Override
+    public Set<Principal> getConnectedUsers() {
+        return getGravity().getConnectedUsers();
     }
-
-    public ServiceAdapter getServiceAdapter(String messageType, String destinationId) {
-        return getGravity().getServiceAdapter(messageType, destinationId);
+    @Override
+    public List<Channel> getConnectedChannelsByDestination(String destination) {
+        return getGravity().getConnectedChannelsByDestination(destination);
     }
-
-    public boolean hasUdpReceiverFactory() {
-        return getGravity().hasUdpReceiverFactory();
+    @Override
+    public Set<Principal> getConnectedUsersByDestination(String destination) {
+        return getGravity().getConnectedUsersByDestination(destination);
     }
-    public UdpReceiverFactory getUdpReceiverFactory() {
-        return getGravity().getUdpReceiverFactory();
+    @Override
+    public List<Channel> findConnectedChannelsByUser(String name) {
+        return getGravity().findConnectedChannelsByUser(name);
+    }
+    @Override
+    public Channel findConnectedChannelByClientId(String clientId) {
+        return getGravity().findConnectedChannelByClientId(clientId);
     }
 
     public void start() throws Exception {
@@ -106,27 +114,11 @@ public class GravityBean implements Gravity {
         getGravity().stop(now);
     }
 
-    public <C extends Channel> C getChannel(ChannelFactory<C> channelFactory, String channelId) {
-        return getGravity().getChannel(channelFactory, channelId);
+    public Message handleMessage(Message message) {
+        return getGravity().handleMessage(message);
     }
-    public Channel removeChannel(String channelId, boolean timeout) {
-        return getGravity().removeChannel(channelId, timeout);
-    }
-    public boolean access(String channelId) {
-        return getGravity().access(channelId);
-    }
-    public void execute(AsyncChannelRunner runnable) {
-        getGravity().execute(runnable);
-    }
-    public boolean cancel(AsyncChannelRunner runnable) {
-        return getGravity().cancel(runnable);
-    }
-
-    public Message handleMessage(ChannelFactory<?> channelFactory, Message message) {
-        return getGravity().handleMessage(channelFactory, message);
-    }
-    public Message handleMessage(ChannelFactory<?> channelFactory, Message message, boolean skipInterceptor) {
-        return getGravity().handleMessage(channelFactory, message, skipInterceptor);
+    public Message handleMessage(Message message, boolean skipInterceptor) {
+        return getGravity().handleMessage(message, skipInterceptor);
     }
     public Message publishMessage(AsyncMessage message) {
         return publishMessage(null, message);

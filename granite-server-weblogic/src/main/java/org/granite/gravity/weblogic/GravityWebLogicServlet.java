@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.gravity.GravityServletUtil;
 import org.granite.logging.Logger;
@@ -94,7 +94,7 @@ public class GravityWebLogicServlet extends AbstractAsyncServlet {
 
         GravityServletUtil.rejectJMFContentType(request);
 
-        Gravity gravity = GravityManager.getGravity(getServletContext());
+        GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
         WebLogicChannelFactory channelFactory = new WebLogicChannelFactory(gravity);
 
         try {
@@ -173,7 +173,7 @@ public class GravityWebLogicServlet extends AbstractAsyncServlet {
 
 	@Override
 	protected void doTimeout(RequestResponseKey key) throws IOException, ServletException {
-		Gravity gravity = GravityManager.getGravity(getServletContext());
+		GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		WebLogicChannelFactory channelFactory = new WebLogicChannelFactory(gravity);
 		
 		CommandMessage amf3Request = GravityServletUtil.getConnectMessage(key.getRequest());

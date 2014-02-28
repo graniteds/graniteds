@@ -46,7 +46,7 @@ public class WebLogicSecurityService extends AbstractSecurityService {
     public void configure(Map<String, String> params) {
     }
 
-    public void login(Object credentials, String charset) throws SecurityServiceException {
+    public Principal login(Object credentials, String charset) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials, charset);
 
         HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
@@ -66,6 +66,8 @@ public class WebLogicSecurityService extends AbstractSecurityService {
         httpRequest.getSession(true);
         
         endLogin(credentials, charset);
+
+        return httpRequest.getUserPrincipal();
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {

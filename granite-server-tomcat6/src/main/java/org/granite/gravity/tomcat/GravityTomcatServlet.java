@@ -21,20 +21,18 @@
  */
 package org.granite.gravity.tomcat;
 
-import java.io.IOException;
-import java.io.InputStream;
+import flex.messaging.messages.Message;
+import org.apache.catalina.CometEvent;
+import org.granite.gravity.AsyncHttpContext;
+import org.granite.gravity.GravityInternal;
+import org.granite.gravity.GravityManager;
+import org.granite.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.catalina.CometEvent;
-import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.Gravity;
-import org.granite.gravity.GravityManager;
-import org.granite.logging.Logger;
-
-import flex.messaging.messages.Message;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author Franck WOLFF
@@ -59,7 +57,7 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
 
         rejectJMFContentType(request);
 
-        Gravity gravity = GravityManager.getGravity(getServletContext());
+        GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		TomcatChannelFactory channelFactory = new TomcatChannelFactory(gravity);
 
         try {
@@ -146,7 +144,7 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
     		HttpServletRequest request = event.getHttpServletRequest();
         	Message connect = getConnectMessage(request);
         	if (connect != null) { // This should be a timeout.
-        		Gravity gravity = GravityManager.getGravity(getServletContext());
+        		GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
         		TomcatChannelFactory channelFactory = new TomcatChannelFactory(gravity);
         		
 		        String channelId = (String)connect.getClientId();

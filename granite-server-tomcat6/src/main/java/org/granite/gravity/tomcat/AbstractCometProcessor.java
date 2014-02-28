@@ -21,17 +21,16 @@
  */
 package org.granite.gravity.tomcat;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.catalina.CometEvent;
 import org.apache.catalina.CometProcessor;
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.logging.Logger;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author Franck WOLFF

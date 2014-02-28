@@ -57,7 +57,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
 
-    protected AbstractWebSocketChannel(Gravity gravity, String id, ChannelFactory<? extends Channel> factory, String clientType) {
+    protected AbstractWebSocketChannel(GravityInternal gravity, String id, ChannelFactory<? extends Channel> factory, String clientType) {
         super(gravity, id, factory, clientType);
     }
 
@@ -101,7 +101,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
         this.contentType = contentType;
     }
 
-    protected Gravity initializeRequest() {
+    protected GravityInternal initializeRequest() {
         if (session != null)
             ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(), session.getServletContext(), session, clientType);
         else
@@ -109,7 +109,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
         return gravity;
     }
 
-    protected Message[] deserialize(Gravity gravity, byte[] data, int offset, int length) throws ClassNotFoundException, IOException {
+    protected Message[] deserialize(GravityInternal gravity, byte[] data, int offset, int length) throws ClassNotFoundException, IOException {
         ByteArrayInputStream is = new ByteArrayInputStream(data, offset, length);
 
         try {
@@ -134,7 +134,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
         }
     }
 
-    protected byte[] serialize(Gravity gravity, Message[] messages) throws IOException {
+    protected byte[] serialize(GravityInternal gravity, Message[] messages) throws IOException {
         ByteArrayOutputStream os = null;
         try {
             os = new ByteArrayOutputStream(200*messages.length);
@@ -251,7 +251,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
                 messagesArray[i++] = message;
 
             // Setup serialization context (thread local)
-            Gravity gravity = getGravity();
+            GravityInternal gravity = getGravity();
             SimpleGraniteContext.createThreadInstance(
                     gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>(), clientType
             );

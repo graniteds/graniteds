@@ -22,14 +22,14 @@
 package org.granite.gravity.tomcat;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author Franck WOLFF
  */
 public class TomcatChannelFactory extends AbstractChannelFactory<TomcatChannel> {
 	
-	public TomcatChannelFactory(Gravity gravity) {
+	public TomcatChannelFactory(GravityInternal gravity) {
 		super(gravity);
 	}
 

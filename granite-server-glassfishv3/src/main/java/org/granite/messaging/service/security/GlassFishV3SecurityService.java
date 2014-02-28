@@ -193,7 +193,7 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
     }
 
 
-    public void login(Object credentials, String charset) throws SecurityServiceException {
+    public Principal login(Object credentials, String charset) throws SecurityServiceException {
         String[] decoded = decodeBase64Credentials(credentials, charset);
 
         ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
@@ -232,6 +232,8 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
         }
         
         endLogin(credentials, charset);
+
+        return principal;
     }
 
     public Object authorize(AbstractSecurityContext context) throws Exception {

@@ -23,7 +23,7 @@ package org.granite.gravity.jetty9;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.websocket.AbstractWebSocketChannel;
 import org.granite.logging.Logger;
 
@@ -38,7 +38,7 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
 	private Session socketSession;
 
 	
-	public JettyWebSocketChannel(Gravity gravity, String id, JettyWebSocketChannelFactory factory, String clientType) {
+	public JettyWebSocketChannel(GravityInternal gravity, String id, JettyWebSocketChannelFactory factory, String clientType) {
     	super(gravity, id, factory, clientType);
 
         log.debug("Create channel %s", getId());

@@ -21,20 +21,20 @@
  */
 package org.granite.gravity.servlet3;
 
-import java.io.ObjectOutput;
-import java.io.OutputStream;
-
 import org.granite.context.GraniteContext;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.messaging.jmf.JMFSerializer;
 import org.granite.util.ContentType;
+
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 /**
  * @author Franck WOLFF
  */
 public class JMFAsyncChannel extends AsyncChannel {
 
-	public JMFAsyncChannel(Gravity gravity, String id, JMFAsyncChannelFactory factory, String clientType) {
+	public JMFAsyncChannel(GravityInternal gravity, String id, JMFAsyncChannelFactory factory, String clientType) {
         super(gravity, id, factory, clientType);
 	}
 

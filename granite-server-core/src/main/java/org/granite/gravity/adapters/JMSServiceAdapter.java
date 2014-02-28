@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -51,6 +52,7 @@ import org.granite.clustering.TransientReference;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 import org.granite.gravity.MessageReceivingException;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.AMF3Deserializer;
@@ -77,7 +79,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
 
     protected ConnectionFactory jmsConnectionFactory = null;
     protected javax.jms.Destination jmsDestination = null;
-    protected Map<String, JMSClient> jmsClients = new ConcurrentHashMap<String, JMSClient>();
+    protected ConcurrentMap<String, JMSClient> jmsClients = new ConcurrentHashMap<String, JMSClient>();
     protected String destinationName = null;
     protected boolean textMessages = false;
     protected boolean transactedSessions = false;
@@ -90,6 +92,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
     protected long failoverRetryInterval = DEFAULT_FAILOVER_RETRY_INTERVAL;
     protected int failoverRetryCount = DEFAULT_FAILOVER_RETRY_COUNT;
     protected long reconnectRetryInterval = DEFAULT_RECONNECT_RETRY_INTERVAL;
+
 
     @Override
     public void configure(XMap adapterProperties, XMap destinationProperties) throws ServiceException {
@@ -458,7 +461,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
 
         public void send(AsyncMessage message) throws Exception {
             Object msg = null;
-            if (Boolean.TRUE.equals(message.getHeader(Gravity.BYTEARRAY_BODY_HEADER))) {
+            if (Boolean.TRUE.equals(message.getHeader(GravityInternal.BYTEARRAY_BODY_HEADER))) {
             	byte[] byteArray = (byte[])message.getBody();
             	ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
             	AMF3Deserializer deser = new AMF3Deserializer(bais);
@@ -748,7 +751,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                         	// On JBoss 6, try to deserialize with application class loader if the previous attempt fails
                             ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
                             try {
-	                            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+	                            Thread.currentThread().setContextClassLoader(JMSServiceAdapter.this.getClass().getClassLoader());
 	                            msg = jmsMessage.getObject();
                             }
                             finally {
@@ -762,7 +765,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                         	// On JBoss 6, try to deserialize with application class loader if the previous attempt fails
                             ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
                             try {
-	                            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+	                            Thread.currentThread().setContextClassLoader(JMSServiceAdapter.this.getClass().getClassLoader());
 	                            msg = jmsMessage.getObject();
 	                            useJBossTCCLDeserializationWorkaround = true;
                             }
@@ -774,7 +777,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
 
                     dmsg.setDestination(getDestination().getId());
                     
-                    if (Boolean.TRUE.equals(message.getBooleanProperty(Gravity.BYTEARRAY_BODY_HEADER))) {
+                    if (Boolean.TRUE.equals(message.getBooleanProperty(GravityInternal.BYTEARRAY_BODY_HEADER))) {
                         getGravity().initThread(null, channel.getClientType());
                         try {
 	                        ByteArrayOutputStream baos = new ByteArrayOutputStream(100);

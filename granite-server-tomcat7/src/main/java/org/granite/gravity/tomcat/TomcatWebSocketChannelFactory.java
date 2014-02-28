@@ -22,11 +22,11 @@
 package org.granite.gravity.tomcat;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 
 public class TomcatWebSocketChannelFactory extends AbstractChannelFactory<TomcatWebSocketChannel> {
 	
-	public TomcatWebSocketChannelFactory(Gravity gravity) {
+	public TomcatWebSocketChannelFactory(GravityInternal gravity) {
 		super(gravity);
 	}
 

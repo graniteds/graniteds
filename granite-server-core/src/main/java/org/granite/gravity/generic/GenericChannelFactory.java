@@ -22,14 +22,14 @@
 package org.granite.gravity.generic;
 
 import org.granite.gravity.AbstractChannelFactory;
-import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author William DRAI
  */
 public class GenericChannelFactory extends AbstractChannelFactory<GenericChannel> {
 	
-	public GenericChannelFactory(Gravity gravity) {
+	public GenericChannelFactory(GravityInternal gravity) {
 		super(gravity);
 	}
 
