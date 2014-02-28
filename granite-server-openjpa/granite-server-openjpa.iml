@@ -12,7 +12,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="granite-server-core" exported="" />
+    <orderEntry type="module" module-name="granite-server-core" />
     <orderEntry type="library" name="org.apache.openjpa:openjpa:2.2.2" level="project" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.11" level="project" />
     <orderEntry type="library" scope="TEST" name="org.hsqldb:hsqldb:2.3.1" level="project" />
