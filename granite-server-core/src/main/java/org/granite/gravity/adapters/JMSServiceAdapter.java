@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -76,7 +77,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
 
     protected ConnectionFactory jmsConnectionFactory = null;
     protected javax.jms.Destination jmsDestination = null;
-    protected Map<String, JMSClient> jmsClients = new HashMap<String, JMSClient>();
+    protected Map<String, JMSClient> jmsClients = new ConcurrentHashMap<String, JMSClient>();
     protected String destinationName = null;
     protected boolean textMessages = false;
     protected boolean transactedSessions = false;
@@ -614,7 +615,6 @@ public class JMSServiceAdapter extends ServiceAdapter {
             	
             	// Reconnect to the JMS provider in case no producer has already done it
             	JMSClientImpl.this.connect();
-                
                 if (jmsConsumerSession == null) {
                     jmsConsumerSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
                     if (reconnected)
@@ -664,6 +664,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
             }
 
             public void setSelector(String selector) throws Exception {
+                // To change the selector, just close the consumer but keep the session
                 if (jmsConsumer != null) {
                     jmsConsumer.close();
                     jmsConsumer = null;
