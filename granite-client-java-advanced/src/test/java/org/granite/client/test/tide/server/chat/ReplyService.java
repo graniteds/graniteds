@@ -1,0 +1,37 @@
+package org.granite.client.test.tide.server.chat;
+
+import flex.messaging.messages.AsyncMessage;
+import flex.messaging.messages.ErrorMessage;
+import flex.messaging.messages.Message;
+import org.granite.context.GraniteContext;
+import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityManager;
+import org.granite.messaging.service.annotations.RemoteDestination;
+import org.granite.messaging.webapp.HttpGraniteContext;
+
+import javax.servlet.AsyncContext;
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+
+/**
+ * Created by william on 13/02/14.
+ */
+@RemoteDestination(id="replyService")
+public class ReplyService {
+
+    public String requestReply(String name) {
+        HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+        Gravity gravity = GravityManager.getGravity(graniteContext.getServletContext());
+        AsyncMessage message = new AsyncMessage();
+        message.setDestination("secureChat");
+        message.setHeader(AsyncMessage.SUBTOPIC_HEADER, "chat");
+        message.setBody(name);
+        Message reply = gravity.sendRequest(null, message);
+        if (reply instanceof ErrorMessage)
+            throw new RuntimeException(((ErrorMessage)reply).getFaultCode());
+        return (String)reply.getBody();
+    }
+}

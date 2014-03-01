@@ -29,8 +29,11 @@ import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TopicMessageEvent;
 import org.granite.client.messaging.messages.push.TopicMessage;
+import org.granite.client.messaging.messages.requests.PublishMessage;
+import org.granite.client.messaging.messages.requests.ReplyMessage;
 import org.granite.client.messaging.messages.requests.SubscribeMessage;
 import org.granite.client.messaging.messages.requests.UnsubscribeMessage;
+import org.granite.client.messaging.messages.responses.ResultMessage;
 import org.granite.logging.Logger;
 
 /**
@@ -213,6 +216,12 @@ public class Consumer extends AbstractTopicAgent {
 			}
 		}
 	}
+
+    public void reply(TopicMessage message, Object reply) {
+        ReplyMessage replyMessage = new ReplyMessage(destination, topic, message.getId(), reply);
+        replyMessage.getHeaders().putAll(message.getHeaders());
+        channel.send(replyMessage);
+    }
 
 	@Override
 	public String toString() {

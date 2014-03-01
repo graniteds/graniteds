@@ -28,6 +28,7 @@ package org.granite.gravity {
     import mx.messaging.messages.AbstractMessage;
     import mx.messaging.messages.AcknowledgeMessage;
     import mx.messaging.messages.AsyncMessage;
+    import mx.messaging.messages.AsyncMessage;
     import mx.messaging.messages.CommandMessage;
     import mx.messaging.messages.ErrorMessage;
     import mx.messaging.messages.IMessage;
@@ -123,6 +124,17 @@ package org.granite.gravity {
             if (_subscriptionId)
                 message.headers[AbstractMessage.DESTINATION_CLIENT_ID_HEADER] = _subscriptionId;
             internalSend(message);
+        }
+
+        public function reply(msg:IMessage, reply:AsyncMessage) {
+            reply.destination = msg.destination;
+            reply.clientId = msg.clientId;
+            reply.correlationId = msg.messageId;
+            if (topic != null)
+                reply.headers[AsyncMessage.SUBTOPIC_HEADER] = topic;
+            if (_subscriptionId)
+                reply.headers[AbstractMessage.DESTINATION_CLIENT_ID_HEADER] = _subscriptionId;
+            internalSend(reply);
         }
 
 

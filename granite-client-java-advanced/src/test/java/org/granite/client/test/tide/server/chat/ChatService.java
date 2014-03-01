@@ -8,7 +8,6 @@ import org.granite.messaging.webapp.HttpGraniteContext;
 
 import java.security.Principal;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**

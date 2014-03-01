@@ -99,10 +99,14 @@ public class MockGravity implements Gravity {
 		return null;
 	}
 
-	public Message publishMessage(Channel channelId, AsyncMessage message) {
+	public Message publishMessage(Channel channel, AsyncMessage message) {
 		lastMessage = message;
 		return null;
 	}
+
+    public Message sendRequest(Channel channel, AsyncMessage message) {
+        return null;
+    }
 
 	public void reconfigure(GravityConfig arg0, GraniteConfig arg1) {
 	}

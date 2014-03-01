@@ -34,6 +34,7 @@ import org.granite.client.messaging.messages.push.TopicMessage;
 import org.granite.client.messaging.messages.requests.InvocationMessage;
 import org.granite.client.messaging.messages.requests.LoginMessage;
 import org.granite.client.messaging.messages.requests.PublishMessage;
+import org.granite.client.messaging.messages.requests.ReplyMessage;
 import org.granite.client.messaging.messages.requests.SubscribeMessage;
 import org.granite.client.messaging.messages.requests.UnsubscribeMessage;
 import org.granite.client.messaging.messages.responses.AbstractResponseMessage;
@@ -112,6 +113,20 @@ public abstract class AbstractAMFChannel extends AbstractHTTPChannel {
 				messages = new Message[]{asyncMessage};
 				break;
 			}
+            case REPLY: {
+                ReplyMessage reply = (ReplyMessage)request;
+                AsyncMessage asyncMessage = new AsyncMessage();
+                asyncMessage.setMessageId(reply.getId());
+                asyncMessage.setTimestamp(reply.getTimestamp());
+                asyncMessage.setTimeToLive(reply.getTimeToLive());
+                asyncMessage.setHeaders(reply.getHeaders());
+                asyncMessage.setDestination(reply.getDestination());
+                asyncMessage.setHeader(AsyncMessage.SUBTOPIC_HEADER, reply.getTopic());
+                asyncMessage.setCorrelationId(reply.getCorrelationId());
+                asyncMessage.setBody(reply.getBody());
+                messages = new Message[]{asyncMessage};
+                break;
+            }
 			case SUBSCRIBE: {
 				SubscribeMessage subscribe = (SubscribeMessage)request;
 				CommandMessage commandMessage = new CommandMessage();

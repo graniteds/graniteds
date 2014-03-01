@@ -129,5 +129,11 @@ public class GravityBean implements Gravity {
 
         return getGravity().publishMessage(fromChannel, message);
     }
+    public Message sendRequest(Channel fromChannel, AsyncMessage message) {
+        if (getGravity() == null)
+            return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
+
+        return getGravity().sendRequest(fromChannel, message);
+    }
 
 }

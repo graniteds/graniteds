@@ -39,6 +39,7 @@ public interface Message extends Externalizable, Cloneable {
 		SUBSCRIBE,
 		UNSUBSCRIBE,
 		PUBLISH,
+        REPLY,
 		
 		// Response types.
 		RESULT,

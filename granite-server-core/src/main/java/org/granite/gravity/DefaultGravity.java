@@ -34,6 +34,9 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
@@ -92,6 +95,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     private UdpReceiverFactory udpReceiverFactory = null;
 
     private Timer channelsTimer;
+    private Timer repliesCleanupTimer;
     private boolean started;
 
     ///////////////////////////////////////////////////////////////////////////
@@ -169,6 +173,8 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     protected void internalStart() {
         gravityPool = new GravityPool(gravityConfig);
         channelsTimer = new Timer();
+        repliesCleanupTimer = new Timer();
+        repliesCleanupTimer.scheduleAtFixedRate(new AsyncRepliesCleanup(), 10000L, 10000L);
         
         if (graniteConfig.isRegisterMBeans()) {
 	        try {
@@ -229,6 +235,15 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
         			log.error(e, "Error while cancelling channels timer");
 				}
 	            channelsTimer = null;
+            }
+
+            if (repliesCleanupTimer != null) {
+                try {
+                    repliesCleanupTimer.cancel();
+                } catch (Exception e) {
+                    log.error(e, "Error while cancelling replies cleanup timer");
+                }
+                repliesCleanupTimer = null;
             }
         	
         	if (gravityPool != null) {
@@ -628,7 +643,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     }
 
     public Set<Principal> getConnectedUsers() {
-        Set<Principal> userPrincipals = new HashSet<Principal>();
+        Set<Principal> userPrincipals =  new HashSet<Principal>();
         for (TimeChannel timeChannel : this.channels.values()) {
             if (timeChannel.getChannel().getUserPrincipal() != null)
                 userPrincipals.add(timeChannel.getChannel().getUserPrincipal());
@@ -686,10 +701,91 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     }
 
     public Message publishMessage(Channel fromChannel, AsyncMessage message) {
-        initThread(null, fromChannel != null ? fromChannel.getClientType() : serverChannel.getClientType());
+        try {
+            initThread(null, fromChannel != null ? fromChannel.getClientType() : serverChannel.getClientType());
 
-        return handlePublishMessage(null, message, fromChannel != null ? fromChannel : serverChannel);
+            return handlePublishMessage(null, message, fromChannel != null ? fromChannel : serverChannel);
+        }
+        finally {
+            releaseThread();
+        }
     }
+
+    public Message sendRequest(Channel fromChannel, AsyncMessage message) {
+        try {
+            initThread(null, fromChannel != null ? fromChannel.getClientType() : serverChannel.getClientType());
+
+            if (message.getMessageId() == null)
+                message.setMessageId(UUIDUtil.randomUUID());
+            message.setTimestamp(System.currentTimeMillis());
+
+            long timeout = 5000L;
+            if (message.getTimeToLive() > 0)
+                timeout = message.getTimeToLive();
+
+            final CountDownLatch waitForReply = new CountDownLatch(1);
+            AsyncReply asyncReply = new AsyncReply(waitForReply, message.getTimestamp()+timeout);
+            asyncReplies.put(message.getMessageId(), asyncReply);
+
+            handlePublishMessage(null, message, fromChannel != null ? fromChannel : serverChannel);
+
+            if (!waitForReply.await(timeout, TimeUnit.MILLISECONDS)) {
+                ErrorMessage errorMessage = new ErrorMessage(message, true);
+                errorMessage.setFaultCode("Server.Messaging.ReplyTimeout");
+                errorMessage.setFaultString("Reply timeout for message " + message.getMessageId());
+                return errorMessage;
+            }
+
+            return asyncReply.getReply();
+        }
+        catch (InterruptedException e) {
+            ErrorMessage errorMessage = new ErrorMessage(message, true);
+            errorMessage.setFaultCode("Server.Messaging.ReplyInterrupted");
+            errorMessage.setFaultString("Reply interrupted for message " + message.getMessageId());
+            return errorMessage;
+        }
+    }
+
+    private final ConcurrentMap<String, AsyncReply> asyncReplies = new ConcurrentHashMap<String, AsyncReply>();
+
+    private static class AsyncReply {
+
+        private final CountDownLatch waitForReply;
+        private final long destroyTimestamp;
+        private Message reply = null;
+
+        public AsyncReply(CountDownLatch waitForReply, long destroyTimestamp) {
+            this.waitForReply = waitForReply;
+            this.destroyTimestamp = destroyTimestamp;
+        }
+
+        public void reply(Message reply) {
+            this.reply = reply;
+            waitForReply.countDown();
+        }
+
+        public Message getReply() {
+            return reply;
+        }
+
+        public long getDestroyTimestamp() {
+            return destroyTimestamp;
+        }
+    }
+
+    private class AsyncRepliesCleanup extends TimerTask {
+
+        @Override
+        public void run() {
+            long time = System.currentTimeMillis();
+            for (Iterator<Map.Entry<String, AsyncReply>> ie = asyncReplies.entrySet().iterator(); ie.hasNext(); ) {
+                Map.Entry<String, AsyncReply> e = ie.next();
+                if (e.getValue().getDestroyTimestamp() >= time)
+                    ie.remove();
+            }
+        }
+    }
+
 
     private Message handlePingMessage(ChannelFactory<?> channelFactory, CommandMessage message) {
         
@@ -940,12 +1036,12 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
         if (destination == null)
             return getInvalidDestinationError(message);
-                
+
         if (message.getMessageId() == null)
-        	message.setMessageId(UUIDUtil.randomUUID());
+            message.setMessageId(UUIDUtil.randomUUID());
         message.setTimestamp(System.currentTimeMillis());
         if (channel != null)
-        	message.setClientId(channel.getId());
+            message.setClientId(channel.getId());
 
         GravityInvocationContext invocationContext = new GravityInvocationContext(message, destination) {
 			@Override
@@ -956,6 +1052,28 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 		        	fromChannel = getChannel(channelFactory, (String)message.getClientId());
 		        if (fromChannel == null)
 		            return handleUnknownClientMessage(message);
+
+                if (message.getCorrelationId() != null) {
+                    AsyncReply asyncReply = asyncReplies.get(message.getCorrelationId());
+                    if (asyncReply != null) {
+                        asyncReply.reply(message);
+
+                        asyncReplies.remove(message.getCorrelationId());    // One one consumer can reply
+
+                        AcknowledgeMessage acknowledgeMessage = new AcknowledgeMessage(message, true);
+                        acknowledgeMessage.setDestination(message.getDestination());
+
+                        return acknowledgeMessage;
+                    }
+                    else {
+                        ErrorMessage errorMessage = new ErrorMessage(message, true);
+                        errorMessage.setFaultCode("Server.Messaging.InvalidReply");
+                        errorMessage.setFaultString("Unknown correlationId " + message.getCorrelationId());
+                        errorMessage.setDestination(message.getDestination());
+
+                        return errorMessage;
+                    }
+                }
 
 		        ServiceAdapter adapter = adapterFactory.getServiceAdapter(message);
 		        

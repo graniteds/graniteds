@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * @author Franck WOLFF
@@ -76,4 +77,5 @@ public interface Gravity {
 
     public Message publishMessage(AsyncMessage message);
     public Message publishMessage(Channel fromChannel, AsyncMessage message);
+    public Message sendRequest(Channel fromChannel, AsyncMessage message);
 }

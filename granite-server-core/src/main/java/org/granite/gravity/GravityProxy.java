@@ -149,4 +149,13 @@ public class GravityProxy implements Gravity {
 
     	return getGravity().publishMessage(fromChannel, message);
     }
+
+    @Override
+    public Message sendRequest(Channel fromChannel, AsyncMessage message) {
+        Gravity gravity = getGravity();
+        if (gravity == null)
+            return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
+
+        return getGravity().sendRequest(fromChannel, message);
+    }
 }
