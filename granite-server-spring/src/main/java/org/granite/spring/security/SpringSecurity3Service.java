@@ -209,7 +209,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
             securityContext.setAuthentication(authentication);
             SecurityContextHolder.setContext(securityContext);
             if (authentication instanceof Principal)
-                principal = (Principal)authentication.getPrincipal();
+                principal = (Principal)authentication;
             try {
                 securityContextRepository.saveContext(securityContext, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
             }
