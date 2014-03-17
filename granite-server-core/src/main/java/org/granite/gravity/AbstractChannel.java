@@ -170,6 +170,7 @@ public abstract class AbstractChannel implements Channel {
 			publishedQueue = new LinkedList<AsyncPublishedMessage>();
 		}
 		finally {
+			publisher.reset();
 			publishedQueueLock.unlock();
 		}
 		
@@ -350,6 +351,7 @@ public abstract class AbstractChannel implements Channel {
 				receivedQueue = new LinkedList<AsyncMessage>();
 			}
 			finally {
+				httpReceiver.reset();
 				receivedQueueLock.unlock();
 			}
 			

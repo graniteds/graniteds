@@ -242,6 +242,7 @@ public class JettyWebSocketChannel extends AbstractChannel implements WebSocket,
 				receivedQueue = new LinkedList<AsyncMessage>();
 			}
 			finally {
+				httpReceiver.reset();
 				receivedQueueLock.unlock();
 			}
 			

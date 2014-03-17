@@ -46,16 +46,7 @@ public abstract class AsyncChannelRunner implements Runnable {
 		queued.set(false);
 	}
 	
-	protected abstract void doRun();
-	
-	public final void run() {
-		try {
-			doRun();
-		}
-		finally {
-			queued.set(false);
-		}
-	}
+	public abstract void run();
 
 	@Override
 	public boolean equals(Object obj) {
