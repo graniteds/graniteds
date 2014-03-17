@@ -21,8 +21,6 @@
  */
 package org.granite.tide.spring;
 
-import java.util.concurrent.Callable;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.granite.gravity.Gravity;

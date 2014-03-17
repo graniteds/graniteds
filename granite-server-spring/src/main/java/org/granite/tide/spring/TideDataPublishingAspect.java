@@ -21,8 +21,6 @@
  */
 package org.granite.tide.spring;
 
-import java.util.concurrent.Callable;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

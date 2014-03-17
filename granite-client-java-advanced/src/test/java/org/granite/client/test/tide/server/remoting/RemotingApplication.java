@@ -22,7 +22,6 @@
 package org.granite.client.test.tide.server.remoting;
 
 import org.granite.config.servlet3.ServerFilter;
-import org.granite.gravity.config.servlet3.MessagingDestination;
 import org.granite.tide.simple.SimpleIdentity;
 
 /**
