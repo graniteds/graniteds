@@ -485,9 +485,6 @@ project('granite-server-jboss') {
         compile files('lib/jboss-vfs3.jar')							// Used conditionally by VFS3Scanner impl
         compile files('lib/jbossmq.jar')							// Used by JBossMQSelector impl
 
-        compile 'io.undertow:undertow-servlet:1.0.0.Final',      // Used by WildFly security service
-                'io.undertow:undertow-core:1.0.0.Final'
-
         compile project(':granite-server-core')
 	}
 }
