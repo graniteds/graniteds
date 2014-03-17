@@ -38,7 +38,7 @@ public interface JMSClient {
 
     public void unsubscribe(CommandMessage message) throws Exception;
 
-	public void send(Map<String, ?> params, Object msg, long timeToLive) throws Exception;
+	public void send(Map<String, Object> params, Object msg, long timeToLive) throws Exception;
 
     public void send(AsyncMessage message) throws Exception;
 

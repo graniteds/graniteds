@@ -130,13 +130,13 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 			return;
 		
 		try {
-			Map<Map<String, String>, List<Object>> updates = new HashMap<Map<String, String>, List<Object>>();
+			Map<Map<String, Object>, List<Object>> updates = new HashMap<Map<String, Object>, List<Object>>();
 			if (paramsProvider != null) {
 				for (Object[] dataUpdate : dataUpdates) {
 					DataPublishParams params = new DataPublishParams();
 					paramsProvider.publishes(params, dataUpdate[1]);
 					
-					Map<String, String> headers = params.getHeaders();
+					Map<String, Object> headers = params.getHeaders();
 					List<Object> list = updates.get(headers);
 					if (list == null) {
 						list = new ArrayList<Object>();
@@ -146,8 +146,8 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 				}
 			}
 			
-			for (Entry<Map<String, String>, List<Object>> me : updates.entrySet()) {
-				Map<String, String> headers = new HashMap<String, String>(me.getKey());
+			for (Entry<Map<String, Object>, List<Object>> me : updates.entrySet()) {
+				Map<String, Object> headers = new HashMap<String, Object>(me.getKey());
 				headers.put(AsyncMessage.SUBTOPIC_HEADER, TIDE_DATA_SUBTOPIC);
 				headers.put(GDS_SESSION_ID, sessionId);
 				headers.put(TIDE_DATA_TYPE_KEY, TIDE_DATA_TYPE_VALUE);
@@ -159,5 +159,5 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 		}
 	}
 	
-	protected abstract void publishUpdate(Map<String, String> params, Object body);
+	protected abstract void publishUpdate(Map<String, Object> params, Object body);
 }

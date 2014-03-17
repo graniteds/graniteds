@@ -470,11 +470,11 @@ public class JMSServiceAdapter extends ServiceAdapter {
             internalSend(message.getHeaders(), msg, message.getMessageId(), message.getCorrelationId(), message.getTimestamp(), message.getTimeToLive());
         }
 
-        public void send(Map<String, ?> params, Object msg, long timeToLive) throws Exception {
+        public void send(Map<String, Object> params, Object msg, long timeToLive) throws Exception {
         	internalSend(params, msg, null, null, new Date().getTime(), timeToLive);
         }
         
-        public void internalSend(Map<String, ?> headers, Object msg, String messageId, String correlationId, long timestamp, long timeToLive) throws Exception {
+        public void internalSend(Map<String, Object> headers, Object msg, String messageId, String correlationId, long timestamp, long timeToLive) throws Exception {
             String topic = (String)headers.get(AsyncMessage.SUBTOPIC_HEADER);
                 
             if (jmsProducerSession == null) {
@@ -496,25 +496,15 @@ public class JMSServiceAdapter extends ServiceAdapter {
             jmsMessage.setJMSTimestamp(timestamp);
             jmsMessage.setJMSExpiration(timeToLive);
             
-            for (Map.Entry<String, ?> me : headers.entrySet()) {
+            for (Map.Entry<String, Object> me : headers.entrySet()) {
                 if ("JMSType".equals(me.getKey())) {
                     if (me.getValue() instanceof String)
-                        jmsMessage.setJMSType((String)me.getValue());
+                        jmsMessage.setJMSType((String) me.getValue());
                 }
                 else if ("JMSPriority".equals(me.getKey())) {
                     if (me.getValue() instanceof Integer)
-                        jmsMessage.setJMSPriority(((Integer)me.getValue()).intValue());
+                        jmsMessage.setJMSPriority((Integer) me.getValue());
                 }
-                else if (me.getValue() instanceof String)
-                    jmsMessage.setStringProperty(me.getKey(), (String)me.getValue());
-                else if (me.getValue() instanceof Boolean)
-                    jmsMessage.setBooleanProperty(me.getKey(), ((Boolean)me.getValue()).booleanValue());
-                else if (me.getValue() instanceof Integer)
-                    jmsMessage.setIntProperty(me.getKey(), ((Integer)me.getValue()).intValue());
-                else if (me.getValue() instanceof Long)
-                    jmsMessage.setLongProperty(me.getKey(), ((Long)me.getValue()).longValue());
-                else if (me.getValue() instanceof Double)
-                    jmsMessage.setDoubleProperty(me.getKey(), ((Double)me.getValue()).doubleValue());
                 else
                     jmsMessage.setObjectProperty(me.getKey(), me.getValue());
             }
