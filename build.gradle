@@ -1342,12 +1342,12 @@ project('granite-client-flex-advanced') {
 	
 	additionalCompilerOptions = [
 		'-define=CONFIG::debugging,false',
-		'-define=CONFIG::flex40,false',
-		'-define=CONFIG::flex45,true'
+		'-define=CONFIG::flex40,true',
+		'-define=CONFIG::flex45,false'
 	]
 	
 	dependencies {
-		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
+		flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
 		
 		external project(':granite-client-flex')
 		
