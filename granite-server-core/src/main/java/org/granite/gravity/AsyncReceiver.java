@@ -31,7 +31,7 @@ public class AsyncReceiver extends AsyncChannelRunner {
 	}
 
 	@Override
-	public void doRun() {
+	public void run() {
 		channel.runReceive();
 	}
 }
