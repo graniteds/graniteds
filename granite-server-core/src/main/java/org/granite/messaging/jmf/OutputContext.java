@@ -32,9 +32,12 @@ public interface OutputContext extends ExtendedObjectOutput, JMFConstants {
 
 	OutputStream getOutputStream();
 
-	void addToStoredStrings(String s);
-	int indexOfStoredStrings(String s);
+	void addToClassNames(String className);
+	int indexOfClassName(String cn);
 
-	void addToStoredObjects(Object o);
-	int indexOfStoredObjects(Object o);
+	void addToStrings(String s);
+	int indexOfString(String s);
+
+	void addToObjects(Object o);
+	int indexOfObject(Object o);
 }

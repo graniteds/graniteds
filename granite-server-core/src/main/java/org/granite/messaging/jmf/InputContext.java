@@ -24,6 +24,8 @@ package org.granite.messaging.jmf;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.granite.messaging.reflect.ClassDescriptor;
+
 /**
  * @author Franck WOLFF
  */
@@ -32,17 +34,25 @@ public interface InputContext extends ExtendedObjectInput, JMFConstants {
 	SharedContext getSharedContext();
 	
 	InputStream getInputStream();
+	
 	int safeRead() throws IOException;
+	long safeReadLong() throws IOException;
 	void safeReadFully(byte[] b) throws IOException;
 	void safeReadFully(byte[] b, int off, int len) throws IOException;
 	void safeSkip(long n) throws IOException;
 	
-	int addSharedString(String s);
-	String getSharedString(int index);
+	int addToClassNames(String s);
+	String getClassName(int index);
 	
-	int addSharedObject(Object o);
-	Object getSharedObject(int index);
+	ClassDescriptor getClassDescriptor(Class<?> cls);
+	ClassDescriptor getClassDescriptor(String className) throws ClassNotFoundException;
+	
+	int addToStrings(String s);
+	String getString(int index);
+	
+	int addToObjects(Object o);
+	Object getObject(int index);
 
-	int addUnresolvedSharedObject(String className);
-	Object setUnresolvedSharedObject(int index, Object o);
+	int addToUnresolvedObjects(String className);
+	Object setUnresolvedObject(int index, Object o);
 }

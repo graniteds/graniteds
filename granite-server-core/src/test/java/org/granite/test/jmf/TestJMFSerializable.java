@@ -135,6 +135,7 @@ public class TestJMFSerializable implements JMFConstants {
 		
 		PrintStream ps = Util.newNullPrintStream();
 		if (dump) {
+			System.out.println(serializer.toDumpString());
 			System.out.println(bytes.length + "B. " + Util.toHexString(bytes));
 			ps = System.out;
 		}
@@ -146,6 +147,8 @@ public class TestJMFSerializable implements JMFConstants {
 		ByteArrayJMFDeserializer deserializer = new ByteArrayJMFDeserializer(bytes, codecRegistry);
 		Object clone = deserializer.readObject();
 		deserializer.close();
+		if (dump)
+			System.out.println(deserializer.toDumpString());
 		return clone;
 	}
 }

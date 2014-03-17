@@ -38,6 +38,9 @@ import org.granite.messaging.jmf.JMFDumper;
 import org.granite.messaging.jmf.JMFSerializer;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.DoubleUtil;
+import org.granite.messaging.jmf.codec.std.impl.util.IntegerUtil;
+import org.granite.messaging.jmf.codec.std.impl.util.LongUtil;
 
 public class Util {
 	
@@ -82,12 +85,16 @@ public class Util {
 			return ((ByteArrayOutputStream)outputStream).toByteArray();
 		}
 		
+		public void writeVariableDouble(double v) throws IOException {
+			DoubleUtil.encodeVariableDouble(this, v);
+		}
+		
 		public void writeVariableInt(int v) throws IOException {
-			codecRegistry.getIntegerCodec().writeVariableInt(this, v);
+			IntegerUtil.encodeVariableInteger(this, v);
 		}
 		
 		public void writeVariableLong(long v) throws IOException {
-			codecRegistry.getLongCodec().writeVariableLong(this, v);
+			LongUtil.encodeVariableLong(this, v);
 		}
 	}
 	
@@ -109,12 +116,16 @@ public class Util {
 			super(new ByteArrayInputStream(bytes), sharedContext);
 		}
 
+		public double readVariableDouble() throws IOException {
+			return DoubleUtil.decodeVariableDouble(this);
+		}
+
 		public int readVariableInt() throws IOException {
-			return codecRegistry.getIntegerCodec().readVariableInt(this);
+			return IntegerUtil.decodeVariableInteger(this);
 		}
 
 		public long readVariableLong() throws IOException {
-			return codecRegistry.getLongCodec().readVariableLong(this);
+			return LongUtil.decodeVariableLong(this);
 		}
 	}
 	

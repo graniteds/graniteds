@@ -37,7 +37,7 @@ public interface SharedContext {
 	
 	Reflection getReflection();
 	
-	List<String> getDefaultStoredStrings();
+	List<String> getInitialClassNameDictionary();
 	
 	AliasRegistry getAliasRegistry();
 	

@@ -46,7 +46,7 @@ public class BooleanCodecImpl extends AbstractStandardCodec<Boolean> implements 
 	}
 
 	public Class<?> getPrimitiveClass() {
-		return Boolean.TYPE;
+		return boolean.class;
 	}
 
 	public void encode(OutputContext ctx, Boolean v) throws IOException {
@@ -57,10 +57,6 @@ public class BooleanCodecImpl extends AbstractStandardCodec<Boolean> implements 
 	}
 	
 	public Boolean decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		if (jmfType != JMF_BOOLEAN_OBJECT)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
 		return Boolean.valueOf(((parameterizedJmfType & 0x80) != 0));
 	}
 
@@ -73,11 +69,6 @@ public class BooleanCodecImpl extends AbstractStandardCodec<Boolean> implements 
 	
 	public boolean decodePrimitive(InputContext ctx) throws IOException {
 		int parameterizedJmfType = ctx.safeRead();
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_BOOLEAN)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
 		return ((parameterizedJmfType & 0x80) != 0);
 	}
 

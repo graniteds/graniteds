@@ -44,7 +44,6 @@ import org.granite.messaging.jmf.codec.std.LongCodec;
 import org.granite.messaging.jmf.codec.std.NullCodec;
 import org.granite.messaging.jmf.codec.std.ShortCodec;
 import org.granite.messaging.jmf.codec.std.StringCodec;
-import org.granite.messaging.jmf.codec.std.impl.ArrayCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.ArrayListCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.BigDecimalCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.BigIntegerCodecImpl;
@@ -61,7 +60,9 @@ import org.granite.messaging.jmf.codec.std.impl.HashSetCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.IntegerCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.LongCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.NullCodecImpl;
+import org.granite.messaging.jmf.codec.std.impl.ObjectArrayCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.ObjectCodecImpl;
+import org.granite.messaging.jmf.codec.std.impl.PrimitiveArrayCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.ShortCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.SqlDateCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.SqlTimeCodecImpl;
@@ -106,7 +107,10 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	private DoubleCodec doubleCodec;
 	private StringCodec stringCodec;
 	
-	private final Map<Integer, StandardCodec<?>> typeToCodec = new HashMap<Integer, StandardCodec<?>>();
+	private final StandardCodec<?>[] typeToCodec = new StandardCodec<?>[256];
+	
+	
+	//private final Map<Integer, StandardCodec<?>> typeToCodec = new HashMap<Integer, StandardCodec<?>>();
 	private final Map<Class<?>, StandardCodec<?>> classToCodec = new HashMap<Class<?>, StandardCodec<?>>();
 	private final List<ConditionalObjectCodec> conditionalObjectCodecs = new ArrayList<ConditionalObjectCodec>();
 	private final Map<Class<?>, PrimitivePropertyCodec> primitivePropertyCodecs = new HashMap<Class<?>, PrimitivePropertyCodec>();
@@ -120,13 +124,15 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	public DefaultCodecRegistry(List<ExtendedObjectCodec> extendedCodecs) {
 		this.extendedCodecs = (extendedCodecs != null ? extendedCodecs : new ArrayList<ExtendedObjectCodec>());
 
+		Map<Integer, StandardCodec<?>> typeToCodecMap = new HashMap<Integer, StandardCodec<?>>();
+		
 		List<StandardCodec<?>> standardCodecs = getStandardCodecs();
 		for (StandardCodec<?> codec : standardCodecs) {
 			
 			if (codec instanceof BijectiveCodec) {
 				if (codec instanceof PrimitiveCodec) {
 					assertNull(classToCodec.put(((PrimitiveCodec<?>)codec).getPrimitiveClass(), codec));
-					assertNull(typeToCodec.put(((PrimitiveCodec<?>)codec).getPrimitiveType(), codec));
+					assertNull(typeToCodecMap.put(((PrimitiveCodec<?>)codec).getPrimitiveType(), codec));
 					
 					switch (((PrimitiveCodec<?>)codec).getPrimitiveType()) {
 						case JMF_BOOLEAN: initBooleanCodec((BooleanCodec)codec); break;
@@ -141,7 +147,7 @@ public class DefaultCodecRegistry implements CodecRegistry {
 				}
 				
 				assertNull(classToCodec.put(((BijectiveCodec<?>)codec).getObjectClass(), codec));
-				assertNull(typeToCodec.put(codec.getObjectType(), codec));
+				assertNull(typeToCodecMap.put(codec.getObjectType(), codec));
 				
 				if (codec.getObjectType() == JMF_STRING)
 					initStringCodec((StringCodec)codec);
@@ -149,7 +155,7 @@ public class DefaultCodecRegistry implements CodecRegistry {
 					initNullCodec((NullCodec)codec);
 			}
 			else if (codec instanceof ConditionalObjectCodec) {
-				assertNull(typeToCodec.put(codec.getObjectType(), codec));
+				assertNull(typeToCodecMap.put(codec.getObjectType(), codec));
 				conditionalObjectCodecs.add((ConditionalObjectCodec)codec);
 			}
 			else
@@ -157,6 +163,11 @@ public class DefaultCodecRegistry implements CodecRegistry {
 		}
 		
 		checkPrimitiveCodecs();
+		
+		for (int i = 0; i < 256; i++) {
+			int jmfType = UNPARAMETERIZED_JMF_TYPES[i];
+			typeToCodec[i] = typeToCodecMap.get(Integer.valueOf(jmfType));
+		}
 	}
 
 	public NullCodec getNullCodec() {
@@ -201,7 +212,7 @@ public class DefaultCodecRegistry implements CodecRegistry {
 
 	@SuppressWarnings("unchecked")
 	public <T> StandardCodec<T> getCodec(int jmfType) {
-		return (StandardCodec<T>)typeToCodec.get(jmfType);
+		return (StandardCodec<T>)typeToCodec[jmfType];
 	}
 
 	@SuppressWarnings("unchecked")
@@ -246,18 +257,6 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	public int extractJmfType(int parameterizedJmfType) {
 		return UNPARAMETERIZED_JMF_TYPES[parameterizedJmfType];
 	}
-
-	public int jmfTypeOfPrimitiveClass(Class<?> cls) {
-		if (!cls.isPrimitive())
-			return -1;
-		StandardCodec<?> codec = classToCodec.get(cls);
-		return (codec instanceof PrimitiveCodec ? ((PrimitiveCodec<?>)codec).getPrimitiveType() : -1);
-	}
-
-	public Class<?> primitiveClassOfJmfType(int jmfType) {
-		StandardCodec<?> codec = typeToCodec.get(Integer.valueOf(jmfType));
-		return (codec instanceof PrimitiveCodec && ((PrimitiveCodec<?>)codec).getPrimitiveType() == jmfType ? ((PrimitiveCodec<?>)codec).getPrimitiveClass() : null);
-	}
 	
 	protected List<StandardCodec<?>> getStandardCodecs() {
 		return Arrays.asList((StandardCodec<?>)
@@ -287,8 +286,10 @@ public class DefaultCodecRegistry implements CodecRegistry {
 			new HashMapCodecImpl(),
 
 			new EnumCodecImpl(),
-			new ArrayCodecImpl(),
+			new PrimitiveArrayCodecImpl(),
+			new ObjectArrayCodecImpl(),
 			new ClassCodecImpl(),
+			
 			new ObjectCodecImpl()
 		);
 	}

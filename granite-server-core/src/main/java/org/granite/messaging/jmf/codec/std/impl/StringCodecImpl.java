@@ -28,14 +28,18 @@ import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.std.StringCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.IntegerUtil;
 
 /**
  * @author Franck WOLFF
  */
-public class StringCodecImpl extends AbstractIntegerStringCodec<String> implements StringCodec {
+public class StringCodecImpl extends AbstractStandardCodec<String> implements StringCodec {
 	
-	protected static final int UUID_FLAG = 0x10;
-	protected static final int UUID_UPPERCASE_FLAG = 0x20;
+	protected static final int INDEX_OR_LENGTH_BYTE_COUNT_OFFSET = 4;
+
+	protected static final int UUID_FLAG = 0x40;
+	protected static final int UUID_LOWERCASE_FLAG = 0x00;
+	protected static final int UUID_UPPERCASE_FLAG = 0x10;
 	
 	protected static final char[] LOWER_HEX = "0123456789abcdef".toCharArray();
 	protected static final char[] UPPER_HEX = "0123456789ABCDEF".toCharArray();
@@ -63,29 +67,76 @@ public class StringCodecImpl extends AbstractIntegerStringCodec<String> implemen
 	}
 
 	public void encode(OutputContext ctx, String v) throws IOException {
+		final OutputStream os = ctx.getOutputStream();
 		
-		int uuidCaseFlag = isUUID(v);
-		if (uuidCaseFlag != -1 && ctx.indexOfStoredStrings(v) < 0) {
-			encodeUUID(ctx, v, uuidCaseFlag);
-			ctx.addToStoredStrings(v);
+		if (v.length() == 0) {
+			os.write(JMF_STRING);
+			os.write(0x00);
+			return;
 		}
-		else
-			writeString(ctx, v, JMF_STRING_TYPE_HANDLER);
+		
+		int indexOfStoredString = ctx.indexOfString(v);
+		if (indexOfStoredString >= 0) {
+			int count = IntegerUtil.significantIntegerBytesCount0(indexOfStoredString);
+			os.write(0x80 | (count << INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) | JMF_STRING);
+			IntegerUtil.encodeInteger(ctx, indexOfStoredString, count);
+		}
+		else {
+			ctx.addToStrings(v);
+			
+			int uuidCaseFlag = isUUID(v);
+			if (uuidCaseFlag != -1)
+				encodeUUID(ctx, v, uuidCaseFlag);
+			else {
+//				char[] cs = v.toCharArray();
+//				byte[] bytes = new byte[cs.length * 3];
+//				
+//				int length = 0;
+//				for (char c : cs) {
+//					if (c <= 0x7F)
+//						bytes[length++] = (byte)c;
+//					else if (c <= 0x7FF) {
+//						bytes[length++] = (byte)(0xC0 | ((c >> 6) & 0x1F));
+//						bytes[length++] = (byte)(0x80 | ((c >> 0) & 0x3F));
+//					}
+//					else {
+//						bytes[length++] = (byte)(0xE0 | ((c >> 12) & 0x0F));
+//						bytes[length++] = (byte)(0x80 | ((c >> 6) & 0x3F));
+//						bytes[length++] = (byte)(0xE0 | ((c >> 12) & 0x0F));
+//					}
+//				}
+				
+				byte[] bytes = v.getBytes(UTF8);
+				int length = bytes.length;
+				int count = IntegerUtil.significantIntegerBytesCount0(length);
+				
+				os.write((count << INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) | JMF_STRING);
+				IntegerUtil.encodeInteger(ctx, length, count);
+				os.write(bytes, 0, length);
+			}
+		}
 	}
 	
 	public String decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_STRING)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
+		if ((parameterizedJmfType & 0x80) != 0) {
+			int index = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) & 0x03);
+			return ctx.getString(index);
+		}
 		
 		if ((parameterizedJmfType & UUID_FLAG) != 0) {
 			String uid = decodeUUID(ctx, parameterizedJmfType);
-			ctx.addSharedString(uid);
+			ctx.addToStrings(uid);
 			return uid;
 		}
 		
-		return readString(ctx, parameterizedJmfType, JMF_STRING_TYPE_HANDLER);
+		int length = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) & 0x03);
+		byte[] bytes = new byte[length];
+		ctx.safeReadFully(bytes);
+		String s = new String(bytes, UTF8);
+		
+		ctx.addToStrings(s);
+		
+		return s;
 	}
 	
 	public void dump(DumpContext ctx, int parameterizedJmfType) throws IOException {
@@ -110,8 +161,8 @@ public class StringCodecImpl extends AbstractIntegerStringCodec<String> implemen
 				if (!(c >= '0' && c <= '9')) {
 					if (c >= 'a' && c <= 'f') {
 						if (flag == -1)
-							flag = 0x00;
-						else if (flag != 0x00)
+							flag = UUID_LOWERCASE_FLAG;
+						else if (flag != UUID_LOWERCASE_FLAG)
 							return -1;
 					}
 					else if (c >= 'A' && c <= 'F') {
@@ -127,8 +178,9 @@ public class StringCodecImpl extends AbstractIntegerStringCodec<String> implemen
 			}
 		}
 		
+		// No letters...
 		if (flag == -1)
-			flag = 0x00;
+			flag = UUID_LOWERCASE_FLAG;
 		
 		return flag;
 	}
@@ -164,7 +216,7 @@ public class StringCodecImpl extends AbstractIntegerStringCodec<String> implemen
 		for (byte b : bytes) {
 			if (i == 8 || i == 13 || i == 18 || i == 23)
 				chars[i++] = '-';
-			chars[i++] = hex[(b & 0xF0) >> 4];
+			chars[i++] = hex[(b & 0xF0) >>> 4];
 			chars[i++] = hex[b & 0x0F];
 		}
 		

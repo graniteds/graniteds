@@ -25,16 +25,13 @@ import java.io.IOException;
 
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
-import org.granite.messaging.jmf.codec.PrimitiveCodec;
+import org.granite.messaging.jmf.codec.ConditionalObjectCodec;
 
 /**
  * @author Franck WOLFF
  */
-public interface IntegerCodec extends PrimitiveCodec<Integer> {
+public interface PrimitiveArrayCodec extends ConditionalObjectCodec {
 
-	void encodePrimitive(OutputContext ctx, int v) throws IOException;
-	int decodePrimitive(InputContext ctx) throws IOException;
-
-	void encode(OutputContext ctx, Integer v) throws IOException;
-	Integer decode(InputContext ctx, int parameterizedJmfType) throws IOException;
+	void encode(OutputContext ctx, Object v) throws IOException;
+	Object decode(InputContext ctx, int parameterizedJmfType) throws IOException, ClassNotFoundException;
 }

@@ -50,11 +50,6 @@ public class NullCodecImpl extends AbstractStandardCodec<Object> implements Null
 	}
 	
 	public Object decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_NULL)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
 		return null;
 	}
 	

@@ -71,7 +71,4 @@ public interface CodecRegistry extends JMFConstants {
 	PrimitivePropertyCodec getPrimitivePropertyCodec(Class<?> propertyCls);
 
 	int extractJmfType(int parameterizedJmfType);
-	
-	int jmfTypeOfPrimitiveClass(Class<?> cls);
-	Class<?> primitiveClassOfJmfType(int jmfType);
 }

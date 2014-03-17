@@ -22,33 +22,21 @@
 package org.granite.messaging.jmf.codec.std.impl;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.std.EnumCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.ClassNameUtil;
+import org.granite.messaging.jmf.codec.std.impl.util.IntegerUtil;
 
 /**
  * @author Franck WOLFF
  */
-public class EnumCodecImpl extends AbstractIntegerStringCodec<Object> implements EnumCodec {
+public class EnumCodecImpl extends AbstractStandardCodec<Object> implements EnumCodec {
 
-	protected static final StringTypeHandler TYPE_HANDLER = new StringTypeHandler() {
-
-		public int type(IntegerComponents ics, boolean reference) {
-			return (reference ? (0x40 | (ics.length << 4) | JMF_ENUM) : ((ics.length << 4) | JMF_ENUM));
-		}
-
-		public int indexOrLengthBytesCount(int parameterizedJmfType) {
-			return (parameterizedJmfType >> 4) & 0x03;
-		}
-
-		public boolean isReference(int parameterizedJmfType) {
-			return (parameterizedJmfType & 0x40) != 0;
-		}
-	};
+	protected static final int ORDINAL_BYTE_COUNT_OFFSET = 6;
 
 	public int getObjectType() {
 		return JMF_ENUM;
@@ -59,50 +47,22 @@ public class EnumCodecImpl extends AbstractIntegerStringCodec<Object> implements
 	}
 
 	public void encode(OutputContext ctx, Object v) throws IOException {
-		final OutputStream os = ctx.getOutputStream();
+		String className = ctx.getAlias(v.getClass().getName());
+		int ordinal = ((Enum<?>)v).ordinal();
+		int count = IntegerUtil.significantIntegerBytesCount0(ordinal);
 		
-		int indexOfStoredObject = ctx.indexOfStoredObjects(v);
-		if (indexOfStoredObject >= 0) {
-			IntegerComponents ics = intComponents(indexOfStoredObject);
-			os.write(0x80 | (ics.length << 4) | JMF_ENUM);
-			writeIntData(ctx, ics);
-		}
-		else {
-			ctx.addToStoredObjects(v);
-			
-			String className = ctx.getAlias(v.getClass().getName());
-			writeString(ctx, className, TYPE_HANDLER);
-			
-			int ordinal = ((Enum<?>)v).ordinal();
-			ctx.getSharedContext().getCodecRegistry().getIntegerCodec().writeVariableInt(ctx, ordinal);
-		}
+		ctx.getOutputStream().write((count << ORDINAL_BYTE_COUNT_OFFSET) | JMF_ENUM);
+		IntegerUtil.encodeInteger(ctx, ordinal, count);
+		ClassNameUtil.encodeClassName(ctx, className);
 	}
 
 	public Object decode(InputContext ctx, int parameterizedJmfType) throws IOException, ClassNotFoundException {
-		final CodecRegistry codecRegistry = ctx.getSharedContext().getCodecRegistry();
-		
-		int jmfType = codecRegistry.extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_ENUM)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
-		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 4) & 0x03, false);
-		
-		Object v = null;
-		if ((parameterizedJmfType & 0x80) != 0)
-			v = ctx.getSharedObject(indexOrLength);
-		else {
-			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
-			className = ctx.getAlias(className);
-			Class<?> cls = ctx.getSharedContext().getReflection().loadClass(className);
-			
-			int ordinal = codecRegistry.getIntegerCodec().readVariableInt(ctx);
-			
-			v = cls.getEnumConstants()[ordinal];
-			ctx.addSharedObject(v);
-		}
-		
-		return v;
+		int count = (parameterizedJmfType >>> ORDINAL_BYTE_COUNT_OFFSET) /* & 0x03 */;
+		int ordinal = IntegerUtil.decodeInteger(ctx, count);
+		String className = ctx.getAlias(ClassNameUtil.decodeClassName(ctx));
+		Class<?> cls = ctx.getSharedContext().getReflection().loadClass(className);
+
+		return cls.getEnumConstants()[ordinal];
 	}
 
 	public void dump(DumpContext ctx, int parameterizedJmfType) throws IOException {
@@ -112,19 +72,11 @@ public class EnumCodecImpl extends AbstractIntegerStringCodec<Object> implements
 		
 		if (jmfType != JMF_ENUM)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
+
+		int count = (parameterizedJmfType >>> ORDINAL_BYTE_COUNT_OFFSET) /* & 0x03 */;
+		int ordinal = IntegerUtil.decodeInteger(ctx, count);
+		String className = ctx.getAlias(ClassNameUtil.decodeClassName(ctx));
 		
-		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 4) & 0x03, false);
-		if ((parameterizedJmfType & 0x80) != 0) {
-			String className = (String)ctx.getSharedObject(indexOrLength);
-			ctx.indentPrintLn("<" + className + "@" + indexOrLength + ">");
-		}
-		else {
-			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
-			className = ctx.getAlias(className);
-			int ordinal = codecRegistry.getIntegerCodec().readVariableInt(ctx);
-			
-			int indexOfStoredObject = ctx.addSharedObject(className);
-			ctx.indentPrintLn(className + "@" + indexOfStoredObject + ": <" + ordinal + ">");
-		}
+		ctx.indentPrintLn(className + ": <" + ordinal + ">");
 	}
 }

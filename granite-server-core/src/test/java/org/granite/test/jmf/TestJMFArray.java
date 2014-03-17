@@ -110,15 +110,17 @@ public class TestJMFArray implements JMFConstants {
 		
 		boolean[][][] booleans3d = {
 			{
-				{true, false, false, true, false, false, false, true},
-				{true, false, false, true, false, false, false, true, true}
+				{true, false, true, true, false, false, false, true},
+				booleans2d[1]
 			},
 			null,
+			booleans2d,
 			{
 				{false},
-				{false, true, false},
+				{false, true, true},
 				null
-			}
+			},
+			booleans2d
 		};
 		Assert.assertTrue(Arrays.deepEquals(booleans3d, (boolean[][][])serializeDeserializeArray(booleans3d)));
 		

@@ -28,23 +28,12 @@ import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.std.ClassCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.ClassNameUtil;
 
-public class ClassCodecImpl extends AbstractIntegerStringCodec<Object> implements ClassCodec {
-
-	protected static final StringTypeHandler TYPE_HANDLER = new StringTypeHandler() {
-
-		public int type(IntegerComponents ics, boolean reference) {
-			return (reference ? (0x40 | (ics.length << 4) | JMF_CLASS) : ((ics.length << 4) | JMF_CLASS));
-		}
-
-		public int indexOrLengthBytesCount(int parameterizedJmfType) {
-			return (parameterizedJmfType >> 4) & 0x03;
-		}
-
-		public boolean isReference(int parameterizedJmfType) {
-			return (parameterizedJmfType & 0x40) != 0;
-		}
-	};
+/**
+ * @author Franck WOLFF
+ */
+public class ClassCodecImpl extends AbstractStandardCodec<Object> implements ClassCodec {
 
 	public int getObjectType() {
 		return JMF_CLASS;
@@ -55,19 +44,19 @@ public class ClassCodecImpl extends AbstractIntegerStringCodec<Object> implement
 	}
 
 	public void encode(OutputContext ctx, Object v) throws IOException, IllegalAccessException {
-		writeString(ctx, ctx.getAlias(((Class<?>)v).getName()), TYPE_HANDLER);
+		String className = ((Class<?>)v).getName();
+		className = ctx.getAlias(className);
+
+		ctx.getOutputStream().write(JMF_CLASS);
+		ClassNameUtil.encodeClassName(ctx, className);
 	}
 
 	public Object decode(InputContext ctx, int parameterizedJmfType)
 			throws IOException, ClassNotFoundException, InstantiationException,
 			IllegalAccessException, InvocationTargetException,
 			SecurityException, NoSuchMethodException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_CLASS)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
-		String className = readString(ctx, parameterizedJmfType, TYPE_HANDLER);
+
+		String className = ClassNameUtil.decodeClassName(ctx);
 		className = ctx.getAlias(className);
 		return ctx.getReflection().loadClass(className);
 	}
@@ -78,7 +67,7 @@ public class ClassCodecImpl extends AbstractIntegerStringCodec<Object> implement
 		if (jmfType != JMF_CLASS)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
-		String className = readString(ctx, parameterizedJmfType, TYPE_HANDLER);
+		String className = ClassNameUtil.decodeClassName(ctx);
 		className = ctx.getAlias(className);
 		ctx.indentPrintLn(Class.class.getName() + ": " + className + ".class");
 	}
