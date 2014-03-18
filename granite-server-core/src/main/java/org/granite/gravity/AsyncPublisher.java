@@ -31,7 +31,17 @@ public class AsyncPublisher extends AsyncChannelRunner {
 	}
 
 	@Override
-	protected void doRun() {
-		channel.runPublish();
+	public final void run() {
+		try {
+			channel.runPublish();
+		}
+		finally {
+			reset();
+			
+			// Make sure pending published messages that were enqueued during
+			// runPublish() are going to be delivered ASAP (see issue GDS-1261).
+			if (channel.hasPublishedMessage())
+				queue(channel.getGravity());
+		}
 	}
 }
