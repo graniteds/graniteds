@@ -119,57 +119,14 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
     			return bean;
     	}
     	
-    	ApplicationContext springContext = getSpringContext();
     	try {
-    		if (componentClass != null) {
-	    		Map<String, ?> beans = springContext.getBeansOfType(componentClass);
-	    		if (beans.size() == 1)
-	    			bean = beans.values().iterator().next();
-	    		else if (beans.size() > 1 && componentName != null && !("".equals(componentName))) {
-	    			if (beans.containsKey(componentName))
-	    				bean = beans.get(componentName);
-	    		}
-	    		else if (beans.isEmpty() && springContext.getClass().getName().indexOf("Grails") > 0 && componentClass.getName().endsWith("Service")) {
-	    			try {
-		    			Object serviceClass = springContext.getBean(componentClass.getName() + "ServiceClass");	    			
-		    			Method m = serviceClass.getClass().getMethod("getPropertyName");
-		    			String compName = (String)m.invoke(serviceClass);
-		    			bean = springContext.getBean(compName);
-	    			}
-	    			catch (NoSuchMethodException e) {
-	    				log.error(e, "Could not get service class for %s", componentClass.getName());
-	    			}
-	    			catch (InvocationTargetException e) {
-	    				log.error(e.getCause(), "Could not get service class for %s", componentClass.getName());
-	    			}
-	    			catch (IllegalAccessException e) {
-	    				log.error(e.getCause(), "Could not get service class for %s", componentClass.getName());
-	    			}
-	    		}
-    		}
-    		if (bean == null && componentName != null && !("".equals(componentName)))
-    			bean = springContext.getBean(componentName);
-    		
-            if (context != null)
-            	context.getRequestMap().put(key, bean);
-            return bean;
+			bean = internalFindComponent(componentName, componentClass);
+			
+	        if (context != null)
+	        	context.getRequestMap().put(key, bean);
+	        return bean;
         }
     	catch (NoSuchBeanDefinitionException nexc) {
-        	if (componentName != null && componentName.endsWith("Controller")) {
-        		try {
-        			int idx = componentName.lastIndexOf(".");
-        			String controllerName = idx > 0 
-        				? componentName.substring(0, idx+1) + componentName.substring(idx+1, idx+2).toUpperCase() + componentName.substring(idx+2)
-        				: componentName.substring(0, 1).toUpperCase() + componentName.substring(1);
-        			bean = getSpringContext().getBean(controllerName);
-                    if (context != null)
-                    	context.getRequestMap().put(key, bean);
-        			return bean;
-        		}
-            	catch (NoSuchBeanDefinitionException nexc2) {
-            	}
-        	}
-        	
             String msg = "Spring service named '" + componentName + "' does not exist.";
             ServiceException e = new ServiceException(msg, nexc);
             throw e;
@@ -180,6 +137,41 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
             throw e;
         }    
     }
+
+	protected Object internalFindComponent(String componentName, Class<?> componentClass) {
+		Object bean = null;
+		
+		if (componentClass != null) {
+			Map<String, ?> beans = springContext.getBeansOfType(componentClass);
+			if (beans.size() == 1)
+				bean = beans.values().iterator().next();
+			else if (beans.size() > 1 && componentName != null && !("".equals(componentName))) {
+				if (beans.containsKey(componentName))
+					bean = beans.get(componentName);
+			}
+			else if (beans.isEmpty() && springContext.getClass().getName().indexOf("Grails") > 0 && componentClass.getName().endsWith("Service")) {
+				try {
+					Object serviceClass = springContext.getBean(componentClass.getName() + "ServiceClass");	    			
+					Method m = serviceClass.getClass().getMethod("getPropertyName");
+					String compName = (String)m.invoke(serviceClass);
+					bean = springContext.getBean(compName);
+				}
+				catch (NoSuchMethodException e) {
+					log.error(e, "Could not get service class for %s", componentClass.getName());
+				}
+				catch (InvocationTargetException e) {
+					log.error(e.getCause(), "Could not get service class for %s", componentClass.getName());
+				}
+				catch (IllegalAccessException e) {
+					log.error(e.getCause(), "Could not get service class for %s", componentClass.getName());
+				}
+			}
+		}
+		if (bean == null && componentName != null && !("".equals(componentName)))
+			bean = springContext.getBean(componentName);
+		
+		return bean;
+	}
     
     @Override
     @SuppressWarnings("unchecked")

@@ -51,12 +51,14 @@ import org.granite.tide.invocation.InvocationCall;
 import org.granite.tide.invocation.InvocationResult;
 import org.granite.util.TypeUtil;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.servlet.mvc.Controller;
@@ -102,6 +104,32 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     	
     	return instance;
     }
+    
+    @Override
+    protected Object internalFindComponent(String componentName, Class<?> componentClass) {
+    	try {
+    		return super.internalFindComponent(componentName, componentClass);
+    	}
+    	catch (NoSuchBeanDefinitionException e) {
+//    		Map<String, HandlerMapping> handlerMappingsMap = springContext.getBeansOfType(HandlerMapping.class);
+//    		if (handlerMappingsMap)
+	    	if (componentName != null && componentName.endsWith("Controller")) {
+	    		try {
+	    			int idx = componentName.lastIndexOf(".");
+	    			String controllerName = idx > 0 
+	    				? componentName.substring(0, idx+1) + componentName.substring(idx+1, idx+2).toUpperCase() + componentName.substring(idx+2)
+	    				: componentName.substring(0, 1).toUpperCase() + componentName.substring(1);
+	    				
+	    			return springContext.getBean(controllerName);
+	    		}
+	        	catch (NoSuchBeanDefinitionException nexc2) {
+	        	}
+	    	}
+    	}
+    	
+    	return null;    	
+    }
+    
     
     
     private static final String SPRINGMVC_BINDING_ATTR = "__SPRINGMVC_LOCAL_BINDING__";
@@ -211,7 +239,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		}
     }
     
-
+    
     @Override
     @SuppressWarnings("unchecked")
     public IInvocationResult postCall(ServiceInvocationContext context, Object result, String componentName, Class<?> componentClass) {
@@ -344,13 +372,16 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     
     
     private class ControllerRequestWrapper extends HttpServletRequestWrapper {
+    	private String initialComponentName = null;
     	private String componentName = null;
     	private String methodName = null;
     	private Map<String, Object> requestMap = null;
     	private Map<String, Object> valueMap = null;
+    	private boolean localBinding;
     	
 		public ControllerRequestWrapper(boolean grails, HttpServletRequest request, String componentName, String methodName, Map<String, Object> requestMap, Map<String, Object> valueMap) {
 			super(request);
+			this.initialComponentName = componentName;
 			this.componentName = componentName.substring(0, componentName.length()-"Controller".length());
 			if (this.componentName.indexOf(".") > 0)
 				this.componentName = this.componentName.substring(this.componentName.lastIndexOf(".")+1);
@@ -359,6 +390,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 			this.methodName = methodName;
 			this.requestMap = requestMap;
 			this.valueMap = valueMap;
+			this.localBinding = Boolean.TRUE.equals(request.getAttribute(SPRINGMVC_BINDING_ATTR));
 		}
     	
 		@Override
@@ -376,7 +408,12 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		}
 		
 		public Object getBindValue(String key) {
-			return valueMap != null ? valueMap.get(key) : null;
+			if (valueMap == null)
+				return null;
+			
+			return localBinding && valueMap.containsKey(initialComponentName + "." + key)
+					? valueMap.get(initialComponentName + "." + key)
+					: valueMap.get(key);
 		}
 		
 		@Override
