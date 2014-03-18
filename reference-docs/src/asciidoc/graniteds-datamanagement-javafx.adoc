@@ -843,6 +843,17 @@ For Spring, add the advice to your context (take care that you need to reference
 <graniteds:tide-data-publishing-advice/>            
 ----
 
+If you want to use the +ON_COMMIT+ mode, you will have to ensure that the data publishing aspect is executed inside the Spring
+transaction aspect by specifying a correct order (data publishing > transaction), for example with +aspectj+:
+
+[source,xml]
+----
+<tx:annotation-driven transaction-manager="transactionManager" mode="aspectj" order="1" />
+
+<graniteds:tide-data-publishing-advice mode="aspectj" order="2"/>            
+----
+
+
 For CDI, enable the interceptor in +beans.xml+ : 
 
 [source,xml]
