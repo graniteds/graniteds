@@ -607,18 +607,20 @@ public class JMSServiceAdapter extends ServiceAdapter {
             }
             
             public void connect(String selector) throws Exception {
-            	if (jmsConsumerSession != null)
+                if (jmsConsumer != null)
             		return;
             	
             	this.selector = selector;
             	
             	// Reconnect to the JMS provider in case no producer has already done it
             	JMSClientImpl.this.connect();
-            	
-                jmsConsumerSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
-                if (reconnected)
-                	jmsConsumerSession.recover();
-                log.debug("Created JMS Consumer Session for channel %s (transacted: %s, ack: %s)", channel.getId(), transactedSessions, acknowledgeMode);
+                
+                if (jmsConsumerSession == null) {
+                    jmsConsumerSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
+                    if (reconnected)
+                        jmsConsumerSession.recover();
+                    log.debug("Created JMS Consumer Session for channel %s (transacted: %s, ack: %s)", channel.getId(), transactedSessions, acknowledgeMode);
+                }
                 
                 if (reconnectTimer != null)
                 	reconnectTimer.cancel();
@@ -662,7 +664,10 @@ public class JMSServiceAdapter extends ServiceAdapter {
             }
 
             public void setSelector(String selector) throws Exception {
-                close();
+                if (jmsConsumer != null) {
+                    jmsConsumer.close();
+                    jmsConsumer = null;
+                }
 
                 connect(selector);
                 log.debug("Changed selector to %s for JMS Consumer of channel %s", selector, channel.getId());
