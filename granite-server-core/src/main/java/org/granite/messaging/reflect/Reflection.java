@@ -102,16 +102,21 @@ public class Reflection {
 		return getClassLoader().loadClass(className);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <T> T newInstance(Class<T> cls)
 		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 		InvocationTargetException, SecurityException, NoSuchMethodException {
 		
-	    try {
+		ClassDescriptor desc = descriptorCache.get(cls);
+		if (desc != null)
+			return (T)desc.newInstance();
+	    
+		try {
 	        Constructor<T> constructor = cls.getConstructor();
 	        return constructor.newInstance();
 	    }
 	    catch (NoSuchMethodException e) {
-	        return instanceFactory.newInstance(cls);
+	        return (T)instanceFactory.newInstantiator(cls).newInstance();
 	    }
 	}
 	

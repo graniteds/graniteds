@@ -39,41 +39,38 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.granite.messaging.reflect.BypassConstructorAllocator;
+import org.granite.messaging.reflect.Instantiator;
 
 /**
  * @author Franck WOLFF
  */
 public class AndroidBypassConstructorAllocator implements BypassConstructorAllocator {
 
-	private final BypassConstructorAllocator allocator;
+	private final Method newInstance;
+	private final Object secondParameter;
 	
 	public AndroidBypassConstructorAllocator() {
-		this.allocator = findAllocator();
-	}
-
-	@Override
-	public <T> T newInstance(Class<T> cls)
-		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
-		InvocationTargetException, SecurityException, NoSuchMethodException {
-		return allocator.newInstance(cls);
+		Object[] allocator = resolve();
+		
+		this.newInstance = (Method)allocator[0];
+		this.secondParameter = allocator[1];
 	}
 	
-	private static BypassConstructorAllocator findAllocator() {
+	public Instantiator newInstantiator(final Class<?> cls) throws IllegalAccessException, InvocationTargetException {
+		return new Instantiator() {
+
+			@Override
+			public Object newInstance() throws InstantiationException, IllegalAccessException, InvocationTargetException {
+				return newInstance.invoke(null, cls, secondParameter);
+			}
+		};
+	}
+	
+	private static Object[] resolve() {
         try {
             final Method newInstance = ObjectStreamClass.class.getDeclaredMethod("newInstance", Class.class, Class.class);
             newInstance.setAccessible(true);
-            
-            return new BypassConstructorAllocator() {
-                
-            	@SuppressWarnings("unchecked")
-				@Override
-                public <T> T newInstance(Class<T> cls)
-                    throws InstantiationException, IllegalAccessException, IllegalArgumentException,
-                    InvocationTargetException, SecurityException, NoSuchMethodException {
-
-                    return (T)newInstance.invoke(null, cls, Object.class);
-                }
-            };
+            return new Object[] {newInstance, Object.class};
         }
         catch (Exception e) {
         	// fallback...
@@ -87,18 +84,7 @@ public class AndroidBypassConstructorAllocator implements BypassConstructorAlloc
             
             final Method newInstance = ObjectStreamClass.class.getDeclaredMethod("newInstance", Class.class, getConstructorId.getReturnType());
             newInstance.setAccessible(true);
-            
-            return new BypassConstructorAllocator() {
-                
-            	@SuppressWarnings("unchecked")
-				@Override
-                public <T> T newInstance(Class<T> cls)
-                    throws InstantiationException, IllegalAccessException, IllegalArgumentException,
-                    InvocationTargetException, SecurityException, NoSuchMethodException {
-
-                    return (T)newInstance.invoke(null, cls, constructorId);
-                }
-            };
+            return new Object[] {newInstance, constructorId};
         }
         catch (Exception e) {
             throw new ExceptionInInitializerError(e);

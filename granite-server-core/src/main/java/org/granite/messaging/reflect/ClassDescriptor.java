@@ -47,6 +47,7 @@ public class ClassDescriptor {
 	private static final Class<?>[] READ_OBJECT_PARAMS = new Class<?>[]{ ObjectInputStream.class };
 	
 	private final Class<?> cls;
+	private final Instantiator instantiator;
 	private final List<Property> properties;
 	private final Method writeObjectMethod;
 	private final Method readObjectMethod;
@@ -59,6 +60,8 @@ public class ClassDescriptor {
 	
 	public ClassDescriptor(Reflection reflection, Class<?> cls) {
 		this.cls = cls;
+		
+		this.instantiator = getInstantiator(reflection, cls);
 		
 		if (!Externalizable.class.isAssignableFrom(cls)) {
 			this.writeObjectMethod = getPrivateMethod(cls, "writeObject", WRITE_OBJECT_PARAMS, Void.TYPE);
@@ -76,9 +79,32 @@ public class ClassDescriptor {
 
 		this.parent = reflection.getDescriptor(cls.getSuperclass());
 	}
+	
+	private static Instantiator getInstantiator(Reflection reflection, Class<?> cls) {
+		try {
+			return new ConstructorInstantiator(cls.getConstructor());
+		}
+		catch (NoSuchMethodException e) {
+			// Fallback...
+		}
+		
+		try {
+			return reflection.instanceFactory.newInstantiator(cls);
+		}
+		catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+		catch (InvocationTargetException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	public Class<?> getCls() {
 		return cls;
+	}
+	
+	public Object newInstance() throws InstantiationException, IllegalAccessException, InvocationTargetException {
+		return instantiator.newInstance();
 	}
 
 	public List<Property> getSerializableProperties() {

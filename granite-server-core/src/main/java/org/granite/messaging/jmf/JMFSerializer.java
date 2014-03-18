@@ -24,9 +24,12 @@ package org.granite.messaging.jmf;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import org.granite.messaging.jmf.codec.StandardCodec;
 import org.granite.messaging.reflect.Property;
@@ -40,8 +43,9 @@ public class JMFSerializer implements OutputContext {
 	///////////////////////////////////////////////////////////////////////////
 	// Fields
 
-	protected final Map<String, Integer> storedStrings = new HashMap<String, Integer>(256);
-	protected final Map<Object, Integer> storedObjects = new IdentityHashMap<Object, Integer>(256);
+	protected final Map<String, Integer> classNames = new HashMap<String, Integer>(256);
+	protected final Map<String, Integer> strings = new HashMap<String, Integer>(256);
+	protected final Map<Object, Integer> objects = new IdentityHashMap<Object, Integer>(256);
 	
     protected final OutputStream outputStream;
     protected final SharedContext context;
@@ -56,8 +60,8 @@ public class JMFSerializer implements OutputContext {
 		this.codecRegistry = context.getCodecRegistry();
 		this.context = context;
 		
-		for (String s : context.getDefaultStoredStrings())
-			addToStoredStrings(s);
+		for (String s : context.getInitialClassNameDictionary())
+			addToClassNames(s);
 	}
 	
 	///////////////////////////////////////////////////////////////////////////
@@ -165,32 +169,50 @@ public class JMFSerializer implements OutputContext {
 		return outputStream;
 	}
 
-	public void addToStoredStrings(String s) {
-        if (s != null && !storedStrings.containsKey(s)) {
-            Integer index = Integer.valueOf(storedStrings.size());
-            storedStrings.put(s, index);
+	@Override
+	public void addToClassNames(String className) {
+        if (className != null && !classNames.containsKey(className)) {
+            Integer index = Integer.valueOf(classNames.size());
+            classNames.put(className, index);
+        }
+	}
+
+	@Override
+	public int indexOfClassName(String className) {
+    	if (className != null) {
+	        Integer index = classNames.get(className);
+	        if (index != null)
+	        	return index.intValue();
+    	}
+    	return -1;
+	}
+
+	public void addToStrings(String s) {
+        if (s != null && !strings.containsKey(s)) {
+            Integer index = Integer.valueOf(strings.size());
+            strings.put(s, index);
         }
     }
 
-	public int indexOfStoredStrings(String s) {
+	public int indexOfString(String s) {
     	if (s != null) {
-	        Integer index = storedStrings.get(s);
+	        Integer index = strings.get(s);
 	        if (index != null)
 	        	return index.intValue();
     	}
     	return -1;
     }
 
-	public void addToStoredObjects(Object o) {
-        if (o != null && !storedObjects.containsKey(o)) {
-            Integer index = Integer.valueOf(storedObjects.size());
-            storedObjects.put(o, index);
+	public void addToObjects(Object o) {
+        if (o != null && !objects.containsKey(o)) {
+            Integer index = Integer.valueOf(objects.size());
+            objects.put(o, index);
         }
     }
 
-	public int indexOfStoredObjects(Object o) {
+	public int indexOfObject(Object o) {
     	if (o != null) {
-	        Integer index = storedObjects.get(o);
+	        Integer index = objects.get(o);
 	        if (index != null)
 	        	return index.intValue();
     	}
@@ -213,5 +235,46 @@ public class JMFSerializer implements OutputContext {
 			codecRegistry.getPrimitivePropertyCodec(property.getType()).encodePrimitive(this, obj, property);
 		else
 			writeObject(property.getObject(obj));
+	}
+	
+	///////////////////////////////////////////////////////////////////////////
+	// Debug
+
+	public String toDumpString() {
+		final Comparator<Map.Entry<?, Integer>> comparator = new Comparator<Map.Entry<?, Integer>>() {
+			@Override
+			public int compare(Entry<?, Integer> o1, Entry<?, Integer> o2) {
+				return o1.getValue().compareTo(o2.getValue());
+			}
+		};
+		
+		StringBuilder sb = new StringBuilder(getClass().getName());
+		sb.append(" {\n");
+		
+		TreeSet<Map.Entry<String, Integer>> setStringInteger = new TreeSet<Map.Entry<String, Integer>>(comparator);
+		setStringInteger.addAll(classNames.entrySet());
+		sb.append("    classNames=[\n");
+		for (Map.Entry<String, Integer> entry : setStringInteger)
+			sb.append("        ").append(entry.getValue()).append(": \"").append(entry.getKey()).append("\"\n");
+		sb.append("    ],\n");
+		
+		setStringInteger = new TreeSet<Map.Entry<String, Integer>>(comparator);
+		setStringInteger.addAll(strings.entrySet());
+		sb.append("    strings=[\n");
+		for (Map.Entry<String, Integer> entry : setStringInteger)
+			sb.append("        ").append(entry.getValue()).append(": \"").append(entry.getKey()).append("\"\n");
+		sb.append("    ],\n");
+		
+		TreeSet<Map.Entry<Object, Integer>> setObjectInteger = new TreeSet<Map.Entry<Object, Integer>>(comparator);
+		setObjectInteger.addAll(objects.entrySet());
+		sb.append("    objects=[\n");
+		for (Map.Entry<Object, Integer> entry : setObjectInteger) {
+			sb.append("        ").append(entry.getValue()).append(": ").append(entry.getKey().getClass().getName())
+			  .append("@").append(System.identityHashCode(entry.getKey())).append("\n");
+		}
+		sb.append("    ]\n");
+		
+		sb.append("}");
+		return sb.toString();
 	}
 }

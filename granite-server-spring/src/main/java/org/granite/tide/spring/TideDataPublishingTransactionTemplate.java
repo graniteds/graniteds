@@ -22,8 +22,6 @@
 
 package org.granite.tide.spring;
 
-import java.util.concurrent.Callable;
-
 import org.granite.gravity.Gravity;
 import org.granite.tide.data.DataEnabled;
 import org.granite.tide.data.DataUpdatePostprocessor;

@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.granite.messaging.AliasRegistry;
 import org.granite.messaging.DefaultAliasRegistry;
+import org.granite.messaging.jmf.codec.std.impl.util.ClassNameUtil;
 import org.granite.messaging.reflect.Reflection;
 
 /**
@@ -40,7 +41,8 @@ import org.granite.messaging.reflect.Reflection;
  */
 public class DefaultSharedContext implements SharedContext {
 
-	protected static List<String> JAVA_DEFAULT_STORED_STRINGS = Arrays.asList(
+	protected static List<String> JAVA_DEFAULT_CLASS_NAMES = Arrays.asList(
+		
 		Boolean.class.getName(),
 		Character.class.getName(),
 		Byte.class.getName(),
@@ -74,7 +76,7 @@ public class DefaultSharedContext implements SharedContext {
 	
 	protected final CodecRegistry codecRegistry;
 	protected final Reflection reflection;
-	protected final List<String> defaultStoredStrings;
+	protected final List<String> initialClassNameDictionary;
 	protected final AliasRegistry aliasRegistry;
 	
 	public DefaultSharedContext() {
@@ -85,17 +87,21 @@ public class DefaultSharedContext implements SharedContext {
 		this(codecRegistry, null, null, null);
 	}
 
-	public DefaultSharedContext(CodecRegistry codecRegistry, List<String> defaultStoredStrings) {
-		this(codecRegistry, defaultStoredStrings, null, null);
+	public DefaultSharedContext(CodecRegistry codecRegistry, List<String> defaultClassNames) {
+		this(codecRegistry, defaultClassNames, null, null);
 	}
 	
-	public DefaultSharedContext(CodecRegistry codecRegistry, List<String> defaultStoredStrings, Reflection reflection, AliasRegistry aliasRegistry) {
+	public DefaultSharedContext(CodecRegistry codecRegistry, List<String> defaultClassNames, Reflection reflection, AliasRegistry aliasRegistry) {
 		this.codecRegistry = (codecRegistry != null ? codecRegistry : new DefaultCodecRegistry());
 		
-		List<String> defaultStoredStringsTmp = new ArrayList<String>(JAVA_DEFAULT_STORED_STRINGS);
-		if (defaultStoredStrings != null)
-			defaultStoredStringsTmp.addAll(defaultStoredStrings);
-		this.defaultStoredStrings = Collections.unmodifiableList(defaultStoredStringsTmp);
+		List<String> initialClassNameDictionary = new ArrayList<String>();
+		for (String className : JAVA_DEFAULT_CLASS_NAMES)
+			ClassNameUtil.initClassNameDictionary(initialClassNameDictionary, className);
+		if (defaultClassNames != null) {
+			for (String className : defaultClassNames)
+				ClassNameUtil.initClassNameDictionary(initialClassNameDictionary, className);
+		}
+		this.initialClassNameDictionary = Collections.unmodifiableList(initialClassNameDictionary);
 		
 		this.reflection = (reflection != null ? reflection : new Reflection(null));
 		
@@ -110,8 +116,9 @@ public class DefaultSharedContext implements SharedContext {
 		return reflection;
 	}
 
-	public List<String> getDefaultStoredStrings() {
-		return defaultStoredStrings;
+	@Override
+	public List<String> getInitialClassNameDictionary() {
+		return initialClassNameDictionary;
 	}
 	
 	public AliasRegistry getAliasRegistry() {

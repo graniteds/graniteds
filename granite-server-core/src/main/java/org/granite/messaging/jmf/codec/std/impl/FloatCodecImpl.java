@@ -28,6 +28,7 @@ import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.std.FloatCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.FloatUtil;
 
 /**
  * @author Franck WOLFF
@@ -42,76 +43,53 @@ public class FloatCodecImpl extends AbstractStandardCodec<Float> implements Floa
 		return Float.class;
 	}
 
+	
 	public int getPrimitiveType() {
 		return JMF_FLOAT;
 	}
 
 	public Class<?> getPrimitiveClass() {
-		return Float.TYPE;
+		return float.class;
 	}
 
+	
 	public void encode(OutputContext ctx, Float v) throws IOException {
-		writeFloatData(ctx, JMF_FLOAT_OBJECT, v.floatValue());
+		final OutputStream os = ctx.getOutputStream();
+		
+		os.write(JMF_FLOAT_OBJECT);
+		FloatUtil.encodeFloat(ctx, v.floatValue());
 	}
 	
 	public Float decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_FLOAT_OBJECT)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-
-		return Float.valueOf(readFloatData(ctx, parameterizedJmfType));
+		return Float.valueOf(FloatUtil.decodeFloat(ctx));
 	}
 
+	
 	public void encodePrimitive(OutputContext ctx, float v) throws IOException {
-		writeFloatData(ctx, JMF_FLOAT, v);
+		final OutputStream os = ctx.getOutputStream();
+		
+		os.write(JMF_FLOAT);
+		FloatUtil.encodeFloat(ctx, v);
 	}
 	
 	public float decodePrimitive(InputContext ctx) throws IOException {
-		int parameterizedJmfType = ctx.safeRead();
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_FLOAT)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
-		return readFloatData(ctx, parameterizedJmfType);
+		ctx.safeRead();
+		return FloatUtil.decodeFloat(ctx);
 	}
+
 	
 	public void dump(DumpContext ctx, int parameterizedJmfType) throws IOException {
 		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
 		
 		switch (jmfType) {
 		case JMF_FLOAT:
-			ctx.indentPrintLn("float: " + readFloatData(ctx, parameterizedJmfType));
+			ctx.indentPrintLn("float: " + FloatUtil.decodeFloat(ctx));
 			break;
 		case JMF_FLOAT_OBJECT:
-			ctx.indentPrintLn(Float.class.getName() + ": " + Float.valueOf(readFloatData(ctx, parameterizedJmfType)));
+			ctx.indentPrintLn(Float.class.getName() + ": " + Float.valueOf(FloatUtil.decodeFloat(ctx)));
 			break;
 		default:
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		}
-	}
-	
-	public static void writeFloatData(OutputContext ctx, int jmfType, float v) throws IOException {
-		int bits = Float.floatToIntBits(v);
-		
-		final OutputStream os = ctx.getOutputStream();
-		
-		os.write(jmfType);
-		
-		os.write(bits);
-		os.write(bits >> 8);
-		os.write(bits >> 16);
-		os.write(bits >> 24);
-	}
-	
-	public static float readFloatData(InputContext ctx, int type) throws IOException {
-		int bits = ctx.safeRead();
-		
-		bits |= ctx.safeRead() << 8;
-		bits |= ctx.safeRead() << 16;
-		bits |= ctx.safeRead() << 24;
-		
-		return Float.intBitsToFloat(bits);
 	}
 }

@@ -39,31 +39,18 @@ import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.codec.StandardCodec;
 import org.granite.messaging.jmf.codec.std.ObjectCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.ClassNameUtil;
+import org.granite.messaging.jmf.codec.std.impl.util.IntegerUtil;
 import org.granite.messaging.reflect.ClassDescriptor;
 import org.granite.messaging.reflect.Property;
 
 /**
  * @author Franck WOLFF
  */
-public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implements ObjectCodec {
+public class ObjectCodecImpl extends AbstractStandardCodec<Object> implements ObjectCodec {
 
-	protected static final StringTypeHandler TYPE_HANDLER = new StringTypeHandler() {
-
-		public int type(IntegerComponents ics, boolean reference) {
-			if (reference)
-				return 0x40 | (ics.length << 4) | JMF_OBJECT;
-			return (ics.length << 4) | JMF_OBJECT;
-		}
-
-		public int indexOrLengthBytesCount(int parameterizedJmfType) {
-			return (parameterizedJmfType >> 4) & 0x03;
-		}
-
-		public boolean isReference(int parameterizedJmfType) {
-			return (parameterizedJmfType & 0x40) != 0;
-		}
-	};
-
+	protected static final int REFERENCE_BYTE_COUNT_OFFSET = 5;
+	
 	public int getObjectType() {
 		return JMF_OBJECT;
 	}
@@ -76,21 +63,24 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 	public void encode(OutputContext ctx, Object v) throws IOException, IllegalAccessException, InvocationTargetException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		int indexOfStoredObject = ctx.indexOfStoredObjects(v);
+		int indexOfStoredObject = ctx.indexOfObject(v);
 		if (indexOfStoredObject >= 0) {
-			IntegerComponents ics = intComponents(indexOfStoredObject);
-			os.write(0x80 | (ics.length << 4) | JMF_OBJECT);
-			writeIntData(ctx, ics);
+			int count = IntegerUtil.significantIntegerBytesCount0(indexOfStoredObject);
+			os.write(0x80 | (count << REFERENCE_BYTE_COUNT_OFFSET) | JMF_OBJECT);
+			IntegerUtil.encodeInteger(ctx, indexOfStoredObject, count);
 		}
 		else {			
 			if (!(v instanceof Serializable))
 				throw new NotSerializableException(v.getClass().getName());
 			
-			ctx.addToStoredObjects(v);
+			ctx.addToObjects(v);
 
 			ExtendedObjectCodec extendedCodec = ctx.getSharedContext().getCodecRegistry().findExtendedEncoder(ctx, v);
 			if (extendedCodec != null) {
-				writeString(ctx, extendedCodec.getEncodedClassName(ctx, v), TYPE_HANDLER);
+				String className = extendedCodec.getEncodedClassName(ctx, v);
+
+				os.write(JMF_OBJECT);
+				ClassNameUtil.encodeClassName(ctx, className);
 				extendedCodec.encode(ctx, v);
 				os.write(JMF_OBJECT_END);
 			}
@@ -116,8 +106,11 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 					v = replacement;
 					desc = replacementDesc;
 				}
+				
+				String className = ctx.getAlias(v.getClass().getName());
 
-				writeString(ctx, ctx.getAlias(v.getClass().getName()), TYPE_HANDLER);
+				os.write(JMF_OBJECT);
+				ClassNameUtil.encodeClassName(ctx, className);
 				if (v instanceof Externalizable && !Proxy.isProxyClass(v.getClass()))
 					((Externalizable)v).writeExternal(ctx);
 				else
@@ -148,39 +141,37 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 		InvocationTargetException, SecurityException, NoSuchMethodException {
 		
 		final CodecRegistry codecRegistry = ctx.getSharedContext().getCodecRegistry();
-		
-		int jmfType = codecRegistry.extractJmfType(parameterizedJmfType);
-		if (jmfType != JMF_OBJECT)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 
 		Object v = null;
-
-		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 4) & 0x03, false);
-		if ((parameterizedJmfType & 0x80) != 0)
-			v = ctx.getSharedObject(indexOrLength);
+		
+		if ((parameterizedJmfType & 0x80) != 0) {
+			int indexOfStoredObject = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> REFERENCE_BYTE_COUNT_OFFSET) & 0x03);
+			v = ctx.getObject(indexOfStoredObject);
+		}
 		else {
-			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
-			
+			String className = ClassNameUtil.decodeClassName(ctx);
+
 			ExtendedObjectCodec extendedCodec = codecRegistry.findExtendedDecoder(ctx, className);
 			if (extendedCodec != null) {
 				className = extendedCodec.getDecodedClassName(ctx, className);
-				int index = ctx.addUnresolvedSharedObject(className);
+				int index = ctx.addToUnresolvedObjects(className);
 				v = extendedCodec.newInstance(ctx, className);
-				ctx.setUnresolvedSharedObject(index, v);
+				ctx.setUnresolvedObject(index, v);
 				extendedCodec.decode(ctx, v);
 			}
 			else {
 				className = ctx.getAlias(className);
-				Class<?> cls = ctx.getSharedContext().getReflection().loadClass(className);
+				
+				ClassDescriptor desc = ctx.getClassDescriptor(className);
+				Class<?> cls = desc.getCls();
 				
 				if (!Serializable.class.isAssignableFrom(cls))
 					throw new NotSerializableException(cls.getName());
 				
-				v = ctx.getReflection().newInstance(cls);
+				v = desc.newInstance();
 
-				ClassDescriptor desc = ctx.getReflection().getDescriptor(cls);
 				if (desc == null || !desc.hasReadResolveMethod()) {
-					ctx.addSharedObject(v);
+					ctx.addToObjects(v);
 					
 					if (Externalizable.class.isAssignableFrom(cls))
 						((Externalizable)v).readExternal(ctx);
@@ -188,7 +179,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 						decodeSerializable(ctx, (Serializable)v);
 				}
 				else {
-					int index = ctx.addUnresolvedSharedObject(className);
+					int index = ctx.addToUnresolvedObjects(className);
 					
 					if (Externalizable.class.isAssignableFrom(cls))
 						((Externalizable)v).readExternal(ctx);
@@ -202,7 +193,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 						if (resolved.getClass() == v.getClass())
 							throw new JMFEncodingException(desc.getCls() + ".readResolve() method returned an instance of the same class");
 						
-						ClassDescriptor resolvedDesc = ctx.getReflection().getDescriptor(resolved.getClass());
+						ClassDescriptor resolvedDesc = ctx.getClassDescriptor(resolved.getClass());
 						if (resolvedDesc == null || !resolvedDesc.hasWriteReplaceMethod()) {
 							throw new JMFEncodingException(
 								desc.getCls() +
@@ -216,7 +207,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 					}
 					while (desc.hasReadResolveMethod());
 					
-					ctx.setUnresolvedSharedObject(index, v);
+					ctx.setUnresolvedObject(index, v);
 				}
 			}
 			
@@ -231,7 +222,7 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 	protected void decodeSerializable(InputContext ctx, Serializable v)
 		throws IOException, ClassNotFoundException, IllegalAccessException, InvocationTargetException {
 
-		ClassDescriptor desc = ctx.getReflection().getDescriptor(v.getClass());
+		ClassDescriptor desc = ctx.getClassDescriptor(v.getClass());
 		decodeSerializable(ctx, v, desc);
 	}
 	
@@ -259,15 +250,15 @@ public class ObjectCodecImpl extends AbstractIntegerStringCodec<Object> implemen
 		if (jmfType != JMF_OBJECT)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 
-		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 4) & 0x03, false);
-		
 		if ((parameterizedJmfType & 0x80) != 0) {
-			String className = (String)ctx.getSharedObject(indexOrLength);
-			ctx.indentPrintLn("<" + className + "@" + indexOrLength + ">");
+			int indexOfStoredObject = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> REFERENCE_BYTE_COUNT_OFFSET) & 0x03);
+			String className = (String)ctx.getObject(indexOfStoredObject);
+			ctx.indentPrintLn("<" + className + "@" + indexOfStoredObject + ">");
 		}
 		else {
-			String className = readString(ctx, parameterizedJmfType, indexOrLength, TYPE_HANDLER);
-			int indexOfStoredObject = ctx.addSharedObject(className);
+			String className = ClassNameUtil.decodeClassName(ctx);
+			
+			int indexOfStoredObject = ctx.addToObjects(className);
 			ctx.indentPrintLn(className + "@" + indexOfStoredObject + " {");
 			ctx.incrIndent(1);
 			

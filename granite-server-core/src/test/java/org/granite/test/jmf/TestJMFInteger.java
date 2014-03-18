@@ -21,13 +21,11 @@
  */
 package org.granite.test.jmf;
 
-import static org.granite.test.jmf.Util.bytes;
 import static org.granite.test.jmf.Util.toHexString;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Arrays;
 
 import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DefaultCodecRegistry;
@@ -57,34 +55,34 @@ public class TestJMFInteger implements JMFConstants {
 	@Test
 	public void testSomeInt() throws IOException {
 
-		checkInt(Integer.MIN_VALUE, 	bytes( 0x60 | JMF_INTEGER, 0x80, 0x00, 0x00, 0x00 ));
-		checkInt(Integer.MIN_VALUE + 1, bytes( 0xE0 | JMF_INTEGER, 0x7F, 0xFF, 0xFF, 0xFF ));
-		checkInt(Integer.MIN_VALUE + 2, bytes( 0xE0 | JMF_INTEGER, 0x7F, 0xFF, 0xFF, 0xFE ));
+		checkInt(Integer.MIN_VALUE);
+		checkInt(Integer.MIN_VALUE + 1);
+		checkInt(Integer.MIN_VALUE + 2);
 		
-		checkInt(-0x01000000, 			bytes( 0xE0 | JMF_INTEGER, 0x01, 0x00, 0x00, 0x00 ));
-		checkInt(-0x00FFFFFF, 			bytes( 0xC0 | JMF_INTEGER, 0xFF, 0xFF, 0xFF ));
+		checkInt(-0x01000000);
+		checkInt(-0x00FFFFFF);
 		
-		checkInt(-0x00010000, 			bytes( 0xC0 | JMF_INTEGER, 0x01, 0x00, 0x00 ));
-		checkInt(-0x0000FFFF, 			bytes( 0xA0 | JMF_INTEGER, 0xFF, 0xFF ));
+		checkInt(-0x00010000);
+		checkInt(-0x0000FFFF);
 		
-		checkInt(-0x00000100, 			bytes( 0xA0 | JMF_INTEGER, 0x01, 0x00 ));
+		checkInt(-0x00000100);
 		
 		for (int i = -0x00000FF; i < 0; i++)
-			checkInt(i, 				bytes( 0x80 | JMF_INTEGER, -i ));
+			checkInt(i);
 		
 		for (int i = 0; i <= 0x00000FF; i++)
-			checkInt(i,					bytes( JMF_INTEGER, i ));
+			checkInt(i);
 
-		checkInt(0x00000100,			bytes( 0x20 | JMF_INTEGER, 0x01, 0x00 ));
+		checkInt(0x00000100);
 		
-		checkInt(0x0000FFFF,			bytes( 0x20 | JMF_INTEGER, 0xFF, 0xFF ));
-		checkInt(0x00010000,			bytes( 0x40 | JMF_INTEGER, 0x01, 0x00, 0x00 ));
+		checkInt(0x0000FFFF);
+		checkInt(0x00010000);
 		
-		checkInt(0x00FFFFFF,			bytes( 0x40 | JMF_INTEGER, 0xFF, 0xFF, 0xFF ));
-		checkInt(0x01000000,			bytes( 0x60 | JMF_INTEGER, 0x01, 0x00, 0x00, 0x00 ));
+		checkInt(0x00FFFFFF);
+		checkInt(0x01000000);
 		
-		checkInt(Integer.MAX_VALUE - 1, bytes( 0x60 | JMF_INTEGER, 0x7F, 0xFF, 0xFF, 0xFE ));
-		checkInt(Integer.MAX_VALUE, 	bytes( 0x60 | JMF_INTEGER, 0x7F, 0xFF, 0xFF, 0xFF ));
+		checkInt(Integer.MAX_VALUE - 1);
+		checkInt(Integer.MAX_VALUE);
 	}
 	
 //	@Test
@@ -98,40 +96,43 @@ public class TestJMFInteger implements JMFConstants {
 	@Test
 	public void testSomeVariableInt() throws IOException {
 
-		checkVariableInt(Integer.MIN_VALUE, 	bytes( 0x80 ));
-		checkVariableInt(Integer.MIN_VALUE + 1, bytes( 0xC3, 0xDF, 0xDF, 0xDF, 0xBF ));
-		checkVariableInt(Integer.MIN_VALUE + 2, bytes( 0xC3, 0xDF, 0xDF, 0xDF, 0xBE ));
+		checkVariableInt(Integer.MIN_VALUE);
+		checkVariableInt(Integer.MIN_VALUE + 1);
+		checkVariableInt(Integer.MIN_VALUE + 2);
 		
-		checkVariableInt(-0x08102040, 			bytes( 0xC0, 0x80, 0x80, 0x80, 0x00 ));
-		checkVariableInt(-0x0810203F, 			bytes( 0xFF, 0xFF, 0xFF, 0x7F ));
+		checkVariableInt(-0x08102041);
+		checkVariableInt(-0x08102040);
 		
-		checkVariableInt(-0x00102040, 			bytes( 0xC0, 0x80, 0x80, 0x00 ));
-		checkVariableInt(-0x0010203F, 			bytes( 0xFF, 0xFF, 0x7F ));
-		
-		checkVariableInt(-0x00002040, 			bytes( 0xC0, 0x80, 0x00 ));
-		checkVariableInt(-0x0000203F, 			bytes( 0xFF, 0x7F ));
-		
-		checkVariableInt(-0x00000040, 			bytes( 0xC0, 0x00 ));
+		checkVariableInt(-0x00102041);
+		checkVariableInt(-0x00102040);
+
+		checkVariableInt(-0x00002041);
+		checkVariableInt(-0x00002040);
+
+		checkVariableInt(-0x00000041);
+		checkVariableInt(-0x00000040);
 		
 		for (int i = -0x000003F; i < 0; i++)
-			checkVariableInt(i, 				bytes( 0x80 | -i ));
+			checkVariableInt(i);
 		
-		for (int i = 0; i <= 0x000003F; i++)
-			checkVariableInt(i,					bytes( i ));
+		for (int i = 0; i < 0x000003F; i++)
+			checkVariableInt(i);
 		
-		checkVariableInt(0x00000040, 			bytes( 0x40, 0x00 ));
+		checkVariableInt(0x0000003F);
+		checkVariableInt(0x00000040);
 		
-		checkVariableInt(0x0000203F, 			bytes( 0x7F, 0x7F ));
-		checkVariableInt(0x00002040, 			bytes( 0x40, 0x80, 0x00 ));
+		checkVariableInt(0x0000203F);
+		checkVariableInt(0x00002040);
 		
-		checkVariableInt(0x0010203F, 			bytes( 0x7F, 0xFF, 0x7F ));
-		checkVariableInt(0x00102040, 			bytes( 0x40, 0x80, 0x80, 0x00 ));
+		checkVariableInt(0x0010203F);
+		checkVariableInt(0x00102040);
 		
-		checkVariableInt(0x0810203F, 			bytes( 0x7F, 0xFF, 0xFF, 0x7F ));
-		checkVariableInt(0x08102040, 			bytes( 0x40, 0x80, 0x80, 0x80, 0x00 ));
+		checkVariableInt(0x0810203F);
+		checkVariableInt(0x08102040);
 		
-		checkVariableInt(Integer.MAX_VALUE - 1, bytes( 0x43, 0xDF, 0xDF, 0xDF, 0xBE ));
-		checkVariableInt(Integer.MAX_VALUE, 	bytes( 0x43, 0xDF, 0xDF, 0xDF, 0xBF ));
+		checkVariableInt(Integer.MAX_VALUE - 2);
+		checkVariableInt(Integer.MAX_VALUE - 1);
+		checkVariableInt(Integer.MAX_VALUE);
 	}
 	
 //	@Test
@@ -145,60 +146,52 @@ public class TestJMFInteger implements JMFConstants {
 	@Test
 	public void testSomeIntObject() throws ClassNotFoundException, IOException {
 		
-		checkIntObject(null,					bytes( JMF_NULL ));
-
-		checkIntObject(Integer.MIN_VALUE, 		bytes( 0x60 | JMF_INTEGER_OBJECT, 0x80, 0x00, 0x00, 0x00 ));
-		checkIntObject(Integer.MIN_VALUE + 1, 	bytes( 0xE0 | JMF_INTEGER_OBJECT, 0x7F, 0xFF, 0xFF, 0xFF ));
-		checkIntObject(Integer.MIN_VALUE + 2, 	bytes( 0xE0 | JMF_INTEGER_OBJECT, 0x7F, 0xFF, 0xFF, 0xFE ));
+		checkIntObject(Integer.MIN_VALUE);
+		checkIntObject(Integer.MIN_VALUE + 1);
+		checkIntObject(Integer.MIN_VALUE + 2);
 		
-		checkIntObject(-0x01000000, 			bytes( 0xE0 | JMF_INTEGER_OBJECT, 0x01, 0x00, 0x00, 0x00 ));
-		checkIntObject(-0x00FFFFFF, 			bytes( 0xC0 | JMF_INTEGER_OBJECT, 0xFF, 0xFF, 0xFF ));
+		checkIntObject(-0x01000000);
+		checkIntObject(-0x00FFFFFF);
 		
-		checkIntObject(-0x00010000, 			bytes( 0xC0 | JMF_INTEGER_OBJECT, 0x01, 0x00, 0x00 ));
-		checkIntObject(-0x0000FFFF, 			bytes( 0xA0 | JMF_INTEGER_OBJECT, 0xFF, 0xFF ));
+		checkIntObject(-0x00010000);
+		checkIntObject(-0x0000FFFF);
 		
-		checkIntObject(-0x00000100, 			bytes( 0xA0 | JMF_INTEGER_OBJECT, 0x01, 0x00 ));
+		checkIntObject(-0x00000100);
 		
 		for (int i = -0x00000FF; i < 0; i++)
-			checkIntObject(i, 					bytes( 0x80 | JMF_INTEGER_OBJECT, -i ));
+			checkIntObject(i);
 		
 		for (int i = 0; i <= 0x00000FF; i++)
-			checkIntObject(i,					bytes( JMF_INTEGER_OBJECT, i ));
+			checkIntObject(i);
 
-		checkIntObject(0x00000100,				bytes( 0x20 | JMF_INTEGER_OBJECT, 0x01, 0x00 ));
+		checkIntObject(0x00000100);
 		
-		checkIntObject(0x0000FFFF,				bytes( 0x20 | JMF_INTEGER_OBJECT, 0xFF, 0xFF ));
-		checkIntObject(0x00010000,				bytes( 0x40 | JMF_INTEGER_OBJECT, 0x01, 0x00, 0x00 ));
+		checkIntObject(0x0000FFFF);
+		checkIntObject(0x00010000);
 		
-		checkIntObject(0x00FFFFFF,				bytes( 0x40 | JMF_INTEGER_OBJECT, 0xFF, 0xFF, 0xFF ));
-		checkIntObject(0x01000000,				bytes( 0x60 | JMF_INTEGER_OBJECT, 0x01, 0x00, 0x00, 0x00 ));
+		checkIntObject(0x00FFFFFF);
+		checkIntObject(0x01000000);
 		
-		checkIntObject(Integer.MAX_VALUE - 1, 	bytes( 0x60 | JMF_INTEGER_OBJECT, 0x7F, 0xFF, 0xFF, 0xFE ));
-		checkIntObject(Integer.MAX_VALUE, 		bytes( 0x60 | JMF_INTEGER_OBJECT, 0x7F, 0xFF, 0xFF, 0xFF ));
+		checkIntObject(Integer.MAX_VALUE - 1);
+		checkIntObject(Integer.MAX_VALUE);
+	}
+
+	private void checkInt(int v) throws IOException {
+		checkInt(v, false);
 	}
 	
-	@SuppressWarnings("unused")
-	private void checkInt(int i) throws IOException {
-		checkInt(i, null);
-	}
-	
-	private void checkInt(int v, byte[] expected) throws IOException {
+	private void checkInt(int v, boolean dump) throws IOException {
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer();
 		serializer.writeInt(v);
 		serializer.close();
 		byte[] bytes = serializer.toByteArray();
 		
-		if (expected != null && !Arrays.equals(bytes, expected)) {
-			StringBuilder sb = new StringBuilder("Expected ")
-				.append(toHexString(expected))
-				.append(" != ")
-				.append(toHexString(bytes))
-				.append(String.format(" for 0x%1$08X (%1$d)", v));
-			
-			fail(sb.toString());
-		}
-		
 		PrintStream ps = Util.newNullPrintStream();
+		if (dump) {
+			System.out.println(bytes.length + "B. " + Util.toHexString(bytes));
+			ps = System.out;
+		}
+
 		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
 		dumper.dump();
 		dumper.close();
@@ -215,27 +208,18 @@ public class TestJMFInteger implements JMFConstants {
 		}
 	}
 	
-	@SuppressWarnings("unused")
-	private void checkVariableInt(int i) throws IOException {
-		checkVariableInt(i, null);
+	private void checkVariableInt(int v) throws IOException {
+		checkVariableInt(v, false);
 	}
 	
-	private void checkVariableInt(int v, byte[] expected) throws IOException {
+	private void checkVariableInt(int v, boolean dump) throws IOException {
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
 		serializer.writeVariableInt(v);
 		serializer.close();
 		byte[] bytes = serializer.toByteArray();
 		
-		if (expected != null && !Arrays.equals(bytes, expected)) {
-			System.out.println(toHexString(bytes));
-			StringBuilder sb = new StringBuilder("Expected ")
-				.append(toHexString(expected))
-				.append(" != ")
-				.append(toHexString(bytes))
-				.append(String.format(" for 0x%1$08X (%1$d)", v));
-			
-			fail(sb.toString());
-		}
+		if (dump)
+			System.out.println(bytes.length + "B. " + Util.toHexString(bytes) + " (" + v + ")");
 		
 		ByteArrayJMFDeserializer deserializer = new ByteArrayJMFDeserializer(bytes, codecRegistry);
 		int j = deserializer.readVariableInt();
@@ -249,25 +233,22 @@ public class TestJMFInteger implements JMFConstants {
 		}
 	}
 	
-	private void checkIntObject(Integer v, byte[] expected) throws ClassNotFoundException, IOException {
+	private void checkIntObject(Integer v) throws ClassNotFoundException, IOException {
+		checkIntObject(v, false);
+	}
+	
+	private void checkIntObject(Integer v, boolean dump) throws ClassNotFoundException, IOException {
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
 		serializer.writeObject(v);
 		serializer.close();
 		byte[] bytes = serializer.toByteArray();
 		
-		if (expected != null && !Arrays.equals(bytes, expected)) {
-			System.out.println(toHexString(bytes));
-			StringBuilder sb = new StringBuilder("Expected ")
-				.append(toHexString(expected))
-				.append(" != ")
-				.append(toHexString(bytes))
-				.append(" for ")
-				.append(v);
-			
-			fail(sb.toString());
-		}
-		
 		PrintStream ps = Util.newNullPrintStream();
+		if (dump) {
+			System.out.println(bytes.length + "B. " + Util.toHexString(bytes));
+			ps = System.out;
+		}
+
 		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
 		dumper.dump();
 		dumper.close();

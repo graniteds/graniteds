@@ -28,7 +28,5 @@ import java.lang.reflect.InvocationTargetException;
  */
 public interface BypassConstructorAllocator {
 	
-	<T> T newInstance(Class<T> cls)
-		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
-		InvocationTargetException, SecurityException, NoSuchMethodException;
+	Instantiator newInstantiator(Class<?> cls) throws IllegalAccessException, InvocationTargetException;
 }

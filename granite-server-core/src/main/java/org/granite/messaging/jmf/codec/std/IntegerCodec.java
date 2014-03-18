@@ -37,7 +37,4 @@ public interface IntegerCodec extends PrimitiveCodec<Integer> {
 
 	void encode(OutputContext ctx, Integer v) throws IOException;
 	Integer decode(InputContext ctx, int parameterizedJmfType) throws IOException;
-	
-	void writeVariableInt(OutputContext ctx, int v) throws IOException;
-	int readVariableInt(InputContext ctx) throws IOException;
 }

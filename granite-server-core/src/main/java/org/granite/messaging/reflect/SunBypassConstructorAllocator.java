@@ -43,15 +43,10 @@ public class SunBypassConstructorAllocator implements BypassConstructorAllocator
 		newConstructorForSerialization = reflectionFactoryClass.getDeclaredMethod("newConstructorForSerialization", Class.class, Constructor.class);
 		objectConstructor = Object.class.getDeclaredConstructor();
 	}
-    
-    @SuppressWarnings("unchecked")
-	public <T> T newInstance(Class<T> cls)
-		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
-		InvocationTargetException, SecurityException, NoSuchMethodException {
-
+	
+	public Instantiator newInstantiator(Class<?> cls) throws IllegalAccessException, InvocationTargetException {
     	Constructor<?> constructor = (Constructor<?>)newConstructorForSerialization.invoke(reflectionFactory, cls, objectConstructor);
         constructor.setAccessible(true);
-        
-        return (T)constructor.newInstance();
-    }
+        return new ConstructorInstantiator(constructor);
+	}
 }

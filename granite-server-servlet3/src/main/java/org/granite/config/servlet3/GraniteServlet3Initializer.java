@@ -27,9 +27,19 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import javax.servlet.*;
+import javax.servlet.FilterRegistration;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
 import org.granite.config.ConfigProvider;
@@ -69,7 +79,6 @@ import org.granite.messaging.service.tide.TideComponentNameMatcher;
 import org.granite.messaging.service.tide.TideComponentTypeMatcher;
 import org.granite.messaging.webapp.AMFMessageFilter;
 import org.granite.messaging.webapp.AMFMessageServlet;
-import org.granite.tide.simple.SimpleServiceContext;
 import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 

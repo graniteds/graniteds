@@ -29,11 +29,14 @@ import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.std.BigIntegerCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.IntegerUtil;
 
 /**
  * @author Franck WOLFF
  */
-public class BigIntegerCodecImpl extends AbstractIntegerStringCodec<BigInteger> implements BigIntegerCodec {
+public class BigIntegerCodecImpl extends AbstractStandardCodec<BigInteger> implements BigIntegerCodec {
+	
+	protected static final int LENGTH_BYTE_COUNT_OFFSET = 6;
 
 	public int getObjectType() {
 		return JMF_BIG_INTEGER;
@@ -48,20 +51,15 @@ public class BigIntegerCodecImpl extends AbstractIntegerStringCodec<BigInteger> 
 		
 		byte[] magnitude = v.toByteArray();
 
-		IntegerComponents ics = intComponents(magnitude.length);
-		os.write((ics.length << 6) | JMF_BIG_INTEGER);
-		writeIntData(ctx, ics);
+		int count = IntegerUtil.significantIntegerBytesCount0(magnitude.length);
+		os.write((count << LENGTH_BYTE_COUNT_OFFSET) | JMF_BIG_INTEGER);
+		IntegerUtil.encodeInteger(ctx, magnitude.length, count);
 		
 		os.write(magnitude);
 	}
 
 	public BigInteger decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_BIG_INTEGER)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
-		int magnitudeLength = readIntData(ctx, (parameterizedJmfType >> 6) & 0x03, false);
+		int magnitudeLength = IntegerUtil.decodeInteger(ctx, parameterizedJmfType >>> LENGTH_BYTE_COUNT_OFFSET);
 
 		byte[] magnitude = new byte[magnitudeLength];
 		ctx.safeReadFully(magnitude);

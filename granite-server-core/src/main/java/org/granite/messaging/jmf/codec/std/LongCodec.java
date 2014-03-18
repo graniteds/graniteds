@@ -37,9 +37,9 @@ public interface LongCodec extends PrimitiveCodec<Long> {
 
 	void encode(OutputContext ctx, Long v) throws IOException;
 	Long decode(InputContext ctx, int parameterizedJmfType) throws IOException;
-	
-	void writeVariableLong(OutputContext ctx, long v) throws IOException;
-	long readVariableLong(InputContext ctx) throws IOException;
-	
-	int lengthOfVariableAbsoluteLong(long abs);
+//	
+//	void writeVariableLong(OutputContext ctx, long v) throws IOException;
+//	long readVariableLong(InputContext ctx) throws IOException;
+//	
+//	int lengthOfVariableAbsoluteLong(long abs);
 }

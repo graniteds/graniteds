@@ -21,13 +21,11 @@
  */
 package org.granite.test.jmf;
 
-import static org.granite.test.jmf.Util.bytes;
 import static org.granite.test.jmf.Util.toHexString;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Arrays;
 
 import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DefaultCodecRegistry;
@@ -56,64 +54,46 @@ public class TestJMFShort implements JMFConstants {
 
 	@Test
 	public void testShort() throws IOException {
+		for (short s = Short.MIN_VALUE; s < Short.MAX_VALUE; s++)
+			checkShort(s);
+		checkShort(Short.MAX_VALUE);
 		
-		checkShort(Short.MIN_VALUE, bytes( 0x40 | JMF_SHORT, 0x80, 0x00 ));
-		
-		for (short s = Short.MIN_VALUE + 1; s < -0x00FF; s++)
-			checkShort(s, bytes( 0xC0 | JMF_SHORT, (-s) >> 8, -s ));
-		
-		for (short s = -0x00FF; s < 0; s++)
-			checkShort(s, bytes( 0x80 | JMF_SHORT, -s ));
-		
-		for (short s = 0; s <= 0x00FF; s++)
-			checkShort(s, bytes( JMF_SHORT, s ));
-		
-		for (short s = 0x0100; s < Short.MAX_VALUE; s++)
-			checkShort(s, bytes( 0x40 | JMF_SHORT, s >> 8, s ));
-		
-		checkShort(Short.MAX_VALUE, bytes( 0x40 | JMF_SHORT, 0x7F, 0xFF ));
+//		checkShort((short)-0x100, true);
+//		checkShort((short)-0xFF, true);
+//
+//		checkShort((short)0xFF, true);
+//		checkShort((short)0x100, true);
 	}
 
 	@Test
 	public void testShortObject() throws ClassNotFoundException, IOException {
-		
-		checkShortObject(null, bytes( JMF_NULL ));
-		
-		checkShortObject(Short.valueOf(Short.MIN_VALUE), bytes( 0x40 | JMF_SHORT_OBJECT, 0x80, 0x00 ));
-		
-		for (short s = Short.MIN_VALUE + 1; s < -0x00FF; s++)
-			checkShortObject(Short.valueOf(s), bytes( 0xC0 | JMF_SHORT_OBJECT, (-s) >> 8, -s ));
-		
-		for (short s = -0x00FF; s < 0; s++)
-			checkShortObject(Short.valueOf(s), bytes( 0x80 | JMF_SHORT_OBJECT, -s ));
-		
-		for (short s = 0; s <= 0x00FF; s++)
-			checkShortObject(Short.valueOf(s), bytes( JMF_SHORT_OBJECT, s ));
-		
-		for (short s = 0x0100; s < Short.MAX_VALUE; s++)
-			checkShortObject(Short.valueOf(s), bytes( 0x40 | JMF_SHORT_OBJECT, s >> 8, s ));
-		
-		checkShortObject(Short.valueOf(Short.MAX_VALUE), bytes( 0x40 | JMF_SHORT_OBJECT, 0x7F, 0xFF ));
+		for (short s = Short.MIN_VALUE; s < Short.MAX_VALUE; s++)
+			checkShortObject(s);
+		checkShortObject(Short.MAX_VALUE);
+
+//		checkShortObject((short)-0x100, true);
+//		checkShortObject((short)-0xFF, true);
+//
+//		checkShortObject((short)0xFF, true);
+//		checkShortObject((short)0x100, true);
+	}
+
+	private void checkShort(short v) throws IOException {
+		checkShort(v, false);
 	}
 	
-	private void checkShort(short v, byte[] expected) throws IOException {
+	private void checkShort(short v, boolean dump) throws IOException {
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
 		serializer.writeShort(v);
 		serializer.close();
 		byte[] bytes = serializer.toByteArray();
 		
-		if (expected != null && !Arrays.equals(bytes, expected)) {
-			StringBuilder sb = new StringBuilder("Expected ")
-				.append(toHexString(expected))
-				.append(" != ")
-				.append(toHexString(bytes))
-				.append(" for ")
-				.append(String.format("0x%04X (%d)", v & 0xFFFF, v));
-			
-			fail(sb.toString());
-		}
-		
 		PrintStream ps = Util.newNullPrintStream();
+		if (dump) {
+			System.out.println(bytes.length + "B. " + Util.toHexString(bytes));
+			ps = System.out;
+		}
+
 		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
 		dumper.dump();
 		dumper.close();
@@ -130,24 +110,22 @@ public class TestJMFShort implements JMFConstants {
 		}
 	}
 	
-	private void checkShortObject(Short v, byte[] expected) throws ClassNotFoundException, IOException {
+	private void checkShortObject(Short v) throws ClassNotFoundException, IOException {
+		checkShortObject(v, false);
+	}
+	
+	private void checkShortObject(Short v, boolean dump) throws ClassNotFoundException, IOException {
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
 		serializer.writeObject(v);
 		serializer.close();
 		byte[] bytes = serializer.toByteArray();
 		
-		if (expected != null && !Arrays.equals(bytes, expected)) {
-			StringBuilder sb = new StringBuilder("Expected ")
-				.append(toHexString(expected))
-				.append(" != ")
-				.append(toHexString(bytes))
-				.append(" for ")
-				.append(v);
-			
-			fail(sb.toString());
-		}
-		
 		PrintStream ps = Util.newNullPrintStream();
+		if (dump) {
+			System.out.println(bytes.length + "B. " + Util.toHexString(bytes));
+			ps = System.out;
+		}
+
 		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
 		dumper.dump();
 		dumper.close();

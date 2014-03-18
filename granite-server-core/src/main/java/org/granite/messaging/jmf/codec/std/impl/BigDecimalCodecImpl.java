@@ -30,11 +30,14 @@ import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.std.BigDecimalCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.IntegerUtil;
 
 /**
  * @author Franck WOLFF
  */
-public class BigDecimalCodecImpl extends AbstractIntegerStringCodec<BigDecimal> implements BigDecimalCodec {
+public class BigDecimalCodecImpl extends AbstractStandardCodec<BigDecimal> implements BigDecimalCodec {
+
+	protected static final int LENGTH_BYTE_COUNT_OFFSET = 6;
 
 	public int getObjectType() {
 		return JMF_BIG_DECIMAL;
@@ -47,27 +50,19 @@ public class BigDecimalCodecImpl extends AbstractIntegerStringCodec<BigDecimal> 
 	public void encode(OutputContext ctx, BigDecimal v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		// Should we compact the magnitude (vs.speed)?
-		// v = v.stripTrailingZeros();
-		
 		int scale = v.scale();
 		byte[] magnitude = v.unscaledValue().toByteArray();
 
-		IntegerComponents ics = intComponents(magnitude.length);
-		os.write((ics.length << 6) | JMF_BIG_DECIMAL);
-		writeIntData(ctx, ics);
+		int count = IntegerUtil.significantIntegerBytesCount0(magnitude.length);
+		os.write((count << LENGTH_BYTE_COUNT_OFFSET) | JMF_BIG_DECIMAL);
+		IntegerUtil.encodeInteger(ctx, magnitude.length, count);
 		
 		os.write(scale);
 		os.write(magnitude);
 	}
 
 	public BigDecimal decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_BIG_DECIMAL)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
-		int magnitudeLength = readIntData(ctx, (parameterizedJmfType >> 6) & 0x03, false);
+		int magnitudeLength = IntegerUtil.decodeInteger(ctx, parameterizedJmfType >>> LENGTH_BYTE_COUNT_OFFSET);
 		int scale = ctx.safeRead();
 
 		byte[] magnitude = new byte[magnitudeLength];

@@ -32,11 +32,14 @@ import org.granite.messaging.jmf.JMFEncodingException;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.StandardCodec;
 import org.granite.messaging.jmf.codec.std.HashSetCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.IntegerUtil;
 
 /**
  * @author Franck WOLFF
  */
-public class HashSetCodecImpl extends AbstractIntegerStringCodec<HashSet<?>> implements HashSetCodec {
+public class HashSetCodecImpl extends AbstractStandardCodec<HashSet<?>> implements HashSetCodec {
+
+	protected static final int INDEX_OR_LENGTH_BYTE_COUNT_OFFSET = 5;
 
 	public int getObjectType() {
 		return JMF_HASH_SET;
@@ -49,20 +52,20 @@ public class HashSetCodecImpl extends AbstractIntegerStringCodec<HashSet<?>> imp
 	public void encode(OutputContext ctx, HashSet<?> v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		int indexOfStoredObject = ctx.indexOfStoredObjects(v);
+		int indexOfStoredObject = ctx.indexOfObject(v);
 		if (indexOfStoredObject >= 0) {
-			IntegerComponents ics = intComponents(indexOfStoredObject);
-			os.write(0x80 | (ics.length << 5) | JMF_HASH_SET);
-			writeIntData(ctx, ics);
+			int count = IntegerUtil.significantIntegerBytesCount0(indexOfStoredObject);
+			os.write(0x80 | (count << INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) | JMF_HASH_SET);
+			IntegerUtil.encodeInteger(ctx, indexOfStoredObject, count);
 		}
 		else {
-			ctx.addToStoredObjects(v);
+			ctx.addToObjects(v);
 			
 			Object[] snapshot = v.toArray();
 			
-			IntegerComponents ics = intComponents(snapshot.length);
-			os.write((ics.length << 5) | JMF_HASH_SET);
-			writeIntData(ctx, ics);
+			int count = IntegerUtil.significantIntegerBytesCount0(snapshot.length);
+			os.write((count << INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) | JMF_HASH_SET);
+			IntegerUtil.encodeInteger(ctx, snapshot.length, count);
 
 			for (Object element : snapshot)
 				ctx.writeObject(element);
@@ -70,17 +73,12 @@ public class HashSetCodecImpl extends AbstractIntegerStringCodec<HashSet<?>> imp
 	}
 
 	public HashSet<?> decode(InputContext ctx, int parameterizedJmfType) throws IOException, ClassNotFoundException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_HASH_SET)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
-		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
+		int indexOrLength = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) & 0x03);
 		if ((parameterizedJmfType & 0x80) != 0)
-			return (HashSet<?>)ctx.getSharedObject(indexOrLength);
+			return (HashSet<?>)ctx.getObject(indexOrLength);
 
 		HashSet<Object> v = new HashSet<Object>(indexOrLength);
-		ctx.addSharedObject(v);
+		ctx.addToObjects(v);
 		
 		for (int index = 0; index < indexOrLength; index++)
 			v.add(ctx.readObject());
@@ -96,15 +94,15 @@ public class HashSetCodecImpl extends AbstractIntegerStringCodec<HashSet<?>> imp
 		if (jmfType != JMF_HASH_SET)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
-		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
+		int indexOrLength = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) & 0x03);
 		if ((parameterizedJmfType & 0x80) != 0) {
-			String v = (String)ctx.getSharedObject(indexOrLength);
+			String v = (String)ctx.getObject(indexOrLength);
 			ctx.indentPrintLn("<" + v + "@" + indexOrLength + ">");
 			return;
 		}
 
 		String v = HashSet.class.getName() + "[" + indexOrLength + "]";
-		int indexOfStoredObject = ctx.addSharedObject(v);
+		int indexOfStoredObject = ctx.addToObjects(v);
 		ctx.indentPrintLn(v + "@" + indexOfStoredObject + " {");
 		ctx.incrIndent(1);
 		

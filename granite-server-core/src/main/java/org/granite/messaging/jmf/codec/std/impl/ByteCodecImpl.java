@@ -47,7 +47,7 @@ public class ByteCodecImpl extends AbstractStandardCodec<Byte> implements ByteCo
 	}
 
 	public Class<?> getPrimitiveClass() {
-		return Byte.TYPE;
+		return byte.class;
 	}
 
 	public void encode(OutputContext ctx, Byte v) throws IOException {
@@ -57,10 +57,6 @@ public class ByteCodecImpl extends AbstractStandardCodec<Byte> implements ByteCo
 	}
 	
 	public Byte decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		if (jmfType != JMF_BYTE_OBJECT)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
 		return Byte.valueOf((byte)ctx.safeRead());
 	}
 
@@ -71,12 +67,7 @@ public class ByteCodecImpl extends AbstractStandardCodec<Byte> implements ByteCo
 	}
 	
 	public byte decodePrimitive(InputContext ctx) throws IOException {
-		int parameterizedJmfType = ctx.safeRead();
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-
-		if (jmfType != JMF_BYTE)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
+		ctx.safeRead();
 		return (byte)ctx.safeRead();
 	}
 	

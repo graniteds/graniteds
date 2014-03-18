@@ -19,19 +19,37 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.messaging.jmf.codec.std;
+package org.granite.messaging.jmf.codec.std.impl.util;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
-import org.granite.messaging.jmf.codec.ConditionalObjectCodec;
 
 /**
  * @author Franck WOLFF
  */
-public interface ArrayCodec extends ConditionalObjectCodec {
+public class FloatUtil {
 
-	void encode(OutputContext ctx, Object v) throws IOException;
-	Object decode(InputContext ctx, int parameterizedJmfType) throws IOException, ClassNotFoundException;
+	// ------------------------------------------------------------------------
+	
+	public static void encodeFloat(OutputContext ctx, float v) throws IOException {
+		final OutputStream os = ctx.getOutputStream();
+		
+		int bits = Float.floatToIntBits(v);
+		os.write(bits >>> 24);
+		os.write(bits >>> 16);
+		os.write(bits >>> 8);
+		os.write(bits);
+	}
+	
+	public static float decodeFloat(InputContext ctx) throws IOException {
+		return Float.intBitsToFloat(
+			ctx.safeRead() << 24 |
+			ctx.safeRead() << 16 |
+			ctx.safeRead() << 8  |
+			ctx.safeRead()
+		);
+	}
 }

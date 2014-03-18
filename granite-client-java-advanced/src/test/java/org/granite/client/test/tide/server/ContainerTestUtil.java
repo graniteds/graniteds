@@ -1,10 +1,11 @@
 package org.granite.client.test.tide.server;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.granite.client.messaging.ServerApp;
-import org.granite.client.messaging.channel.AMFChannelFactory;
-import org.granite.client.messaging.channel.ChannelFactory;
 import org.granite.client.messaging.channel.ChannelType;
-import org.granite.client.messaging.channel.JMFChannelFactory;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.server.ServerSession;
@@ -13,10 +14,6 @@ import org.granite.test.container.EmbeddedContainer;
 import org.granite.util.ContentType;
 import org.granite.util.TypeUtil;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by william on 04/02/14.

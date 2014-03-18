@@ -47,7 +47,7 @@ public class CharacterCodecImpl extends AbstractStandardCodec<Character> impleme
 	}
 
 	public Class<?> getPrimitiveClass() {
-		return Character.TYPE;
+		return char.class;
 	}
 
 	public void encode(OutputContext ctx, Character v) throws IOException {
@@ -55,9 +55,6 @@ public class CharacterCodecImpl extends AbstractStandardCodec<Character> impleme
 	}
 	
 	public Character decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		if (jmfType != JMF_CHARACTER_OBJECT)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		return Character.valueOf(readCharData(ctx, parameterizedJmfType));
 	}
 
@@ -67,11 +64,6 @@ public class CharacterCodecImpl extends AbstractStandardCodec<Character> impleme
 	
 	public char decodePrimitive(InputContext ctx) throws IOException {
 		int parameterizedJmfType = ctx.safeRead();
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_CHARACTER)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
 		return readCharData(ctx, parameterizedJmfType);
 	}
 	
@@ -99,7 +91,7 @@ public class CharacterCodecImpl extends AbstractStandardCodec<Character> impleme
 		}
 		else {	
 			os.write(0x80 | jmfType);
-			os.write(v >> 8);
+			os.write(v >>> 8);
 			os.write(v);
 		}
 	}

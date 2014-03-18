@@ -26,14 +26,19 @@ import java.io.OutputStream;
 
 import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
+import org.granite.messaging.jmf.JMFEncodingException;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.std.DoubleCodec;
-import org.granite.messaging.jmf.codec.std.LongCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.DoubleUtil;
+import org.granite.messaging.jmf.codec.std.impl.util.LongUtil;
+import org.granite.messaging.jmf.codec.std.impl.util.DoubleUtil.DoubleAsLong;
 
 /**
  * @author Franck WOLFF
  */
 public class DoubleCodecImpl extends AbstractStandardCodec<Double> implements DoubleCodec {
+
+	protected static final int POW_10_OFFSET = 4;
 
 	public int getObjectType() {
 		return JMF_DOUBLE_OBJECT;
@@ -48,7 +53,7 @@ public class DoubleCodecImpl extends AbstractStandardCodec<Double> implements Do
 	}
 
 	public Class<?> getPrimitiveClass() {
-		return Double.TYPE;
+		return double.class;
 	}
 
 	public void encode(OutputContext ctx, Double v) throws IOException {
@@ -56,11 +61,6 @@ public class DoubleCodecImpl extends AbstractStandardCodec<Double> implements Do
 	}
 	
 	public Double decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-
-		if (jmfType != JMF_DOUBLE_OBJECT)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
 		return Double.valueOf(readDoubleData(ctx, parameterizedJmfType));
 	}
 
@@ -70,11 +70,6 @@ public class DoubleCodecImpl extends AbstractStandardCodec<Double> implements Do
 	
 	public double decodePrimitive(InputContext ctx) throws IOException {
 		int parameterizedJmfType = ctx.safeRead();
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-
-		if (jmfType != JMF_DOUBLE)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
 		return readDoubleData(ctx, parameterizedJmfType);
 	}
 	
@@ -96,83 +91,43 @@ public class DoubleCodecImpl extends AbstractStandardCodec<Double> implements Do
 	public static void writeDoubleData(OutputContext ctx, int jmfType, double v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		if (Double.isNaN(v))
-			os.write(0xC0 | jmfType);
-		else {
-			long asLong = (long)v;
-			LongCodec longCodec = ctx.getSharedContext().getCodecRegistry().getLongCodec();
+		long bits = Double.doubleToLongBits(v);
+		
+		// v isn't NaN, +-Infinity or -0.0
+		if ((bits & 0x7FF0000000000000L) != 0x7FF0000000000000L && bits != 0x8000000000000000L) {
 			
-			int lengthAsLong = Integer.MAX_VALUE;
-			if (v == asLong) {
-				if (v == Long.MIN_VALUE)
-					lengthAsLong = 1;
-				else if (Double.doubleToRawLongBits(v) != Long.MIN_VALUE)
-					lengthAsLong = longCodec.lengthOfVariableAbsoluteLong(Math.abs(asLong)) + 1;
-			}
-			
-			if (lengthAsLong < 4) {
-				os.write(0x80 | jmfType);
-				longCodec.writeVariableLong(ctx, asLong);
-			}
-			else if (v == (float)v) {
-				os.write(0x40 | jmfType);
+			DoubleAsLong asLong = DoubleUtil.doubleAsLong04(v);
+			if (asLong != null &&
+				asLong.longValue >= LongUtil.MIN_7_BYTES_VARIABLE_LONG &&
+				asLong.longValue <= LongUtil.MAX_7_BYTES_VARIABLE_LONG) {
 				
-				int bits = Float.floatToRawIntBits((float)v);
-				os.write(bits);
-				os.write(bits >> 8);
-				os.write(bits >> 16);
-				os.write(bits >> 24);
-			}
-			else if (lengthAsLong < 8) {
-				os.write(0x80 | jmfType);
-				longCodec.writeVariableLong(ctx, asLong);
-			}
-			else {
-				os.write(jmfType);
-				
-				long bits = Double.doubleToRawLongBits(v);
-				os.write((int)bits);
-				os.write((int)(bits >> 8));
-				os.write((int)(bits >> 16));
-				os.write((int)(bits >> 24));
-				os.write((int)(bits >> 32));
-				os.write((int)(bits >> 40));
-				os.write((int)(bits >> 48));
-				os.write((int)(bits >> 56));
+				os.write(0x80 | (asLong.pow10 << POW_10_OFFSET) | jmfType);
+				LongUtil.encodeVariableLong(ctx, asLong.longValue);
+				return;
 			}
 		}
+		
+		os.write(jmfType);
+		LongUtil.encodeLong(ctx, bits);
 	}
 	
-	public static double readDoubleData(InputContext ctx, int type) throws IOException {
-		double v;
-		
-		switch ((type >> 6) & 0x03) {
-		case 3:
-			v = Double.NaN;
-			break;
-		case 2:
-			v = ctx.getSharedContext().getCodecRegistry().getLongCodec().readVariableLong(ctx);
-			break;
-		case 1:
-			int i = ctx.safeRead();
-			i |= ctx.safeRead() << 8;
-			i |= ctx.safeRead() << 16;
-			i |= ctx.safeRead() << 24;
-			v = Float.intBitsToFloat(i);
-			break;
-		default: // case 0:
-			long l = ctx.safeRead();
-			l |= ((long)ctx.safeRead()) << 8;
-			l |= ((long)ctx.safeRead()) << 16;
-			l |= ((long)ctx.safeRead()) << 24;
-			l |= ((long)ctx.safeRead()) << 32;
-			l |= ((long)ctx.safeRead()) << 40;
-			l |= ((long)ctx.safeRead()) << 48;
-			l |= ((long)ctx.safeRead()) << 56;
-			v = Double.longBitsToDouble(l);
-			break;
+	public static double readDoubleData(InputContext ctx, int parameterizedJmfType) throws IOException {
+		if ((parameterizedJmfType & 0x80) != 0) {
+			long asLong = LongUtil.decodeVariableLong(ctx);
+			int pow10 = ((parameterizedJmfType >>> POW_10_OFFSET) & 0x07);
+			
+			switch (pow10) {
+			case 0:
+				return asLong;
+			case 2:
+				return asLong / 100.0;
+			case 4:
+				return asLong / 10000.0;
+			default:
+				throw new JMFEncodingException("Unsupported power of 10: " + pow10);
+			}
 		}
-
-		return v;
+		
+		return Double.longBitsToDouble(LongUtil.decodeLong(ctx));
 	}
 }

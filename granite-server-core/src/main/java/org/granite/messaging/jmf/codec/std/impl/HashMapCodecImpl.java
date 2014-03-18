@@ -33,11 +33,14 @@ import org.granite.messaging.jmf.JMFEncodingException;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.StandardCodec;
 import org.granite.messaging.jmf.codec.std.HashMapCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.IntegerUtil;
 
 /**
  * @author Franck WOLFF
  */
-public class HashMapCodecImpl extends AbstractIntegerStringCodec<HashMap<?, ?>> implements HashMapCodec {
+public class HashMapCodecImpl extends AbstractStandardCodec<HashMap<?, ?>> implements HashMapCodec {
+
+	protected static final int INDEX_OR_LENGTH_BYTE_COUNT_OFFSET = 5;
 
 	public int getObjectType() {
 		return JMF_HASH_MAP;
@@ -50,20 +53,20 @@ public class HashMapCodecImpl extends AbstractIntegerStringCodec<HashMap<?, ?>> 
 	public void encode(OutputContext ctx, HashMap<?, ?> v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
-		int indexOfStoredObject = ctx.indexOfStoredObjects(v);
+		int indexOfStoredObject = ctx.indexOfObject(v);
 		if (indexOfStoredObject >= 0) {
-			IntegerComponents ics = intComponents(indexOfStoredObject);
-			os.write(0x80 | (ics.length << 5) | JMF_HASH_MAP);
-			writeIntData(ctx, ics);
+			int count = IntegerUtil.significantIntegerBytesCount0(indexOfStoredObject);
+			os.write(0x80 | (count << INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) | JMF_HASH_MAP);
+			IntegerUtil.encodeInteger(ctx, indexOfStoredObject, count);
 		}
 		else {
-			ctx.addToStoredObjects(v);
+			ctx.addToObjects(v);
 			
 			Map.Entry<?, ?>[] snapshot = v.entrySet().toArray(new Map.Entry<?, ?>[0]);
 			
-			IntegerComponents ics = intComponents(snapshot.length);
-			os.write((ics.length << 5) | JMF_HASH_MAP);
-			writeIntData(ctx, ics);
+			int count = IntegerUtil.significantIntegerBytesCount0(snapshot.length);
+			os.write((count << INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) | JMF_HASH_MAP);
+			IntegerUtil.encodeInteger(ctx, snapshot.length, count);
 			
 			for (Map.Entry<?, ?> entry : snapshot) {
 				ctx.writeObject(entry.getKey());
@@ -73,17 +76,12 @@ public class HashMapCodecImpl extends AbstractIntegerStringCodec<HashMap<?, ?>> 
 	}
 
 	public HashMap<?, ?> decode(InputContext ctx, int parameterizedJmfType) throws IOException, ClassNotFoundException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_HASH_MAP)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
-		final int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
+		int indexOrLength = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) & 0x03);
 		if ((parameterizedJmfType & 0x80) != 0)
-			return (HashMap<?, ?>)ctx.getSharedObject(indexOrLength);
+			return (HashMap<?, ?>)ctx.getObject(indexOrLength);
 
 		HashMap<Object, Object> v = new HashMap<Object, Object>(indexOrLength);
-		ctx.addSharedObject(v);
+		ctx.addToObjects(v);
 		
 		for (int index = 0; index < indexOrLength; index++) {
 			Object key = ctx.readObject();
@@ -102,15 +100,15 @@ public class HashMapCodecImpl extends AbstractIntegerStringCodec<HashMap<?, ?>> 
 		if (jmfType != JMF_HASH_MAP)
 			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
 		
-		int indexOrLength = readIntData(ctx, (parameterizedJmfType >> 5) & 0x03, false);
+		int indexOrLength = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) & 0x03);
 		if ((parameterizedJmfType & 0x80) != 0) {
-			String v = (String)ctx.getSharedObject(indexOrLength);
+			String v = (String)ctx.getObject(indexOrLength);
 			ctx.indentPrintLn("<" + v + "@" + indexOrLength + ">");
 			return;
 		}
 
 		String v = HashMap.class.getName() + "[" + indexOrLength + "]";
-		int indexOfStoredObject = ctx.addSharedObject(v);
+		int indexOfStoredObject = ctx.addToObjects(v);
 		ctx.indentPrintLn(v + "@" + indexOfStoredObject + " {");
 		ctx.incrIndent(1);
 		

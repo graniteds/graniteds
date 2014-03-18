@@ -19,14 +19,19 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.client.test.tide.server.remoting;
+package org.granite.messaging.jmf.codec.std;
 
-import org.granite.config.servlet3.ServerFilter;
-import org.granite.tide.simple.SimpleIdentity;
+import java.io.IOException;
+
+import org.granite.messaging.jmf.InputContext;
+import org.granite.messaging.jmf.OutputContext;
+import org.granite.messaging.jmf.codec.ConditionalObjectCodec;
 
 /**
- * Created by william on 30/09/13.
+ * @author Franck WOLFF
  */
-@ServerFilter(tide=true, type="server", tideInterfaces={ SimpleIdentity.class })
-public class RemotingApplication {
+public interface ObjectArrayCodec extends ConditionalObjectCodec {
+
+	void encode(OutputContext ctx, Object v) throws IOException;
+	Object decode(InputContext ctx, int parameterizedJmfType) throws IOException, ClassNotFoundException;
 }

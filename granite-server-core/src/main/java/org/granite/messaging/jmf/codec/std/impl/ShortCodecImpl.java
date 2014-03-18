@@ -47,7 +47,7 @@ public class ShortCodecImpl extends AbstractStandardCodec<Short> implements Shor
 	}
 
 	public Class<?> getPrimitiveClass() {
-		return Short.TYPE;
+		return short.class;
 	}
 
 	public void encode(OutputContext ctx, Short v) throws IOException {
@@ -55,11 +55,6 @@ public class ShortCodecImpl extends AbstractStandardCodec<Short> implements Shor
 	}
 	
 	public Short decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_SHORT_OBJECT)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-
 		return Short.valueOf(readShortData(ctx, parameterizedJmfType));
 	}
 
@@ -69,11 +64,6 @@ public class ShortCodecImpl extends AbstractStandardCodec<Short> implements Shor
 	
 	public short decodePrimitive(InputContext ctx) throws IOException {
 		int parameterizedJmfType = ctx.safeRead();
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_SHORT)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
 		return readShortData(ctx, parameterizedJmfType);
 	}
 	
@@ -92,35 +82,34 @@ public class ShortCodecImpl extends AbstractStandardCodec<Short> implements Shor
 		}
 	}
 	
-	public void writeShortData(OutputContext ctx, int jmfType, int v) throws IOException {
+	protected void writeShortData(OutputContext ctx, int jmfType, int v) throws IOException {
 		final OutputStream os = ctx.getOutputStream();
 		
 		if (v == Short.MIN_VALUE) {
 			os.write(0x40 | jmfType);
-			os.write(v >> 8);
+			os.write(v >>> 8);
 			os.write(v);
 		}
 		else {
-			int s = 0x00;
-			int a = v;
+			int opposite = 0x00;
 			if (v < 0) {
-				a = -v;
-				s = 0x80;
+				opposite = 0x80;
+				v = -v;
 			}
 			
-			if (a <= 0xFF) {
-				os.write(s | jmfType);
-				os.write(a);
+			if (v <= 0xFF) {
+				os.write(opposite | jmfType);
+				os.write(v);
 			}
 			else {
-				os.write(s | 0x40 | jmfType);
-				os.write(a >> 8);
-				os.write(a);
+				os.write(opposite | 0x40 | jmfType);
+				os.write(v >>> 8);
+				os.write(v);
 			}
 		}
 	}
 	
-	public short readShortData(InputContext ctx, int parameterizedJmfType) throws IOException {
+	protected short readShortData(InputContext ctx, int parameterizedJmfType) throws IOException {
 		short v = (short)ctx.safeRead();
 		
 		if ((parameterizedJmfType & 0x40) != 0)

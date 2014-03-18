@@ -21,13 +21,10 @@
  */
 package org.granite.test.jmf;
 
-import static org.granite.test.jmf.Util.bytes;
-import static org.granite.test.jmf.Util.toHexString;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Arrays;
 
 import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DefaultCodecRegistry;
@@ -57,32 +54,32 @@ public class TestJMFFloat implements JMFConstants {
 	@Test
 	public void testSomeFloat() throws IOException {
 
-		checkFloat(Float.NaN, 						bytes( JMF_FLOAT, 0x00, 0x00, 0xC0, 0x7F ));
-		checkFloat(Float.MAX_VALUE, 				bytes( JMF_FLOAT, 0xFF, 0xFF, 0x7F, 0x7F ));
-		checkFloat(Float.MIN_VALUE, 				bytes( JMF_FLOAT, 0x01, 0x00, 0x00, 0x00 ));
-		checkFloat(Float.MIN_NORMAL, 				bytes( JMF_FLOAT, 0x00, 0x00, 0x80, 0x00 ));
-		checkFloat(Float.NEGATIVE_INFINITY, 		bytes( JMF_FLOAT, 0x00, 0x00, 0x80, 0xFF ));
-		checkFloat(Float.POSITIVE_INFINITY, 		bytes( JMF_FLOAT, 0x00, 0x00, 0x80, 0x7F ));
+		checkFloat(Float.NaN);
+		checkFloat(Float.MAX_VALUE);
+		checkFloat(Float.MIN_VALUE);
+		checkFloat(Float.MIN_NORMAL);
+		checkFloat(Float.NEGATIVE_INFINITY);
+		checkFloat(Float.POSITIVE_INFINITY);
 
-		checkFloat((float)Math.PI, 					bytes( JMF_FLOAT, 0xDB, 0x0F, 0x49, 0x40 ));
-		checkFloat((float)-Math.PI, 				bytes( JMF_FLOAT, 0xDB, 0x0F, 0x49, 0xC0 ));
-		checkFloat((float)Math.E, 					bytes( JMF_FLOAT, 0x54, 0xF8, 0x2D, 0x40 ));
-		checkFloat((float)-Math.E, 					bytes( JMF_FLOAT, 0x54, 0xF8, 0x2D, 0xC0 ));
+		checkFloat((float)Math.PI);
+		checkFloat((float)-Math.PI);
+		checkFloat((float)Math.E);
+		checkFloat((float)-Math.E);
 
-		checkFloat((float)-1.0000004, 				bytes( JMF_FLOAT, 0x03, 0x00, 0x80, 0xBF ));
-		checkFloat((float)-1.0000003, 				bytes( JMF_FLOAT, 0x03, 0x00, 0x80, 0xBF ));
-		checkFloat((float)-1.0000002, 				bytes( JMF_FLOAT, 0x02, 0x00, 0x80, 0xBF ));
-		checkFloat((float)-1.0000001, 				bytes( JMF_FLOAT, 0x01, 0x00, 0x80, 0xBF ));
-		checkFloat((float)-1.0, 					bytes( JMF_FLOAT, 0x00, 0x00, 0x80, 0xBF ));
+		checkFloat(-1.0000004F);
+		checkFloat(-1.0000003F);
+		checkFloat(-1.0000002F);
+		checkFloat(-1.0000001F);
+		checkFloat(-1.0F);
 		
-		checkFloat((float)-0.0,						bytes( JMF_FLOAT, 0x00, 0x00, 0x00, 0x80 ));
-		checkFloat((float)0.0,						bytes( JMF_FLOAT, 0x00, 0x00, 0x00, 0x00 ));
+		checkFloat(-0.0F);
+		checkFloat(0.0F);
 		
-		checkFloat((float)1.0, 						bytes( JMF_FLOAT, 0x00, 0x00, 0x80, 0x3F ));
-		checkFloat((float)1.0000001, 				bytes( JMF_FLOAT, 0x01, 0x00, 0x80, 0x3F ));
-		checkFloat((float)1.0000002, 				bytes( JMF_FLOAT, 0x02, 0x00, 0x80, 0x3F ));
-		checkFloat((float)1.0000003, 				bytes( JMF_FLOAT, 0x03, 0x00, 0x80, 0x3F ));
-		checkFloat((float)1.0000004, 				bytes( JMF_FLOAT, 0x03, 0x00, 0x80, 0x3F ));
+		checkFloat(1.0F);
+		checkFloat(1.0000001F);
+		checkFloat(1.0000002F);
+		checkFloat(1.0000003F);
+		checkFloat(1.0000004F);
 		
 		for (float d = -1000.0F; d < 1000.0F; d++)
 			checkFloat(d);
@@ -94,34 +91,32 @@ public class TestJMFFloat implements JMFConstants {
 	@Test
 	public void testSomeFloatObject() throws ClassNotFoundException, IOException {
 
-		checkFloatObject(null,							bytes( JMF_NULL ));
-		
-		checkFloatObject(Float.NaN, 					bytes( JMF_FLOAT_OBJECT, 0x00, 0x00, 0xC0, 0x7F ));
-		checkFloatObject(Float.MAX_VALUE, 				bytes( JMF_FLOAT_OBJECT, 0xFF, 0xFF, 0x7F, 0x7F ));
-		checkFloatObject(Float.MIN_VALUE, 				bytes( JMF_FLOAT_OBJECT, 0x01, 0x00, 0x00, 0x00 ));
-		checkFloatObject(Float.MIN_NORMAL, 				bytes( JMF_FLOAT_OBJECT, 0x00, 0x00, 0x80, 0x00 ));
-		checkFloatObject(Float.NEGATIVE_INFINITY, 		bytes( JMF_FLOAT_OBJECT, 0x00, 0x00, 0x80, 0xFF ));
-		checkFloatObject(Float.POSITIVE_INFINITY, 		bytes( JMF_FLOAT_OBJECT, 0x00, 0x00, 0x80, 0x7F ));
+		checkFloatObject(Float.NaN);
+		checkFloatObject(Float.MAX_VALUE);
+		checkFloatObject(Float.MIN_VALUE);
+		checkFloatObject(Float.MIN_NORMAL);
+		checkFloatObject(Float.NEGATIVE_INFINITY);
+		checkFloatObject(Float.POSITIVE_INFINITY);
 
-		checkFloatObject((float)Math.PI, 				bytes( JMF_FLOAT_OBJECT, 0xDB, 0x0F, 0x49, 0x40 ));
-		checkFloatObject((float)-Math.PI, 				bytes( JMF_FLOAT_OBJECT, 0xDB, 0x0F, 0x49, 0xC0 ));
-		checkFloatObject((float)Math.E, 				bytes( JMF_FLOAT_OBJECT, 0x54, 0xF8, 0x2D, 0x40 ));
-		checkFloatObject((float)-Math.E, 				bytes( JMF_FLOAT_OBJECT, 0x54, 0xF8, 0x2D, 0xC0 ));
+		checkFloatObject((float)Math.PI);
+		checkFloatObject((float)-Math.PI);
+		checkFloatObject((float)Math.E);
+		checkFloatObject((float)-Math.E);
 
-		checkFloatObject((float)-1.0000004, 			bytes( JMF_FLOAT_OBJECT, 0x03, 0x00, 0x80, 0xBF ));
-		checkFloatObject((float)-1.0000003, 			bytes( JMF_FLOAT_OBJECT, 0x03, 0x00, 0x80, 0xBF ));
-		checkFloatObject((float)-1.0000002, 			bytes( JMF_FLOAT_OBJECT, 0x02, 0x00, 0x80, 0xBF ));
-		checkFloatObject((float)-1.0000001, 			bytes( JMF_FLOAT_OBJECT, 0x01, 0x00, 0x80, 0xBF ));
-		checkFloatObject((float)-1.0, 					bytes( JMF_FLOAT_OBJECT, 0x00, 0x00, 0x80, 0xBF ));
+		checkFloatObject(-1.0000004F);
+		checkFloatObject(-1.0000003F);
+		checkFloatObject(-1.0000002F);
+		checkFloatObject(-1.0000001F);
+		checkFloatObject(-1.0F);
 		
-		checkFloatObject((float)-0.0,					bytes( JMF_FLOAT_OBJECT, 0x00, 0x00, 0x00, 0x80 ));
-		checkFloatObject((float)0.0,					bytes( JMF_FLOAT_OBJECT, 0x00, 0x00, 0x00, 0x00 ));
+		checkFloatObject(-0.0F);
+		checkFloatObject(0.0F);
 		
-		checkFloatObject((float)1.0, 					bytes( JMF_FLOAT_OBJECT, 0x00, 0x00, 0x80, 0x3F ));
-		checkFloatObject((float)1.0000001, 				bytes( JMF_FLOAT_OBJECT, 0x01, 0x00, 0x80, 0x3F ));
-		checkFloatObject((float)1.0000002, 				bytes( JMF_FLOAT_OBJECT, 0x02, 0x00, 0x80, 0x3F ));
-		checkFloatObject((float)1.0000003, 				bytes( JMF_FLOAT_OBJECT, 0x03, 0x00, 0x80, 0x3F ));
-		checkFloatObject((float)1.0000004, 				bytes( JMF_FLOAT_OBJECT, 0x03, 0x00, 0x80, 0x3F ));
+		checkFloatObject(1.0F);
+		checkFloatObject(1.0000001F);
+		checkFloatObject(1.0000002F);
+		checkFloatObject(1.0000003F);
+		checkFloatObject(1.0000004F);
 		
 		for (float d = -1000.0F; d < 1000.0F; d++)
 			checkFloatObject(d);
@@ -129,28 +124,23 @@ public class TestJMFFloat implements JMFConstants {
 		for (float d = -10.0002F; d < 11.0F; d += 0.01)
 			checkFloatObject(d);
 	}
-
+	
 	private void checkFloat(float v) throws IOException {
-		checkFloat(v, null);
+		checkFloat(v, false);
 	}
 	
-	private void checkFloat(float v, byte[] expected) throws IOException {
+	private void checkFloat(float v, boolean dump) throws IOException {
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
 		serializer.writeFloat(v);
 		serializer.close();
 		byte[] bytes = serializer.toByteArray();
 		
-		if (expected != null && !Arrays.equals(bytes, expected)) {
-			StringBuilder sb = new StringBuilder("Expected ")
-				.append(toHexString(expected))
-				.append(" != ")
-				.append(toHexString(bytes))
-				.append(String.format(" for 0x%08X (%a)", Float.floatToIntBits(v), v));
-			
-			fail(sb.toString());
-		}
-		
 		PrintStream ps = Util.newNullPrintStream();
+		if (dump) {
+			System.out.println(bytes.length + "B. " + Util.toHexString(bytes));
+			ps = System.out;
+		}
+
 		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
 		dumper.dump();
 		dumper.close();
@@ -159,39 +149,26 @@ public class TestJMFFloat implements JMFConstants {
 		float u = deserializer.readFloat();
 		deserializer.close();
 		
-		if (Float.compare(v, u) != 0) {
-			StringBuilder sb = new StringBuilder(
-					String.format("0x%08X (%a) != 0x%08X (%a) ",
-					Float.floatToIntBits(v), v, Float.floatToIntBits(u), u)
-				)
-				.append(toHexString(bytes));
-			
-			fail(sb.toString());
-		}
-	}
-
-	private void checkFloatObject(Float v) throws ClassNotFoundException, IOException {
-		checkFloatObject(v, null);
+		if (Float.floatToIntBits(v) != Float.floatToIntBits(u))
+			fail(v + " != " + u);
 	}
 	
-	private void checkFloatObject(Float v, byte[] expected) throws ClassNotFoundException, IOException {
+	private void checkFloatObject(Float v) throws ClassNotFoundException, IOException {
+		checkFloatObject(v, false);
+	}
+	
+	private void checkFloatObject(Float v, boolean dump) throws ClassNotFoundException, IOException {
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
 		serializer.writeObject(v);
 		serializer.close();
 		byte[] bytes = serializer.toByteArray();
 		
-		if (expected != null && !Arrays.equals(bytes, expected)) {
-			StringBuilder sb = new StringBuilder("Expected ")
-				.append(toHexString(expected))
-				.append(" != ")
-				.append(toHexString(bytes))
-				.append(" for ")
-				.append(v);
-			
-			fail(sb.toString());
-		}
-		
 		PrintStream ps = Util.newNullPrintStream();
+		if (dump) {
+			System.out.println(bytes.length + "B. " + Util.toHexString(bytes));
+			ps = System.out;
+		}
+
 		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
 		dumper.dump();
 		dumper.close();
@@ -200,14 +177,10 @@ public class TestJMFFloat implements JMFConstants {
 		Object u = deserializer.readObject();
 		deserializer.close();
 		
-		if (!(u instanceof Float || u == null))
-			fail("u isn't a Float or null: " + u);
+		if (!(u instanceof Float))
+			fail("Not a Float instance: " + u + " for: " + v);
 		
-		if ((v != null && !v.equals(u)) || (v == null && u != null)) {
-			StringBuilder sb = new StringBuilder(String.format("%s != %s", v, u))
-				.append(toHexString(bytes));
-			
-			fail(sb.toString());
-		}
+		if (Float.floatToIntBits(v) != Float.floatToIntBits((Float)u))
+			fail(v + " != " + u);
 	}
 }

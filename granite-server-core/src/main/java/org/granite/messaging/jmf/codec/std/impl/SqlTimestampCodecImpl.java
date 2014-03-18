@@ -29,6 +29,7 @@ import org.granite.messaging.jmf.DumpContext;
 import org.granite.messaging.jmf.InputContext;
 import org.granite.messaging.jmf.OutputContext;
 import org.granite.messaging.jmf.codec.std.SqlTimestampCodec;
+import org.granite.messaging.jmf.codec.std.impl.util.LongUtil;
 
 /**
  * @author Franck WOLFF
@@ -47,34 +48,11 @@ public class SqlTimestampCodecImpl extends AbstractStandardCodec<Timestamp> impl
 		final OutputStream os = ctx.getOutputStream();
 		
 		os.write(JMF_SQL_TIMESTAMP);
-		
-		long t = v.getTime();
-		
-		os.write((int)(t >> 56));
-		os.write((int)(t >> 48));
-		os.write((int)(t >> 40));
-		os.write((int)(t >> 32));
-		os.write((int)(t >> 24));
-		os.write((int)(t >> 16));
-		os.write((int)(t >> 8));
-		os.write((int)t);
+		LongUtil.encodeLong(ctx, v.getTime());
 	}
 
 	public Timestamp decode(InputContext ctx, int parameterizedJmfType) throws IOException {
-		int jmfType = ctx.getSharedContext().getCodecRegistry().extractJmfType(parameterizedJmfType);
-		
-		if (jmfType != JMF_SQL_TIMESTAMP)
-			throw newBadTypeJMFEncodingException(jmfType, parameterizedJmfType);
-		
-		long t = ((long)ctx.safeRead()) << 56;
-		t |= ((long)ctx.safeRead()) << 48;
-		t |= ((long)ctx.safeRead()) << 40;
-		t |= ((long)ctx.safeRead()) << 32;
-		t |= ((long)ctx.safeRead()) << 24;
-		t |= ((long)ctx.safeRead()) << 16;
-		t |= ((long)ctx.safeRead()) << 8;
-		t |= ctx.safeRead();
-		return new Timestamp(t);
+		return new Timestamp(LongUtil.decodeLong(ctx));
 	}
 	
 	public void dump(DumpContext ctx, int parameterizedJmfType) throws IOException {

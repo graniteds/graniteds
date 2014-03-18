@@ -31,7 +31,17 @@ public class AsyncReceiver extends AsyncChannelRunner {
 	}
 
 	@Override
-	public void doRun() {
-		channel.runReceive();
+	public final void run() {
+		try {
+			channel.runReceive();
+		}
+		finally {
+			reset();
+			
+			// Make sure pending received messages that were enqueued during
+			// runReceive() are going to be delivered ASAP (see issue GDS-1261).
+			if (channel.hasReceivedMessage())
+				queue(channel.getGravity());
+		}
 	}
 }

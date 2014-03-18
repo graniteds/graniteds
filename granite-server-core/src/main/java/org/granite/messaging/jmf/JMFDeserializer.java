@@ -26,10 +26,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.granite.messaging.annotations.Include;
 import org.granite.messaging.jmf.codec.StandardCodec;
+import org.granite.messaging.reflect.ClassDescriptor;
 import org.granite.messaging.reflect.NoopWritableProperty;
 import org.granite.messaging.reflect.Property;
 import org.granite.messaging.reflect.Reflection;
@@ -42,9 +45,12 @@ public class JMFDeserializer implements InputContext {
 	///////////////////////////////////////////////////////////////////////////
 	// Fields
 	
-	protected final List<String> storedStrings = new ArrayList<String>(256);
-	protected final List<Object> storedObjects = new ArrayList<Object>(256);
+	protected final List<String> classNames = new ArrayList<String>(256);
+	protected final List<String> strings = new ArrayList<String>(256);
+	protected final List<Object> objects = new ArrayList<Object>(256);
 	
+	protected final Map<String, ClassDescriptor> classDescriptors = new HashMap<String, ClassDescriptor>(256);
+
     protected final InputStream inputStream;
     protected final SharedContext context;
     
@@ -58,7 +64,7 @@ public class JMFDeserializer implements InputContext {
 		this.context = context;
 		this.codecRegistry = context.getCodecRegistry();
 		
-		this.storedStrings.addAll(context.getDefaultStoredStrings());
+		this.classNames.addAll(context.getInitialClassNameDictionary());
 	}
 	
 	///////////////////////////////////////////////////////////////////////////
@@ -115,11 +121,10 @@ public class JMFDeserializer implements InputContext {
 
 	public Object readObject() throws ClassNotFoundException, IOException {
 		int parameterizedJmfType = safeRead();
-		int jmfType = codecRegistry.extractJmfType(parameterizedJmfType);
 		
-		StandardCodec<?> codec = codecRegistry.getCodec(jmfType);
+		StandardCodec<?> codec = codecRegistry.getCodec(parameterizedJmfType);
 		if (codec == null)
-			throw new JMFEncodingException("Unsupported JMF type: " + jmfType);
+			throw new JMFEncodingException("Unsupported JMF type: " + codecRegistry.extractJmfType(parameterizedJmfType));
 		
 		try {
 			return codec.decode(this, parameterizedJmfType);
@@ -206,6 +211,10 @@ public class JMFDeserializer implements InputContext {
 			throw new EOFException();
 		return b;
 	}
+
+	public long safeReadLong() throws IOException {
+		return (long)safeRead();
+	}
 	
 	public void safeReadFully(byte[] b) throws IOException {
 		safeReadFully(b, 0, b.length);
@@ -236,37 +245,70 @@ public class JMFDeserializer implements InputContext {
 		}
 	}
 
-	public int addSharedString(String s) {
-		int index = storedStrings.size();
-		storedStrings.add(index, s);
+	@Override
+	public int addToClassNames(String cn) {
+		int index = classNames.size();
+		classNames.add(index, cn);
+		return index;
+	}
+
+	@Override
+	public String getClassName(int index) {
+		return classNames.get(index);
+	}
+
+	@Override
+	public ClassDescriptor getClassDescriptor(String className) throws ClassNotFoundException {
+		ClassDescriptor desc = classDescriptors.get(className);
+		if (desc == null) {
+			Class<?> cls = context.getReflection().loadClass(className);
+			desc = context.getReflection().getDescriptor(cls);
+			classDescriptors.put(className, desc);
+		}
+		return desc;
+	}
+
+	@Override
+	public ClassDescriptor getClassDescriptor(Class<?> cls) {
+		ClassDescriptor desc = classDescriptors.get(cls.getName());
+		if (desc == null) {
+			desc = context.getReflection().getDescriptor(cls);
+			classDescriptors.put(cls.getName(), desc);
+		}
+		return desc;
+	}
+
+	public int addToStrings(String s) {
+		int index = strings.size();
+		strings.add(index, s);
 		return index;
 	}
 	
-	public String getSharedString(int index) {
-		return storedStrings.get(index);
+	public String getString(int index) {
+		return strings.get(index);
 	}
 	
-	public int addSharedObject(Object o) {
-		int index = storedObjects.size();
-		storedObjects.add(index, o);
+	public int addToObjects(Object o) {
+		int index = objects.size();
+		objects.add(index, o);
 		return index;
 	}
 	
-	public Object getSharedObject(int index) {
-		Object o = storedObjects.get(index);
+	public Object getObject(int index) {
+		Object o = objects.get(index);
 		if (o instanceof UnresolvedSharedObject)
 			throw new JMFUnresolvedSharedObjectException("Unresolved shared object: " + o);
 		return o;
 	}
 	
-	public int addUnresolvedSharedObject(String className) {
-		int index = storedObjects.size();
-		storedObjects.add(index, new UnresolvedSharedObject(className, index));
+	public int addToUnresolvedObjects(String className) {
+		int index = objects.size();
+		objects.add(index, new UnresolvedSharedObject(className, index));
 		return index;
 	}
 	
-	public Object setUnresolvedSharedObject(int index, Object o) {
-		Object uso = storedObjects.set(index, o);
+	public Object setUnresolvedObject(int index, Object o) {
+		Object uso = objects.set(index, o);
 		if (!(uso instanceof UnresolvedSharedObject))
 			throw new JMFUnresolvedSharedObjectException("Not an unresolved shared object: " + uso);
 		return uso;
@@ -315,5 +357,35 @@ public class JMFDeserializer implements InputContext {
 		public String toString() {
 			return UnresolvedSharedObject.class.getName() + " {className=" + className + ", index=" + index + "}";
 		}
+	}
+	
+	///////////////////////////////////////////////////////////////////////////
+	// Debug
+
+	public String toDumpString() {
+		StringBuilder sb = new StringBuilder(getClass().getName());
+		sb.append(" {\n");
+		
+		sb.append("    storedClassNames=[\n");
+		for (int i = 0; i < classNames.size(); i++)
+			sb.append("        ").append(i).append(": \"").append(classNames.get(i)).append("\"\n");
+		sb.append("    ],\n");
+		
+		
+		sb.append("    storedStrings=[\n");
+		for (int i = 0; i < strings.size(); i++)
+			sb.append("        ").append(i).append(": \"").append(strings.get(i)).append("\"\n");
+		sb.append("    ],\n");
+		
+		sb.append("    storedObjects=[\n");
+		for (int i = 0; i < objects.size(); i++) {
+			Object o = objects.get(i);
+			sb.append("        ").append(i).append(": ").append(o.getClass().getName())
+			  .append("@").append(System.identityHashCode(o)).append("\n");
+		}
+		sb.append("    ],\n");
+		
+		sb.append("}");
+		return sb.toString();
 	}
 }
