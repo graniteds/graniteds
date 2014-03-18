@@ -46,7 +46,22 @@ public abstract class AsyncChannelRunner implements Runnable {
 		queued.set(false);
 	}
 	
-	public abstract void run();
+	protected abstract void doRun();
+
+	public final void run() {
+		try {
+			doRun();
+		}
+		finally {
+			queued.set(false);
+			
+			// Make sure pending received or published messages that were enqueued
+			// during doRun() (serialization or dispatch) are going to be delivered
+			// ASAP (see issue GDS-1261).
+			if (channel.hasReceivedMessage() || channel.hasPublishedMessage())
+				queue(channel.getGravity());
+		}
+	}
 
 	@Override
 	public boolean equals(Object obj) {

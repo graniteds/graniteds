@@ -72,7 +72,7 @@ public abstract class AbstractChannel implements Channel {
     protected final Lock receivedQueueLock = new ReentrantLock();
     
     protected final AsyncPublisher publisher;
-    protected final AsyncReceiver httpReceiver;
+    protected final AsyncReceiver receiver;
     
     protected UdpReceiver udpReceiver = null;
     
@@ -91,7 +91,7 @@ public abstract class AbstractChannel implements Channel {
         this.factory = factory;
         
         this.publisher = new AsyncPublisher(this);
-        this.httpReceiver = new AsyncReceiver(this);
+        this.receiver = new AsyncReceiver(this);
     }
     
     ///////////////////////////////////////////////////////////////////////////
@@ -170,7 +170,6 @@ public abstract class AbstractChannel implements Channel {
 			publishedQueue = new LinkedList<AsyncPublishedMessage>();
 		}
 		finally {
-			publisher.reset();
 			publishedQueueLock.unlock();
 		}
 		
@@ -223,7 +222,7 @@ public abstract class AbstractChannel implements Channel {
 		}
 
 		if (hasAsyncHttpContext())
-			httpReceiver.queue(gravity);
+			receiver.queue(gravity);
 	}
 	
 	public boolean hasReceivedMessage() {
@@ -351,7 +350,6 @@ public abstract class AbstractChannel implements Channel {
 				receivedQueue = new LinkedList<AsyncMessage>();
 			}
 			finally {
-				httpReceiver.reset();
 				receivedQueueLock.unlock();
 			}
 			
@@ -455,7 +453,7 @@ public abstract class AbstractChannel implements Channel {
     	try {
 	    	Gravity gravity = getGravity();
 			gravity.cancel(publisher);
-			gravity.cancel(httpReceiver);
+			gravity.cancel(receiver);
 	
 	    	subscriptions.clear();
     	}
@@ -473,7 +471,7 @@ public abstract class AbstractChannel implements Channel {
 	
 	protected boolean queueReceiver() {
 		if (hasReceivedMessage()) {
-			httpReceiver.queue(getGravity());
+			receiver.queue(getGravity());
 			return true;
 		}
 		return false;

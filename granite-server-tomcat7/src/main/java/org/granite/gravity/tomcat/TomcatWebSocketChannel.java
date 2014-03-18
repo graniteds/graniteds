@@ -271,7 +271,6 @@ public class TomcatWebSocketChannel extends AbstractChannel {
 				receivedQueue = new LinkedList<AsyncMessage>();
 			}
 			finally {
-				httpReceiver.reset();
 				receivedQueueLock.unlock();
 			}
 			

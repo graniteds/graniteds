@@ -229,7 +229,6 @@ public class GlassFishWebSocketChannel extends AbstractChannel implements WebSoc
 				receivedQueue = new LinkedList<AsyncMessage>();
 			}
 			finally {
-				httpReceiver.reset();
 				receivedQueueLock.unlock();
 			}
 			

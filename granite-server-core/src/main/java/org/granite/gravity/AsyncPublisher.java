@@ -31,7 +31,7 @@ public class AsyncPublisher extends AsyncChannelRunner {
 	}
 
 	@Override
-	public void run() {
+	protected void doRun() {
 		channel.runPublish();
 	}
 }
