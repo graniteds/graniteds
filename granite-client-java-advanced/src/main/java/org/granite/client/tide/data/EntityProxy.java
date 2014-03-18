@@ -40,11 +40,12 @@ package org.granite.client.tide.data;
 public interface EntityProxy {
     
     public String getClassName();
-    
-    public Object getWrappedObject();
-    
+
+    public String getUid();
+
     public boolean hasProperty(String name);
 
     public Object getProperty(String name);
 
+    public Object getWrappedObject();
 }

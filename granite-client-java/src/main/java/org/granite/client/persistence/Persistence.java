@@ -280,6 +280,8 @@ public class Persistence {
 	
 	public Object getPropertyValue(Object entity, String name, boolean raw) {
 		Property property = reflection.findSerializableProperty(entity.getClass(), name);
+        if (property == null)
+            throw new RuntimeException("Property " + name + " not found on object " + entity);
 		try {
 			return raw ? property.getRawObject(entity) : property.getObject(entity);
         }
@@ -290,6 +292,8 @@ public class Persistence {
 	
 	public void setPropertyValue(Object entity, String name, Object value) {
 		Property property = reflection.findSerializableProperty(entity.getClass(), name);
+        if (property == null)
+            throw new RuntimeException("Property " + name + " not found on object " + entity);
 		try {
 			property.setObject(entity, value);
         }

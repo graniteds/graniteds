@@ -40,6 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanPropertyBase;
@@ -56,11 +57,19 @@ import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 
+import org.granite.client.javafx.persistence.collection.FXPersistentCollections;
+import org.granite.client.javafx.persistence.collection.ObservablePersistentList;
+import org.granite.client.javafx.persistence.collection.ObservablePersistentMap;
+import org.granite.client.javafx.persistence.collection.ObservablePersistentSet;
+import org.granite.client.javafx.persistence.collection.ObservablePersistentSortedMap;
+import org.granite.client.javafx.persistence.collection.ObservablePersistentSortedSet;
+import org.granite.client.persistence.collection.PersistentList;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.PersistenceManager;
 import org.granite.client.tide.data.impl.AbstractDataManager;
 import org.granite.client.util.WeakIdentityHashMap;
 import org.granite.logging.Logger;
+import org.granite.util.TypeUtil;
 
 /**
  * @author William DRAI
@@ -76,7 +85,22 @@ public class JavaFXDataManager extends AbstractDataManager {
     public void setTrackingHandler(TrackingHandler trackingHandler) {
         this.trackingHandler = trackingHandler;
     }
-    
+
+    public <T> T newInstance(Object source, Class<T> cast) throws IllegalAccessException, InstantiationException {
+        if (ObservablePersistentList.class.isInstance(source))
+            return (T)FXPersistentCollections.observablePersistentList();
+        else if (ObservablePersistentSortedSet.class.isInstance(source))
+            return (T)FXPersistentCollections.observablePersistentSortedSet();
+        else if (ObservablePersistentSet.class.isInstance(source))
+            return (T)FXPersistentCollections.observablePersistentSet();
+        else if (ObservablePersistentSortedMap.class.isInstance(source))
+            return (T)FXPersistentCollections.observablePersistentSortedMap();
+        else if (ObservablePersistentMap.class.isInstance(source))
+            return (T)FXPersistentCollections.observablePersistentMap();
+
+        return TypeUtil.newInstance(source.getClass(), cast);
+    }
+
     public BooleanProperty dirty = new ReadOnlyBooleanWrapper(this, "dirty", false);
     
     public ReadOnlyBooleanProperty dirtyProperty() {

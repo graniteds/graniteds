@@ -160,10 +160,6 @@ public class MergeContext {
         this.externalDataSessionId = externalDataSessionId;
     }
     
-    public void setServerSession(ServerSession serverSession) {
-    	this.serverSession = serverSession;
-    }
-    
     public ServerSession getServerSession() {
     	return serverSession;
     }

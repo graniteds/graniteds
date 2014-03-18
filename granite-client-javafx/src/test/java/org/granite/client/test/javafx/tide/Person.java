@@ -44,11 +44,13 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 
 import org.granite.client.javafx.persistence.collection.FXPersistentCollections;
+import org.granite.client.messaging.RemoteAlias;
 import org.granite.client.persistence.Entity;
 import org.granite.client.persistence.Lazy;
 
 
 @Entity
+@RemoteAlias("org.granite.client.test.Person")
 public class Person extends AbstractEntity {
 
     private static final long serialVersionUID = 1L;

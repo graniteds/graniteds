@@ -1,16 +1,29 @@
 package org.granite.client.tide.data;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.tide.PropertyHolder;
+import org.granite.client.tide.data.impl.ChangeEntityRef;
+import org.granite.client.tide.data.impl.ChangeProxy;
 import org.granite.client.tide.data.impl.ObjectUtil;
 import org.granite.client.tide.data.spi.EntityRef;
 import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.logging.Logger;
-import org.granite.tide.data.*;
+import org.granite.tide.data.Change;
+import org.granite.tide.data.ChangeRef;
+import org.granite.tide.data.ChangeSet;
+import org.granite.tide.data.CollectionChange;
+import org.granite.tide.data.CollectionChanges;
 import org.granite.util.TypeUtil;
-
-import java.lang.reflect.Array;
-import java.util.*;
 
 /**
  * Created by william on 10/01/14.
@@ -30,10 +43,12 @@ public class ChangeMerger implements DataMerger {
     }
 
     private boolean isForEntity(MergeContext mergeContext, Change change, Object entity) {
-        return entity.getClass().getName().equals(change.getClassName()) && change.getUid().equals(mergeContext.getDataManager().getUid(entity));
+        String className = mergeContext.getServerSession().getAliasRegistry().getTypeForAlias(change.getClassName());
+        return entity.getClass().getName().equals(className) && change.getUid().equals(mergeContext.getDataManager().getUid(entity));
     }
     private boolean isForEntity(MergeContext mergeContext, ChangeRef changeRef, Object entity) {
-        return entity.getClass().getName().equals(changeRef.getClassName()) && changeRef.getUid().equals(mergeContext.getDataManager().getUid(entity));
+        String className = mergeContext.getServerSession().getAliasRegistry().getTypeForAlias(changeRef.getClassName());
+        return entity.getClass().getName().equals(className) && changeRef.getUid().equals(mergeContext.getDataManager().getUid(entity));
     }
 
     /**
@@ -67,7 +82,9 @@ public class ChangeMerger implements DataMerger {
                 next = change;
             }
 
-            Object dest = mergeContext.getCachedObject(change);
+            ChangeEntityRef changeEntityRef = new ChangeEntityRef(change, mergeContext.getServerSession().getAliasRegistry());
+
+            Object dest = mergeContext.getCachedObject(changeEntityRef);
             if (dest == null) {
                 // Entity not found locally : nothing to do, we can't apply incremental changes
                 log.warn("Incoming change received for unknown entity {0}", change.getClassName() + ":" + change.getUid());
@@ -158,11 +175,29 @@ public class ChangeMerger implements DataMerger {
                                 mergedColl = (List<Object>)mergeContext.getDataManager().getPropertyValue(receivedEntity, p);
                             else {
                                 Object target = coll instanceof PropertyHolder ? ((PropertyHolder)coll).getObject() : coll;
-                                mergedColl = TypeUtil.newInstance(target.getClass(), List.class);
+                                mergedColl = mergeContext.getDataManager().newInstance(target, List.class);
                                 if (!unsaved)
                                     mergedColl.addAll((List<?>)coll);
 
                                 applyListChanges(mergeContext, mergedColl, (CollectionChanges)val, saved != null && saved.get(p) instanceof List<?> ? (List<Object>)saved.get(p) : null);
+                            }
+
+                            mergedChanges.put(p, mergedColl);
+                        }
+                        else if (coll instanceof Set<?>) {
+                            Set<Object> mergedColl = null;
+                            receivedEntity = lookupEntity(mergeContext, val, dest, null);
+                            // Check if we can find the complete initialized list in the incoming changes and use it instead of incremental updates
+                            if (receivedEntity != null && mergeContext.getDataManager().getPropertyValue(receivedEntity, p) instanceof PersistentCollection
+                                    && ((PersistentCollection)mergeContext.getDataManager().getPropertyValue(receivedEntity, p)).wasInitialized())
+                                mergedColl = (Set<Object>)mergeContext.getDataManager().getPropertyValue(receivedEntity, p);
+                            else {
+                                Object target = coll instanceof PropertyHolder ? ((PropertyHolder)coll).getObject() : coll;
+                                mergedColl = mergeContext.getDataManager().newInstance(target, Set.class);
+                                if (!unsaved)
+                                    mergedColl.addAll((Set<?>)coll);
+
+                                applySetChanges(mergeContext, mergedColl, (CollectionChanges)val, saved != null && saved.get(p) instanceof List<?> ? (List<Object>)saved.get(p) : null);
                             }
 
                             mergedChanges.put(p, mergedColl);
@@ -176,7 +211,7 @@ public class ChangeMerger implements DataMerger {
                                 mergedMap = (Map<Object, Object>)mergeContext.getDataManager().getPropertyValue(receivedEntity, p);
                             else {
                                 Object target = coll instanceof PropertyHolder ? ((PropertyHolder)coll).getObject() : coll;
-                                mergedMap = TypeUtil.newInstance(target.getClass(), Map.class);
+                                mergedMap = mergeContext.getDataManager().newInstance(target, Map.class);
                                 if (!unsaved)
                                     mergedMap.putAll((Map<?, ?>)coll);
 
@@ -190,19 +225,19 @@ public class ChangeMerger implements DataMerger {
                         mergedChanges.put(p, val);
                 }
 
-                String versionPropertyName = mergeContext.getDataManager().getVersionPropertyName(TypeUtil.forName(change.getClassName()));
-                Number version = (Number)change.getChanges().get(versionPropertyName);
+                Class<?> changeClass = TypeUtil.forName(changeEntityRef.getClassName());
+                Number version = change.getVersion();
                 // If dest version is greater than received change, use it instead
                 // That means that the received Change change is probably inconsistent with its content
                 if (incomingEntity != null && mergeContext.getDataManager().getVersion(incomingEntity) != null && (version == null || ((Number)mergeContext.getDataManager().getVersion(incomingEntity)).longValue() > version.longValue()))
                     version = (Number)mergeContext.getDataManager().getVersion(incomingEntity);
 
-//                ChangeProxy changeProxy = new ChangeProxy(change.getUid(), mergeContext.getDataManager().getIdPropertyName(TypeUtil.forName(change.getClassName())),
-//                        change.getId(), mergeContext.getDataManager().
-//                        mergeContext.getDataManager().getVersionPropertyName(TypeUtil.forName(change.getClassName())), version, mergedChanges, templateObject);
-//
-//                // Merge the proxy (only actual changes will be merged, values not in mergedChanges will be ignored)
-//                mergeContext.mergeExternal(changeProxy, dest, parent, propertyName);
+                ChangeProxy changeProxy = new ChangeProxy(mergeContext.getDataManager().getUidPropertyName(changeClass),
+                		change.getUid(), mergeContext.getDataManager().getIdPropertyName(changeClass),
+                        change.getId(), mergeContext.getDataManager().getVersionPropertyName(changeClass), version, mergedChanges, templateObject);
+
+                // Merge the proxy (only actual changes will be merged, values not in mergedChanges will be ignored)
+                mergeContext.mergeExternal(changeProxy, dest, parent, propertyName);
 
                 // Ensure updated collections/maps will be processed only once
                 // Mark them in the current merge cache
@@ -235,16 +270,16 @@ public class ChangeMerger implements DataMerger {
 
     private void applyListChanges(MergeContext mergeContext, List<Object> coll, CollectionChanges ccs, List<Object> savedArray) {
         if (savedArray != null) {
-            // If list has been modified locally, apply received operations to the current saved snapshot
+            // If the List has been modified locally, apply received operations to the current saved snapshot
             List<Object> savedList = new ArrayList<Object>(savedArray);
 
             for (CollectionChange cc : ccs.getChanges()) {
                 if (cc.getType() == -1) {
                     if (cc.getKey() != null && (Integer)cc.getKey() >= 0 && cc.getValue() instanceof ChangeRef
                             && isForEntity(mergeContext, (ChangeRef) cc.getValue(), savedList.get((Integer)cc.getKey())))
-                        savedList.remove((Integer)cc.getKey());
+                        savedList.remove(cc.getKey());
                     else if (cc.getKey() != null && (Integer)cc.getKey() >= 0 && mergeContext.objectEquals(cc.getValue(), savedList.get((Integer)cc.getKey())))
-                        savedList.remove((Integer)cc.getKey());
+                        savedList.remove(cc.getKey());
                     else if (cc.getKey() == null && cc.getValue() instanceof ChangeRef) {
                         for (int i = 0; i < savedList.size(); i++) {
                             if (isForEntity(mergeContext, (ChangeRef)cc.getValue(), savedList.get(i))) {
@@ -289,7 +324,7 @@ public class ChangeMerger implements DataMerger {
             savedArray.addAll(savedList);
         }
         else {
-            // If list has not been modified locally, apply received operations to the current collection content
+            // If the List has not been modified locally, apply received operations to the current collection content
             for (CollectionChange cc : ccs.getChanges()) {
                 if (cc.getType() == -1) {
                     if (cc.getKey() != null && (Integer)cc.getKey() >= 0 && cc.getValue() instanceof ChangeRef
@@ -324,6 +359,79 @@ public class ChangeMerger implements DataMerger {
                 }
                 else if (cc.getType() == 0 && cc.getKey() != null && (Integer)cc.getKey() >= 0) {
                     coll.set((Integer) cc.getKey(), cc.getValue());
+                }
+            }
+        }
+    }
+
+
+    private void applySetChanges(MergeContext mergeContext, Set<Object> coll, CollectionChanges ccs, List<Object> savedArray) {
+        if (savedArray != null) {
+            // If the Set has been modified locally, apply received operations to the current saved snapshot
+            List<Object> savedList = new ArrayList<Object>(savedArray);
+
+            for (CollectionChange cc : ccs.getChanges()) {
+                if (cc.getType() == -1) {
+                    if (cc.getValue() instanceof ChangeRef) {
+                        for (int i = 0; i < savedList.size(); i++) {
+                            if (isForEntity(mergeContext, (ChangeRef)cc.getValue(), savedList.get(i))) {
+                                savedList.remove(i);
+                                i--;
+                            }
+                        }
+                    }
+                    else {
+                        for (int i = 0; i < savedList.size(); i++) {
+                            if (mergeContext.objectEquals(cc.getValue(), savedList.get(i))) {
+                                savedList.remove(i);
+                                i--;
+                            }
+                        }
+                    }
+                }
+                else if (cc.getType() == 1) {
+                    savedList.add(cc.getValue());
+                }
+            }
+
+            // Replace local objects by received objects in merged collection
+            List<Object> toAdd = new ArrayList<Object>();
+            for (Iterator<Object> ic = coll.iterator(); ic.hasNext(); ) {
+                Object c = ic.next();
+                for (Object e : savedList) {
+                    if (mergeContext.objectEquals(c, e) && c != e) {
+                        ic.remove();
+                        toAdd.add(e);
+                        break;
+                    }
+                }
+            }
+            coll.addAll(toAdd);
+
+            savedArray.clear();
+            savedArray.addAll(savedList);
+        }
+        else {
+            // If the Set has not been modified locally, apply received operations to the current collection content
+            for (CollectionChange cc : ccs.getChanges()) {
+                if (cc.getType() == -1) {
+                    if (cc.getKey() == null && cc.getValue() instanceof ChangeRef) {
+                        for (Iterator<Object> ic = coll.iterator(); ic.hasNext(); ) {
+                            Object c = ic.next();
+                            if (isForEntity(mergeContext, (ChangeRef) cc.getValue(), c))
+                                ic.remove();
+                        }
+                    }
+                    else if (cc.getKey() == null) {
+                        for (Iterator<Object> ic = coll.iterator(); ic.hasNext(); ) {
+                            Object c = ic.next();
+                            if (isForEntity(mergeContext, (ChangeRef) cc.getValue(), c))
+                                ic.remove();
+                        }
+                    }
+                }
+                else if (cc.getType() == 1) {
+                    coll.add(cc.getValue());
                 }
             }
         }
@@ -401,6 +509,8 @@ public class ChangeMerger implements DataMerger {
 
 
     private Object lookupEntity(MergeContext mergeContext, Object graph, Object obj, IdentityHashMap<Object, Boolean> cache) {
+        if (graph == null)
+            return null;
         if (!(graph.getClass().isArray()) && (ObjectUtil.isSimple(graph) || graph instanceof Value || graph instanceof byte[] || graph instanceof Enum))
             return null;
 

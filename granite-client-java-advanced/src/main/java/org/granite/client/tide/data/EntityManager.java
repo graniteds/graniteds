@@ -42,6 +42,7 @@ import org.granite.client.tide.data.spi.DataManager;
 import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.data.spi.DataManager.TrackingHandler;
 import org.granite.client.tide.server.ServerSession;
+import org.granite.tide.data.Change;
 
 /**
  *  EntityManager is the interface for entity management (!)
@@ -191,7 +192,7 @@ public interface EntityManager {
      * MergeContext should be released at the end of the process
      * @return current merge context
      */
-    public MergeContext initMerge();
+    public MergeContext initMerge(ServerSession serverSession);
 
     /**
      * Merge an object in the local context
@@ -336,6 +337,10 @@ public interface EntityManager {
         public <T> String eventName(Class<T> entityClass) {
         	return DATA_EVENT_PREFIX + name().toLowerCase() + "." + entityClass.getSimpleName();
         }
+
+        public Update of(Object object) {
+            return new Update(this, object);
+        }
     }
 
     /**
@@ -362,7 +367,7 @@ public interface EntityManager {
         public void setEntity(Object entity) {
             this.entity = entity;
         }
-        
+
         public static Update forUpdate(String kind, Object entity) {
             return new Update(UpdateKind.forName(kind), entity);
         }

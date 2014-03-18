@@ -39,7 +39,7 @@ public class CollectionChanges implements Externalizable {
     public CollectionChanges() { 
     }
     
-    public CollectionChanges(CollectionChange[] changes) {
+    public CollectionChanges(CollectionChange... changes) {
     	this.changes = changes;
     }
 
@@ -47,7 +47,7 @@ public class CollectionChanges implements Externalizable {
 		return changes;
 	}
 	
-	public void setChanges(CollectionChange[] changes) {
+	public void setChanges(CollectionChange... changes) {
 		this.changes = changes;
 	}
 	

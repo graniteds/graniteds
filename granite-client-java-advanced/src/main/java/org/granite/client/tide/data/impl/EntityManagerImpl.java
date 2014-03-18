@@ -50,7 +50,14 @@ import java.util.Set;
 import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.collection.CollectionLoader;
-import org.granite.client.tide.data.*;
+import org.granite.client.tide.data.Conflict;
+import org.granite.client.tide.data.DataConflictListener;
+import org.granite.client.tide.data.DataMerger;
+import org.granite.client.tide.data.EntityManager;
+import org.granite.client.tide.data.PersistenceManager;
+import org.granite.client.tide.data.RemoteInitializer;
+import org.granite.client.tide.data.RemoteValidator;
+import org.granite.client.tide.data.Value;
 import org.granite.client.tide.data.impl.UIDWeakSet.Matcher;
 import org.granite.client.tide.data.impl.UIDWeakSet.Operation;
 import org.granite.client.tide.data.spi.DataManager;
@@ -285,7 +292,6 @@ public class EntityManagerImpl implements EntityManager {
             attachEntity(object);
 
         for (Map.Entry<String, Object> me : dataManager.getPropertyValues(object, false, true).entrySet()) {
-            String p = me.getKey();
             Object val = me.getValue();
             if (!dataManager.isInitialized(val))
                 continue;
@@ -549,10 +555,14 @@ public class EntityManagerImpl implements EntityManager {
         
         return removed;
     }
-    
-    
-    public MergeContext initMerge() {
-        return new MergeContext(this, dirtyCheckContext, null);
+
+
+    public MergeContext initMerge(ServerSession serverSession) {
+        if (serverSession != null) {
+            DataMerger[] customMergers = serverSession.getContext().allByType(DataMerger.class);
+            setCustomMergers(customMergers);
+        }
+        return new MergeContext(this, dirtyCheckContext, serverSession);
     }
 
     /**
@@ -589,14 +599,6 @@ public class EntityManagerImpl implements EntityManager {
                 fromCache = true;
             }
             else {
-                // Give a chance to intercept received value so we can apply changes on private values
-				Object currentMerge = mergeContext.getCurrentMerge();
-				if (currentMerge instanceof EntityProxy) {
-					if (!((EntityProxy)currentMerge).hasProperty(propertyName))
-						return previous;
-					next = obj = ((EntityProxy)currentMerge).getProperty(propertyName);
-				}
-
                 // Clear change tracking
 				dataManager.stopTracking(previous, parent);
 				
@@ -718,10 +720,7 @@ public class EntityManagerImpl implements EntityManager {
             }
         }
         else if (dataManager.isEntity(obj)) {
-        	if (obj instanceof EntityProxy)
-                p = entitiesByUid.get(((EntityProxy)obj).getClassName() + ":" + dataManager.getUid(((EntityProxy)obj).getWrappedObject()));
-        	else
-        		p = entitiesByUid.get(dataManager.getCacheKey(obj));
+            p = entitiesByUid.get(dataManager.getCacheKey(obj));
             if (p != null) {
                 // Trying to merge an entity that is already cached with itself: stop now, this is not necessary to go deeper in the object graph
                 // it should be already instrumented and tracked
@@ -845,14 +844,8 @@ public class EntityManagerImpl implements EntityManager {
             else
                 mergeContext.markVersionChanged(dest);
             
-            if (!ignore) {
-				if (obj instanceof EntityProxy) {
-					mergeContext.setCurrentMerge(obj);
-					defaultMerge(mergeContext, ((EntityProxy)obj).getWrappedObject(), dest, parent, propertyName);
-				}
-				else
-					defaultMerge(mergeContext, obj, dest, parent, propertyName);
-            }
+            if (!ignore)
+                defaultMerge(mergeContext, obj, dest, parent, propertyName);
         }
         else
             defaultMerge(mergeContext, obj, dest, parent, propertyName);
@@ -1507,8 +1500,7 @@ public class EntityManagerImpl implements EntityManager {
      */
     public Object mergeExternalData(ServerSession serverSession, Object obj, Object prev, String externalDataSessionId, List<Object> removals, List<Object> persists) {
         try {
-            MergeContext mergeContext = new MergeContext(this, dirtyCheckContext, null);
-            mergeContext.setServerSession(serverSession);
+            MergeContext mergeContext = new MergeContext(this, dirtyCheckContext, serverSession);
             mergeContext.setExternalDataSessionId(externalDataSessionId);
             
             return internalMergeExternalData(mergeContext, obj, prev, removals, persists);
@@ -2125,8 +2117,13 @@ public class EntityManagerImpl implements EntityManager {
         }
         
         mergeContext.setExternalDataSessionId(sourceSessionId);
-        internalMergeExternalData(mergeContext, merges, null, removals, persists);
-        
+        if (merges.size() == 1)
+            internalMergeExternalData(mergeContext, merges.get(0), null, removals, persists);
+        else if (merges.size() > 1)
+            internalMergeExternalData(mergeContext, merges, null, removals, persists);
+        else
+            internalMergeExternalData(mergeContext, null, null, removals, persists);
+
         for (Update update : updates)
             update.setEntity(getCachedObject(update.getEntity(), update.getKind() != UpdateKind.REMOVE));
     }

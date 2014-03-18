@@ -187,7 +187,7 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
         }
         
 		// Force generation of uids by merging all arguments in the current context
-        context.getEntityManager().initMerge();
+        context.getEntityManager().initMerge(serverSession);
         List<Object> argsList = Arrays.asList(args);
 		for (int i = 0; i < args.length; i++) {
 			if (argsList.get(i) instanceof PropertyHolder)

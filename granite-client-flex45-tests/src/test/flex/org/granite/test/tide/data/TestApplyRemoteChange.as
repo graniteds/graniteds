@@ -35,6 +35,7 @@ package org.granite.test.tide.data
     import org.granite.test.tide.Contact;
     import org.granite.test.tide.Person;
     import org.granite.tide.BaseContext;
+    import org.granite.tide.IEntity;
     import org.granite.tide.Tide;
     import org.granite.tide.data.Change;
     import org.granite.tide.data.ChangeMerger;
@@ -1324,7 +1325,7 @@ package org.granite.test.tide.data
 			// Check serialization of change set
 			changeSet = ObjectUtil.copy(changeSet) as ChangeSet;
 			
-			Managed.resetEntity(person);
+			Managed.resetEntity(IEntity(person));
 			
 			Assert.assertEquals("Person has 1 contact", 1, person.contacts.length);
 			

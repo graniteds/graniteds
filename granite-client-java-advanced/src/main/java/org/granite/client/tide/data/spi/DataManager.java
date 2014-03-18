@@ -65,6 +65,13 @@ public interface DataManager {
     public boolean hasIdProperty(Object entity);
 
     /**
+     * Name of the id field for the entity
+     * @param entity object
+     * @return property name or null if not found
+     */
+    public String getIdPropertyName(Object entity);
+
+    /**
      * Return the persistent detached state of an entity (private field name __detachedState__)
      * @param entity object
      * @return detached state if field found, error if field not found
@@ -122,6 +129,21 @@ public interface DataManager {
      * @return uid or error if uid could not be generated
      */
     public String getUid(Object entity);
+
+    /**
+     * Name of the uid field for the entity
+     * @param entity object
+     * @return property name or null if not found
+     */
+    public String getUidPropertyName(Object entity);
+
+    /**
+     * Return the value of the property for the specified entity instance
+     * @param entity object instance
+     * @param name property name
+     * @return property exists
+     */
+    public boolean hasProperty(Object entity, String name);
 
     /**
      * Return a map of property values for the specified entity instance
@@ -206,6 +228,15 @@ public interface DataManager {
      * @return true if modified
      */
     public boolean isDeepDirtyEntity(Object entity);
+
+    /**
+     * Create an empty instance of the same class as the source
+      * @param source source object
+     * @param cast expected type
+     * @param <T> expected type
+     * @return new empty instance
+     */
+    public <T> T newInstance(Object source, Class<T> cast) throws IllegalAccessException, InstantiationException;
 
 
     /**

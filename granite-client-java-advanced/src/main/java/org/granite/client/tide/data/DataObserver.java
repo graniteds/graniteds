@@ -242,7 +242,7 @@ public class DataObserver implements ContextAware, NameAware {
 				        if (receivedSessionId != null && receivedSessionId.equals(serverSession.getSessionId()))
 				        	receivedSessionId = null;
 				        
-			        	MergeContext mergeContext = entityManager.initMerge();
+			        	MergeContext mergeContext = entityManager.initMerge(serverSession);
 			        	
 				        Object[] updates = (Object[])message.getData();
 				        List<EntityManager.Update> upds = new ArrayList<EntityManager.Update>();

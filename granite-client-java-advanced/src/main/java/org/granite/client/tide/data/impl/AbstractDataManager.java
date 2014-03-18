@@ -35,6 +35,7 @@
 package org.granite.client.tide.data.impl;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,10 +45,12 @@ import java.util.concurrent.ConcurrentMap;
 import org.granite.client.persistence.Persistence;
 import org.granite.client.platform.Platform;
 import org.granite.client.tide.data.EntityManager;
+import org.granite.client.tide.data.EntityProxy;
 import org.granite.client.tide.data.PersistenceManager;
 import org.granite.client.tide.data.spi.DataManager;
 import org.granite.logging.Logger;
 import org.granite.messaging.reflect.Property;
+import org.granite.util.TypeUtil;
 import org.granite.util.UUIDUtil;
 
 /**
@@ -81,9 +84,16 @@ public abstract class AbstractDataManager implements DataManager {
     public boolean hasIdProperty(Object entity) {
     	if (entity == null)
             throw new IllegalArgumentException("entity should not be null");
-    	return persistence.hasIdProperty(entity instanceof Class<?> ? (Class<?>)entity : entity.getClass());
+    	return persistence.hasIdProperty(entity instanceof Class<?> ? (Class<?>) entity : entity.getClass());
     }
-    
+
+    public String getIdPropertyName(Object entity) {
+        if (entity == null)
+            throw new IllegalArgumentException("entity should not be null");
+        Property property = persistence.getIdProperty(entity instanceof Class<?> ? (Class<?>) entity : entity.getClass());
+        return property != null ? property.getName() : null;
+    }
+
     public String getDetachedState(Object entity) {
     	return persistence.getDetachedState(entity);
     }
@@ -105,9 +115,19 @@ public abstract class AbstractDataManager implements DataManager {
     	return property != null ? property.getName() : null;
     }
     
+    public boolean hasProperty(Object entity, String name) {
+    	if (entity == null)
+    		return false;
+        if (entity instanceof EntityProxy)
+            return ((EntityProxy)entity).hasProperty(name);
+    	return true;
+    }
+    
     public Object getPropertyValue(Object entity, String name) {
     	if (entity == null)
     		return null;
+        if (entity instanceof EntityProxy)
+            return ((EntityProxy)entity).getProperty(name);
     	return persistence.getPropertyValue(entity, name, true);
     }
     
@@ -135,17 +155,28 @@ public abstract class AbstractDataManager implements DataManager {
     	return entity.getClass().getSimpleName() + "::" + System.identityHashCode(entity);
     }
     
+    public String getUidPropertyName(Object entity) {
+    	if (entity == null)
+            throw new IllegalArgumentException("entity should not be null");
+    	Property property = persistence.getUidProperty(entity instanceof Class<?> ? (Class<?>)entity : entity.getClass());
+    	return property != null ? property.getName() : null;
+    }
+    
     public String getCacheKey(Object entity) {
     	if (entity == null)
     		return null;
-    	
+    	if (entity instanceof EntityProxy)
+            return ((EntityProxy)entity).getClassName() + ":" + ((EntityProxy)entity).getUid();
     	return entity.getClass().getName() + ":" + getUid(entity);
     }
     
     public boolean isInitialized(Object object) {
     	return persistence.isInitialized(object);
     }
-    
+
+    public void setInitialized(Object object, boolean initialized) {
+        persistence.setInitialized(object, initialized);
+    }
     
     public void copyUid(Object dest, Object obj) {
         if (isEntity(obj) && persistence.hasUidProperty(obj.getClass()))
@@ -172,6 +203,8 @@ public abstract class AbstractDataManager implements DataManager {
     }
     
     public void copyProxyState(Object dest, Object obj) {
+        if (obj instanceof EntityProxy)
+            return;
 		try {
 			persistence.setInitialized(dest, persistence.isInitialized(obj));
 			persistence.setDetachedState(dest, persistence.getDetachedState(obj));
@@ -182,11 +215,22 @@ public abstract class AbstractDataManager implements DataManager {
     }
     
     public Map<String, Object> getPropertyValues(Object entity, boolean excludeVersion, boolean includeReadOnly) {
-        return persistence.getPropertyValues(entity, true, false, excludeVersion, includeReadOnly);
+        return getPropertyValues(entity, false, excludeVersion, includeReadOnly);
     }
     
     public Map<String, Object> getPropertyValues(Object entity, boolean excludeIdUid, boolean excludeVersion, boolean includeReadOnly) {
-        return persistence.getPropertyValues(entity, true, excludeIdUid, excludeVersion, includeReadOnly);
+        Object object = entity instanceof EntityProxy ? ((EntityProxy)entity).getWrappedObject() : entity;
+        Map<String, Object> propertyValues = persistence.getPropertyValues(object, true, excludeIdUid, excludeVersion, includeReadOnly);
+        if (entity instanceof EntityProxy) {
+            for (Iterator<Map.Entry<String, Object>> ipval = propertyValues.entrySet().iterator(); ipval.hasNext(); ) {
+                Map.Entry<String, Object> pval = ipval.next();
+                if (!((EntityProxy)entity).hasProperty(pval.getKey()))
+                    ipval.remove();
+                else
+                    pval.setValue(((EntityProxy)entity).getProperty(pval.getKey()));
+            }
+        }
+        return propertyValues;
     }
 
     
@@ -211,7 +255,11 @@ public abstract class AbstractDataManager implements DataManager {
     	getLazyPropertyNames(entity.getClass()).add(propertyName);    	
     }
 
-    
+    public <T> T newInstance(Object source, Class<T> cast) throws IllegalAccessException, InstantiationException {
+        return TypeUtil.newInstance(source.getClass(), cast);
+    }
+
+
     public boolean isDirtyEntity(Object entity) {
     	EntityManager entityManager = PersistenceManager.getEntityManager(entity);
     	if (entityManager == null)

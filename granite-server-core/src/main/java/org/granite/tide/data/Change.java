@@ -21,8 +21,6 @@
  */
 package org.granite.tide.data;
 
-import org.granite.messaging.reflect.Reflection;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -54,7 +52,7 @@ public class Change implements Externalizable {
     
     public Change(String className, Serializable id, Number version, String uid) {
     	this.className = className;
-    	this.id = id;
+        this.id = id;
     	this.version = version;
     	this.uid = uid;
     	this.changes = new HashMap<String, Object>();
@@ -94,7 +92,7 @@ public class Change implements Externalizable {
         return local;
     }
 
-	public void addCollectionChanges(String propertyName, CollectionChange[] collChanges) {
+	public void addCollectionChanges(String propertyName, CollectionChange... collChanges) {
 		CollectionChanges existingChanges = (CollectionChanges)changes.get(propertyName);
 		if (existingChanges == null)
 			changes.put(propertyName, new CollectionChanges(collChanges));

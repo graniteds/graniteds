@@ -176,8 +176,7 @@ public class ResultHandler<T> implements Runnable {
             // Clear flash context variable for Grails/Spring MVC
             context.remove("flash");
 
-            MergeContext mergeContext = entityManager.initMerge();
-            mergeContext.setServerSession(serverSession);
+            MergeContext mergeContext = entityManager.initMerge(serverSession);
 
             boolean mergeExternal = true;
             if (invocationResult != null) {
@@ -186,7 +185,7 @@ public class ResultHandler<T> implements Runnable {
                 if (invocationResult.getUpdates() != null && invocationResult.getUpdates().length > 0) {
                     updates = new ArrayList<EntityManager.Update>(invocationResult.getUpdates().length);
                     for (Object[] u : invocationResult.getUpdates())
-                        updates.add(EntityManager.Update.forUpdate((String) u[0], u[1]));
+                        updates.add(EntityManager.Update.forUpdate((String)u[0], u[1]));
                     entityManager.handleUpdates(mergeContext, null, updates);
                 }
             }

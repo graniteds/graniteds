@@ -805,8 +805,8 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 			if (propName.equals(versionPropertyName) || propName.equals("dirty"))
 				continue;
 			
-//			if (!source.hasOwnProperty(propName))
-//				continue;
+			if (!dataManager.hasProperty(source, propName))
+				continue;
 			
 			Object localValue = pval.get(propName);
 			if (localValue instanceof PropertyHolder)

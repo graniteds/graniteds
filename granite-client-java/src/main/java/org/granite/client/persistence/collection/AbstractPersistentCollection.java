@@ -606,6 +606,8 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
         
         for (InitializationListener listener : initializationListeners)
             listener.uninitialized(this);
+
+        collection = null;
         
         log.debug("uninitialized");
     }

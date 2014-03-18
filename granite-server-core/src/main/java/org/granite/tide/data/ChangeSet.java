@@ -42,7 +42,7 @@ public class ChangeSet implements Externalizable {
         this.local = false;
 	}
 	
-	public ChangeSet(Change[] changes) {
+	public ChangeSet(Change... changes) {
 		this.changes = changes;
         this.local = false;
 	}

@@ -82,7 +82,7 @@ public class TestConflictEntity {
         Contact nc = new Contact(1L, 0L, "C01", null);
         nc.setPerson(np);
 
-        MergeContext mergeContext = entityManager.initMerge();
+        MergeContext mergeContext = entityManager.initMerge(null);
         entityManager.handleUpdates(mergeContext, "SID", Arrays.asList(new Update(UpdateKind.REMOVE, nc)));
 
         Assert.assertEquals("Person contacts empty", 0, p.getContacts().size());
@@ -104,7 +104,7 @@ public class TestConflictEntity {
 
         Contact2 nc = new Contact2(1L, 0L, "C01", null);
 
-        MergeContext mergeContext = entityManager.initMerge();
+        MergeContext mergeContext = entityManager.initMerge(null);
         entityManager.handleUpdates(mergeContext, "SID", Arrays.asList(new Update(UpdateKind.REMOVE, nc)));
 
         Assert.assertEquals("Person 1 contacts empty", 0, p1.getContacts().size());
@@ -135,7 +135,7 @@ public class TestConflictEntity {
          });
          
          // Receive an external removal event
-         MergeContext mergeContext = entityManager.initMerge();
+         MergeContext mergeContext = entityManager.initMerge(null);
          entityManager.handleUpdates(mergeContext, "SID", Arrays.asList(new Update(UpdateKind.REMOVE, nc)));
 
          Assert.assertEquals("Conflict detected", 1, conflicts[0].getConflicts().size());
@@ -168,7 +168,7 @@ public class TestConflictEntity {
          });
          
          // Receive an external removal event
-         MergeContext mergeContext = entityManager.initMerge();
+         MergeContext mergeContext = entityManager.initMerge(null);
          entityManager.handleUpdates(mergeContext, "SID", Arrays.asList(new Update(UpdateKind.REMOVE, nc)));
 
          Assert.assertEquals("Conflict detected", 1, conflicts[0].getConflicts().size());

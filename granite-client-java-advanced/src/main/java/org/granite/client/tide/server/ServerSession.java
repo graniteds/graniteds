@@ -93,6 +93,7 @@ import org.granite.client.tide.impl.ResultHandler;
 import org.granite.client.validation.InvalidValue;
 import org.granite.config.GraniteConfig;
 import org.granite.logging.Logger;
+import org.granite.messaging.AliasRegistry;
 import org.granite.util.ContentType;
 
 
@@ -128,6 +129,7 @@ public class ServerSession implements ContextAware {
 
     private ServerApp serverApp;
 	private ContentType contentType = ContentType.JMF_AMF;
+    private ClientAliasRegistry aliasRegistry;
 	private Class<? extends ChannelFactory> channelFactoryClass = null;
     private Transport remotingTransport = null;
     private Transport messagingTransport = null;
@@ -324,6 +326,11 @@ public class ServerSession implements ContextAware {
 		this.packageNames.clear();
 		this.packageNames.addAll(packageNames);
 	}
+
+
+    public ClientAliasRegistry getAliasRegistry() {
+        return aliasRegistry;
+    }
 	
 	private GraniteConfig graniteConfig = null;
 	
@@ -341,7 +348,7 @@ public class ServerSession implements ContextAware {
 	    if (channelFactory != null)    // Already started
 	        return;
 	    
-	    ClientAliasRegistry aliasRegistry = new ClientAliasRegistry();
+	    aliasRegistry = new ClientAliasRegistry();
 	    aliasRegistry.registerAlias(InvalidValue.class);
 
 	    if (channelFactoryClass != null) {
@@ -422,6 +429,7 @@ public class ServerSession implements ContextAware {
 	            
             remotingChannel = null;
 			messagingChannelsByType.clear();
+            aliasRegistry = null;
 		}
 	}
 
