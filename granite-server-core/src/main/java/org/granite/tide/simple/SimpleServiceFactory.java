@@ -21,7 +21,8 @@
  */
 package org.granite.tide.simple;
 
-import flex.messaging.messages.RemotingMessage;
+import java.util.Map;
+
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.service.ServiceException;
@@ -30,8 +31,7 @@ import org.granite.messaging.service.ServiceInvoker;
 import org.granite.scan.ScannedItemHandler;
 import org.granite.tide.TideServiceInvoker;
 
-import java.util.Collections;
-import java.util.Map;
+import flex.messaging.messages.RemotingMessage;
 
 /**
  * @author Franck WOLFF
@@ -58,42 +58,15 @@ public class SimpleServiceFactory extends ServiceFactory {
         return getServiceInvoker(cache, destination, key);
     }
 
-    private ServiceInvoker<?> getServiceInvoker(Map<String, Object> cache, Destination destination, String key) {
-        GraniteContext context = GraniteContext.getCurrentInstance();
-        synchronized (this) {
-            ServiceInvoker<?> invoker = (ServiceInvoker<?>)cache.get(key);
-            if (invoker == null) {
-                SimpleServiceContext tideContext = new SimpleServiceContext();
-
-                if (destination.getProperties().containsKey(ENTITY_MANAGER_FACTORY_JNDI_NAME)) {
-                    tideContext.setEntityManagerFactoryJndiName(destination.getProperties().get(ENTITY_MANAGER_FACTORY_JNDI_NAME));
-                }
-                else if (destination.getProperties().containsKey(ENTITY_MANAGER_JNDI_NAME)) {
-                    tideContext.setEntityManagerJndiName(destination.getProperties().get(ENTITY_MANAGER_JNDI_NAME));
-                }
-
-                invoker = new TideServiceInvoker<SimpleServiceFactory>(destination, this, tideContext);
-                cache.put(key, invoker);
-            }
-            return invoker;
-        }
-    }
-    
-    
-    private Map<String, Object> getCache(Destination destination) throws ServiceException {
-        GraniteContext context = GraniteContext.getCurrentInstance();
-        String scope = destination.getProperties().get("scope");
-
-        Map<String, Object> cache = null;
-        if (scope == null || "request".equals(scope))
-            cache = context.getRequestMap();
-        else if ("session".equals(scope))
-            cache = context.getSessionMap();
-        else if ("application".equals(scope))
-            cache = Collections.synchronizedMap(context.getApplicationMap());
-        else
-            throw new ServiceException("Illegal scope in destination: " + destination);
+    private synchronized ServiceInvoker<?> getServiceInvoker(Map<String, Object> cache, Destination destination, String key) {
+        ServiceInvoker<?> invoker = (ServiceInvoker<?>)cache.get(key);
+        if (invoker != null)
+        	return invoker;
         
-        return cache;
+        SimpleServiceContext tideContext = new SimpleServiceContext();
+        
+        invoker = new TideServiceInvoker<SimpleServiceFactory>(destination, this, tideContext);
+        cache.put(key, invoker);
+        return invoker;
     }
 }

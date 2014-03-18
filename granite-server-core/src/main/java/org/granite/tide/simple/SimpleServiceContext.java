@@ -21,6 +21,16 @@
  */
 package org.granite.tide.simple;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceInvocationContext;
@@ -36,16 +46,6 @@ import org.granite.tide.invocation.InvocationResult;
 import org.granite.tide.util.AbstractContext;
 import org.granite.util.TypeUtil;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 
 /**
  * @author William DRAI
@@ -60,24 +60,13 @@ public class SimpleServiceContext extends TideServiceContext {
 
     private final SimpleIdentity identity;
 
-    private String entityManagerFactoryJndiName = null;
-    private String entityManagerJndiName = null;
-
     
     public SimpleServiceContext() throws ServiceException {
         super();
     	this.identity = new SimpleIdentity();
     }
-
-    public void setEntityManagerFactoryJndiName(String entityManagerFactoryJndiName) {
-        this.entityManagerFactoryJndiName = entityManagerFactoryJndiName;
-    }
-
-    public void setEntityManagerJndiName(String entityManagerJndiName) {
-        this.entityManagerJndiName = entityManagerJndiName;
-    }
-
-
+    
+    
     @Override
     protected AsyncPublisher getAsyncPublisher() {
         return null;
@@ -92,7 +81,7 @@ public class SimpleServiceContext extends TideServiceContext {
     public Object findComponent(String componentName, Class<?> componentClass) {
     	if ("identity".equals(componentName))
     		return identity;
-
+    	
         SimpleComponent component = null;
         if (componentName != null)
             component = cache.get(componentName);
