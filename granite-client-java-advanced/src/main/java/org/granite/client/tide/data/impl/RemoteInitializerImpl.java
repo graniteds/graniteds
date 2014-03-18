@@ -124,7 +124,8 @@ public class RemoteInitializerImpl implements RemoteInitializer {
 					
 					List<String> propertyNames = initMap.get(objectsInitializing.get(i)[1]);
 					if (propertyNames == null) {
-						propertyNames = Arrays.asList((String)objectsInitializing.get(i)[2]);
+						propertyNames = new ArrayList<String>();
+						propertyNames.add((String)objectsInitializing.get(i)[2]);
 						initMap.put(objectsInitializing.get(i)[1], propertyNames);
 					}
 					else
