@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <actionScriptProperties analytics="false" mainApplicationPath="dummy.as" projectUUID="b8a2e4fb-c032-4a87-b08a-dd6b980a4c3d" version="10">
-  <compiler additionalCompilerArguments="-define=CONFIG::debugging,false&#13;&#10;-define=CONFIG::flex40,true&#13;&#10;-define=CONFIG::flex45,false" autoRSLOrdering="true" copyDependentFiles="false" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="src/main/flex" strict="true" targetPlayerVersion="11.1.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
+  <compiler additionalCompilerArguments="-define=CONFIG::debugging,false&#13;&#10;-define=CONFIG::flex40,true&#13;&#10;-define=CONFIG::flex45,false" autoRSLOrdering="true" copyDependentFiles="false" flexSDK="Flex 3.6A" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="src/main/flex" strict="true" targetPlayerVersion="10.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
     <compilerSourcePath>
       <compilerSourcePathEntry kind="1" linkType="1" path="src/main/flex"/>
       <compilerSourcePathEntry kind="1" linkType="1" path="src/main/resources"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="src/test/actionscript"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="src/test/flex"/>
       <compilerSourcePathEntry kind="1" linkType="1" path="src/test/resources"/>
     </compilerSourcePath>
     <libraryPath defaultLinkType="0">

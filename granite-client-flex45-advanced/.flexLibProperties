@@ -120,7 +120,6 @@
     <classEntry path="org.granite.tide.data.UninitializeArgumentPreprocessor"/>
     <classEntry path="org.granite.tide.data.events.DirtyChangeEvent"/>
     <classEntry path="org.granite.tide.data.events.TideDataConflictsEvent"/>
-    <classEntry path="org.granite.tide.data.model.Page"/>
     <classEntry path="org.granite.tide.data.model.PageInfo"/>
     <classEntry path="org.granite.tide.data.model.SortInfo"/>
     <classEntry path="org.granite.tide.deeplinking.TideUrlMapping"/>

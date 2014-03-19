@@ -18,12 +18,7 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>[source path] actionscript</name>
-			<type>2</type>
-			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/test/actionscript</locationURI>
-		</link>
-		<link>
-			<name>[source path] flex</name>
+			<name>[source path] main-flex</name>
 			<type>2</type>
 			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/main/flex</locationURI>
 		</link>
@@ -33,9 +28,14 @@
 			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/main/resources</locationURI>
 		</link>
 		<link>
+			<name>[source path] test-flex</name>
+			<type>2</type>
+			<locationURI>DOCUMENTS/graniteds/granite-client-flex45-tests/src/test/flex</locationURI>
+		</link>
+		<link>
 			<name>[source path] test-resources</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/test/resources</locationURI>
+			<locationURI>DOCUMENTS/graniteds/granite-client-flex45-tests/src/test/resources</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<actionScriptProperties analytics="false" mainApplicationPath="dummy.as" projectUUID="63586b13-89d3-4be8-a788-ca9f1c6979f4" version="11">
-  <compiler additionalCompilerArguments="-define=CONFIG::debugging,false&#13;&#10;-define=CONFIG::flex40,false&#13;&#10;-define=CONFIG::flex45,true" autoRSLOrdering="true" copyDependentFiles="false" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="../graniteds/granite-client-flex-advanced/src/main/flex" strict="true" targetPlayerVersion="11.1.0" useApolloConfig="false" useDebugRSLSwfs="true" useFlashSDK="false" verifyDigests="true" warn="true">
+<actionScriptProperties analytics="false" mainApplicationPath="dummy.as" projectUUID="63586b13-89d3-4be8-a788-ca9f1c6979f4" version="10">
+  <compiler additionalCompilerArguments="-define=CONFIG::debugging,false&#13;&#10;-define=CONFIG::flex40,false&#13;&#10;-define=CONFIG::flex45,true" autoRSLOrdering="true" copyDependentFiles="false" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="src/main/flex" strict="true" targetPlayerVersion="11.1.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
     <compilerSourcePath>
       <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/graniteds/granite-client-flex-advanced/src/main/flex"/>
       <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/graniteds/granite-client-flex-advanced/src/main/resources"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/graniteds/granite-client-flex-advanced/src/test/actionscript"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/graniteds/granite-client-flex-advanced/src/test/resources"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/graniteds/granite-client-flex45-tests/src/test/flex"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/graniteds/granite-client-flex45-tests/src/test/resources"/>
     </compilerSourcePath>
     <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">
@@ -15,6 +15,10 @@
         </excludedEntries>
       </libraryPathEntry>
       <libraryPathEntry kind="3" linkType="2" path="/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="true"/>
+      <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/Common"/>
+      <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject"/>
+      <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject_Extended"/>
+      <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LOCALE_LOCATION}/version4locale/"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>
@@ -22,7 +26,6 @@
     <application path="dummy.as"/>
   </applications>
   <modules/>
-  <workers/>
   <buildCSSFiles/>
   <flashCatalyst validateFlashCatalystCompatibility="false"/>
 </actionScriptProperties>

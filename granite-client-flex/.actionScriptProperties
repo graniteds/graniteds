@@ -14,7 +14,7 @@
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/core.swc" useDefaultLinkType="false"/>
         </excludedEntries>
       </libraryPathEntry>
-      <libraryPathEntry kind="3" linkType="1" path="${FLEX_WEBSOCKET_CLIENT_SWC}" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="C:/Users/william/.gradle/caches/artifacts-26/filestore/org.graniteds/flex-websocket-client/1.0/swc/c81b1e2dd5b040bfa828066c795cd4850d86c7c2/flex-websocket-client-1.0.swc" useDefaultLinkType="false"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>
