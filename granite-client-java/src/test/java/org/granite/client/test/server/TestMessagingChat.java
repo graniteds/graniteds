@@ -39,6 +39,7 @@ import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicMessageListener;
 import org.granite.client.messaging.channel.AMFChannelFactory;
 import org.granite.client.messaging.channel.Channel;
+//import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.channel.ChannelFactory;
 import org.granite.client.messaging.channel.ChannelType;
 import org.granite.client.messaging.channel.JMFChannelFactory;
@@ -262,12 +263,12 @@ public class TestMessagingChat {
         }
     }
 
-
     protected void waitForChannel(Channel channel, CyclicBarrier barrier) {
         try {
             barrier.await();
         }
         catch (Exception e) {
+        	log.error(e, "Error while releasing barrier %s for chanel %s", barrier, channel);
         }
     }
 
@@ -302,7 +303,7 @@ public class TestMessagingChat {
         @Override
         public void run() {
             channelFactory = buildChannelFactory();
-            MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP_APP);
+            final MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf", SERVER_APP_APP);
             channel.getTransport().setStatusHandler(new TransportStatusHandler() {
                 @Override
                 public void handleIO(boolean active) {
@@ -330,6 +331,7 @@ public class TestMessagingChat {
                         barriers[0].await();
                     }
                     catch (Exception e) {
+                    	log.error(e, "Error while released subscription barrier: %s", channel);
                     }
                 }
             });
@@ -380,6 +382,7 @@ public class TestMessagingChat {
                             @Override
                             public void onIssue(IssueEvent event) {
                                 log.error("Consumer %s: unsubscription failed %s", id, event.toString());
+                                waitToStop.countDown();
                             }
                         });
                     }
