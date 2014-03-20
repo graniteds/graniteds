@@ -21,14 +21,15 @@
  */
 package org.granite.gravity.websocket;
 
-import org.granite.gravity.Gravity;
-import org.granite.gravity.GravityManager;
+import java.util.Arrays;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
-import java.util.Arrays;
+
+import org.granite.gravity.Gravity;
+import org.granite.gravity.GravityManager;
 
 /**
  * Note: MUST implement ServerApplicationConfig to force Tomcat 7.0.52+ to initialize ServerContainer
@@ -36,8 +37,6 @@ import java.util.Arrays;
  * @author wdrai
  */
 public class GravityWebSocketDeployer implements ServletContextListener {
-
-	private static final long serialVersionUID = 1L;
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {

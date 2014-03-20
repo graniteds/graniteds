@@ -32,10 +32,6 @@ import org.granite.scan.ScannedItemHandler;
 import org.granite.tide.TideServiceInvoker;
 
 import flex.messaging.messages.RemotingMessage;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * @author Franck WOLFF

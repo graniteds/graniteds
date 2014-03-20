@@ -38,7 +38,6 @@ import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
 import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
-import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;

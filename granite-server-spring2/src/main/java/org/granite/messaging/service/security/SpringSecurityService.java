@@ -95,8 +95,7 @@ public class SpringSecurityService extends AbstractSecurityService {
                 Authentication authentication = authenticationManager.authenticate(auth);
                 SecurityContext securityContext = SecurityContextHolder.getContext();
                 securityContext.setAuthentication(authentication);
-                if (authentication.getPrincipal() instanceof Principal)
-                    principal = (Principal)authentication.getPrincipal();
+                principal = authentication;
                 SecurityContextHolder.setContext(securityContext);
                 saveSecurityContextInSession(securityContext, 0);
 

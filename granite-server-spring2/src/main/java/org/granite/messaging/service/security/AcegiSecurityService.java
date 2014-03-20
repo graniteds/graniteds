@@ -82,10 +82,9 @@ public class AcegiSecurityService extends AbstractSecurityService {
             try {
                 Authentication authentication = authenticationManager.authenticate(auth);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                if (authentication instanceof Principal)
-                    principal = (Principal)authentication.getPrincipal();
+                principal = authentication;
                 httpRequest.getSession().setAttribute(SPRING_AUTHENTICATION_TOKEN, authentication);
-
+                
                 endLogin(credentials, charset);
             } 
             catch (AuthenticationException e) {

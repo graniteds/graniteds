@@ -21,10 +21,12 @@
  */
 package org.granite.client.messaging.transport.websocket;
 
-import org.granite.client.messaging.channel.Channel;
-import org.granite.client.messaging.transport.TransportException;
-import org.granite.client.messaging.transport.TransportMessage;
-import org.granite.logging.Logger;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.websocket.ClientEndpointConfig;
 import javax.websocket.CloseReason;
@@ -37,14 +39,11 @@ import javax.websocket.HandshakeResponse;
 import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
+import org.granite.client.messaging.channel.Channel;
+import org.granite.client.messaging.transport.TransportException;
+import org.granite.client.messaging.transport.TransportMessage;
+import org.granite.logging.Logger;
 
 
 /**

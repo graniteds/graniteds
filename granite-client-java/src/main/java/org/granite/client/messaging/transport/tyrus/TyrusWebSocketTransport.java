@@ -21,19 +21,16 @@
  */
 package org.granite.client.messaging.transport.tyrus;
 
+import javax.websocket.WebSocketContainer;
+
 import org.glassfish.tyrus.client.ClientManager;
 import org.granite.client.messaging.transport.websocket.WebSocketTransport;
-import org.granite.logging.Logger;
-
-import javax.websocket.WebSocketContainer;
 
 
 /**
  * @author William DRAI
  */
 public class TyrusWebSocketTransport extends WebSocketTransport {
-	
-	private static final Logger log = Logger.getLogger(TyrusWebSocketTransport.class);
 
     @Override
     protected WebSocketContainer createContainer() {

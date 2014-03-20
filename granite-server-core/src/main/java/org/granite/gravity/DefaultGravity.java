@@ -636,7 +636,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
     public List<Channel> getConnectedChannels() {
         List<Channel> channels = new ArrayList<Channel>();
-        for (TimeChannel timeChannel : this.channels.values()) {
+        for (TimeChannel<? extends Channel> timeChannel : this.channels.values()) {
             channels.add(timeChannel.getChannel());
         }
         return channels;
@@ -644,7 +644,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
     public Set<Principal> getConnectedUsers() {
         Set<Principal> userPrincipals =  new HashSet<Principal>();
-        for (TimeChannel timeChannel : this.channels.values()) {
+        for (TimeChannel<? extends Channel> timeChannel : this.channels.values()) {
             if (timeChannel.getChannel().getUserPrincipal() != null)
                 userPrincipals.add(timeChannel.getChannel().getUserPrincipal());
         }
@@ -653,7 +653,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
     public List<Channel> getConnectedChannelsByDestination(String destination) {
         List<Channel> channels = new ArrayList<Channel>();
-        for (TimeChannel timeChannel : this.channels.values()) {
+        for (TimeChannel<? extends Channel> timeChannel : this.channels.values()) {
             for (Subscription subscription : timeChannel.getChannel().getSubscriptions()) {
                 if (destination.equals(subscription.getDestination())) {
                     channels.add(timeChannel.getChannel());
@@ -666,7 +666,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
     public Set<Principal> getConnectedUsersByDestination(String destination) {
         Set<Principal> userPrincipals = new HashSet<Principal>();
-        for (TimeChannel timeChannel : this.channels.values()) {
+        for (TimeChannel<? extends Channel> timeChannel : this.channels.values()) {
             for (Subscription subscription : timeChannel.getChannel().getSubscriptions()) {
                 if (destination.equals(subscription.getDestination())) {
                     userPrincipals.add(timeChannel.getChannel().getUserPrincipal());
@@ -679,7 +679,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
     public List<Channel> findConnectedChannelsByUser(String name) {
         List<Channel> channels = new ArrayList<Channel>();
-        for (TimeChannel timeChannel : this.channels.values()) {
+        for (TimeChannel<? extends Channel> timeChannel : this.channels.values()) {
             if (timeChannel.getChannel().getUserPrincipal() != null && timeChannel.getChannel().getUserPrincipal().getName().equals(name))
                 channels.add(timeChannel.getChannel());
         }

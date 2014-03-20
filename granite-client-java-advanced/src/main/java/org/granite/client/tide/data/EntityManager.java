@@ -39,10 +39,9 @@ import java.util.Map;
 
 import org.granite.client.tide.Context;
 import org.granite.client.tide.data.spi.DataManager;
-import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.data.spi.DataManager.TrackingHandler;
+import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.server.ServerSession;
-import org.granite.tide.data.Change;
 
 /**
  *  EntityManager is the interface for entity management (!)

@@ -21,7 +21,6 @@
  */
 package org.granite.client.test.server;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -255,7 +254,6 @@ public class TestMessagingChat {
         private List<String> received = new ArrayList<String>();
         private CyclicBarrier[] barriers;
         private Thread thread = new Thread(this);
-        private ChannelFactory channelFactory;
         private Consumer consumer;
         private int timeout = 20;
 
@@ -280,7 +278,7 @@ public class TestMessagingChat {
         @Override
         public void run() {
             ChannelFactory channelFactory = ContainerTestUtil.buildChannelFactory(contentType);
-            MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf-" + id, SERVER_APP_APP);
+            final MessagingChannel channel = channelFactory.newMessagingChannel(channelType, "messagingamf-" + id, SERVER_APP_APP);
             channel.getTransport().setStatusHandler(new TransportStatusHandler() {
                 @Override
                 public void handleIO(boolean active) {

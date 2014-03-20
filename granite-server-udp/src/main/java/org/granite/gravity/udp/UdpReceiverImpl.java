@@ -42,10 +42,8 @@ import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
 import org.granite.context.SimpleGraniteContext;
 import org.granite.gravity.AbstractChannel;
-import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityInternal;
 import org.granite.gravity.MessageReceivingException;
-import org.granite.gravity.udp.UdpReceiver;
 import org.granite.logging.Logger;
 
 import flex.messaging.messages.AcknowledgeMessage;

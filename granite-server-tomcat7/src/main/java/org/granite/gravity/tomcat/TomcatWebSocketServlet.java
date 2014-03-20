@@ -87,9 +87,8 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 			String clientType = request.getHeader("GDSClientType") != null ? request.getHeader("GDSClientType") : request.getParameter("GDSClientType");
 			String sessionId = null;
 			HttpSession session = request.getSession(false);
-            ServletGraniteContext graniteContext = null;
 			if (session != null) {
-                graniteContext = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
+                ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
 		        	getServletContext(), session, clientType);
 		        
 				sessionId = session.getId();
@@ -102,11 +101,11 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 					}
 				}
 
-                graniteContext = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
+                ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
 	        		getServletContext(), sessionId, clientType); 
 			}
             else {
-                graniteContext = ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
+                ServletGraniteContext.createThreadInstance(gravity.getGraniteConfig(), gravity.getServicesConfig(),
                         getServletContext(), (String)null, clientType);
             }
 

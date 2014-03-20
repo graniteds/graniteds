@@ -21,8 +21,6 @@
  */
 package org.granite.gravity;
 
-import flex.messaging.messages.AsyncMessage;
-import flex.messaging.messages.Message;
 import org.granite.config.GraniteConfig;
 import org.granite.config.ShutdownListener;
 import org.granite.config.flex.ServicesConfig;
@@ -31,9 +29,7 @@ import org.granite.gravity.adapters.ServiceAdapter;
 import org.granite.gravity.udp.UdpReceiverFactory;
 import org.granite.messaging.jmf.SharedContext;
 
-import java.security.Principal;
-import java.util.List;
-import java.util.Set;
+import flex.messaging.messages.Message;
 
 /**
  * @author Franck WOLFF

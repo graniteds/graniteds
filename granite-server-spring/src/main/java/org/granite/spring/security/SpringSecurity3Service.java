@@ -202,14 +202,13 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
                     return null;
                 }
             }
-
+            
             log.debug("Define authentication and save to repo: %s", authentication != null ? authentication.getName() : "none");
             HttpRequestResponseHolder holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
             SecurityContext securityContext = securityContextRepository.loadContext(holder);
             securityContext.setAuthentication(authentication);
             SecurityContextHolder.setContext(securityContext);
-            if (authentication instanceof Principal)
-                principal = (Principal)authentication;
+            principal = authentication;
             try {
                 securityContextRepository.saveContext(securityContext, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
             }

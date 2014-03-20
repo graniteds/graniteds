@@ -41,6 +41,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Future;
 
+import org.granite.client.messaging.RemoteAlias;
 import org.granite.client.messaging.messages.responses.FaultMessage;
 import org.granite.client.messaging.messages.responses.FaultMessage.Code;
 import org.granite.client.tide.impl.ComponentImpl;

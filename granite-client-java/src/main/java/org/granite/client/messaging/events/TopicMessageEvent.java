@@ -22,7 +22,6 @@
 package org.granite.client.messaging.events;
 
 import org.granite.client.messaging.Consumer;
-import org.granite.client.messaging.messages.Message;
 import org.granite.client.messaging.messages.push.TopicMessage;
 
 /**

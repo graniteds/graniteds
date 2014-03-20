@@ -62,7 +62,8 @@ public class ChangeMerger implements DataMerger {
      *
      *  @return merged entity (=== previous when previous not null)
      */
-    public Object merge(MergeContext mergeContext, Object changeSet, Object previous, Object parent, String propertyName) {
+    @SuppressWarnings("unchecked")
+	public Object merge(MergeContext mergeContext, Object changeSet, Object previous, Object parent, String propertyName) {
         if (changeSet != null || previous != null)
             log.debug("merge Change: {0} previous {1} (change)", ObjectUtil.toString(changeSet), ObjectUtil.toString(previous));
 
@@ -268,7 +269,8 @@ public class ChangeMerger implements DataMerger {
     }
 
 
-    private void applyListChanges(MergeContext mergeContext, List<Object> coll, CollectionChanges ccs, List<Object> savedArray) {
+    @SuppressWarnings("cast")
+	private void applyListChanges(MergeContext mergeContext, List<Object> coll, CollectionChanges ccs, List<Object> savedArray) {
         if (savedArray != null) {
             // If the List has been modified locally, apply received operations to the current saved snapshot
             List<Object> savedList = new ArrayList<Object>(savedArray);
@@ -458,7 +460,7 @@ public class ChangeMerger implements DataMerger {
             }
 
             // Replace local objects by received objects in merged map
-            for (Map.Entry me : map.entrySet()) {
+            for (Map.Entry<?, ?> me : map.entrySet()) {
                 Object key = me.getKey();
                 Object value = me.getValue();
                 for (Object k : savedMap.keySet()) {

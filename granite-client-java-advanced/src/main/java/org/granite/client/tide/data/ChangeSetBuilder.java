@@ -34,14 +34,22 @@
  */
 package org.granite.client.tide.data;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.granite.client.tide.Context;
 import org.granite.client.tide.data.impl.ObjectUtil;
-import org.granite.logging.Logger;
 import org.granite.tide.IUID;
-import org.granite.tide.data.*;
-
-import java.io.Serializable;
-import java.util.*;
+import org.granite.tide.data.Change;
+import org.granite.tide.data.ChangeRef;
+import org.granite.tide.data.ChangeSet;
+import org.granite.tide.data.CollectionChange;
+import org.granite.tide.data.CollectionChanges;
+import org.granite.tide.data.DataUtils;
 
 /**
  * 	ChangeSetBuilder is a utility class that builds a ChangeSet for an existing dirty context
@@ -50,8 +58,6 @@ import java.util.*;
  * 	@author William DRAI
  */
 public class ChangeSetBuilder {
-
-    private static final Logger log = Logger.getLogger(ChangeSetBuilder.class);
 
     private final Context context;
     private final Map<Object, Map<String, Object>> savedProperties;
@@ -125,7 +131,7 @@ public class ChangeSetBuilder {
 
     private void collectEntitySavedProperties(Object entity, Map<Object, Map<String, Object>> savedProperties, Map<Object, Boolean> cache) {
         if (cache == null)
-            cache = new IdentityHashMap();
+            cache = new IdentityHashMap<Object, Boolean>();
         else if (cache.containsKey(entity))
             return;
 
@@ -134,14 +140,12 @@ public class ChangeSetBuilder {
             savedProperties.put(entity, this.savedProperties.get(entity));
 
         Map<String, Object> properties = context.getDataManager().getPropertyValues(entity, false, false);
-        for (Map.Entry<String, Object> mep : properties.entrySet()) {
-            String p = mep.getKey();
-            Object v = mep.getValue();
+        for (Object v : properties.values()) {
             if (v == null)
                 continue;
             if (isEntity(entity) && !context.getDataManager().isInitialized(v))
                 continue;
-
+            
             if (v instanceof Collection<?>) {
                 for (Object e : ((Collection<?>)v))
                     collectEntitySavedProperties(e, savedProperties, cache);
@@ -158,7 +162,8 @@ public class ChangeSetBuilder {
         }
     }
 
-    private ChangeSet internalBuildChangeSet(Map<Object, Map<String, Object>> savedProperties) {
+    @SuppressWarnings("unchecked")
+	private ChangeSet internalBuildChangeSet(Map<Object, Map<String, Object>> savedProperties) {
         ChangeSet changeSet = new ChangeSet(new Change[0], local);
         Map<Object, Object> changeMap = new IdentityHashMap<Object, Object>();
 

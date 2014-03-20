@@ -21,6 +21,10 @@
  */
 package org.granite.client.messaging.transport.websocket;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.LinkedList;
+
 import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.transport.AbstractTransport;
 import org.granite.client.messaging.transport.TransportException;
@@ -28,10 +32,6 @@ import org.granite.client.messaging.transport.TransportFuture;
 import org.granite.client.messaging.transport.TransportMessage;
 import org.granite.logging.Logger;
 import org.granite.util.PublicByteArrayOutputStream;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.LinkedList;
 
 
 /**
@@ -146,7 +146,8 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
         this.stopping = stopping;
     }
 
-    protected void onConnect(Channel channel, S connection) {
+    @SuppressWarnings("unchecked")
+	protected void onConnect(Channel channel, S connection) {
         synchronized (channel) {
             reconnectAttempts = 0;
             ((TransportData<S>)channel.getTransportData()).connect(connection);
@@ -163,7 +164,7 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
         boolean waitBeforeReconnect = !(closeCode == CLOSE_NORMAL && message != null && message.startsWith("Idle"));
 
         // Mark the connection as closed, the channel should reopen a connection if needed for the next message
-        ((TransportData)channel.getTransportData()).disconnect();
+        ((TransportData<?>)channel.getTransportData()).disconnect();
 
         if (stopping || !isStarted()) {
             log.debug("Websocket connection marked as disconnected");

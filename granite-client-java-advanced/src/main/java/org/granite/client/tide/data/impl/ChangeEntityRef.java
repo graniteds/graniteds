@@ -1,9 +1,7 @@
 package org.granite.client.tide.data.impl;
 
 import org.granite.client.messaging.ClientAliasRegistry;
-import org.granite.client.tide.data.spi.DataManager;
 import org.granite.client.tide.data.spi.EntityRef;
-import org.granite.client.tide.server.ServerSession;
 import org.granite.tide.data.Change;
 
 /**

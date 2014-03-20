@@ -212,6 +212,7 @@ public class JMFDeserializer implements InputContext {
 		return b;
 	}
 
+	@SuppressWarnings("cast")
 	public long safeReadLong() throws IOException {
 		return (long)safeRead();
 	}

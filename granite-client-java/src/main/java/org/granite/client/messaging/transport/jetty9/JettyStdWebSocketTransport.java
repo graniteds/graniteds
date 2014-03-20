@@ -21,19 +21,16 @@
  */
 package org.granite.client.messaging.transport.jetty9;
 
+import javax.websocket.WebSocketContainer;
+
 import org.eclipse.jetty.websocket.jsr356.JettyClientContainerProvider;
 import org.granite.client.messaging.transport.websocket.WebSocketTransport;
-import org.granite.logging.Logger;
-
-import javax.websocket.WebSocketContainer;
 
 
 /**
  * @author William DRAI
  */
 public class JettyStdWebSocketTransport extends WebSocketTransport {
-	
-	private static final Logger log = Logger.getLogger(JettyStdWebSocketTransport.class);
 
     @Override
     protected WebSocketContainer createContainer() {

@@ -1,20 +1,14 @@
 package org.granite.client.test.tide.server.chat;
 
-import flex.messaging.messages.AsyncMessage;
-import flex.messaging.messages.ErrorMessage;
-import flex.messaging.messages.Message;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityManager;
 import org.granite.messaging.service.annotations.RemoteDestination;
 import org.granite.messaging.webapp.HttpGraniteContext;
 
-import javax.servlet.AsyncContext;
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
+import flex.messaging.messages.AsyncMessage;
+import flex.messaging.messages.ErrorMessage;
+import flex.messaging.messages.Message;
 
 /**
  * Created by william on 13/02/14.

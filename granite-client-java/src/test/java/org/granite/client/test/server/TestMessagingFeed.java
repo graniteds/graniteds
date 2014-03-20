@@ -21,7 +21,6 @@
  */
 package org.granite.client.test.server;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -44,7 +43,6 @@ import org.granite.client.test.server.feed.FeedListener;
 import org.granite.client.test.server.feed.Info;
 import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
-import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;

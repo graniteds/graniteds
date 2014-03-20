@@ -21,19 +21,18 @@
  */
 package org.granite.client.test.tide.server;
 
+import java.io.File;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.granite.client.messaging.Consumer;
-import org.granite.client.messaging.Producer;
 import org.granite.client.messaging.ResultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicMessageListener;
-import org.granite.client.messaging.events.FaultEvent;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TopicMessageEvent;
-import org.granite.client.messaging.messages.ResponseMessage;
-import org.granite.client.messaging.messages.responses.FaultMessage;
 import org.granite.client.test.tide.server.chat.ChatApplication;
-import org.granite.client.test.tide.server.chat.ChatService;
 import org.granite.client.test.tide.server.chat.ReplyService;
 import org.granite.client.tide.BaseIdentity;
 import org.granite.client.tide.Context;
@@ -57,11 +56,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by william on 30/09/13.

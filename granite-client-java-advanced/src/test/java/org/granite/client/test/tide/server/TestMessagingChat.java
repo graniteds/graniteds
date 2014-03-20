@@ -21,6 +21,11 @@
  */
 package org.granite.client.test.tide.server;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.granite.client.messaging.Consumer;
 import org.granite.client.messaging.Producer;
 import org.granite.client.messaging.ResultIssuesResponseListener;
@@ -45,9 +50,7 @@ import org.granite.client.tide.server.TideResponders;
 import org.granite.client.tide.server.TideResultEvent;
 import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
-import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
-import org.jboss.shrinkwrap.api.ConfigurationBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
@@ -56,15 +59,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by william on 30/09/13.
@@ -213,7 +207,8 @@ public class TestMessagingChat {
         Assert.assertFalse("Consumer not logged in", notLoggedIn[0]);
         Assert.assertTrue("Consumer subscribed", consumer.isSubscribed());
 
-        Collection<String> users = (Collection<String>)chatService.call("getConnectedUsers").get();
+        @SuppressWarnings("unchecked")
+		Collection<String> users = (Collection<String>)chatService.call("getConnectedUsers").get();
         Assert.assertTrue("User connected", users.contains("user"));
 
         consumer.unsubscribe().get();

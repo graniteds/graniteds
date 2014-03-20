@@ -30,7 +30,6 @@ import javax.servlet.http.HttpSession;
 
 import org.granite.context.GraniteContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
-import org.granite.messaging.webapp.ServletGraniteContext;
 import org.mortbay.jetty.HttpConnection;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.security.UserRealm;

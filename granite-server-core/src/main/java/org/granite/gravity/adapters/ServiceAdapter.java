@@ -23,7 +23,6 @@ package org.granite.gravity.adapters;
 
 import org.granite.config.flex.Destination;
 import org.granite.gravity.Channel;
-import org.granite.gravity.Gravity;
 import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;

@@ -21,23 +21,16 @@
  */
 package org.granite.gravity;
 
+import java.security.Principal;
+import java.util.List;
+import java.util.Set;
+
 import org.granite.config.GraniteConfig;
-import org.granite.config.ShutdownListener;
 import org.granite.config.flex.ServicesConfig;
-import org.granite.context.GraniteContext;
-import org.granite.gravity.adapters.ServiceAdapter;
-import org.granite.gravity.udp.UdpReceiverFactory;
+import org.granite.messaging.jmf.SharedContext;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
-import org.granite.messaging.jmf.SharedContext;
-
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Future;
 
 /**
  * @author Franck WOLFF

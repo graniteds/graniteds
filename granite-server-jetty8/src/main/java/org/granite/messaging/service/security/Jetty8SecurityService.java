@@ -1,6 +1,5 @@
 package org.granite.messaging.service.security;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
 import java.util.Map;
@@ -9,11 +8,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.eclipse.jetty.server.Authentication;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.UserIdentity;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
-
-import org.eclipse.jetty.server.Request;
 import org.granite.messaging.webapp.ServletGraniteContext;
 
 

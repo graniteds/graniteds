@@ -46,6 +46,7 @@ public class DoubleUtil {
 		}
 	}
 	
+	@SuppressWarnings("cast")
 	public static DoubleAsLong doubleAsLong04(double v) {
 		long asLong = (long)v;
 		if (v == (double)asLong)

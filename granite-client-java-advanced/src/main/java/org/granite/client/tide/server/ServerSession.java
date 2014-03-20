@@ -93,7 +93,6 @@ import org.granite.client.tide.impl.ResultHandler;
 import org.granite.client.validation.InvalidValue;
 import org.granite.config.GraniteConfig;
 import org.granite.logging.Logger;
-import org.granite.messaging.AliasRegistry;
 import org.granite.util.ContentType;
 
 

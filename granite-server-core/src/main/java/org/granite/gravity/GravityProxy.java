@@ -21,22 +21,19 @@
  */
 package org.granite.gravity;
 
-import javax.servlet.ServletContext;
-
-import flex.messaging.messages.ErrorMessage;
-import org.granite.config.GraniteConfig;
-import org.granite.config.flex.ServicesConfig;
-import org.granite.context.GraniteContext;
-import org.granite.gravity.adapters.ServiceAdapter;
-import org.granite.gravity.udp.UdpReceiverFactory;
-
-import flex.messaging.messages.AsyncMessage;
-import flex.messaging.messages.Message;
-import org.granite.messaging.jmf.SharedContext;
-
 import java.security.Principal;
 import java.util.List;
 import java.util.Set;
+
+import javax.servlet.ServletContext;
+
+import org.granite.config.GraniteConfig;
+import org.granite.config.flex.ServicesConfig;
+import org.granite.messaging.jmf.SharedContext;
+
+import flex.messaging.messages.AsyncMessage;
+import flex.messaging.messages.ErrorMessage;
+import flex.messaging.messages.Message;
 
 /**
  * @author William DRAI
