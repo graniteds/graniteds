@@ -1600,7 +1600,7 @@ project('granite-client-java') {
 		compile 'javax.servlet:javax.servlet-api:3.0.1'				// Should use 2.5 but 3.0 required by ServletGraniteContext.BasicRequest
 		compile 'log4j:log4j:1.2.17'
 		
-        compile 'org.apache.httpcomponents:httpasyncclient:4.0',
+        compile 'org.apache.httpcomponents:httpasyncclient:4.0.1',
                 'org.eclipse.jetty:jetty-client:8.1.14.v20131031',
                 'org.eclipse.jetty:jetty-websocket:8.1.14.v20131031',
                 'net.sf.extcos:extcos:0.3b',
