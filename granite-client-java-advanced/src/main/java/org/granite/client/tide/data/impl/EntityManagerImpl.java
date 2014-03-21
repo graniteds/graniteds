@@ -293,9 +293,9 @@ public class EntityManagerImpl implements EntityManager {
 
         for (Map.Entry<String, Object> me : dataManager.getPropertyValues(object, false, true).entrySet()) {
             Object val = me.getValue();
-            if (!dataManager.isInitialized(val))
+            if (val != null && !dataManager.isInitialized(val))
                 continue;
-
+            
             if (val instanceof Collection<?>) {
                 for (Object o : ((Collection<?>)val))
                     internalAttach(o, cache);

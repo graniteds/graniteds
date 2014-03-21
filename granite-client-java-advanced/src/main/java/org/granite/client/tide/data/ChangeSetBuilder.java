@@ -205,7 +205,7 @@ public class ChangeSetBuilder {
             changeMap.put(entity, change);
             Change[] changes = new Change[changeSet.getChanges().length+1];
             System.arraycopy(changeSet.getChanges(), 0, changes, 0, changeSet.getChanges().length);
-            changeSet.getChanges()[changeSet.getChanges().length] = change;
+            changes[changeSet.getChanges().length] = change;
             changeSet.setChanges(changes);
 
             for (Map.Entry<String, Object> me : context.getDataManager().getPropertyValues(entity, true, true, false ).entrySet()) {
@@ -251,19 +251,18 @@ public class ChangeSetBuilder {
     }
 
     private Object buildRef(Object object) {
-        if (isEntity(object)) {
-            if (!context.getDataManager().hasVersionProperty(object))
-                throw new IllegalArgumentException("Cannot build ChangeSet for non versioned entity " + object.getClass().getName());
+        if (!isEntity(object))
+        	return object;
+    
+        if (!context.getDataManager().hasVersionProperty(object))
+            throw new IllegalArgumentException("Cannot build ChangeSet for non versioned entity " + object.getClass().getName());
 
-            if (context.getDataManager().getVersion(object) != null)
-                return new ChangeRef(object.getClass().getName(), context.getDataManager().getUid(object), (Serializable)context.getDataManager().getId(object));
-            else {
-                // Force attachment/init of uids of ref object in case some deep elements in the graph are not yet managed in the current context
-                // So the next merge in the tmp context does not attach newly added objects to the tmp context
-                context.getEntityManager().attach(object);
-                return tmpContext.getEntityManager().mergeFromEntityManager(context.getEntityManager(), object, null, true);
-            }
-        }
-        return object;
+        if (context.getDataManager().getVersion(object) != null)
+            return new ChangeRef(object.getClass().getName(), context.getDataManager().getUid(object), (Serializable)context.getDataManager().getId(object));
+        
+        // Force attachment/init of uids of ref object in case some deep elements in the graph are not yet managed in the current context
+        // So the next merge in the tmp context does not attach newly added objects to the tmp context
+        context.getEntityManager().attach(object);
+        return tmpContext.getEntityManager().mergeFromEntityManager(context.getEntityManager(), object, null, true);
     }
 }

@@ -88,6 +88,11 @@ public abstract class AbstractEntity implements Serializable {
         this.uid.set(uid);
     }
     
+    public void resetId(Long id, Long version) {
+    	this.id.set(id);
+    	this.version.set(version);
+    }
+    
     public ReadOnlyObjectProperty<Long> idProperty() {
         return id.getReadOnlyProperty();
     }        
@@ -110,6 +115,16 @@ public abstract class AbstractEntity implements Serializable {
     }
     public void setUid(String uid) {
         this.uid.set(uid);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        return (o == this || (o instanceof AbstractEntity && uid.get().equals(((AbstractEntity)o).getUid())));
+    }
+    
+    @Override
+    public int hashCode() {
+        return uid.get().hashCode();
     }
     
     @Override

@@ -35,7 +35,7 @@ import org.granite.client.persistence.Entity;
 import org.granite.client.persistence.Lazy;
 
 @Entity
-@RemoteAlias("org.granite.test.tide.Visit")
+@RemoteAlias("org.granite.test.tide.PatientStatus")
 public class PatientStatus extends AbstractEntity {
 
 	private static final long serialVersionUID = 1L;

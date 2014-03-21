@@ -36,28 +36,30 @@ import org.granite.client.persistence.Entity;
 import org.granite.client.persistence.Lazy;
 
 @Entity
-@RemoteAlias("org.granite.client.test.tide.Visit2")
-public class Visit2 extends AbstractEntity {
+@RemoteAlias("org.granite.test.tide.Diagnosisb")
+public class Diagnosisb extends AbstractEntity {
 
 	private static final long serialVersionUID = 1L;
 	
 	private StringProperty name = new SimpleStringProperty(this, "name");
-    private ObjectProperty<Patient4> patient = new SimpleObjectProperty<Patient4>(this, "patient");
+    private ObjectProperty<Patient4b> patient = new SimpleObjectProperty<Patient4b>(this, "patient");
+    private ObjectProperty<Visit2> visit = new SimpleObjectProperty<Visit2>(this, "visit");
     @Lazy
-    private ReadOnlyListWrapper<Diagnosis> assessments = FXPersistentCollections.readOnlyObservablePersistentList(this, "assessments");
+    private ReadOnlyListWrapper<VisitObservation> observations = FXPersistentCollections.readOnlyObservablePersistentList(this, "observations");
 
 
-    public Visit2() {
+    public Diagnosisb() {
         super();
     }
 
-    public Visit2(Long id, Long version, String uid, Patient4 patient, String name) {
+    public Diagnosisb(Long id, Long version, String uid, Patient4b patient, Visit2 visit, String name) {
         super(id, version, uid);
         this.patient.set(patient);
+        this.visit.set(visit);
         this.name.set(name);
     }
 
-    public Visit2(Long id, boolean initialized, String detachedState) {
+    public Diagnosisb(Long id, boolean initialized, String detachedState) {
         super(id, initialized, detachedState);
     }
 
@@ -71,20 +73,20 @@ public class Visit2 extends AbstractEntity {
         this.name.set(name);
     }
 
-    public ObjectProperty<Patient4> patientProperty() {
+    public ObjectProperty<Patient4b> patientProperty() {
         return patient;
     }
-    public Patient4 getPatient() {
+    public Patient4b getPatient() {
         return patient.get();
     }
-    public void setPatient(Patient4 patient) {
+    public void setPatient(Patient4b patient) {
         this.patient.set(patient);
     }
 
-    public ReadOnlyListProperty<Diagnosis> assessmentsProperty() {
-        return assessments.getReadOnlyProperty();
+    public ReadOnlyListProperty<VisitObservation> observationsProperty() {
+        return observations.getReadOnlyProperty();
     }
-    public ObservableList<Diagnosis> getAssessments() {
-        return assessments.get();
+    public ObservableList<VisitObservation> getObservations() {
+        return observations.get();
     }
 }

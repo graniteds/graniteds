@@ -35,14 +35,11 @@
 
 package org.granite.client.test.javafx.tide;
 
-import javafx.beans.property.ReadOnlyListProperty;
-import javafx.beans.property.ReadOnlyListWrapper;
-import javafx.beans.property.ReadOnlySetProperty;
-import javafx.beans.property.ReadOnlySetWrapper;
+import javafx.beans.property.ReadOnlyMapProperty;
+import javafx.beans.property.ReadOnlyMapWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
+import javafx.collections.ObservableMap;
 
 import org.granite.client.javafx.persistence.collection.FXPersistentCollections;
 import org.granite.client.messaging.RemoteAlias;
@@ -51,52 +48,55 @@ import org.granite.client.persistence.Lazy;
 
 
 @Entity
-@RemoteAlias("org.granite.test.tide.Classification")
-public class Classification extends AbstractEntity {
+@RemoteAlias("org.granite.client.test.Person11")
+public class Person11 extends AbstractEntity {
 
     private static final long serialVersionUID = 1L;
     
-    private StringProperty name = new SimpleStringProperty(this, "name");
+    private StringProperty firstName = new SimpleStringProperty(this, "firstName");
+    private StringProperty lastName = new SimpleStringProperty(this, "lastName");
     @Lazy
-    private ReadOnlyListWrapper<Classification> subclasses = FXPersistentCollections.readOnlyObservablePersistentList(this, "subclasses");
-    @Lazy
-    private ReadOnlySetWrapper<Classification> superclasses = FXPersistentCollections.readOnlyObservablePersistentSet(this, "superclasses");
+    private ReadOnlyMapWrapper<SimpleEntity, SimpleEntity2> map = FXPersistentCollections.readOnlyObservablePersistentMap(this, "map");
     
     
-    public Classification() {
+    public Person11() {
         super();
     }
     
-    public Classification(Long id, Long version, String uid, String name) {
+    public Person11(Long id, Long version, String uid, String firstName, String lastName) {
         super(id, version, uid);
-        this.name.set(name);
+        this.firstName.set(firstName);
+        this.lastName.set(lastName);
     }
     
-    public Classification(Long id, boolean initialized, String detachedState) {
+    public Person11(Long id, boolean initialized, String detachedState) {
         super(id, initialized, detachedState);
     }
     
-    public StringProperty nameProperty() {
-        return name;
+    public StringProperty firstNameProperty() {
+        return firstName;
     }    
-    public String getName() {
-        return name.get();
+    public String getFirstName() {
+        return firstName.get();
     }    
-    public void setName(String name) {
-        this.name.set(name);
+    public void setFirstName(String firstName) {
+        this.firstName.set(firstName);
     }
     
-    public ReadOnlyListProperty<Classification> subclassesProperty() {
-    	return subclasses.getReadOnlyProperty();
-    }
-    public ObservableList<Classification> getSubclasses() {
-        return subclasses.get();
+    public StringProperty lastNameProperty() {
+        return lastName;
+    }    
+    public String getLastName() {
+        return lastName.get();
+    }    
+    public void setLastName(String lastName) {
+        this.lastName.set(lastName);
     }
     
-    public ReadOnlySetProperty<Classification> superclassesProperty() {
-    	return superclasses.getReadOnlyProperty();
+    public ReadOnlyMapProperty<SimpleEntity, SimpleEntity2> mapProperty() {
+        return map.getReadOnlyProperty();
     }
-    public ObservableSet<Classification> getSuperclasses() {
-        return superclasses.get();
+    public ObservableMap<SimpleEntity, SimpleEntity2> getMap() {
+    	return map.get();
     }
 }

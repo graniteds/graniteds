@@ -27,26 +27,43 @@ import static org.granite.client.tide.data.EntityManager.UpdateKind.REMOVE;
 import static org.granite.client.tide.data.EntityManager.UpdateKind.UPDATE;
 import static org.granite.client.tide.data.PersistenceManager.getEntityManager;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
+import org.granite.client.javafx.platform.JavaFXReflection;
 import org.granite.client.javafx.tide.JavaFXApplication;
 import org.granite.client.messaging.RemoteAlias;
+import org.granite.client.messaging.jmf.ClientSharedContext;
+import org.granite.client.messaging.jmf.DefaultClientSharedContext;
+import org.granite.client.messaging.jmf.ext.ClientEntityCodec;
 import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.test.tide.MockChannelFactory;
 import org.granite.client.test.tide.MockInstanceStoreFactory;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.data.ChangeMerger;
 import org.granite.client.tide.data.ChangeSetBuilder;
+import org.granite.client.tide.data.Conflicts;
+import org.granite.client.tide.data.DataConflictListener;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.spi.DataManager;
 import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.impl.SimpleContextManager;
 import org.granite.client.tide.server.ServerSession;
+import org.granite.messaging.jmf.DefaultCodecRegistry;
+import org.granite.messaging.jmf.JMFDeserializer;
+import org.granite.messaging.jmf.JMFSerializer;
+import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
+import org.granite.messaging.reflect.Reflection;
 import org.granite.tide.data.Change;
 import org.granite.tide.data.ChangeRef;
 import org.granite.tide.data.ChangeSet;
 import org.granite.tide.data.CollectionChange;
+import org.granite.tide.data.CollectionChanges;
+import org.granite.util.JMFAMFUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,11 +72,12 @@ public class TestApplyRemoteChange {
 
     private SimpleContextManager contextManager;
     private Context ctx;
-    @SuppressWarnings("unused")
     private ServerSession serverSession;
     private DataManager dataManager;
     private EntityManager entityManager;
-
+    
+    private ClientSharedContext clientSharedContext;
+    
     @Before
     public void setup() throws Exception {
         contextManager = new SimpleContextManager(new JavaFXApplication());
@@ -73,14 +91,20 @@ public class TestApplyRemoteChange {
         dataManager = ctx.getDataManager();
         ctx.set(new ChangeMerger());
         serverSession.start();
+        
+		List<ExtendedObjectCodec> clientExtendedCodecs = new ArrayList<ExtendedObjectCodec>(Arrays.asList(new ClientEntityCodec()));
+		List<String> defaultStoredStrings = new ArrayList<String>(JMFAMFUtil.AMF_DEFAULT_STORED_STRINGS);
+		Reflection clientReflection = new JavaFXReflection(getClass().getClassLoader());
+		clientSharedContext = new DefaultClientSharedContext(new DefaultCodecRegistry(clientExtendedCodecs), defaultStoredStrings, clientReflection, serverSession.getAliasRegistry());
     }
-
+    
     private static String personAlias = Person.class.getAnnotation(RemoteAlias.class).value();
     private static String patientAlias = Patient3.class.getAnnotation(RemoteAlias.class).value();
     private static String visitAlias = Visit.class.getAnnotation(RemoteAlias.class).value();
 
 
-    @Test
+    @SuppressWarnings("cast")
+	@Test
     public void testApplyRemoteChange1() {
         Person person = new Person(1L, 0L, "P1", null, "Test");
 
@@ -125,7 +149,8 @@ public class TestApplyRemoteChange {
     }
 
 
-    @Test
+    @SuppressWarnings("cast")
+	@Test
     public void testApplyRemoteChange2() {
         Person person = new Person(1L, 0L, "P1", null, "Test");
         Contact contact1 = new Contact(1L, 0L, "C1", person, "toto@toto.net");
@@ -166,7 +191,8 @@ public class TestApplyRemoteChange {
         Assert.assertTrue("Context dirty", dataManager.isDirty());
     }
 
-    @Test
+    @SuppressWarnings("cast")
+	@Test
     public void testApplyRemoteChange3() {
         Person person = new Person(1L, 0L, "P1", null, "Test");
         Contact contact1 = new Contact(1L, 0L, "C1", person, "toto@toto.net");
@@ -486,6 +512,10 @@ public class TestApplyRemoteChange {
         Assert.assertFalse("Context not dirty", dataManager.isDirty());
     }
 
+    
+    private static String patient4Alias = Patient4.class.getAnnotation(RemoteAlias.class).value();
+    private static String statusAlias = PatientStatus.class.getAnnotation(RemoteAlias.class).value();
+    
    	@Test
     public void testApplyRemoteChangeList4() {
    		Patient4 patient = new Patient4(1L, 0L, "P1", "Test");
@@ -506,538 +536,430 @@ public class TestApplyRemoteChange {
         entityManager.mergeExternalData(changeSet);
         entityManager.clearCache();
 
+        Patient4 patientb = new Patient4(patient.getId(), patient.getVersion(), patient.getUid(), "Test");
+        ((PersistentCollection)patientb.getDiagnosis()).uninitialize();
+        PatientStatus statusb = new PatientStatus(status.getId(), status.getVersion()+1, status.getUid(), patientb, status.getName());
+        ((PersistentCollection)statusb.getDeathCauses()).uninitialize();
+        patientb.setStatus(statusb);
         
-        var patientb:Patient4 = new Patient4();
-        patientb.id = patient.id;
-        patientb.uid = patient.uid;
-        patientb.version = patient.version;
-        patientb.name = "Test";
-        patientb.diagnosis = new PersistentSet(false);
-        var statusb:PatientStatus = new PatientStatus();
-        statusb.id = status.id;
-        statusb.uid = status.uid;
-        statusb.version = status.version+1;
-        statusb.deathCauses = new PersistentSet(false);
-        patientb.status = statusb;
-
-        var diagnosis2b:Diagnosis = new Diagnosis();
-        diagnosis2b.uid = "D2";
-        diagnosis2b.id = 2;
-        diagnosis2b.version = 0;
-        diagnosis2b.name = "Test2";
-        diagnosis2b.patient = patientb;
-
-
-        var change1:Change = new Change(Type.forClass(Patient4).name, patient.uid, patient.id, patientb.version);
-        var collChanges1:CollectionChanges = new CollectionChanges();
-        collChanges1.addChange(1, null, diagnosis2b);
-        change1.changes.diagnosis = collChanges1;
-
-        var change3:Change = new Change(Type.forClass(PatientStatus).name, status.uid, status.id, statusb.version+1);
-        var collChanges3:CollectionChanges = new CollectionChanges();
-        collChanges3.addChange(1, 1, diagnosis2b);
-        change3.changes.deathCauses = collChanges3;
-
-        _ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'PERSIST', diagnosis2b ] , [ 'UPDATE', new ChangeSet([ change3 ]) ]]);
-
-        Assert.assertStrictlyEquals("Patient em", _ctx, patient.meta::entityManager);
-        Assert.assertStrictlyEquals("Diagnosis patient", patient, patient.diagnosis.getItemAt(1).patient);
-        Assert.assertStrictlyEquals("Diagnosis patient", patient, status.deathCauses.getItemAt(1).patient);
-        Assert.assertStrictlyEquals("Diagnosis em", _ctx, patient.diagnosis.getItemAt(1).meta::entityManager);
-        Assert.assertStrictlyEquals("Diagnosis em", _ctx, status.deathCauses.getItemAt(1).meta::entityManager);
-        Assert.assertEquals("Diagnosis added to patient", 2, patient.diagnosis.length);
-        Assert.assertEquals("Diagnosis added to patient (id)", 2, patient.diagnosis.getItemAt(1).id);
-        Assert.assertEquals("Diagnosis added to status", 2, status.deathCauses.length);
-        Assert.assertEquals("Diagnosis added to status (id)", 2, status.deathCauses.getItemAt(1).id);
-
-        Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
+        Diagnosis diagnosis2b = new Diagnosis(2L, 0L, "D2", patientb, null, "Test2");
+        
+        Change change1 = new Change(patient4Alias, patientb.getId(), patientb.getVersion(), patientb.getUid());
+        change1.addCollectionChanges("diagnosis", new CollectionChange(1, null, diagnosis2b));
+        
+        Change change3 = new Change(statusAlias, statusb.getId(), statusb.getVersion(), statusb.getUid());
+        change3.addCollectionChanges("deathCauses", new CollectionChange(1, 1, diagnosis2b));
+        
+        MergeContext mergeContext = entityManager.initMerge(serverSession);
+        entityManager.handleUpdates(mergeContext, null, Arrays.asList(
+        		UPDATE.of(new ChangeSet(change1)), PERSIST.of(diagnosis2b), UPDATE.of(new ChangeSet(change3))
+        ));
+        
+        Assert.assertSame("Patient em", entityManager, getEntityManager(patient));
+        Assert.assertTrue("Diagnosis patient", patient.getDiagnosis().contains(diagnosis));
+        Assert.assertTrue("Diagnosis patient", patient.getStatus().getDeathCauses().contains(diagnosis));
+        for (Diagnosis d : patient.getDiagnosis())
+        	Assert.assertSame("Diagnosis em", entityManager, getEntityManager(d));
+        for (Diagnosis d : patient.getStatus().getDeathCauses())
+        	Assert.assertSame("Diagnosis em", entityManager, getEntityManager(d));
+        Assert.assertEquals("Diagnosis added to patient", 2, patient.getDiagnosis().size());
+        boolean found = false;
+        for (Diagnosis d : patient.getDiagnosis()) {
+        	if (d.getId().equals(2L))
+        		found = true;
+        }
+        Assert.assertTrue("Diagnosis added to patient (id)", found);
+        found = false;
+        for (Diagnosis d : patient.getStatus().getDeathCauses()) {
+        	if (d.getId().equals(2L))
+        		found = true;
+        }
+        Assert.assertTrue("Diagnosis added to status (id)", found);
+        
+        Assert.assertFalse("Context not dirty", dataManager.isDirty());
     }
 
-//    [Test]
-//    public function testApplyRemoteChangeList5():void {
-//        var patient:Patient4 = new Patient4();
-//        patient.uid = "P1";
-//        patient.id = 1;
-//        patient.version = 0;
-//        patient.name = "Test";
-//        patient.diagnosis = new PersistentSet();
-//        patient.visits = new PersistentSet();
-//        var status:PatientStatus = new PatientStatus();
-//        status.uid = "S1";
-//        status.id = 1;
-//        status.version = 0;
-//        status.name = "Test";
-//        status.patient = patient;
-//        status.deathCauses = new PersistentList();
-//        patient.status = status;
-//        var visit:Visit2 = new Visit2();
-//        visit.uid = "V1";
-//        visit.id = 1;
-//        visit.version = 0;
-//        visit.name = "Test";
-//        visit.patient = patient;
-//        visit.assessments = new PersistentSet();
-//        patient.visits.addItem(visit);
-//        var diagnosis:Diagnosis = new Diagnosis();
-//        diagnosis.uid = "D1";
-//        diagnosis.id = 1;
-//        diagnosis.version = 0;
-//        diagnosis.name = "Test";
-//        diagnosis.patient = patient;
-//        diagnosis.visit = visit;
-//        patient.diagnosis.addItem(diagnosis);
-//        patient.status.deathCauses.addItem(diagnosis);
-//        visit.assessments.addItem(diagnosis);
-//
-//        _ctx.patient = _ctx.meta_mergeExternalData(patient);
-//        _ctx.meta_clearCache();
-//
-//        patient = _ctx.patient;
-//
-//        var diagnosis2:Diagnosis = new Diagnosis();
-//        diagnosis2.uid = "D2";
-//        diagnosis2.patient = patient;
-//        patient.status.deathCauses.addItem(diagnosis2);
-//
-//        diagnosis2.name = "Test2";
-//
-//
-//        // Simulate remote call with local merge of arguments
-//        var changeSet:ChangeSet = new ChangeSetBuilder(_ctx).buildChangeSet();
-//        _ctx.meta_mergeExternal(changeSet);
-//        _ctx.meta_clearCache();
-//
-//
-//        var patientb:Patient4 = new Patient4();
-//        patientb.id = patient.id;
-//        patientb.uid = patient.uid;
-//        patientb.version = patient.version;
-//        patientb.name = "Test";
-//        patientb.diagnosis = new PersistentSet(false);
-//        patientb.visits = new PersistentSet(false);
-//        var statusb:PatientStatus = new PatientStatus();
-//        statusb.id = status.id;
-//        statusb.uid = status.uid;
-//        statusb.version = status.version+1;
-//        statusb.deathCauses = new PersistentSet(false);
-//        patientb.status = statusb;
-//        var visitb:Visit2 = new Visit2();
-//        visitb.id = visit.id;
-//        visitb.uid = visit.uid;
-//        visitb.version = visit.version;
-//        visitb.assessments = new PersistentSet(false);
-//        visitb.patient = patientb;
-//
-//        var diagnosis2b:Diagnosis = new Diagnosis();
-//        diagnosis2b.uid = "D2";
-//        diagnosis2b.id = 2;
-//        diagnosis2b.version = 0;
-//        diagnosis2b.name = "Test2";
-//        diagnosis2b.patient = patientb;
-//        diagnosis2b.visit = visitb;
-//
-//
-//        var change1:Change = new Change(Type.forClass(Patient4).name, patient.uid, patient.id, patientb.version);
-//        var collChanges1:CollectionChanges = new CollectionChanges();
-//        collChanges1.addChange(1, null, diagnosis2b);
-//        change1.changes.diagnosis = collChanges1;
-//
-//        var change3:Change = new Change(Type.forClass(PatientStatus).name, status.uid, status.id, statusb.version+1);
-//        var collChanges3:CollectionChanges = new CollectionChanges();
-//        collChanges3.addChange(1, 1, diagnosis2b);
-//        change3.changes.deathCauses = collChanges3;
-//
-//        _ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ], [ 'PERSIST', diagnosis2b ] , [ 'UPDATE', new ChangeSet([ change3 ]) ]]);
-//
-//        Assert.assertStrictlyEquals("Patient em", _ctx, patient.meta::entityManager);
-//        Assert.assertStrictlyEquals("Diagnosis patient", patient, patient.diagnosis.getItemAt(1).patient);
-//        Assert.assertStrictlyEquals("Diagnosis patient", patient, status.deathCauses.getItemAt(1).patient);
-//        Assert.assertStrictlyEquals("Diagnosis em", _ctx, patient.diagnosis.getItemAt(1).meta::entityManager);
-//        Assert.assertStrictlyEquals("Diagnosis em", _ctx, status.deathCauses.getItemAt(1).meta::entityManager);
-//        Assert.assertEquals("Diagnosis added to patient", 2, patient.diagnosis.length);
-//        Assert.assertEquals("Diagnosis added to patient (id)", 2, patient.diagnosis.getItemAt(1).id);
-//        Assert.assertEquals("Diagnosis added to status", 2, status.deathCauses.length);
-//        Assert.assertEquals("Diagnosis added to status (id)", 2, status.deathCauses.getItemAt(1).id);
-//
-//        Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
-//    }
-//
-//    [Test]
-//    public function testApplyRemoteChangeList6():void {
-//        var list:Classification = new Classification();
-//        list.uid = "P1";
-//        list.id = 1;
-//        list.version = 0;
-//        list.subclasses = new PersistentList();
-//        var c1:Classification = new Classification(1, 0, "C1");
-//        var c2:Classification = new Classification(2, 0, "C2");
-//        var c3:Classification = new Classification(3, 0, "C3");
-//        var c4:Classification = new Classification(4, 0, "C4");
-//        list.subclasses.addItem(c1);
-//        list.subclasses.addItem(c2);
-//        list.subclasses.addItem(c3);
-//        list.subclasses.addItem(c4);
-//        c1.superclasses = new PersistentSet();
-//        c1.superclasses.addItem(list);
-//        c2.superclasses = new PersistentSet();
-//        c2.superclasses.addItem(list);
-//        c3.superclasses = new PersistentSet();
-//        c3.superclasses.addItem(list);
-//        c4.superclasses = new PersistentSet();
-//        c4.superclasses.addItem(list);
-//
-//        _ctx.list = _ctx.meta_mergeExternalData(list);
-//        _ctx.meta_clearCache();
-//
-//        list = Classification(_ctx.list);
-//
-//        var c:Object = list.subclasses.removeItemAt(3);
-//        list.subclasses.addItemAt(c, 2);
-//
-//        // Case where the server does not build the changes in the same order than the client
-//        // Ex. Client: A B C => A C B :  remove C (2) => add C (1)
-//        //     Server: A B C => A C B :  add C (1) => remove C (3)
-//
-//        var c4b:Classification = new Classification(4, 0, "C4");
-//        c4b.subclasses = new PersistentList(false);
-//        c4b.superclasses = new PersistentSet(false);
-//
-//        var change:Change = new Change(Type.forClass(Classification).name, list.uid, list.id, list.version+1);
-//        var collChanges:CollectionChanges = new CollectionChanges();
-//        collChanges.addChange(1, 2, c4b);
-//        collChanges.addChange(-1, 4, c4b);
-//        change.changes.subclasses = collChanges;
-//
-//        _ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
-//
-//        Assert.assertEquals("List size", 4, list.subclasses.length);
-//        Assert.assertEquals("List elt 3", "C4", list.subclasses.getItemAt(2).uid);
-//        Assert.assertEquals("List elt 4", "C3", list.subclasses.getItemAt(3).uid);
-//        Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
-//    }
-//
-//    [Test]
-//    public function testApplyRemoteChangeList6b():void {
-//        var list:Classification = new Classification();
-//        list.uid = "P1";
-//        list.id = 1;
-//        list.version = 0;
-//        list.subclasses = new PersistentList();
-//        var c1:Classification = new Classification(1, 0, "C1");
-//        var c2:Classification = new Classification(2, 0, "C2");
-//        var c3:Classification = new Classification(3, 0, "C3");
-//        var c4:Classification = new Classification(4, 0, "C4");
-//        list.subclasses.addItem(c1);
-//        list.subclasses.addItem(c2);
-//        list.subclasses.addItem(c3);
-//        list.subclasses.addItem(c4);
-//        c1.superclasses = new PersistentSet();
-//        c1.superclasses.addItem(list);
-//        c2.superclasses = new PersistentSet();
-//        c2.superclasses.addItem(list);
-//        c3.superclasses = new PersistentSet();
-//        c3.superclasses.addItem(list);
-//        c4.superclasses = new PersistentSet();
-//        c4.superclasses.addItem(list);
-//
-//        _ctx.list = _ctx.meta_mergeExternalData(list);
-//        _ctx.meta_clearCache();
-//
-//        list = Classification(_ctx.list);
-//
-//        var c:Object = list.subclasses.removeItemAt(3);
-//        list.subclasses.addItemAt(c, 2);
-//
-//        // Case where the server does not build the same permutation as the client
-//        // Ex. Client: A B C => A C B :  remove C (2) => add C (1)
-//        //     Server: A B C => A C B :  remove B (1) => add B (2)
-//
-//        var c3b:Classification = new Classification(3, 0, "C3");
-//        c3b.subclasses = new PersistentList(false);
-//        c3b.superclasses = new PersistentSet(false);
-//
-//        var change:Change = new Change(Type.forClass(Classification).name, list.uid, list.id, list.version+1);
-//        var collChanges:CollectionChanges = new CollectionChanges();
-//        collChanges.addChange(-1, 2, c3b);
-//        collChanges.addChange(1, 3, c3b);
-//        change.changes.subclasses = collChanges;
-//
-//        _ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
-//
-//        Assert.assertEquals("List size", 4, list.subclasses.length);
-//        Assert.assertEquals("List elt 3", "C4", list.subclasses.getItemAt(2).uid);
-//        Assert.assertEquals("List elt 4", "C3", list.subclasses.getItemAt(3).uid);
-//        Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
-//    }
-//
-//    [Test]
-//    public function testApplyRemoteChangeList6c():void {
-//        var list:Classification = new Classification();
-//        list.uid = "P1";
-//        list.id = 1;
-//        list.version = 0;
-//        list.subclasses = new PersistentList();
-//        var c1:Classification = new Classification(1, 0, "C1");
-//        var c2:Classification = new Classification(2, 0, "C2");
-//        var c3:Classification = new Classification(3, 0, "C3");
-//        var c4:Classification = new Classification(4, 0, "C4");
-//        list.subclasses.addItem(c1);
-//        list.subclasses.addItem(c2);
-//        list.subclasses.addItem(c3);
-//        list.subclasses.addItem(c4);
-//        c1.superclasses = new PersistentSet();
-//        c1.superclasses.addItem(list);
-//        c2.superclasses = new PersistentSet();
-//        c2.superclasses.addItem(list);
-//        c3.superclasses = new PersistentSet();
-//        c3.superclasses.addItem(list);
-//        c4.superclasses = new PersistentSet();
-//        c4.superclasses.addItem(list);
-//
-//        _ctx.list = _ctx.meta_mergeExternalData(list);
-//        _ctx.meta_clearCache();
-//
-//        list = Classification(_ctx.list);
-//
-//        var c:Object = list.subclasses.removeItemAt(0);
-//        list.subclasses.addItemAt(c, 1);
-//        c = list.subclasses.removeItemAt(2);
-//        list.subclasses.addItemAt(c, 1);
-//
-//        // Case where the server does not build the same permutation as the client
-//        // Ex. Client: A B C D => B A C D => B C A D :  remove A (0) => add A (1) => remove C (2) => add C (1)
-//        //     Server: A B C D => B C A D :  remove A (0) => add A (2)
-//
-//        var c3b:Classification = new Classification(3, 0, "C3");
-//        c3b.subclasses = new PersistentList(false);
-//        c3b.superclasses = new PersistentSet(false);
-//
-//        var change:Change = new Change(Type.forClass(Classification).name, list.uid, list.id, list.version+1);
-//        var collChanges:CollectionChanges = new CollectionChanges();
-//        collChanges.addChange(-1, 0, new ChangeRef(Type.forClass(Classification).name, "C1", 1));
-//        collChanges.addChange(1, 2, new ChangeRef(Type.forClass(Classification).name, "C1", 2));
-//        change.changes.subclasses = collChanges;
-//
-//        _ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
-//
-//        Assert.assertEquals("List size", 4, list.subclasses.length);
-//        Assert.assertEquals("List elt 3", "C1", list.subclasses.getItemAt(2).uid);
-//        Assert.assertEquals("List elt 4", "C4", list.subclasses.getItemAt(3).uid);
-//        Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
-//    }
-//
-//    [Test]
-//    public function testApplyRemoteChangeMap():void {
-//        var person:Person11 = new Person11();
-//        person.uid = "P1";
-//        person.id = 1;
-//        person.version = 0;
-//        person.lastName = "Test";
-//        person.map = new PersistentMap();
-//        var key:Key = new Key();
-//        key.uid = "K1";
-//        key.id = 1;
-//        key.version = 0;
-//        key.name = "Key";
-//        var val:Value = new Value();
-//        val.uid = "V1";
-//        val.id = 1;
-//        val.version = 0;
-//        val.name = "Value";
-//        person.map.put(key, val);
-//
-//        _ctx.person = _ctx.meta_mergeExternalData(person);
-//
-//        person = _ctx.person;
-//
-//        var key2:Key = new Key();
-//        key2.uid = "K2";
-//        key2.name = "Key2";
-//        var val2:Value = new Value();
-//        val2.uid = "V2";
-//        val2.name = "Value2";
-//        person.map.put(key2, val2);
-//
-//
-//        var keyb:Key = new Key();
-//        keyb.uid = "K2";
-//        keyb.id = 2;
-//        keyb.version = 0;
-//        keyb.name = "Key2";
-//        var valb:Value = new Value();
-//        valb.uid = "V2";
-//        valb.id = 2;
-//        valb.version = 0;
-//        valb.name = "Value2";
-//
-//        var change1:Change = new Change(Type.forClass(Person11).name, person.uid, person.id, 0);
-//        var collChanges1:CollectionChanges = new CollectionChanges();
-//        collChanges1.addChange(1, keyb, valb);
-//        change1.changes.map = collChanges1;
-//
-//        _ctx.meta_handleUpdates(false, [[ 'UPDATE', new ChangeSet([ change1 ]) ]]);
-//
-//        Assert.assertStrictlyEquals("Patient em", _ctx, person.meta::entityManager);
-//        Assert.assertEquals("Entry added to person.map", 2, person.map.length);
-//        Assert.assertEquals("Entry key updated", 2, key2.id);
-//        Assert.assertEquals("Entry value updated", 2, val2.id);
-//
-//        Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
-//    }
-//
-//
-//    private var _conflicts:Conflicts;
-//
-//    [Test]
-//    public function testApplyRemoteChangeConflict():void {
-//        var person:Person = new Person();
-//        person.uid = "P1";
-//        person.id = 1;
-//        person.version = 0;
-//        person.contacts = new PersistentSet(true);
-//        person.lastName = "Test";
-//
-//        _ctx.person = _ctx.meta_mergeExternalData(person);
-//        person = _ctx.person;
-//
-//        person.lastName = "Tutu";
-//
-//        var personAlias:String = Type.forClass(Person).name;
-//
-//        var change:Change = new Change(personAlias, "P1", 1, 1);
-//        change.changes.lastName = "Toto";
-//
-//        _ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, dataConflictHandler, false, 0, true);
-//        _ctx.meta_handleUpdates(true, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
-//
-//        Assert.assertEquals("Last name not changed", "Tutu", person.lastName);
-//        Assert.assertEquals("Conflict detected", 1, _conflicts.conflicts.length);
-//
-//        _conflicts.acceptAllServer();
-//
-//        Assert.assertEquals("Last name changed", "Toto", person.lastName);
-//    }
-//
-//    [Test]
-//    public function testApplyRemoteChangeConflict2():void {
-//        var person:Person = new Person();
-//        person.uid = "P1";
-//        person.id = 1;
-//        person.version = 0;
-//        person.contacts = new PersistentSet(true);
-//        person.lastName = "Test";
-//
-//        _ctx.person = _ctx.meta_mergeExternalData(person);
-//        person = _ctx.person;
-//
-//        person.lastName = "Tutu";
-//
-//        var personAlias:String = Type.forClass(Person).name;
-//
-//        var change:Change = new Change(personAlias, "P1", 1, 1);
-//        change.changes.lastName = "Toto";
-//
-//        _ctx.addEventListener(TideDataConflictsEvent.DATA_CONFLICTS, dataConflictHandler, false, 0, true);
-//        _ctx.meta_handleUpdates(true, [[ 'UPDATE', new ChangeSet([ change ]) ]]);
-//
-//        Assert.assertEquals("Last name not changed", "Tutu", person.lastName);
-//        Assert.assertEquals("Conflict detected", 1, _conflicts.conflicts.length);
-//
-//        _conflicts.acceptAllClient();
-//
-//        Assert.assertEquals("Last name changed", "Tutu", person.lastName);
-//        Assert.assertEquals("Version increased", 1, person.version);
-//    }
-//
-//    private function dataConflictHandler(event:TideDataConflictsEvent):void {
-//        _conflicts = event.conflicts;
-//    }
-//
-//    [Test]
-//    public function testApplyChangeRef():void {
-//        var person:Person = new Person();
-//        person.uid = "P1";
-//        person.id = 1;
-//        person.version = 0;
-//        person.contacts = new PersistentSet(true);
-//        person.lastName = "Test";
-//        var contact:Contact = new Contact();
-//        contact.uid = "C1";
-//        contact.id = 1;
-//        contact.version = 0;
-//        contact.person = person;
-//        contact.email = "test@test.com";
-//        person.contacts.addItem(contact);
-//
-//        _ctx.person = _ctx.meta_mergeExternalData(person);
-//        person = _ctx.person;
-//
-//        person.contacts.removeItemAt(0);
-//
-//        var changeSet:ChangeSet = new ChangeSetBuilder(_ctx).buildChangeSet();
-//
-//        // Check serialization of change set
-//        changeSet = ObjectUtil.copy(changeSet) as ChangeSet;
-//
-//        Managed.resetEntity(person);
-//
-//        Assert.assertEquals("Person has 1 contact", 1, person.contacts.length);
-//
-//        // Check that applied ChangeSet removes the contact
-//
-//        _ctx.meta_mergeExternalData(changeSet);
-//
-//        Assert.assertEquals("Person contact removed", 0, person.contacts.length);
-//    }
-//
-//    [Test]
-//    public function testApplyChangeBoolean():void {
-//        _ctx.meta_uninitializeAllowed = false;
-//
-//        var patient:Patient4b = new Patient4b();
-//        patient.id = 1;
-//        patient.version = 0;
-//        patient.uid = "P1";
-//        patient.diagnosisAssessed = false;
-//        patient.diagnosis = new PersistentSet(true);
-//        patient.name = "Bla";
-//
-//        _ctx.patient = _ctx.meta_mergeExternalData(patient);
-//        patient = _ctx.patient;
-//
-//        var diagnosis:Diagnosisb = new Diagnosisb();
-//        diagnosis.uid = "D1";
-//        diagnosis.patient = patient;
-//        patient.diagnosis.addItem(diagnosis);
-//        patient.diagnosisAssessed = true;
-//
-//        diagnosis.name = "bla";
-//
-//        Assert.assertTrue("Context dirty", _ctx.meta_dirty);
-//
-//        var changeSet:ChangeSet = new ChangeSetBuilder(_ctx).buildChangeSet();
-//
-//        // Simulate pre-remote call merge
-//        changeSet = ChangeSet(_ctx.meta_mergeExternal(changeSet));
-//
-//        Assert.assertStrictlyEquals(patient, diagnosis.patient);
-//
-//        // Simulate serialization
-//        changeSet = ChangeSet(ObjectUtil.copy(changeSet));
-//
-//        var c:Change = changeSet.changes[0];
-//        var change:Change = new Change(c.className, c.uid, c.id, 1, false);
-//        for (var p:String in c.changes)
-//            change.changes[p] = c.changes[p];
-//        var diag:Diagnosisb = c.changes.diagnosis.changes[0].value;
-//        diag.id = 1;
-//        diag.version = 0;
-//        diag.patient.version = 1;
-//        var updates:Array = [ [ 'PERSIST', diag ], [ 'UPDATE', change ] ];
-//        _ctx.meta_handleUpdates(false, updates);
-//
-//        Assert.assertFalse("Context not dirty", _ctx.meta_dirty);
-//        Assert.assertEquals("Patient version", 1, patient.version);
-//        Assert.assertEquals("Diagnosis count", 1, patient.diagnosis.length);
-//    }
+    @Test
+    public void testApplyRemoteChangeList5() {
+        Patient4 patient = new Patient4(1L, 0L, "P1", "Test");
+        PatientStatus status = new PatientStatus(1L, 0L, "S1", patient, "Test");
+        patient.setStatus(status);
+        Visit2 visit = new Visit2(1L, 0L, "V1", patient, "Test");
+        patient.getVisits().add(visit);
+        Diagnosis diagnosis = new Diagnosis(1L, 0L, "D1", patient, visit, "Test");
+        patient.getDiagnosis().add(diagnosis);
+        patient.getStatus().getDeathCauses().add(diagnosis);
+        visit.getAssessments().add(diagnosis);
+        
+        patient = (Patient4)entityManager.mergeExternalData(patient);
+        entityManager.clearCache();
+        
+        Diagnosis diagnosis2 = new Diagnosis(null, null, "D2", patient, null, null);
+        patient.getStatus().getDeathCauses().add(diagnosis2);
+        
+        diagnosis2.setName("Test2");
+        
+        // Simulate remote call with local merge of arguments
+        ChangeSet changeSet = new ChangeSetBuilder(ctx).buildChangeSet();
+        entityManager.mergeExternalData(changeSet);
+        entityManager.clearCache();
+
+        
+        Patient4 patientb = new Patient4(patient.getId(), patient.getVersion(), patient.getUid(), "Test");
+        ((PersistentCollection)patientb.getDiagnosis()).uninitialize();
+        ((PersistentCollection)patientb.getVisits()).uninitialize();
+        PatientStatus statusb = new PatientStatus(status.getId(), status.getVersion()+1, status.getUid(), patientb, "Test");
+        ((PersistentCollection)statusb.getDeathCauses()).uninitialize();
+        patientb.setStatus(statusb);
+        Visit2 visitb = new Visit2(visit.getId(), visit.getVersion(), visit.getUid(), patientb, "Test");
+        ((PersistentCollection)visitb.getAssessments()).uninitialize();
+
+        Diagnosis diagnosis2b = new Diagnosis(2L, 0L, "D2", patientb, visitb, "Test2");
+
+        Change change1 = new Change(patient4Alias, patientb.getId(), patientb.getVersion(), patientb.getUid());
+        change1.addCollectionChanges("diagnosis", new CollectionChange(1, null, diagnosis2b));
+        
+        Change change3 = new Change(statusAlias, statusb.getId(), statusb.getVersion(), statusb.getUid());
+        change3.addCollectionChanges("deathCauses", new CollectionChange(1, 1, diagnosis2b));
+        
+        MergeContext mergeContext = entityManager.initMerge(serverSession);
+        entityManager.handleUpdates(mergeContext, null, Arrays.asList(
+        		UPDATE.of(new ChangeSet(change1)), PERSIST.of(diagnosis2b), UPDATE.of(new ChangeSet(change3))
+        ));
+        
+        Assert.assertSame("Patient em", entityManager, getEntityManager(patient));
+        Assert.assertTrue("Diagnosis patient", patient.getDiagnosis().contains(diagnosis));
+        Assert.assertTrue("Diagnosis patient", patient.getStatus().getDeathCauses().contains(diagnosis));
+        for (Diagnosis d : patient.getDiagnosis())
+        	Assert.assertSame("Diagnosis em", entityManager, getEntityManager(d));
+        for (Diagnosis d : patient.getStatus().getDeathCauses())
+        	Assert.assertSame("Diagnosis em", entityManager, getEntityManager(d));
+        Assert.assertEquals("Diagnosis added to patient", 2, patient.getDiagnosis().size());
+        boolean found = false;
+        for (Diagnosis d : patient.getDiagnosis()) {
+        	if (d.getId().equals(2L))
+        		found = true;
+        }
+        Assert.assertTrue("Diagnosis added to patient (id)", found);
+        found = false;
+        for (Diagnosis d : patient.getStatus().getDeathCauses()) {
+        	if (d.getId().equals(2L))
+        		found = true;
+        }
+        Assert.assertTrue("Diagnosis added to status (id)", found);
+        
+        Assert.assertFalse("Context not dirty", dataManager.isDirty());
+    }
+    
+    
+    private static String classificationAlias = Classification.class.getAnnotation(RemoteAlias.class).value();
+    
+    @Test
+    public void testApplyRemoteChangeList6() {
+        Classification list = new Classification(1L, 0L, "P1", "List");
+        Classification c1 = new Classification(1L, 0L, "C1", "1");
+        Classification c2 = new Classification(2L, 0L, "C2", "2");
+        Classification c3 = new Classification(3L, 0L, "C3", "3");
+        Classification c4 = new Classification(4L, 0L, "C4", "4");
+        list.getSubclasses().addAll(c1, c2, c3, c4);
+        c1.getSuperclasses().add(list);
+        c2.getSuperclasses().add(list);
+        c3.getSuperclasses().add(list);
+        c4.getSuperclasses().add(list);
+        
+        list = (Classification)entityManager.mergeExternalData(list);
+        entityManager.clearCache();
+
+        Classification c = list.getSubclasses().remove(3);
+        list.getSubclasses().add(2, c);
+
+        // Case where the server does not build the changes in the same order than the client
+        // Ex. Client: A B C => A C B :  remove C (2) => add C (1)
+        //     Server: A B C => A C B :  add C (1) => remove C (3)
+
+        Classification c4b = new Classification(4L, 0L, "C4", "4");
+        ((PersistentCollection)c4b.getSubclasses()).uninitialize();
+        ((PersistentCollection)c4b.getSuperclasses()).uninitialize();
+
+        Change change = new Change(classificationAlias, list.getId(), list.getVersion()+1, list.getUid());
+        change.addCollectionChanges("subclasses", new CollectionChange(1, 2, c4b), new CollectionChange(-1, 4, c4b));
+
+        MergeContext mergeContext = entityManager.initMerge(serverSession);
+        entityManager.handleUpdates(mergeContext, null, Arrays.asList(UPDATE.of(new ChangeSet(change))));
+
+        Assert.assertEquals("List size", 4, list.getSubclasses().size());
+        Assert.assertEquals("List elt 3", "C4", list.getSubclasses().get(2).getUid());
+        Assert.assertEquals("List elt 4", "C3", list.getSubclasses().get(3).getUid());
+        
+        Assert.assertFalse("Context not dirty", dataManager.isDirty());
+    }
+
+   	@Test
+    public void testApplyRemoteChangeList6b() {
+        Classification list = new Classification(1L, 0L, "P1", "List");
+        Classification c1 = new Classification(1L, 0L, "C1", "1");
+        Classification c2 = new Classification(2L, 0L, "C2", "2");
+        Classification c3 = new Classification(3L, 0L, "C3", "3");
+        Classification c4 = new Classification(4L, 0L, "C4", "4");
+        list.getSubclasses().addAll(c1, c2, c3, c4);
+        c1.getSuperclasses().add(list);
+        c2.getSuperclasses().add(list);
+        c3.getSuperclasses().add(list);
+        c4.getSuperclasses().add(list);
+        
+        list = (Classification)entityManager.mergeExternalData(list);
+        entityManager.clearCache();
+
+        Classification c = list.getSubclasses().remove(3);
+        list.getSubclasses().add(2, c);
+
+        // Case where the server does not build the same permutation as the client
+        // Ex. Client: A B C => A C B :  remove C (2) => add C (1)
+        //     Server: A B C => A C B :  remove B (1) => add B (2)
+
+        Classification c3b = new Classification(3L, 0L, "C3", "Test");
+        ((PersistentCollection)c3b.getSubclasses()).uninitialize();
+        ((PersistentCollection)c3b.getSuperclasses()).uninitialize();
+
+        Change change = new Change(classificationAlias, list.getId(), list.getVersion()+1, list.getUid());
+        change.addCollectionChanges("subclasses", new CollectionChange(-1, 2, c3b), new CollectionChange(1, 3, c3b));
+
+        MergeContext mergeContext = entityManager.initMerge(serverSession);
+        entityManager.handleUpdates(mergeContext, null, Arrays.asList(UPDATE.of(new ChangeSet(change))));
+
+        Assert.assertEquals("List size", 4, list.getSubclasses().size());
+        Assert.assertEquals("List elt 3", "C4", list.getSubclasses().get(2).getUid());
+        Assert.assertEquals("List elt 4", "C3", list.getSubclasses().get(3).getUid());
+        
+        Assert.assertFalse("Context not dirty", dataManager.isDirty());
+    }
+
+   	@Test
+    public void testApplyRemoteChangeList6c() {
+        Classification list = new Classification(1L, 0L, "P1", "List");
+        Classification c1 = new Classification(1L, 0L, "C1", "1");
+        Classification c2 = new Classification(2L, 0L, "C2", "2");
+        Classification c3 = new Classification(3L, 0L, "C3", "3");
+        Classification c4 = new Classification(4L, 0L, "C4", "4");
+        list.getSubclasses().addAll(c1, c2, c3, c4);
+        c1.getSuperclasses().add(list);
+        c2.getSuperclasses().add(list);
+        c3.getSuperclasses().add(list);
+        c4.getSuperclasses().add(list);
+        
+        list = (Classification)entityManager.mergeExternalData(list);
+        entityManager.clearCache();
+
+        Classification c = list.getSubclasses().remove(0);
+        list.getSubclasses().add(1, c);
+        c = list.getSubclasses().remove(2);
+        list.getSubclasses().add(1, c);
+        
+        // Case where the server does not build the same permutation as the client
+        // Ex. Client: A B C D => B A C D => B C A D :  remove A (0) => add A (1) => remove C (2) => add C (1)
+        //     Server: A B C D => B C A D :  remove A (0) => add A (2)
+        
+        Classification c3b = new Classification(3L, 0L, "C3", "3");
+        ((PersistentCollection)c3b.getSubclasses()).uninitialize();
+        ((PersistentCollection)c3b.getSuperclasses()).uninitialize();
+        
+        Change change = new Change(classificationAlias, list.getId(), list.getVersion()+1, list.getUid());
+        change.addCollectionChanges("subclasses", 
+        		new CollectionChange(-1, 0, new ChangeRef(classificationAlias, "C1", 1L)),
+        		new CollectionChange(1, 2, new ChangeRef(classificationAlias, "C2", 2L))
+        );
+
+        MergeContext mergeContext = entityManager.initMerge(serverSession);
+        entityManager.handleUpdates(mergeContext, null, Arrays.asList(UPDATE.of(new ChangeSet(change))));
+
+        Assert.assertEquals("List size", 4, list.getSubclasses().size());
+        Assert.assertEquals("List elt 3", "C1", list.getSubclasses().get(2).getUid());
+        Assert.assertEquals("List elt 4", "C4", list.getSubclasses().get(3).getUid());
+        
+        Assert.assertFalse("Context not dirty", dataManager.isDirty());
+    }
+   	
+   	
+    private static String person11Alias = Person11.class.getAnnotation(RemoteAlias.class).value();
+    
+    @Test
+    public void testApplyRemoteChangeMap() {
+    	Person11 person = new Person11(1L, 0L, "P1", "Test", "Test");
+    	SimpleEntity key = new SimpleEntity(null, null, "K1", "Key");
+    	SimpleEntity2 value = new SimpleEntity2(1L, 0L, "V1", "Value");
+    	person.getMap().put(key, value);
+        
+        person = (Person11)entityManager.mergeExternalData(person);
+        entityManager.clearCache();
+        
+        SimpleEntity key2 = new SimpleEntity(null, null, "K2", "Key2");
+        SimpleEntity2 val2 = new SimpleEntity2(null, null, "V2", "Value2");
+        person.getMap().put(key2, val2);
+        
+    	SimpleEntity key2b = new SimpleEntity(2L, 0L, "K2", "Key2");
+    	SimpleEntity2 val2b = new SimpleEntity2(2L, 0L, "V2", "Value2");
+        person.getMap().put(key2b, val2b);
+        
+        Change change1 = new Change(person11Alias, person.getId(), 0L, person.getUid());
+        change1.addCollectionChanges("map", new CollectionChange(1, key2b, val2b));
+        
+        MergeContext mergeContext = entityManager.initMerge(serverSession);
+        entityManager.handleUpdates(mergeContext, null, Arrays.asList(UPDATE.of(new ChangeSet(change1))));
+
+        Assert.assertSame("Person em", entityManager, getEntityManager(person));
+        Assert.assertEquals("Entry added to person.map", 2, person.getMap().size());
+        Assert.assertEquals("Entry key updated", Long.valueOf(2), key2.getId());
+        Assert.assertEquals("Entry value updated", Long.valueOf(2), val2.getId());
+        
+        Assert.assertFalse("Context not dirty", dataManager.isDirty());
+    }
+
+    
+    @Test
+    public void testApplyRemoteChangeConflict() {
+    	Person person = new Person(1L, 0L, "P1", "Test", "Test");
+        
+        person = (Person)entityManager.mergeExternalData(person);
+        entityManager.clearCache();
+
+        person.setLastName("Tutu");
+
+        Change change = new Change(personAlias, 1L, 1L, "P1");
+        change.getChanges().put("lastName", "Toto");
+        
+        final Conflicts[] conflicts = new Conflicts[1];
+        entityManager.addListener(new DataConflictListener() {			
+			@Override
+			public void onConflict(EntityManager entityManager, Conflicts c) {
+				conflicts[0] = c;
+			}
+		});
+        
+        MergeContext mergeContext = entityManager.initMerge(serverSession);
+        entityManager.handleUpdates(mergeContext, "EXTUSER", Arrays.asList(UPDATE.of(new ChangeSet(change))));
+        
+        Assert.assertEquals("Last name not changed", "Tutu", person.getLastName());
+        Assert.assertEquals("Conflict detected", 1, conflicts[0].getConflicts().size());
+        
+        conflicts[0].acceptAllServer();
+        
+        Assert.assertEquals("Last name changed", "Toto", person.getLastName());
+    }
+
+    @Test
+    public void testApplyRemoteChangeConflict2() {
+        Person person = new Person(1L, 0L, "P1", "Test", "Test");
+        
+        person = (Person)entityManager.mergeExternalData(person);
+        entityManager.clearCache();
+
+        person.setLastName("Tutu");
+
+        Change change = new Change(personAlias, 1L, 1L, "P1");
+        change.getChanges().put("lastName", "Toto");
+
+        final Conflicts[] conflicts = new Conflicts[1];
+        entityManager.addListener(new DataConflictListener() {			
+			@Override
+			public void onConflict(EntityManager entityManager, Conflicts c) {
+				conflicts[0] = c;
+			}
+		});
+        MergeContext mergeContext = entityManager.initMerge(serverSession);
+        entityManager.handleUpdates(mergeContext, "EXTUSER", Arrays.asList(UPDATE.of(new ChangeSet(change))));
+
+        Assert.assertEquals("Last name not changed", "Tutu", person.getLastName());
+        Assert.assertEquals("Conflict detected", 1, conflicts[0].getConflicts().size());
+        
+        conflicts[0].acceptAllClient();
+        
+        Assert.assertEquals("Last name changed", "Tutu", person.getLastName());
+        Assert.assertEquals("Version increased", Long.valueOf(1), person.getVersion());
+    }
+
+    
+    @SuppressWarnings("unchecked")
+	private <T> T serializeCopy(T object) throws Exception {
+        // Simulate serialization of change set
+        ByteArrayOutputStream buf = new ByteArrayOutputStream(1000);
+        JMFSerializer ser = new JMFSerializer(buf, clientSharedContext);
+        ser.writeObject(object);
+        ser.close();
+        JMFDeserializer deser = new JMFDeserializer(new ByteArrayInputStream(buf.toByteArray()), clientSharedContext);
+        object = (T)deser.readObject();
+        deser.close();
+        return object;
+    }
+    
+    @Test
+    public void testApplyChangeRef() throws Exception {
+        Person person = new Person(1L, 0L, "P1", "Test", "Test");
+        Contact contact = new Contact(1L, 0L, "C1", person, "test@test.com");
+        person.getContacts().add(contact);
+        
+        person = (Person)entityManager.mergeExternalData(person);
+        entityManager.clearCache();
+        
+        person.getContacts().remove(0);
+        
+        ChangeSet changeSet = new ChangeSetBuilder(ctx).buildChangeSet();
+        
+        changeSet = serializeCopy(changeSet);
+        
+        entityManager.resetEntity(person);
+        
+        Assert.assertEquals("Person has 1 contact", 1, person.getContacts().size());
+        
+        // Check that applied ChangeSet removes the contact
+        
+        MergeContext mergeContext = entityManager.initMerge(serverSession);
+        entityManager.mergeExternal(mergeContext, changeSet, null, null, null, false);
+
+        Assert.assertEquals("Person contact removed", 0, person.getContacts().size());
+    }
+
+    @Test
+    public void testApplyChangeBoolean() throws Exception {
+    	entityManager.setUninitializeAllowed(false);
+    	
+    	Patient4b patient = new Patient4b(1L, 0L, "P1", "Bla", false);
+        
+        patient = (Patient4b)entityManager.mergeExternalData(patient);
+        entityManager.clearCache();
+
+        Diagnosisb diagnosis = new Diagnosisb(null, null, "D1", patient, null, null);
+        patient.getDiagnosis().add(diagnosis);
+        patient.setDiagnosisAssessed(true);
+
+        diagnosis.setName("bla");
+
+        Assert.assertTrue("Context dirty", dataManager.isDirty());
+        
+        ChangeSet changeSet = new ChangeSetBuilder(ctx).buildChangeSet();
+
+        // Simulate pre-remote call merge
+        MergeContext mergeContext = entityManager.initMerge(serverSession);
+        changeSet = (ChangeSet)entityManager.mergeExternal(mergeContext, changeSet, null, null, null, false);
+        
+        Assert.assertSame(patient, diagnosis.getPatient());
+        
+        MergeContext.destroy(entityManager);
+        
+        // Simulate serialization
+        changeSet = serializeCopy(changeSet);
+        
+        Change c = changeSet.getChanges()[0];
+        Change change = new Change(c.getClassName(), c.getId(), 1L, c.getUid(), false);
+        change.getChanges().putAll(c.getChanges());
+        Diagnosisb diag = (Diagnosisb)((CollectionChanges)c.getChanges().get("diagnosis")).getChanges()[0].getValue();
+        diag.resetId(1L, 0L);
+        diag.getPatient().resetId(diag.getPatient().getId(), 1L);
+        
+        mergeContext = entityManager.initMerge(serverSession);
+        entityManager.handleUpdates(mergeContext, null, Arrays.asList(PERSIST.of(diag), UPDATE.of(new ChangeSet(change))));
+        
+        Assert.assertFalse("Context not dirty", dataManager.isDirty());
+        Assert.assertEquals("Patient version", Long.valueOf(1), patient.getVersion());
+        Assert.assertEquals("Diagnosis count", 1, patient.getDiagnosis().size());
+    }
 }

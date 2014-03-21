@@ -887,6 +887,9 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 				
 				Object value = dataManager.getPropertyValue(object, p);
 				if (value instanceof Collection<?>) {
+					if (value instanceof PersistentCollection && !((PersistentCollection)value).wasInitialized())
+						continue;
+					
 					@SuppressWarnings("unchecked")
 					List<Object> snapshot = (List<Object>)sn;
 					Collection<?> coll = (Collection<?>)value;
@@ -929,6 +932,9 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 						ip.remove();
 				}
 				else if (value instanceof Map<?, ?>) {
+					if (value instanceof PersistentCollection && !((PersistentCollection)value).wasInitialized())
+						continue;
+					
 					@SuppressWarnings("unchecked")
 					List<Object[]> snapshot = (List<Object[]>)sn;
 					Map<?, ?> map = (Map<?, ?>)value;

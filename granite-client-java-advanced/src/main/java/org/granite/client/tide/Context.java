@@ -149,8 +149,10 @@ public class Context {
      */
     public void initContext(Application application, EventBus eventBus, InstanceStore instanceStore) {
     	this.application = application;
-    	this.eventBus = eventBus;
-        this.instanceStore = instanceStore;
+    	if (eventBus != null)
+    		this.eventBus = eventBus;
+    	if (instanceStore != null)
+    		this.instanceStore = instanceStore;
         application.initContext(this, initialBeans);
         this.entityManager = new EntityManagerImpl("", dataManager);
         this.entityManager.setRemoteInitializer(new RemoteInitializerImpl(this));
@@ -368,7 +370,9 @@ public class Context {
     private static int tmpContextId = 1;
 
     public Context newTemporaryContext() {
-        return new Context(getContextManager(), null, "$$TMP$$" + (tmpContextId++));
+        Context tmpContext = new Context(getContextManager(), null, "$$TMP$$" + (tmpContextId++));
+        tmpContext.initContext(application, null, null);
+        return tmpContext;
     }
 
 }

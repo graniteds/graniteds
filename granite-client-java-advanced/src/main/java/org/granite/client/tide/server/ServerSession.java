@@ -326,11 +326,14 @@ public class ServerSession implements ContextAware {
 		this.packageNames.addAll(packageNames);
 	}
 
-
+	/**
+	 * Return the current alias registry for this session
+	 * @return alias registry
+	 */
     public ClientAliasRegistry getAliasRegistry() {
         return aliasRegistry;
     }
-	
+    
 	private GraniteConfig graniteConfig = null;
 	
 	public Object convert(Object value, Type expectedType) {

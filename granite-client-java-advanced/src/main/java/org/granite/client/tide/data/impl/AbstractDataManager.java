@@ -171,6 +171,8 @@ public abstract class AbstractDataManager implements DataManager {
     }
     
     public boolean isInitialized(Object object) {
+    	if (object == null)
+    		return true;
     	return persistence.isInitialized(object);
     }
 

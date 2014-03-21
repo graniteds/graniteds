@@ -43,24 +43,24 @@ import javafx.beans.property.StringProperty;
 
 
 @Entity
-@RemoteAlias("org.granite.client.test.SimpleEntity")
-public class SimpleEntity extends AbstractEntity {
+@RemoteAlias("org.granite.client.test.SimpleEntity2")
+public class SimpleEntity2 extends AbstractEntity {
 
     private static final long serialVersionUID = 1L;
     
     private StringProperty name = new SimpleStringProperty(this, "name");
     
     
-    public SimpleEntity() {
+    public SimpleEntity2() {
         super();
     }
     
-    public SimpleEntity(Long id, Long version, String uid, String name) {
+    public SimpleEntity2(Long id, Long version, String uid, String name) {
         super(id, version, uid);
         this.name.set(name);
     }
     
-    public SimpleEntity(Long id, boolean initialized, String detachedState) {
+    public SimpleEntity2(Long id, boolean initialized, String detachedState) {
         super(id, initialized, detachedState);
     }
     

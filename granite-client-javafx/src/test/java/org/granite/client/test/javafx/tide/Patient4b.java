@@ -28,11 +28,13 @@
 
 package org.granite.client.test.javafx.tide;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
 import javafx.beans.property.ReadOnlySetProperty;
 import javafx.beans.property.ReadOnlySetWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -45,8 +47,8 @@ import org.granite.client.persistence.Entity;
 import org.granite.client.persistence.Lazy;
 
 @Entity
-@RemoteAlias("org.granite.test.tide.Patient4")
-public class Patient4 extends AbstractEntity {
+@RemoteAlias("org.granite.test.tide.Patient4b")
+public class Patient4b extends AbstractEntity {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -54,20 +56,22 @@ public class Patient4 extends AbstractEntity {
 	@Lazy
     private ReadOnlyListWrapper<Visit2> visits = FXPersistentCollections.readOnlyObservablePersistentList(this, "visits");
     @Lazy
-    private ReadOnlySetWrapper<Diagnosis> diagnosis = FXPersistentCollections.readOnlyObservablePersistentSet(this, "diagnosis");
+    private ReadOnlySetWrapper<Diagnosisb> diagnosis = FXPersistentCollections.readOnlyObservablePersistentSet(this, "diagnosis");
+    private BooleanProperty diagnosisAssessed = new SimpleBooleanProperty(this, "diagnosisAssessed");
     private StringProperty name = new SimpleStringProperty(this, "name");
 
 
-    public Patient4() {
+    public Patient4b() {
         super();
     }
 
-    public Patient4(Long id, Long version, String uid, String name) {
+    public Patient4b(Long id, Long version, String uid, String name, boolean assessed) {
         super(id, version, uid);
         this.name.set(name);
+        this.diagnosisAssessed.set(assessed);
     }
 
-    public Patient4(Long id, boolean initialized, String detachedState) {
+    public Patient4b(Long id, boolean initialized, String detachedState) {
         super(id, initialized, detachedState);
     }
 
@@ -98,10 +102,20 @@ public class Patient4 extends AbstractEntity {
         return visits.get();
     }
 
-    public ReadOnlySetProperty<Diagnosis> diagnosisProperty() {
+    public ReadOnlySetProperty<Diagnosisb> diagnosisProperty() {
         return diagnosis.getReadOnlyProperty();
     }
-    public ObservableSet<Diagnosis> getDiagnosis() {
+    public ObservableSet<Diagnosisb> getDiagnosis() {
         return diagnosis.get();
+    }
+    
+    public boolean isDiagnosisAssessed() {
+    	return diagnosisAssessed.get();
+    }
+    public void setDiagnosisAssessed(boolean assessed) {
+    	diagnosisAssessed.set(assessed);
+    }
+    public BooleanProperty diagnosisAssessedProperty() {
+    	return diagnosisAssessed;
     }
 }

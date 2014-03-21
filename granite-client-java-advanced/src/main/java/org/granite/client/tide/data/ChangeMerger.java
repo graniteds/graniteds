@@ -88,7 +88,7 @@ public class ChangeMerger implements DataMerger {
             Object dest = mergeContext.getCachedObject(changeEntityRef);
             if (dest == null) {
                 // Entity not found locally : nothing to do, we can't apply incremental changes
-                log.warn("Incoming change received for unknown entity {0}", change.getClassName() + ":" + change.getUid());
+                log.warn("Incoming change received for unknown entity %s: %s", change.getClassName(), change.getUid());
                 continue;
             }
 
@@ -269,7 +269,6 @@ public class ChangeMerger implements DataMerger {
     }
 
 
-    @SuppressWarnings("cast")
 	private void applyListChanges(MergeContext mergeContext, List<Object> coll, CollectionChanges ccs, List<Object> savedArray) {
         if (savedArray != null) {
             // If the List has been modified locally, apply received operations to the current saved snapshot
@@ -279,9 +278,9 @@ public class ChangeMerger implements DataMerger {
                 if (cc.getType() == -1) {
                     if (cc.getKey() != null && (Integer)cc.getKey() >= 0 && cc.getValue() instanceof ChangeRef
                             && isForEntity(mergeContext, (ChangeRef) cc.getValue(), savedList.get((Integer)cc.getKey())))
-                        savedList.remove(cc.getKey());
+                        savedList.remove(((Integer)cc.getKey()).intValue());
                     else if (cc.getKey() != null && (Integer)cc.getKey() >= 0 && mergeContext.objectEquals(cc.getValue(), savedList.get((Integer)cc.getKey())))
-                        savedList.remove(cc.getKey());
+                        savedList.remove(((Integer)cc.getKey()).intValue());
                     else if (cc.getKey() == null && cc.getValue() instanceof ChangeRef) {
                         for (int i = 0; i < savedList.size(); i++) {
                             if (isForEntity(mergeContext, (ChangeRef)cc.getValue(), savedList.get(i))) {
@@ -301,14 +300,14 @@ public class ChangeMerger implements DataMerger {
                 }
                 else if (cc.getType() == 1) {
                     if (cc.getKey() != null && (Integer)cc.getKey() >= 0)
-                        savedList.add((Integer) cc.getKey(), cc.getValue());
+                        savedList.add(((Integer)cc.getKey()).intValue(), cc.getValue());
                     else if (cc.getKey() != null)
                         savedList.add(cc.getValue());
                     else
                         savedList.add(cc.getValue());
                 }
                 else if (cc.getType() == 0 && cc.getKey() != null && (Integer)cc.getKey() >= 0) {
-                    savedList.set((Integer)cc.getKey(), cc.getValue());
+                    savedList.set(((Integer)cc.getKey()).intValue(), cc.getValue());
                 }
             }
 
@@ -331,9 +330,9 @@ public class ChangeMerger implements DataMerger {
                 if (cc.getType() == -1) {
                     if (cc.getKey() != null && (Integer)cc.getKey() >= 0 && cc.getValue() instanceof ChangeRef
                         && isForEntity(mergeContext, (ChangeRef)cc.getValue(), coll.get((Integer)cc.getKey())))
-                        coll.remove((Integer)cc.getKey());
+                        coll.remove(((Integer)cc.getKey()).intValue());
                     else if (cc.getKey() != null && (Integer)cc.getKey() >= 0 && mergeContext.objectEquals(cc.getValue(), coll.get((Integer)cc.getKey())))
-                        coll.remove((Integer)cc.getKey());
+                        coll.remove(((Integer)cc.getKey()).intValue());
                     else if (cc.getKey() == null && cc.getValue() instanceof ChangeRef) {
                         for (int i = 0; i < coll.size(); i++) {
                             if (isForEntity(mergeContext, (ChangeRef) cc.getValue(), coll.get(i))) {
@@ -460,31 +459,34 @@ public class ChangeMerger implements DataMerger {
             }
 
             // Replace local objects by received objects in merged map
-            for (Map.Entry<?, ?> me : map.entrySet()) {
+            Map<Object, Object> toAdd = new HashMap<Object, Object>();
+            for (Iterator<Map.Entry<Object, Object>> ime = map.entrySet().iterator(); ime.hasNext(); ) {
+            	Map.Entry<Object, Object> me = ime.next();
                 Object key = me.getKey();
                 Object value = me.getValue();
                 for (Object k : savedMap.keySet()) {
                     if (mergeContext.objectEquals(key, k) && key != k) {
-                        map.remove(key);
+                       	ime.remove();
                         key = k;
-                        map.put(key, value);
+                        toAdd.put(key, value);
                     }
                     if (mergeContext.objectEquals(value, k) && value != k) {
                         value = k;
-                        map.put(key, value);
+                        toAdd.put(key, value);
                     }
                     Object v = savedMap.get(k);
                     if (mergeContext.objectEquals(key, v) && key != v) {
-                        map.remove(key);
+                       	ime.remove();
                         key = v;
-                        map.put(key, value);
+                        toAdd.put(key, value);
                     }
                     if (mergeContext.objectEquals(value, v) && value != v) {
                         value = v;
-                        map.put(key, value);
+                        toAdd.put(key, value);
                     }
                 }
             }
+            map.putAll(toAdd);
 
             savedArray.clear();
             for (Map.Entry<Object, Object> me : savedMap.entrySet())
