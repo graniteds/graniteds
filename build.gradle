@@ -1764,7 +1764,7 @@ project('granite-client-java') {
     }
 
     test {
-        it.dependsOn 'testTomcat7', 'testJetty8', 'testGlassFishv31'
+        it.dependsOn 'testTomcat7', 'testJetty8'		//, 'testGlassFishv31'
 
         excludes = [ 'org/granite/client/test/server/Test*' ]
     }
