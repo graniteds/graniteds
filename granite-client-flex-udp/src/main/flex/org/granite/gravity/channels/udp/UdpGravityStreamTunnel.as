@@ -249,6 +249,22 @@ package org.granite.gravity.channels.udp {
 				}
 				
 				_datagramSocket.connect((channel as UdpGravityChannel).serverIp, serverUdpPort);
+				
+				// Send a 1 byte ping message to make sure firewalls aren't blocking this
+				// connection.
+				var udpPing:ByteArray = new ByteArray();
+				udpPing.writeBoolean(true);
+				try {
+					_datagramSocket.send(udpPing);
+				}
+				catch (e:Error) {
+					dispatchFaultEvent(
+						"Client." + getUnqualifiedClassName(this) + ".Connect",
+						"Could not send UPD Ping data to: " + (channel as UdpGravityChannel).serverIp + ':' + serverUdpPort
+					);
+					return;
+				}
+				
 				_datagramSocket.addEventListener(DatagramSocketDataEvent.DATA, datagramDataEventHandler, false, 0, true);
 				_datagramSocket.receive();
 	
