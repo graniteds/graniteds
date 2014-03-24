@@ -41,8 +41,10 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.granite.client.tide.Context;
+import org.granite.client.messaging.ClientAliasRegistry;
 import org.granite.client.tide.data.impl.ObjectUtil;
+import org.granite.client.tide.data.spi.DataManager;
+import org.granite.client.tide.server.ServerSession;
 import org.granite.tide.IUID;
 import org.granite.tide.data.Change;
 import org.granite.tide.data.ChangeRef;
@@ -59,27 +61,33 @@ import org.granite.tide.data.DataUtils;
  */
 public class ChangeSetBuilder {
 
-    private final Context context;
+    private final EntityManager entityManager;
+    private final DataManager dataManager;
+    private final ServerSession serverSession;
+    private final ClientAliasRegistry aliasRegistry;
     private final Map<Object, Map<String, Object>> savedProperties;
     private final boolean local;
 
-    private Context tmpContext = null;
+    private EntityManager tmpEntityManager = null;
 
 
-    public ChangeSetBuilder(Context context) {
-        this(context, true);
+    public ChangeSetBuilder(EntityManager entityManager, ServerSession serverSession) {
+        this(entityManager, serverSession, true);
     }
 
-    public ChangeSetBuilder(Context context, boolean local) {
-        this.context = context;
-        this.savedProperties = context.getEntityManager().getSavedProperties();
+    public ChangeSetBuilder(EntityManager entityManager, ServerSession serverSession, boolean local) {
+        this.entityManager = entityManager;
+        this.dataManager = entityManager.getDataManager();
+        this.serverSession = serverSession;
+        this.aliasRegistry = serverSession.getAliasRegistry();
+        this.savedProperties = entityManager.getSavedProperties();
         this.local = local;
-
+        
         // Temporary context to store complete entities so we can uninitialize all collections
         // when possible
-        tmpContext = context.newTemporaryContext();
+        tmpEntityManager = entityManager.newTemporaryEntityManager();
     }
-
+    
     /**
      *  Build a ChangeSet object for the current context
      *
@@ -99,9 +107,10 @@ public class ChangeSetBuilder {
         collectEntitySavedProperties(entity, entitySavedProperties, null);
         if (!entitySavedProperties.containsKey(entity)) {
             Map<String, Object> sp = new HashMap<String, Object>();
-            sp.put(context.getDataManager().getVersionPropertyName(entity), context.getDataManager().getVersion(entity));
+            sp.put(dataManager.getVersionPropertyName(entity), dataManager.getVersion(entity));
+            entitySavedProperties.put(entity, sp);
         }
-
+        
         ChangeSet changeSet = internalBuildChangeSet(entitySavedProperties);
 
         // Place Change for initial entity first
@@ -119,13 +128,24 @@ public class ChangeSetBuilder {
         }
         return changeSet;
     }
-
-    private boolean isForEntity(Change change, Object entity) {
-        return entity.getClass().getName().equals(change.getClassName()) && change.getUid().equals(context.getDataManager().getUid(entity));
+    
+    private String getType(String alias) {
+    	String className = aliasRegistry.getTypeForAlias(alias);
+    	return className != null ? className : alias;
     }
-
+    
+    private String getAlias(String className) {
+    	String alias = aliasRegistry.getAliasForType(className);
+    	return alias != null ? alias : className;
+    }
+    
+    
+    private boolean isForEntity(Change change, Object entity) {
+        return entity.getClass().getName().equals(getType(change.getClassName())) && change.getUid().equals(dataManager.getUid(entity));
+    }
+    
     private boolean isEntity(Object entity) {
-        return context.getDataManager().isEntity(entity);
+        return entityManager.getDataManager().isEntity(entity);
     }
 
 
@@ -139,11 +159,11 @@ public class ChangeSetBuilder {
         if (isEntity(entity) && this.savedProperties.containsKey(entity))
             savedProperties.put(entity, this.savedProperties.get(entity));
 
-        Map<String, Object> properties = context.getDataManager().getPropertyValues(entity, false, false);
+        Map<String, Object> properties = dataManager.getPropertyValues(entity, false, false);
         for (Object v : properties.values()) {
             if (v == null)
                 continue;
-            if (isEntity(entity) && !context.getDataManager().isInitialized(v))
+            if (isEntity(entity) && !dataManager.isInitialized(v))
                 continue;
             
             if (v instanceof Collection<?>) {
@@ -173,7 +193,7 @@ public class ChangeSetBuilder {
 //            entity = _context.meta_getOwnerEntity(entity);
 
             if (!isEntity(entity) && !(entity instanceof IUID))
-                entity = context.getEntityManager().getOwnerEntity(entity);
+                entity = entityManager.getOwnerEntity(entity);
 
             if (changeMap.containsKey(entity))
                 continue;
@@ -183,19 +203,18 @@ public class ChangeSetBuilder {
             Change change = null;
             String versionPropertyName = null;
             if (isEntity(entity)) {
-                versionPropertyName = context.getDataManager().getVersionPropertyName(entity);
+                versionPropertyName = dataManager.getVersionPropertyName(entity);
                 // Unsaved objects should not be part of the ChangeSet
                 if (save.get(versionPropertyName) == null)
                     continue;
 
-                change = new Change(entity.getClass().getName(),
-                        context.getDataManager().hasIdProperty(entity) ? (Serializable)context.getDataManager().getId(entity) : null,
-                        (Number)context.getDataManager().getVersion(entity),
-                        context.getDataManager().getUid(entity),
+                change = new Change(getAlias(entity.getClass().getName()),
+                		dataManager.hasIdProperty(entity) ? (Serializable)dataManager.getId(entity) : null,
+                        (Number)dataManager.getVersion(entity), dataManager.getUid(entity),
                         local);
             }
             else if (entity instanceof IUID) {
-                change = new Change(entity.getClass().getName(), null, null, context.getDataManager().getUid(entity), local);
+                change = new Change(getAlias(entity.getClass().getName()), null, null, dataManager.getUid(entity), local);
             }
             if (change == null) {
                 changeMap.put(entity, false);
@@ -208,11 +227,11 @@ public class ChangeSetBuilder {
             changes[changeSet.getChanges().length] = change;
             changeSet.setChanges(changes);
 
-            for (Map.Entry<String, Object> me : context.getDataManager().getPropertyValues(entity, true, true, false ).entrySet()) {
+            for (Map.Entry<String, Object> me : dataManager.getPropertyValues(entity, true, true, false ).entrySet()) {
                 String p = me.getKey();
                 Object v = me.getValue();
                 if (save != null && save.containsKey(p)) {
-                    if (v instanceof Collection<?>) {
+                    if (v instanceof Collection<?> || v instanceof Map<?, ?>) {
                         List<?> collSnapshot = (List<?>)save.get(p);
                         CollectionChanges collChanges = new CollectionChanges();
                         change.getChanges().put(p, collChanges);
@@ -245,7 +264,7 @@ public class ChangeSetBuilder {
         }
 
         // Cleanup tmp context to detach all new entities
-        tmpContext.clear();
+        tmpEntityManager.clear();
 
         return changeSet;
     }
@@ -254,15 +273,15 @@ public class ChangeSetBuilder {
         if (!isEntity(object))
         	return object;
     
-        if (!context.getDataManager().hasVersionProperty(object))
+        if (!dataManager.hasVersionProperty(object))
             throw new IllegalArgumentException("Cannot build ChangeSet for non versioned entity " + object.getClass().getName());
-
-        if (context.getDataManager().getVersion(object) != null)
-            return new ChangeRef(object.getClass().getName(), context.getDataManager().getUid(object), (Serializable)context.getDataManager().getId(object));
+        
+        if (dataManager.getVersion(object) != null)
+            return new ChangeRef(getAlias(object.getClass().getName()), dataManager.getUid(object), (Serializable)dataManager.getId(object));
         
         // Force attachment/init of uids of ref object in case some deep elements in the graph are not yet managed in the current context
         // So the next merge in the tmp context does not attach newly added objects to the tmp context
-        context.getEntityManager().attach(object);
-        return tmpContext.getEntityManager().mergeFromEntityManager(context.getEntityManager(), object, null, true);
+        entityManager.attach(object);
+        return tmpEntityManager.mergeFromEntityManager(entityManager, serverSession, object, null, true);
     }
 }

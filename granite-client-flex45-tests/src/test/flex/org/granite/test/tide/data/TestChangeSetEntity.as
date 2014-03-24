@@ -356,7 +356,7 @@ package org.granite.test.tide.data
                 }
             }
             Assert.assertNotNull("ChangeSet add key K2", cc);
-            Assert.assertTrue("ChangeSet add value", "test@test.com", cc.value.email);
+            Assert.assertEquals("ChangeSet add value", "test@test.com", cc.value.email);
             Assert.assertFalse("ChangeSet add value uninit", cc.value.meta::isInitialized("person"));
         }
 		

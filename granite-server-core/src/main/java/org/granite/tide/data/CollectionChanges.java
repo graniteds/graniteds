@@ -51,6 +51,36 @@ public class CollectionChanges implements Externalizable {
 		this.changes = changes;
 	}
 	
+	public int size() {
+		return changes.length;
+	}
+	
+	public CollectionChange getChange(int index) {
+		return changes[index];
+	}
+	
+	public int getChangeType(int index) {
+		return changes[index].getType();
+	}
+	
+	public Object getChangeKey(int index) {
+		return changes[index].getKey();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <K> K getChangeKey(int index, Class<K> cast) {
+		return (K)changes[index].getKey();
+	}
+	
+	public Object getChangeValue(int index) {
+		return changes[index].getValue();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <V> V getChangeValue(int index, Class<V> cast) {
+		return (V)changes[index].getValue();
+	}
+	
 	public void writeExternal(ObjectOutput out) throws IOException {
 		Object[] cs = new Object[changes.length];
 		for (int i = 0; i < cs.length; i++)

@@ -48,6 +48,7 @@ import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextAware;
 import org.granite.client.tide.NameAware;
 import org.granite.client.tide.PropertyHolder;
+import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.server.ArgumentPreprocessor;
 import org.granite.client.tide.server.Component;
 import org.granite.client.tide.server.ComponentListener;
@@ -187,13 +188,13 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
         }
         
 		// Force generation of uids by merging all arguments in the current context
-        context.getEntityManager().initMerge(serverSession);
+        MergeContext mergeContext = context.getEntityManager().initMerge(serverSession);
         List<Object> argsList = Arrays.asList(args);
 		for (int i = 0; i < args.length; i++) {
 			if (argsList.get(i) instanceof PropertyHolder)
 				argsList.set(i, ((PropertyHolder)args[i]).getObject());
 		}
-		argsList = (List<Object>)context.getEntityManager().mergeExternalData(argsList);
+		argsList = (List<Object>)context.getEntityManager().mergeExternal(mergeContext, argsList, null, null, null, false);
 		for (int i = 0; i < args.length; i++)
 			args[i] = argsList.get(i);
 		

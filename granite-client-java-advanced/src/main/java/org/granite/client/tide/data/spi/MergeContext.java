@@ -111,8 +111,8 @@ public class MergeContext {
 
     public void addConflict(Object localEntity, Object receivedEntity, List<String> properties) {
         if (this.mergeConflicts == null)
-            this.mergeConflicts = new Conflicts(this.entityManager);
-
+            this.mergeConflicts = new Conflicts(this.entityManager, this.serverSession);
+        
         this.mergeConflicts.addConflict(localEntity, receivedEntity, properties);
     }
 

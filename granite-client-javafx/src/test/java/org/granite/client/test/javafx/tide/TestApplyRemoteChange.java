@@ -532,7 +532,7 @@ public class TestApplyRemoteChange {
         patient.getStatus().getDeathCauses().add(diagnosis2);
         
         // Simulate remote call with local merge of arguments
-        ChangeSet changeSet = new ChangeSetBuilder(ctx).buildChangeSet();
+        ChangeSet changeSet = new ChangeSetBuilder(entityManager, serverSession).buildChangeSet();
         entityManager.mergeExternalData(changeSet);
         entityManager.clearCache();
 
@@ -600,7 +600,7 @@ public class TestApplyRemoteChange {
         diagnosis2.setName("Test2");
         
         // Simulate remote call with local merge of arguments
-        ChangeSet changeSet = new ChangeSetBuilder(ctx).buildChangeSet();
+        ChangeSet changeSet = new ChangeSetBuilder(entityManager, serverSession).buildChangeSet();
         entityManager.mergeExternalData(changeSet);
         entityManager.clearCache();
 
@@ -902,7 +902,7 @@ public class TestApplyRemoteChange {
         
         person.getContacts().remove(0);
         
-        ChangeSet changeSet = new ChangeSetBuilder(ctx).buildChangeSet();
+        ChangeSet changeSet = new ChangeSetBuilder(entityManager, serverSession).buildChangeSet();
         
         changeSet = serializeCopy(changeSet);
         
@@ -935,8 +935,8 @@ public class TestApplyRemoteChange {
 
         Assert.assertTrue("Context dirty", dataManager.isDirty());
         
-        ChangeSet changeSet = new ChangeSetBuilder(ctx).buildChangeSet();
-
+        ChangeSet changeSet = new ChangeSetBuilder(entityManager, serverSession).buildChangeSet();
+        
         // Simulate pre-remote call merge
         MergeContext mergeContext = entityManager.initMerge(serverSession);
         changeSet = (ChangeSet)entityManager.mergeExternal(mergeContext, changeSet, null, null, null, false);

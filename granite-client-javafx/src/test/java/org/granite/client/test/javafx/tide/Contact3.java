@@ -46,39 +46,39 @@ import org.granite.client.persistence.Lazy;
 
 
 @Entity
-@RemoteAlias("org.granite.client.test.Contact")
-public class Contact extends AbstractEntity {
+@RemoteAlias("org.granite.client.test.Contact3")
+public class Contact3 extends AbstractEntity {
 
     private static final long serialVersionUID = 1L;
     
     @Lazy
-    private ObjectProperty<Person> person = new SimpleObjectProperty<Person>(this, "person");
+    private ObjectProperty<Person9> person = new SimpleObjectProperty<Person9>(this, "person");
     private StringProperty email = new SimpleStringProperty(this, "email");
     
     
-    public Contact() {
+    public Contact3() {
         super();
     }
     
-    public Contact(Long id, Long version, String uid, String email) {
+    public Contact3(Long id, Long version, String uid, String email) {
         super(id, version, uid);
         this.email.set(email);
     }    
-    public Contact(Long id, Long version, String uid, Person person, String email) {
+    public Contact3(Long id, Long version, String uid, Person9 person, String email) {
         super(id, version, uid);
         this.person.set(person);
         this.email.set(email);
     }    
     
-    public ObjectProperty<Person> personProperty() {
+    public ObjectProperty<Person9> personProperty() {
         return person;
     }
     
-    public Person getPerson() {
+    public Person9 getPerson() {
         return person.get();
     }
     
-    public void setPerson(Person person) {
+    public void setPerson(Person9 person) {
         this.person.set(person);
     }
     

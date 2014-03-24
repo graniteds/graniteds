@@ -63,7 +63,15 @@ public class ChangeSet implements Externalizable {
     public boolean isLocal() {
         return local;
     }
-
+    
+    public int size() {
+    	return changes.length;
+    }
+    
+    public Change getChange(int index) {
+    	return changes[index];
+    }
+    
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(changes);
 	}

@@ -38,45 +38,56 @@ package org.granite.client.test.javafx.tide;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
+import javafx.beans.property.ReadOnlyMapProperty;
+import javafx.beans.property.ReadOnlyMapWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 
 import org.granite.client.javafx.persistence.collection.FXPersistentCollections;
+import org.granite.client.messaging.RemoteAlias;
 import org.granite.client.persistence.Entity;
+import org.granite.client.persistence.Lazy;
 
 
 @Entity
-public class PersonEmbed extends AbstractEntity {
-
+@RemoteAlias("org.granite.client.test.Person9")
+public class Person9 extends AbstractEntity {
+	
     private static final long serialVersionUID = 1L;
     
     private ObjectProperty<Salutation> salutation = new SimpleObjectProperty<Salutation>(this, "salutation");
     private StringProperty firstName = new SimpleStringProperty(this, "firstName");
     private StringProperty lastName = new SimpleStringProperty(this, "lastName");
-    private ObjectProperty<EmbeddedAddress> address = new SimpleObjectProperty<EmbeddedAddress>(this, "address");
-    private ReadOnlyListWrapper<Contact> contacts = FXPersistentCollections.readOnlyObservablePersistentList(this, "contact");
+    @Lazy
+    private ReadOnlyMapWrapper<SimpleEntity, Contact3> testMap = FXPersistentCollections.readOnlyObservablePersistentMap(this, "testMap");
+    @Lazy
+    private ReadOnlyListWrapper<Contact3> contacts = FXPersistentCollections.readOnlyObservablePersistentList(this, "contacts");
     
     
-    public PersonEmbed() {
-        super();
+    public Person9() {    	
     }
     
-    public PersonEmbed(Long id, Long version, String uid, String firstName, String lastName) {
+    public Person9(Long id, Long version, String uid, String firstName, String lastName) {
         super(id, version, uid);
         this.firstName.set(firstName);
         this.lastName.set(lastName);
     }
     
+    public Person9(Long id, boolean initialized, String detachedState) {
+        super(id, initialized, detachedState);
+    }
+    
     public ObjectProperty<Salutation> salutationProperty() {
-    	return salutation;
-    }
+        return salutation;
+    }    
     public Salutation getSalutation() {
-    	return salutation.get();
-    }
+        return salutation.get();
+    }    
     public void setSalutation(Salutation salutation) {
-    	this.salutation.set(salutation);
+        this.salutation.set(salutation);
     }
     
     public StringProperty firstNameProperty() {
@@ -99,20 +110,23 @@ public class PersonEmbed extends AbstractEntity {
         this.lastName.set(lastName);
     }
     
-    public ObjectProperty<EmbeddedAddress> addressProperty() {
-        return address;
-    }    
-    public EmbeddedAddress getAddress() {
-        return address.get();
-    }    
-    public void setAddress(EmbeddedAddress address) {
-        this.address.set(address);
+    public ReadOnlyListProperty<Contact3> contactsProperty() {
+        return contacts.getReadOnlyProperty();
+    }
+    public ObservableList<Contact3> getContacts() {
+    	return contacts.get();
+    }
+    public void addContact(Contact3 contact) {
+    	contacts.get().add(contact);
+    }
+    public Contact3 getContact(int idx) {
+    	return contacts.get().get(idx);
     }
     
-    public ObservableList<Contact> getContacts() {
-        return contacts.get();
-    }    
-    public ReadOnlyListProperty<Contact> contactsProperty() {
-        return contacts.getReadOnlyProperty();
+    public ReadOnlyMapProperty<SimpleEntity, Contact3> testMapProperty() {
+        return testMap.getReadOnlyProperty();
+    }
+    public ObservableMap<SimpleEntity, Contact3> getTestMap() {
+    	return testMap.get();
     }
 }

@@ -79,6 +79,15 @@ public interface DataManager {
     public String getDetachedState(Object entity);
 
     /**
+     * Init state of a proxy object
+     * @param dest proxy object
+     * @param id proxy id
+     * @param initialized is initialized
+     * @param detachedState detached state
+     */
+    public void initProxy(Object dest, Object id, boolean initialized, String detachedState);
+
+    /**
      * Define the target object as a proxy for the source entity
      * @param target target object
      * @param source source entity

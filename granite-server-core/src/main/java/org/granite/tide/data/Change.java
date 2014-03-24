@@ -87,7 +87,24 @@ public class Change implements Externalizable {
 	public Map<String, Object> getChanges() {
 		return changes;
 	}
-
+	
+	public boolean isEmpty() {
+		return changes.size() == 0;
+	}
+	
+	public Object getChange(String key) {
+		return changes.get(key);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> T getChange(String key, Class<T> cast) {
+		return (T)changes.get(key);
+	}
+	
+	public CollectionChanges getCollectionChange(String key) {
+		return (CollectionChanges)changes.get(key);
+	}
+	
     public boolean isLocal() {
         return local;
     }

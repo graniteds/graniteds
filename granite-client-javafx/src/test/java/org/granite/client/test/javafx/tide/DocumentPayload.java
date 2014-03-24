@@ -24,53 +24,50 @@ package org.granite.client.test.javafx.tide;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 
 import org.granite.client.messaging.RemoteAlias;
 import org.granite.client.persistence.Entity;
 
 @Entity
-@RemoteAlias("org.granite.test.tide.VisitObservation")
-public class VisitObservation extends AbstractEntity {
+@RemoteAlias("org.granite.test.tide.DocumentPayload")
+public class DocumentPayload extends AbstractEntity {
 
 	private static final long serialVersionUID = 1L;
 	
-	private StringProperty name = new SimpleStringProperty(this, "name");
-    private ObjectProperty<VisitTest> test = new SimpleObjectProperty<VisitTest>(this, "test");
+	private ObjectProperty<byte[]> payload = new SimpleObjectProperty<byte[]>(this, "payload");
+    private ObjectProperty<Document> document = new SimpleObjectProperty<Document>(this, "document");
 
 
-    public VisitObservation() {
+    public DocumentPayload() {
         super();
     }
 
-    public VisitObservation(Long id, Long version, String uid, VisitTest test, String name) {
+    public DocumentPayload(Long id, Long version, String uid, Document document) {
         super(id, version, uid);
-        this.test.set(test);
-        this.name.set(name);
+        this.document.set(document);
     }
 
-    public VisitObservation(Long id, boolean initialized, String detachedState) {
+    public DocumentPayload(Long id, boolean initialized, String detachedState) {
         super(id, initialized, detachedState);
     }
 
-    public StringProperty nameProperty() {
-        return name;
+    public ObjectProperty<byte[]> payloadProperty() {
+        return payload;
     }
-    public String getName() {
-        return name.get();
+    public byte[] getPayload() {
+        return payload.get();
     }
-    public void setName(String name) {
-        this.name.set(name);
+    public void setPayload(byte[] payload) {
+        this.payload.set(payload);
     }
 
-    public ObjectProperty<VisitTest> testProperty() {
-        return test;
+    public ObjectProperty<Document> documentProperty() {
+        return document;
     }
-    public VisitTest getTest() {
-        return test.get();
+    public Document getDocument() {
+        return document.get();
     }
-    public void setVisitTest(VisitTest test) {
-        this.test.set(test);
+    public void setDocument(Document document) {
+        this.document.set(document);
     }
 }

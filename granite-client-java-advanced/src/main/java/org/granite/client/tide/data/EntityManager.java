@@ -264,15 +264,16 @@ public interface EntityManager {
      *
      *  @return merged object (should === previous when previous not null)
      */
-    public Object mergeFromEntityManager(EntityManager sourceEntityManager, Object obj, String externalDataSessionId, boolean uninitializing);
+    public Object mergeFromEntityManager(EntityManager sourceEntityManager, ServerSession serverSession, Object obj, String externalDataSessionId, boolean uninitializing);
     
     /**
      *  Merge conversation entity manager context variables in global entity manager 
      *  Only applicable to conversation contexts 
      * 
      *  @param entityManager conversation entity manager
+     *  @param serverSession current server session
      */
-    public void mergeInEntityManager(EntityManager entityManager);
+    public void mergeInEntityManager(EntityManager entityManager, ServerSession serverSession);
 
     /**
      * Attach an entity graph in the current entity manager

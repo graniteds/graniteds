@@ -93,7 +93,7 @@ public class ChangeMerger implements DataMerger {
             }
 
             if (dest != previous && previous != null && !isForEntity(mergeContext, change, previous)) {
-                // Cannot apply changes if provided change has not the same uid than the previous object
+                // Cannot apply changes if provided change has not the same uid than the cached object
                 continue;
             }
 

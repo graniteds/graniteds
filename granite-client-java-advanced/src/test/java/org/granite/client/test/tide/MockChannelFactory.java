@@ -35,6 +35,7 @@
 package org.granite.client.test.tide;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Set;
 
 import org.granite.client.messaging.ClientAliasRegistry;
@@ -43,11 +44,19 @@ import org.granite.client.messaging.channel.ChannelBuilder;
 import org.granite.client.messaging.channel.ChannelFactory;
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.channel.RemotingChannel;
+import org.granite.client.messaging.codec.JMFAMF0MessagingCodec;
+import org.granite.client.messaging.jmf.ClientSharedContext;
+import org.granite.client.messaging.jmf.DefaultClientSharedContext;
 import org.granite.client.messaging.transport.Transport;
+import org.granite.client.test.MockAMFRemotingChannel;
+import org.granite.client.test.MockTransport;
 import org.granite.messaging.AliasRegistry;
 import org.granite.util.ContentType;
 
 public class MockChannelFactory implements ChannelFactory {
+
+    private MockTransport transport = new MockTransport();
+    private ClientSharedContext sharedContext = new DefaultClientSharedContext();
 
     public MockChannelFactory(Object context) {
     }
@@ -94,17 +103,15 @@ public class MockChannelFactory implements ChannelFactory {
 
     @Override
     public Transport getRemotingTransport() {
-        return null;
+        return transport;
     }
 
     @Override
     public void setRemotingTransport(Transport remotingTransport) {
-
     }
 
     @Override
     public void setMessagingTransport(Transport messagingTransport) {
-
     }
 
     @Override
@@ -114,12 +121,12 @@ public class MockChannelFactory implements ChannelFactory {
 
     @Override
     public Transport getMessagingTransport() {
-        return null;
+        return transport;
     }
 
     @Override
     public Transport getMessagingTransport(String channelType) {
-        return null;
+        return transport;
     }
 
     private ClientAliasRegistry aliasRegistry;
@@ -153,12 +160,52 @@ public class MockChannelFactory implements ChannelFactory {
 
     @Override
     public RemotingChannel newRemotingChannel(String id, String uri) {
-        return null;
+    	try {
+    		return new MockAMFRemotingChannel(transport, null, id, new URI(uri), 1);
+    	}
+    	catch (URISyntaxException e) {
+    		return null;
+    	}
     }
 
     @Override
     public RemotingChannel newRemotingChannel(String id, String uri, int maxConcurrentRequests) {
-        return null;
+    	try {
+    		return new MockAMFRemotingChannel(transport, new JMFAMF0MessagingCodec(sharedContext), id, new URI(uri), maxConcurrentRequests);
+    	}
+    	catch (URISyntaxException e) {
+    		return null;
+    	}
+    }
+
+    @Override
+    public RemotingChannel newRemotingChannel(String id, URI uri) {
+		return new MockAMFRemotingChannel(transport, new JMFAMF0MessagingCodec(sharedContext), id, uri, 1);
+    }
+
+    @Override
+    public RemotingChannel newRemotingChannel(String id, URI uri, int maxConcurrentRequests) {
+		return new MockAMFRemotingChannel(transport, new JMFAMF0MessagingCodec(sharedContext), id, uri, maxConcurrentRequests);
+    }
+
+    @Override
+    public RemotingChannel newRemotingChannel(String id, ServerApp serverApp) {
+    	try {
+    		return new MockAMFRemotingChannel(transport, new JMFAMF0MessagingCodec(sharedContext), id, new URI("http://" + serverApp.getServerName() + ":" + serverApp.getServerPort() + "/" + serverApp.getContextRoot()), 1);
+    	}
+    	catch (URISyntaxException e) {
+    		return null;
+    	}
+    }
+
+    @Override
+    public RemotingChannel newRemotingChannel(String id, ServerApp serverApp, int maxConcurrentRequests) {
+    	try {
+    		return new MockAMFRemotingChannel(transport, new JMFAMF0MessagingCodec(sharedContext), id, new URI("http://" + serverApp.getServerName() + ":" + serverApp.getServerPort() + "/" + serverApp.getContextRoot()), maxConcurrentRequests);
+    	}
+    	catch (URISyntaxException e) {
+    		return null;
+    	}
     }
 
     @Override
@@ -172,32 +219,12 @@ public class MockChannelFactory implements ChannelFactory {
     }
 
     @Override
-    public RemotingChannel newRemotingChannel(String id, URI uri) {
-        return null;
-    }
-
-    @Override
-    public RemotingChannel newRemotingChannel(String id, URI uri, int maxConcurrentRequests) {
-        return null;
-    }
-
-    @Override
     public MessagingChannel newMessagingChannel(String id, URI uri) {
         return null;
     }
 
     @Override
     public MessagingChannel newMessagingChannel(String channelType, String id, URI uri) {
-        return null;
-    }
-
-    @Override
-    public RemotingChannel newRemotingChannel(String id, ServerApp serverApp) {
-        return null;
-    }
-
-    @Override
-    public RemotingChannel newRemotingChannel(String id, ServerApp serverApp, int maxConcurrentRequests) {
         return null;
     }
 

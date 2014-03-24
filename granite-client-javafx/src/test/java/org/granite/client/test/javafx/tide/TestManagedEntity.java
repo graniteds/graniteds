@@ -542,7 +542,7 @@ public class TestManagedEntity {
         contact.setPerson(new Person());
         
         EntityManager tmp = entityManager.newTemporaryEntityManager();
-        Contact c = (Contact)tmp.mergeFromEntityManager(entityManager, contact, null, true);
+        Contact c = (Contact)tmp.mergeFromEntityManager(entityManager, null, contact, null, true);
         
         Assert.assertTrue("Person initialized", dataManager.isInitialized(c.getPerson()));
     }

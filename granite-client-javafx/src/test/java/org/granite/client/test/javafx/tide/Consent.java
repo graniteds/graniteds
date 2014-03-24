@@ -31,26 +31,27 @@ import org.granite.client.messaging.RemoteAlias;
 import org.granite.client.persistence.Entity;
 
 @Entity
-@RemoteAlias("org.granite.test.tide.VisitObservation")
-public class VisitObservation extends AbstractEntity {
+@RemoteAlias("org.granite.test.tide.Consent")
+public class Consent extends AbstractEntity {
 
 	private static final long serialVersionUID = 1L;
 	
 	private StringProperty name = new SimpleStringProperty(this, "name");
-    private ObjectProperty<VisitTest> test = new SimpleObjectProperty<VisitTest>(this, "test");
+    private ObjectProperty<Patient5> patient = new SimpleObjectProperty<Patient5>(this, "patient");
+    private ObjectProperty<DocumentList> documentList = new SimpleObjectProperty<DocumentList>(this, "documentList");
 
 
-    public VisitObservation() {
+    public Consent() {
         super();
     }
 
-    public VisitObservation(Long id, Long version, String uid, VisitTest test, String name) {
+    public Consent(Long id, Long version, String uid, Patient5 patient, String name) {
         super(id, version, uid);
-        this.test.set(test);
+        this.patient.set(patient);
         this.name.set(name);
     }
 
-    public VisitObservation(Long id, boolean initialized, String detachedState) {
+    public Consent(Long id, boolean initialized, String detachedState) {
         super(id, initialized, detachedState);
     }
 
@@ -64,13 +65,23 @@ public class VisitObservation extends AbstractEntity {
         this.name.set(name);
     }
 
-    public ObjectProperty<VisitTest> testProperty() {
-        return test;
+    public ObjectProperty<Patient5> patientProperty() {
+        return patient;
     }
-    public VisitTest getTest() {
-        return test.get();
+    public Patient5 getPatient() {
+        return patient.get();
     }
-    public void setVisitTest(VisitTest test) {
-        this.test.set(test);
+    public void setPatient(Patient5 patient) {
+        this.patient.set(patient);
+    }
+
+    public ObjectProperty<DocumentList> documentListProperty() {
+        return documentList;
+    }
+    public DocumentList getDocumentList() {
+        return documentList.get();
+    }
+    public void setDocumentList(DocumentList documentList) {
+        this.documentList.set(documentList);
     }
 }

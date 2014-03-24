@@ -31,26 +31,28 @@ import org.granite.client.messaging.RemoteAlias;
 import org.granite.client.persistence.Entity;
 
 @Entity
-@RemoteAlias("org.granite.test.tide.VisitObservation")
-public class VisitObservation extends AbstractEntity {
+@RemoteAlias("org.granite.test.tide.Alert2")
+public class Alert2 extends AbstractEntity {
 
-	private static final long serialVersionUID = 1L;
-	
+    private static final long serialVersionUID = 1L;
+    
 	private StringProperty name = new SimpleStringProperty(this, "name");
-    private ObjectProperty<VisitTest> test = new SimpleObjectProperty<VisitTest>(this, "test");
+    private ObjectProperty<Patient2> patient = new SimpleObjectProperty<Patient2>(this, "patient");
+    private ObjectProperty<Account2> account = new SimpleObjectProperty<Account2>(this, "account");
+    
 
-
-    public VisitObservation() {
+    public Alert2() {
         super();
     }
 
-    public VisitObservation(Long id, Long version, String uid, VisitTest test, String name) {
+    public Alert2(Long id, Long version, String uid, Patient2 patient, Account2 account, String name) {
         super(id, version, uid);
-        this.test.set(test);
+        this.patient.set(patient);
+        this.account.set(account);
         this.name.set(name);
     }
 
-    public VisitObservation(Long id, boolean initialized, String detachedState) {
+    public Alert2(Long id, boolean initialized, String detachedState) {
         super(id, initialized, detachedState);
     }
 
@@ -64,13 +66,23 @@ public class VisitObservation extends AbstractEntity {
         this.name.set(name);
     }
 
-    public ObjectProperty<VisitTest> testProperty() {
-        return test;
+    public ObjectProperty<Patient2> patientProperty() {
+        return patient;
     }
-    public VisitTest getTest() {
-        return test.get();
+    public Patient2 getPatient() {
+        return patient.get();
     }
-    public void setVisitTest(VisitTest test) {
-        this.test.set(test);
+    public void setPatient(Patient2 patient) {
+        this.patient.set(patient);
+    }
+
+    public ObjectProperty<Account2> accountProperty() {
+        return account;
+    }
+    public Account2 getAccount() {
+        return account.get();
+    }
+    public void setAccount(Account2 account) {
+        this.account.set(account);
     }
 }

@@ -36,6 +36,7 @@ package org.granite.client.tide.data;
 
 import java.util.List;
 
+import org.granite.client.tide.server.ServerSession;
 import org.granite.logging.Logger;
 
 /**
@@ -62,6 +63,10 @@ public class Conflict {
         this.localEntity = localEntity;
         this.receivedEntity = receivedEntity;
         this.properties = properties;
+    }
+    
+    public ServerSession getServerSession() {
+    	return conflicts.getServerSession();
     }
     
     public Object getLocalEntity() {

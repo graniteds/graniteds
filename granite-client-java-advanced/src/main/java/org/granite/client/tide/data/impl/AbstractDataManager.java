@@ -185,6 +185,12 @@ public abstract class AbstractDataManager implements DataManager {
         	persistence.setUid(dest, persistence.getUid(obj));
     }
     
+    public void initProxy(Object dest, Object id, boolean initialized, String detachedState) {
+        persistence.setId(dest, id);
+        persistence.setInitialized(dest, initialized);
+        persistence.setDetachedState(dest, detachedState);
+    }
+    
     public boolean defineProxy(Object dest, Object obj) {
         if (!isEntity(dest))
             return false;

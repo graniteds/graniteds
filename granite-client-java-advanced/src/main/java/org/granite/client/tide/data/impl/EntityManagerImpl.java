@@ -667,7 +667,7 @@ public class EntityManagerImpl implements EntityManager {
                         if (entityManager == mergeContext.getSourceEntityManager())
                             return;
                         if (entityManager.getCachedObject(entity, true) != null)
-                            entityManager.mergeFromEntityManager(entityManager, entity, mergeContext.getExternalDataSessionId(), mergeContext.isUninitializing());
+                            entityManager.mergeFromEntityManager(entityManager, mergeContext.getServerSession(), entity, mergeContext.getExternalDataSessionId(), mergeContext.isUninitializing());
                     }
                 });
             }
@@ -898,11 +898,14 @@ public class EntityManagerImpl implements EntityManager {
         
         if (mergeContext.isUninitializing() && isEntity(parent) && propertyName != null) {
         	if (dataManager.hasVersionProperty(parent) && dataManager.getVersion(parent) != null
-        		&& dataManager.isLazyProperty(parent, propertyName) && previous instanceof PersistentCollection && ((PersistentCollection)previous).wasInitialized()) {
-                log.debug("uninitialize lazy collection %s", ObjectUtil.toString(previous));
+        		&& dataManager.isLazyProperty(parent, propertyName)) {
                 mergeContext.pushMerge(coll, previous);
                 
-                ((PersistentCollection)previous).uninitialize();
+                if (previous instanceof PersistentCollection && ((PersistentCollection)previous).wasInitialized()) {
+	                log.debug("uninitialize lazy collection %s", ObjectUtil.toString(previous));
+	                ((PersistentCollection)previous).uninitialize();
+                }
+                
                 return (List<?>)previous;
             }
         }
@@ -1065,11 +1068,14 @@ public class EntityManagerImpl implements EntityManager {
         
         if (mergeContext.isUninitializing() && isEntity(parent) && propertyName != null) {
             if (dataManager.hasVersionProperty(parent) && dataManager.getVersion(parent) != null
-                && dataManager.isLazyProperty(parent, propertyName) && previous instanceof PersistentCollection && ((PersistentCollection)previous).wasInitialized()) {
-                log.debug("uninitialize lazy collection %s", ObjectUtil.toString(previous));
+                && dataManager.isLazyProperty(parent, propertyName)) {
                 mergeContext.pushMerge(coll, previous);
                 
-                ((PersistentCollection)previous).uninitialize();
+            	if (previous instanceof PersistentCollection && ((PersistentCollection)previous).wasInitialized()) {
+	                log.debug("uninitialize lazy collection %s", ObjectUtil.toString(previous));
+	                ((PersistentCollection)previous).uninitialize();
+            	}
+            	
                 return (Set<?>)previous;
             }
         }
@@ -1225,11 +1231,15 @@ public class EntityManagerImpl implements EntityManager {
         
         if (mergeContext.isUninitializing() && isEntity(parent) && propertyName != null) {
         	if (dataManager.hasVersionProperty(parent) && dataManager.getVersion(parent) != null
-        		&& dataManager.isLazyProperty(parent, propertyName) && previous instanceof PersistentCollection && ((PersistentCollection)previous).wasInitialized()) {
-                log.debug("uninitialize lazy map %s", ObjectUtil.toString(previous));
+        		&& dataManager.isLazyProperty(parent, propertyName)) {
                 
                 mergeContext.pushMerge(map, previous);
-                ((PersistentCollection)previous).uninitialize();
+                
+                if (previous instanceof PersistentCollection && ((PersistentCollection)previous).wasInitialized()) {
+                    log.debug("uninitialize lazy map %s", ObjectUtil.toString(previous));
+                	((PersistentCollection)previous).uninitialize();
+                }
+                
                 return (Map<?, ?>)previous;
             }
         }
@@ -1441,15 +1451,16 @@ public class EntityManagerImpl implements EntityManager {
      *  Merge an object coming from another entity manager (in general in the global context) in the local context
      *
      *  @param sourceEntityManager source context of incoming data
+     *  @param serverSession current server session
      *  @param obj external object
      *  @param externalDataSessionId is merge from external data
      *  @param uninitializing true to force folding of loaded lazy associations
      *
      *  @return merged object
      */
-    public Object mergeFromEntityManager(EntityManager sourceEntityManager, Object obj, String externalDataSessionId, boolean uninitializing) {
+    public Object mergeFromEntityManager(EntityManager sourceEntityManager, ServerSession serverSession, Object obj, String externalDataSessionId, boolean uninitializing) {
         try {
-            MergeContext mergeContext = new MergeContext(this, dirtyCheckContext, null);
+            MergeContext mergeContext = new MergeContext(this, dirtyCheckContext, serverSession);
             mergeContext.setSourceEntityManager(sourceEntityManager);
             mergeContext.setUninitializing(uninitializing);
             mergeContext.setExternalDataSessionId(externalDataSessionId);        
@@ -1542,7 +1553,7 @@ public class EntityManagerImpl implements EntityManager {
      * 
      *  @param entityManager conversation entity manager
      */
-    public void mergeInEntityManager(final EntityManager entityManager) {
+    public void mergeInEntityManager(final EntityManager entityManager, final ServerSession serverSession) {
         final Set<Object> cache = new HashSet<Object>();
         final EntityManager sourceEntityManager = this;
         entitiesByUid.apply(new UIDWeakSet.Operation() {
@@ -1550,7 +1561,7 @@ public class EntityManagerImpl implements EntityManager {
                 // Reset local dirty state, only server state can safely be merged in global context
                 if (isEntity(obj))
                     resetEntity(obj, cache);
-                entityManager.mergeFromEntityManager(sourceEntityManager, obj, null, false);
+                entityManager.mergeFromEntityManager(sourceEntityManager, serverSession, obj, null, false);
             }
         });
     }
@@ -1831,7 +1842,7 @@ public class EntityManagerImpl implements EntityManager {
             // Copy the local entity to save local changes
             EntityManager entityManager = PersistenceManager.getEntityManager(conflict.getLocalEntity());
             EntityManager tmp = entityManager.newTemporaryEntityManager();
-            modifiedEntity = tmp.mergeFromEntityManager(entityManager, conflict.getLocalEntity(), null, false);
+            modifiedEntity = tmp.mergeFromEntityManager(entityManager, conflict.getServerSession(), conflict.getLocalEntity(), null, false);
             tmp.clear();
         }
         else

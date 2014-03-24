@@ -37,6 +37,7 @@ package org.granite.client.tide.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.granite.client.tide.server.ServerSession;
 import org.granite.logging.Logger;
 
 /**
@@ -49,14 +50,16 @@ public class Conflicts {
     @SuppressWarnings("unused")
     private static Logger log = Logger.getLogger("org.granite.client.tide.data.Conflicts");
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
+    private final ServerSession serverSession;
     
     private List<Conflict> conflicts = new ArrayList<Conflict>();
     
 
 
-    public Conflicts(EntityManager entityManager) {
+    public Conflicts(EntityManager entityManager, ServerSession serverSession) {
         this.entityManager = entityManager;
+        this.serverSession = serverSession;
     }
     
     public void addConflict(Object localEntity, Object receivedEntity, List<String> properties) {
@@ -66,7 +69,11 @@ public class Conflicts {
     
     public List<Conflict> getConflicts() {
         return conflicts;
-    }        
+    }
+    
+    public ServerSession getServerSession() {
+    	return serverSession;
+    }
     
     public boolean isEmpty() {
         return conflicts.size() == 0;

@@ -365,14 +365,4 @@ public class Context {
     public void markAsFinished() {
         this.finished = true;
     }
-
-
-    private static int tmpContextId = 1;
-
-    public Context newTemporaryContext() {
-        Context tmpContext = new Context(getContextManager(), null, "$$TMP$$" + (tmpContextId++));
-        tmpContext.initContext(application, null, null);
-        return tmpContext;
-    }
-
 }
