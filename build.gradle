@@ -1198,12 +1198,12 @@ project('granite-server-hibernate4') {
 		testCompile 'org.springframework:spring-orm:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
+		testCompile 'com.h2database:h2:1.3.173'
 		testCompile project(':granite-server-core').sourceSets.test.output
 		testCompile(project(':granite-server-spring')) { transitive = false }
 		
 		testRuntime 'cglib:cglib:3.0'
 		testRuntime 'org.ow2.asm:asm-util:4.0'
-		testRuntime 'com.h2database:h2:1.3.173'
 		testRuntime 'org.springframework.security:spring-security-web:3.1.4.RELEASE'
 	}
 	
@@ -1220,7 +1220,10 @@ project('granite-server-hibernate4') {
 	}
 	
 	test {
-		includes = [ 'org/granite/test/hibernate4/**/Test*', 'org/granite/test/tide/hibernate4/**/Test*' ]
+		includes = [ 
+			'org/granite/test/hibernate4/**/Test*', 
+			'org/granite/test/tide/hibernate4/**/Test*' 
+		]
 	}
 }
 

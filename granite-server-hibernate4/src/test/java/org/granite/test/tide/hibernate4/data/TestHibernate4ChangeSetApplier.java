@@ -19,29 +19,47 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.test.tide.hibernate.data;
+package org.granite.test.tide.hibernate4.data;
 
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.granite.hibernate.ProxyFactory;
-import org.granite.test.tide.data.*;
+import org.granite.hibernate4.ProxyFactory;
+import org.granite.test.tide.data.AbstractEntity;
+import org.granite.test.tide.data.Address;
+import org.granite.test.tide.data.Classification;
+import org.granite.test.tide.data.Contact2;
+import org.granite.test.tide.data.Country;
+import org.granite.test.tide.data.LineItemBag;
+import org.granite.test.tide.data.LineItemBag2;
+import org.granite.test.tide.data.LineItemList;
+import org.granite.test.tide.data.LineItemList2;
+import org.granite.test.tide.data.Medication;
+import org.granite.test.tide.data.Order;
+import org.granite.test.tide.data.Order2;
+import org.granite.test.tide.data.Patient;
+import org.granite.test.tide.data.Person2;
+import org.granite.test.tide.data.Phone2;
+import org.granite.test.tide.data.Prescription;
 import org.granite.tide.data.TidePersistenceAdapter;
-import org.granite.tide.hibernate.HibernateDataPublishListener;
-import org.granite.tide.hibernate.HibernatePersistenceAdapter;
+import org.granite.tide.hibernate4.HibernateDataChangePublishListener;
+import org.granite.tide.hibernate4.HibernatePersistenceAdapter;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.AnnotationConfiguration;
-import org.hibernate.collection.PersistentSet;
+import org.hibernate.collection.internal.PersistentSet;
+import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.EventType;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.proxy.pojo.javassist.JavassistLazyInitializer;
 import org.junit.Assert;
 import org.junit.Test;
 
 @SuppressWarnings("deprecation")
-public class TestHibernate3ChangeSetApplier extends AbstractTestChangeSetApplier {
+public class TestHibernate4ChangeSetApplier extends AbstractTestChangeSetApplier {
 	
 	private SessionFactory sessionFactory;
 	private Session session;
@@ -93,11 +111,12 @@ public class TestHibernate3ChangeSetApplier extends AbstractTestChangeSetApplier
 			.setProperty("hibernate.connection.username", "sa")
 			.setProperty("hibernate.connection.password", "");
 		
-		configuration.setListener("post-insert", new HibernateDataPublishListener());
-		configuration.setListener("post-update", new HibernateDataPublishListener());
-		configuration.setListener("post-delete", new HibernateDataPublishListener());
-		
 		sessionFactory = configuration.buildSessionFactory();
+		
+		EventListenerRegistry registry = ((SessionFactoryImpl)sessionFactory).getServiceRegistry().getService(EventListenerRegistry.class);
+		registry.appendListeners(EventType.POST_INSERT, new HibernateDataChangePublishListener());
+		registry.appendListeners(EventType.POST_UPDATE, new HibernateDataChangePublishListener());
+		registry.appendListeners(EventType.POST_DELETE, new HibernateDataChangePublishListener());
 	}
 
 	@Override

@@ -22,9 +22,29 @@
 package org.granite.test.tide.hibernate4.spring;
 
 import org.granite.test.tide.spring.AbstractTestTideRemotingHibernate;
+import org.granite.tide.hibernate4.HibernateDataPublishListener;
+import org.hibernate.SessionFactory;
+import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.EventType;
+import org.hibernate.internal.SessionFactoryImpl;
+import org.junit.Before;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
 
 @ContextConfiguration(locations={ "/org/granite/test/tide/hibernate4/spring/test-context-hibernate4.xml" })
 public class TestHibernate4TideRemotingHibernate extends AbstractTestTideRemotingHibernate {
+	
+	@Autowired
+	private SessionFactory sessionFactory;
+	
+    @Before
+    public void setUp() throws Exception {
+    	super.setUp();
+    	
+		EventListenerRegistry registry = ((SessionFactoryImpl)sessionFactory).getServiceRegistry().getService(EventListenerRegistry.class);
+		registry.appendListeners(EventType.POST_INSERT, new HibernateDataPublishListener());
+		registry.appendListeners(EventType.POST_UPDATE, new HibernateDataPublishListener());
+		registry.appendListeners(EventType.POST_DELETE, new HibernateDataPublishListener());
+    }
 }
