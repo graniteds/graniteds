@@ -40,7 +40,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanPropertyBase;
@@ -63,7 +62,6 @@ import org.granite.client.javafx.persistence.collection.ObservablePersistentMap;
 import org.granite.client.javafx.persistence.collection.ObservablePersistentSet;
 import org.granite.client.javafx.persistence.collection.ObservablePersistentSortedMap;
 import org.granite.client.javafx.persistence.collection.ObservablePersistentSortedSet;
-import org.granite.client.persistence.collection.PersistentList;
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.PersistenceManager;
 import org.granite.client.tide.data.impl.AbstractDataManager;
@@ -86,7 +84,8 @@ public class JavaFXDataManager extends AbstractDataManager {
         this.trackingHandler = trackingHandler;
     }
 
-    public <T> T newInstance(Object source, Class<T> cast) throws IllegalAccessException, InstantiationException {
+    @SuppressWarnings("unchecked")
+	public <T> T newInstance(Object source, Class<T> cast) throws IllegalAccessException, InstantiationException {
         if (ObservablePersistentList.class.isInstance(source))
             return (T)FXPersistentCollections.observablePersistentList();
         else if (ObservablePersistentSortedSet.class.isInstance(source))
