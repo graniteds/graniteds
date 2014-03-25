@@ -1037,13 +1037,14 @@ package org.granite.tide.data {
 			
 			if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
 				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(parent));
-				if (desc.versionPropertyName != null && !isNaN(parent[desc.versionPropertyName]) && desc.lazy[propertyName]
-					&& previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
-					
-					log.debug("uninitialize lazy collection {0}", BaseContext.toString(previous));
+				if (desc.versionPropertyName != null && !isNaN(parent[desc.versionPropertyName]) && desc.lazy[propertyName]) {					
 					_mergeContext.pushMerge(coll, previous);
-
-					IPersistentCollection(previous).uninitialize();
+					
+					if (previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+						log.debug("uninitialize lazy collection {0}", BaseContext.toString(previous));
+						IPersistentCollection(previous).uninitialize();
+					}
+					
 					return IList(previous);
 				}
 			}
@@ -1241,12 +1242,14 @@ package org.granite.tide.data {
 			
             if (_mergeContext.uninitializing && parent is IEntity && propertyName != null) {
 				var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(parent));
-				if (desc.versionPropertyName != null && !isNaN(parent[desc.versionPropertyName]) && desc.lazy[propertyName] 
-					&& previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
-					
-                    log.debug("uninitialize lazy map {0}", BaseContext.toString(previous));
+				if (desc.versionPropertyName != null && !isNaN(parent[desc.versionPropertyName]) && desc.lazy[propertyName]) {					
 					_mergeContext.pushMerge(map, previous);
-                    IPersistentCollection(previous).uninitialize();
+					
+					if (previous is IPersistentCollection && IPersistentCollection(previous).isInitialized()) {
+	                    log.debug("uninitialize lazy map {0}", BaseContext.toString(previous));
+	                    IPersistentCollection(previous).uninitialize();
+					}
+					
                     return IMap(previous);
                 }
             }
