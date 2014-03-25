@@ -156,4 +156,9 @@ public class ObservablePersistentSortedSet<E> extends ObservableSetWrapper<E> im
 	public PersistentSortedSet<E> internalPersistentCollection() {
 		return persistentSortedSet;
 	}
+	
+	@Override
+	public String toString() {
+		return persistentSortedSet.toString();
+	}
 }

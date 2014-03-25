@@ -156,4 +156,9 @@ public class ObservablePersistentSet<E> extends ObservableSetWrapper<E> implemen
 	public PersistentSet<E> internalPersistentCollection() {
 		return persistentSet;
 	}
+	
+	@Override
+	public String toString() {
+		return persistentSet.toString();
+	}
 }

@@ -149,4 +149,9 @@ public class ObservablePersistentList<E> extends ObservableListWrapper<E> implem
 	public PersistentList<E> internalPersistentCollection() {
 		return persistentList;
 	}
+	
+	@Override
+	public String toString() {
+		return persistentList.toString();
+	}
 }

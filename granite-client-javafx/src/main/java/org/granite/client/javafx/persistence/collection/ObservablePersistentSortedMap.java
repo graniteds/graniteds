@@ -149,4 +149,9 @@ public class ObservablePersistentSortedMap<K, V> extends ObservableMapWrapper<K,
 	public PersistentSortedMap<K, V> internalPersistentCollection() {
 		return persistentSortedMap;
 	}
+	
+	@Override
+	public String toString() {
+		return persistentSortedMap.toString();
+	}
 }

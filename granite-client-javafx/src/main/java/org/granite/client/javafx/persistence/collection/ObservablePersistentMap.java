@@ -149,4 +149,9 @@ public class ObservablePersistentMap<K, V> extends ObservableMapWrapper<K, V> im
 	public PersistentMap<K, V> internalPersistentCollection() {
 		return persistentMap;
 	}
+	
+	@Override
+	public String toString() {
+		return persistentMap.toString();
+	}
 }

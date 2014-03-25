@@ -149,4 +149,9 @@ public class ObservablePersistentBag<E> extends ObservableListWrapper<E> impleme
 	public PersistentBag<E> internalPersistentCollection() {
 		return persistentBag;
 	}
+	
+	@Override
+	public String toString() {
+		return persistentBag.toString();
+	}
 }
