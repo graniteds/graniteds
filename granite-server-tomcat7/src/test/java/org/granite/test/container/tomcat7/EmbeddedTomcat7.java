@@ -21,19 +21,17 @@
  */
 package org.granite.test.container.tomcat7;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.Host;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.startup.CatalinaProperties;
-import org.apache.catalina.startup.Tomcat;
-import org.granite.test.container.Utils;
-import org.granite.test.container.EmbeddedContainer;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.catalina.Host;
+import org.apache.catalina.startup.CatalinaProperties;
+import org.apache.catalina.startup.Tomcat;
+import org.granite.test.container.EmbeddedContainer;
+import org.granite.test.container.Utils;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * Created by william on 30/09/13.

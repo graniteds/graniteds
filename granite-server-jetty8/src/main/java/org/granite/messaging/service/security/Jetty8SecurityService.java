@@ -180,17 +180,22 @@ public class Jetty8SecurityService extends AbstractSecurityService {
 
 
     public static class Jetty8AuthenticationContext implements AuthenticationContext {
-
-        private final UserIdentity.Scope scope;
-        private Authentication authentication;
-        private Principal principal;
-
+    	
+		private static final long serialVersionUID = 1L;
+		
+		private transient final UserIdentity.Scope scope;
+        private transient Authentication authentication;
+        private transient Principal principal;
+        
         public Jetty8AuthenticationContext(UserIdentity.Scope scope, Authentication authentication) {
             this.scope = scope;
             this.authentication = authentication;
         }
-
+        
         public Principal authenticate(String username, String password) {
+        	if (authentication == null)
+        		throw SecurityServiceException.newAuthenticationFailedException("Invalid authentication");
+        	
             if (authentication instanceof Authentication.Deferred)
                 authentication = ((Authentication.Deferred)authentication).login(username, password, ((ServletGraniteContext)GraniteContext.getCurrentInstance()).getRequest());
 
@@ -199,7 +204,11 @@ public class Jetty8SecurityService extends AbstractSecurityService {
 
             return principal;
         }
-
+        
+        public boolean isValid() {
+        	return principal != null;
+        }
+        
         public Principal getPrincipal() {
             return principal;
         }

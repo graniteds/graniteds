@@ -271,15 +271,20 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
 
 
     public static class Tomcat7AuthenticationContext implements AuthenticationContext {
+    	
+		private static final long serialVersionUID = 1L;
 
-        private final Realm realm;
-        private Principal principal;
-
+        private transient final Realm realm;
+        private transient Principal principal;
+        
         public Tomcat7AuthenticationContext(Realm realm) {
             this.realm = realm;
         }
 
         public Principal authenticate(String username, String password) {
+        	if (realm == null)
+        		throw SecurityServiceException.newAuthenticationFailedException("Invalid authentication");
+        	
             principal = realm.authenticate(username, password);
             return principal;
         }

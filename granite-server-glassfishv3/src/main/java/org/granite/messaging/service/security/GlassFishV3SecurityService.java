@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
 import com.sun.web.security.RealmAdapter;
+
 import org.apache.catalina.Engine;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Server;
@@ -359,9 +360,11 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
 
     public static class GlassFishV3AuthenticationContext implements AuthenticationContext {
 
+    	private static final long serialVersionUID = 1L;		
+
         private final String securityServletName;
-        private final RealmAdapter realm;
-        private Principal principal;
+        private transient final RealmAdapter realm;
+        private transient Principal principal;
 
         public GlassFishV3AuthenticationContext(String securityServletName, RealmAdapter realm) {
             this.securityServletName = securityServletName;
@@ -369,6 +372,9 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
         }
 
         public Principal authenticate(String username, String password) {
+        	if (realm == null)
+        		throw SecurityServiceException.newAuthenticationFailedException("Invalid authentication");
+        	
             principal = GlassFishV3SecurityService.authenticate(realm, username, password);
             return principal;
         }

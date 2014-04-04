@@ -24,12 +24,15 @@ package org.granite.messaging.service.security;
 import io.undertow.security.api.SecurityContext;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.spec.HttpServletRequestImpl;
+
 import org.granite.context.GraniteContext;
+import org.granite.messaging.service.security.SecurityServiceException;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.messaging.webapp.ServletGraniteContext;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
@@ -194,9 +197,11 @@ public class UndertowSecurityService extends AbstractSecurityService {
 
 
     public static class UndertowAuthenticationContext implements AuthenticationContext {
+    	
+		private static final long serialVersionUID = 1L;
 
-        private final SecurityContext securityContext;
-        private Principal principal = null;
+        private transient final SecurityContext securityContext;
+        private transient Principal principal = null;
         private String username = null;
 
         public UndertowAuthenticationContext(SecurityContext securityContext) {
@@ -204,6 +209,9 @@ public class UndertowSecurityService extends AbstractSecurityService {
         }
 
         public Principal authenticate(String username, String password) {
+        	if (securityContext == null)
+        		throw SecurityServiceException.newAuthenticationFailedException("Invalid authentication");
+        	
             if (username.equals(this.username) && principal != null)
                 return principal;
 

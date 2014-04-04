@@ -22,6 +22,8 @@
 package org.granite.messaging.service.security;
 
 import javax.servlet.http.HttpSession;
+
+import java.io.Serializable;
 import java.security.Principal;
 import java.util.Map;
 
@@ -47,7 +49,7 @@ public interface SecurityService {
     public void handleSecurityException(SecurityServiceException e);
 
 
-    public static interface AuthenticationContext {
+    public static interface AuthenticationContext extends Serializable {
 
         public Principal authenticate(String username, String password);
 

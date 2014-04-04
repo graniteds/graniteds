@@ -11,6 +11,7 @@ import org.granite.messaging.webapp.ServletGraniteContext;
 import javax.servlet.ServletRequestWrapper;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
@@ -218,16 +219,21 @@ public class Jetty9SecurityService extends AbstractSecurityService {
 
     public static class Jetty9AuthenticationContext implements AuthenticationContext {
 
-        private final UserIdentity.Scope scope;
-        private Authentication authentication;
-        private Principal principal;
+    	private static final long serialVersionUID = 1L;		
 
+        private transient final UserIdentity.Scope scope;
+        private transient Authentication authentication;
+        private transient Principal principal;
+        
         public Jetty9AuthenticationContext(UserIdentity.Scope scope, Authentication authentication) {
             this.scope = scope;
             this.authentication = authentication;
         }
 
         public Principal authenticate(String username, String password) {
+        	if (authentication == null)
+        		throw SecurityServiceException.newAuthenticationFailedException("Invalid authentication");
+        	
             if (authentication instanceof Authentication.Deferred)
                 authentication = ((Authentication.Deferred)authentication).login(username, password, ((ServletGraniteContext)GraniteContext.getCurrentInstance()).getRequest());
 
