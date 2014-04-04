@@ -44,13 +44,13 @@ import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.channel.ChannelType;
 import org.granite.client.messaging.udp.UdpChannelListener;
 import org.granite.client.messaging.udp.UdpMessagingChannel;
+import org.granite.client.test.server.ContainerTestUtil;
 import org.granite.client.test.server.TestMessagingChat;
 import org.granite.client.test.server.chat.ChatApplication;
 import org.granite.logging.Logger;
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
-import org.granite.util.TypeUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
@@ -90,8 +90,8 @@ public class TestUdpMessagingChat extends TestMessagingChat {
         war.addClass(ChatApplication.class);
         war.addAsLibraries(new File("granite-server-udp/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
         war.addAsWebInfResource(new File("granite-client-java-udp/src/test/resources/granite-config-udp.xml"), "granite/granite-config.xml");
-
-        container = (EmbeddedContainer) TypeUtil.newInstance(CONTAINER_CLASS_NAME, new Class<?>[] { WebArchive.class }, new Object[] { war });
+        
+        container = ContainerTestUtil.newContainer(war, false);
         container.start();
         log.info("Container started");
     }
