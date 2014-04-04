@@ -21,6 +21,7 @@
  */
 package org.granite.client.messaging.messages.requests;
 
+import org.granite.client.messaging.messages.AbstractMessage;
 import org.granite.client.messaging.messages.Message;
 
 import java.util.Map;
@@ -90,5 +91,13 @@ public final class ReplyMessage extends AbstractTopicRequestMessage {
 		copy(message);
 		
 		return message;
+	}
+
+	@Override
+	protected void copy(AbstractMessage message) {
+		super.copy(message);
+		
+		((ReplyMessage)message).correlationId = correlationId;
+		((ReplyMessage)message).body = body;
 	}
 }
