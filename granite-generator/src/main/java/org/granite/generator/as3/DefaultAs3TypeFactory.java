@@ -109,6 +109,9 @@ public class DefaultAs3TypeFactory implements As3TypeFactory {
 
 	@Override
 	public ClientType getAs3Type(Class<?> jType) {
+		if (jType.isAnnotation())
+			return null;
+		
         As3Type as3Type = getFromCache(jType);
 
         if (as3Type == null) {

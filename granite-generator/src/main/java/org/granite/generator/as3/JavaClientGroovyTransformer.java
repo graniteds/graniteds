@@ -189,8 +189,9 @@ public abstract class JavaClientGroovyTransformer
         if (clientType == null)
         	clientType = getConfig().getAs3TypeFactory().getAs3Type(clazz);
         
-        clientType = clientType.translatePackages(getConfig().getTranslators());
-
+        if (clientType != null)
+        	clientType = clientType.translatePackages(getConfig().getTranslators());
+        
         return clientType;
 	}
 
@@ -223,6 +224,9 @@ public abstract class JavaClientGroovyTransformer
 	@Override
 	public Set<JavaImport> getJavaImports(ClientType clientType, boolean property) {
 		Set<JavaImport> imports = new HashSet<JavaImport>();
+		
+		if (clientType == null)
+			return imports;
 		
 		for (String className : clientType.getImports()) {
 			try {

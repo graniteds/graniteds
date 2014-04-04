@@ -76,11 +76,15 @@ public class ${jClass.clientType.name}Base<%
     for (jMethod in jClass.methods) {%>    
     public Future<${jMethod.clientReturnType.name}> ${jMethod.name}(<%
             String[] names = jMethod.getClientParameterNames();
-
+			String[] options = jMethod.getClientParameterOptions();
+			
             int count = 0;
             for (pType in jMethod.getClientParameterTypes()) {
                 if (count > 0) {
                     %>, <%
+                }
+                if (options[count] != null) {
+                	%>@${options[count]} <%
                 }
                 %>${pType.name} ${names[count]}<%
                 count++;

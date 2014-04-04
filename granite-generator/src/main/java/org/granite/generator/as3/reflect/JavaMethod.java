@@ -26,7 +26,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.granite.generator.as3.ClientType;
 import org.granite.generator.as3.PropertyType;
@@ -56,6 +58,7 @@ public class JavaMethod extends JavaMember<Method> {
     private final ClientType[] clientParameterTypes;
     private final String[] clientParameterNames;
     private final String[] clientParameterOptions;
+    private final Set<ClientType> clientAnnotationTypes = new HashSet<ClientType>();
     
     public JavaMethod(Method method, MethodType type) {
     	this(method, type, null, null);
@@ -114,8 +117,10 @@ public class JavaMethod extends JavaMember<Method> {
 
         this.type = type;
         
-        if (method.isAnnotationPresent(Lazy.class))
+        if (method.isAnnotationPresent(Lazy.class)) {
         	this.options = "Lazy";
+        	this.clientAnnotationTypes.add(provider.getClientType(Lazy.class, null, null, null));
+        }
         else
         	this.options = null;
         
@@ -157,6 +162,7 @@ public class JavaMethod extends JavaMember<Method> {
 				for (Annotation annotation : annotations) {
 					if (annotation.annotationType().equals(Lazy.class)) {
 						clientParameterOptions[i] = "Lazy";
+			        	this.clientAnnotationTypes.add(provider.getClientType(Lazy.class, null, null, null));
 						break;
 					}
 				}				
@@ -238,5 +244,9 @@ public class JavaMethod extends JavaMember<Method> {
 
 	public String[] getClientParameterOptions() {
 		return clientParameterOptions;
+	}
+	
+	public Set<ClientType> getClientAnnotationTypes() {
+		return clientAnnotationTypes;
 	}
 }

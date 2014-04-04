@@ -50,6 +50,6 @@ import java.lang.annotation.Target;
  * @author William DRAI
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.FIELD})
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 public @interface Lazy {
 }

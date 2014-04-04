@@ -47,6 +47,8 @@ public class JavaType implements ClientType {
     public static final JavaType PAGE_INFO = new JavaType("org.granite.tide.data.model", "PageInfo", null);
     public static final JavaType SORT_INFO = new JavaType("org.granite.tide.data.model", "SortInfo", null);
     
+    public static final JavaType LAZY = new JavaType("org.granite.client.persistence", "Lazy", null);
+    
     private final String packageName;
     private final String name;
     private final String qualifiedName;
