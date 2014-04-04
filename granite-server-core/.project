@@ -2,16 +2,49 @@
 <projectDescription>
 	<name>granite-server-core</name>
 	<comment>GraniteDS Core server library</comment>
-	<projects/>
+	<projects>
+	</projects>
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
-			<arguments/>
+			<arguments>
+			</arguments>
 		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
 	</natures>
-	<linkedResources/>
+	<linkedResources>
+		<link>
+			<name>amf-java</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-amf/src/main/java</locationURI>
+		</link>
+		<link>
+			<name>common-advanced-java</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-common-advanced/src/main/java</locationURI>
+		</link>
+		<link>
+			<name>common-java</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-common/src/main/java</locationURI>
+		</link>
+		<link>
+			<name>common-resources</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-common/src/main/resources</locationURI>
+		</link>
+		<link>
+			<name>jmf-java</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-jmf/src/main/java</locationURI>
+		</link>
+		<link>
+			<name>jmf-resources</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-jmf/src/main/resources</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
