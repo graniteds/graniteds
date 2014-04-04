@@ -191,6 +191,9 @@ public class JavaRemoteDestination extends JavaAbstractType {
 				for (ClientType paramType : javaMethod.getClientParameterTypes())
 					addToImports(provider.getJavaImports(paramType, false));
 				
+				for (ClientType annotationType : javaMethod.getClientAnnotationTypes())
+					addToImports(provider.getJavaImports(annotationType, false));
+				
 				Class<?> clazz = javaMethod.getReturnType();
 				if (clazz.isMemberClass() && !clazz.isEnum()) {
 					throw new UnsupportedOperationException(

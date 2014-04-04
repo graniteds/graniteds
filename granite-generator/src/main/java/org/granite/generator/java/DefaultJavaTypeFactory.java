@@ -39,6 +39,7 @@ import org.granite.generator.as3.As3TypeFactory;
 import org.granite.generator.as3.ClientType;
 import org.granite.generator.as3.PropertyType;
 import org.granite.generator.util.GenericTypeUtil;
+import org.granite.tide.data.Lazy;
 import org.granite.util.ClassUtil;
 
 /**
@@ -63,6 +64,7 @@ public class DefaultJavaTypeFactory implements As3TypeFactory {
     	simpleJava2JavaType.put(buildCacheKey(Float.TYPE), JavaType.FLOAT);
     	simpleJava2JavaType.put(buildCacheKey(Double.TYPE), JavaType.DOUBLE);
     	simpleJava2JavaType.put(buildCacheKey(String.class), JavaType.STRING);
+    	simpleJava2JavaType.put(buildCacheKey(Lazy.class), JavaType.LAZY);
     	
     	propertyJava2JavaType.put(buildCacheKey(Boolean.TYPE), JavaType.BOOLEAN);
     	propertyJava2JavaType.put(buildCacheKey(Integer.TYPE), JavaType.INT);

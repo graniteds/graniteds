@@ -47,6 +47,8 @@ public class JavaFXType implements ClientType {
     public static final JavaFXType PAGE_INFO = new JavaFXType("org.granite.tide.data.model", "PageInfo", null);
     public static final JavaFXType SORT_INFO = new JavaFXType("org.granite.tide.data.model", "SortInfo", null);
     
+    public static final JavaFXType LAZY = new JavaFXType("org.granite.client.persistence", "Lazy", null);
+    
     public static final JavaFXType BOOLEAN_PROPERTY = new JavaFXType(null, "boolean", "javafx.beans.property.BooleanProperty", "javafx.beans.property.SimpleBooleanProperty", Boolean.FALSE);
     public static final JavaFXType INT_PROPERTY = new JavaFXType(null, "int", "javafx.beans.property.IntegerProperty", "javafx.beans.property.SimpleIntegerProperty", Integer.valueOf(0));
     public static final JavaFXType LONG_PROPERTY = new JavaFXType(null, "long", "javafx.beans.property.LongProperty", "javafx.beans.property.SimpleLongProperty", Long.valueOf(0));

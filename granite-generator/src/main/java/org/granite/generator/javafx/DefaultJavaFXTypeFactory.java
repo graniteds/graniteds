@@ -39,6 +39,7 @@ import org.granite.generator.as3.As3TypeFactory;
 import org.granite.generator.as3.ClientType;
 import org.granite.generator.as3.PropertyType;
 import org.granite.generator.util.GenericTypeUtil;
+import org.granite.tide.data.Lazy;
 import org.granite.util.ClassUtil;
 
 /**
@@ -64,6 +65,7 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
     	simpleJava2JavaFXType.put(buildCacheKey(Float.TYPE), JavaFXType.FLOAT);
     	simpleJava2JavaFXType.put(buildCacheKey(Double.TYPE), JavaFXType.DOUBLE);
     	simpleJava2JavaFXType.put(buildCacheKey(String.class), JavaFXType.STRING);
+    	simpleJava2JavaFXType.put(buildCacheKey(Lazy.class), JavaFXType.LAZY);
     	
     	propertyJava2JavaFXType.put(buildCacheKey(Boolean.TYPE), JavaFXType.BOOLEAN_PROPERTY);
     	propertyJava2JavaFXType.put(buildCacheKey(Double.TYPE), JavaFXType.DOUBLE_PROPERTY);
