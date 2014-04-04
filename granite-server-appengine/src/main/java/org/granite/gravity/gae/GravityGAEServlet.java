@@ -62,7 +62,7 @@ public class GravityGAEServlet extends AbstractGravityServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
-		GAEChannelFactory channelFactory = new GAEChannelFactory((GAEGravity)gravity);
+		GAEChannelFactory channelFactory = new GAEChannelFactory(gravity);
 		
 		try {
 			// Setup context (thread local GraniteContext, etc.)

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    GRANITE DATA SERVICES
+    Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+
+    This file is part of the Granite Data Services Platform.
+
+    Granite Data Services is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    Granite Data Services is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+    General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+    USA, or see <http://www.gnu.org/licenses/>.
+
+-->
+
+<!DOCTYPE granite-config PUBLIC "-//Granite Data Services//DTD granite-config internal//EN"
+    "http://www.graniteds.org/public/dtd/3.0.0/granite-config.dtd">
+
+<!--
+ ! @author Franck WOLFF
+ !-->
+<granite-config>
+
+    <!--
+     ! Standard GDS converters.
+     !-->
+    <converters>
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Integer" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Long" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Double" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Boolean2Boolean" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Collection2Collection" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Collection2Array" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Array2Array" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Array2Collection" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Date2Date" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Map2Map" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2CharArray" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2BigDecimal" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2BigInteger" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Byte" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Float" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Short" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2Char" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2Locale" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Character2Character" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Compatibility" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2Document" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2Enum" />
+    </converters>
+    
+    <externalizers>
+    	<externalizer type="org.granite.messaging.amf.io.util.externalizer.EnumExternalizer">
+    		<include instance-of="java.lang.Enum"/>
+    	</externalizer>
+    	<externalizer type="org.granite.messaging.amf.io.util.externalizer.MathContextExternalizer">
+    		<include instance-of="java.math.MathContext"/>
+    	</externalizer>
+    	<!--
+    	<externalizer type="org.granite.messaging.amf.io.util.externalizer.LongExternalizer">
+    		<include instance-of="java.lang.Long"/>
+    	</externalizer>
+    	<externalizer type="org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer">
+    		<include instance-of="java.math.BigInteger"/>
+    	</externalizer>
+    	<externalizer type="org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer">
+    		<include instance-of="java.math.BigDecimal"/>
+    	</externalizer>
+    	-->
+    </externalizers>
+    
+    <distributed-data-factory type="org.granite.clustering.SessionDistributedDataFactory"/>
+
+</granite-config>

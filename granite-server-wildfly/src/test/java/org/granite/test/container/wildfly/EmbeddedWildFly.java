@@ -51,7 +51,8 @@ public class EmbeddedWildFly implements EmbeddedContainer {
         war.as(ZipExporter.class).exportTo(warFile, true);
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public void start() {
         try {
             jboss.start();

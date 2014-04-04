@@ -21,21 +21,9 @@
  */
 package org.granite.test.container.glassfishv31;
 
-import org.glassfish.embeddable.BootstrapProperties;
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFishProperties;
-import org.glassfish.embeddable.GlassFishRuntime;
-import org.granite.logging.Logger;
-import org.granite.test.container.EmbeddedContainer;
-import org.granite.test.container.Utils;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-
 import java.io.File;
-import java.lang.reflect.Field;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * Created by william on 30/09/13.

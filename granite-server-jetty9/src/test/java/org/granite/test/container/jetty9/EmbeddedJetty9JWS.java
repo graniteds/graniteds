@@ -21,22 +21,9 @@
  */
 package org.granite.test.container.jetty9;
 
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.server.session.HashSessionManager;
-import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.webapp.WebAppContext;
-import org.granite.logging.Logger;
-import org.granite.test.container.EmbeddedContainer;
-import org.granite.test.container.Utils;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.jetty_7.api.ShrinkWrapWebAppContext;
-
 import java.io.File;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
  * Created by william on 30/09/13.
