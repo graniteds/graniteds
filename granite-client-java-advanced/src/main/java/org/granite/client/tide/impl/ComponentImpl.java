@@ -211,7 +211,7 @@ public class ComponentImpl implements Component, ContextAware, NameAware, Invoca
             ArgumentPreprocessor[] apps = context.allByType(ArgumentPreprocessor.class);
             if (apps != null) {
                 for (ArgumentPreprocessor app : apps)
-                    args = app.preprocess(method, args);
+                    args = app.preprocess(serverSession, method, args);
             }
         }
         
