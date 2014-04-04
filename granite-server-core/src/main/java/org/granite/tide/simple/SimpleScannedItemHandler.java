@@ -92,7 +92,7 @@ public class SimpleScannedItemHandler implements ScannedItemHandler {
                     }
                 }
 			}
-			catch (Exception e) {
+			catch (Throwable e) {
 				log.debug(e, "Could not introspect scanned item: %s", item);
 			}
 		}
