@@ -24,6 +24,7 @@ package org.granite.spring;
 import javax.servlet.ServletContext;
 
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceInvoker;
@@ -59,8 +60,8 @@ public class SpringServiceFactory extends SimpleServiceFactory {
         String messageType = request.getClass().getName();
         String destinationId = request.getDestination();
 
-        GraniteContext context = GraniteContext.getCurrentInstance();
-        Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
+        ServicesConfig servicesConfig = GraniteContext.getCurrentInstance().getServicesConfig();
+        Destination destination = servicesConfig.findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);
         

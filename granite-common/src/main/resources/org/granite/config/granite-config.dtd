@@ -1,0 +1,234 @@
+<!--
+
+    GRANITE DATA SERVICES
+    Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+
+    This file is part of the Granite Data Services Platform.
+
+    Granite Data Services is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    Granite Data Services is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+    General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+    USA, or see <http://www.gnu.org/licenses/>.
+
+-->
+<!ELEMENT granite-config (
+    amf3-serializer?,
+    amf3-deserializer?,
+    amf3-deserializer-securizer?,
+    amf3-message-interceptor?,
+    converters?,
+    method-matcher?,
+    invocation-listener?,
+    instantiators?,
+    class-getter?,
+    externalizers?,
+    jmf-extended-codecs?,
+    jmf-default-stored-strings?,
+    jmf-reflection?,
+    descriptors?,
+    exception-converters?,
+    security?,
+    tide-components?,
+    message-selector?,
+    gravity?,
+    distributed-data-factory?
+)>
+<!ATTLIST granite-config
+	scan (true|false) "false"
+>
+
+<!ELEMENT amf3-serializer EMPTY>
+<!ATTLIST amf3-serializer
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT amf3-deserializer EMPTY>
+<!ATTLIST amf3-deserializer
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT amf3-deserializer-securizer EMPTY>
+<!ATTLIST amf3-deserializer-securizer
+	type CDATA "org.granite.messaging.amf.io.RegexAMF3DeserializerSecurizer"
+	param CDATA ""
+>
+
+<!ELEMENT amf3-message-interceptor EMPTY>
+<!ATTLIST amf3-message-interceptor
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT converters (
+	converter*
+)>
+<!ATTLIST converters
+	override (true|false) "false"
+>
+<!ELEMENT converter EMPTY>
+<!ATTLIST converter
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT method-matcher EMPTY>
+<!ATTLIST method-matcher
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT invocation-listener EMPTY>
+<!ATTLIST invocation-listener
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT instantiators (
+	instantiator*
+)>
+<!ELEMENT instantiator (#PCDATA)>
+<!ATTLIST instantiator
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT class-getter EMPTY>
+<!ATTLIST class-getter
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT externalizers (
+	configuration?,
+	externalizer*
+)>
+<!ELEMENT configuration ANY>
+<!ELEMENT externalizer (
+	include+
+)>
+<!ATTLIST externalizer
+	type CDATA #REQUIRED
+>
+<!ELEMENT include EMPTY>
+<!ATTLIST include
+	type CDATA #IMPLIED
+	instance-of CDATA #IMPLIED
+	annotated-with CDATA #IMPLIED
+>
+
+<!ELEMENT jmf-extended-codecs (
+	jmf-extended-codec*
+)>
+<!ATTLIST jmf-extended-codecs
+	mode (prepend|append|replace) "append"
+>
+<!ELEMENT jmf-extended-codec EMPTY>
+<!ATTLIST jmf-extended-codec
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT jmf-default-stored-strings (
+	jmf-default-stored-string*
+)>
+<!ATTLIST jmf-default-stored-strings
+	mode (prepend|append|replace) "append"
+>
+<!ELEMENT jmf-default-stored-string EMPTY>
+<!ATTLIST jmf-default-stored-string
+	value CDATA #REQUIRED
+>
+
+<!ELEMENT jmf-reflection EMPTY>
+<!ATTLIST jmf-reflection
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT descriptors (
+	descriptor*
+)>
+<!ELEMENT descriptor EMPTY>
+<!ATTLIST descriptor
+	type CDATA #IMPLIED
+	instance-of CDATA #IMPLIED
+	java CDATA #IMPLIED
+	as3 CDATA #IMPLIED
+>
+
+<!ELEMENT exception-converters (
+	exception-converter*
+)>
+<!ELEMENT exception-converter EMPTY>
+<!ATTLIST exception-converter
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT security (param*)>
+<!ATTLIST security
+	type CDATA #REQUIRED
+>
+<!ELEMENT param EMPTY>
+<!ATTLIST param
+	name CDATA #REQUIRED
+	value CDATA #REQUIRED>
+
+<!ELEMENT tide-components (
+	tide-component+
+)>
+<!ELEMENT tide-component EMPTY>
+<!ATTLIST tide-component
+	type CDATA #IMPLIED
+	name CDATA #IMPLIED
+	instance-of CDATA #IMPLIED
+	annotated-with CDATA #IMPLIED
+	disabled (true|false) "false"
+>
+
+<!ELEMENT message-selector EMPTY>
+<!ATTLIST message-selector
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT distributed-data-factory EMPTY>
+<!ATTLIST distributed-data-factory
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT gravity (
+	configuration?,
+	thread-pool?,
+	udp?
+)>
+<!ATTLIST gravity
+    factory CDATA "org.granite.gravity.DefaultGravityFactory"
+    channel-idle-timeout-millis CDATA "1800000"
+    long-polling-timeout-millis CDATA "20000"
+    retry-on-error (true|false) "true"
+    max-messages-queued-per-channel CDATA "2147483647"
+    reconnect-interval-millis CDATA "30000"
+    reconnect-max-attempts CDATA "60"
+    encode-message-body CDATA "false"
+>
+<!ELEMENT thread-pool EMPTY>
+<!ATTLIST thread-pool
+    core-pool-size CDATA "5"
+    maximum-pool-size CDATA "20"
+    keep-alive-time-millis CDATA "10000"
+    queue-capacity CDATA "2147483647"
+>
+<!ELEMENT udp EMPTY>
+<!ATTLIST udp
+    port CDATA "0"
+    nio (true|false) "true"
+    connected (true|false) "true"
+    send-buffer-size CDATA "65536"
+>
+<!ELEMENT hibernate-collection-metadata (#PCDATA)>
+<!ELEMENT dynamic-class (#PCDATA)>
+<!ELEMENT gae EMPTY>
+<!ATTLIST gae
+    polling-interval CDATA "500"
+>

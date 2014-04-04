@@ -25,14 +25,13 @@ import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.gravity.GravityConfig;
 import org.granite.gravity.GravityFactory;
-import org.granite.messaging.jmf.SharedContext;
 
 /**
  * @author Franck WOLFF
  */
 public class GAEGravityFactory implements GravityFactory {
 
-	public GAEGravity newGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig, SharedContext sharedContext) {
-		return new GAEGravity(gravityConfig, servicesConfig, graniteConfig, sharedContext);
+	public GAEGravity newGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig) {
+		return new GAEGravity(gravityConfig, servicesConfig, graniteConfig);
 	}
 }

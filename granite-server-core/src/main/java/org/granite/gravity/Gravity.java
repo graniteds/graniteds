@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
-import org.granite.messaging.jmf.SharedContext;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
@@ -43,7 +42,6 @@ public interface Gravity {
     public GravityConfig getGravityConfig();
     public ServicesConfig getServicesConfig();
     public GraniteConfig getGraniteConfig();
-    public SharedContext getSharedContext();
 
     ///////////////////////////////////////////////////////////////////////////
     // Properties.

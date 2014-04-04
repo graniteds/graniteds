@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import flex.messaging.messages.Message;
+
 import org.granite.client.messaging.ClientAliasRegistry;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.codec.MessagingCodec;
@@ -38,8 +39,8 @@ import org.granite.client.messaging.transport.TransportException;
 import org.granite.client.platform.Platform;
 import org.granite.messaging.AliasRegistry;
 import org.granite.messaging.amf.AMF0Message;
-import org.granite.scan.ServiceLoader;
 import org.granite.util.ContentType;
+import org.granite.util.ServiceLoader;
 
 /**
  * @author Franck WOLFF

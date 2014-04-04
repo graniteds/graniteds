@@ -36,15 +36,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.messaging.service.ServiceException;
+import org.granite.util.Entity;
 import org.granite.util.Introspector;
 import org.granite.util.PropertyDescriptor;
 import org.granite.util.TypeUtil;
-import org.granite.util.Entity;
 
 
 /**
@@ -78,8 +79,9 @@ public class ChangeSetApplier {
         if (entity == null)
             return null;
 
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
-        Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
+        ConvertersConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        ClassGetter classGetter = config.getClassGetter();
+        Converters converters = config.getConverters();
         
         if (entity != null && !classGetter.isInitialized(null, null, entity)) {
             // cache.contains() cannot be called on un unintialized proxy because hashCode will fail !!
@@ -241,7 +243,7 @@ public class ChangeSetApplier {
 	
 	@SuppressWarnings("unchecked")
 	private Object applyChange(Change change, Set<Object> cache) {
-		Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
+		Converters converters = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getConverters();
 		
 		Object appliedChange = null;
 		try {

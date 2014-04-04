@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 
+import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.selector.GravityMessageSelector;
 import org.granite.gravity.selector.MessageSelector;
@@ -107,7 +108,7 @@ public class Subscription implements Serializable {
             		GraniteContext context = GraniteContext.getCurrentInstance();
             		if (context == null)
             			throw new IllegalStateException("Cannot parse selector outside of GDS context");
-            		messageSelectorConstructor = context.getGraniteConfig().getMessageSelectorConstructor();
+            		messageSelectorConstructor = ((GraniteConfig)context.getGraniteConfig()).getMessageSelectorConstructor();
             	}
                 if (messageSelectorConstructor == null)
                     this.selector = new GravityMessageSelector(selectorText);

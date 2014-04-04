@@ -23,6 +23,7 @@ public class ReplyService {
         message.setDestination("secureChat");
         message.setHeader(AsyncMessage.SUBTOPIC_HEADER, "chat");
         message.setBody(name);
+        message.setTimeToLive(10000L);
         Message reply = gravity.sendRequest(null, message);
         if (reply instanceof ErrorMessage)
             throw new RuntimeException(((ErrorMessage)reply).getFaultCode());

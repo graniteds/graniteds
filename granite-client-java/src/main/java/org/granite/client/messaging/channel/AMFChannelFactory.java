@@ -28,6 +28,7 @@ import org.granite.client.messaging.codec.AMF3MessagingCodec;
 import org.granite.client.messaging.codec.MessagingCodec;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.client.platform.Platform;
+import org.granite.config.api.AliasRegistryConfig;
 import org.granite.messaging.amf.AMF0Message;
 import org.granite.util.ContentType;
 
@@ -93,7 +94,7 @@ public class AMFChannelFactory extends AbstractChannelFactory {
         if (!this.defaultConfiguration.isLoaded())
             this.defaultConfiguration.load();
 
-		this.aliasRegistry = this.defaultConfiguration.getGraniteConfig().getAliasRegistry();
+		this.aliasRegistry = ((AliasRegistryConfig)this.defaultConfiguration.getGraniteConfig()).getAliasRegistry();
 	}
 
 	@Override

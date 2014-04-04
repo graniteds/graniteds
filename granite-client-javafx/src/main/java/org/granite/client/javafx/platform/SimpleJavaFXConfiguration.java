@@ -34,14 +34,13 @@
  */
 package org.granite.client.javafx.platform;
 
+import org.granite.client.configuration.ClientGraniteConfig;
 import org.granite.client.configuration.SimpleConfiguration;
 import org.granite.client.messaging.ClientAliasRegistry;
 import org.granite.client.persistence.collection.PersistentBag;
 import org.granite.client.persistence.collection.PersistentList;
 import org.granite.client.persistence.collection.PersistentMap;
 import org.granite.client.persistence.collection.PersistentSet;
-import org.granite.client.validation.InvalidValue;
-import org.granite.config.GraniteConfig;
 
 /**
  * @author Franck WOLFF
@@ -53,13 +52,13 @@ public class SimpleJavaFXConfiguration extends SimpleConfiguration {
 	}
 
 	@Override
-	public void postLoad(GraniteConfig graniteConfig) {
+	public void postLoad(ClientGraniteConfig graniteConfig) {
 		ClientAliasRegistry aliasRegistry = new ClientAliasRegistry();
 		aliasRegistry.registerAlias(PersistentSet.class.getName(), "org.granite.messaging.persistence.ExternalizablePersistentSet");
 		aliasRegistry.registerAlias(PersistentBag.class.getName(), "org.granite.messaging.persistence.ExternalizablePersistentBag");
 		aliasRegistry.registerAlias(PersistentList.class.getName(), "org.granite.messaging.persistence.ExternalizablePersistentList");
 		aliasRegistry.registerAlias(PersistentMap.class.getName(), "org.granite.messaging.persistence.ExternalizablePersistentMap");
-		aliasRegistry.registerAlias(InvalidValue.class.getName(), "org.granite.tide.validators.InvalidValue");
+		aliasRegistry.registerAlias("org.granite.client.validation.InvalidValue", "org.granite.tide.validators.InvalidValue");
 		graniteConfig.setAliasRegistry(aliasRegistry);
 	}
 }

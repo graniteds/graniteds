@@ -47,7 +47,6 @@ import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextAware;
 import org.granite.client.tide.NameAware;
-import org.granite.client.tide.PropertyHolder;
 import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.server.ArgumentPreprocessor;
 import org.granite.client.tide.server.Component;
@@ -56,6 +55,7 @@ import org.granite.client.tide.server.InvocationInterceptor;
 import org.granite.client.tide.server.ServerSession;
 import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
+import org.granite.client.util.PropertyHolder;
 import org.granite.logging.Logger;
 
 /**

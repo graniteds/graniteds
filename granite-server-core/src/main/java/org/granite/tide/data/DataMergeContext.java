@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.tide.IUID;
@@ -71,7 +72,7 @@ public class DataMergeContext {
     
     public static void addResultEntity(Object result) {
     	DataMergeContext mergeContext = dataMergeContext.get();
-    	ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+    	ClassGetter classGetter = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getClassGetter();
     	mergeContext.addResultEntity(result, classGetter, new HashSet<Object>());
     }
     

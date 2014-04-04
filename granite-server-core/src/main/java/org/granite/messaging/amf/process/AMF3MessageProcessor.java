@@ -49,7 +49,7 @@ public abstract class AMF3MessageProcessor {
 
     public static Message process(Message request) {
         GraniteContext context = GraniteContext.getCurrentInstance();
-        AMF3MessageInterceptor interceptor = context.getGraniteConfig().getAmf3MessageInterceptor();
+        AMF3MessageInterceptor interceptor = ((GraniteConfig)context.getGraniteConfig()).getAmf3MessageInterceptor();
         
         Message response = null;
         try {

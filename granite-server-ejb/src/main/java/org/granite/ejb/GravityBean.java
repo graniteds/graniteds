@@ -21,20 +21,21 @@
  */
 package org.granite.ejb;
 
-import flex.messaging.messages.AsyncMessage;
-import flex.messaging.messages.ErrorMessage;
-import flex.messaging.messages.Message;
+import java.security.Principal;
+import java.util.List;
+import java.util.Set;
+
+import javax.ejb.Local;
+import javax.ejb.Singleton;
+
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.gravity.Channel;
 import org.granite.gravity.GravityConfig;
-import org.granite.messaging.jmf.SharedContext;
 
-import javax.ejb.Local;
-import javax.ejb.Singleton;
-import java.security.Principal;
-import java.util.List;
-import java.util.Set;
+import flex.messaging.messages.AsyncMessage;
+import flex.messaging.messages.ErrorMessage;
+import flex.messaging.messages.Message;
 
 @Singleton(name="org.granite.ejb.Gravity")
 @Local(Gravity.class)
@@ -61,9 +62,6 @@ public class GravityBean implements Gravity {
     }
     public GraniteConfig getGraniteConfig() {
         return getGravity().getGraniteConfig();
-    }
-    public SharedContext getSharedContext() {
-        return getGravity().getSharedContext();
     }
 
     ///////////////////////////////////////////////////////////////////////////

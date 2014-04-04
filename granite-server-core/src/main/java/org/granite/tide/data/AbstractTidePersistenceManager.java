@@ -21,8 +21,9 @@
  */
 package org.granite.tide.data;
 
-import org.granite.logging.Logger;
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
+import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.tide.TidePersistenceManager;
 import org.granite.tide.TideTransactionManager;
@@ -59,7 +60,7 @@ public abstract class AbstractTidePersistenceManager implements TidePersistenceM
 	 */
 	public Object attachEntity(TidePersistenceManager pm, Object entity, String[] propertyNames) {
 		Object attachedEntity = null;
-        ClassGetter getter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        ClassGetter getter = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getClassGetter();
         
         try {
 			Object tx = tm.begin(pm instanceof TideTransactionPersistenceManager ? (TideTransactionPersistenceManager)pm : null);

@@ -36,8 +36,8 @@ package org.granite.client.tide.data.impl;
 
 import java.util.Date;
 
-import org.granite.client.tide.PropertyHolder;
 import org.granite.client.tide.data.spi.DataManager;
+import org.granite.client.util.PropertyHolder;
 
 /**
  * @author William DRAI

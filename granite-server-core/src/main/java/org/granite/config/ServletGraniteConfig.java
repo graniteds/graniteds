@@ -49,7 +49,7 @@ public class ServletGraniteConfig implements ServletGraniteConfigMBean {
     // Static fields.
 
     private static final Logger log = Logger.getLogger(ServletGraniteConfig.class);
-
+    
     private static final String GRANITE_CONFIG_DEFAULT = "/WEB-INF/granite/granite-config.xml";
     
     public static final String GRANITE_CONFIG_KEY = GraniteConfig.class.getName() + "_CACHE";

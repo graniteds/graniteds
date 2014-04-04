@@ -55,11 +55,10 @@ import org.granite.jmx.MBeanServerLocator;
 import org.granite.jmx.OpenMBean;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
-import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.security.SecurityServiceException;
 import org.granite.messaging.webapp.ServletGraniteContext;
-import org.granite.scan.ServiceLoader;
+import org.granite.util.ServiceLoader;
 import org.granite.util.TypeUtil;
 import org.granite.util.UUIDUtil;
 
@@ -86,7 +85,6 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     private GravityConfig gravityConfig = null;
     private ServicesConfig servicesConfig = null;
     private GraniteConfig graniteConfig = null;
-    private SharedContext sharedContext = null;
 
     private Channel serverChannel = null;
     private AdapterFactory adapterFactory = null;
@@ -101,14 +99,13 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
 
-    public DefaultGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig, SharedContext sharedContext) {
+    public DefaultGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig) {
         if (gravityConfig == null || servicesConfig == null || graniteConfig == null)
             throw new NullPointerException("All arguments must be non null.");
 
         this.gravityConfig = gravityConfig;
         this.servicesConfig = servicesConfig;
         this.graniteConfig = graniteConfig;
-        this.sharedContext = sharedContext;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -125,11 +122,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 	public GraniteConfig getGraniteConfig() {
         return graniteConfig;
     }
-
-    public SharedContext getSharedContext() {
-        return sharedContext;
-    }
-
+	
 	public boolean isStarted() {
         return started;
     }
@@ -434,7 +427,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 	        		log.debug("Found channel id in distributed data: %s", clientId);
 	        		String channelFactoryClassName = gdd.getChannelFactoryClassName(clientId);
                     String clientType = gdd.getChannelClientType(clientId);
-	        		channelFactory = (ChannelFactory<C>)TypeUtil.newInstance(channelFactoryClassName, new Class<?>[] { Gravity.class }, new Object[] { this });
+	        		channelFactory = (ChannelFactory<C>)TypeUtil.newInstance(channelFactoryClassName, new Class<?>[] { GravityInternal.class }, new Object[] { this });
 	        		C channel = channelFactory.newChannel(clientId, clientType);
 	    	    	timeChannel = new TimeChannel<C>(channel);
 	    	        if (channels.putIfAbsent(clientId, timeChannel) == null) {
@@ -562,7 +555,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
         AMF3MessageInterceptor interceptor = null;
         if (!skipInterceptor)
-        	interceptor = GraniteContext.getCurrentInstance().getGraniteConfig().getAmf3MessageInterceptor();
+        	interceptor = ((GraniteConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getAmf3MessageInterceptor();
         
         Message reply = null;
         boolean publish = false;
@@ -722,20 +715,19 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
             long timeout = 5000L;
             if (message.getTimeToLive() > 0)
                 timeout = message.getTimeToLive();
-
-            final CountDownLatch waitForReply = new CountDownLatch(1);
-            AsyncReply asyncReply = new AsyncReply(waitForReply, message.getTimestamp()+timeout);
+            
+            AsyncReply asyncReply = new AsyncReply(message.getTimestamp()+timeout);
             asyncReplies.put(message.getMessageId(), asyncReply);
-
+            
             handlePublishMessage(null, message, fromChannel != null ? fromChannel : serverChannel);
-
-            if (!waitForReply.await(timeout, TimeUnit.MILLISECONDS)) {
+            
+            if (!asyncReply.await(timeout, TimeUnit.MILLISECONDS)) {
                 ErrorMessage errorMessage = new ErrorMessage(message, true);
                 errorMessage.setFaultCode("Server.Messaging.ReplyTimeout");
                 errorMessage.setFaultString("Reply timeout for message " + message.getMessageId());
                 return errorMessage;
             }
-
+            
             return asyncReply.getReply();
         }
         catch (InterruptedException e) {
@@ -754,9 +746,13 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
         private final long destroyTimestamp;
         private Message reply = null;
 
-        public AsyncReply(CountDownLatch waitForReply, long destroyTimestamp) {
-            this.waitForReply = waitForReply;
+        public AsyncReply(long destroyTimestamp) {
+            this.waitForReply = new CountDownLatch(1);
             this.destroyTimestamp = destroyTimestamp;
+        }
+        
+        public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+        	return waitForReply.await(timeout, unit);
         }
 
         public void reply(Message reply) {
@@ -774,13 +770,13 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     }
 
     private class AsyncRepliesCleanup extends TimerTask {
-
+    	
         @Override
         public void run() {
-            long time = System.currentTimeMillis();
+            long time = System.currentTimeMillis() - 30000L;
             for (Iterator<Map.Entry<String, AsyncReply>> ie = asyncReplies.entrySet().iterator(); ie.hasNext(); ) {
                 Map.Entry<String, AsyncReply> e = ie.next();
-                if (e.getValue().getDestroyTimestamp() >= time)
+                if (time > e.getValue().getDestroyTimestamp())
                     ie.remove();
             }
         }
@@ -882,7 +878,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
         final GraniteContext context = GraniteContext.getCurrentInstance();
 
         // Get and check destination.
-        final Destination destination = context.getServicesConfig().findDestinationById(
+        final Destination destination = ((ServicesConfig)context.getServicesConfig()).findDestinationById(
             message.getMessageRefType(),
             message.getDestination()
         );
@@ -1029,7 +1025,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
         GraniteContext context = GraniteContext.getCurrentInstance();
 
         // Get and check destination.
-        Destination destination = context.getServicesConfig().findDestinationById(
+        Destination destination = ((ServicesConfig)context.getServicesConfig()).findDestinationById(
             message.getClass().getName(),
             message.getDestination()
         );
@@ -1042,7 +1038,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
         message.setTimestamp(System.currentTimeMillis());
         if (channel != null)
             message.setClientId(channel.getId());
-
+        
         GravityInvocationContext invocationContext = new GravityInvocationContext(message, destination) {
 			@Override
 			public Object invoke() throws Exception {
@@ -1054,12 +1050,10 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 		            return handleUnknownClientMessage(message);
 
                 if (message.getCorrelationId() != null) {
-                    AsyncReply asyncReply = asyncReplies.get(message.getCorrelationId());
+                    AsyncReply asyncReply = asyncReplies.remove(message.getCorrelationId());
                     if (asyncReply != null) {
                         asyncReply.reply(message);
-
-                        asyncReplies.remove(message.getCorrelationId());    // One one consumer can reply
-
+                        
                         AcknowledgeMessage acknowledgeMessage = new AcknowledgeMessage(message, true);
                         acknowledgeMessage.setDestination(message.getDestination());
 

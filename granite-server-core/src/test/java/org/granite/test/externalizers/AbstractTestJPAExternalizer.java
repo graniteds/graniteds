@@ -35,6 +35,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
+import org.granite.config.AMF3Config;
+import org.granite.config.ConvertersConfig;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
@@ -100,13 +102,13 @@ public abstract class AbstractTestJPAExternalizer {
 		
 		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
-		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
 		out.writeObject(e5);		
 		GraniteContext.release();
 		
 		InputStream is = new ByteArrayInputStream(baos.toByteArray());
 		gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
-		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(is);
 		Object obj = in.readObject();
 		GraniteContext.release();
 		
@@ -147,19 +149,19 @@ public abstract class AbstractTestJPAExternalizer {
 		
 		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
-		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
 		out.writeObject(e2);		
 		GraniteContext.release();
 		
 		InputStream is = new ByteArrayInputStream(baos.toByteArray());
 		gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
-		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(is);
 		Object obj = in.readObject();
 		GraniteContext.release();
 		
 		Assert.assertTrue("Entity2", obj instanceof Entity2);
-		if (gc.getGraniteConfig().getClassGetter().getClass().getName().indexOf("hibernate") >= 0)
-		    Assert.assertFalse("Entity 2 entities not loaded", gc.getGraniteConfig().getClassGetter().isInitialized(((Entity2)obj).getEntity(), "entities", ((Entity2)obj).getEntity().getEntities()));
+		if (((ConvertersConfig)gc.getGraniteConfig()).getClassGetter().getClass().getName().indexOf("hibernate") >= 0)
+		    Assert.assertFalse("Entity 2 entities not loaded", ((ConvertersConfig)gc.getGraniteConfig()).getClassGetter().isInitialized(((Entity2)obj).getEntity(), "entities", ((Entity2)obj).getEntity().getEntities()));
 	}
 	
 	@Test
@@ -198,13 +200,13 @@ public abstract class AbstractTestJPAExternalizer {
 		
 		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
-		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
 		out.writeObject(a);		
 		GraniteContext.release();
 		
 		InputStream is = new ByteArrayInputStream(baos.toByteArray());
 		gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
-		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(is);
 		Object obj = in.readObject();
 		GraniteContext.release();
 		
@@ -218,13 +220,13 @@ public abstract class AbstractTestJPAExternalizer {
         
         GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
         ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
-        ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+        ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
         out.writeObject(e6);        
         GraniteContext.release();
         
         InputStream is = new ByteArrayInputStream(baos.toByteArray());
         gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
-        ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+        ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(is);
         Object obj = in.readObject();
         GraniteContext.release();
         
@@ -261,19 +263,19 @@ public abstract class AbstractTestJPAExternalizer {
         GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
-        ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+        ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
         
         out.writeObject(e7);        
         GraniteContext.release();
         
         InputStream is = new ByteArrayInputStream(baos.toByteArray());
         gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
-        ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+        ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(is);
         Object obj = in.readObject();
         GraniteContext.release();
         
         Assert.assertTrue("Entity7", obj instanceof Entity7);
-        Assert.assertFalse("Entity8 not loaded", gc.getGraniteConfig().getClassGetter().isInitialized(obj, "entity8", ((Entity7)obj).getEntity8()));
+        Assert.assertFalse("Entity8 not loaded", ((ConvertersConfig)gc.getGraniteConfig()).getClassGetter().isInitialized(obj, "entity8", ((Entity7)obj).getEntity8()));
     }
     
     @Test
@@ -301,24 +303,24 @@ public abstract class AbstractTestJPAExternalizer {
         
         e7 = entityManager.find(Entity7.class, e7.getId());
         
-        gc.getGraniteConfig().getClassGetter().initialize(e7, "entity8", e7.getEntity8());
+        ((ConvertersConfig)gc.getGraniteConfig()).getClassGetter().initialize(e7, "entity8", e7.getEntity8());
         
         entityManager.flush();
         et.commit();
         entityManager.close();
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
-        ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+        ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
         out.writeObject(e7);        
         GraniteContext.release();
         
         InputStream is = new ByteArrayInputStream(baos.toByteArray());
         gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
-        ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+        ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(is);
         Object obj = in.readObject();
         GraniteContext.release();
         
         Assert.assertTrue("Entity7", obj instanceof Entity7);
-        Assert.assertTrue("Entity8 loaded", gc.getGraniteConfig().getClassGetter().isInitialized(obj, "entity8", ((Entity7)obj).getEntity8()));
+        Assert.assertTrue("Entity8 loaded", ((ConvertersConfig)gc.getGraniteConfig()).getClassGetter().isInitialized(obj, "entity8", ((Entity7)obj).getEntity8()));
     }
 }

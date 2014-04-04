@@ -27,13 +27,16 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.granite.cdi.CDIUtils;
+import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceFactory;
 import org.granite.messaging.service.ServiceInvoker;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.tide.TideServiceInvoker;
 import org.granite.tide.data.PersistenceExceptionConverter;
 import org.granite.util.XMap;
@@ -71,14 +74,14 @@ public class CDIServiceFactory extends ServiceFactory {
         
         GraniteContext graniteContext = GraniteContext.getCurrentInstance();
         try {
-        	graniteContext.getGraniteConfig().registerExceptionConverter(PersistenceExceptionConverter.class);
+        	((GraniteConfig)graniteContext.getGraniteConfig()).registerExceptionConverter(PersistenceExceptionConverter.class);
         }
         catch (Throwable t) {
 	    	log.info(t, "JPA exception converter not registered (JPA not found on classpath)");
         }
 
         try {
-	        manager = CDIUtils.lookupBeanManager(((HttpGraniteContext)graniteContext).getServletContext());
+	        manager = CDIUtils.lookupBeanManager(((ServletGraniteContext)graniteContext).getServletContext());
         }
         catch (Exception e) {
 	        log.warn("Unable to find the CDI Manager in JNDI, lookup in ServletContext");
@@ -108,8 +111,8 @@ public class CDIServiceFactory extends ServiceFactory {
         String messageType = request.getClass().getName();
         String destinationId = request.getDestination();
 
-        HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
-        Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
+        ServicesConfig servicesConfig = GraniteContext.getCurrentInstance().getServicesConfig();
+        Destination destination = servicesConfig.findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);
         

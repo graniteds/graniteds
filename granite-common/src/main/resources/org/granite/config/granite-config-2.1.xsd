@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+
+    GRANITE DATA SERVICES
+    Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+
+    This file is part of the Granite Data Services Platform.
+
+    Granite Data Services is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    Granite Data Services is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+    General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+    USA, or see <http://www.gnu.org/licenses/>.
+
+-->
+<xs:schema
+	xmlns="http://www.graniteds.org/config"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:graniteds="http://www.graniteds.org/config"
+	targetNamespace="http://www.graniteds.org/config"
+	elementFormDefault="qualified" attributeFormDefault="unqualified"
+	version="1.0">
+	
+	<xs:annotation>
+		<xs:documentation></xs:documentation>
+	</xs:annotation>
+	
+	
+	<xs:element name="flex-filter">		
+        <xs:annotation>
+			<xs:documentation></xs:documentation>
+		</xs:annotation>
+        
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:tide-roles"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:tide-annotations"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:tide-interfaces"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:tide-names"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:tide-types"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:exception-converters"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:amf3-message-interceptor"/>
+			</xs:choice>
+            <xs:attributeGroup ref="graniteds:attlist.FlexFilter" />
+      	</xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.FlexFilter">
+		<xs:attribute name="url-pattern" type="xs:string"/>
+        <xs:attribute name="tide" type="xs:boolean" default="false"/>
+    </xs:attributeGroup>
+    
+    <xs:element name="tide-roles" type="graniteds:multiValuedProperty">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="tide-annotations" type="graniteds:multiValuedProperty">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="tide-interfaces" type="graniteds:multiValuedProperty">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="tide-names" type="graniteds:multiValuedProperty">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="tide-types" type="graniteds:multiValuedProperty">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="exception-converters" type="graniteds:multiValuedProperty">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="amf3-message-interceptor" type="xs:string">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="value" type="xs:string">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="multiValuedProperty">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="graniteds:value"/>
+        </xs:sequence>
+    </xs:complexType>
+
+	
+	<xs:element name="security-service">		
+        <xs:annotation>
+			<xs:documentation></xs:documentation>
+		</xs:annotation>
+        
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="graniteds:attlist.SecurityService" />
+      	</xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.SecurityService">
+        <xs:attribute name="authentication-manager" type="xs:string"/>
+        <xs:attribute name="security-context-repository" type="xs:string"/>
+        <xs:attribute name="security-interceptor" type="xs:string"/>
+    </xs:attributeGroup>
+	
+    
+    <xs:element name="role" type="xs:string">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="rolesProperty">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="graniteds:role"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:element name="roles" type="graniteds:rolesProperty">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+    </xs:element>
+	
+	<xs:element name="remote-destination">		
+        <xs:annotation>
+			<xs:documentation></xs:documentation>
+		</xs:annotation>
+        
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:roles"/>
+            </xs:choice>
+            <xs:attributeGroup ref="graniteds:attlist.RemoteDestination" />
+      	</xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.RemoteDestination">
+		<xs:attribute name="id" type="xs:string"/>
+		<xs:attribute name="name" type="xs:string"/>
+		<xs:attribute name="source" type="xs:string"/>
+    </xs:attributeGroup>
+	
+	
+	<xs:element name="messaging-destination">		
+        <xs:annotation>
+			<xs:documentation></xs:documentation>
+		</xs:annotation>
+        
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:roles"/>
+            </xs:choice>
+            <xs:attributeGroup ref="graniteds:attlist.MessagingDestination" />
+      	</xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.MessagingDestination">
+		<xs:attribute name="id" type="xs:string"/>
+		<xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="no-local" type="xs:boolean" default="false"/>
+        <xs:attribute name="session-selector" type="xs:boolean" default="false"/>
+    </xs:attributeGroup>
+	
+	
+	<xs:element name="jms-topic-destination">		
+        <xs:annotation>
+			<xs:documentation></xs:documentation>
+		</xs:annotation>
+        
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:roles"/>
+            </xs:choice>
+            <xs:attributeGroup ref="graniteds:attlist.MessagingDestination" />
+            <xs:attributeGroup ref="graniteds:attlist.JmsTopicDestination" />
+      	</xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.JmsTopicDestination">
+		<xs:attribute name="connection-factory" type="xs:string"/>
+		<xs:attribute name="jndi-name" type="xs:string"/>
+		<xs:attribute name="destination-jndi-name" type="xs:string"/>
+		<xs:attribute name="acknowledge-mode" type="xs:string" default="AUTO_ACKNOWLEDGE"/>
+		<xs:attribute name="transacted-sessions" type="xs:boolean" default="false"/>
+    </xs:attributeGroup>
+	
+	
+	<xs:element name="activemq-topic-destination">		
+        <xs:annotation>
+			<xs:documentation></xs:documentation>
+		</xs:annotation>
+        
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:roles"/>
+            </xs:choice>
+            <xs:attributeGroup ref="graniteds:attlist.MessagingDestination"/>
+            <xs:attributeGroup ref="graniteds:attlist.JmsTopicDestination" />
+            <xs:attributeGroup ref="graniteds:attlist.ActiveMQTopicDestination" />
+      	</xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.ActiveMQTopicDestination">
+		<xs:attribute name="broker-url" type="xs:string"/>
+		<xs:attribute name="create-broker" type="xs:boolean" default="true"/>
+		<xs:attribute name="wait-for-start" type="xs:boolean" default="false"/>
+		<xs:attribute name="durable" type="xs:boolean" default="false"/>
+		<xs:attribute name="file-store-root" type="xs:string"/>
+    </xs:attributeGroup>
+	
+	
+	<xs:element name="tide-persistence">		
+        <xs:annotation>
+			<xs:documentation></xs:documentation>
+		</xs:annotation>
+        
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="graniteds:attlist.TidePersistence" />
+      	</xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.TidePersistence">
+		<xs:attribute name="id" type="xs:string"/>
+        <xs:attribute name="transaction-manager" type="xs:string"/>
+    </xs:attributeGroup>
+	
+	<xs:element name="tide-identity">		
+        <xs:annotation>
+			<xs:documentation></xs:documentation>
+		</xs:annotation>
+        
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="graniteds:attlist.TideIdentity" />
+      	</xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.TideIdentity">
+        <xs:attribute name="acl-service" type="xs:string"/>
+        <xs:attribute name="sid-retrieval-strategy" type="xs:string"/>
+        <xs:attribute name="object-identity-retrieval-strategy" type="xs:string"/>
+    </xs:attributeGroup>
+    
+</xs:schema>

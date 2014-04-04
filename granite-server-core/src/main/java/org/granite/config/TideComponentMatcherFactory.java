@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.granite.config.api.GraniteConfigException;
 import org.granite.messaging.service.tide.TideComponentAnnotatedWithMatcher;
 import org.granite.messaging.service.tide.TideComponentInstanceOfMatcher;
 import org.granite.messaging.service.tide.TideComponentMatcher;

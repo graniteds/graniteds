@@ -48,13 +48,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.granite.client.persistence.collection.PersistentCollection;
-import org.granite.client.tide.PropertyHolder;
 import org.granite.client.tide.data.Value;
 import org.granite.client.tide.data.spi.DataManager;
 import org.granite.client.tide.data.spi.DataManager.ChangeKind;
 import org.granite.client.tide.data.spi.DirtyCheckContext;
 import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.data.spi.Wrapper;
+import org.granite.client.util.PropertyHolder;
 import org.granite.client.util.WeakIdentityHashMap;
 import org.granite.logging.Logger;
 

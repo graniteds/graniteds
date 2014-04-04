@@ -21,7 +21,9 @@
  */
 package org.granite.tide.seam;
 
+import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceFactory;
@@ -57,9 +59,9 @@ public class SeamServiceFactory extends ServiceFactory {
         else
             super.configure(properties);
         
-        GraniteContext graniteContext = GraniteContext.getCurrentInstance();
+        GraniteConfig graniteConfig = GraniteContext.getCurrentInstance().getGraniteConfig();
         try {
-        	graniteContext.getGraniteConfig().registerExceptionConverter(PersistenceExceptionConverter.class);
+        	graniteConfig.registerExceptionConverter(PersistenceExceptionConverter.class);
 	    }
 	    catch (Throwable t) {
 	    	log.info(t, "JPA exception converter not registered (JPA not found on classpath)");
@@ -82,7 +84,7 @@ public class SeamServiceFactory extends ServiceFactory {
         String destinationId = request.getDestination();
 
         HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
-        Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
+        Destination destination = ((ServicesConfig)context.getServicesConfig()).findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);
         

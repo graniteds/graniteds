@@ -50,7 +50,7 @@ import flex.messaging.messages.RemotingMessage;
 /**
  * @author Franck WOLFF
  */
-public class ServicesConfig implements ScannedItemHandler {
+public class ServicesConfig implements ChannelConfig, ScannedItemHandler {
 
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
@@ -357,5 +357,21 @@ public class ServicesConfig implements ScannedItemHandler {
      		}
     	 }
     }
+
+	@Override
+	public boolean getChannelProperty(String channelId, String propertyName) {
+		if (channelId == null)
+			return false;
+		Channel channel = findChannelById(channelId);
+		if (channel == null) {
+			log.debug("Could not get channel for channel id: %s", channelId);
+			return false;
+		}
+		if ("legacyXmlSerialization".equals(propertyName))
+			return channel.isLegacyXmlSerialization();
+		else if ("".equals(propertyName))
+			return channel.isLegacyCollectionSerialization();
+		return false;
+	}
     
 }

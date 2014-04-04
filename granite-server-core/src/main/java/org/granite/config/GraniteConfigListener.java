@@ -47,8 +47,8 @@ import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodecService;
 import org.granite.messaging.reflect.Reflection;
-import org.granite.scan.ServiceLoader;
 import org.granite.util.JMFAMFUtil;
+import org.granite.util.ServiceLoader;
 import org.granite.util.ServletParams;
 
 

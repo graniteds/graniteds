@@ -23,12 +23,11 @@ package org.granite.gravity;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
-import org.granite.messaging.jmf.SharedContext;
 
 /**
  * @author Franck WOLFF
  */
 public interface GravityFactory {
 
-	public Gravity newGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig, SharedContext sharedContext);
+	public Gravity newGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig);
 }

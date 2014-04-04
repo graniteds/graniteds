@@ -22,8 +22,7 @@
 package org.granite.client.configuration;
 
 import org.granite.client.messaging.codec.MessagingCodec.ClientType;
-import org.granite.config.GraniteConfig;
-import org.granite.config.flex.ServicesConfig;
+import org.granite.config.Config;
 
 /**
  * Configuration object for AMF channel factory
@@ -44,16 +43,16 @@ public interface Configuration {
 	void setClientType(ClientType clientType);
 
     /**
-     * GraniteConfig object loaded of built by this configuration
+     * ClientGraniteConfig object loaded of built by this configuration
      * @return granite config
      */
-	GraniteConfig getGraniteConfig();
-
+	<C extends Config> C getGraniteConfig();
+	
     /**
      * ServicesConfig object loaded of built by this configuration
      * @return services config
      */
-	ServicesConfig getServicesConfig();
+	<C extends Config> C getServicesConfig();
 
     /**
      * Is the configuration loaded ?

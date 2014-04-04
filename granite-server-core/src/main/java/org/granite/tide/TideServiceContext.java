@@ -35,6 +35,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.util.ClassGetter;
@@ -141,7 +142,7 @@ public abstract class TideServiceContext implements Serializable {
     	
     
     public Object mergeExternal(Object obj, Object previous) {
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        ClassGetter classGetter = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getClassGetter();
         return mergeExternal(classGetter, obj, previous, null, null);
     }
     

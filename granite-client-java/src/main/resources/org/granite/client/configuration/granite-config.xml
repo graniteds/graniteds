@@ -29,6 +29,54 @@
     
     <amf3-deserializer-securizer type="org.granite.client.configuration.NoopAMF3DeserializerSecurizer"/>
 
+    <!--
+     ! Standard GDS converters.
+     !-->
+    <converters>
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Integer" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Long" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Double" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Boolean2Boolean" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Collection2Collection" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Collection2Array" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Array2Array" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Array2Collection" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Date2Date" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Map2Map" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2CharArray" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2BigDecimal" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2BigInteger" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Byte" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Float" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Number2Short" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2Char" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2Locale" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Character2Character" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.Compatibility" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2Document" />
+        <converter type="org.granite.messaging.amf.io.convert.impl.String2Enum" />
+    </converters>
+    
+    <externalizers>
+    	<externalizer type="org.granite.messaging.amf.io.util.externalizer.EnumExternalizer">
+    		<include instance-of="java.lang.Enum"/>
+    	</externalizer>
+    	<externalizer type="org.granite.messaging.amf.io.util.externalizer.MathContextExternalizer">
+    		<include instance-of="java.math.MathContext"/>
+    	</externalizer>
+    	<!--
+    	<externalizer type="org.granite.messaging.amf.io.util.externalizer.LongExternalizer">
+    		<include instance-of="java.lang.Long"/>
+    	</externalizer>
+    	<externalizer type="org.granite.messaging.amf.io.util.externalizer.BigIntegerExternalizer">
+    		<include instance-of="java.math.BigInteger"/>
+    	</externalizer>
+    	<externalizer type="org.granite.messaging.amf.io.util.externalizer.BigDecimalExternalizer">
+    		<include instance-of="java.math.BigDecimal"/>
+    	</externalizer>
+    	-->
+    </externalizers>
+
     <descriptors>
     	<descriptor
             instance-of="java.lang.Object"

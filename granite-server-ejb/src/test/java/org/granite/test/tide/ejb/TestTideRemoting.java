@@ -21,6 +21,7 @@
  */
 package org.granite.test.tide.ejb;
 
+import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.test.tide.TestInvocationListener;
 import org.granite.tide.data.DataContext;
@@ -81,7 +82,7 @@ public class TestTideRemoting extends AbstractTideTestCase {
 	
 	@Test
 	public void testCleanupContextGDS1022() {
-		((TestInvocationListener)GraniteContext.getCurrentInstance().getGraniteConfig().getInvocationListener()).setFailBefore(true);
+		((TestInvocationListener)((GraniteConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getInvocationListener()).setFailBefore(true);
 		Exception error = null;
 		try {
 			invokeComponent("helloService", null, "hello", new Object[] { "jack" });

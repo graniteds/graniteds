@@ -65,6 +65,8 @@ public class GravityManager {
 	    	
     		if (gravity == null) {
 		        GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(context);
+		        graniteConfig.setSharedContext(GraniteConfigListener.getSharedContext(context));
+		        
 	    		ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(context);
 	            
 	    		GravityServiceConfigurator serviceConfigurator = (GravityServiceConfigurator)context.getAttribute(GraniteConfigListener.GRANITE_CONFIG_ATTRIBUTE);
@@ -76,7 +78,7 @@ public class GravityManager {
 		        String gravityFactory = gravityConfig.getGravityFactory();
 		        try {
 					GravityFactory factory = TypeUtil.newInstance(gravityFactory, GravityFactory.class);
-					gravity = factory.newGravity(gravityConfig, servicesConfig, graniteConfig, GraniteConfigListener.getSharedContext(context));
+					gravity = factory.newGravity(gravityConfig, servicesConfig, graniteConfig);
 				} 
 		        catch (Exception e) {
 					throw new ServletException("Could not create Gravity instance with factory: " + gravityFactory, e);

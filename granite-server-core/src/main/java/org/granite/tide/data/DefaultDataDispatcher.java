@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 
 import org.granite.clustering.DistributedData;
 import org.granite.clustering.DistributedDataFactory;
+import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.Channel;
 import org.granite.gravity.Gravity;
@@ -64,7 +65,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 
 		DistributedDataFactory distributedDataFactory = gravity != null
                 ? gravity.getGraniteConfig().getDistributedDataFactory()
-                : graniteContext.getGraniteConfig().getDistributedDataFactory();
+                : ((GraniteConfig)graniteContext.getGraniteConfig()).getDistributedDataFactory();
 		DistributedData gdd = distributedDataFactory.getInstance();
 		if (gdd != null) {
 			this.gravity = GravityManager.getGravity(((ServletGraniteContext)graniteContext).getServletContext());
@@ -97,7 +98,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 	
 	@Override
 	protected void changeDataSelector(String dataSelector) {
-		DistributedDataFactory distributedDataFactory = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory();		
+		DistributedDataFactory distributedDataFactory = ((GraniteConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getDistributedDataFactory();		
 		DistributedData gdd = distributedDataFactory.getInstance();
 		if (gdd != null) {
 			String clientId = gdd.getDestinationClientId(topicName);

@@ -39,7 +39,7 @@ import org.granite.tide.data.Change;
 import org.granite.tide.data.ChangeRef;
 import org.granite.tide.data.CollectionChange;
 import org.granite.tide.data.DataContext;
-import org.granite.tide.data.DataUtils;
+import org.granite.tide.data.Utils;
 import org.granite.tide.data.DataContext.EntityUpdate;
 import org.granite.tide.data.DataContext.EntityUpdateType;
 import org.hibernate.EntityMode;
@@ -195,7 +195,7 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     		List<?> oldSnapshot = (List<?>)oldColl;
     		List<?> newList = (List<?>)newColl;
     		
-    		List<Object[]> ops = DataUtils.diffLists(oldSnapshot, newList);    		
+    		List<Object[]> ops = Utils.diffLists(oldSnapshot, newList);    		
     		
     		CollectionChange[] collChanges = new CollectionChange[ops.size()];
     		int idx = 0;

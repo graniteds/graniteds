@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converter;
@@ -459,11 +460,11 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		}
 		
 		private Object getBindValue(boolean request, Class<?> requiredType) {
-			GraniteContext context = GraniteContext.getCurrentInstance();
-			ClassGetter classGetter = context.getGraniteConfig().getClassGetter();
+			ConvertersConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+			ClassGetter classGetter = config.getClassGetter();
 			Object value = request ? wrapper.getRequestValue(getObjectName()) : wrapper.getBindValue(getObjectName());
 			if (requiredType != null) {
-				Converter converter = context.getGraniteConfig().getConverters().getConverter(value, requiredType);
+				Converter converter = config.getConverters().getConverter(value, requiredType);
 				if (converter != null)
 					value = converter.convert(value, requiredType);
 			}

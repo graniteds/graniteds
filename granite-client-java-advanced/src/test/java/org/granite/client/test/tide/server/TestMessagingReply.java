@@ -90,7 +90,7 @@ public class TestMessagingReply {
         war.addClass(ChatApplication.class);
         war.addClass(ReplyService.class);
         war.addAsWebInfResource(new File("granite-client-java-advanced/src/test/resources/META-INF/services-config.properties"), "classes/META-INF/services-config.properties");
-
+        
         container = ContainerTestUtil.newContainer(war, false);
         container.start();
         log.info("Container started");
@@ -105,45 +105,56 @@ public class TestMessagingReply {
 
     @Test
     public void testTextReply() throws Exception {
-        ServerSession serverSession = ContainerTestUtil.buildServerSession(context, SERVER_APP_APP, contentType);
-        Consumer consumer = serverSession.getConsumer("secureChat", "chat", channelType);
-        Identity identity = context.set("identity", new BaseIdentity(serverSession));
-        Component replyService = context.set("replyService", new ComponentImpl(serverSession));
-
-        String user = identity.login("user", "user00", TideResponders.<String>noop()).get();
-        Assert.assertEquals("Logged in", "user", user);
-
+        ServerSession serverSession1 = ContainerTestUtil.buildServerSession(context, SERVER_APP_APP, contentType);
+        Consumer consumer1 = serverSession1.getConsumer("secureChat", "chat", channelType);
+        Identity identity1 = context.set("identity", new BaseIdentity(serverSession1));
+        
+        ServerSession serverSession2 = ContainerTestUtil.buildServerSession(context, SERVER_APP_APP, contentType);
+        Identity identity2 = context.set("identity", new BaseIdentity(serverSession2));
+        Component replyService2 = context.set("replyService", new ComponentImpl(serverSession2));
+        
+        String user1 = identity1.login("user", "user00", TideResponders.<String>noop()).get();
+        Assert.assertEquals("Logged in", "user", user1);
+        
+        String user2 = identity2.login("user", "user00", TideResponders.<String>noop()).get();
+        Assert.assertEquals("Logged in", "user", user2);
+        
         final CountDownLatch waitForSubscribe = new CountDownLatch(1);
         final boolean[] subscribed = new boolean[1];
-        consumer.subscribe(new ResultIssuesResponseListener() {
+        consumer1.subscribe(new ResultIssuesResponseListener() {
             @Override
             public void onIssue(IssueEvent event) {
                 waitForSubscribe.countDown();
             }
-
+            
             @Override
             public void onResult(ResultEvent event) {
                 subscribed[0] = true;
                 waitForSubscribe.countDown();
             }
         });
-        consumer.addMessageListener(new TopicMessageListener() {
+        
+        final TopicMessageListener messageListener = new TopicMessageListener() {
             @Override
             public void onMessage(TopicMessageEvent event) {
                 event.reply("Hello " + event.getMessage().getData());
             }
-        });
+        };
+        
+        consumer1.addMessageListener(messageListener);
         waitForSubscribe.await(15000, TimeUnit.MILLISECONDS);
-
-        Assert.assertTrue("Consumer subscribed", consumer.isSubscribed());
-
-        String reply = (String)replyService.call("requestReply", "bob").get();
-        Assert.assertEquals("Hello bob", reply);
-
-        consumer.unsubscribe().get();
-
+        
+        Assert.assertTrue("Consumer subscribed", consumer1.isSubscribed());
+        
+        String name = "bob";
+        String reply = (String)replyService2.call("requestReply", name).get();
+        Assert.assertEquals("Hello " + name, reply);
+        
+        consumer1.removeMessageListener(messageListener);
+        consumer1.unsubscribe().get();
+        
         final CountDownLatch waitForLogout = new CountDownLatch(1);
-        identity.logout(new TideResponder<Void>() {
+        identity1.logout(new TideResponder<Void>() {
             @Override
             public void result(TideResultEvent<Void> event) {
                 waitForLogout.countDown();
@@ -155,7 +166,8 @@ public class TestMessagingReply {
             }
         });
         waitForLogout.await(10000, TimeUnit.MILLISECONDS);
-
-        serverSession.stop();
+        
+        serverSession1.stop();
+        serverSession2.stop();
     }
 }

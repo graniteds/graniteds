@@ -25,7 +25,9 @@ import java.util.Map;
 
 import javax.naming.InitialContext;
 
+import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.service.ExtendedServiceExceptionHandler;
 import org.granite.messaging.service.ServiceException;
@@ -74,9 +76,9 @@ public class EjbServiceFactory extends ServiceFactory {
         else
             super.configure(properties);
         
-        GraniteContext graniteContext = GraniteContext.getCurrentInstance();
-        graniteContext.getGraniteConfig().registerExceptionConverter(PersistenceExceptionConverter.class);
-        graniteContext.getGraniteConfig().registerExceptionConverter(EJBAccessExceptionConverter.class);
+        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        config.registerExceptionConverter(PersistenceExceptionConverter.class);
+        config.registerExceptionConverter(EJBAccessExceptionConverter.class);
         
         this.lookup = properties.get("lookup");
     }
@@ -89,7 +91,7 @@ public class EjbServiceFactory extends ServiceFactory {
 
         GraniteContext context = GraniteContext.getCurrentInstance();
         Map<String, Object> cache = context.getSessionMap();
-        Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
+        Destination destination = ((ServicesConfig)context.getServicesConfig()).findDestinationById(messageType, destinationId);
         String key = TideServiceInvoker.class.getName() + '.' + destinationId;
 
         return getServiceInvoker(cache, destination, key);

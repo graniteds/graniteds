@@ -42,7 +42,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.granite.clustering.DistributedDataFactory;
+import org.granite.config.api.AliasRegistryConfig;
+import org.granite.config.api.ConfigurableFactory;
 import org.granite.config.api.Configuration;
+import org.granite.config.api.GraniteConfigException;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.AliasRegistry;
@@ -62,6 +65,7 @@ import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.io.util.externalizer.LongExternalizer;
 import org.granite.messaging.amf.io.util.externalizer.MapExternalizer;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
+import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.messaging.reflect.Reflection;
 import org.granite.messaging.service.DefaultMethodMatcher;
@@ -81,8 +85,8 @@ import org.xml.sax.SAXException;
 /**
  * @author Franck WOLFF
  */
-public class GraniteConfig implements ScannedItemHandler {
-
+public class GraniteConfig implements ConvertersConfig, AliasRegistryConfig, AMF3Config, ExternalizersConfig, ScannedItemHandler {
+	
 	public enum JMF_EXTENSIONS_MODE {
 		PREPPEND,
 		APPEND,
@@ -161,6 +165,9 @@ public class GraniteConfig implements ScannedItemHandler {
     
     // JMF reflection.
     private Reflection jmfReflection = null;
+    
+    // JMF
+    private SharedContext sharedContext;
     
     // Java descriptors configuration.
     private final ConcurrentHashMap<String, Class<? extends JavaClassDescriptor>> javaDescriptorsByType
@@ -935,6 +942,14 @@ public class GraniteConfig implements ScannedItemHandler {
     	return aliasRegistry;
     }
     
+    public void setSharedContext(SharedContext sharedContext) {
+    	this.sharedContext = sharedContext;
+    }
+    
+    public SharedContext getSharedContext() {
+    	return sharedContext;
+    }
+    
     /**
      * Read custom class exception converters
      * Converter must have 'type' attribute
@@ -1025,9 +1040,10 @@ public class GraniteConfig implements ScannedItemHandler {
     ///////////////////////////////////////////////////////////////////////////
     // Other helpers.
 
-	private <T> T getElementByType(
+	@SuppressWarnings("unchecked")
+	private <T, C extends Config> T getElementByType(
         String type,
-        ConfigurableFactory<T> factory,
+        ConfigurableFactory<T, C> factory,
         ConcurrentHashMap<String, T> elementsByType,
         Map<String, String> elementsByInstanceOf,
         Map<String, String> elementsByAnnotatedWith,
@@ -1055,7 +1071,7 @@ public class GraniteConfig implements ScannedItemHandler {
                 try {
                     Class<Annotation> annotationClass = TypeUtil.forName(annotation, Annotation.class);
                     if (typeClass.isAnnotationPresent(annotationClass)) {
-                        element = factory.getInstance(entry.getValue(), this);
+                        element = factory.getInstance(entry.getValue(), (C)this);
                         break;
                     }
                 } catch (Exception e) {
@@ -1070,7 +1086,7 @@ public class GraniteConfig implements ScannedItemHandler {
 	            try {
 	                Class<?> instanceOfClass = TypeUtil.forName(instanceOf);
 	                if (instanceOfClass.isAssignableFrom(typeClass)) {
-	                    element = factory.getInstance(entry.getValue(), this);
+	                    element = factory.getInstance(entry.getValue(), (C)this);
 	                    break;
 	                }
 	            } catch (Exception e) {
@@ -1080,7 +1096,7 @@ public class GraniteConfig implements ScannedItemHandler {
         }
 
         if (NULL == element)
-            element = factory.getInstanceForBean(scannedConfigurables, typeClass, this);
+            element = factory.getInstanceForBean(scannedConfigurables, typeClass, (C)this);
 
         T previous = elementsByType.putIfAbsent(type, element);
         if (previous != null)

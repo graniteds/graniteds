@@ -11,12 +11,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.granite.client.persistence.collection.PersistentCollection;
-import org.granite.client.tide.PropertyHolder;
 import org.granite.client.tide.data.impl.ChangeEntityRef;
 import org.granite.client.tide.data.impl.ChangeProxy;
 import org.granite.client.tide.data.impl.ObjectUtil;
 import org.granite.client.tide.data.spi.EntityRef;
 import org.granite.client.tide.data.spi.MergeContext;
+import org.granite.client.util.PropertyHolder;
 import org.granite.logging.Logger;
 import org.granite.tide.data.Change;
 import org.granite.tide.data.ChangeRef;

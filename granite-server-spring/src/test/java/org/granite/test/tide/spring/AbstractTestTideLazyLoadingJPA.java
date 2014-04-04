@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.test.tide.data.Person;
@@ -61,7 +62,7 @@ public class AbstractTestTideLazyLoadingJPA extends AbstractTideTestCase {
 		
         Object result = initializeObject(person, new String[] { "contacts" });
         
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        ClassGetter classGetter = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getClassGetter();
         Assert.assertTrue("Collection initialized", classGetter.isInitialized(result, "contacts", null));
         
         checkSessionsClosed();

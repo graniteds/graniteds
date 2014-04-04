@@ -28,7 +28,6 @@ import org.granite.gravity.ChannelFactory;
 import org.granite.gravity.DefaultGravity;
 import org.granite.gravity.GravityConfig;
 import org.granite.gravity.Subscription;
-import org.granite.messaging.jmf.SharedContext;
 import org.granite.util.UUIDUtil;
 
 import com.google.appengine.api.memcache.Expiration;
@@ -53,8 +52,8 @@ public class GAEGravity extends DefaultGravity {
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
 
-    public GAEGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig, SharedContext sharedContext) {
-    	super(gravityConfig, servicesConfig, graniteConfig, sharedContext);
+    public GAEGravity(GravityConfig gravityConfig, ServicesConfig servicesConfig, GraniteConfig graniteConfig) {
+    	super(gravityConfig, servicesConfig, graniteConfig);
     }
     
 

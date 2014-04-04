@@ -29,7 +29,5 @@ package org.granite.tide.async;
  */
 public interface AsyncPublisher {
     
-    public void initThread();
-    
     public void publishMessage(String sessionId, Object eventResult);
 }

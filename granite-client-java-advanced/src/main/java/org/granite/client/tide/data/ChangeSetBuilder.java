@@ -51,7 +51,6 @@ import org.granite.tide.data.ChangeRef;
 import org.granite.tide.data.ChangeSet;
 import org.granite.tide.data.CollectionChange;
 import org.granite.tide.data.CollectionChanges;
-import org.granite.tide.data.DataUtils;
 
 /**
  * 	ChangeSetBuilder is a utility class that builds a ChangeSet for an existing dirty context
@@ -238,11 +237,11 @@ public class ChangeSetBuilder {
 
                         List<Object[]> diffOps = null;
                         if (v instanceof Map<?, ?>)
-                            diffOps = DataUtils.diffMaps(DataUtils.convertMapSnapshot((List<Object[]>)collSnapshot), (Map<?, ?>)v);
+                            diffOps = Utils.diffMaps(Utils.convertMapSnapshot((List<Object[]>)collSnapshot), (Map<?, ?>)v);
                         else if (v instanceof List<?>)
-                            diffOps = DataUtils.diffLists(collSnapshot, (List<?>)v);
+                            diffOps = Utils.diffLists(collSnapshot, (List<?>)v);
                         else
-                            diffOps = DataUtils.diffColls(collSnapshot, (Collection<?>)v);
+                            diffOps = Utils.diffColls(collSnapshot, (Collection<?>)v);
 
                         CollectionChange[] collectionChanges = new CollectionChange[diffOps.size()];
                         int idx = 0;

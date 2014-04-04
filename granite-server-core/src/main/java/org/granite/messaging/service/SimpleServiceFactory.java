@@ -25,6 +25,7 @@ import flex.messaging.messages.RemotingMessage;
 
 import org.granite.config.flex.Destination;
 import org.granite.config.flex.DestinationRemoveListener;
+import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 
 import java.util.Collections;
@@ -46,7 +47,7 @@ public class SimpleServiceFactory extends ServiceFactory implements DestinationR
         String destinationId = request.getDestination();
 
         GraniteContext context = GraniteContext.getCurrentInstance();
-        Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
+        Destination destination = ((ServicesConfig)context.getServicesConfig()).findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);
 

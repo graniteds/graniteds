@@ -28,6 +28,7 @@ import java.io.ObjectOutput;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.granite.config.AMF3Config;
 import org.granite.context.GraniteContext;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -46,11 +47,11 @@ public class TestTypedMap extends AbstractTestExternalizer {
 		map.put("tata", new String[] { "tata" });
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);
-		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
 		out.writeObject(map);
 		
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(bais);
+		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(bais);
 		Object obj = in.readObject();
 		Assert.assertEquals("Map size", 2, ((Map<?, ?>)obj).size());
 		Assert.assertTrue("Map type", ((Map<?, ?>)obj).get("toto").getClass().getComponentType().equals(String.class));

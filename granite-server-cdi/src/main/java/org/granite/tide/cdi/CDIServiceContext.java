@@ -49,6 +49,7 @@ import javax.inject.Inject;
 import javax.persistence.Entity;
 import javax.servlet.http.HttpSession;
 
+import org.granite.config.ConvertersConfig;
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
@@ -590,7 +591,7 @@ public class CDIServiceContext extends TideServiceContext {
 	                        if (bean != null) {
 	                            Method setter = Reflections.getSetterMethod(bean.getClass(), path[path.length-1]);
 	                            Type type = setter.getParameterTypes()[0];
-	                            value = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters().convert(update.getValue(), type);
+	                            value = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getConverters().convert(update.getValue(), type);
 	                            // Merge entities into current persistent context if needed
 	                            value = mergeExternal(value, previous);
 	                            Reflections.invoke(setter, bean, value);
@@ -639,7 +640,7 @@ public class CDIServiceContext extends TideServiceContext {
         	TideInvocation.get().lock();
 	        	
 	        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
-	        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+	        ClassGetter classGetter = ((GraniteConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getClassGetter();
 	        
 	        for (Map.Entry<ContextResult, Boolean> me : getResultsEval().entrySet()) {
 	            if (!me.getValue())

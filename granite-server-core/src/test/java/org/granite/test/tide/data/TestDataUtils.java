@@ -27,7 +27,7 @@ import java.util.Random;
 
 import junit.framework.Assert;
 
-import org.granite.tide.data.DataUtils;
+import org.granite.tide.data.Utils;
 import org.junit.Test;
 
 @SuppressWarnings("deprecation")
@@ -51,7 +51,7 @@ public class TestDataUtils {
 		newList.add(c3);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 		
@@ -78,7 +78,7 @@ public class TestDataUtils {
 		newList.add(c3);
 		newList.add(c2);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 		
@@ -104,7 +104,7 @@ public class TestDataUtils {
 		newList.add(c3);
 		newList.add(c3);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 		
@@ -131,7 +131,7 @@ public class TestDataUtils {
 		newList.add(c1);
 		newList.add(c2);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -152,7 +152,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c1);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -174,7 +174,7 @@ public class TestDataUtils {
 		newList.add(c1);
 		newList.add(c2);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 		
@@ -199,7 +199,7 @@ public class TestDataUtils {
 		newList.add(c1);
 		newList.add(c2);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 		
@@ -228,7 +228,7 @@ public class TestDataUtils {
 		newList.add(c4);
 		newList.add(c3);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -253,7 +253,7 @@ public class TestDataUtils {
 		newList.add(c1);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -275,7 +275,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c1);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -299,7 +299,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c1);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -329,7 +329,7 @@ public class TestDataUtils {
 		newList.add(c4);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -354,7 +354,7 @@ public class TestDataUtils {
 		newList.add(c1);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -379,7 +379,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -404,7 +404,7 @@ public class TestDataUtils {
 		newList.add(c4);
 		newList.add(c3);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -429,7 +429,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c1);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -454,7 +454,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c1);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -475,7 +475,7 @@ public class TestDataUtils {
 		newList.add(c3);
 		newList.add(c2);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -506,7 +506,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c1);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -534,7 +534,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c1);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -567,7 +567,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c1);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -598,7 +598,7 @@ public class TestDataUtils {
 		newList.add(c5);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -626,7 +626,7 @@ public class TestDataUtils {
 		newList.add(c6);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -657,7 +657,7 @@ public class TestDataUtils {
 		newList.add(c7);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -687,7 +687,7 @@ public class TestDataUtils {
 		newList.add(c1);
 		newList.add(c6);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -719,7 +719,7 @@ public class TestDataUtils {
 		newList.add(c3);
 		newList.add(c7);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -751,7 +751,7 @@ public class TestDataUtils {
 		newList.add(c7);
 		newList.add(c6);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -786,7 +786,7 @@ public class TestDataUtils {
 		newList.add(c7);
 		newList.add(c6);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -816,7 +816,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -846,7 +846,7 @@ public class TestDataUtils {
 		newList.add(c6);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -870,7 +870,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -898,7 +898,7 @@ public class TestDataUtils {
 		newList.add(c6);
 		newList.add(c2);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -929,7 +929,7 @@ public class TestDataUtils {
 		newList.add(c1);
 		newList.add(c7);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -961,7 +961,7 @@ public class TestDataUtils {
 		newList.add(c2);
 		newList.add(c7);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -991,7 +991,7 @@ public class TestDataUtils {
 		newList.add(c6);
 		newList.add(c7);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -1022,7 +1022,7 @@ public class TestDataUtils {
 		newList.add(c4);
 		newList.add(c3);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -1054,7 +1054,7 @@ public class TestDataUtils {
 		newList.add(c3);
 		newList.add(c8);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -1080,7 +1080,7 @@ public class TestDataUtils {
 		newList.add(c3);
 		newList.add(c4);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -1107,7 +1107,7 @@ public class TestDataUtils {
 		newList.add(c4);
 		newList.add(c5);
 		
-		List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+		List<Object[]> ops = Utils.diffLists(oldList, newList);
 		
 		checkListDiff(oldList, newList, ops);
 	}
@@ -1133,7 +1133,7 @@ public class TestDataUtils {
 			for (int i = 0; i < newSize; i++)
 				newList.add(c[random.nextInt(newSize)]);
 			
-			List<Object[]> ops = DataUtils.diffLists(oldList, newList);
+			List<Object[]> ops = Utils.diffLists(oldList, newList);
 			
 			checkListDiff(oldList, newList, ops);
 		}

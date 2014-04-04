@@ -60,7 +60,7 @@ public class MockChannelFactory implements ChannelFactory {
 
     public MockChannelFactory(Object context) {
     }
-
+    
     @Override
     public ContentType getContentType() {
         return null;

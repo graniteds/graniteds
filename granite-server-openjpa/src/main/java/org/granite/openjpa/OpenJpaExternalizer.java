@@ -51,7 +51,7 @@ import org.apache.openjpa.kernel.OpenJPAStateManager;
 import org.apache.openjpa.util.ProxyCollection;
 import org.apache.openjpa.util.ProxyMap;
 import org.granite.collections.BasicMap;
-import org.granite.config.GraniteConfig;
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converters;
@@ -120,7 +120,7 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
         }
         // Regular @Entity or @MappedSuperclass
         else {
-            GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+            ConvertersConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
 
             Converters converters = config.getConverters();
             ClassGetter classGetter = config.getClassGetter();
@@ -164,7 +164,7 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
     @Override
     public void writeExternal(Object o, ObjectOutput out) throws IOException, IllegalAccessException {
 
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        ClassGetter classGetter = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getClassGetter();
         Class<?> oClass = classGetter.getClass(o);
 
         if (!isRegularEntity(o.getClass()) && !isEmbeddable(o.getClass())) { // @Embeddable or others...

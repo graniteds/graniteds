@@ -33,6 +33,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 
+import org.granite.config.AMF3Config;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
@@ -119,12 +120,12 @@ public class TestHibernate3DataMerge {
 		close();
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(6000);
-		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
 		out.writeObject(entree);
 		
 		open();
 		
-		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(new ByteArrayInputStream(baos.toByteArray()));
+		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(new ByteArrayInputStream(baos.toByteArray()));
 		entree = (Entree)in.readObject();
 		
 		entree = save(entree);
@@ -174,12 +175,12 @@ public class TestHibernate3DataMerge {
 		close();
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(6000);
-		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
 		out.writeObject(entree);
 		
 		open();
 		
-		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(new ByteArrayInputStream(baos.toByteArray()));
+		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(new ByteArrayInputStream(baos.toByteArray()));
 		entree = (Entree)in.readObject();
 		
 		entree = save(entree);

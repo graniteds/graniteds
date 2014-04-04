@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.granite.clustering.DistributedData;
+import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 
@@ -91,7 +92,7 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 		if (graniteContext == null)
 			return;
 		
-		DistributedData gdd = graniteContext.getGraniteConfig().getDistributedDataFactory().getInstance();
+		DistributedData gdd = ((GraniteConfig)graniteContext.getGraniteConfig()).getDistributedDataFactory().getInstance();
 		if (gdd == null)
 			return;	// Session expired
 		

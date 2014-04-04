@@ -25,7 +25,9 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.service.ExtendedServiceExceptionHandler;
@@ -71,9 +73,9 @@ public class SpringServiceFactory extends ServiceFactory {
         else
             super.configure(properties);
         
-        GraniteContext graniteContext = GraniteContext.getCurrentInstance();
         try {
-        	graniteContext.getGraniteConfig().registerExceptionConverter(PersistenceExceptionConverter.class);
+            GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        	config.registerExceptionConverter(PersistenceExceptionConverter.class);
         }
         catch (Throwable t) {
 	    	log.info(t, "JPA exception converter not registered (JPA not found on classpath)");
@@ -91,7 +93,7 @@ public class SpringServiceFactory extends ServiceFactory {
         Map<String, Object> cache = context.getSessionMap(false);
         if (cache == null)
         	cache = context.getRequestMap();
-        Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
+        Destination destination = ((ServicesConfig)context.getServicesConfig()).findDestinationById(messageType, destinationId);
         if (destination == null)
             throw new ServiceException("No matching destination: " + destinationId);
         

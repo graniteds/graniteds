@@ -23,6 +23,7 @@ package org.granite.test.tide.spring;
 
 import javax.inject.Inject;
 
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.test.tide.data.Person;
@@ -63,7 +64,7 @@ public class AbstractTestTideLazyLoadingHibernate extends AbstractTideTestCase {
 		
         Person result = (Person)initializeObject(person, new String[] { "contacts" });
         
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        ClassGetter classGetter = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getClassGetter();
         Assert.assertTrue("Person initialized", classGetter.isInitialized(null, null, result));
         Assert.assertTrue("Collection initialized", classGetter.isInitialized(result, "contacts", result.getContacts()));
         

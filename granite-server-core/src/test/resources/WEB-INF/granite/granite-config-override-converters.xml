@@ -34,7 +34,7 @@
         <converter type="org.granite.messaging.amf.io.convert.impl.Collection2Array" />
         <converter type="org.granite.messaging.amf.io.convert.impl.Array2Array" />
         <converter type="org.granite.messaging.amf.io.convert.impl.Array2Collection" />
-	    <converter type="org.granite.test.config.TestDateConverter" />
+	    <converter type="org.granite.test.config.CustomDateConverter" />
         <converter type="org.granite.messaging.amf.io.convert.impl.Date2Date" />
         <converter type="org.granite.messaging.amf.io.convert.impl.Map2Map" />
         <converter type="org.granite.messaging.amf.io.convert.impl.String2CharArray" />

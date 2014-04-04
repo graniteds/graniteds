@@ -378,6 +378,52 @@ configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith
 	}
 }
 
+// Common project
+// Minimal config + common classes for client and server
+project('granite-common') {
+
+	description = 'GraniteDS Common library'
+	
+	dependencies {
+		compile 'log4j:log4j:1.2.17',
+			'org.slf4j:slf4j-api:1.7.0'
+	}	
+}
+
+// Common project
+// Common classes for Tide client and server
+project('granite-common-advanced') {
+
+	description = 'GraniteDS Common Advanced library'
+	
+	dependencies {
+		compile 'log4j:log4j:1.2.17',
+			'org.slf4j:slf4j-api:1.7.0'
+	}
+}
+
+// AMF Serialization implementation
+project('granite-amf') {
+	
+	description = 'GraniteDS AMF Serialization library'
+	
+	dependencies {
+		compile project(':granite-common')
+	}
+}
+
+// JMF Serialization implementation
+project('granite-jmf') {
+	
+	description = 'GraniteDS JMF Serialization library'
+	
+	dependencies {
+		compile project(':granite-common')
+		
+		testCompile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+	}
+}
+
 // Core project
 // AMF/JMF Serialization + Remoting + Gravity + Tide server-side data management
 project('granite-server-core') {
@@ -399,6 +445,34 @@ project('granite-server-core') {
 		compile 'javax.transaction:transaction-api:1.1-rev-1'
 		compile 'javax.enterprise:cdi-api:1.0-SP4'					// Required for @NonBinding annotation on @DataEnabled
     }
+
+	sourceSets {
+		main {
+			java {
+				source project(':granite-common').sourceSets.main.java
+				source project(':granite-common-advanced').sourceSets.main.java
+				source project(':granite-amf').sourceSets.main.java
+				source project(':granite-jmf').sourceSets.main.java
+			}
+			resources {
+				source project(':granite-common').sourceSets.main.resources
+				source project(':granite-common-advanced').sourceSets.main.java
+				source project(':granite-amf').sourceSets.main.resources
+				source project(':granite-jmf').sourceSets.main.resources
+			}
+		}
+	}
+	
+	javadoc {
+		source = sourceSets.main.java		// Redefine here so filter is applied
+	}
+	
+	jar {
+		metaInf {
+			from 'LICENSE.txt'
+		}
+	}
+
 }
 
 // Servlet 3 Integration for Gravity async I/O and auto configuration
@@ -626,6 +700,19 @@ project('granite-server-activemq') {
 		compile project(':granite-server-core')
 	}
 }
+
+//// Hazelcast integration
+//project('granite-server-hazelcast') {
+//	
+//	description = 'GraniteDS Hazelcast integration server library'
+//	
+//	dependencies {
+//		compile 'com.hazelcast:hazelcast:3.2'
+//		
+//		compile project(':granite-server-core')
+//	}
+//}
+
 
 def coreProjects = [
         ':granite-server-core',
@@ -1156,6 +1243,7 @@ project('granite-server-hibernate') {
 		testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
 		testCompile 'com.h2database:h2:1.3.173'
+		testCompile project(':granite-jmf').sourceSets.test.output		
 		testCompile project(':granite-server-core').sourceSets.test.output
 		testCompile(project(':granite-server-spring')) { transitive = false }
 		
@@ -1199,6 +1287,7 @@ project('granite-server-hibernate4') {
 		testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
 		testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
 		testCompile 'com.h2database:h2:1.3.173'
+		testCompile project(':granite-jmf').sourceSets.test.output		
 		testCompile project(':granite-server-core').sourceSets.test.output
 		testCompile(project(':granite-server-spring')) { transitive = false }
 		
@@ -1641,6 +1730,11 @@ project('granite-client-flex45-tests') {
 }
 
 
+List<String> clientResourceExcludes = [
+	'org/granite/config/granite-config.xml'
+]
+
+
 // Java client library
 project('granite-client-java') {
     description = 'GraniteDS Java client'
@@ -1663,8 +1757,7 @@ project('granite-client-java') {
 
     dependencies {
 
-		// Dependencies from granite-core
-		compile 'javax.servlet:javax.servlet-api:3.0.1'				// Should use 2.5 but 3.0 required by ServletGraniteContext.BasicRequest
+		// Dependencies from granite-common
 		compile 'log4j:log4j:1.2.17'
 
         compile 'org.apache.httpcomponents:httpasyncclient:4.0.1',
@@ -1684,10 +1777,10 @@ project('granite-client-java') {
         compile 'org.glassfish.tyrus:tyrus-client:1.4'
 
         compile files('lib/jetty-util-89.jar')     // Use custom merged jar to compile both Jetty 8 and Jetty 9 websocket clients
-
+		
         testRuntime 'org.slf4j:slf4j-api:1.7.5',
                 'org.slf4j:slf4j-log4j12:1.7.5'
-
+				
         testTyrusClientRuntime 'org.glassfish.tyrus:tyrus-container-grizzly-client:1.4'
 
         testJetty8ClientRuntime 'org.eclipse.jetty:jetty-websocket:8.1.14.v20131031',
@@ -1765,75 +1858,38 @@ project('granite-client-java') {
         testGlassFishv4Runtime(project(':granite-server-eclipselink')) { transitive = false }
     }
 	
-	List<String> javaExcludes = [ 
-		'org/granite/clustering/*Session*.java',
-		'org/granite/clustering/TransientReferenceHolder*.java',
-		'org/granite/config/Abstract*.java',
-		'org/granite/config/Servlet*.java',
-		'org/granite/config/ConfigProvider*.java',
-		'org/granite/config/*Listener*.java',
-		'org/granite/config/flex/Servlet*.java',
-		'org/granite/gravity/**',
-		'org/granite/tide/IUID*.java',
-		'org/granite/tide/TidePersistence*.java',
-		'org/granite/tide/TideService*.java',
-		'org/granite/tide/TideTransaction*.java',
-		'org/granite/tide/annotations/*.java',
-		'org/granite/tide/async/*.java',
-		'org/granite/tide/data/*.java',
-		'org/granite/tide/util/*.java',
-		'org/granite/tide/simple/*.java',
-        'org/granite/tide/pojo/*.java',
-        'org/granite/tide/security/*.java',
-		'org/granite/tide/validators/*.java',
-		'org/granite/messaging/amf/process/*Processor.java',
-		'org/granite/messaging/amf/io/convert/impl/GAE*.java',
-		'org/granite/messaging/persistence/*Externalizable*.java',
-		'org/granite/messaging/service/security/AbstractSecurityService.java',
-		'org/granite/messaging/service/security/GlassFish*.java',
-		'org/granite/messaging/service/security/Jetty*.java',
-		'org/granite/messaging/service/security/Tomcat*.java',
-		'org/granite/messaging/service/security/WebLogic*.java',
-		'org/granite/messaging/service/Abstract*.java',
-		'org/granite/messaging/service/ServiceFactory*.java',
-		'org/granite/messaging/service/ServiceInvoker*.java',
-		'org/granite/messaging/service/Simple*.java',
-		'org/granite/messaging/service/DefaultServiceExceptionHandler*.java',
-		'org/granite/messaging/service/ExtendedServiceExceptionHandler*.java',
-		'org/granite/messaging/webapp',
-		'org/granite/messaging/webapp/**/*.java',
-		'org/granite/util/Entity.java',
-		'org/granite/util/Servlet*.java',
-		'org/granite/jmx',
-		'org/granite/jmx/*.java',
-		'org/granite/scan/VFS*.java' 
-	]
-	
-	List<String> resourceExcludes = [
-		'org/granite/config/granite-config.xml'
-	]
-	
 	sourceSets {
 		main {
 			java {
-				source project(':granite-server-core').sourceSets.main.java
-				
-				// Exclude for eclipse
-				exclude javaExcludes
-			}			
+				source project(':granite-common').sourceSets.main.java
+				source project(':granite-amf').sourceSets.main.java
+				source project(':granite-jmf').sourceSets.main.java
+			}
 			resources {
-				source project(':granite-server-core').sourceSets.main.resources
+				source project(':granite-common').sourceSets.main.resources
+				source project(':granite-amf').sourceSets.main.resources
+				source project(':granite-jmf').sourceSets.main.resources
 				
-				// Exclude for eclipse
-				exclude resourceExcludes
+				exclude clientResourceExcludes
+			}
+		}
+		
+		compact {
+			java {
+				source project(':granite-common').sourceSets.main.java
+				source project(':granite-jmf').sourceSets.main.java
+				srcDir 'src/main/java'
+			}
+			resources {
+				source project(':granite-common').sourceSets.main.resources
+				source project(':granite-jmf').sourceSets.main.resources
+				srcDir 'src/main/resources'
 			}
 		}
 	}
 	
 	// For some reasons excludes must be applied on filter after the sourceSets definitions 
-	sourceSets.main.java.filter.exclude javaExcludes
-	
-	sourceSets.main.resources.filter.exclude resourceExcludes
+	sourceSets.main.resources.filter.exclude clientResourceExcludes
 	
 	javadoc {
 		source = sourceSets.main.java		// Redefine here so filter is applied
@@ -1966,7 +2022,7 @@ project('granite-client-java') {
             + project.configurations.testJetty9ClientRuntime + project.configurations.testTyrusClientRuntime + project.configurations.testJetty9Runtime)
     }
 
-    task testGlassFishv31(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-ejb:jar', ':granite-server-glassfishv3:jar' ]) {
+    task testGlassFishv31(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-ejb:jar', ':granite-server-glassfishv3:jar', ':granite-server-eclipselink:jar', ':granite-server-beanvalidation:jar' ]) {
         systemProperties = [
                 'container.className' : 'org.granite.test.container.glassfishv31.EmbeddedGlassFishv31',
                 'channel.types' : 'websocket-std-jetty9'    // long-polling fails randomly on GF 3.1
@@ -1978,13 +2034,13 @@ project('granite-client-java') {
         workingDir = rootDir
         reports.junitXml.destination = new File(buildDir, 'test-results/glassfishv31')
         reports.html.destination = new File(buildDir, 'reports/tests/glassfishv31')
-
+		
         // Add GlassFish jars to the classpath (excluding jar from client compile classpath)
         classpath = (project.sourceSets.test.runtimeClasspath.filter(runtimeExcludes) + project.configurations.testJetty9ClientRuntime
                 + project.configurations.testGlassFishv31RuntimePatch + project.configurations.testGlassFishv31Runtime)
     }
-
-    task testGlassFishv4JWS(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-ejb:jar', ':granite-server-glassfishv3:jar' ]) {
+	
+    task testGlassFishv4JWS(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-ejb:jar', ':granite-server-glassfishv3:jar', ':granite-server-eclipselink:jar', ':granite-server-beanvalidation:jar' ]) {
         systemProperties = [
                 'container.className' : 'org.granite.test.container.glassfishv31.EmbeddedGlassFishv4JWS',
                 'channel.types' : 'long-polling,websocket-std-jetty9'
@@ -2105,7 +2161,18 @@ project('granite-client-java-advanced') {
         testGlassFishv4Runtime project(':granite-server-glassfishv3').sourceSets.test.output
         testGlassFishv4Runtime(project(':granite-server-eclipselink')) { transitive = false }
 	}
-
+	
+	sourceSets {
+		main {
+			java {
+				source project(':granite-common-advanced').sourceSets.main.java
+			}
+			resources {
+				source project(':granite-common-advanced').sourceSets.main.resources
+			}
+		}
+	}
+	
     def runtimeExcludes = { f ->
         (!f.name.matches('jetty-.*\\.jar')
                 && !f.name.matches('websocket-.*\\.jar')
@@ -2235,7 +2302,7 @@ project('granite-client-java-advanced') {
         classpath = cpwildfly.filter { !it.name.startsWith('granite-server') && !it.name.startsWith('granite-client') }
     }
 
-    task testGlassFishv4(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-glassfishv3:jar' ]) {
+    task testGlassFishv4(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-glassfishv3:jar', ':granite-server-eclipselink:jar', ':granite-server-beanvalidation:jar' ]) {
         systemProperties = [
                 'container.className' : 'org.granite.test.container.glassfishv31.EmbeddedGlassFishv4JWS',
                 'websocket.transport.className' : 'org.granite.client.messaging.transport.jetty9.JettyWebSocketTransport'
@@ -2316,7 +2383,56 @@ project('granite-client-java-udp') {
 project('granite-client-javafx') {
 	
 	apply plugin: 'cobertura'
+	
+	dependencies {
+		
+		compile files(System.properties.'java.home' + '/lib/jfxrt.jar')
+		
+		// Dependencies from granite-common
+		compile 'log4j:log4j:1.2.17'
+		
+		compile group: 'org.eclipse.jetty', name: 'jetty-continuation', version: '8.1.14.v20131031', transitive: false
+		compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '8.1.14.v20131031', transitive: false
+		compile group: 'org.eclipse.jetty', name: 'jetty-io', version: '8.1.14.v20131031', transitive: false
+		compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '8.1.14.v20131031', transitive: false
+		compile group: 'org.eclipse.jetty', name: 'jetty-websocket', version: '8.1.14.v20131031', transitive: false
 
+		compile group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: '9.1.2.v20140210', transitive: false
+		compile group: 'org.eclipse.jetty.websocket', name: 'websocket-common', version: '9.1.2.v20140210', transitive: false
+		compile group: 'org.eclipse.jetty.websocket', name: 'websocket-api', version: '9.1.2.v20140210', transitive: false
+		compile group: 'org.eclipse.jetty.websocket', name: 'javax-websocket-client-impl', version: '9.1.2.v20140210', transitive: false
+
+		compile 'org.glassfish.tyrus:tyrus-client:1.4'
+
+		compile project(':granite-client-java').files('lib/jetty-util-89.jar')     // Use custom merged jar to compile both Jetty 8 and Jetty 9 websocket clients
+		
+		compile 'org.apache.httpcomponents:httpasyncclient:4.0.1',
+				'net.sf.extcos:extcos:0.3b'
+		
+        testCompile project(':granite-server-core')
+        testCompile project(':granite-server-hibernate')
+		
+		testCompile project(':granite-client-java').sourceSets.test.output
+	}
+	
+	// Include sources of advanced java client
+	sourceSets {
+		main {
+			java {
+				source project(':granite-client-java').sourceSets.main.java
+			}
+			resources {
+				source project(':granite-client-java').sourceSets.main.resources
+			}
+		}
+	}
+}
+
+// JavaFX client library
+project('granite-client-javafx-advanced') {
+	
+	apply plugin: 'cobertura'
+	
 	dependencies {
 		
 		compile 'javax.enterprise:cdi-api:1.0-SP4',
@@ -2324,19 +2440,18 @@ project('granite-client-javafx') {
 			'javax.validation:validation-api:1.0.0.GA',
 			'org.springframework:spring-beans:3.1.4.RELEASE',
 			'org.springframework:spring-context:3.1.4.RELEASE'
-			
+		
 		compile files(System.properties.'java.home' + '/lib/jfxrt.jar')
 		
-		compile project(':granite-client-java')
-		compile project(':granite-client-java-advanced')
-
+		compile project(':granite-client-javafx')
+		
 		testCompile 'org.hibernate:hibernate-core:3.6.10.Final',
 			'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
 			'antlr:antlr:2.7.7'
-        
-        testCompile project(':granite-server-core')
-        testCompile project(':granite-server-hibernate')
-			
+		
+		testCompile project(':granite-server-core')
+		testCompile project(':granite-server-hibernate')
+		
 		testCompile project(':granite-client-java').sourceSets.test.output
 		testCompile project(':granite-client-java-advanced').sourceSets.test.output
 	}
@@ -2354,23 +2469,55 @@ project('granite-client-javafx') {
 	}
 }
 
+
+List androidJavaExcludes = [
+	'org/granite/config/api/**',
+	'org/granite/config/flex/**',
+	'org/granite/collections/**',
+	'org/granite/context/**',
+	'org/granite/logging/impl/**',
+	'org/granite/messaging/persistence/*Externalizable*',
+	'org/granite/scan/**',
+	'org/granite/client/configuration/Client*',
+	'org/granite/client/configuration/Simple*',
+	'org/granite/client/messaging/alias/**',
+	'org/granite/client/messaging/amf/**',
+	'org/granite/client/messaging/channel/AMF*',
+	'org/granite/client/messaging/channel/amf/AMF*',
+	'org/granite/client/messaging/codec/AMF*',
+	'org/granite/client/messaging/codec/ClientJavaClassDescriptor*',
+	'org/granite/client/messaging/transport/jetty9/**',
+	'org/granite/client/messaging/transport/jetty/**',
+	'org/granite/client/messaging/transport/apache/**',
+	'org/granite/client/validation/Default*',
+	'org/granite/client/validation/Notifying*',
+	'org/granite/client/validation/Server*',
+	'org/granite/client/validation/Validation*',
+	'org/granite/client/tide/spring/**',
+	'org/granite/client/tide/cdi/**',
+	'org/granite/client/tide/validation/**'
+]
+
+List androidResourceExcludes = [
+	'org/granite/config/*.xsd',
+	'org/granite/config/*.dtd',
+	'org/granite/config/*.xml',
+	'org/granite/client/configuration/granite-config.xml'
+]
+
+
 // Android client library
 project('granite-client-android') {
 
 	dependencies {
 
-		compile 'javax.enterprise:cdi-api:1.0-SP4',
-			'javax.inject:javax.inject:1',
-			'javax.validation:validation-api:1.0.0.GA',
-			'org.springframework:spring-beans:3.1.4.RELEASE',
-			'org.springframework:spring-context:3.1.4.RELEASE',
-			'com.google.android:android:4.0.1.2'
-
+		compile 'com.google.android:android:4.0.1.2'
+		
+        compile 'org.jboss.spec.javax.websocket:jboss-websocket-api_1.0_spec:1.0.0.Final',
+			'org.glassfish.tyrus:tyrus-client:1.4'
+		
 		compile files('lib/android-async-http-1.4.3.jar')
 		
-		compile project(':granite-client-java')
-        compile project(':granite-server-core')
-
 		testCompile project(':granite-client-java').sourceSets.test.output
 		
 		testCompile 'org.hibernate:hibernate-core:3.6.10.Final',
@@ -2380,17 +2527,74 @@ project('granite-client-android') {
 		testCompile project(':granite-server-core'), project(':granite-server-hibernate')
 	}
 	
-	// Include sources of advanced java client
+	// Include sources of java client
+	sourceSets {
+		main {
+			java {
+				source project(':granite-common').sourceSets.main.java
+				source project(':granite-jmf').sourceSets.main.java
+				source project(':granite-client-java').sourceSets.compact.java
+				
+				exclude androidJavaExcludes
+			}
+			resources {
+				source project(':granite-common').sourceSets.main.resources
+				source project(':granite-jmf').sourceSets.main.resources
+				source project(':granite-client-java').sourceSets.compact.resources
+				
+				exclude androidResourceExcludes
+			}
+		}
+	}
+	
+	sourceSets.main.java.filter.exclude androidJavaExcludes
+	
+	sourceSets.main.resources.filter.exclude androidResourceExcludes
+}
+
+// Android advanced client library
+project('granite-client-android-advanced') {
+
+	dependencies {
+
+		compile 'javax.inject:javax.inject:1',
+			'com.google.android:android:4.0.1.2'
+		
+		compile 'org.jboss.spec.javax.websocket:jboss-websocket-api_1.0_spec:1.0.0.Final',
+			'org.glassfish.tyrus:tyrus-client:1.4'
+		
+		compile files('lib/android-async-http-1.4.3.jar')
+		
+		compile project(':granite-client-android')
+		
+		testCompile project(':granite-client-java').sourceSets.test.output
+		
+		testCompile 'org.hibernate:hibernate-core:3.6.10.Final',
+			'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
+			'antlr:antlr:2.7.7'
+			
+		testCompile project(':granite-server-core'), project(':granite-server-hibernate')
+	}
+	
+	// Include sources of java client
 	sourceSets {
 		main {
 			java {
 				source project(':granite-client-java-advanced').sourceSets.main.java
+				
+				exclude androidJavaExcludes
 			}
 			resources {
 				source project(':granite-client-java-advanced').sourceSets.main.resources
+				
+				exclude androidResourceExcludes
 			}
 		}
 	}
+	
+	sourceSets.main.java.filter.exclude androidJavaExcludes
+	
+	sourceSets.main.resources.filter.exclude androidResourceExcludes
 }
 
 

@@ -24,12 +24,11 @@ package org.granite.client.persistence.collection;
 import java.util.Collection;
 import java.util.Map;
 
-import org.granite.client.messaging.amf.persistence.AMFPersistentCollectionSnapshotFactory;
-import org.granite.client.messaging.jmf.persistence.JMFPersistentCollectionSnapshotFactory;
 import org.granite.messaging.jmf.ExtendedObjectInput;
 import org.granite.messaging.jmf.ExtendedObjectOutput;
 import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 import org.granite.util.ContentType;
+import org.granite.util.TypeUtil;
 
 /**
  * @author Franck WOLFF
@@ -44,13 +43,18 @@ public abstract class PersistentCollectionSnapshotFactory {
 
 	
 	public static PersistentCollectionSnapshotFactory newInstance(ContentType contentType) {
-		switch (contentType) {
-		case JMF_AMF:
-			return new JMFPersistentCollectionSnapshotFactory();
-		case AMF:
-			return new AMFPersistentCollectionSnapshotFactory();
-		default:
-			throw new UnsupportedOperationException("Unsupported content type: " + contentType);
+		try {
+			switch (contentType) {
+			case JMF_AMF:
+				return TypeUtil.newInstance("org.granite.client.messaging.jmf.persistence.JMFPersistentCollectionSnapshotFactory", PersistentCollectionSnapshotFactory.class);
+			case AMF:
+				return TypeUtil.newInstance("org.granite.client.messaging.amf.persistence.AMFPersistentCollectionSnapshotFactory", PersistentCollectionSnapshotFactory.class);
+			default:
+				throw new UnsupportedOperationException("Unsupported content type: " + contentType);
+			}
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Could not create collection snapshot factory: " + contentType, e);
 		}
 	}
 	

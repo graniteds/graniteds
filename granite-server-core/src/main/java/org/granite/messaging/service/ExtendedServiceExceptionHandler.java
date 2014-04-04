@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 
+import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
@@ -94,7 +95,7 @@ public class ExtendedServiceExceptionHandler extends DefaultServiceExceptionHand
 
         for (int i = causes.size()-1; i >= 0; i--) {
             Throwable cause = causes.get(i);
-	        for (ExceptionConverter ec : GraniteContext.getCurrentInstance().getGraniteConfig().getExceptionConverters()) {
+	        for (ExceptionConverter ec : ((GraniteConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getExceptionConverters()) {
                 if (ec.accepts(cause, t))
                     return ec.convert(cause, detail, extendedData);
             }

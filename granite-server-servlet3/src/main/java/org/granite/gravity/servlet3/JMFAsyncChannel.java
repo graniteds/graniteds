@@ -40,7 +40,7 @@ public class JMFAsyncChannel extends AsyncChannel {
 
 	@Override
 	public ObjectOutput newSerializer(GraniteContext context, OutputStream os) {
-		return new JMFSerializer(os, getGravity().getSharedContext());
+		return new JMFSerializer(os, getGravity().getGraniteConfig().getSharedContext());
 	}
 
 	@Override

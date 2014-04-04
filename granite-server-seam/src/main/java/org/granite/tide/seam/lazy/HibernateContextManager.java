@@ -23,6 +23,7 @@ package org.granite.tide.seam.lazy;
 
 import java.io.Serializable;
 
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.tide.TidePersistenceManager;
@@ -53,7 +54,7 @@ public class HibernateContextManager implements TidePersistenceManager {
 	 */
 	public Object attachEntity(Object entity, String[] propertyNames) {
 		Object attachedEntity = null;
-        ClassGetter getter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        ClassGetter getter = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getClassGetter();
         
 		try { 
 		    attachedEntity = fetchEntity(entity, propertyNames);

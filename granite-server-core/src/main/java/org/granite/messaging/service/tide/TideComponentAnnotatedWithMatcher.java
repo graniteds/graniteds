@@ -24,7 +24,7 @@ package org.granite.messaging.service.tide;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-import org.granite.config.GraniteConfigException;
+import org.granite.config.api.GraniteConfigException;
 import org.granite.util.TypeUtil;
 
 

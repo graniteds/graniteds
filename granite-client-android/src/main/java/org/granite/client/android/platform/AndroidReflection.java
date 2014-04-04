@@ -45,14 +45,4 @@ public class AndroidReflection extends Reflection {
 	public AndroidReflection(ClassLoader classLoader) {
 		super(classLoader, new AndroidBypassConstructorAllocator());
 	}
-	
-//	@Override
-//	protected FieldProperty newFieldProperty(Field field) {
-//		return new AndroidFieldProperty(field);
-//	}
-//
-//	@Override
-//	protected MethodProperty newMethodProperty(Method getter, Method setter, String name) {
-//		return new AndroidMethodProperty(getter, setter, name);
-//	}
 }

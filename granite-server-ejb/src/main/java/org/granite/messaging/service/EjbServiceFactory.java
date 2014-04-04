@@ -29,6 +29,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.util.XMap;
@@ -118,7 +119,7 @@ public class EjbServiceFactory extends ServiceFactory {
 
         // Not found, lookup and cache.
     	if (invoker == null) {
-            Destination destination = context.getServicesConfig().findDestinationById(
+            Destination destination = ((ServicesConfig)context.getServicesConfig()).findDestinationById(
             	request.getClass().getName(),
             	destinationId
             );

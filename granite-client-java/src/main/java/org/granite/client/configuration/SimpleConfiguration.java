@@ -25,8 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.granite.client.messaging.codec.MessagingCodec.ClientType;
-import org.granite.config.GraniteConfig;
-import org.granite.config.flex.ServicesConfig;
+import org.granite.config.Config;
 
 /**
  * @author Franck WOLFF
@@ -36,9 +35,9 @@ public class SimpleConfiguration implements Configuration {
 	private String graniteStdConfigPath = SimpleConfiguration.class.getPackage().getName().replace('.', '/') + "/granite-config.xml";
 	private String graniteConfigPath = null;
 	
-	private GraniteConfig graniteConfig = null;
-	private ServicesConfig servicesConfig = null;
-
+	private ClientGraniteConfig graniteConfig = null;
+	private Object servicesConfig = null;
+	
 	private ClientType clientType = ClientType.AS3;
 
     /**
@@ -91,9 +90,9 @@ public class SimpleConfiguration implements Configuration {
 			is = Thread.currentThread().getContextClassLoader().getResourceAsStream(graniteStdConfigPath);
 			if (graniteConfigPath != null)
 				is = Thread.currentThread().getContextClassLoader().getResourceAsStream(graniteConfigPath);
-			graniteConfig = new GraniteConfig(graniteStdConfigPath, is, null, null);
+			graniteConfig = new ClientGraniteConfig(graniteStdConfigPath, is, null, null);
 			postLoad(graniteConfig);
-			servicesConfig = new ServicesConfig(null, null, false);
+			servicesConfig = new ClientServicesConfig();
 		}
 		catch (Exception e) {
 			graniteConfig = null;
@@ -113,23 +112,25 @@ public class SimpleConfiguration implements Configuration {
      * Can be overriden by subclasses to do some post loading customization of the configuration
      * @param graniteConfig config object loaded
      */
-	protected void postLoad(GraniteConfig graniteConfig) {
+	protected void postLoad(ClientGraniteConfig graniteConfig) {
 	}
 
     /**
      * GraniteConfig object
      * @return GraniteConfig object
      */
-	public GraniteConfig getGraniteConfig() {
-		return graniteConfig;
+	@SuppressWarnings("unchecked")
+	public <C extends Config> C getGraniteConfig() {
+		return (C)graniteConfig;
 	}
 
     /**
      * ServicesConfig object
      * @return ServicesConfig object
      */
-	public ServicesConfig getServicesConfig() {
-		return servicesConfig;
+	@SuppressWarnings("unchecked")
+	public <C extends Config> C getServicesConfig() {
+		return (C)servicesConfig;
 	}
 
 }

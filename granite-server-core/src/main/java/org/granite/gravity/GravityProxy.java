@@ -29,7 +29,6 @@ import javax.servlet.ServletContext;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
-import org.granite.messaging.jmf.SharedContext;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.ErrorMessage;
@@ -64,9 +63,6 @@ public class GravityProxy implements Gravity {
     }
     public GraniteConfig getGraniteConfig() {
     	return getGravity().getGraniteConfig();
-    }
-    public SharedContext getSharedContext() {
-        return getGravity().getSharedContext();
     }
 
     ///////////////////////////////////////////////////////////////////////////

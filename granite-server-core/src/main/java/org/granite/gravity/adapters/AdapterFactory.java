@@ -30,6 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.granite.config.flex.Adapter;
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
@@ -79,7 +80,8 @@ public class AdapterFactory implements Serializable {
 
         log.debug(">> Finding serviceAdapter for messageType: %s and destinationId: %s", messageType, destinationId);
 
-        Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
+        ServicesConfig servicesConfig = context.getServicesConfig();
+        Destination destination = servicesConfig.findDestinationById(messageType, destinationId);
         if (destination == null) {
             log.debug(">> No destination found: %s", destinationId);
             return null;

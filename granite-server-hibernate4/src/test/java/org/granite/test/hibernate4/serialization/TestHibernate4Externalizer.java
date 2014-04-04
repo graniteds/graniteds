@@ -32,6 +32,7 @@ import java.util.Properties;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 
+import org.granite.config.AMF3Config;
 import org.granite.context.GraniteContext;
 import org.granite.context.SimpleGraniteContext;
 import org.granite.test.externalizers.AbstractTestJPAExternalizer;
@@ -78,13 +79,13 @@ public class TestHibernate4Externalizer extends AbstractTestJPAExternalizer {
         entityManager.close();
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
-        ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+        ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
         out.writeObject(e7);        
         GraniteContext.release();
         
         InputStream is = new ByteArrayInputStream(baos.toByteArray());
         gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
-        ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+        ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(is);
         Object obj = in.readObject();
         GraniteContext.release();
         

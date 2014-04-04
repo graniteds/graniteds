@@ -69,7 +69,7 @@ public abstract class ServiceInvoker<T extends ServiceFactory> {
         this.serviceExceptionHandler = factory.getServiceExceptionHandler();
 
         ServiceInvocationListener invocationListener =
-            GraniteContext.getCurrentInstance().getGraniteConfig().getInvocationListener();
+            ((GraniteConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getInvocationListener();
         if (invocationListener != null) {
             this.invocationListeners = new ArrayList<ServiceInvocationListener>();
             this.invocationListeners.add(invocationListener);

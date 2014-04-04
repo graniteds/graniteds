@@ -24,6 +24,7 @@ package org.granite.tide.simple;
 import java.util.Map;
 
 import org.granite.config.flex.Destination;
+import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceFactory;
@@ -49,7 +50,7 @@ public class SimpleServiceFactory extends ServiceFactory {
 
         GraniteContext context = GraniteContext.getCurrentInstance();
         Map<String, Object> cache = context.getApplicationMap();
-        Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
+        Destination destination = ((ServicesConfig)context.getServicesConfig()).findDestinationById(messageType, destinationId);
         String key = TideServiceInvoker.class.getName() + '.' + destinationId;
 
         return getServiceInvoker(cache, destination, key);

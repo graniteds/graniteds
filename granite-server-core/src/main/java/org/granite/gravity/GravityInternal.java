@@ -27,7 +27,6 @@ import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.adapters.ServiceAdapter;
 import org.granite.gravity.udp.UdpReceiverFactory;
-import org.granite.messaging.jmf.SharedContext;
 
 import flex.messaging.messages.Message;
 
@@ -42,7 +41,6 @@ public interface GravityInternal extends ShutdownListener {
     public GravityConfig getGravityConfig();
     public ServicesConfig getServicesConfig();
     public GraniteConfig getGraniteConfig();
-    public SharedContext getSharedContext();
 
     ///////////////////////////////////////////////////////////////////////////
     // Constants.

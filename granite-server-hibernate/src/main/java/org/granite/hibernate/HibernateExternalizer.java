@@ -45,7 +45,7 @@ import javax.persistence.Entity;
 import javax.persistence.MappedSuperclass;
 
 import org.granite.collections.BasicMap;
-import org.granite.config.GraniteConfig;
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converters;
@@ -178,7 +178,7 @@ public class HibernateExternalizer extends DefaultExternalizer {
         }
         // Regular @Entity or @MappedSuperclass
         else {
-            GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+        	ConvertersConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
 
             Converters converters = config.getConverters();
             ClassGetter classGetter = config.getClassGetter();
@@ -281,7 +281,7 @@ public class HibernateExternalizer extends DefaultExternalizer {
     @Override
     public void writeExternal(Object o, ObjectOutput out) throws IOException, IllegalAccessException {
 
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        ClassGetter classGetter = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getClassGetter();
         Class<?> oClass = classGetter.getClass(o);
 
         String detachedState = null;

@@ -117,7 +117,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
 
             if (ContentType.JMF_AMF.equals(contentType)) {
                 @SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
-                JMFDeserializer deserializer = new JMFDeserializer(is, gravity.getSharedContext());
+                JMFDeserializer deserializer = new JMFDeserializer(is, gravity.getGraniteConfig().getSharedContext());
                 messages = (Message[])deserializer.readObject();
             }
             else {
@@ -141,7 +141,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
 
             if (ContentType.JMF_AMF.equals(contentType)) {
                 @SuppressWarnings("all") // JDK7 warning (Resource leak: 'serializer' is never closed)...
-                        JMFSerializer serializer = new JMFSerializer(os, gravity.getSharedContext());
+                        JMFSerializer serializer = new JMFSerializer(os, gravity.getGraniteConfig().getSharedContext());
                 serializer.writeObject(messages);
             }
             else {

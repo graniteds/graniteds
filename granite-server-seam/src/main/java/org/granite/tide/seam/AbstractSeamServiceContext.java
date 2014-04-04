@@ -34,6 +34,7 @@ import java.util.Set;
 import javax.persistence.Entity;
 import javax.servlet.http.HttpSession;
 
+import org.granite.config.ConvertersConfig;
 import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.messaging.amf.io.util.ClassGetter;
@@ -180,10 +181,6 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
      * @param asyncContext saved context
      */
     public void setAsyncContext(AsyncContext asyncContext) {
-        AsyncPublisher asyncPublisher = getAsyncPublisher();
-        if (asyncPublisher != null)
-            asyncPublisher.initThread();
-        
         Contexts.getSessionContext().set("org.jboss.seam.security.identity", asyncContext.getIdentity());
         setSessionId(asyncContext.getSessionId());
         for (ContextResult resultEval : asyncContext.getResults()) {
@@ -625,7 +622,7 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
 	                        if (bean != null && path.length == 1 && dmsFieldNames != null && dmsFieldNames.contains(path[0])) {
 	                        	Field field = org.granite.util.Reflections.getField(bean.getClass(), path[0]);
 	                        	field.setAccessible(true);
-	                            value = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters().convert(update.getValue(), field.getType());
+	                            value = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getConverters().convert(update.getValue(), field.getType());
 	                            // Merge entities into current persistent context if needed
 	                            value = mergeExternal(value, previous);
 	                        	Reflections.set(field, bean, value);
@@ -644,7 +641,7 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
 	                        			// Ignore
 	                        		}
 	                        	}
-	                            value = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters().convert(update.getValue(), type);
+	                            value = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getConverters().convert(update.getValue(), type);
 	                            // Merge entities into current persistent context if needed
 	                            value = mergeExternal(value, previous);
 	                            Reflections.invoke(setter, bean, value);
@@ -740,7 +737,7 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
         
         List<String> exprs = new ArrayList<String>();
         GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
-        ClassGetter classGetter = GraniteContext.getCurrentInstance().getGraniteConfig().getClassGetter();
+        ClassGetter classGetter = config.getClassGetter();
         
         SeamInitializer.instance();
         

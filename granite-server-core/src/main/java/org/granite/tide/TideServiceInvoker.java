@@ -29,6 +29,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
+import org.granite.config.ConvertersConfig;
+import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
@@ -242,7 +244,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
             Set<Class<?>> componentClasses = instance != null ? tideContext.findComponentClasses(componentName, componentClass) : null;
             
             GraniteContext context = GraniteContext.getCurrentInstance();
-            if (instance != null && componentClasses != null && context.getGraniteConfig().isComponentTideEnabled(componentName, componentClasses, instance))
+            if (instance != null && componentClasses != null && ((GraniteConfig)context.getGraniteConfig()).isComponentTideEnabled(componentName, componentClasses, instance))
                 return tideContext.adjustInvokee(instance, componentName, componentClasses);
             
             if (instance != null)
@@ -295,7 +297,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         graniteContext.getRequestMap().put(TideServiceInvoker.class.getName(), this);
         
         if (componentName != null || componentClass != null) {
-	    	Converters converters = graniteContext.getGraniteConfig().getConverters();
+	    	Converters converters = ((ConvertersConfig)graniteContext.getGraniteConfig()).getConverters();
 	    	
 	    	Set<Class<?>> componentClasses = tideContext.findComponentClasses(componentName, componentClass);
 	    	for (Class<?> cClass : componentClasses) {

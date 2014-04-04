@@ -22,13 +22,14 @@
 package org.granite.gravity.gae;
 
 import org.granite.gravity.AbstractChannelFactory;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author William DRAI
  */
 public class GAEChannelFactory extends AbstractChannelFactory<GAEChannel> {
 	
-	public GAEChannelFactory(GAEGravity gravity) {
+	public GAEChannelFactory(GravityInternal gravity) {
 		super(gravity);
 	}
 

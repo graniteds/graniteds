@@ -28,6 +28,7 @@ import java.util.Date;
 import javax.servlet.http.HttpSession;
 
 import org.granite.clustering.DistributedData;
+import org.granite.config.GraniteConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageProcessor;
@@ -166,7 +167,7 @@ public abstract class AbstractSecurityService implements SecurityService {
      */
 	protected void endLogin(Object credentials, String charset) {
 		try {
-			DistributedData gdd = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory().getInstance();
+			DistributedData gdd = ((GraniteConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getDistributedDataFactory().getInstance();
 			if (gdd != null) {
 				gdd.setCredentials(credentials);
 				gdd.setCredentialsCharset(charset);
@@ -188,7 +189,7 @@ public abstract class AbstractSecurityService implements SecurityService {
 	 */
     protected boolean tryRelogin() {
     	try {
-			DistributedData gdd = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory().getInstance();
+			DistributedData gdd = ((GraniteConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getDistributedDataFactory().getInstance();
 			if (gdd != null) {
 				Object credentials = gdd.getCredentials();
 	        	if (credentials != null) {
@@ -216,7 +217,7 @@ public abstract class AbstractSecurityService implements SecurityService {
      */
 	protected void endLogout() {
 		try {
-			DistributedData gdd = GraniteContext.getCurrentInstance().getGraniteConfig().getDistributedDataFactory().getInstance();
+			DistributedData gdd = ((GraniteConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getDistributedDataFactory().getInstance();
 			if (gdd != null) {
 				gdd.removeCredentials();
 				gdd.removeCredentialsCharset();

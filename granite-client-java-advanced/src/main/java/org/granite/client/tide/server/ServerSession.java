@@ -63,10 +63,8 @@ import org.granite.client.messaging.RemoteService;
 import org.granite.client.messaging.ResultFaultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicAgent;
-import org.granite.client.messaging.channel.AMFChannelFactory;
 import org.granite.client.messaging.channel.ChannelBuilder;
 import org.granite.client.messaging.channel.ChannelFactory;
-import org.granite.client.messaging.channel.JMFChannelFactory;
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.channel.RemotingChannel;
 import org.granite.client.messaging.channel.SessionAwareChannel;
@@ -91,9 +89,10 @@ import org.granite.client.tide.Identity;
 import org.granite.client.tide.impl.FaultHandler;
 import org.granite.client.tide.impl.ResultHandler;
 import org.granite.client.validation.InvalidValue;
-import org.granite.config.GraniteConfig;
+import org.granite.config.ConvertersConfig;
 import org.granite.logging.Logger;
 import org.granite.util.ContentType;
+import org.granite.util.TypeUtil;
 
 
 /**
@@ -334,12 +333,12 @@ public class ServerSession implements ContextAware {
         return aliasRegistry;
     }
     
-	private GraniteConfig graniteConfig = null;
+	private ConvertersConfig convertersConfig = null;
 	
 	public Object convert(Object value, Type expectedType) {
-		if (contentType == ContentType.JMF_AMF || graniteConfig == null)
+		if (contentType == ContentType.JMF_AMF || convertersConfig == null)
 			return value;
-		return graniteConfig.getConverters().convert(value, expectedType);
+		return convertersConfig.getConverters().convert(value, expectedType);
 	}
 
     /**
@@ -360,7 +359,7 @@ public class ServerSession implements ContextAware {
 	            Configuration configuration = Platform.getInstance().newConfiguration();
 	            configuration.setClientType(ClientType.JAVA);
 	            configuration.load();
-	            graniteConfig = configuration.getGraniteConfig();
+	            convertersConfig = configuration.getGraniteConfig();
 	            channelFactory = constructor.newInstance(platformContext, configuration);
 	        }
 	        catch (NoSuchMethodException e) {
@@ -368,14 +367,25 @@ public class ServerSession implements ContextAware {
                 channelFactory = constructor.newInstance(platformContext);
 	        }	        
 	    }
-	    else if (contentType == ContentType.JMF_AMF)
-			channelFactory = new JMFChannelFactory(platformContext);
+	    else if (contentType == ContentType.JMF_AMF) {
+	        try {
+				channelFactory = (ChannelFactory)TypeUtil.newInstance("org.granite.client.messaging.channel.JMFChannelFactory", new Class<?>[] { Object.class }, new Object[] { platformContext });
+	        }
+	        catch (Exception e) {
+                throw new RuntimeException("Could not create JMFChannelFactory", e);
+	        }	        
+	    }
 		else {
 			Configuration configuration = Platform.getInstance().newConfiguration();
 			configuration.setClientType(ClientType.JAVA);
 			configuration.load();
-			graniteConfig = configuration.getGraniteConfig();
-			channelFactory = new AMFChannelFactory(platformContext, configuration);
+			convertersConfig = configuration.getGraniteConfig();
+	        try {
+	        	channelFactory = (ChannelFactory)TypeUtil.newInstance("org.granite.client.messaging.channel.AMFChannelFactory", new Class<?>[] { Object.class, Configuration.class }, new Object[] { platformContext, configuration });
+	        }
+	        catch (Exception e) {
+                throw new RuntimeException("Could not create AMFChannelFactory", e);
+	        }	        
 		}
         channelFactory.setAliasRegistry(aliasRegistry);
 		channelFactory.setScanPackageNames(packageNames);

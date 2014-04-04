@@ -52,8 +52,9 @@ import java.util.Set;
 import javafx.beans.value.ObservableValue;
 
 import org.granite.client.persistence.Id;
-import org.granite.client.tide.PropertyHolder;
 import org.granite.client.util.BeanUtil;
+import org.granite.client.util.PropertyHolder;
+import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converters;
@@ -78,7 +79,7 @@ public class JavaFXExternalizer extends DefaultExternalizer {
 
         if (fields == null) {
             PropertyDescriptor[] propertyDescriptors = BeanUtil.getProperties(clazz);
-            Converters converters = GraniteContext.getCurrentInstance().getGraniteConfig().getConverters();
+            Converters converters = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getConverters();
 
             fields = new ArrayList<Property>();
 

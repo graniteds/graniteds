@@ -32,7 +32,7 @@ import org.junit.Before;
 
 
 public class AbstractTestExternalizer {
-
+	
 	@Before
 	public void before() throws Exception {
 		GraniteConfig graniteConfig = new GraniteConfig(null, null, null, null);

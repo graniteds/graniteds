@@ -34,6 +34,7 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
+import org.granite.config.AMF3Config;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
@@ -93,13 +94,13 @@ public abstract class AbstractTestJDOExternalizer {
 		
 		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
-		ObjectOutput out = gc.getGraniteConfig().newAMF3Serializer(baos);
+		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
 		out.writeObject(e5);		
 		GraniteContext.release();
 		
 		InputStream is = new ByteArrayInputStream(baos.toByteArray());
 		gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
-		ObjectInput in = gc.getGraniteConfig().newAMF3Deserializer(is);
+		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(is);
 		Object obj = in.readObject();
 		GraniteContext.release();
 		

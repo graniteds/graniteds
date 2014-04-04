@@ -26,19 +26,13 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.granite.client.configuration.Configuration;
-import org.granite.client.configuration.SimpleConfiguration;
-import org.granite.client.messaging.ExtCosRemoteAliasScanner;
 import org.granite.client.messaging.RemoteAliasScanner;
-import org.granite.client.messaging.StandardRemoteAliasScanner;
 import org.granite.client.messaging.channel.ChannelType;
 import org.granite.client.messaging.transport.Transport;
-import org.granite.client.messaging.transport.apache.ApacheAsyncTransport;
-import org.granite.client.messaging.transport.jetty9.JettyStdWebSocketTransport;
-import org.granite.client.messaging.transport.jetty9.JettyWebSocketTransport;
 import org.granite.client.persistence.Persistence;
 import org.granite.logging.Logger;
 import org.granite.messaging.reflect.Reflection;
-import org.granite.scan.ServiceLoader;
+import org.granite.util.ServiceLoader;
 import org.granite.util.TypeUtil;
 
 /**
@@ -165,13 +159,18 @@ public class Platform {
 
 	public RemoteAliasScanner newRemoteAliasScanner() {
 		try {
-			return new ExtCosRemoteAliasScanner();
+			return TypeUtil.newInstance("org.granite.client.messaging.alias.ExtCosRemoteAliasScanner", RemoteAliasScanner.class);
 		}
 		catch (Throwable t) {
 			log.debug(t, "Extcos scanner not available, using classpath scanner");
 		}
 		
-		return new StandardRemoteAliasScanner();
+		try {
+			return TypeUtil.newInstance("org.granite.client.messaging.alias.StandardRemoteAliasScanner", RemoteAliasScanner.class);
+		}
+		catch (Throwable t) {
+			throw new RuntimeException("Could not create remote alias scanner", t);
+		}
 	}
 	
 	public Reflection getReflection() {
@@ -179,7 +178,12 @@ public class Platform {
 	}
 
 	public Configuration newConfiguration() {
-		return new SimpleConfiguration();
+		try {
+			return TypeUtil.newInstance("org.granite.client.configuration.SimpleConfiguration", Configuration.class);
+		}
+		catch (Throwable t) {
+			throw new RuntimeException("Could not create simple configuration", t);
+		}
 	}
 
     public String defaultChannelType() {
@@ -187,9 +191,14 @@ public class Platform {
     }
 
     public Transport newRemotingTransport() {
-        return new ApacheAsyncTransport();
+    	try {
+    		return TypeUtil.newInstance("org.granite.client.messaging.transport.apache.ApacheAsyncTransport", Transport.class);
+    	}
+    	catch (Exception e) {
+    		throw new RuntimeException("Could not create Apache transport");
+    	}
     }
-
+    
     public Transport newMessagingTransport() {
         return null;
     }
@@ -198,18 +207,18 @@ public class Platform {
         Map<String, Transport> transportMap = new HashMap<String, Transport>();
         try {
             TypeUtil.forName("org.eclipse.jetty.websocket.jsr356.JettyClientContainerProvider");
-            transportMap.put(ChannelType.WEBSOCKET, new JettyStdWebSocketTransport());
+            transportMap.put(ChannelType.WEBSOCKET, TypeUtil.newInstance("org.granite.client.messaging.transport.jetty9.JettyStdWebSocketTransport", Transport.class));
         }
         catch (Throwable e1) {
             try {
                 TypeUtil.forName("org.eclipse.jetty.websocket.client.WebSocketClient");
-                transportMap.put(ChannelType.WEBSOCKET, new JettyWebSocketTransport());
+                transportMap.put(ChannelType.WEBSOCKET, TypeUtil.newInstance("org.granite.client.messaging.transport.jetty9.JettyStdWebSocketTransport", Transport.class));
             }
             catch (Throwable e2) {
                 // Jetty 9 websocket client not found
                 try {
                     TypeUtil.forName("org.eclipse.jetty.websocket.WebSocketClientFactory");
-                    transportMap.put(ChannelType.WEBSOCKET, new org.granite.client.messaging.transport.jetty.JettyWebSocketTransport());
+                    transportMap.put(ChannelType.WEBSOCKET, TypeUtil.newInstance("org.granite.client.messaging.transport.jetty.JettyWebSocketTransport", Transport.class));
                 }
                 catch (Throwable e3) {
                     // Jetty 8 websocket client not found

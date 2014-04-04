@@ -36,6 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.granite.config.AMF3Config;
 import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.udp.UdpReceiver;
@@ -249,7 +250,7 @@ public abstract class AbstractChannel implements Channel {
 	}
 	
 	public ObjectOutput newSerializer(GraniteContext context, OutputStream os) {
-		return context.getGraniteConfig().newAMF3Serializer(os);
+		return ((AMF3Config)context.getGraniteConfig()).newAMF3Serializer(os);
 	}
 	
 	public String getSerializerContentType() {

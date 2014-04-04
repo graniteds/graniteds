@@ -36,7 +36,6 @@ import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.gravity.adapters.JMSServiceAdapter;
 import org.granite.messaging.jmf.DefaultSharedContext;
-import org.granite.messaging.jmf.SharedContext;
 import org.granite.spring.SpringGraniteConfig;
 import org.junit.After;
 import org.junit.Assert;
@@ -63,8 +62,8 @@ public class TestTideMessaging extends AbstractJUnit4SpringContextTests {
 	@Before
 	public void setup() throws Exception {
         GravityConfig gravityConfig = new GravityConfig(springConfig.getGraniteConfig());
-        SharedContext sharedContext = new DefaultSharedContext();
-		Gravity gravity = new DefaultGravityFactory().newGravity(gravityConfig, springConfig.getServicesConfig(), springConfig.getGraniteConfig(), sharedContext);
+        springConfig.getGraniteConfig().setSharedContext(new DefaultSharedContext());
+		Gravity gravity = new DefaultGravityFactory().newGravity(gravityConfig, springConfig.getServicesConfig(), springConfig.getGraniteConfig());
         gravity.start();
         servletContext.setAttribute(Gravity.class.getName(), gravity);
         SimpleGraniteContext.createThreadInstance(springConfig.getGraniteConfig(), springConfig.getServicesConfig(), new HashMap<String, Object>());

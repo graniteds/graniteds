@@ -26,6 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.granite.config.flex.Destination;
 import org.granite.config.flex.Factory;
+import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.util.TypeUtil;
@@ -52,7 +53,7 @@ public abstract class ServiceFactory {
 
         log.debug(">> Finding factoryId for messageType: %s and destinationId: %s", messageType, destinationId);
 
-        Destination destination = context.getServicesConfig().findDestinationById(messageType, destinationId);
+        Destination destination = ((ServicesConfig)context.getServicesConfig()).findDestinationById(messageType, destinationId);
         if (destination == null)
         	throw new ServiceException("Destination not found: " + destinationId);
         String factoryId = destination.getProperties().get("factory");
@@ -73,7 +74,7 @@ public abstract class ServiceFactory {
 
                 log.debug(">> No cached factory for: %s", factoryId);
 
-                Factory config = context.getServicesConfig().findFactoryById(factoryId);
+                Factory config = ((ServicesConfig)context.getServicesConfig()).findFactoryById(factoryId);
                 if (config == null)
                     config = getDefaultFactoryConfig();
                 try {

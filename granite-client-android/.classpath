@@ -5,7 +5,6 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
 	<classpathentry kind="src" path="/granite-client-java"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/granite-client-java-advanced"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/granite-server-core"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

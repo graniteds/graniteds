@@ -42,10 +42,12 @@ import java.io.ObjectOutput;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.granite.client.configuration.ClientGraniteConfig;
 import org.granite.client.configuration.Configuration;
 import org.granite.client.javafx.platform.SimpleJavaFXConfiguration;
 import org.granite.client.messaging.ClientAliasRegistry;
 import org.granite.client.messaging.codec.MessagingCodec.ClientType;
+import org.granite.config.AMF3Config;
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.SimpleGraniteContext;
@@ -56,7 +58,7 @@ import org.junit.Test;
 public class TestExternalizerMap {
 	
 	private ServicesConfig servicesConfig = null;
-	private GraniteConfig graniteConfigJavaFX = null;
+	private ClientGraniteConfig graniteConfigJavaFX = null;
 	private GraniteConfig graniteConfigHibernate = null;
 	
 
@@ -91,7 +93,7 @@ public class TestExternalizerMap {
 		
 		SimpleGraniteContext.createThreadInstance(graniteConfigJavaFX, servicesConfig, new HashMap<String, Object>(), ClientType.JAVA.toString());
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
-		ObjectInput in = graniteConfigJavaFX.newAMF3Deserializer(bais);
+		ObjectInput in = ((AMF3Config)graniteConfigJavaFX).newAMF3Deserializer(bais);
 		Object entity = in.readObject();
 		
 		Assert.assertTrue("Map type", entity instanceof Map);
@@ -113,7 +115,7 @@ public class TestExternalizerMap {
 		
 		SimpleGraniteContext.createThreadInstance(graniteConfigJavaFX, servicesConfig, new HashMap<String, Object>(), ClientType.JAVA.toString());
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
-		ObjectInput in = graniteConfigJavaFX.newAMF3Deserializer(bais);
+		ObjectInput in = ((AMF3Config)graniteConfigJavaFX).newAMF3Deserializer(bais);
 		Object entity = in.readObject();
 		
 		Assert.assertTrue("Map type", entity instanceof Map);
