@@ -276,7 +276,8 @@ class ExtLicensePlugin extends LicensePlugin {
 
 // Common configuration for all subprojects
 // signing + maven deployment
-configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith('-eclipse') && !it.name.endsWith('-tests') }) { subproject ->
+configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith('-eclipse') && !it.name.endsWith('-tests')
+	&& !it.name.startsWith('granite-common') && it.name != 'granite-amf' && it.name != 'granite-jmf' }) { subproject ->
 	
 	apply plugin: 'maven'
 	apply plugin: 'signing'
@@ -2426,6 +2427,10 @@ project('granite-client-javafx') {
 			}
 		}
 	}
+	
+	javadoc {
+		source = sourceSets.main.java		// Redefine here so filter is applied
+	}
 }
 
 // JavaFX client library
@@ -2466,6 +2471,10 @@ project('granite-client-javafx-advanced') {
 				source project(':granite-client-java-advanced').sourceSets.main.resources
 			}
 		}
+	}
+	
+	javadoc {
+		source = sourceSets.main.java		// Redefine here so filter is applied
 	}
 }
 
@@ -2546,10 +2555,14 @@ project('granite-client-android') {
 			}
 		}
 	}
-	
+
 	sourceSets.main.java.filter.exclude androidJavaExcludes
 	
 	sourceSets.main.resources.filter.exclude androidResourceExcludes
+	
+	javadoc {
+		source = sourceSets.main.java		// Redefine here so filter is applied
+	}
 }
 
 // Android advanced client library
@@ -2595,6 +2608,10 @@ project('granite-client-android-advanced') {
 	sourceSets.main.java.filter.exclude androidJavaExcludes
 	
 	sourceSets.main.resources.filter.exclude androidResourceExcludes
+	
+	javadoc {
+		source = sourceSets.main.java		// Redefine here so filter is applied
+	}
 }
 
 
