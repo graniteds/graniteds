@@ -3,16 +3,15 @@ import org.apache.tools.ant.filters.ReplaceTokens
 buildscript {
     repositories {
         mavenCentral()
-	mavenRepo name: 'JBoss Nexus', url: 'https://repository.jboss.org/nexus/content/groups/public'
-	mavenRepo name: 'Bintray Asciidoctor repo', url: 'http://dl.bintray.com/content/aalmiray/asciidoctor'
-	mavenRepo name: 'Bintray JCenter', url: 'http://jcenter.bintray.com'
+		mavenRepo name: 'Bintray Asciidoctor repo', url: 'http://dl.bintray.com/content/aalmiray/asciidoctor'
+		mavenRepo name: 'Bintray JCenter', url: 'http://jcenter.bintray.com'
     }
 	
     dependencies {
-	classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.6.0'
-	classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
+		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.6.0'
+		classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
         classpath group: 'org.gradlefx', name: 'gradlefx', version: '0.6.4'
-	classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.5.0'
+		classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.5.0'
     }
 }
 
@@ -77,6 +76,7 @@ configure(subprojects) {
 	
 	repositories {
 		mavenCentral()
+		mavenRepo name: 'JBoss Nexus', url: 'https://repository.jboss.org/nexus/content/groups/public'
         mavenLocal()
 	}
 }
