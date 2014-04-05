@@ -24,7 +24,7 @@
       </layout>
    </appender>
 
-    <logger name="org.granite.gravity.adapters.SimpleServiceAdapter">
+    <!--logger name="org.granite.gravity.adapters.SimpleServiceAdapter">
         <level value="DEBUG"/>
     </logger>
     <logger name="org.granite.gravity.websocket.AbstractWebSocketChannel">
@@ -41,7 +41,7 @@
     </logger>
     <logger name="org.granite.client.messaging">
         <level value="DEBUG"/>
-    </logger>
+    </logger-->
 
     <root>
       <priority value="INFO"/>
