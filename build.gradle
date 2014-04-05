@@ -276,8 +276,8 @@ class ExtLicensePlugin extends LicensePlugin {
 
 // Common configuration for all subprojects
 // signing + maven deployment
-configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith('-eclipse') && !it.name.endsWith('-tests')
-	&& !it.name.startsWith('granite-common') && it.name != 'granite-amf' && it.name != 'granite-jmf' }) { subproject ->
+configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith('-eclipse') && !it.name.endsWith('-tests') &&
+	!it.name.startsWith('granite-common') && it.name != 'granite-amf' && it.name != 'granite-jmf' }) { subproject ->
 	
 	apply plugin: 'maven'
 	apply plugin: 'signing'
