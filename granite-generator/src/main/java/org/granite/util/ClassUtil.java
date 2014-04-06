@@ -607,7 +607,19 @@ public abstract class ClassUtil {
                 else if (!setters.isEmpty()) {
                 	definedSetter = setters.get(0);
                 }
-
+                
+                if (definedSetter == null && !setters.isEmpty()) {
+                	definedSetter = setters.get(0);
+                	Class<?> propertyType = definedSetter.getParameterTypes()[0];
+                	
+                	for (Method getter : getters) {
+                		if (getter.getReturnType().equals(propertyType)) {
+                			definedGetter = getter;
+                			break;
+                		}
+                	}
+                }
+                
                 table.put("getter", definedGetter);
                 table.put("setter", definedSetter);
             }
