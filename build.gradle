@@ -392,18 +392,6 @@ project('granite-common') {
 	}	
 }
 
-// Common project
-// Common classes for Tide client and server
-project('granite-common-advanced') {
-
-	description = 'GraniteDS Common Advanced library'
-	
-	dependencies {
-		compile 'log4j:log4j:1.2.17',
-			'org.slf4j:slf4j-api:1.7.0'
-	}
-}
-
 // AMF Serialization implementation
 project('granite-amf') {
 	
@@ -452,13 +440,11 @@ project('granite-server-core') {
 		main {
 			java {
 				source project(':granite-common').sourceSets.main.java
-				source project(':granite-common-advanced').sourceSets.main.java
 				source project(':granite-amf').sourceSets.main.java
 				source project(':granite-jmf').sourceSets.main.java
 			}
 			resources {
 				source project(':granite-common').sourceSets.main.resources
-				source project(':granite-common-advanced').sourceSets.main.java
 				source project(':granite-amf').sourceSets.main.resources
 				source project(':granite-jmf').sourceSets.main.resources
 			}
@@ -2162,17 +2148,6 @@ project('granite-client-java-advanced') {
         testGlassFishv4Runtime(project(':granite-server-glassfishv3')) { transitive = false }
         testGlassFishv4Runtime project(':granite-server-glassfishv3').sourceSets.test.output
         testGlassFishv4Runtime(project(':granite-server-eclipselink')) { transitive = false }
-	}
-	
-	sourceSets {
-		main {
-			java {
-				source project(':granite-common-advanced').sourceSets.main.java
-			}
-			resources {
-				source project(':granite-common-advanced').sourceSets.main.resources
-			}
-		}
 	}
 	
     def runtimeExcludes = { f ->

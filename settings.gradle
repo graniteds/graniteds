@@ -1,5 +1,4 @@
 include 'granite-common'
-include 'granite-common-advanced'
 include 'granite-amf'
 include 'granite-jmf'
 
