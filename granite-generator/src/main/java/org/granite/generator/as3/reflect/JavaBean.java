@@ -267,7 +267,7 @@ public class JavaBean extends JavaAbstractType {
             }
         }
 
-        // Getter annotated by @ExternalizedProperty.
+        // Getter annotated by @Include.
         if (propertyDescriptors != null) {
             for (PropertyDescriptor property : propertyDescriptors) {
             	Method getter = property.getReadMethod();
