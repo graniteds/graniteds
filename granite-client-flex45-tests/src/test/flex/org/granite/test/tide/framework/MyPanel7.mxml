@@ -2,7 +2,7 @@
 <!--
 
       GRANITE DATA SERVICES
-      Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+      Copyright (C) 2006-2014 GRANITE DATA SERVICES S.A.S.
 
       This file is part of the Granite Data Services Platform.
 
@@ -22,7 +22,6 @@
       USA, or see <http://www.gnu.org/licenses/>.
 
 -->
-
 <mx:Panel xmlns:mx="http://www.adobe.com/2006/mxml"
 		  xmlns:framework="org.granite.test.tide.framework.*"
 		  layout="absolute" width="400" height="300">

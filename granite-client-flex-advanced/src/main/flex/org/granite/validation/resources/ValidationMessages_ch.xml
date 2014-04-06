@@ -2,7 +2,7 @@
 <!--
 
       GRANITE DATA SERVICES
-      Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+      Copyright (C) 2006-2014 GRANITE DATA SERVICES S.A.S.
 
       This file is part of the Granite Data Services Platform.
 
@@ -35,19 +35,18 @@
       details.
 
 -->
-
 <properties>
-	<entry key="javax.validation.constraints.AssertFalse.message">一定是假的</entry>
+	<entry key="javax.validation.constraints.AssertFalse.message">一定是�?�的</entry>
 	<entry key="javax.validation.constraints.AssertTrue.message">一定是真的</entry>
-	<entry key="javax.validation.constraints.DecimalMax.message">一定小于等于{value}</entry>
+	<entry key="javax.validation.constraints.DecimalMax.message">一定�?于等于{value}</entry>
 	<entry key="javax.validation.constraints.DecimalMin.message">一定大于等于{value}</entry>
 	<entry key="javax.validation.constraints.Digits.message">数值超出范围 (&lt;{integer} digits&gt;.&lt;{fraction} digits&gt;)</entry>
-	<entry key="javax.validation.constraints.Future.message">一定在将来</entry>
-	<entry key="javax.validation.constraints.Max.message">一定小于等于{value}</entry>
+	<entry key="javax.validation.constraints.Future.message">一定在将�?�</entry>
+	<entry key="javax.validation.constraints.Max.message">一定�?于等于{value}</entry>
 	<entry key="javax.validation.constraints.Min.message">一定大于等于{value}</entry>
-	<entry key="javax.validation.constraints.NotNull.message">可能不为NULL</entry>
+	<entry key="javax.validation.constraints.NotNull.message">�?�能�?为NULL</entry>
 	<entry key="javax.validation.constraints.Null.message">一定为NULL</entry>
 	<entry key="javax.validation.constraints.Past.message">一定在过去</entry>
-	<entry key="javax.validation.constraints.Pattern.message">必须匹配 "{regexp}"</entry>
+	<entry key="javax.validation.constraints.Pattern.message">必须匹�? "{regexp}"</entry>
 	<entry key="javax.validation.constraints.Size.message">size 必须在 {min} 和 {max} 之间</entry>
 </properties>

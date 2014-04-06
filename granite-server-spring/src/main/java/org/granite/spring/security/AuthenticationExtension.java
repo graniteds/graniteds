@@ -1,6 +1,6 @@
 /**
  *   GRANITE DATA SERVICES
- *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+ *   Copyright (C) 2006-2014 GRANITE DATA SERVICES S.A.S.
  *
  *   This file is part of the Granite Data Services Platform.
  *
@@ -19,7 +19,6 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-
 package org.granite.spring.security;
 
 import org.springframework.context.ApplicationContext;

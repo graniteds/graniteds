@@ -2,7 +2,7 @@
 <!--
 
       GRANITE DATA SERVICES
-      Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
+      Copyright (C) 2006-2014 GRANITE DATA SERVICES S.A.S.
 
       This file is part of the Granite Data Services Platform.
 
@@ -35,7 +35,6 @@
       details.
 
 -->
-
 <properties>
 	<entry key="javax.validation.constraints.AssertFalse.message">must be false</entry>
 	<entry key="javax.validation.constraints.AssertTrue.message">must be true</entry>
