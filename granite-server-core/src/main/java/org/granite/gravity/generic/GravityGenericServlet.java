@@ -32,6 +32,7 @@ import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
+import org.granite.util.ContentType;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
@@ -125,8 +126,8 @@ public class GravityGenericServlet extends AbstractGravityServlet {
             }
 
             log.debug("<< [AMF3 RESPONSES] %s", (Object)amf3Responses);
-
-            serialize(gravity, response, amf3Responses);
+            
+            serialize(gravity, response, amf3Responses, ContentType.forMimeType(request.getContentType()));
 		}
         catch (IOException e) {
             log.error(e, "Gravity message error");

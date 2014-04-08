@@ -23,11 +23,13 @@ package org.granite.gravity.jetty;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
+
 import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
+import org.granite.util.ContentType;
 import org.mortbay.jetty.RetryRequest;
 import org.mortbay.util.ajax.Continuation;
 import org.mortbay.util.ajax.ContinuationSupport;
@@ -35,6 +37,7 @@ import org.mortbay.util.ajax.ContinuationSupport;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 /**
@@ -129,7 +132,7 @@ public class GravityJettyServlet extends AbstractGravityServlet {
 
             log.debug("<< [AMF3 RESPONSES] %s", (Object)amf3Responses);
 
-            serialize(gravity, response, amf3Responses);
+            serialize(gravity, response, amf3Responses, ContentType.forMimeType(request.getContentType()));
 		}
         catch (RetryRequest e) {
             throw e;
