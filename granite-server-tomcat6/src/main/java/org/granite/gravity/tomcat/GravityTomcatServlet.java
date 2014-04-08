@@ -58,8 +58,6 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
         HttpServletRequest request = event.getHttpServletRequest();
         HttpServletResponse response = event.getHttpServletResponse();
 
-        rejectJMFContentType(request);
-
         GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		TomcatChannelFactory channelFactory = new TomcatChannelFactory(gravity);
 

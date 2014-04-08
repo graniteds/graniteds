@@ -40,7 +40,7 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
-import org.granite.gravity.AbstractChannel;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author Franck WOLFF
@@ -49,12 +49,12 @@ public class UdpNIOChannel extends AbstractUdpChannel {
 
 	private DatagramChannel channel = null;
 	
-	public UdpNIOChannel(UdpChannelFactory channelFactory, AbstractChannel gravityChannel, DatagramChannel channel) {
-		this(channelFactory, gravityChannel, channel, null);
+	public UdpNIOChannel(UdpChannelFactory channelFactory, GravityInternal gravity, DatagramChannel channel) {
+		this(channelFactory, gravity, channel, null);
 	}
 
-	public UdpNIOChannel(UdpChannelFactory channelFactory, AbstractChannel gravityChannel, DatagramChannel channel, InetSocketAddress address) {
-		super(channelFactory, gravityChannel, address);
+	public UdpNIOChannel(UdpChannelFactory channelFactory, GravityInternal gravity, DatagramChannel channel, InetSocketAddress address) {
+		super(channelFactory, gravity, address);
 		
 		if ((address == null && !channel.isConnected()) || (address != null && channel.isConnected()))
 			throw new IllegalArgumentException("Inconsistent arguments");

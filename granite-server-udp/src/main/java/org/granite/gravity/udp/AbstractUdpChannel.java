@@ -37,7 +37,7 @@ package org.granite.gravity.udp;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import org.granite.gravity.AbstractChannel;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author Franck WOLFF
@@ -45,20 +45,20 @@ import org.granite.gravity.AbstractChannel;
 public abstract class AbstractUdpChannel implements UdpChannel {
 	
     protected UdpChannelFactory channelFactory = null;
-    protected AbstractChannel gravityChannel = null;
+    protected GravityInternal gravity = null;
 	protected InetSocketAddress address = null;
 	
-	public AbstractUdpChannel(UdpChannelFactory channelFactory, AbstractChannel gravityChannel, InetSocketAddress address) {
-		if (channelFactory == null || gravityChannel == null)
+	public AbstractUdpChannel(UdpChannelFactory channelFactory, GravityInternal gravity, InetSocketAddress address) {
+		if (channelFactory == null || gravity == null)
 			throw new NullPointerException();
 		
 		this.channelFactory = channelFactory;
-		this.gravityChannel = gravityChannel;
+		this.gravity = gravity;
 		this.address = address;
 	}
 
-	public AbstractChannel getGravityChannel() {
-		return gravityChannel;
+	public GravityInternal getGravity() {
+		return gravity;
 	}
 
 	public int write(byte[] data) throws IOException {
@@ -67,7 +67,7 @@ public abstract class AbstractUdpChannel implements UdpChannel {
 
 	public void close() {
 		channelFactory = null;
-		gravityChannel = null;
+		gravity = null;
 		address = null;
 	}
 }

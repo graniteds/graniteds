@@ -55,8 +55,6 @@ public class GravityJettyServlet extends AbstractGravityServlet {
         
     	log.debug("doPost: from %s:%d", request.getRemoteAddr(), request.getRemotePort());
 
-        rejectJMFContentType(request);
-
         GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		ContinuationChannelFactory channelFactory = new ContinuationChannelFactory(gravity);
 		

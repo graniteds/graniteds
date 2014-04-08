@@ -57,9 +57,7 @@ public class GravityJBossWebServlet extends AbstractHttpEventServlet {
 
     	HttpServletRequest request = event.getHttpServletRequest();
         HttpServletResponse response = event.getHttpServletResponse();
-
-        rejectJMFContentType(request);
-
+        
         GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
         JBossWebChannelFactory channelFactory = new JBossWebChannelFactory(gravity);
 

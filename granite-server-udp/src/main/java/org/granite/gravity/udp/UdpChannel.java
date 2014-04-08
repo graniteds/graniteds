@@ -37,7 +37,7 @@ package org.granite.gravity.udp;
 import java.io.IOException;
 import java.net.SocketAddress;
 
-import org.granite.gravity.AbstractChannel;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author Franck WOLFF
@@ -46,7 +46,7 @@ public interface UdpChannel {
 
 	static final int MAX_PACKET_SIZE = 64 * 1024; // 64K
 
-	AbstractChannel getGravityChannel();
+	GravityInternal getGravity();
 	
 	SocketAddress getClientAddress();
 	int getServerPort();

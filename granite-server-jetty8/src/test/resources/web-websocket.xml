@@ -39,6 +39,16 @@
     </filter-mapping>
 
     <servlet>
+        <servlet-name>GravityServlet</servlet-name>
+        <servlet-class>org.granite.gravity.jetty8.GravityJettyServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GravityServlet</servlet-name>
+        <url-pattern>/gravityamf/*</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
         <servlet-name>WebSocketServlet</servlet-name>
         <servlet-class>org.granite.gravity.jetty8.JettyWebSocketServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
