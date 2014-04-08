@@ -2,9 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/granite-client-java"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
-	<classpathentry kind="src" path="/granite-client-java"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/granite-server-core"/>
+	<classpathentry kind="src" path="/granite-server-core"/>
+	<classpathentry kind="src" path="/granite-server-hibernate"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
