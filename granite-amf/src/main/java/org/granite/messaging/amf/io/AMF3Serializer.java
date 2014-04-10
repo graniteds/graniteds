@@ -44,10 +44,10 @@ import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.messaging.amf.io.util.DefaultJavaClassDescriptor;
 import org.granite.messaging.amf.io.util.IndexedJavaClassDescriptor;
 import org.granite.messaging.amf.io.util.JavaClassDescriptor;
+import org.granite.messaging.amf.io.util.Property;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
 import org.granite.messaging.amf.types.AMFDictionaryValue;
 import org.granite.messaging.amf.types.AMFSpecialValue;
-import org.granite.messaging.amf.types.AMFSpecialValueFactory;
 import org.granite.messaging.amf.types.AMFVectorIntValue;
 import org.granite.messaging.amf.types.AMFVectorNumberValue;
 import org.granite.messaging.amf.types.AMFVectorObjectValue;
@@ -82,7 +82,6 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     protected final Converters converters;
     protected final ClassGetter classGetter;
     protected final XMLUtil xmlUtil;
-    protected final AMFSpecialValueFactory specialValueFactory;
 
     protected final ExternalizersConfig externalizersConfig;
     protected final boolean externalizeLong;
@@ -113,7 +112,6 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         this.converters = convertersConfig.getConverters();
         this.classGetter = convertersConfig.getClassGetter();
         this.xmlUtil = XMLUtilFactory.getXMLUtil();
-        this.specialValueFactory = new AMFSpecialValueFactory();
 
         this.externalizersConfig = (ExternalizersConfig)context.getGraniteConfig();
         this.externalizeLong = (externalizersConfig.getExternalizer(Long.class.getName()) != null);
@@ -645,10 +643,11 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
                     ((Externalizable)o).writeExternal(this);
             }
             else {
-                for (int i = 0; i < desc.getPropertiesCount(); i++) {
-                    Object obj = desc.getPropertyValue(i, o);
-                    writeObject(specialValueFactory.createSpecialValue(desc.getProperty(i), obj));
-                }
+            	final int count = desc.getPropertiesCount();
+            	for (int i = 0; i < count; i++) {
+            		Property property = desc.getProperty(i);
+            		writeObject(property.getProperty(o));
+            	}
 
                 if (desc.isDynamic()) {
                     Map<?, ?> oMap = (Map<?, ?>)o;
@@ -679,11 +678,13 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         else {
             iDesc = addToStoredClassDescriptors(cls);
             desc = iDesc.getDescriptor();
+            
+            final int count = desc.getPropertiesCount();
 
-            writeAMF3IntegerData((desc.getPropertiesCount() << 4) | (desc.getEncoding() << 2) | 0x03);
+            writeAMF3IntegerData((count << 4) | (desc.getEncoding() << 2) | 0x03);
             writeAMF37BitsStringData(desc.getName());
 
-            for (int i = 0; i < desc.getPropertiesCount(); i++)
+            for (int i = 0; i < count; i++)
             	writeAMF37BitsStringData(desc.getPropertyName(i));
         }
     	

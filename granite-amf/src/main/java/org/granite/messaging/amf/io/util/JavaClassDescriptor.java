@@ -42,7 +42,7 @@ public abstract class JavaClassDescriptor {
     protected final Externalizer externalizer;
     protected final Converters converters;
     protected final byte encoding;
-    protected final List<Property> properties;
+    protected final Property[] properties;
 
     protected JavaClassDescriptor(Class<?> type) {
         Object config = GraniteContext.getCurrentInstance().getGraniteConfig();
@@ -51,7 +51,9 @@ public abstract class JavaClassDescriptor {
         this.externalizer = ((ExternalizersConfig)config).getExternalizer(type.getName());
         this.converters = ((ConvertersConfig)config).getConverters();
         this.encoding = findEncoding(type);
-        this.properties = introspectProperties();
+        
+        List<Property> properties = introspectProperties();
+        this.properties = (properties != null ? properties.toArray(new Property[0]) : new Property[0]);
     }
 
     private byte findEncoding(Class<?> type) {
@@ -98,25 +100,18 @@ public abstract class JavaClassDescriptor {
     }
 
     public int getPropertiesCount() {
-        return (properties != null ? properties.size() : 0);
+        return properties.length;
     }
 
     public Property getProperty(int index) {
-        if (properties == null)
-            throw new ArrayIndexOutOfBoundsException(index);
-        return properties.get(index);
+        return properties[index];
     }
     
     public String getPropertyName(int index) {
-        if (properties == null)
-            throw new ArrayIndexOutOfBoundsException(index);
-        return properties.get(index).getName();
+        return properties[index].getName();
     }
 
     public Object getPropertyValue(int index, Object instance) {
-        if (properties == null)
-            throw new ArrayIndexOutOfBoundsException(index);
-        Property prop = properties.get(index);
-        return prop.getProperty(instance);
+        return properties[index].getProperty(instance);
     }
 }

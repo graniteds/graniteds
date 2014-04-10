@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import org.granite.messaging.amf.io.convert.Converters;
+import org.granite.messaging.amf.types.AMFSpecialValueFactory.SpecialValueFactory;
 import org.granite.util.TypeUtil;
 import org.granite.util.TypeUtil.DeclaredAnnotation;
 
@@ -37,12 +38,15 @@ public class MethodProperty extends Property {
     private final Method setter;
     private final Method getter;
     private final Type type;
+    private final SpecialValueFactory<?> factory;
 
     public MethodProperty(Converters converters, String name, Method setter, Method getter) {
         super(converters, name);
         this.setter = setter;
         this.getter = getter;
         this.type = getter != null ? getter.getGenericReturnType() : setter.getParameterTypes()[0];
+        
+        this.factory = converters.getSpecialValueFactory().getValueFactory(this);
     }
 
     @Override
@@ -107,7 +111,10 @@ public class MethodProperty extends Property {
     @Override
     public Object getProperty(Object instance) {
         try {
-            return getter.invoke(instance, new Object[0]);
+            Object o = getter.invoke(instance, new Object[0]);
+            if (factory != null)
+            	o = factory.create(o);
+            return o;
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

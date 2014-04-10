@@ -43,31 +43,110 @@ public class AMFSpecialValueFactory {
 	public AMFSpecialValueFactory(AMFVectorObjectAliaser vectorObjectAlias) {
 		this.vectorObjectAlias = (vectorObjectAlias != null ? vectorObjectAlias : new AMFBasicVectorObjectAliaser());
 	}
-
-	public Object createSpecialValue(Property property, Object o) {
-    	if (o != null && !(o instanceof Externalizable)) {
-    		if (o instanceof Collection || (o.getClass().isArray() && o.getClass().getComponentType() != Byte.TYPE)) {
+	
+	public SpecialValueFactory<?> getValueFactory(Property property) {
+		Type propertyType = property.getType();
+		Class<?> type = TypeUtil.classOfType(propertyType);
+		
+        if (!Externalizable.class.isAssignableFrom(type)) {
+        	if ((type.isArray() && type.getComponentType() != byte.class) || Collection.class.isAssignableFrom(type)) {
 	    		if (property.isAnnotationPresent(AMFVectorInt.class))
-	    			return new AMFVectorIntValue(o, property.getAnnotation(AMFVectorInt.class).fixed());
+	    			return new AMFVectorIntValueFactory(property.getAnnotation(AMFVectorInt.class));
 	    		if (property.isAnnotationPresent(AMFVectorNumber.class))
-	    			return new AMFVectorNumberValue(o, property.getAnnotation(AMFVectorNumber.class).fixed());
+	    			return new AMFVectorNumberValueFactory(property.getAnnotation(AMFVectorNumber.class));
 	    		if (property.isAnnotationPresent(AMFVectorUint.class))
-	    			return new AMFVectorUintValue(o, property.getAnnotation(AMFVectorUint.class).fixed());
+	    			return new AMFVectorUintValueFactory(property.getAnnotation(AMFVectorUint.class));
 	    		if (property.isAnnotationPresent(AMFVectorObject.class)) {
 	    			AMFVectorObject annotation = property.getAnnotation(AMFVectorObject.class);
-	    			String type = annotation.type();
-	    			if (type == null || type.length() == 0) {
-		    			Type propertyType = property.getType();
+	    			String vectorComponentType = annotation.type();
+	    			if (vectorComponentType == null || vectorComponentType.length() == 0) {
 		    			Class<?> componentClass = TypeUtil.componentClassOfType(propertyType);
-		    			type = vectorObjectAlias.aliasFor(componentClass);
+		    			vectorComponentType = vectorObjectAlias.aliasFor(componentClass);
 	    			}
-	    			return new AMFVectorObjectValue(o, type, annotation.fixed());
+	    			return new AMFVectorObjectValueFactory(annotation, vectorComponentType);
 	    		}
-    		}
-    		else if (o instanceof Map && property.isAnnotationPresent(AMFDictionary.class))
-    			return new AMFDictionaryValue((Map<?, ?>)o, property.getAnnotation(AMFDictionary.class).weakKeys());
-    	}
-    	
-    	return o;
+        	}
+        	else if (Map.class.isAssignableFrom(type) && property.isAnnotationPresent(AMFDictionary.class)) {
+        		return new AMFDictionaryValueFactory(property.getAnnotation(AMFDictionary.class));
+        	}
+        }
+
+        return null;
+	}
+	
+	public interface SpecialValueFactory<T extends AMFSpecialValue<?>> {
+		public T create(Object o);
+	}
+
+	public class AMFVectorIntValueFactory implements SpecialValueFactory<AMFVectorIntValue> {
+		
+		private final AMFVectorInt annotation;
+		
+		public AMFVectorIntValueFactory(AMFVectorInt annotation) {
+			this.annotation = annotation;
+		}
+
+		@Override
+		public AMFVectorIntValue create(Object o) {
+			return (o != null ? new AMFVectorIntValue(o, annotation.fixed()) : null);
+		}
+	}
+
+	public class AMFVectorUintValueFactory implements SpecialValueFactory<AMFVectorUintValue> {
+		
+		private final AMFVectorUint annotation;
+		
+		public AMFVectorUintValueFactory(AMFVectorUint annotation) {
+			this.annotation = annotation;
+		}
+
+		@Override
+		public AMFVectorUintValue create(Object o) {
+			return (o != null ? new AMFVectorUintValue(o, annotation.fixed()) : null);
+		}
+	}
+
+	public class AMFVectorNumberValueFactory implements SpecialValueFactory<AMFVectorNumberValue> {
+		
+		private final AMFVectorNumber annotation;
+		
+		public AMFVectorNumberValueFactory(AMFVectorNumber annotation) {
+			this.annotation = annotation;
+		}
+
+		@Override
+		public AMFVectorNumberValue create(Object o) {
+			return (o != null ? new AMFVectorNumberValue(o, annotation.fixed()) : null);
+		}
+	}
+
+	public class AMFVectorObjectValueFactory implements SpecialValueFactory<AMFVectorObjectValue> {
+		
+		private final AMFVectorObject annotation;
+		private final String type;
+		
+		public AMFVectorObjectValueFactory(AMFVectorObject annotation, String type) {
+			this.annotation = annotation;
+			this.type = type;
+		}
+
+		@Override
+		public AMFVectorObjectValue create(Object o) {
+			return (o != null ? new AMFVectorObjectValue(o, type, annotation.fixed()) : null);
+		}
+	}
+
+	public class AMFDictionaryValueFactory implements SpecialValueFactory<AMFDictionaryValue> {
+		
+		private final AMFDictionary annotation;
+		
+		public AMFDictionaryValueFactory(AMFDictionary annotation) {
+			this.annotation = annotation;
+		}
+
+		@Override
+		public AMFDictionaryValue create(Object o) {
+			return (o != null ? new AMFDictionaryValue((Map<?, ?>)o, annotation.weakKeys()) : null);
+		}
 	}
 }

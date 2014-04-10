@@ -26,17 +26,23 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
 import org.granite.messaging.amf.io.convert.Converters;
+import org.granite.messaging.amf.types.AMFSpecialValueFactory.SpecialValueFactory;
 
 /**
  * @author Franck WOLFF
  */
 public class FieldProperty extends Property {
-
+	
     private final Field field;
+    private final SpecialValueFactory<?> factory;
 
     public FieldProperty(Converters converters, Field field) {
         super(converters, field.getName());
+        
+        field.setAccessible(true);
         this.field = field;
+        
+        this.factory = converters.getSpecialValueFactory().getValueFactory(this);
     }
 
     @Override
@@ -62,9 +68,9 @@ public class FieldProperty extends Property {
     @Override
     public void setProperty(Object instance, Object value, boolean convert) {
         try {
-            field.setAccessible(true);
             field.set(instance, convert ? convert(value) : value);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -72,9 +78,12 @@ public class FieldProperty extends Property {
     @Override
     public Object getProperty(Object instance) {
         try {
-            field.setAccessible(true);
-            return field.get(instance);
-        } catch (Exception e) {
+            Object o = field.get(instance);
+            if (factory != null)
+            	o = factory.create(o);
+            return o;
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
