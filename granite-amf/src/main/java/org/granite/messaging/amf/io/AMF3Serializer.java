@@ -1,6 +1,6 @@
 /**
  *   GRANITE DATA SERVICES
- *   Copyright (C) 2006-2014 GRANITE DATA SERVICES S.A.S.
+ *   Copyright (C) 2006-2013 GRANITE DATA SERVICES S.A.S.
  *
  *   This file is part of the Granite Data Services Platform.
  *
@@ -21,11 +21,11 @@
  */
 package org.granite.messaging.amf.io;
 
-import java.io.DataOutputStream;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
+import java.io.UTFDataFormatException;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -33,15 +33,12 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.granite.config.ConvertersConfig;
 import org.granite.config.ExternalizersConfig;
 import org.granite.config.flex.ChannelConfig;
 import org.granite.context.GraniteContext;
-import org.granite.logging.Logger;
-import org.granite.messaging.amf.AMF3Constants;
 import org.granite.messaging.amf.io.convert.Converters;
 import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.messaging.amf.io.util.DefaultJavaClassDescriptor;
@@ -55,6 +52,8 @@ import org.granite.messaging.amf.types.AMFVectorIntValue;
 import org.granite.messaging.amf.types.AMFVectorNumberValue;
 import org.granite.messaging.amf.types.AMFVectorObjectValue;
 import org.granite.messaging.amf.types.AMFVectorUintValue;
+import org.granite.util.ObjectCache;
+import org.granite.util.StringCache;
 import org.granite.util.TypeUtil;
 import org.granite.util.XMLUtil;
 import org.granite.util.XMLUtilFactory;
@@ -65,59 +64,80 @@ import flex.messaging.io.ArrayCollection;
 /**
  * @author Franck WOLFF
  */
-public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AMF3Constants {
+public class AMF3Serializer implements ObjectOutput, AMF3Constants {
 
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
-
-    protected static final Logger log = Logger.getLogger(AMF3Serializer.class);
-    protected static final Logger logMore = Logger.getLogger(AMF3Serializer.class.getName() + "_MORE");
-
-    protected final Map<String, Integer> storedStrings = new HashMap<String, Integer>();
-    protected final Map<Object, Integer> storedObjects = new IdentityHashMap<Object, Integer>();
-    protected final Map<String, IndexedJavaClassDescriptor> storedClassDescriptors
-    	= new HashMap<String, IndexedJavaClassDescriptor>();
-
-    protected final GraniteContext context = GraniteContext.getCurrentInstance();
-    protected final Converters converters = ((ConvertersConfig)context.getGraniteConfig()).getConverters();
-
-    protected final boolean externalizeLong
-		= (((ExternalizersConfig)context.getGraniteConfig()).getExternalizer(Long.class.getName()) != null);
-    protected final boolean externalizeBigInteger
-		= (((ExternalizersConfig)context.getGraniteConfig()).getExternalizer(BigInteger.class.getName()) != null);
-    protected final boolean externalizeBigDecimal
-    	= (((ExternalizersConfig)context.getGraniteConfig()).getExternalizer(BigDecimal.class.getName()) != null);
-
-    protected final XMLUtil xmlUtil = XMLUtilFactory.getXMLUtil();
     
-    // TODO: allow aliaser configuration in granite-config.xml
-    protected final AMFSpecialValueFactory specialValueFactory = new AMFSpecialValueFactory();
-    
-    protected final boolean debug = log.isDebugEnabled();
-    protected final boolean debugMore = logMore.isDebugEnabled();
+    private final OutputStream out;
+    private final byte[] buffer;
+	private int position;
 
-    protected boolean isChannelConfigInitialized = false;
-    protected boolean isLegacyXmlSerialization = false;
-    protected boolean isLegacyCollectionSerialization = false;
+	protected final StringCache storedStrings;
+	protected final ObjectCache storedObjects;
+    protected final Map<String, IndexedJavaClassDescriptor> storedClassDescriptors;
+
+    protected final GraniteContext context;
+    
+    protected final Converters converters;
+    protected final ClassGetter classGetter;
+    protected final XMLUtil xmlUtil;
+    protected final AMFSpecialValueFactory specialValueFactory;
+
+    protected final boolean externalizeLong;
+    protected final boolean externalizeBigInteger;
+    protected final boolean externalizeBigDecimal;
+    protected final boolean legacyXmlSerialization;
+    protected final boolean legacyCollectionSerialization;
 
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
 
     public AMF3Serializer(OutputStream out) {
-        super(out);
+        this(out, 1024);
+    }
 
-        if (debugMore) logMore.debug("new AMF3Serializer(out=%s)", out);
+    public AMF3Serializer(OutputStream out, int capacity) {
+    	this.out = out;
+        this.buffer = new byte[capacity];
+        this.position = 0;
+        
+        this.storedStrings = new StringCache(64);
+        this.storedObjects = new ObjectCache(64);
+        this.storedClassDescriptors = new HashMap<String, IndexedJavaClassDescriptor>();
+        
+        this.context = GraniteContext.getCurrentInstance();
+        
+        ConvertersConfig convertersConfig = (ConvertersConfig)context.getGraniteConfig();
+        this.converters = convertersConfig.getConverters();
+        this.classGetter = convertersConfig.getClassGetter();
+        this.xmlUtil = XMLUtilFactory.getXMLUtil();
+        this.specialValueFactory = new AMFSpecialValueFactory();
+
+        ExternalizersConfig externalizerConfig = (ExternalizersConfig)context.getGraniteConfig();
+        this.externalizeLong = (externalizerConfig.getExternalizer(Long.class.getName()) != null);
+        this.externalizeBigInteger = (externalizerConfig.getExternalizer(BigInteger.class.getName()) != null);
+        this.externalizeBigDecimal = (externalizerConfig.getExternalizer(BigDecimal.class.getName()) != null);
+        
+        String channelId = context.getAMFContext().getChannelId();
+        ChannelConfig channelConfig = context.getServicesConfig();
+        this.legacyXmlSerialization = getChannelProperty(channelId, channelConfig, "legacyXmlSerialization");
+        this.legacyCollectionSerialization = getChannelProperty(channelId, channelConfig, "legacyCollectionSerialization");
+    }
+    
+    private static boolean getChannelProperty(String channelId, ChannelConfig channelConfig, String name) {
+    	if (channelId != null && channelConfig != null)
+    		return channelConfig.getChannelProperty(channelId, name);
+    	return false;
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // ObjectOutput implementation.
 
     public void writeObject(Object o) throws IOException {
-        if (debugMore) logMore.debug("writeObject(o=%s)", o);
-
         try {
 	        if (o == null)
-	            write(AMF3_NULL);
+	        	writeAMF3Null();
 	        else if (o instanceof AMFSpecialValue)
 	        	writeAMF3SpecialValue((AMFSpecialValue<?>)o);
 	        else if (!(o instanceof Externalizable)) {
@@ -126,11 +146,9 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
 	                o = converters.revert(o);
 	
 		        if (o == null)
-		            write(AMF3_NULL);
+		        	writeAMF3Null();
 		        else if (o instanceof String || o instanceof Character)
 	                writeAMF3String(o.toString());
-	            else if (o instanceof Boolean)
-	                write(((Boolean)o).booleanValue() ? AMF3_BOOLEAN_TRUE : AMF3_BOOLEAN_FALSE);
 	            else if (o instanceof Number) {
 	                if (o instanceof Integer || o instanceof Short || o instanceof Byte)
 	                    writeAMF3Integer(((Number)o).intValue());
@@ -143,12 +161,6 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
 	                else
 	                    writeAMF3Number(((Number)o).doubleValue());
 	            }
-	            else if (o instanceof Date)
-	                writeAMF3Date((Date)o);
-	            else if (o instanceof Calendar)
-	                writeAMF3Date(((Calendar)o).getTime());
-	            else if (o instanceof Document)
-	                writeAMF3Xml((Document)o);
 	            else if (o instanceof Collection<?>)
 	                writeAMF3Collection((Collection<?>)o);
 	            else if (o.getClass().isArray()) {
@@ -157,6 +169,14 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
 	                else
 	                    writeAMF3Array(o);
 	            }
+	            else if (o instanceof Boolean)
+	            	writeAMF3Boolean(((Boolean)o).booleanValue());
+	            else if (o instanceof Date)
+	                writeAMF3Date((Date)o);
+	            else if (o instanceof Calendar)
+	                writeAMF3Date(((Calendar)o).getTime());
+	            else if (o instanceof Document)
+	                writeAMF3Xml((Document)o);
 	            else
 	                writeAMF3Object(o);
 	        }
@@ -174,9 +194,17 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     ///////////////////////////////////////////////////////////////////////////
     // AMF3 serialization.
 
-    protected void writeAMF3SpecialValue(AMFSpecialValue<?> value) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3SpecialValue(value=%s)", value);
+    protected void writeAMF3Null() throws IOException {
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_NULL;
+    }
 
+    protected void writeAMF3Boolean(boolean value) throws IOException {
+    	ensureCapacity(1);
+    	buffer[position++] = (value ? AMF3_BOOLEAN_TRUE : AMF3_BOOLEAN_FALSE);
+    }
+    
+    protected void writeAMF3SpecialValue(AMFSpecialValue<?> value) throws IOException {
         switch (value.type) {
         case AMF3_DICTIONARY:
 			writeAMF3Dictionary((AMFDictionaryValue)value);
@@ -199,22 +227,22 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     }
     
     protected void writeAMF3VectorObject(AMFVectorObjectValue value) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3VectorObject(value=%s)", value);
-
-        write(AMF3_VECTOR_OBJECT);
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_VECTOR_OBJECT;
 
         Object o = value.value;
         
-        int index = indexOfStoredObjects(o);
+        int index = storedObjects.putIfAbsent(o);
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredObjects(o);
-
             int length = getArrayOrCollectionLength(o);
             writeAMF3IntegerData(length << 1 | 0x01);
-            write(value.fixed ? 0x01 : 0x00);
-            writeAMF3StringData(value.type);
+
+            ensureCapacity(1);
+        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
+            
+        	writeAMF3StringData(value.type);
 
             if (o.getClass().isArray()) {
                 for (int i = 0; i < length; i++)
@@ -228,105 +256,113 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     }
     
     protected void writeAMF3VectorInt(AMFVectorIntValue value) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3VectorInt(value=%s)", value);
-
-        write(AMF3_VECTOR_INT);
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_VECTOR_INT;
 
         Object o = value.value;
 
-        int index = indexOfStoredObjects(o);
+        int index = storedObjects.putIfAbsent(o);
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredObjects(o);
-
             int length = getArrayOrCollectionLength(o);
             writeAMF3IntegerData(length << 1 | 0x01);
-            write(value.fixed ? 0x01 : 0x00);
+        	
+            ensureCapacity(1);
+        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
 
             if (o.getClass().isArray()) {
-                for (int i = 0; i < length; i++)
-                	writeInt(((Number)Array.get(o, i)).intValue());
+                for (int i = 0; i < length; i++) {
+                	ensureCapacity(4);
+                	writeIntData(((Number)Array.get(o, i)).intValue());
+                }
             }
             else {
-            	for (Object item : (Collection<?>)o)
+            	for (Object item : (Collection<?>)o) {
+                	ensureCapacity(4);
             		writeInt(((Number)item).intValue());
+            	}
             }
         }
     }
     
     protected void writeAMF3VectorNumber(AMFVectorNumberValue value) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3VectorNumber(value=%s)", value);
-
-        write(AMF3_VECTOR_NUMBER);
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_VECTOR_NUMBER;
 
         Object o = value.value;
 
-        int index = indexOfStoredObjects(o);
+        int index = storedObjects.putIfAbsent(o);
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredObjects(o);
-
             int length = getArrayOrCollectionLength(o);
             writeAMF3IntegerData(length << 1 | 0x01);
-            write(value.fixed ? 0x01 : 0x00);
+        	
+            ensureCapacity(1);
+        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
 
             if (o.getClass().isArray()) {
-                for (int i = 0; i < length; i++)
-                	writeDouble(((Number)Array.get(o, i)).doubleValue());
+                for (int i = 0; i < length; i++) {
+                	ensureCapacity(8);
+                	writeLongData(Double.doubleToLongBits(((Number)Array.get(o, i)).doubleValue()));
+                }
             }
             else {
-            	for (Object item : (Collection<?>)o)
-            		writeDouble(((Number)item).doubleValue());
+            	for (Object item : (Collection<?>)o) {
+                	ensureCapacity(8);
+                	writeLongData(Double.doubleToLongBits(((Number)item).doubleValue()));
+            	}
             }
         }
     }
     
     protected void writeAMF3VectorUint(AMFVectorUintValue value) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3VectorUint(value=%s)", value);
-
-        write(AMF3_VECTOR_UINT);
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_VECTOR_UINT;
 
         Object o = value.value;
 
-        int index = indexOfStoredObjects(o);
+        int index = storedObjects.putIfAbsent(o);
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredObjects(o);
-
             int length = getArrayOrCollectionLength(o);
             writeAMF3IntegerData(length << 1 | 0x01);
-            write(value.fixed ? 0x01 : 0x00);
+        	
+            ensureCapacity(1);
+        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
 
             if (o.getClass().isArray()) {
-                for (int i = 0; i < length; i++)
-                	writeInt(((Number)Array.get(o, i)).intValue());
+                for (int i = 0; i < length; i++) {
+                	ensureCapacity(4);
+                	writeIntData(((Number)Array.get(o, i)).intValue());
+                }
             }
             else {
-            	for (Object item : (Collection<?>)o)
+            	for (Object item : (Collection<?>)o) {
+                	ensureCapacity(4);
             		writeInt(((Number)item).intValue());
+            	}
             }
         }
     }
 
     protected void writeAMF3Dictionary(AMFDictionaryValue value) throws IOException {
-        if (debugMore) logMore.debug("writeAMFDictionary(value=%s)", value);
-
-        write(AMF3_DICTIONARY);
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_DICTIONARY;
 
         Map<?, ?> o = value.value;
 
-        int index = indexOfStoredObjects(o);
+        int index = storedObjects.putIfAbsent(o);
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredObjects(o);
-
             int length = o.size();
             writeAMF3IntegerData(length << 1 | 0x01);
-            write(value.weakKeys ? 0x01 : 0x00);
+        	
+            ensureCapacity(1);
+        	buffer[position++] = (byte)(value.weakKeys ? 0x01 : 0x00);
 
             for (Map.Entry<?, ?> entry : o.entrySet()) {
             	writeObject(entry.getKey());
@@ -342,231 +378,258 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
     }
 
     protected void writeAMF3Integer(int i) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3Integer(i=%d)", i);
-
-        if (i < AMF3_INTEGER_MIN || i > AMF3_INTEGER_MAX) {
-            if (debugMore) logMore.debug("writeAMF3Integer() - %d is out of AMF3 int range, writing it as a Number", i);
+        if (i < AMF3_INTEGER_MIN || i > AMF3_INTEGER_MAX)
             writeAMF3Number(i);
-        }
         else {
-            write(AMF3_INTEGER);
+        	ensureCapacity(1);
+        	buffer[position++] = AMF3_INTEGER;
             writeAMF3IntegerData(i);
         }
     }
 
     protected void writeAMF3IntegerData(int i) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3IntegerData(i=%d)", i);
-
-        if (i < AMF3_INTEGER_MIN || i > AMF3_INTEGER_MAX)
-            throw new IllegalArgumentException("Integer out of range: " + i);
-
+    	ensureCapacity(4);
+    	
+    	final byte[] buffer = this.buffer;
+    	int position = this.position;
+    	
         if (i < 0 || i >= 0x200000) {
-            write(((i >> 22) & 0x7F) | 0x80);
-            write(((i >> 15) & 0x7F) | 0x80);
-            write(((i >> 8) & 0x7F) | 0x80);
-            write(i & 0xFF);
+        	buffer[position++] = (byte)(((i >>> 22) & 0x7F) | 0x80);
+        	buffer[position++] = (byte)(((i >>> 15) & 0x7F) | 0x80);
+        	buffer[position++] = (byte)(((i >>> 8) & 0x7F) | 0x80);
+        	buffer[position++] = (byte)i;
         }
         else {
             if (i >= 0x4000)
-                write(((i >> 14) & 0x7F) | 0x80);
+            	buffer[position++] = (byte)(((i >>> 14) & 0x7F) | 0x80);
             if (i >= 0x80)
-                write(((i >> 7) & 0x7F) | 0x80);
-            write(i & 0x7F);
+            	buffer[position++] = (byte)(((i >>> 7) & 0x7F) | 0x80);
+            buffer[position++] = (byte)(i & 0x7F);
         }
+        
+        this.position = position;
     }
 
     protected void writeAMF3Number(double d) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3Number(d=%f)", d);
-
-        write(AMF3_NUMBER);
-        writeDouble(d);
+    	ensureCapacity(9);
+    	
+    	buffer[position++] = AMF3_NUMBER;
+    	writeLongData(Double.doubleToLongBits(d));
     }
 
     protected void writeAMF3String(String s) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3String(s=%s)", s);
-
-        write(AMF3_STRING);
-        writeAMF3StringData(s);
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_STRING;
+       
+    	writeAMF3StringData(s);
     }
 
     protected void writeAMF3StringData(String s) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3StringData(s=%s)", s);
 
-        if (s.length() == 0) {
-            write(0x01);
+    	if (s.length() == 0) {
+        	ensureCapacity(1);
+        	buffer[position++] = 0x01;
             return;
         }
 
-        int index = indexOfStoredStrings(s);
+        int index = storedStrings.putIfAbsent(s);
 
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredStrings(s);
-
-            final int sLength = s.length();
-
-            // Compute and write modified UTF-8 string length.
-            int uLength = 0;
-            for (int i = 0; i < sLength; i++) {
-                int c = s.charAt(i);
-                if ((c >= 0x0001) && (c <= 0x007F))
-                    uLength++;
+            final int length = s.length();
+            
+            int c, count = 0;
+            for (int i = 0; i < length; i++) {
+                c = s.charAt(i);
+                if (c <= 0x007F)
+                	count++;
                 else if (c > 0x07FF)
-                    uLength += 3;
+                	count += 3;
                 else
-                    uLength += 2;
+                	count += 2;
             }
-            writeAMF3IntegerData((uLength << 1) | 0x01);
 
-            // Write modified UTF-8 bytes.
-            for (int i = 0; i < sLength; i++) {
-                int c = s.charAt(i);
-                if ((c >= 0x0001) && (c <= 0x007F)) {
-                    write(c);
-                }
+            writeAMF3IntegerData((count << 1) | 0x01);
+            
+        	final byte[] buffer = this.buffer;
+        	final int bufferLengthMinus3 = buffer.length - 3;
+            int position = this.position;
+
+            for (int i = 0; i < length; i++) {
+            	c = s.charAt(i);
+
+            	if (position >= bufferLengthMinus3) {
+            		this.position = position;
+            		flushBuffer();
+            		position = 0;
+            	}
+
+            	if (c <= 0x007F)
+                	buffer[position++] = (byte)c;
                 else if (c > 0x07FF) {
-                    write(0xE0 | ((c >> 12) & 0x0F));
-                    write(0x80 | ((c >>  6) & 0x3F));
-                    write(0x80 | ((c >>  0) & 0x3F));
+                	buffer[position++] = (byte)(0xE0 | ((c >>> 12) & 0x0F));
+                	buffer[position++] = (byte)(0x80 | ((c >>> 6) & 0x3F));
+                	buffer[position++] = (byte)(0x80 | ((c >>> 0) & 0x3F));
                 }
                 else {
-                    write(0xC0 | ((c >>  6) & 0x1F));
-                    write(0x80 | ((c >>  0) & 0x3F));
+                	buffer[position++] = (byte)(0xC0 | ((c >>> 6) & 0x1F));
+                	buffer[position++] = (byte)(0x80 | ((c >>> 0) & 0x3F));
                 }
             }
+            
+            this.position = position;
+        }
+    }
+
+    private void writeAMF37BitsStringData(String s) throws IOException {
+        if (s.length() == 0) {
+        	ensureCapacity(1);
+        	buffer[position++] = 0x01;
+            return;
+        }
+        
+        int index = storedStrings.putIfAbsent(s);
+
+        if (index >= 0)
+            writeAMF3IntegerData(index << 1);
+        else {
+        	final int length = s.length();
+
+        	writeAMF3IntegerData((length << 1) | 0x01);
+        	
+        	final byte[] buffer = this.buffer;
+        	final int bufferLength = buffer.length;
+            int position = this.position;
+        	
+        	int i = 0;
+        	while (i < length && position < bufferLength)
+        		buffer[position++] = (byte)s.charAt(i++);
+        	this.position = position;
+        	
+        	while (i < length) {
+        		flushBuffer();
+        		
+        		position = 0;
+            	while (i < length && position < bufferLength)
+            		buffer[position++] = (byte)s.charAt(i++);
+            	this.position = position;
+        	}
         }
     }
 
     protected void writeAMF3Xml(Document doc) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3Xml(doc=%s)", doc);
+    	ensureCapacity(1);
+    	buffer[position++] = (legacyXmlSerialization ? AMF3_XML : AMF3_XMLSTRING);
 
-        byte xmlType = AMF3_XMLSTRING;
-        initChannelConfig();
-        if (isChannelConfigInitialized && isLegacyXmlSerialization)
-            xmlType = AMF3_XML;
-        write(xmlType);
-
-        int index = indexOfStoredObjects(doc);
+        int index = storedObjects.putIfAbsent(doc);
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredObjects(doc);
-
             byte[] bytes = xmlUtil.toString(doc).getBytes("UTF-8");
             writeAMF3IntegerData((bytes.length << 1) | 0x01);
-            write(bytes);
+            flushBuffer();
+            out.write(bytes, 0, bytes.length);
         }
     }
 
     protected void writeAMF3Date(Date date) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3Date(date=%s)", date);
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_DATE;
 
-        write(AMF3_DATE);
-
-        int index = indexOfStoredObjects(date);
+        int index = storedObjects.putIfAbsent(date);
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredObjects(date);
             writeAMF3IntegerData(0x01);
-            writeDouble(date.getTime());
+            
+            ensureCapacity(8);
+            writeLongData(date.getTime());
         }
     }
 
     protected void writeAMF3Array(Object array) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3Array(array=%s)", array);
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_ARRAY;
 
-        write(AMF3_ARRAY);
-
-        int index = indexOfStoredObjects(array);
+        int index = storedObjects.putIfAbsent(array);
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredObjects(array);
-
             int length = Array.getLength(array);
             writeAMF3IntegerData(length << 1 | 0x01);
-            write(0x01);
+        	
+            ensureCapacity(1);
+        	buffer[position++] = 0x01;
+
             for (int i = 0; i < length; i++)
                 writeObject(Array.get(array, i));
         }
     }
 
     protected void writeAMF3ByteArray(byte[] bytes) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3ByteArray(bytes=%s)", bytes);
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_BYTEARRAY;
 
-        write(AMF3_BYTEARRAY);
-
-        int index = indexOfStoredObjects(bytes);
+        int index = storedObjects.putIfAbsent(bytes);
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredObjects(bytes);
-
             writeAMF3IntegerData(bytes.length << 1 | 0x01);
-            //write(bytes);
-
-            for (int i = 0; i < bytes.length; i++)
-            	out.write(bytes[i]);
+            
+            flushBuffer();
+            out.write(bytes, 0, bytes.length);
         }
     }
 
     protected void writeAMF3Collection(Collection<?> c) throws IOException {
-        if (debugMore) logMore.debug("writeAMF3Collection(c=%s)", c);
-
-        initChannelConfig();
-        if (isChannelConfigInitialized && isLegacyCollectionSerialization)
+        if (legacyCollectionSerialization)
             writeAMF3Array(c.toArray());
         else {
-            ArrayCollection ac = (c instanceof ArrayCollection ? (ArrayCollection)c : new ArrayCollection(c));
-            writeAMF3Object(ac);
+        	ensureCapacity(1);
+        	buffer[position++] = AMF3_OBJECT;
+            
+        	int index = storedObjects.putIfAbsent(c);
+            if (index >= 0)
+                writeAMF3IntegerData(index << 1);
+            else {
+            	writeAndGetAMF3Descriptor(ArrayCollection.class);
+            	
+            	ensureCapacity(1);
+            	buffer[position++] = AMF3_ARRAY;
+            	
+            	// Add an arbitrary object in the dictionary instead of the
+            	// array obtained via c.toArray(): c.toArray() must return a
+            	// new instance each time it is called, there is no way to
+            	// find the same instance later...
+            	storedObjects.putIfAbsent(new Object());
+            	
+                writeAMF3IntegerData(c.size() << 1 | 0x01);
+                
+                ensureCapacity(1);
+            	buffer[position++] = 0x01;
+            	
+            	for (Object o : c)
+            		writeObject(o);
+            }
         }
     }
 
     protected void writeAMF3Object(Object o) throws IOException {
-        if (debug) log.debug("writeAMF3Object(o=%s)...", o);
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_OBJECT;
 
-        write(AMF3_OBJECT);
-
-        int index = indexOfStoredObjects(o);
+        int index = storedObjects.putIfAbsent(o);
         if (index >= 0)
             writeAMF3IntegerData(index << 1);
         else {
-            addToStoredObjects(o);
-
-            ClassGetter classGetter = ((ConvertersConfig)context.getGraniteConfig()).getClassGetter();
-            if (debug) log.debug("writeAMF3Object() - classGetter=%s", classGetter);
-            
             Class<?> oClass = classGetter.getClass(o);
-            if (debug) log.debug("writeAMF3Object() - oClass=%s", oClass);
 
-            JavaClassDescriptor desc = null;
-
-            // write class description.
-            IndexedJavaClassDescriptor iDesc = getFromStoredClassDescriptors(oClass);
-            if (iDesc != null) {
-                desc = iDesc.getDescriptor();
-                writeAMF3IntegerData(iDesc.getIndex() << 2 | 0x01);
-            }
-            else {
-                iDesc = addToStoredClassDescriptors(oClass);
-                desc = iDesc.getDescriptor();
-
-                writeAMF3IntegerData((desc.getPropertiesCount() << 4) | (desc.getEncoding() << 2) | 0x03);
-                writeAMF3StringData(desc.getName());
-
-                for (int i = 0; i < desc.getPropertiesCount(); i++)
-                    writeAMF3StringData(desc.getPropertyName(i));
-            }
-            if (debug) log.debug("writeAMF3Object() - desc=%s", desc);
-
-            // write object content.
+            JavaClassDescriptor desc = writeAndGetAMF3Descriptor(oClass);
             if (desc.isExternalizable()) {
                 Externalizer externalizer = desc.getExternalizer();
 
                 if (externalizer != null) {
-                    if (debug) log.debug("writeAMF3Object() - using externalizer=%s", externalizer);
                     try {
                         externalizer.writeExternal(o, this);
                     }
@@ -577,31 +640,22 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
                         throw new RuntimeException("Could not externalize object: " + o, e);
                     }
                 }
-                else {
-                    if (debug) log.debug("writeAMF3Object() - legacy Externalizable=%s", o);
+                else
                     ((Externalizable)o).writeExternal(this);
-                }
             }
             else {
-                if (debug) log.debug("writeAMF3Object() - writing defined properties...");
                 for (int i = 0; i < desc.getPropertiesCount(); i++) {
                     Object obj = desc.getPropertyValue(i, o);
-                    if (debug) log.debug("writeAMF3Object() - writing defined property: %s=%s", desc.getPropertyName(i), obj);
                     writeObject(specialValueFactory.createSpecialValue(desc.getProperty(i), obj));
                 }
 
                 if (desc.isDynamic()) {
-                    if (debug) log.debug("writeAMF3Object() - writing dynamic properties...");
                     Map<?, ?> oMap = (Map<?, ?>)o;
                     for (Map.Entry<?, ?> entry : oMap.entrySet()) {
                         Object key = entry.getKey();
                         if (key != null) {
                             String propertyName = key.toString();
                             if (propertyName.length() > 0) {
-                                if (debug) log.debug(
-                                    "writeAMF3Object() - writing dynamic property: %s=%s",
-                                    propertyName, entry.getValue()
-                                );
                                 writeAMF3StringData(propertyName);
                                 writeObject(entry.getValue());
                             }
@@ -611,45 +665,35 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
                 }
             }
         }
+    }
+    
+    protected JavaClassDescriptor writeAndGetAMF3Descriptor(Class<?> cls) throws IOException {
+    	JavaClassDescriptor desc = null;
+    	
+        IndexedJavaClassDescriptor iDesc = getFromStoredClassDescriptors(cls);
+        if (iDesc != null) {
+            desc = iDesc.getDescriptor();
+            writeAMF3IntegerData(iDesc.getIndex() << 2 | 0x01);
+        }
+        else {
+            iDesc = addToStoredClassDescriptors(cls);
+            desc = iDesc.getDescriptor();
 
-        if (debug) log.debug("writeAMF3Object(o=%s) - Done", o);
+            writeAMF3IntegerData((desc.getPropertiesCount() << 4) | (desc.getEncoding() << 2) | 0x03);
+            writeAMF37BitsStringData(desc.getName());
+
+            for (int i = 0; i < desc.getPropertiesCount(); i++)
+            	writeAMF37BitsStringData(desc.getPropertyName(i));
+        }
+    	
+        return desc;
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // Cached objects methods.
 
-    protected void addToStoredStrings(String s) {
-        if (!storedStrings.containsKey(s)) {
-            Integer index = Integer.valueOf(storedStrings.size());
-            if (debug) log.debug("addToStoredStrings(s=%s) at index=%d", s, index);
-            storedStrings.put(s, index);
-        }
-    }
-
-    protected int indexOfStoredStrings(String s) {
-        Integer index = storedStrings.get(s);
-        if (debug) log.debug("indexOfStoredStrings(s=%s) -> %d", s, (index != null ? index : -1));
-        return (index != null ? index : -1);
-    }
-
-    protected void addToStoredObjects(Object o) {
-        if (o != null && !storedObjects.containsKey(o)) {
-            Integer index = Integer.valueOf(storedObjects.size());
-            if (debug) log.debug("addToStoredObjects(o=%s) at index=%d", o, index);
-            storedObjects.put(o, index);
-        }
-    }
-
-    protected int indexOfStoredObjects(Object o) {
-        Integer index = storedObjects.get(o);
-        if (debug) log.debug("indexOfStoredObjects(o=%s) -> %d", o, (index != null ? index : -1));
-        return (index != null ? index : -1);
-    }
-
     protected IndexedJavaClassDescriptor addToStoredClassDescriptors(Class<?> clazz) {
         final String name = JavaClassDescriptor.getClassName(clazz);
-
-        if (debug) log.debug("addToStoredClassDescriptors(clazz=%s)", clazz);
 
         if (storedClassDescriptors.containsKey(name))
             throw new RuntimeException(
@@ -677,37 +721,226 @@ public class AMF3Serializer extends DataOutputStream implements ObjectOutput, AM
             desc = new DefaultJavaClassDescriptor(clazz);
 
         IndexedJavaClassDescriptor iDesc = new IndexedJavaClassDescriptor(storedClassDescriptors.size(), desc);
-
-        if (debug) log.debug("addToStoredClassDescriptors() - putting: name=%s, iDesc=%s", name, iDesc);
-
         storedClassDescriptors.put(name, iDesc);
-
         return iDesc;
     }
 
     protected IndexedJavaClassDescriptor getFromStoredClassDescriptors(Class<?> clazz) {
-        if (debug) log.debug("getFromStoredClassDescriptors(clazz=%s)", clazz);
-
         String name = JavaClassDescriptor.getClassName(clazz);
-        IndexedJavaClassDescriptor iDesc = storedClassDescriptors.get(name);
-
-        if (debug) log.debug("getFromStoredClassDescriptors() -> %s", iDesc);
-
-        return iDesc;
+        return storedClassDescriptors.get(name);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // Utilities.
-    
-    protected void initChannelConfig() {
-    	if (isChannelConfigInitialized)
-    		return;
-        String channelId = context.getAMFContext().getChannelId();
-        ChannelConfig channelConfig = context.getServicesConfig();
-        if (channelConfig != null) {
-	        isLegacyXmlSerialization = channelConfig.getChannelProperty(channelId, "legacyXmlSerialization");
-	        isLegacyCollectionSerialization = channelConfig.getChannelProperty(channelId, "legacyCollectionSerialization");
-        }
-        isChannelConfigInitialized = true;
+	
+    private void writeIntData(int i) {
+    	final byte[] buffer = this.buffer;
+    	int position = this.position;
+
+    	buffer[position++] = (byte)(i >>> 24);
+    	buffer[position++] = (byte)(i >>> 16);
+    	buffer[position++] = (byte)(i >>> 8);
+    	buffer[position++] = (byte)i;
+    	
+    	this.position = position;
     }
+	
+    private void writeLongData(long l) {
+    	final byte[] buffer = this.buffer;
+    	int position = this.position;
+    	
+    	buffer[position++] = (byte)(l >>> 56);
+    	buffer[position++] = (byte)(l >>> 48);
+    	buffer[position++] = (byte)(l >>> 40);
+    	buffer[position++] = (byte)(l >>> 32);
+    	buffer[position++] = (byte)(l >>> 24);
+    	buffer[position++] = (byte)(l >>> 16);
+    	buffer[position++] = (byte)(l >>> 8);
+    	buffer[position++] = (byte)l;
+    	
+    	this.position = position;
+    }
+
+	private void ensureCapacity(int capacity) throws IOException {
+		if (buffer.length - position < capacity)
+			flushBuffer();
+	}
+	
+	private void flushBuffer() throws IOException {
+		if (position > 0) {
+			out.write(buffer, 0, position);
+			position = 0;
+		}
+	}
+	
+	///////////////////////////////////////////////////////////////////////////
+	// ObjectOutput implementation: not optimized as these methods shouldn't
+	// be used with AMF3...
+	
+	@Override
+	public void writeBoolean(boolean v) throws IOException {
+		flushBuffer();
+		out.write(v ? 1 : 0);
+	}
+
+	@Override
+	public void writeByte(int v) throws IOException {
+		flushBuffer();
+		out.write(v);
+	}
+
+	@Override
+	public void writeShort(int v) throws IOException {
+		flushBuffer();
+		out.write((v >>> 8) & 0xFF);
+        out.write((v >>> 0) & 0xFF);
+	}
+
+	@Override
+	public void writeChar(int v) throws IOException {
+		flushBuffer();
+		out.write((v >>> 8) & 0xFF);
+        out.write((v >>> 0) & 0xFF);
+	}
+
+	@Override
+	public void writeInt(int v) throws IOException {
+		flushBuffer();
+		out.write((v >>> 24) & 0xFF);
+        out.write((v >>> 16) & 0xFF);
+        out.write((v >>>  8) & 0xFF);
+        out.write((v >>>  0) & 0xFF);
+	}
+
+	@Override
+	public void writeLong(long v) throws IOException {
+		flushBuffer();
+		
+		byte writeBuffer[] = new byte[8];
+        writeBuffer[0] = (byte)(v >>> 56);
+        writeBuffer[1] = (byte)(v >>> 48);
+        writeBuffer[2] = (byte)(v >>> 40);
+        writeBuffer[3] = (byte)(v >>> 32);
+        writeBuffer[4] = (byte)(v >>> 24);
+        writeBuffer[5] = (byte)(v >>> 16);
+        writeBuffer[6] = (byte)(v >>>  8);
+        writeBuffer[7] = (byte)(v >>>  0);
+        out.write(writeBuffer, 0, 8);
+	}
+
+	@Override
+	public void writeFloat(float v) throws IOException {
+		flushBuffer();
+		writeInt(Float.floatToIntBits(v));
+	}
+
+	@Override
+	public void writeDouble(double v) throws IOException {
+		flushBuffer();
+		writeLong(Double.doubleToLongBits(v));
+	}
+
+	@Override
+	public void writeBytes(String s) throws IOException {
+		flushBuffer();
+        
+		final int len = s.length();
+        for (int i = 0 ; i < len ; i++)
+            out.write((byte)s.charAt(i));
+	}
+
+	@Override
+	public void writeChars(String s) throws IOException {
+		flushBuffer();
+        
+		int len = s.length();
+        for (int i = 0 ; i < len ; i++) {
+            int v = s.charAt(i);
+            out.write((v >>> 8) & 0xFF);
+            out.write((v >>> 0) & 0xFF);
+        }
+	}
+
+	@Override
+	public void writeUTF(String s) throws IOException {
+		flushBuffer();
+
+		final int strlen = s.length();
+        int utflen = 0;
+        int c, count = 0;
+
+        for (int i = 0; i < strlen; i++) {
+            c = s.charAt(i);
+            if ((c >= 0x0001) && (c <= 0x007F)) {
+                utflen++;
+            } else if (c > 0x07FF) {
+                utflen += 3;
+            } else {
+                utflen += 2;
+            }
+        }
+
+        if (utflen > 65535)
+            throw new UTFDataFormatException("encoded string too long: " + utflen + " bytes");
+
+        byte[] bytearr = new byte[utflen+2];
+
+        bytearr[count++] = (byte) ((utflen >>> 8) & 0xFF);
+        bytearr[count++] = (byte) ((utflen >>> 0) & 0xFF);
+
+        int i=0;
+        for (i=0; i<strlen; i++) {
+           c = s.charAt(i);
+           if (!((c >= 0x0001) && (c <= 0x007F)))
+        	   break;
+           bytearr[count++] = (byte) c;
+        }
+
+        for (;i < strlen; i++){
+            c = s.charAt(i);
+            if ((c >= 0x0001) && (c <= 0x007F)) {
+                bytearr[count++] = (byte) c;
+
+            } else if (c > 0x07FF) {
+                bytearr[count++] = (byte) (0xE0 | ((c >> 12) & 0x0F));
+                bytearr[count++] = (byte) (0x80 | ((c >>  6) & 0x3F));
+                bytearr[count++] = (byte) (0x80 | ((c >>  0) & 0x3F));
+            } else {
+                bytearr[count++] = (byte) (0xC0 | ((c >>  6) & 0x1F));
+                bytearr[count++] = (byte) (0x80 | ((c >>  0) & 0x3F));
+            }
+        }
+        
+        out.write(bytearr, 0, utflen+2);
+	}
+
+	@Override
+	public void write(int b) throws IOException {
+		flushBuffer();
+		out.write(b);
+	}
+
+	@Override
+	public void write(byte[] b) throws IOException {
+		flushBuffer();
+		out.write(b);
+	}
+
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+		flushBuffer();
+		out.write(b, off, len);
+	}
+
+	@Override
+	public void flush() throws IOException {
+		flushBuffer();
+		out.flush();
+	}
+
+	@Override
+	public void close() throws IOException {
+		flushBuffer();
+		out.close();
+	}
 }

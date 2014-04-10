@@ -19,12 +19,16 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.messaging.amf;
+package org.granite.messaging.amf.io;
+
+import java.nio.charset.Charset;
 
 /**
  * @author Franck WOLFF
  */
 public interface AMF3Constants {
+	
+	public static final Charset UTF8 = Charset.forName("UTF-8");
 	
 	/*
 	Adobe Systems Incorporated AMF 3 Specification (January 2013) 

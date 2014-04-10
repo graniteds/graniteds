@@ -21,7 +21,7 @@
  */
 package org.granite.messaging.amf.types;
 
-import org.granite.messaging.amf.AMF3Constants;
+import org.granite.messaging.amf.io.AMF3Constants;
 
 /**
  * @author Franck WOLFF

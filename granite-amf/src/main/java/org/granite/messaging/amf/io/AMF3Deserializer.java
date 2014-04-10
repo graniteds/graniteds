@@ -27,7 +27,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
-import java.io.UTFDataFormatException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,7 +38,6 @@ import org.granite.config.ExternalizersConfig;
 import org.granite.config.api.AliasRegistryConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
-import org.granite.messaging.amf.AMF3Constants;
 import org.granite.messaging.amf.io.util.ActionScriptClassDescriptor;
 import org.granite.messaging.amf.io.util.DefaultActionScriptClassDescriptor;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
@@ -202,38 +200,41 @@ public class AMF3Deserializer extends DataInputStream implements ObjectInput, AM
             if (length > 0) {
 
                 byte[] utfBytes = new byte[length];
-                char[] utfChars = new char[length];
-
-                readFully(utfBytes);
-
-                int c, c2, c3, iBytes = 0, iChars = 0;
-                while (iBytes < length) {
-                    c = utfBytes[iBytes++] & 0xFF;
-                    if (c <= 0x7F)
-                        utfChars[iChars++] = (char)c;
-                    else {
-                        switch (c >> 4) {
-                        case 12: case 13:
-                            c2 = utfBytes[iBytes++];
-                            if ((c2 & 0xC0) != 0x80)
-                                throw new UTFDataFormatException("Malformed input around byte " + (iBytes-2));
-                            utfChars[iChars++] = (char)(((c & 0x1F) << 6) | (c2 & 0x3F));
-                            break;
-                        case 14:
-                            c2 = utfBytes[iBytes++];
-                            c3 = utfBytes[iBytes++];
-                            if (((c2 & 0xC0) != 0x80) || ((c3 & 0xC0) != 0x80))
-                                throw new UTFDataFormatException("Malformed input around byte " + (iBytes-3));
-                            utfChars[iChars++] = (char)(((c & 0x0F) << 12) | ((c2 & 0x3F) << 6) | ((c3 & 0x3F) << 0));
-                            break;
-                        default:
-                            throw new UTFDataFormatException("Malformed input around byte " + (iBytes-1));
-                        }
-                    }
-                }
-                result = new String(utfChars, 0, iChars);
-
-                if (debugMore) logMore.debug("readAMF3String() - result=%s", result);
+                readFully(utfBytes, 0, length);
+                result = new String(utfBytes, UTF8);
+                
+//                char[] utfChars = new char[length];
+//
+//                readFully(utfBytes);
+//
+//                int c, c2, c3, iBytes = 0, iChars = 0;
+//                while (iBytes < length) {
+//                    c = utfBytes[iBytes++] & 0xFF;
+//                    if (c <= 0x7F)
+//                        utfChars[iChars++] = (char)c;
+//                    else {
+//                        switch (c >> 4) {
+//                        case 12: case 13:
+//                            c2 = utfBytes[iBytes++];
+//                            if ((c2 & 0xC0) != 0x80)
+//                                throw new UTFDataFormatException("Malformed input around byte " + (iBytes-2));
+//                            utfChars[iChars++] = (char)(((c & 0x1F) << 6) | (c2 & 0x3F));
+//                            break;
+//                        case 14:
+//                            c2 = utfBytes[iBytes++];
+//                            c3 = utfBytes[iBytes++];
+//                            if (((c2 & 0xC0) != 0x80) || ((c3 & 0xC0) != 0x80))
+//                                throw new UTFDataFormatException("Malformed input around byte " + (iBytes-3));
+//                            utfChars[iChars++] = (char)(((c & 0x0F) << 12) | ((c2 & 0x3F) << 6) | ((c3 & 0x3F) << 0));
+//                            break;
+//                        default:
+//                            throw new UTFDataFormatException("Malformed input around byte " + (iBytes-1));
+//                        }
+//                    }
+//                }
+//                result = new String(utfChars, 0, iChars);
+//
+//                if (debugMore) logMore.debug("readAMF3String() - result=%s", result);
 
                 addToStoredStrings(result);
             } else

@@ -38,7 +38,7 @@ import java.util.Map;
  * @author Franck WOLFF
  */
 public class StringUtil {
-
+	
     private static final char[] HEX_CHARS = "0123456789ABCDEF".toCharArray();
 
     public static char[] bytesToHexChars(byte[] bytes) {
@@ -244,7 +244,8 @@ public class StringUtil {
             }
 
             return String.valueOf(o);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return o.getClass().getName() + " (exception: " + e.toString() + ")";
         }
     }
