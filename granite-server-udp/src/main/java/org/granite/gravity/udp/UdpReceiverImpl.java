@@ -38,13 +38,16 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.util.HashMap;
 
+import javax.servlet.ServletException;
+
 import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
 import org.granite.context.SimpleGraniteContext;
-import org.granite.gravity.AbstractChannel;
 import org.granite.gravity.GravityInternal;
+import org.granite.gravity.GravityServletUtil;
 import org.granite.gravity.MessageReceivingException;
 import org.granite.logging.Logger;
+import org.granite.util.ContentType;
 
 import flex.messaging.messages.AcknowledgeMessage;
 import flex.messaging.messages.AsyncMessage;
@@ -62,13 +65,15 @@ public class UdpReceiverImpl implements UdpReceiver {
 
 	private UdpChannel udpChannel;
 	private Message connect;
+	private ContentType contentType;
 
-	public UdpReceiverImpl(UdpChannel udpChannel, Message connect) {
+	public UdpReceiverImpl(UdpChannel udpChannel, Message connect, ContentType contentType) {
 		if (udpChannel == null || connect == null)
 			throw new NullPointerException();
 		
 		this.udpChannel = udpChannel;
 		this.connect = connect;
+		this.contentType = contentType;
 	}
 	
 	@Override
@@ -79,8 +84,7 @@ public class UdpReceiverImpl implements UdpReceiver {
 	}
 
 	public void receive(AsyncMessage message) throws MessageReceivingException {
-		AbstractChannel gravityChannel = udpChannel.getGravityChannel();
-		GravityInternal gravity = gravityChannel.getGravity();
+		GravityInternal gravity = udpChannel.getGravity();
 		
 		message.setCorrelationId(connect.getMessageId());
         GraniteContext context = SimpleGraniteContext.createThreadInstance(
@@ -92,12 +96,15 @@ public class UdpReceiverImpl implements UdpReceiver {
 	        ((AMFContextImpl)context.getAMFContext()).setCurrentAmf3Message(connect);
 	
 	        UdpOutputStream os = new UdpOutputStream();
-	        ObjectOutput out = gravityChannel.newSerializer(context, os);
-	        out.writeObject(new Message[] {message});
+	        ObjectOutput out = GravityServletUtil.newSerializer(gravity, os, contentType);
+	        out.writeObject(new Message[] { message });
 	        
 	        int sent = udpChannel.write(os.buffer(), 0, os.size());
 	        if (sent != os.size())
 	        	log.debug("Partial data sent: %d of %d", sent, os.size());
+        }
+        catch (ServletException e) {
+        	throw new MessageReceivingException(message, e);
         }
         catch (IOException e) {
         	throw new MessageReceivingException(message, e);

@@ -22,15 +22,18 @@
 package org.granite.gravity.tomcat;
 
 import flex.messaging.messages.Message;
+
 import org.apache.catalina.CometEvent;
 import org.granite.gravity.AsyncHttpContext;
 import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
+import org.granite.util.ContentType;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -54,8 +57,6 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
 
         HttpServletRequest request = event.getHttpServletRequest();
         HttpServletResponse response = event.getHttpServletResponse();
-
-        rejectJMFContentType(request);
 
         GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		TomcatChannelFactory channelFactory = new TomcatChannelFactory(gravity);
@@ -107,7 +108,7 @@ public class GravityTomcatServlet extends AbstractCometProcessor {
 
             log.debug("<< [AMF3 RESPONSES] %s", (Object)amf3Responses);
 
-            serialize(gravity, response, amf3Responses);
+            serialize(gravity, response, amf3Responses, ContentType.forMimeType(request.getContentType()));
         }
         catch (IOException e) {
             log.error(e, "Gravity message error");

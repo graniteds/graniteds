@@ -21,8 +21,11 @@
  */
 package org.granite.tide.spring;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -43,6 +46,7 @@ import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceInvocationContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
+import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.tide.IInvocationCall;
 import org.granite.tide.IInvocationResult;
 import org.granite.tide.annotations.BypassTideMerge;
@@ -55,6 +59,13 @@ import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpOutputMessage;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.HandlerAdapter;
@@ -92,9 +103,21 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     	for (Class<?> componentClass : componentClasses) {
 	    	if (componentClass.isAnnotationPresent(org.springframework.stereotype.Controller.class)) {
 	    		return new AnnotationMethodHandlerAdapter() {
+	    			{
+	    				HttpMessageConverter<?>[] messageConverters = new HttpMessageConverter<?>[getMessageConverters().length+1];
+	    				System.arraycopy(getMessageConverters(), 0, messageConverters, 0, getMessageConverters().length);
+	    				messageConverters[messageConverters.length-1] = new ControllerRequestBodyConverter();
+	    				setMessageConverters(messageConverters);
+	    			}
+	    			
 	    			@Override
 	    			protected ServletRequestDataBinder createBinder(HttpServletRequest request, Object target, String objectName) throws Exception {
 	    				return new ControllerRequestDataBinder(request, target, objectName);
+	    			}
+	    			
+	    			@Override
+	    			protected HttpInputMessage createHttpInputMessage(HttpServletRequest request) throws Exception {
+	    				return new ControllerInputMessage(request);
 	    			}
 	    		};
 	    	}
@@ -134,7 +157,8 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     
     private static final String SPRINGMVC_BINDING_ATTR = "__SPRINGMVC_LOCAL_BINDING__";
     
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Object[] beforeMethodSearch(Object instance, String methodName, Object[] args) {
     	if (instance instanceof HandlerAdapter) {
     		boolean grails = getSpringContext().getClass().getName().indexOf("Grails") > 0;
@@ -156,16 +180,25 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     			// Special handling for Grails controllers
     			handler = springContext.getBean("mainSimpleController");
     		}
-    		HttpGraniteContext context = (HttpGraniteContext)GraniteContext.getCurrentInstance();
-    		@SuppressWarnings("unchecked")
-    		Map<String, Object> requestMap = (args[3] != null && args[3] instanceof Object[] && ((Object[])args[3]).length >= 1 && ((Object[])args[3]).length <= 2 && ((Object[])args[3])[0] instanceof Map) 
-    			? (Map<String, Object>)((Object[])args[3])[0] 
-    			: null;
+    		ServletGraniteContext context = (ServletGraniteContext)GraniteContext.getCurrentInstance();
+    		Map<String, Object> requestMap = null;
     		boolean localBinding = false;
-    		if (args[3] != null && args[3] instanceof Object[] && ((Object[])args[3]).length == 2 
-    				&& ((Object[])args[3])[0] instanceof Map<?, ?> && ((Object[])args[3])[1] instanceof Boolean)
-    			localBinding = (Boolean)((Object[])args[3])[1];
-    		context.getRequestMap().put(SPRINGMVC_BINDING_ATTR, localBinding);
+    		Object requestBody = null;
+    		if (args[3] != null && args[3] instanceof Object[]) {
+	    		Object[] params = (Object[])args[3];
+	    		if (params.length >= 1 && params.length <= 2 && params[params.length-1] instanceof Map<?, ?>) {
+	    			requestMap = (Map<String, Object>)params[params.length-1];
+	    			if (params.length == 2)
+	    				requestBody = params[0];
+	    		}
+	    		else if (params.length >= 2 && params.length <= 3 && params[params.length-2] instanceof Map<?, ?> && params[params.length-1] instanceof Boolean) {
+	    			requestMap = (Map<String, Object>)params[params.length-2];
+	    			localBinding = (Boolean)params[params.length-1];
+	    			if (params.length == 3)
+	    				requestBody = params[0];
+	    		}
+	    		context.getRequestMap().put(SPRINGMVC_BINDING_ATTR, localBinding);
+    		}
     		
     		Map<String, Object> valueMap = null;
     		if (args[4] instanceof InvocationCall) {
@@ -181,7 +214,6 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 	    				if (cClass.isInterface())
 	    					continue;
 		    			Method m = cClass.getDeclaredMethod("getProperty", String.class);
-		    			@SuppressWarnings("unchecked")
 		    			Map<String, Object> map = (Map<String, Object>)m.invoke(component, "params");
 		    			if (requestMap != null)
 		    				map.putAll(requestMap);
@@ -193,7 +225,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 	    			// Ignore, probably not a Grails controller
 	    		}
     		}
-     		ControllerRequestWrapper rw = new ControllerRequestWrapper(grails, context.getRequest(), componentName, (String)args[2], requestMap, valueMap);
+     		ControllerRequestWrapper rw = new ControllerRequestWrapper(grails, context.getRequest(), componentName, (String)args[2], requestBody, requestMap, valueMap);
     		return new Object[] { "handle", new Object[] { rw, context.getResponse(), handler }};
     	}
     	
@@ -372,22 +404,25 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     
     
     private class ControllerRequestWrapper extends HttpServletRequestWrapper {
-    	private String initialComponentName = null;
-    	private String componentName = null;
-    	private String methodName = null;
-    	private Map<String, Object> requestMap = null;
-    	private Map<String, Object> valueMap = null;
-    	private boolean localBinding;
+    	private final String initialComponentName;
+    	private final String componentName;
+    	private final String methodName;
+    	private final Object requestBody;
+    	private final Map<String, Object> requestMap;
+    	private final Map<String, Object> valueMap;
+    	private final boolean localBinding;
     	
-		public ControllerRequestWrapper(boolean grails, HttpServletRequest request, String componentName, String methodName, Map<String, Object> requestMap, Map<String, Object> valueMap) {
+		public ControllerRequestWrapper(boolean grails, HttpServletRequest request, String componentName, String methodName, Object requestBody, Map<String, Object> requestMap, Map<String, Object> valueMap) {
 			super(request);
 			this.initialComponentName = componentName;
-			this.componentName = componentName.substring(0, componentName.length()-"Controller".length());
-			if (this.componentName.indexOf(".") > 0)
-				this.componentName = this.componentName.substring(this.componentName.lastIndexOf(".")+1);
+			String actualComponentName = componentName.substring(0, componentName.length()-"Controller".length());
+			if (actualComponentName.indexOf(".") > 0)
+				actualComponentName = actualComponentName.substring(actualComponentName.lastIndexOf(".")+1);
 			if (grails)
-				this.componentName = this.componentName.substring(0, 1).toLowerCase() + this.componentName.substring(1);
+				actualComponentName = actualComponentName.substring(0, 1).toLowerCase() + actualComponentName.substring(1);
+			this.componentName = actualComponentName;
 			this.methodName = methodName;
+			this.requestBody = requestBody;
 			this.requestMap = requestMap;
 			this.valueMap = valueMap;
 			this.localBinding = Boolean.TRUE.equals(request.getAttribute(SPRINGMVC_BINDING_ATTR));
@@ -399,8 +434,17 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		}
 		
 		@Override
+		public String getContentType() {
+			return REQUEST_BODY_TYPE.toString();
+		}
+		
+		@Override
 		public String getServletPath() {
 			return "/" + componentName + "/" + methodName;
+		}
+		
+		public Object getRequestBody() {
+			return requestBody;
 		}
 		
 		public Object getRequestValue(String key) {
@@ -448,10 +492,68 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     }
     
     
+    private static final MediaType REQUEST_BODY_TYPE = new MediaType("application", "x-graniteds-springmvc");
+    
+    
+    private class ControllerRequestBodyConverter implements HttpMessageConverter<Object> {
+    	
+		@Override
+		public boolean canRead(Class<?> clazz, MediaType mediaType) {
+			return mediaType.equals(REQUEST_BODY_TYPE);
+		}
+		
+		@Override
+		public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+			return false;
+		}
+		
+		@Override
+		public List<MediaType> getSupportedMediaTypes() {
+			return Collections.singletonList(REQUEST_BODY_TYPE);
+		}
+		
+		@Override
+		public Object read(Class<? extends Object> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+			return ((ControllerInputMessage)inputMessage).getWrappedBody();
+		}
+		
+		@Override
+		public void write(Object t, MediaType contentType, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+		}
+    }
+    
+    
+    private class ControllerInputMessage implements HttpInputMessage {
+
+    	private final ControllerRequestWrapper wrapper;
+    	private final HttpHeaders headers = new HttpHeaders();
+    	
+    	public ControllerInputMessage(ServletRequest request) {
+    		this.wrapper = (ControllerRequestWrapper)request;
+    		headers.add("Content-Type", REQUEST_BODY_TYPE.toString());
+    	}
+    	
+		@Override
+		public HttpHeaders getHeaders() {
+			return headers;
+		}
+
+		@Override
+		public InputStream getBody() throws IOException {
+			return null;
+		}
+		
+		public Object getWrappedBody() {
+			return wrapper.getRequestBody();
+		}
+    	
+    }
+    
+    
     private class ControllerRequestDataBinder extends ServletRequestDataBinder {
     	
-    	private ControllerRequestWrapper wrapper = null;
-    	private Object target = null;
+    	private final ControllerRequestWrapper wrapper;
+    	private Object target;
 
 		public ControllerRequestDataBinder(ServletRequest request, Object target, String objectName) {
 			super(target, objectName);

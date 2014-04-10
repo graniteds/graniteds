@@ -38,8 +38,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.DatagramChannel;
 
-import org.granite.gravity.AbstractChannel;
-import org.granite.gravity.udp.UdpReceiverFactory;
+import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
 
 /**
@@ -100,7 +99,7 @@ public class UdpSharedNIOChannelFactory extends AbstractUdpChannelFactory {
 	}
 
 	@Override
-	public UdpChannel newUdpChannel(AbstractChannel gravityChannel, InetSocketAddress address) {
-		return new UdpNIOChannel(this, gravityChannel, channel, address);
+	public UdpChannel newUdpChannel(GravityInternal gravity, InetSocketAddress address) {
+		return new UdpNIOChannel(this, gravity, channel, address);
 	}
 }

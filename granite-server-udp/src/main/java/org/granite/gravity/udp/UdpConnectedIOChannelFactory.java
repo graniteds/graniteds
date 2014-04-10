@@ -37,8 +37,7 @@ package org.granite.gravity.udp;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 
-import org.granite.gravity.AbstractChannel;
-import org.granite.gravity.udp.UdpReceiverFactory;
+import org.granite.gravity.GravityInternal;
 import org.granite.logging.Logger;
 
 /**
@@ -67,7 +66,7 @@ public class UdpConnectedIOChannelFactory extends AbstractUdpChannelFactory {
 	}
 
 	@Override
-	public UdpChannel newUdpChannel(AbstractChannel gravityChannel, InetSocketAddress address) {
+	public UdpChannel newUdpChannel(GravityInternal gravity, InetSocketAddress address) {
 		int port = factory.getPort();
 		
 		if (port == 0)
@@ -84,7 +83,7 @@ public class UdpConnectedIOChannelFactory extends AbstractUdpChannelFactory {
 			
 			log.info("UDP socket bound to port %d and connected to %s", socket.getLocalPort(), socket.getRemoteSocketAddress());
 			
-			return new UdpIOChannel(this, gravityChannel, socket, address);
+			return new UdpIOChannel(this, gravity, socket, address);
 		}
 		catch (Exception e) {
 			throw new RuntimeException("Could not create data socket on port: " + port, e);

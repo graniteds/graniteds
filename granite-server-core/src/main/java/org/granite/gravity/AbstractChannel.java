@@ -22,7 +22,6 @@
 package org.granite.gravity;
 
 import java.io.IOException;
-import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.net.SocketException;
 import java.security.Principal;
@@ -33,10 +32,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.granite.config.AMF3Config;
 import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.udp.UdpReceiver;
@@ -249,14 +248,6 @@ public abstract class AbstractChannel implements Channel {
 		return runReceived(null);
 	}
 	
-	public ObjectOutput newSerializer(GraniteContext context, OutputStream os) {
-		return ((AMF3Config)context.getGraniteConfig()).newAMF3Serializer(os);
-	}
-	
-	public String getSerializerContentType() {
-		return ContentType.AMF.mimeType();
-	}
-	
 	protected void createUdpReceiver(UdpReceiverFactory factory, AsyncHttpContext asyncHttpContext) {
 		OutputStream os = null;
 		try {
@@ -275,20 +266,11 @@ public abstract class AbstractChannel implements Channel {
 	            null, request, response
 	        );
 	        ((AMFContextImpl)context.getAMFContext()).setCurrentAmf3Message(asyncHttpContext.getConnectMessage());
-	
-	        response.setStatus(HttpServletResponse.SC_OK);
-	        response.setContentType(getSerializerContentType());
-	        response.setDateHeader("Expire", 0L);
-	        response.setHeader("Cache-Control", "no-store");
 	        
-	        os = response.getOutputStream();
-	        
-	        ObjectOutput serializer = newSerializer(context, os);
-	        
-	        serializer.writeObject(new AsyncMessage[] { reply });
-	        
-	        os.flush();
-	        response.flushBuffer();
+	        GravityServletUtil.serialize(gravity, response, new AsyncMessage[] { reply }, ContentType.forMimeType(request.getContentType()));
+		}
+		catch (ServletException e) {
+			log.error(e, "Could not send UDP connect acknowledgement to channel: %s", this);
 		}
 		catch (IOException e) {
 			log.error(e, "Could not send UDP connect acknowledgement to channel: %s", this);
@@ -381,25 +363,16 @@ public abstract class AbstractChannel implements Channel {
 	            null, request, response
 	        );
 	        ((AMFContextImpl)context.getAMFContext()).setCurrentAmf3Message(asyncHttpContext.getConnectMessage());
-	
+	        
 	        // Write messages to response output stream.
-
-	        response.setStatus(HttpServletResponse.SC_OK);
-	        response.setContentType(getSerializerContentType());
-	        response.setDateHeader("Expire", 0L);
-	        response.setHeader("Cache-Control", "no-store");
-	        
-	        os = response.getOutputStream();
-	        ObjectOutput serializer = newSerializer(context, os);
-	        
-	        log.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
-	        
-	        serializer.writeObject(messagesArray);
-	        
-	        os.flush();
-	        response.flushBuffer();
+	        GravityServletUtil.serialize(gravity, response, messagesArray, ContentType.forMimeType(request.getContentType()));
 	        
 	        return true; // Messages were delivered, http context isn't valid anymore.
+		}
+		catch (ServletException e) {
+			log.error(e, "Configuration error for channel: %s", getId());
+			
+			return true;
 		}
 		catch (IOException e) {
 			log.warn(e, "Could not send messages to channel: %s (retrying later)", getId());

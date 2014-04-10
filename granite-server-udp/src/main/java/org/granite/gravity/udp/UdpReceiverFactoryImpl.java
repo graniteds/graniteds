@@ -43,6 +43,7 @@ import org.granite.gravity.GravityConfig;
 import org.granite.gravity.udp.UdpReceiver;
 import org.granite.gravity.udp.UdpReceiverFactory;
 import org.granite.logging.Logger;
+import org.granite.util.ContentType;
 
 import flex.messaging.messages.Message;
 
@@ -122,7 +123,7 @@ public class UdpReceiverFactoryImpl implements UdpReceiverFactory {
 		
 		log.debug("Creating UDP receiver for channel id %s and address %s", channel.getId(), address);
 		
-		return new UdpReceiverImpl(udpChannelFactory.newUdpChannel(channel, address), connect);
+		return new UdpReceiverImpl(udpChannelFactory.newUdpChannel(channel.getGravity(), address), connect, ContentType.forMimeType(request.getContentType()));
 	}
 
 	public void stop() {

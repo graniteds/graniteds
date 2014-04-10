@@ -40,7 +40,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
-import org.granite.gravity.AbstractChannel;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author Franck WOLFF
@@ -49,12 +49,12 @@ public class UdpIOChannel extends AbstractUdpChannel {
 
 	private DatagramSocket socket = null;
 	
-	public UdpIOChannel(UdpChannelFactory channelFactory, AbstractChannel gravityChannel, DatagramSocket socket) {
-		this(channelFactory, gravityChannel, socket, null);
+	public UdpIOChannel(UdpChannelFactory channelFactory, GravityInternal gravity, DatagramSocket socket) {
+		this(channelFactory, gravity, socket, null);
 	}
 	
-	public UdpIOChannel(UdpChannelFactory channelFactory, AbstractChannel gravityChannel, DatagramSocket socket, InetSocketAddress address) {
-		super(channelFactory, gravityChannel, address);
+	public UdpIOChannel(UdpChannelFactory channelFactory, GravityInternal gravity, DatagramSocket socket, InetSocketAddress address) {
+		super(channelFactory, gravity, address);
 		
 		if ((address == null && !socket.isConnected()) || (address != null && socket.isConnected()))
 			throw new IllegalArgumentException("Inconsistent arguments");

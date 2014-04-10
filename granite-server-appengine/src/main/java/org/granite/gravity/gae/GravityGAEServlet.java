@@ -32,6 +32,7 @@ import org.granite.gravity.AbstractGravityServlet;
 import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.logging.Logger;
+import org.granite.util.ContentType;
 
 import com.google.apphosting.api.DeadlineExceededException;
 
@@ -138,7 +139,7 @@ public class GravityGAEServlet extends AbstractGravityServlet {
 
             log.debug("<< [AMF3 RESPONSES] %s", (Object)amf3Responses);
 
-            serialize(gravity, response, amf3Responses);
+            serialize(gravity, response, amf3Responses, ContentType.forMimeType(request.getContentType()));
 		}
         catch (IOException e) {
             log.error(e, "Gravity message error");

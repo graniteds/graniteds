@@ -67,4 +67,31 @@ public class TestTideRemotingController extends AbstractTideTestCase {
         
         Assert.assertEquals("Hello joe", result.getResult());
     }
+	
+	@Test
+    public void testObjectCallBody() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		Contact c = new Contact();
+		c.setEmail("joe");
+        InvocationResult result = invokeComponent("hello3Controller", null, "hello", new Object[] { c, params, true }, 
+        		new Object[] { new Object[] { "hello3Controller", "contact", c } },
+        		new String[0], null 
+        );
+        
+        Assert.assertEquals("Hello joe", result.getResult());
+    }
+	
+	@Test
+    public void testObjectCallBody2() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("greet", "Hello");
+		Contact c = new Contact();
+		c.setEmail("joe");
+        InvocationResult result = invokeComponent("hello3Controller", null, "hello2", new Object[] { c, params, true }, 
+        		new Object[] { new Object[] { "hello3Controller", "contact", c } },
+        		new String[0], null 
+        );
+        
+        Assert.assertEquals("Hello joe", result.getResult());
+    }
 }

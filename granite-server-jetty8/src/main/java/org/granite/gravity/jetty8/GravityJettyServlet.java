@@ -23,6 +23,7 @@ package org.granite.gravity.jetty8;
 
 import flex.messaging.messages.AsyncMessage;
 import flex.messaging.messages.Message;
+
 import org.eclipse.jetty.continuation.Continuation;
 import org.eclipse.jetty.continuation.ContinuationSupport;
 import org.eclipse.jetty.continuation.ContinuationThrowable;
@@ -32,10 +33,12 @@ import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.gravity.GravityServletUtil;
 import org.granite.logging.Logger;
+import org.granite.util.ContentType;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 /**
@@ -52,8 +55,6 @@ public class GravityJettyServlet extends AbstractGravityServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
     	log.debug("doPost: from %s:%d", request.getRemoteAddr(), request.getRemotePort());
-
-        rejectJMFContentType(request);
 
         GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
 		ContinuationChannelFactory channelFactory = new ContinuationChannelFactory(gravity);
@@ -131,7 +132,7 @@ public class GravityJettyServlet extends AbstractGravityServlet {
 
             log.debug("<< [AMF3 RESPONSES] %s", (Object)amf3Responses);
 
-            serialize(gravity, response, amf3Responses);
+            serialize(gravity, response, amf3Responses, ContentType.forMimeType(request.getContentType()));
 		}
         catch (ContinuationThrowable e) {
             throw e;

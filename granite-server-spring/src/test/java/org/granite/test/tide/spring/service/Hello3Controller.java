@@ -19,24 +19,27 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.client.test.javafx.jmf;
+package org.granite.test.tide.spring.service;
 
-import java.io.Serializable;
+import org.granite.messaging.service.annotations.RemoteDestination;
+import org.granite.test.tide.data.Contact;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-public class AbstractPersistable<PK extends Serializable> implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-
-	private PK id;
-	
-	public AbstractPersistable() {
-	}
-
-	public PK getId() {
-		return id;
-	}
-
-	public void setId(PK id) {
-		this.id = id;
-	}
+@Controller
+@RemoteDestination
+public class Hello3Controller {
+    
+	@RequestMapping(value="/hello3/hello")
+    public String hello(@RequestBody Contact contact) {
+        return "Hello " + contact.getEmail();
+    }
+    
+	@RequestMapping(value="/hello3/hello2")
+    public String hello2(@RequestBody Contact contact, @RequestParam("greet") String greet) {
+        return greet + " " + contact.getEmail();
+    }
 }

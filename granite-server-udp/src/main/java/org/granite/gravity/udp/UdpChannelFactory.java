@@ -36,7 +36,7 @@ package org.granite.gravity.udp;
 
 import java.net.InetSocketAddress;
 
-import org.granite.gravity.AbstractChannel;
+import org.granite.gravity.GravityInternal;
 
 /**
  * @author Franck WOLFF
@@ -46,5 +46,5 @@ public interface UdpChannelFactory {
 	void start();
 	void stop();
 
-	UdpChannel newUdpChannel(AbstractChannel gravityChannel, InetSocketAddress address);
+	UdpChannel newUdpChannel(GravityInternal gravity, InetSocketAddress address);
 }

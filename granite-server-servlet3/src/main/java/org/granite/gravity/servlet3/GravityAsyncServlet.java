@@ -21,26 +21,22 @@
  */
 package org.granite.gravity.servlet3;
 
-import flex.messaging.messages.Message;
-import org.granite.config.GraniteConfigListener;
-import org.granite.gravity.AbstractGravityServlet;
-import org.granite.gravity.AsyncHttpContext;
-import org.granite.gravity.GravityInternal;
-import org.granite.gravity.GravityManager;
-import org.granite.logging.Logger;
-import org.granite.messaging.jmf.JMFDeserializer;
-import org.granite.messaging.jmf.JMFSerializer;
-import org.granite.util.ContentType;
-import org.granite.util.UUIDUtil;
+import java.io.IOException;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+
+import org.granite.gravity.AbstractGravityServlet;
+import org.granite.gravity.AsyncHttpContext;
+import org.granite.gravity.GravityInternal;
+import org.granite.gravity.GravityManager;
+import org.granite.logging.Logger;
+import org.granite.util.ContentType;
+
+import flex.messaging.messages.Message;
 
 /**
  * @author Franck WOLFF
@@ -66,7 +62,7 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 			throw new ServletException("Gravity Servlet3 implementation doesn't support dispatch(...) mode");
 
 		GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
-		AsyncChannelFactory channelFactory = newAsyncChannelFactory(gravity, request.getContentType());
+		AsyncChannelFactory channelFactory = new AsyncChannelFactory(gravity);
         
 		try {
             initializeRequest(gravity, request, response);
@@ -122,8 +118,8 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
             }
 
             log.debug("<< [AMF3 RESPONSES] %s", (Object)amf3Responses);
-
-            serialize(gravity, response, amf3Responses, request.getContentType());
+            
+            serialize(gravity, response, amf3Responses, ContentType.forMimeType(request.getContentType()));
         }
         catch (IOException e) {
             log.error(e, "Gravity message error");
@@ -142,85 +138,5 @@ public class GravityAsyncServlet extends AbstractGravityServlet {
 	@Override
 	public void destroy() {
 		super.destroy();
-	}
-	
-	protected AsyncChannelFactory newAsyncChannelFactory(GravityInternal gravity, String contentType) throws ServletException {
-		if (ContentType.JMF_AMF.mimeType().equals(contentType)) {
-	    	return new JMFAsyncChannelFactory(gravity);
-		}
-		return new AsyncChannelFactory(gravity);
-	}
-
-	@Override
-	protected Message[] deserialize(GravityInternal gravity, HttpServletRequest request) throws ClassNotFoundException, IOException, ServletException {
-		if (ContentType.JMF_AMF.mimeType().equals(request.getContentType())) {
-			InputStream is = request.getInputStream();
-			try {
-				return deserializeJMFAMF(gravity, request, is);
-			}
-			finally {
-				is.close();
-			}
-		}
-		return super.deserialize(gravity, request);
-	}
-
-	@Override
-	protected Message[] deserialize(GravityInternal gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException, ServletException {
-		if (ContentType.JMF_AMF.mimeType().equals(request.getContentType()))
-			return deserializeJMFAMF(gravity, request, is);
-		return super.deserialize(gravity, request, is);
-	}
-	
-	protected Message[] deserializeJMFAMF(GravityInternal gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException, ServletException {
-    	if (gravity.getGraniteConfig().getSharedContext() == null)
-    		throw GraniteConfigListener.newSharedContextNotInitializedException();
-    	
-    	@SuppressWarnings("all") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
-		JMFDeserializer deserializer = new JMFDeserializer(is, gravity.getGraniteConfig().getSharedContext());
-        return (Message[])deserializer.readObject();
-	}
-
-	protected void serialize(GravityInternal gravity, HttpServletResponse response, Message[] messages, String contentType) throws IOException, ServletException {
-		if (ContentType.JMF_AMF.mimeType().equals(contentType))
-			serializeJMFAMF(gravity, response, messages);
-		else
-			super.serialize(gravity, response, messages);
-	}
-
-	protected void serializeJMFAMF(GravityInternal gravity, HttpServletResponse response, Message[] messages) throws IOException, ServletException {
-    	if (gravity.getGraniteConfig().getSharedContext() == null)
-    		throw GraniteConfigListener.newSharedContextNotInitializedException();
-    	
-    	OutputStream os = null;
-		try {
-            // For SDK 2.0.1_Hotfix2+ (LCDS 2.5+).
-			String dsId = null;
-            for (Message message : messages) {
-	            if ("nil".equals(message.getHeader(Message.DS_ID_HEADER))) {
-	            	if (dsId == null)
-	            		dsId = UUIDUtil.randomUUID();
-	                message.getHeaders().put(Message.DS_ID_HEADER, dsId);
-	            }
-            }
-			
-	        response.setStatus(HttpServletResponse.SC_OK);
-	        response.setContentType(ContentType.JMF_AMF.mimeType());
-	        response.setDateHeader("Expire", 0L);
-	        response.setHeader("Cache-Control", "no-store");
-	        
-	        os = response.getOutputStream();
-
-	        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'serializer' is never closed)...
-            JMFSerializer serializer = new JMFSerializer(os, gravity.getGraniteConfig().getSharedContext());
-            serializer.writeObject(messages);
-	        
-	        os.flush();
-	        response.flushBuffer();
-		}
-		finally {
-			if (os != null)
-				os.close();
-		}
 	}
 }

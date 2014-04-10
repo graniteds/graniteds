@@ -34,6 +34,7 @@ import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.gravity.GravityServletUtil;
 import org.granite.logging.Logger;
+import org.granite.util.ContentType;
 import org.granite.util.ServletParams;
 
 import weblogic.servlet.http.AbstractAsyncServlet;
@@ -92,8 +93,6 @@ public class GravityWebLogicServlet extends AbstractAsyncServlet {
 		HttpServletRequest request = key.getRequest();
 		HttpServletResponse response = key.getResponse();
 
-        GravityServletUtil.rejectJMFContentType(request);
-
         GravityInternal gravity = (GravityInternal)GravityManager.getGravity(getServletContext());
         WebLogicChannelFactory channelFactory = new WebLogicChannelFactory(gravity);
 
@@ -144,8 +143,8 @@ public class GravityWebLogicServlet extends AbstractAsyncServlet {
             }
 
             log.debug("<< [AMF3 RESPONSES] %s", (Object)amf3Responses);
-
-            GravityServletUtil.serialize(gravity, response, amf3Responses);
+            
+            GravityServletUtil.serialize(gravity, response, amf3Responses, ContentType.forMimeType(request.getContentType()));
         }
         catch (IOException e) {
             log.error(e, "Gravity message error");

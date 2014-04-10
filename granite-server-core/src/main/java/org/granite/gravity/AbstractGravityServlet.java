@@ -30,6 +30,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.granite.util.ContentType;
+
 import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.Message;
 
@@ -77,10 +79,6 @@ public class AbstractGravityServlet extends HttpServlet {
 
 	///////////////////////////////////////////////////////////////////////////
 	// AMF (de)serialization methods.
-
-    protected void rejectJMFContentType(HttpServletRequest request) throws ServletException {
-        GravityServletUtil.rejectJMFContentType(request);
-    }
 	
 	protected GravityInternal initializeRequest(GravityInternal gravity, HttpServletRequest request, HttpServletResponse response) {
 		return GravityServletUtil.initializeRequest(getServletConfig(), gravity, request, response);
@@ -94,8 +92,8 @@ public class AbstractGravityServlet extends HttpServlet {
 		return GravityServletUtil.deserialize(gravity, request, is);
 	}
 	
-	protected void serialize(GravityInternal gravity, HttpServletResponse response, Message[] messages) throws IOException {
-		GravityServletUtil.serialize(gravity, response, messages);
+	protected void serialize(GravityInternal gravity, HttpServletResponse response, Message[] messages, ContentType contentType) throws ServletException, IOException {
+		GravityServletUtil.serialize(gravity, response, messages, contentType);
 	}
 	
 	protected void cleanupRequest(HttpServletRequest request) {
