@@ -32,7 +32,7 @@ import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.granite.config.ConvertersConfig;
@@ -52,8 +52,8 @@ import org.granite.messaging.amf.types.AMFVectorIntValue;
 import org.granite.messaging.amf.types.AMFVectorNumberValue;
 import org.granite.messaging.amf.types.AMFVectorObjectValue;
 import org.granite.messaging.amf.types.AMFVectorUintValue;
-import org.granite.util.ObjectCache;
-import org.granite.util.StringCache;
+import org.granite.util.ObjectIndexedCache;
+import org.granite.util.StringIndexedCache;
 import org.granite.util.TypeUtil;
 import org.granite.util.XMLUtil;
 import org.granite.util.XMLUtilFactory;
@@ -73,9 +73,9 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     private final byte[] buffer;
 	private int position;
 
-	protected final StringCache storedStrings;
-	protected final ObjectCache storedObjects;
-    protected final Map<String, IndexedJavaClassDescriptor> storedClassDescriptors;
+	protected final StringIndexedCache storedStrings;
+	protected final ObjectIndexedCache storedObjects;
+    protected final Map<Class<?>, IndexedJavaClassDescriptor> storedClassDescriptors;
 
     protected final GraniteContext context;
     
@@ -84,6 +84,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     protected final XMLUtil xmlUtil;
     protected final AMFSpecialValueFactory specialValueFactory;
 
+    protected final ExternalizersConfig externalizersConfig;
     protected final boolean externalizeLong;
     protected final boolean externalizeBigInteger;
     protected final boolean externalizeBigDecimal;
@@ -102,9 +103,9 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         this.buffer = new byte[capacity];
         this.position = 0;
         
-        this.storedStrings = new StringCache(64);
-        this.storedObjects = new ObjectCache(64);
-        this.storedClassDescriptors = new HashMap<String, IndexedJavaClassDescriptor>();
+        this.storedStrings = new StringIndexedCache(64);
+        this.storedObjects = new ObjectIndexedCache(64);
+        this.storedClassDescriptors = new IdentityHashMap<Class<?>, IndexedJavaClassDescriptor>();
         
         this.context = GraniteContext.getCurrentInstance();
         
@@ -114,10 +115,10 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         this.xmlUtil = XMLUtilFactory.getXMLUtil();
         this.specialValueFactory = new AMFSpecialValueFactory();
 
-        ExternalizersConfig externalizerConfig = (ExternalizersConfig)context.getGraniteConfig();
-        this.externalizeLong = (externalizerConfig.getExternalizer(Long.class.getName()) != null);
-        this.externalizeBigInteger = (externalizerConfig.getExternalizer(BigInteger.class.getName()) != null);
-        this.externalizeBigDecimal = (externalizerConfig.getExternalizer(BigDecimal.class.getName()) != null);
+        this.externalizersConfig = (ExternalizersConfig)context.getGraniteConfig();
+        this.externalizeLong = (externalizersConfig.getExternalizer(Long.class.getName()) != null);
+        this.externalizeBigInteger = (externalizersConfig.getExternalizer(BigInteger.class.getName()) != null);
+        this.externalizeBigDecimal = (externalizersConfig.getExternalizer(BigDecimal.class.getName()) != null);
         
         String channelId = context.getAMFContext().getChannelId();
         ChannelConfig channelConfig = context.getServicesConfig();
@@ -693,19 +694,16 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     // Cached objects methods.
 
     protected IndexedJavaClassDescriptor addToStoredClassDescriptors(Class<?> clazz) {
-        final String name = JavaClassDescriptor.getClassName(clazz);
-
-        if (storedClassDescriptors.containsKey(name))
+        if (storedClassDescriptors.containsKey(clazz))
             throw new RuntimeException(
-                "Descriptor of \"" + name + "\" is already stored at index: " +
+                "Descriptor of \"" + clazz + "\" is already stored at index: " +
                 getFromStoredClassDescriptors(clazz).getIndex()
             );
 
-        // find custom class descriptor and instantiate if any
+        // find custom class descriptor and instantiate if any.
         JavaClassDescriptor desc = null;
 
-        Class<? extends JavaClassDescriptor> descriptorType
-            = ((ExternalizersConfig)context.getGraniteConfig()).getJavaDescriptor(clazz.getName());
+        Class<? extends JavaClassDescriptor> descriptorType = externalizersConfig.getJavaDescriptor(clazz.getName());
         if (descriptorType != null) {
             Class<?>[] argsDef = new Class[]{Class.class};
             Object[] argsVal = new Object[]{clazz};
@@ -721,13 +719,12 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
             desc = new DefaultJavaClassDescriptor(clazz);
 
         IndexedJavaClassDescriptor iDesc = new IndexedJavaClassDescriptor(storedClassDescriptors.size(), desc);
-        storedClassDescriptors.put(name, iDesc);
+        storedClassDescriptors.put(clazz, iDesc);
         return iDesc;
     }
 
     protected IndexedJavaClassDescriptor getFromStoredClassDescriptors(Class<?> clazz) {
-        String name = JavaClassDescriptor.getClassName(clazz);
-        return storedClassDescriptors.get(name);
+        return storedClassDescriptors.get(clazz);
     }
 
     ///////////////////////////////////////////////////////////////////////////
