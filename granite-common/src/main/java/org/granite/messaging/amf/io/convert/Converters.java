@@ -28,7 +28,6 @@ import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.granite.messaging.amf.types.AMFSpecialValueFactory;
 import org.granite.util.TypeUtil;
 
 /**
@@ -44,8 +43,6 @@ public class Converters {
 
     /** Array of all configured reverters */
     private Reverter[] reverters;
-    
-    private final AMFSpecialValueFactory specialValueFactory;
 
     /**
      * Constructs a new Converters instance with the supplied list of converters (possibly reverters).
@@ -78,8 +75,6 @@ public class Converters {
 
         this.converters = converters.toArray(new Converter[converters.size()]);
         this.reverters = reverters.toArray(new Reverter[reverters.size()]);
-        
-        this.specialValueFactory = new AMFSpecialValueFactory();
     }
     
     public void addConverter(Class<? extends Converter> converterClass) 
@@ -186,8 +181,4 @@ public class Converters {
     	System.arraycopy(converters, 0, copy, 0, converters.length);
     	return copy;
     }
-
-	public AMFSpecialValueFactory getSpecialValueFactory() {
-		return specialValueFactory;
-	}
 }

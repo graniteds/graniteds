@@ -46,7 +46,7 @@ public class MethodProperty extends Property {
         this.getter = getter;
         this.type = getter != null ? getter.getGenericReturnType() : setter.getParameterTypes()[0];
         
-        this.factory = converters.getSpecialValueFactory().getValueFactory(this);
+        this.factory = specialValueFactory.getValueFactory(this);
     }
 
     @Override

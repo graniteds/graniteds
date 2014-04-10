@@ -25,12 +25,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 import org.granite.messaging.amf.io.convert.Converters;
+import org.granite.messaging.amf.types.AMFSpecialValueFactory;
 
 /**
  * @author Franck WOLFF
  */
 public abstract class Property {
 
+	protected static final AMFSpecialValueFactory specialValueFactory = new AMFSpecialValueFactory();
+	
     private final String name;
     private final Converters converters;
 

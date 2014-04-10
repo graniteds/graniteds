@@ -42,7 +42,7 @@ public class FieldProperty extends Property {
         field.setAccessible(true);
         this.field = field;
         
-        this.factory = converters.getSpecialValueFactory().getValueFactory(this);
+        this.factory = specialValueFactory.getValueFactory(this);
     }
 
     @Override
