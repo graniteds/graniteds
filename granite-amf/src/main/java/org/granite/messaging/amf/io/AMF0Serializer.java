@@ -547,6 +547,7 @@ public class AMF0Serializer {
         AMF3Config config = GraniteContext.getCurrentInstance().getGraniteConfig(); 
         ObjectOutput amf3 = config.newAMF3Serializer(rawOutputStream);
         amf3.writeObject(data.getValue());
+        amf3.flush();
     }
 
     public static String convertDOMToString(Node node) {

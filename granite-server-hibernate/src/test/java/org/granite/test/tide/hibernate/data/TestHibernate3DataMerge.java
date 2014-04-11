@@ -122,11 +122,13 @@ public class TestHibernate3DataMerge {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(6000);
 		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
 		out.writeObject(entree);
+		out.close();
 		
 		open();
 		
 		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(new ByteArrayInputStream(baos.toByteArray()));
 		entree = (Entree)in.readObject();
+		in.close();
 		
 		entree = save(entree);
 		
@@ -177,11 +179,13 @@ public class TestHibernate3DataMerge {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(6000);
 		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
 		out.writeObject(entree);
+		out.close();
 		
 		open();
 		
 		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(new ByteArrayInputStream(baos.toByteArray()));
 		entree = (Entree)in.readObject();
+		in.close();
 		
 		entree = save(entree);
 		

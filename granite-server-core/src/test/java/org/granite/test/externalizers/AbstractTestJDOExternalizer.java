@@ -95,13 +95,15 @@ public abstract class AbstractTestJDOExternalizer {
 		GraniteContext gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
-		out.writeObject(e5);		
+		out.writeObject(e5);	
+		out.close();
 		GraniteContext.release();
 		
 		InputStream is = new ByteArrayInputStream(baos.toByteArray());
 		gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
 		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(is);
 		Object obj = in.readObject();
+		in.close();
 		GraniteContext.release();
 		
 		Assert.assertTrue("Entity5", obj instanceof EntityJDO5);

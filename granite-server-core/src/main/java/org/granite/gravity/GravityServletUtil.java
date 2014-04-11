@@ -145,8 +145,9 @@ public class GravityServletUtil {
 	        
 	        ObjectOutput serializer = newSerializer(gravity, os, contentType);
             serializer.writeObject(messages);
-	        
-	        os.flush();
+            serializer.flush();	        
+            
+            os.flush();
 	        response.flushBuffer();
 		}
 		finally {

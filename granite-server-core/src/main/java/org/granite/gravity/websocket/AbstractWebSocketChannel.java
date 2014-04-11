@@ -147,7 +147,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
             else {
                 ObjectOutput amf3Serializer = gravity.getGraniteConfig().newAMF3Serializer(os);
                 amf3Serializer.writeObject(messages);
-                os.flush();
+                amf3Serializer.flush();
             }
 
             return os.toByteArray();

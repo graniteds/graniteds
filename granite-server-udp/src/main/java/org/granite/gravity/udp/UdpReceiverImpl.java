@@ -98,6 +98,7 @@ public class UdpReceiverImpl implements UdpReceiver {
 	        UdpOutputStream os = new UdpOutputStream();
 	        ObjectOutput out = GravityServletUtil.newSerializer(gravity, os, contentType);
 	        out.writeObject(new Message[] { message });
+	        out.flush();
 	        
 	        int sent = udpChannel.write(os.buffer(), 0, os.size());
 	        if (sent != os.size())

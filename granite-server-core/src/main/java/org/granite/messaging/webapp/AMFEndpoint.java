@@ -163,6 +163,7 @@ public class AMFEndpoint {
 	        @SuppressWarnings("all") // JDK7 warning (Resource leak: 'serializer' is never closed)...
 			JMFSerializer serializer = new JMFSerializer(os, jmfSharedContext);
 	        serializer.writeObject(amf0Response);
+	        serializer.flush();
 	        
 	        response.flushBuffer();
 	    }

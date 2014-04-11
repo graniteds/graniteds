@@ -49,10 +49,12 @@ public class TestTypedMapProperty extends AbstractTestExternalizer {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);
 		ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
 		out.writeObject(entity);
+		out.close();
 		
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(bais);
 		Object obj = in.readObject();
+		in.close();
 		Assert.assertTrue("Entity1", obj instanceof Entity1);
 		Assert.assertEquals("Entity map", 2, ((Entity1)obj).getMap().size());
 		Assert.assertTrue("Entity map type", ((Entity1)obj).getMap().get("toto").getClass().getComponentType().equals(String.class));

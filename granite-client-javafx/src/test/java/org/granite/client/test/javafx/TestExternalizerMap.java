@@ -75,6 +75,7 @@ public class TestExternalizerMap {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = graniteConfigHibernate.newAMF3Serializer(baos);
 		out.writeObject(map);
+		out.close();
 		
 		byte[] buf = baos.toByteArray();
 		
@@ -82,6 +83,7 @@ public class TestExternalizerMap {
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 		ObjectInput in = ((AMF3Config)graniteConfigJavaFX).newAMF3Deserializer(bais);
 		Object entity = in.readObject();
+		in.close();
 		
 		Assert.assertTrue("Map type", entity instanceof Map);
 		Assert.assertEquals("Map value", new Long(89), ((Map<String, Long>)entity).get("test"));
@@ -97,6 +99,7 @@ public class TestExternalizerMap {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = graniteConfigHibernate.newAMF3Serializer(baos);
 		out.writeObject(map);
+		out.close();
 		
 		byte[] buf = baos.toByteArray();
 		
@@ -104,6 +107,7 @@ public class TestExternalizerMap {
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 		ObjectInput in = ((AMF3Config)graniteConfigJavaFX).newAMF3Deserializer(bais);
 		Object entity = in.readObject();
+		in.close();
 		
 		Assert.assertTrue("Map type", entity instanceof Map);
 		Assert.assertEquals("Map value", new Long(89), ((Map<Integer, Long>)entity).get(34));

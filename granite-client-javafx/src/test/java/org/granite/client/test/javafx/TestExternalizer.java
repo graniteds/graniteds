@@ -86,6 +86,7 @@ public class TestExternalizer {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = graniteConfigHibernate.newAMF3Serializer(baos);
 		out.writeObject(entity1);
+		out.close();
 		
 		byte[] buf = baos.toByteArray();
 		
@@ -93,6 +94,7 @@ public class TestExternalizer {
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 		ObjectInput in = ((AMF3Config)graniteConfigJavaFX).newAMF3Deserializer(bais);
 		Object entity = in.readObject();
+		in.close();
 		
 		Assert.assertTrue("Entity type", entity instanceof FXEntity1b);
 	}
@@ -110,6 +112,7 @@ public class TestExternalizer {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = ((AMF3Config)graniteConfigJavaFX).newAMF3Serializer(baos);
 		out.writeObject(entity1);
+		out.close();
 		
 		byte[] buf = baos.toByteArray();
 		
@@ -117,6 +120,7 @@ public class TestExternalizer {
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 		ObjectInput in = graniteConfigHibernate.newAMF3Deserializer(bais);
 		Object entity = in.readObject();
+		in.close();
 		
 		Assert.assertTrue("Entity type", entity instanceof Entity1b);
 	}
@@ -134,6 +138,7 @@ public class TestExternalizer {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = ((AMF3Config)graniteConfigJavaFX).newAMF3Serializer(baos);
 		out.writeObject(entity1);
+		out.close();
 		
 		byte[] buf = baos.toByteArray();
 		
@@ -141,6 +146,7 @@ public class TestExternalizer {
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 		ObjectInput in = graniteConfigHibernate.newAMF3Deserializer(bais);
 		Object entity = in.readObject();
+		in.close();
 		
 		Assert.assertTrue("Entity type", entity instanceof Entity1b);
 	}
@@ -160,6 +166,7 @@ public class TestExternalizer {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = graniteConfigHibernate.newAMF3Serializer(baos);
 		out.writeObject(entity1);
+		out.close();
 		
 		byte[] buf = baos.toByteArray();
 		
@@ -167,6 +174,7 @@ public class TestExternalizer {
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 		ObjectInput in = ((AMF3Config)graniteConfigJavaFX).newAMF3Deserializer(bais);
 		Object entity = in.readObject();
+		in.close();
 		
 		Assert.assertTrue("Entity type", entity instanceof FXEntity1);
 	}
@@ -184,6 +192,7 @@ public class TestExternalizer {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = ((AMF3Config)graniteConfigJavaFX).newAMF3Serializer(baos);
 		out.writeObject(entity1);
+		out.close();
 		
 		byte[] buf = baos.toByteArray();
 		
@@ -191,6 +200,7 @@ public class TestExternalizer {
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 		ObjectInput in = graniteConfigHibernate.newAMF3Deserializer(bais);
 		Object entity = in.readObject();
+		in.close();
 		
 		Assert.assertTrue("Entity type", entity instanceof Entity1);
 	}
@@ -208,6 +218,7 @@ public class TestExternalizer {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = ((AMF3Config)graniteConfigJavaFX).newAMF3Serializer(baos);
 		out.writeObject(entity1);
+		out.close();
 		
 		byte[] buf = baos.toByteArray();
 		
@@ -215,6 +226,7 @@ public class TestExternalizer {
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 		ObjectInput in = graniteConfigHibernate.newAMF3Deserializer(bais);
 		Object entity = in.readObject();
+		in.close();
 		
 		Assert.assertTrue("Entity type", entity instanceof Entity1);
 	}
@@ -233,6 +245,7 @@ public class TestExternalizer {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = graniteConfigHibernate.newAMF3Serializer(baos);
 		out.writeObject(entity1);
+		out.close();
 		
 		byte[] buf = baos.toByteArray();
 		
@@ -240,6 +253,7 @@ public class TestExternalizer {
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 		ObjectInput in = ((AMF3Config)graniteConfigJavaFX).newAMF3Deserializer(bais);
 		Object entity = in.readObject();
+		in.close();
 		
 		Assert.assertTrue("Entity type", entity instanceof FXEntity1c);
 		Assert.assertEquals("Entity2 value", "Test2", ((FXEntity1c)entity).getMap().get("test").getName());
@@ -257,6 +271,7 @@ public class TestExternalizer {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
 		ObjectOutput out = ((AMF3Config)graniteConfigJavaFX).newAMF3Serializer(baos);
 		out.writeObject(entity1);
+		out.close();
 		
 		byte[] buf = baos.toByteArray();
 		
@@ -264,6 +279,7 @@ public class TestExternalizer {
 		ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 		ObjectInput in = graniteConfigHibernate.newAMF3Deserializer(bais);
 		Object entity = in.readObject();
+		in.close();
 		
 		Assert.assertTrue("Entity type", entity instanceof Entity1c);
 		Assert.assertEquals("Entity2 value", "Test2", ((Entity1c)entity).getMap().get("test").getName());
@@ -293,6 +309,7 @@ public class TestExternalizer {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream(1000000);
 			ObjectOutput out = graniteConfigHibernate.newAMF3Serializer(baos);
 			out.writeObject(list);
+			out.close();
 			
 			byte[] buf = baos.toByteArray();
 			
@@ -305,6 +322,7 @@ public class TestExternalizer {
 			ByteArrayInputStream bais = new ByteArrayInputStream(buf);
 			ObjectInput in = ((AMF3Config)graniteConfigJavaFX).newAMF3Deserializer(bais);
 			Object read = in.readObject();
+			in.close();
 			
 			long elapsedTimeClient = (System.nanoTime()-time)/1000000;
 			System.out.println("Elapsed time client: " + elapsedTimeClient);

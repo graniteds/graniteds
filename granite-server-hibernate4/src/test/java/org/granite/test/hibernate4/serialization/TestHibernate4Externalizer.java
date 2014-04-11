@@ -80,13 +80,15 @@ public class TestHibernate4Externalizer extends AbstractTestJPAExternalizer {
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream(20000);
         ObjectOutput out = ((AMF3Config)gc.getGraniteConfig()).newAMF3Serializer(baos);
-        out.writeObject(e7);        
+        out.writeObject(e7);
+        out.close();
         GraniteContext.release();
         
         InputStream is = new ByteArrayInputStream(baos.toByteArray());
         gc = SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
         ObjectInput in = ((AMF3Config)gc.getGraniteConfig()).newAMF3Deserializer(is);
         Object obj = in.readObject();
+        in.close();
         GraniteContext.release();
         
         Assert.assertTrue("Entity7", obj instanceof Entity7);
