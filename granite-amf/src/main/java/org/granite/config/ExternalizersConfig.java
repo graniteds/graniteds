@@ -23,6 +23,7 @@ package org.granite.config;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 import org.granite.messaging.amf.io.util.ActionScriptClassDescriptor;
 import org.granite.messaging.amf.io.util.JavaClassDescriptor;
@@ -66,6 +67,8 @@ public interface ExternalizersConfig extends Config {
 
     public Map<String, String> getAs3DescriptorsByInstanceOf();
     
+    
+    public ConcurrentMap<String, JavaClassDescriptor> getJavaDescriptorsCache();
     
     public Class<? extends JavaClassDescriptor> getJavaDescriptor(String type);
 

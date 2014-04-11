@@ -1,5 +1,29 @@
+/**
+ *   GRANITE DATA SERVICES
+ *   Copyright (C) 2006-2014 GRANITE DATA SERVICES S.A.S.
+ *
+ *   This file is part of the Granite Data Services Platform.
+ *
+ *   Granite Data Services is free software; you can redistribute it and/or
+ *   modify it under the terms of the GNU Lesser General Public
+ *   License as published by the Free Software Foundation; either
+ *   version 2.1 of the License, or (at your option) any later version.
+ *
+ *   Granite Data Services is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ *   General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Lesser General Public
+ *   License along with this library; if not, write to the Free Software
+ *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ *   USA, or see <http://www.gnu.org/licenses/>.
+ */
 package org.granite.util;
 
+/**
+ * @author Franck WOLFF
+ */
 public abstract class AbstractIndexedCache {
 
 	private static final int MAXIMUM_CAPACITY = 1 << 30;
@@ -36,15 +60,17 @@ public abstract class AbstractIndexedCache {
 	}
     
     public abstract int hash(Object o);
-    public abstract boolean equals(Entry e, int hash, Object o);
+    public abstract int find(Entry head, int hash, Object o);
 	
-	public int putIfAbsent(Object o) {
+	public final int putIfAbsent(Object o) {
         int hash = hash(o);
         int index = indexFor(hash, table.length);
         
-        for (Entry e = table[index]; e != null; e = e.next) {
-            if (equals(e, hash, o))
-                return e.index;
+        Entry head = table[index];
+        if (head != null) {
+        	int found = find(head, hash, o);
+        	if (found != -1)
+        		return found;
         }
         
         addEntry(hash, o, index);

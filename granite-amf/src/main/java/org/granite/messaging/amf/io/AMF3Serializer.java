@@ -273,13 +273,13 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
             if (o.getClass().isArray()) {
                 for (int i = 0; i < length; i++) {
                 	ensureCapacity(4);
-                	writeIntData(((Number)Array.get(o, i)).intValue());
+                	position = writeIntData(buffer, position, ((Number)Array.get(o, i)).intValue());
                 }
             }
             else {
             	for (Object item : (Collection<?>)o) {
                 	ensureCapacity(4);
-            		writeInt(((Number)item).intValue());
+                	position = writeIntData(buffer, position, ((Number)item).intValue());
             	}
             }
         }
@@ -304,13 +304,13 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
             if (o.getClass().isArray()) {
                 for (int i = 0; i < length; i++) {
                 	ensureCapacity(8);
-                	writeLongData(Double.doubleToLongBits(((Number)Array.get(o, i)).doubleValue()));
+                	position = writeLongData(buffer, position, Double.doubleToLongBits(((Number)Array.get(o, i)).doubleValue()));
                 }
             }
             else {
             	for (Object item : (Collection<?>)o) {
                 	ensureCapacity(8);
-                	writeLongData(Double.doubleToLongBits(((Number)item).doubleValue()));
+                	position = writeLongData(buffer, position, Double.doubleToLongBits(((Number)item).doubleValue()));
             	}
             }
         }
@@ -335,13 +335,13 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
             if (o.getClass().isArray()) {
                 for (int i = 0; i < length; i++) {
                 	ensureCapacity(4);
-                	writeIntData(((Number)Array.get(o, i)).intValue());
+                	position = writeIntData(buffer, position, ((Number)Array.get(o, i)).intValue());
                 }
             }
             else {
             	for (Object item : (Collection<?>)o) {
                 	ensureCapacity(4);
-            		writeInt(((Number)item).intValue());
+                	position = writeIntData(buffer, position, ((Number)item).intValue());
             	}
             }
         }
@@ -408,12 +408,12 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         
         this.position = position;
     }
-
+    
     protected void writeAMF3Number(double d) throws IOException {
     	ensureCapacity(9);
     	
     	buffer[position++] = AMF3_NUMBER;
-    	writeLongData(Double.doubleToLongBits(d));
+    	position = writeLongData(buffer, position, Double.doubleToLongBits(d));
     }
 
     protected void writeAMF3String(String s) throws IOException {
@@ -543,7 +543,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
             writeAMF3IntegerData(0x01);
             
             ensureCapacity(8);
-            writeLongData(date.getTime());
+            position = writeLongData(buffer, position, date.getTime());
         }
     }
 
@@ -670,7 +670,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     protected JavaClassDescriptor writeAndGetAMF3Descriptor(Class<?> cls) throws IOException {
     	JavaClassDescriptor desc = null;
     	
-        IndexedJavaClassDescriptor iDesc = getFromStoredClassDescriptors(cls);
+        IndexedJavaClassDescriptor iDesc = storedClassDescriptors.get(cls);
         if (iDesc != null) {
             desc = iDesc.getDescriptor();
             writeAMF3IntegerData(iDesc.getIndex() << 2 | 0x01);
@@ -695,58 +695,43 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     // Cached objects methods.
 
     protected IndexedJavaClassDescriptor addToStoredClassDescriptors(Class<?> clazz) {
-        if (storedClassDescriptors.containsKey(clazz))
-            throw new RuntimeException(
-                "Descriptor of \"" + clazz + "\" is already stored at index: " +
-                getFromStoredClassDescriptors(clazz).getIndex()
-            );
-
-        // find custom class descriptor and instantiate if any.
-        JavaClassDescriptor desc = null;
-
-        Class<? extends JavaClassDescriptor> descriptorType = externalizersConfig.getJavaDescriptor(clazz.getName());
-        if (descriptorType != null) {
-            Class<?>[] argsDef = new Class[]{Class.class};
-            Object[] argsVal = new Object[]{clazz};
-            try {
-                desc = TypeUtil.newInstance(descriptorType, argsDef, argsVal);
-            }
-            catch (Exception e) {
-                throw new RuntimeException("Could not instantiate Java descriptor: " + descriptorType);
-            }
+        JavaClassDescriptor desc = externalizersConfig.getJavaDescriptorsCache().get(clazz.getName());
+        
+        if (desc == null) {
+            
+        	// find custom class descriptor and instantiate it if any.
+	        Class<? extends JavaClassDescriptor> descriptorType = externalizersConfig.getJavaDescriptor(clazz.getName());
+	        if (descriptorType != null) {
+	            try {
+	                desc = TypeUtil.newInstance(descriptorType, new Class[]{Class.class}, new Object[]{clazz});
+	            }
+	            catch (Exception e) {
+	                throw new RuntimeException("Could not instantiate Java descriptor: " + descriptorType);
+	            }
+	        }
+	        else
+	            desc = new DefaultJavaClassDescriptor(clazz);
+	        
+	        externalizersConfig.getJavaDescriptorsCache().putIfAbsent(clazz.getName(), desc);
         }
-
-        if (desc == null)
-            desc = new DefaultJavaClassDescriptor(clazz);
 
         IndexedJavaClassDescriptor iDesc = new IndexedJavaClassDescriptor(storedClassDescriptors.size(), desc);
         storedClassDescriptors.put(clazz, iDesc);
         return iDesc;
     }
 
-    protected IndexedJavaClassDescriptor getFromStoredClassDescriptors(Class<?> clazz) {
-        return storedClassDescriptors.get(clazz);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // Utilities.
 	
-    private void writeIntData(int i) {
-    	final byte[] buffer = this.buffer;
-    	int position = this.position;
-
+    private int writeIntData(byte[] buffer, int position, int i) {
     	buffer[position++] = (byte)(i >>> 24);
     	buffer[position++] = (byte)(i >>> 16);
     	buffer[position++] = (byte)(i >>> 8);
     	buffer[position++] = (byte)i;
-    	
-    	this.position = position;
+    	return position;
     }
 	
-    private void writeLongData(long l) {
-    	final byte[] buffer = this.buffer;
-    	int position = this.position;
-    	
+    private static int writeLongData(byte[] buffer, int position, long l) {
     	buffer[position++] = (byte)(l >>> 56);
     	buffer[position++] = (byte)(l >>> 48);
     	buffer[position++] = (byte)(l >>> 40);
@@ -755,8 +740,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     	buffer[position++] = (byte)(l >>> 16);
     	buffer[position++] = (byte)(l >>> 8);
     	buffer[position++] = (byte)l;
-    	
-    	this.position = position;
+    	return position;
     }
 
 	private void ensureCapacity(int capacity) throws IOException {

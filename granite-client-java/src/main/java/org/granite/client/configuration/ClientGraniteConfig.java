@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.granite.config.AMF3Config;
 import org.granite.config.ActionScriptClassDescriptorFactory;
@@ -134,6 +135,8 @@ public class ClientGraniteConfig implements ConvertersConfig, AliasRegistryConfi
     private final Map<String, String> externalizersByAnnotatedWith = new HashMap<String, String>();
     
     // Java descriptors configuration.
+    private final ConcurrentHashMap<String, JavaClassDescriptor> javaDescriptorsCache
+		= new ConcurrentHashMap<String, JavaClassDescriptor>();
     private final ConcurrentHashMap<String, Class<? extends JavaClassDescriptor>> javaDescriptorsByType
         = new ConcurrentHashMap<String, Class<? extends JavaClassDescriptor>>();
     private final Map<String, String> javaDescriptorsByInstanceOf = new HashMap<String, String>();
@@ -422,6 +425,10 @@ public class ClientGraniteConfig implements ConvertersConfig, AliasRegistryConfi
     	return as3DescriptorsByInstanceOf;
     }
     
+
+	public ConcurrentMap<String, JavaClassDescriptor> getJavaDescriptorsCache() {
+		return javaDescriptorsCache;
+	}
     
     public Class<? extends JavaClassDescriptor> getJavaDescriptor(String type) {
         return getElementByType(type, JC_DESCRIPTOR_FACTORY, javaDescriptorsByType, javaDescriptorsByInstanceOf, null, null);

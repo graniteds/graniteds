@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.granite.clustering.DistributedDataFactory;
 import org.granite.config.api.AliasRegistryConfig;
@@ -170,6 +171,8 @@ public class GraniteConfig implements ConvertersConfig, AliasRegistryConfig, AMF
     private SharedContext sharedContext;
     
     // Java descriptors configuration.
+    private final ConcurrentHashMap<String, JavaClassDescriptor> javaDescriptorsCache
+    	= new ConcurrentHashMap<String, JavaClassDescriptor>();
     private final ConcurrentHashMap<String, Class<? extends JavaClassDescriptor>> javaDescriptorsByType
         = new ConcurrentHashMap<String, Class<? extends JavaClassDescriptor>>();
     private final Map<String, String> javaDescriptorsByInstanceOf = new HashMap<String, String>();
@@ -536,8 +539,12 @@ public class GraniteConfig implements ConvertersConfig, AliasRegistryConfig, AMF
     	return as3DescriptorsByInstanceOf;
     }
     
-    
-    public Class<? extends JavaClassDescriptor> getJavaDescriptor(String type) {
+
+	public ConcurrentMap<String, JavaClassDescriptor> getJavaDescriptorsCache() {
+		return javaDescriptorsCache;
+	}
+
+	public Class<? extends JavaClassDescriptor> getJavaDescriptor(String type) {
         return getElementByType(type, JC_DESCRIPTOR_FACTORY, javaDescriptorsByType, javaDescriptorsByInstanceOf, null, null);
     }
 
