@@ -10,7 +10,7 @@ buildscript {
     dependencies {
 		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.6.0'
 		classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
-        classpath group: 'org.gradlefx', name: 'gradlefx', version: '0.6.4'
+        classpath group: 'org.gradlefx', name: 'gradlefx', version: '0.8.1'
 		classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.5.0'
     }
 }
@@ -449,6 +449,12 @@ project('granite-server-core') {
 				source project(':granite-jmf').sourceSets.main.resources
 			}
 		}
+		
+		test {
+			java {
+				exclude 'org/granite/test/amf/**'
+			}
+		}
 	}
 	
 	javadoc {
@@ -689,7 +695,7 @@ project('granite-server-activemq') {
 	}
 }
 
-//// Hazelcast integration
+// Hazelcast integration
 //project('granite-server-hazelcast') {
 //	
 //	description = 'GraniteDS Hazelcast integration server library'
@@ -2166,6 +2172,20 @@ project('granite-client-java-advanced') {
                 && !f.name.matches('asm-.*-3.*\\.jar')
                 && !f.name.matches('extcos.*\\.jar'))
     }
+	
+	beforeEvaluate {
+		File jbossHome = new File(jbossas7Home)
+		if (!jbossHome.exists()) {
+			println 'JBoss AS 7 location not defined correctly, skip JBoss tests'
+			tasks.getByName('testJBossAS7').enabled = false
+		}
+		
+		File wildflyHome = new File(wildflyHome)
+		if (!wildflyHome.exists()) {
+			println 'WildFly location not defined correctly, skip WildFly tests'
+			tasks.getByName('testWildFly8').enabled = false
+		}
+	}
 
     task testTomcat7(type: Test, dependsOn: [ ':granite-server-core:jar', ':granite-server-servlet3:jar', ':granite-server-tomcat7:jar' ]) {
         systemProperties = [ 'container.className' : 'org.granite.test.container.tomcat7.EmbeddedTomcat7' ]
