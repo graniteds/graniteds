@@ -77,8 +77,6 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
 	protected final ObjectIndexedCache storedObjects;
     protected final Map<Class<?>, IndexedJavaClassDescriptor> storedClassDescriptors;
 
-    protected final GraniteContext context;
-    
     protected final Converters converters;
     protected final ClassGetter classGetter;
     protected final XMLUtil xmlUtil;
@@ -106,7 +104,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         this.storedObjects = new ObjectIndexedCache(64);
         this.storedClassDescriptors = new IdentityHashMap<Class<?>, IndexedJavaClassDescriptor>();
         
-        this.context = GraniteContext.getCurrentInstance();
+        GraniteContext context = GraniteContext.getCurrentInstance();
         
         ConvertersConfig convertersConfig = (ConvertersConfig)context.getGraniteConfig();
         this.converters = convertersConfig.getConverters();
