@@ -290,6 +290,20 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     		writeAMF3Null();
     	else {
     		Class<?> cls = o.getClass();
+    		
+    		if (cls == String.class) {
+    			writeAMF3String((String)o);
+    			return;
+    		}
+    		if (cls == Integer.class) {
+    			writeAMF3Integer(((Integer)o).intValue());
+    			return;
+    		}
+    		if (cls == Boolean.class) {
+    			writeAMF3Boolean(((Boolean)o).booleanValue());
+    			return;
+    		}
+    		
     		AMF3Writer writer = writersCache.get(cls);
     		if (writer == null) {
     			writer = getWriter(cls);
