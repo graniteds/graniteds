@@ -160,7 +160,7 @@ public class Converters {
     }
 
     /**
-     * Revert back to standard, AMF3 known Java type the supplied value. This method iterates
+     * Revert back to standard (AMF3 known Java type) the supplied value. This method iterates
      * on all configured Reverters and returns the {@link Reverter#revert(Object)} method result
      * if the {@link Reverter#canRevert(Object)} method returns true for the current Reverter
      * instance.

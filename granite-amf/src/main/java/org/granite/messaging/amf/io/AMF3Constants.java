@@ -72,6 +72,7 @@ public interface AMF3Constants {
     public static final byte AMF3_VECTOR_OBJECT = 0x10;
     public static final byte AMF3_DICTIONARY = 0x11;
     
-    public static final int AMF3_INTEGER_MAX = Integer.MAX_VALUE >> 3;
-    public static final int AMF3_INTEGER_MIN = Integer.MIN_VALUE >> 3;
+    public static final int AMF3_SIGNED_INTEGER_MASK = 0x1FFFFFFF;
+    public static final int AMF3_INTEGER_MAX = 0x0FFFFFFF;
+    public static final int AMF3_INTEGER_MIN = 0xF0000000;
 }
