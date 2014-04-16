@@ -748,7 +748,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         	writeAMF3UnsignedIntegerData(0x01);
             
             ensureCapacity(8);
-            position = writeLongData(buffer, position, date.getTime());
+            position = writeLongData(buffer, position, Double.doubleToRawLongBits((double)date.getTime()));
         }
     }
     
@@ -806,7 +806,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     
     protected void writeAMF3ByteObjectArray(Byte[] array) throws IOException {
     	ensureCapacity(1);
-    	buffer[position++] = AMF3_ARRAY;
+    	buffer[position++] = AMF3_BYTEARRAY;
 
         int index = storedObjects.putIfAbsent(array);
         if (index >= 0)
