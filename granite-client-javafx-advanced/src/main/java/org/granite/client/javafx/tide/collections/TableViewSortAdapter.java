@@ -34,6 +34,7 @@
  */
 package org.granite.client.javafx.tide.collections;
 
+import org.granite.client.tide.collection.SortAdapter;
 import org.granite.tide.data.model.SortInfo;
 
 import javafx.beans.property.ReadOnlyProperty;

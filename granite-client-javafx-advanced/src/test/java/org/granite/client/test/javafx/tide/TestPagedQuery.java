@@ -43,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 import javafx.collections.ObservableMap;
 
 import org.granite.client.javafx.tide.collections.PageChangeListener;
-import org.granite.client.javafx.tide.collections.PagedCollection;
 import org.granite.client.javafx.tide.collections.PagedQuery;
 import org.granite.client.messaging.RemoteService;
 import org.granite.client.messaging.messages.Message;
@@ -127,9 +126,9 @@ public class TestPagedQuery {
         final Semaphore sem = new Semaphore(1);
         sem.acquire();
         
-        personList.addListener(new PageChangeListener<Person>() {
+        personList.addListener(new PageChangeListener<Person, Person>() {
 			@Override
-			public void pageChanged(PagedCollection<Person> collection, TideRpcEvent event) {
+			public void pageChanged(PagedQuery<Person, Person> collection, TideRpcEvent event) {
 				sem.release();
 			}        	
         });
@@ -179,9 +178,9 @@ public class TestPagedQuery {
         final Semaphore sem = new Semaphore(1);
         sem.acquire();
         
-        personList.addListener(new PageChangeListener<Person>() {
+        personList.addListener(new PageChangeListener<Person, ObservableMap<String, Object>>() {
 			@Override
-			public void pageChanged(PagedCollection<Person> collection, TideRpcEvent event) {
+			public void pageChanged(PagedQuery<Person, ObservableMap<String, Object>> collection, TideRpcEvent event) {
 				sem.release();
 			}        	
         });
@@ -200,5 +199,15 @@ public class TestPagedQuery {
         
         Assert.assertEquals("Persons count", 2, personList.size());
         Assert.assertNull("Person element", personList.get(3));
+    }
+
+    @Test
+    public void testPagedQueryInit() throws Exception {
+    	PersonRepository repository = new PersonRepository();
+        PagedQuery<Person, Document> personList = new PagedQuery<Person, Document>(repository, "findByFilter", 25) {};
+        ctx.set("personList", personList);
+        
+        Assert.assertEquals("Persons filter", Document.class, personList.getFilter().getClass());
+        //Assert.assertNull("Person element", personList.getElementClass());
     }
 }

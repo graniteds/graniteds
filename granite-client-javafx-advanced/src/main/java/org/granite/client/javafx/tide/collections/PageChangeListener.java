@@ -39,7 +39,7 @@ import org.granite.client.tide.server.TideRpcEvent;
 /**
  * @author William DRAI
  */
-public interface PageChangeListener<E> {
+public interface PageChangeListener<E, F> {
 
-	public void pageChanged(PagedCollection<E> collection, TideRpcEvent event);
+	public void pageChanged(PagedQuery<E, F> collection, TideRpcEvent event);
 }

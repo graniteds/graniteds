@@ -35,34 +35,65 @@
 package org.granite.client.tide.collection;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
 import javax.annotation.PreDestroy;
 
+import org.granite.client.tide.Context;
+import org.granite.client.tide.ContextAware;
+import org.granite.client.tide.Initializable;
+import org.granite.client.tide.NameAware;
 import org.granite.client.tide.data.EntityManager.UpdateKind;
 import org.granite.client.tide.events.TideEvent;
 import org.granite.client.tide.events.TideEventObserver;
+import org.granite.client.tide.impl.ComponentImpl;
+import org.granite.client.tide.server.Component;
+import org.granite.client.tide.server.ServerSession;
 import org.granite.client.tide.server.TideFaultEvent;
 import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
 import org.granite.client.tide.server.TideRpcEvent;
+import org.granite.client.util.PropertyHolder;
 import org.granite.logging.Logger;
 import org.granite.tide.data.model.Page;
+import org.granite.tide.data.model.PageInfo;
+import org.granite.tide.data.model.SortInfo;
+import org.granite.util.TypeUtil;
 
 /**
  * @author William DRAI
  */
-public abstract class AbstractPagedCollection<E> implements List<E>, TideEventObserver {
+public abstract class AbstractPagedCollection<E, F> implements List<E>, Component, PropertyHolder, NameAware, ContextAware, Initializable, TideEventObserver {
 	
     private static final Logger log = Logger.getLogger(AbstractPagedCollection.class);
     
+    private final ServerSession serverSession;
+    private String componentName = null;
+    private String remoteComponentName = null;
+    private Class<? extends Component> remoteComponentClass = null;
+    private Component component = null;
+    private Context context = null;
+	
+    private String methodName = "find";
+    private boolean usePage = false;
+    private PageFilterFinder<E> pageFilterFinder = null;
+    private SimpleFilterFinder<E> simpleFilterFinder = null;
+    
+	protected SortAdapter sortAdapter = null;
+	private SortInfo sortInfo = new SortInfo();
+	
+    private Class<F> filterClass = null;
 	
     protected boolean initializing = false;
     private boolean initSent = false;
@@ -80,13 +111,74 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	
 
 	public AbstractPagedCollection() {
-		super();
+		// CDI proxying..
+		this.serverSession = null;
+		initCollection();
+	}
+    
+    public AbstractPagedCollection(ServerSession serverSession) {
+    	this.serverSession = serverSession;
+    	initFilter();
+    	initCollection();
+    }
+
+    public AbstractPagedCollection(Component remoteComponent, String methodName, int maxResults) {
+    	this.component = remoteComponent;
+    	this.methodName = methodName;
+    	this.max = maxResults;
+    	this.serverSession = null;
+    	initFilter();
+    	initCollection();
+    	initFilterFinder();
+    }
+    
+    public AbstractPagedCollection(Component remoteComponent, PageFilterFinder<E> finder, int maxResults) {
+    	this.component = remoteComponent;
+    	this.pageFilterFinder = finder;
+    	this.max = maxResults;
+    	this.serverSession = null;
+    	initFilter();
+    	initCollection();
+    }
+    
+    public AbstractPagedCollection(Component remoteComponent, SimpleFilterFinder<E> finder, int maxResults) {
+    	this.component = remoteComponent;
+    	this.simpleFilterFinder = finder;
+    	this.max = maxResults;
+    	this.serverSession = null;
+    	initFilter();
+    	initCollection();
+    }
+    
+	private void initCollection() {
 	    log.debug("create collection");
 		first = 0;
 		last = 0;
 		count = 0;
 		initializing = true;
+		
+		initComponent();
 	}
+	
+	@SuppressWarnings("unchecked")
+	private void initComponent() {
+		Type superclass = getClass().getGenericSuperclass();
+		if (superclass instanceof ParameterizedType) {
+			ParameterizedType supertype = (ParameterizedType)superclass;
+			if (supertype.getActualTypeArguments()[0] instanceof Class<?>)
+				setElementClass((Class<E>)supertype.getActualTypeArguments()[0]);
+			if (supertype.getActualTypeArguments()[1] instanceof Class<?>) {
+				try {
+					setFilterClass((Class<F>)supertype.getActualTypeArguments()[1]);
+				} 
+				catch (Exception e) {
+					throw new RuntimeException("Could not init filter for type " + supertype.getActualTypeArguments()[1], e);
+				}
+			}
+		}
+    }
+	
+    protected abstract void initFilter();
 	
 	
 	/**
@@ -134,6 +226,145 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 		this.cancelPendingCalls = cancel;
 	}
 	
+    public void setName(String componentName) {
+    	this.componentName = componentName;
+    }
+    
+    public void setContext(Context context) {
+    	this.context = context;
+
+        if (remoteComponentName != null)
+            setRemoteComponentName(remoteComponentName);
+
+        if (remoteComponentClass != null) {
+            try {
+                setRemoteComponentClass(remoteComponentClass);
+            }
+            catch (Exception e) {
+                throw new RuntimeException("Could not init context", e);
+            }
+        }
+
+    	if (component instanceof ContextAware)
+    		((ContextAware)component).setContext(context);
+    }
+
+	public String getName() {
+	    return remoteComponentName;
+	}
+
+	public void setRemoteComponentName(String remoteComponentName) {
+        if (remoteComponentName == null)
+            throw new IllegalArgumentException("remoteComponentName cannot be null");
+
+        this.remoteComponentName = remoteComponentName;
+        if (context == null) {
+            this.component = null;
+            return;
+        }
+
+		component = context.byName(remoteComponentName);
+        if (component == null || !(component instanceof ComponentImpl)) {
+            component = new ComponentImpl(serverSession);
+            context.set(remoteComponentName, component);
+        }
+	}
+	
+	public void setRemoteComponentClass(Class<? extends Component> remoteComponentClass) throws IllegalAccessException, InstantiationException {
+        if (remoteComponentClass == null)
+            throw new IllegalArgumentException("remoteComponentClass cannot be null");
+
+        this.remoteComponentClass = remoteComponentClass;
+        if (context == null) {
+            component = null;
+            return;
+        }
+
+        component = context.byType(remoteComponentClass);
+        if (component == null) {
+            component = TypeUtil.newInstance(remoteComponentClass, new Class<?>[] { ServerSession.class }, new Object[] { serverSession });
+            context.set(component);
+        }
+	}
+	
+	public void setRemoteComponent(Component remoteComponent) {
+        if (remoteComponent == null)
+            throw new IllegalArgumentException("remoteComponent cannot be null");
+        
+		this.component = remoteComponent;
+	}
+	
+	public void setMethodName(String methodName) {
+		this.methodName = methodName;
+	}
+	
+	public void setPageFilterFinder(PageFilterFinder<E> finder) {
+		this.pageFilterFinder = finder;
+	}
+	
+	public void setSimpleFilterFinder(SimpleFilterFinder<E> finder) {
+		this.simpleFilterFinder = finder;
+	}
+	
+	public void setUsePage(boolean usePage) {
+		this.usePage = usePage;
+	}
+    
+	public void init() {
+        if (component != null)
+        	return;
+        
+        component = new ComponentImpl(serverSession);
+        ((ComponentImpl)component).setName(componentName);
+        ((ComponentImpl)component).setContext(context);
+	}
+	
+	
+	public void setSortAdapter(SortAdapter sortAdapter) {
+		this.sortAdapter = sortAdapter;
+		if (sortAdapter != null)
+			sortAdapter.apply(sortInfo);
+	}
+	
+	public SortAdapter getSortAdapter() {
+		return sortAdapter;
+	}
+	
+	public void resetSort() {
+		this.sortAdapter = null;
+		sortInfo.setOrder(null);
+		sortInfo.setDesc(null);
+	}
+	
+	public void setFilterClass(Class<F> filterClass) throws IllegalAccessException, InstantiationException {
+		if (Map.class.isAssignableFrom(filterClass)) {
+			setFilter(null);
+			return;
+		}
+		this.filterClass = filterClass;
+		setFilter(TypeUtil.newInstance(filterClass, filterClass));
+	}
+	
+	public void resetFilter() {
+		if (filterClass == null) {
+			setFilter(null);
+			return;
+		}
+		try {
+			setFilter(TypeUtil.newInstance(filterClass, filterClass));
+		}
+		catch (Exception e) {
+			log.error(e, "Could not reset typed filter for PagedQuery %s", getName());
+		}
+	}
+	
+	public abstract void setFilter(F filter);
+	
+	public void reset() {
+		resetFilter();
+		resetSort();
+		clear();
+	}
 	
 
 	@Override
@@ -181,11 +412,126 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	}
 	
 	/**
-	 *	Abstract method: trigger a results query for the current filter
+	 *	Trigger a results query for the current filter
 	 *	@param first	: index of first required result
 	 *  @param last     : index of last required result
 	 */
-	protected abstract Future<?> find(int first, int last);
+	protected Future<?> find(int first, int last) {
+		int max = 0;
+		if (this.initializing && this.max > 0)
+			max = this.max;
+		else if (!this.initializing)
+		    max = last-first;
+		
+		Object filter = cloneFilter();		
+		return doFind(filter, first, max);
+	}
+	
+	protected synchronized Future<?> doFind(Object filter, int first, int max) {
+		// Force evaluation of max, results and count
+		if (sortAdapter != null)
+			sortAdapter.retrieve(sortInfo);
+		
+		String[] order = sortInfo.getOrder();
+		if (order != null && order.length == 0)
+			order = null;
+		boolean[] desc = sortInfo.getDesc();
+		if (desc != null && desc.length == 0)
+			desc = null;
+		
+		initFilterFinder();
+		if (pageFilterFinder != null) {
+			PageInfo pageInfo = new PageInfo(first, max, order, desc);
+			PagedCollectionResponder<Page<E>> findResponder = new PagedCollectionResponder<Page<E>>(first, max);
+			return pageFilterFinder.find(filter, pageInfo, findResponder);
+		}
+		PagedCollectionResponder<Map<String, Object>> findResponder = new PagedCollectionResponder<Map<String, Object>>(first, max);
+		return simpleFilterFinder.find(filter, first, max, order, desc, findResponder);
+	}
+	
+	public abstract F getFilter();
+	
+	protected abstract Object cloneFilter();
+	
+	private void initFilterFinder() {
+		if (pageFilterFinder != null || simpleFilterFinder != null)
+			return;
+		
+		boolean usePage = this.usePage;
+		try {
+			for (Method m : component.getClass().getMethods()) {
+				if (m.getName().equals(methodName) && m.getParameterTypes().length >= 2 
+						&& PageInfo.class.isAssignableFrom(m.getParameterTypes()[1])) {
+					usePage = true;
+					break;
+				}
+			}
+		}
+		catch (Exception e) {
+			// Untyped component proxy
+		}
+		if (usePage)
+			pageFilterFinder = new ComponentPageFilterFinder(component, methodName);
+		else
+			simpleFilterFinder = new ComponentSimpleFilterFinder(component, methodName);
+	}
+	
+	private final class ComponentPageFilterFinder implements PageFilterFinder<E> {
+		private final Component component;
+		private final String methodName;
+		
+		public ComponentPageFilterFinder(Component component, String methodName) {
+			this.component = component;
+			this.methodName = methodName;
+		}
+
+		@Override
+		public Future<Page<E>> find(Object filter, PageInfo pageInfo, TideResponder<Page<E>> responder) {
+			return component.call(methodName, pageInfo, responder);
+		}
+	}
+	
+	private final class ComponentSimpleFilterFinder implements SimpleFilterFinder<E> {
+		private final Component component;
+		private final String methodName;
+		
+		public ComponentSimpleFilterFinder(Component component, String methodName) {
+			this.component = component;
+			this.methodName = methodName;
+		}
+
+		@Override
+		public Future<Map<String, Object>> find(Object filter, int first, int max, String[] order, boolean[] desc, TideResponder<Map<String, Object>> responder) {
+			return component.call(methodName, first, max, order, desc, responder);
+		}
+	}
+	
+	
+	/**
+	 *  Build a result object from the result event
+	 *  
+	 *  @param event the result event
+	 *  @param first first index requested
+	 *  @param max max elements requested
+	 *   
+	 *  @return a Page object containing data from the collection
+	 *      resultList   : the retrieved data
+	 *      resultCount  : the total count of elements (non paged)
+	 *      firstResult  : the index of the first retrieved element
+	 *      maxResults   : the maximum count of retrieved elements 
+	 */
+	
+	@SuppressWarnings("unchecked")
+	protected Page<E> getResult(TideResultEvent<?> event, int first, int max) {
+		if (event.getResult() instanceof Page<?>)
+			return (Page<E>)event.getResult();
+		
+		Map<String, Object> result = (Map<String, Object>)event.getResult();
+		Page<E> page = new Page<E>(result.containsKey("firstResult") ? (Integer)result.get("firstResult") : first, 
+				result.containsKey("maxResults") ? (Integer)result.get("maxResults") : max,
+				((Number)result.get("resultCount")).intValue(), (List<E>)result.get("resultList"));
+	    return page;
+	}
 	
 	
 	/**
@@ -204,6 +550,12 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	 *  @return always false
 	 */
 	public boolean refresh() {
+		Object filter = getFilter();
+		if (filter != null && this.context.getEntityManager().isDeepDirtyEntity(filter)) {
+			filterRefresh = true;
+			fullRefresh = true;
+		}
+		
 		// Recheck sort fields to listen for asc/desc change events
 		pendingRanges.clear();
 		pendingCalls.clear();
@@ -243,21 +595,6 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	private void clearLocalIndex() {
 		localIndex = null;
 	}
-	
-	/**
-	 *  Build a result object from the result event
-	 *  
-	 *  @param event the result event
-	 *  @param first first index requested
-	 *  @param max max elements requested
-	 *   
-	 *  @return a Page object containing data from the collection
-	 *      resultList   : the retrieved data
-	 *      resultCount  : the total count of elements (non paged)
-	 *      firstResult  : the index of the first retrieved element
-	 *      maxResults   : the maximum count of retrieved elements 
-	 */
-	protected abstract Page<E> getResult(TideResultEvent<?> event, int first, int max);
 	
 	
 	/**
@@ -693,9 +1030,29 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 		}
 		
 	}
+		
+	/**
+	 * PropertyHolder interface
+	 */
+	public Object getObject() {
+		if (component instanceof PropertyHolder)
+	    	return ((PropertyHolder)component).getObject();
+	    return null;
+	}
+	
+    public void setProperty(String propName, Object value) {
+    	if (component instanceof PropertyHolder)
+    		((PropertyHolder)component).setProperty(propName, value);
+    }
+
+	
+	@Override
+	public <T> Future<T> call(String operation, Object... args) {
+		throw new UnsupportedOperationException();
+	}
 	
 	
-	public class PagedCollectionResponder implements TideResponder<Object> {
+	private class PagedCollectionResponder<R> implements TideResponder<R> {
 	    
 	    private int first;
 	    private int max;
@@ -707,7 +1064,7 @@ public abstract class AbstractPagedCollection<E> implements List<E>, TideEventOb
 	    }
 	    
 	    @Override
-	    public void result(TideResultEvent<Object> event) {
+	    public void result(TideResultEvent<R> event) {
             findResult(event, first, max);
 	    }
 	    
