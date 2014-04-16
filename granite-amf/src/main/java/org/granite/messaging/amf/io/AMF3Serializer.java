@@ -290,6 +290,20 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     		writeAMF3Null();
     	else {
     		Class<?> cls = o.getClass();
+    		
+    		if (cls == String.class) {
+    			writeAMF3String((String)o);
+    			return;
+    		}
+    		if (cls == Integer.class) {
+    			writeAMF3Integer(((Integer)o).intValue());
+    			return;
+    		}
+    		if (cls == Boolean.class) {
+    			writeAMF3Boolean(((Boolean)o).booleanValue());
+    			return;
+    		}
+    		
     		AMF3Writer writer = writersCache.get(cls);
     		if (writer == null) {
     			writer = getWriter(cls);
@@ -734,7 +748,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         	writeAMF3UnsignedIntegerData(0x01);
             
             ensureCapacity(8);
-            position = writeLongData(buffer, position, date.getTime());
+            position = writeLongData(buffer, position, Double.doubleToRawLongBits((double)date.getTime()));
         }
     }
     
@@ -792,7 +806,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     
     protected void writeAMF3ByteObjectArray(Byte[] array) throws IOException {
     	ensureCapacity(1);
-    	buffer[position++] = AMF3_ARRAY;
+    	buffer[position++] = AMF3_BYTEARRAY;
 
         int index = storedObjects.putIfAbsent(array);
         if (index >= 0)
