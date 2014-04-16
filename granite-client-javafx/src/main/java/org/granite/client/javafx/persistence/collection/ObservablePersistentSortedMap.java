@@ -141,4 +141,15 @@ public class ObservablePersistentSortedMap<K, V> extends ObservableMapWrapper<K,
 	public String toString() {
 		return persistentSortedMap.toString();
 	}
+	
+	@Override
+	public int hashCode() {
+		return System.identityHashCode(persistentSortedMap);
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		return object instanceof UnsafePersistentCollection 
+				&& ((UnsafePersistentCollection<?>)object).internalPersistentCollection() == persistentSortedMap;
+	}
 }

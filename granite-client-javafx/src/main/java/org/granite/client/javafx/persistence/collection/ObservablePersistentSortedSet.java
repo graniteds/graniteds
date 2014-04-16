@@ -148,4 +148,15 @@ public class ObservablePersistentSortedSet<E> extends ObservableSetWrapper<E> im
 	public String toString() {
 		return persistentSortedSet.toString();
 	}
+	
+	@Override
+	public int hashCode() {
+		return System.identityHashCode(persistentSortedSet);
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		return object instanceof UnsafePersistentCollection 
+				&& ((UnsafePersistentCollection<?>)object).internalPersistentCollection() == persistentSortedSet;
+	}
 }

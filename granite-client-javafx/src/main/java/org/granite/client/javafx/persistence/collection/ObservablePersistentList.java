@@ -141,4 +141,15 @@ public class ObservablePersistentList<E> extends ObservableListWrapper<E> implem
 	public String toString() {
 		return persistentList.toString();
 	}
+	
+	@Override
+	public int hashCode() {
+		return System.identityHashCode(persistentList);
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		return object instanceof UnsafePersistentCollection 
+				&& ((UnsafePersistentCollection<?>)object).internalPersistentCollection() == persistentList;
+	}
 }

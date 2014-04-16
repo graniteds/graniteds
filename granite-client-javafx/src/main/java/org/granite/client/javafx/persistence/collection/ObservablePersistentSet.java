@@ -148,4 +148,15 @@ public class ObservablePersistentSet<E> extends ObservableSetWrapper<E> implemen
 	public String toString() {
 		return persistentSet.toString();
 	}
+	
+	@Override
+	public int hashCode() {
+		return System.identityHashCode(persistentSet);
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		return object instanceof UnsafePersistentCollection 
+				&& ((UnsafePersistentCollection<?>)object).internalPersistentCollection() == persistentSet;
+	}
 }

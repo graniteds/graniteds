@@ -141,4 +141,15 @@ public class ObservablePersistentBag<E> extends ObservableListWrapper<E> impleme
 	public String toString() {
 		return persistentBag.toString();
 	}
+	
+	@Override
+	public int hashCode() {
+		return System.identityHashCode(persistentBag);
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		return object instanceof UnsafePersistentCollection 
+				&& ((UnsafePersistentCollection<?>)object).internalPersistentCollection() == persistentBag;
+	}
 }

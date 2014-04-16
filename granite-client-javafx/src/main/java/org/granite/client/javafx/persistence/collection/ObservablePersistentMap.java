@@ -141,4 +141,15 @@ public class ObservablePersistentMap<K, V> extends ObservableMapWrapper<K, V> im
 	public String toString() {
 		return persistentMap.toString();
 	}
+	
+	@Override
+	public int hashCode() {
+		return System.identityHashCode(persistentMap);
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		return object instanceof UnsafePersistentCollection 
+				&& ((UnsafePersistentCollection<?>)object).internalPersistentCollection() == persistentMap;
+	}
 }
