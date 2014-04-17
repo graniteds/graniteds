@@ -24,6 +24,7 @@ package org.granite.test.amf;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -33,6 +34,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.granite.config.GraniteConfig;
@@ -42,6 +46,11 @@ import org.granite.context.SimpleGraniteContext;
 import org.granite.messaging.amf.io.AMF3Constants;
 import org.granite.messaging.amf.io.AMF3Deserializer;
 import org.granite.messaging.amf.io.AMF3Serializer;
+import org.granite.messaging.amf.types.AMFDictionaryValue;
+import org.granite.messaging.amf.types.AMFVectorIntValue;
+import org.granite.messaging.amf.types.AMFVectorNumberValue;
+import org.granite.messaging.amf.types.AMFVectorObjectValue;
+import org.granite.messaging.amf.types.AMFVectorUintValue;
 import org.granite.util.XMLUtil;
 import org.granite.util.XMLUtilFactory;
 import org.junit.Assert;
@@ -1539,6 +1548,233 @@ public class TestAMFSerialization implements AMF3Constants {
 			Assert.assertEquals(e.getValue(), map.get(e.getKey())); 
 		}
 	}
+
+	@Test
+	public void testAMFVectorInt() throws IOException {
+		byte[] bytes = serialize(new AMFVectorIntValue(new int[0]));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_INT, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof int[]);
+		Assert.assertEquals(0, ((int[])o).length);
+		
+		bytes = serialize(new AMFVectorIntValue(new ArrayList<Integer>()));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_INT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof int[]);
+		Assert.assertEquals(0, ((int[])o).length);
+		
+		int[] array = {Integer.MIN_VALUE, -1, 0, 1, Integer.MAX_VALUE};
+		
+		bytes = serialize(new AMFVectorIntValue(array));
+		Assert.assertEquals(23, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_INT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof int[]);
+		Assert.assertEquals(array.length, ((int[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((int[])o)[i]);
+		
+		List<Integer> list = new ArrayList<Integer>(array.length);
+		for (int i : array)
+			list.add(i);
+		bytes = serialize(new AMFVectorIntValue(list));
+		Assert.assertEquals(23, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_INT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof int[]);
+		Assert.assertEquals(array.length, ((int[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((int[])o)[i]);
+	}
+
+	@Test
+	public void testAMFVectorUint() throws IOException {
+		byte[] bytes = serialize(new AMFVectorUintValue(new int[0]));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_UINT, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof long[]);
+		Assert.assertEquals(0, ((long[])o).length);
+		
+		bytes = serialize(new AMFVectorUintValue(new ArrayList<Integer>()));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_UINT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof long[]);
+		Assert.assertEquals(0, ((long[])o).length);
+		
+		int[] array = {Integer.MIN_VALUE, -1, 0, 1, Integer.MAX_VALUE};
+		
+		bytes = serialize(new AMFVectorUintValue(array));
+		Assert.assertEquals(23, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_UINT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof long[]);
+		Assert.assertEquals(array.length, ((long[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals((array[i] & 0xFFFFFFFFL), ((long[])o)[i]);
+		
+		List<Integer> list = new ArrayList<Integer>(array.length);
+		for (int i : array)
+			list.add(i);
+		bytes = serialize(new AMFVectorUintValue(list));
+		Assert.assertEquals(23, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_UINT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof long[]);
+		Assert.assertEquals(array.length, ((long[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals((array[i] & 0xFFFFFFFFL), ((long[])o)[i]);
+	}
+
+	@Test
+	public void testAMFVectorNumber() throws IOException {
+		byte[] bytes = serialize(new AMFVectorNumberValue(new double[0]));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_NUMBER, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof double[]);
+		Assert.assertEquals(0, ((double[])o).length);
+		
+		bytes = serialize(new AMFVectorNumberValue(new ArrayList<Double>()));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_NUMBER, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof double[]);
+		Assert.assertEquals(0, ((double[])o).length);
+		
+		double[] array = {Double.NEGATIVE_INFINITY, -Double.MAX_VALUE, -1.0, -Double.MIN_VALUE, -0.0,
+				Double.NaN, 0.0, Double.MIN_VALUE, 1.0, Double.MAX_VALUE, Double.POSITIVE_INFINITY};
+		
+		bytes = serialize(new AMFVectorNumberValue(array));
+		Assert.assertEquals(91, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_NUMBER, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof double[]);
+		Assert.assertEquals(array.length, ((double[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((double[])o)[i], 0.0);
+		
+		List<Double> list = new ArrayList<Double>(array.length);
+		for (double i : array)
+			list.add(i);
+		bytes = serialize(new AMFVectorNumberValue(list));
+		Assert.assertEquals(91, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_NUMBER, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof double[]);
+		Assert.assertEquals(array.length, ((double[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((double[])o)[i], 0.0);
+	}
+
+	@Test
+	public void testAMFVectorObject() throws IOException {
+		byte[] bytes = serialize(new AMFVectorObjectValue(new Object[0], "*"));
+		Assert.assertEquals(5, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_OBJECT, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof List);
+		Assert.assertEquals(0, ((List<?>)o).size());
+		
+		bytes = serialize(new AMFVectorObjectValue(new ArrayList<Object>(), "*"));
+		Assert.assertEquals(5, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_OBJECT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof List);
+		Assert.assertEquals(0, ((List<?>)o).size());
+		
+		String[] array = new String[]{null, "bla", "blo", "bla"};
+		
+		bytes = serialize(new AMFVectorObjectValue(array, String.class.getName()));
+		Assert.assertEquals(33, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_OBJECT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof List);
+		Assert.assertEquals(array.length, ((List<?>)o).size());
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((List<?>)o).get(i));
+		
+		List<String> list = new ArrayList<String>(array.length);
+		for (String i : array)
+			list.add(i);
+		
+		bytes = serialize(new AMFVectorObjectValue(list, String.class.getName()));
+		Assert.assertEquals(33, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_OBJECT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof List);
+		Assert.assertEquals(array.length, ((List<?>)o).size());
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((List<?>)o).get(i));
+	}
+	
+	@Test
+	public void testAMFDictionary() throws IOException {
+		byte[] bytes = serialize(new AMFDictionaryValue(new HashMap<Object, Object>()));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_DICTIONARY, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof HashMap);
+		Assert.assertEquals(0, ((HashMap<?, ?>)o).size());
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put(null, Boolean.TRUE);
+		map.put("null", null);
+		map.put("bla", Double.MAX_VALUE);
+		map.put("bli", Integer.valueOf(345));
+		
+		bytes = serialize(new AMFDictionaryValue(map));
+		Assert.assertEquals(34, bytes.length);
+		Assert.assertEquals(AMF3_DICTIONARY, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof HashMap);
+		Assert.assertEquals(map.size(), ((HashMap<?, ?>)o).size());
+		
+		for (Map.Entry<?, ?> e : ((HashMap<?, ?>)o).entrySet()) {
+			Assert.assertTrue(map.containsKey(e.getKey()));
+			Assert.assertEquals(e.getValue(), map.get(e.getKey())); 
+		}
+	}
+	
+	@Test
+	public void testAMFTuttyFrutty() throws IOException {
+		TuttyFrutty tf = new TuttyFrutty();
+		byte[] bytes = serialize(new TuttyFrutty());
+		Assert.assertEquals(AMF3_OBJECT, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof TuttyFrutty);
+		Assert.assertTrue(tf.equals(o));
+	}
 	
 	private byte[] serialize(Object o) throws IOException {
 		SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, null);
@@ -1564,5 +1800,113 @@ public class TestAMFSerialization implements AMF3Constants {
 		GraniteContext.release();
 
 		return o;
+	}
+	
+	public static class TuttyFrutty {
+		
+		public Object property0 = null;
+		
+		public boolean property1 = true;
+		public byte property2 = Byte.MIN_VALUE;
+		public char property3 = 'a';
+		public short property4 = Short.MAX_VALUE;
+		public int property5 = 72163;
+		public long property6 = 324L;
+		public float property7 = Float.MAX_VALUE;
+		public double property8 = Double.MIN_VALUE;
+		
+		public Boolean property9 = Boolean.FALSE;
+		public Byte property10 = Byte.valueOf((byte)34);
+		public Character property11 = Character.valueOf('b');
+		public Short property12 = Short.valueOf((short)-67);
+		public Integer property13 = Integer.valueOf(-654876);
+		public Long property14 = Long.valueOf(-65);
+		public Float property15 = Float.valueOf(-334.8f);
+		public Double property16 = Double.valueOf(-546.0);
+		
+		public boolean[] property17 = new boolean[]{true, false, false, true, false, true , true};
+		public byte[] property18 = new byte[]{1, 4, -34, 54, 0, 6};
+		public char[] property19 = "fasiudyfiuys".toCharArray();
+		public short[] property20 = new short[]{-5, 876, -4857, 585, 1};
+		public int[] property21 = new int[]{-345234, 93485, 0, 38745, -875};
+		public long[] property22 = new long[]{-837456838L, 329845L, 0L, 837456L};
+		public float[] property23 = new float[]{Float.NEGATIVE_INFINITY, Float.MAX_VALUE, 0.0f, -8374.5f, 987.78f};
+		public double[] property24 = new double[]{3.345, -2345.89, Double.POSITIVE_INFINITY, 0.0};
+		
+		public Boolean[] property25 = new Boolean[]{false, true, true, false};
+		public Byte[] property26 = new Byte[]{5, -3, 67, -32};
+		public Character[] property27 = new Character[]{'3', '-', 'r', 't'};
+		public Short[] property28 = new Short[]{-234, 345, 5496, 0};
+		public Integer[] property29 = new Integer[]{-2347, 39457, 345987, -382476, 0};
+		public Long[] property30 = new Long[]{-342876L, 6L, 7L, 8734L};
+		public Float[] property31 = new Float[]{-1.0f, 765.98f, 654.8f, 0.0f};
+		public Double[] property32 = new Double[]{-3.0, Double.MAX_VALUE, 7634.904, -0.0};
+		
+		public String property33 = "45345y43iyt5uy4f34gv5h43gf5h345f4h3g5hg";
+		
+		public List<String> property34 = Arrays.asList("sagdf", "2345", "873465", "i749rygk");
+		public Set<String> property35 = new HashSet<String>(Arrays.asList("oieruwyto", "095860", "0r8gt", "0r9et8y"));
+		public SortedSet<String> property36 = new TreeSet<String>(Arrays.asList("8345", "ldfkgjhl", "2364tf", "0d98fg7oudfh"));;
+		public Map<String, Object> property37;
+		
+		public TuttyFrutty() {
+			property37 = new HashMap<String, Object>();
+			property37.put("dsfgsd", Boolean.TRUE);
+			property37.put("9080sduf", Boolean.FALSE);
+			property37.put("u6sd5", Integer.valueOf(8374));
+			property37.put("saodg980y", new Date());
+			property37.put("u6as5d7s", "ksadjfh");
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (!(obj instanceof TuttyFrutty))
+				return false;
+
+			try {
+				for (Field f : TuttyFrutty.class.getDeclaredFields()) {
+					Object v1 = f.get(this);
+					Object v2 = f.get(obj);
+					
+					if (v1 == null) {
+						if (v2 != null)
+							return false;
+					}
+					else if (v1.getClass().isArray()) {
+						if (v2 == null || !v2.getClass().isArray())
+							return false;
+						if (v1.getClass().getComponentType() != v2.getClass().getComponentType())
+							return false;
+						if (v1.getClass().getComponentType().isPrimitive()) {
+							if (v1.getClass().getComponentType() == boolean.class && !Arrays.equals((boolean[])v1, (boolean[])v2))
+								return false;
+							else if (v1.getClass().getComponentType() == byte.class && !Arrays.equals((byte[])v1, (byte[])v2))
+								return false;
+							else if (v1.getClass().getComponentType() == char.class && !Arrays.equals((char[])v1, (char[])v2))
+								return false;
+							else if (v1.getClass().getComponentType() == short.class && !Arrays.equals((short[])v1, (short[])v2))
+								return false;
+							else if (v1.getClass().getComponentType() == int.class && !Arrays.equals((int[])v1, (int[])v2))
+								return false;
+							else if (v1.getClass().getComponentType() == long.class && !Arrays.equals((long[])v1, (long[])v2))
+								return false;
+							else if (v1.getClass().getComponentType() == float.class && !Arrays.equals((float[])v1, (float[])v2))
+								return false;
+							else if (v1.getClass().getComponentType() == double.class && !Arrays.equals((double[])v1, (double[])v2))
+								return false;
+						}
+						else if (!Arrays.equals((Object[])v1, (Object[])v2))
+							return false;
+					}
+					else if (!v1.equals(v2))
+						return false;
+				}
+			}
+			catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+			
+			return true;
+		}
 	}
 }

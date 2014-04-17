@@ -77,11 +77,11 @@ public abstract class ActionScriptClassDescriptor {
     }
 
     public boolean isExternalizable() {
-        return encoding == 0x01;
+        return (encoding & 0x01) != 0;
     }
 
     public boolean isDynamic() {
-        return encoding == 0x02;
+        return (encoding & 0x02) != 0;
     }
 
     public abstract void defineProperty(String name);
@@ -89,6 +89,9 @@ public abstract class ActionScriptClassDescriptor {
 
     public int getPropertiesCount() {
         return properties.size();
+    }
+    public Property getProperty(int index) {
+        return properties.get(index);
     }
     public String getPropertyName(int index) {
         return properties.get(index).getName();

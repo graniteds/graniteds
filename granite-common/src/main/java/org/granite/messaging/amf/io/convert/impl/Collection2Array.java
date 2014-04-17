@@ -86,7 +86,12 @@ public class Collection2Array extends Converter {
                 int i = 0;
                 for (Object item : c) {
 
-                    if (itemConverter == null)
+                	if (item != null && item.getClass() == targetComponentType) {
+                		Array.set(array, i++, item);
+                		continue;
+                	}
+
+                	if (itemConverter == null)
                         itemConverter = converters.getConverter(item, targetComponentType);
                     else if (!itemConverter.canConvert(item, targetComponentType))
                         itemConverter = converters.getConverter(item, targetComponentType);

@@ -34,8 +34,25 @@ import org.granite.util.PropertyDescriptor;
  */
 public class DefaultActionScriptClassDescriptor extends ActionScriptClassDescriptor {
 
+	private final Class<?> clazz;
+	
     public DefaultActionScriptClassDescriptor(String type, byte encoding) {
         super(type, encoding);
+        
+        this.clazz = forName(type, instantiator);
+    }
+    
+    private static Class<?> forName(String name, String instantiator) {
+    	if (name.length() == 0)
+    		return HashMap.class;
+    	
+    	String className = (instantiator != null ? instantiator : name);
+		try {
+			return TypeUtil.forName(className);
+		}
+		catch (Throwable t) {
+			throw new RuntimeException("Class not found: " + className);
+		}
     }
 
     @Override
@@ -45,8 +62,6 @@ public class DefaultActionScriptClassDescriptor extends ActionScriptClassDescrip
             properties.add(new MapProperty(converters, name));
         else {
             try {
-                Class<?> clazz = TypeUtil.forName(type);
-
                 // Try to find public getter/setter.
                 PropertyDescriptor[] props = Introspector.getPropertyDescriptors(clazz);
                 for (PropertyDescriptor prop : props) {
@@ -76,15 +91,14 @@ public class DefaultActionScriptClassDescriptor extends ActionScriptClassDescrip
 
     @Override
     public Object newJavaInstance() {
-
-        if (type.length() == 0)
+        if (clazz == HashMap.class)
             return new HashMap<String, Object>();
-
-        String className = (instantiator != null ? instantiator : type);
+        
         try {
-            return TypeUtil.newInstance(className);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not create instance of: " + className, e);
-        }
+			return clazz.newInstance();
+		}
+        catch (Exception e) {
+        	throw new RuntimeException("Could not create instance of: " + clazz.getName(), e);
+		}
     }
 }

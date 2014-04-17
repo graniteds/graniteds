@@ -147,7 +147,37 @@ public class Converters {
      * @throws NoConverterFoundException if no suitable converter can be found.
      */
     public Object convert(Object value, Type targetType) throws NoConverterFoundException {
-        return getConverter(value, targetType, true).convert(value, targetType);
+    	if (value != null) {
+    		Class<?> valueClass = value.getClass(); 
+    		if (valueClass == targetType)
+    			return value;
+    		
+    		if (targetType instanceof Class) {
+    			 Class<?> targetClass = (Class<?>)targetType;
+    			 if (targetClass.isPrimitive()) {
+    				 if (targetClass == int.class && valueClass == Integer.class)
+    					 return value;
+    				 if (targetClass == boolean.class && valueClass == Boolean.class)
+    					 return value;
+    				 if (targetClass == double.class && valueClass == Double.class)
+    					 return value;
+    				 if (targetClass == long.class && valueClass == Long.class)
+    					 return value;
+    				 if (targetClass == byte.class && valueClass == Byte.class)
+    					 return value;
+    				 if (targetClass == char.class && valueClass == Character.class)
+    					 return value;
+    				 if (targetClass == float.class && valueClass == Float.class)
+    					 return value;
+    				 if (targetClass == short.class && valueClass == Short.class)
+    					 return value;
+    			 }
+    		}
+    	}
+    	else if (targetType instanceof Class && !((Class<?>)targetType).isPrimitive())
+    		return value;
+        
+    	return getConverter(value, targetType, true).convert(value, targetType);
     }
 
     /**

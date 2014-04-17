@@ -21,6 +21,8 @@
  */
 package org.granite.messaging.amf.types;
 
+import java.util.Collection;
+
 /**
  * @author Franck WOLFF
  */
@@ -29,8 +31,17 @@ public abstract class AMFAbstractVectorValue extends AMFSpecialValue<Object> {
 	public final boolean fixed;
 	
 	protected AMFAbstractVectorValue(byte type, Object value, boolean fixed) {
-		super(type, value);
+		super(type, checkValue(value));
 
 		this.fixed = fixed;
+	}
+	
+	protected static Object checkValue(Object value) {
+		if (value == null)
+			throw new NullPointerException();
+		Class<?> valueClass = value.getClass();
+		if (!valueClass.isArray() && !Collection.class.isAssignableFrom(valueClass))
+			throw new IllegalArgumentException("Cannot serialize " + valueClass + " as a AMF Vector");
+		return value;
 	}
 }
