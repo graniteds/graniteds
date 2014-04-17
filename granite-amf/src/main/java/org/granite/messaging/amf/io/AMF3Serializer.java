@@ -281,8 +281,9 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // ObjectOutput implementation.
+    // AMF3 entry point: ObjectOutput.writeObject(...) implementation.
 
+    @Override
     public void writeObject(Object o) throws IOException {
     	if (o != null)
     		o = converters.revert(o);
@@ -312,77 +313,9 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     		writer.write(this, o);
     	}
     }
-    
-    protected AMF3Writer getWriter(Class<?> cls) {
-    	
-    	if (cls.isPrimitive())
-    		throw new RuntimeException("Illegal primitive class: " + cls);
-    	
-    	if (Externalizable.class.isAssignableFrom(cls))
-    		return AMF3_OBJECT_WRITER;
-		
-    	if (cls == String.class || cls == Character.class)
-			return AMF3_STRING_WRITER;
-		
-    	if (Number.class.isAssignableFrom(cls)) {
-			if (cls == Integer.class || cls == Short.class || cls == Byte.class)
-				return AMF3_INTEGER_WRITER;
-			if (externalizeLong && cls == Long.class)
-				return AMF3_OBJECT_WRITER;
-			if (externalizeBigInteger && BigInteger.class.isAssignableFrom(cls))
-				return AMF3_OBJECT_WRITER;
-			if (externalizeBigDecimal && BigDecimal.class.isAssignableFrom(cls))
-				return AMF3_OBJECT_WRITER;
-			return AMF3_NUMBER_WRITER;
-		}
-		
-    	if (Collection.class.isAssignableFrom(cls))
-			return AMF3_COLLECTION_WRITER;
-		
-    	if (cls.isArray()) {
-			Class<?> componentType = cls.getComponentType();
-			if (componentType == boolean.class)
-				return AMF3_BOOLEAN_ARRAY_WRITER;
-			if (componentType == char.class)
-				return AMF3_CHAR_ARRAY_WRITER;
-			if (componentType == Character.class)
-				return AMF3_CHAR_OBJECT_ARRAY_WRITER;
-			if (componentType == byte.class)
-				return AMF3_BYTE_ARRAY_WRITER;
-			if (componentType == Byte.class)
-				return AMF3_BYTE_OBJECT_ARRAY_WRITER;
-			if (componentType == short.class)
-				return AMF3_SHORT_ARRAY_WRITER;
-			if (componentType == int.class)
-				return AMF3_INT_ARRAY_WRITER;
-			if (componentType == long.class)
-				return AMF3_LONG_ARRAY_WRITER;
-			if (componentType == float.class)
-				return AMF3_FLOAT_ARRAY_WRITER;
-			if (componentType == double.class)
-				return AMF3_DOUBLE_ARRAY_WRITER;
-			return AMF3_OBJECT_ARRAY_WRITER;
-		}
-		
-    	if (cls == Boolean.class)
-			return AMF3_BOOLEAN_WRITER;
-		
-    	if (Date.class.isAssignableFrom(cls))
-			return AMF3_DATE_WRITER;
-		if (Calendar.class.isAssignableFrom(cls))
-			return AMF3_CALENDAR_WRITER;
-		
-		if (Document.class.isAssignableFrom(cls))
-			return AMF3_DOCUMENT_WRITER;
-		
-		if (AMFSpecialValue.class.isAssignableFrom(cls))
-			return AMF3_SPECIAL_VALUE_WRITER;
-		
-		return AMF3_OBJECT_WRITER;
-    }
 
     ///////////////////////////////////////////////////////////////////////////
-    // AMF3 serialization.
+    // AMF3 serialization methods.
 
     protected void writeAMF3Null() throws IOException {
     	ensureCapacity(1);
@@ -392,179 +325,6 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     protected void writeAMF3Boolean(boolean value) throws IOException {
     	ensureCapacity(1);
     	buffer[position++] = (value ? AMF3_BOOLEAN_TRUE : AMF3_BOOLEAN_FALSE);
-    }
-    
-    protected void writeAMF3SpecialValue(AMFSpecialValue<?> value) throws IOException {
-        switch (value.type) {
-        case AMF3_DICTIONARY:
-			writeAMF3Dictionary((AMFDictionaryValue)value);
-			break;
-        case AMF3_VECTOR_INT:
-			writeAMF3VectorInt((AMFVectorIntValue)value);
-        	break;
-        case AMF3_VECTOR_NUMBER:
-			writeAMF3VectorNumber((AMFVectorNumberValue)value);
-        	break;
-        case AMF3_VECTOR_UINT:
-			writeAMF3VectorUint((AMFVectorUintValue)value);
-        	break;
-        case AMF3_VECTOR_OBJECT:
-			writeAMF3VectorObject((AMFVectorObjectValue)value);
-        	break;
-        default:
-			throw new RuntimeException("Unsupported AMF special value: " + value);
-        }
-    }
-    
-    protected void writeAMF3VectorObject(AMFVectorObjectValue value) throws IOException {
-    	ensureCapacity(1);
-    	buffer[position++] = AMF3_VECTOR_OBJECT;
-
-        Object o = value.value;
-        
-        int index = storedObjects.putIfAbsent(o);
-        if (index >= 0)
-        	writeAMF3UnsignedIntegerData(index << 1);
-        else {
-            int length = getArrayOrCollectionLength(o);
-            writeAMF3UnsignedIntegerData(length << 1 | 0x01);
-
-            ensureCapacity(1);
-        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
-            
-        	writeAMF3StringData(value.type);
-
-            if (o.getClass().isArray()) {
-                for (int i = 0; i < length; i++)
-                    writeObject(Array.get(o, i));
-            }
-            else {
-            	for (Object item : (Collection<?>)o)
-            		writeObject(item);
-            }
-        }
-    }
-    
-    protected void writeAMF3VectorInt(AMFVectorIntValue value) throws IOException {
-    	ensureCapacity(1);
-    	buffer[position++] = AMF3_VECTOR_INT;
-
-        Object o = value.value;
-
-        int index = storedObjects.putIfAbsent(o);
-        if (index >= 0)
-        	writeAMF3UnsignedIntegerData(index << 1);
-        else {
-            int length = getArrayOrCollectionLength(o);
-            writeAMF3UnsignedIntegerData(length << 1 | 0x01);
-        	
-            ensureCapacity(1);
-        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
-
-            if (o.getClass().isArray()) {
-                for (int i = 0; i < length; i++) {
-                	ensureCapacity(4);
-                	position = writeIntData(buffer, position, ((Number)Array.get(o, i)).intValue());
-                }
-            }
-            else {
-            	for (Object item : (Collection<?>)o) {
-                	ensureCapacity(4);
-                	position = writeIntData(buffer, position, ((Number)item).intValue());
-            	}
-            }
-        }
-    }
-    
-    protected void writeAMF3VectorNumber(AMFVectorNumberValue value) throws IOException {
-    	ensureCapacity(1);
-    	buffer[position++] = AMF3_VECTOR_NUMBER;
-
-        Object o = value.value;
-
-        int index = storedObjects.putIfAbsent(o);
-        if (index >= 0)
-        	writeAMF3UnsignedIntegerData(index << 1);
-        else {
-            int length = getArrayOrCollectionLength(o);
-            writeAMF3UnsignedIntegerData(length << 1 | 0x01);
-        	
-            ensureCapacity(1);
-        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
-
-            if (o.getClass().isArray()) {
-                for (int i = 0; i < length; i++) {
-                	ensureCapacity(8);
-                	position = writeLongData(buffer, position, Double.doubleToLongBits(((Number)Array.get(o, i)).doubleValue()));
-                }
-            }
-            else {
-            	for (Object item : (Collection<?>)o) {
-                	ensureCapacity(8);
-                	position = writeLongData(buffer, position, Double.doubleToLongBits(((Number)item).doubleValue()));
-            	}
-            }
-        }
-    }
-    
-    protected void writeAMF3VectorUint(AMFVectorUintValue value) throws IOException {
-    	ensureCapacity(1);
-    	buffer[position++] = AMF3_VECTOR_UINT;
-
-        Object o = value.value;
-
-        int index = storedObjects.putIfAbsent(o);
-        if (index >= 0)
-        	writeAMF3UnsignedIntegerData(index << 1);
-        else {
-            int length = getArrayOrCollectionLength(o);
-            writeAMF3UnsignedIntegerData(length << 1 | 0x01);
-        	
-            ensureCapacity(1);
-        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
-
-            if (o.getClass().isArray()) {
-                for (int i = 0; i < length; i++) {
-                	ensureCapacity(4);
-                	position = writeIntData(buffer, position, ((Number)Array.get(o, i)).intValue());
-                }
-            }
-            else {
-            	for (Object item : (Collection<?>)o) {
-                	ensureCapacity(4);
-                	position = writeIntData(buffer, position, ((Number)item).intValue());
-            	}
-            }
-        }
-    }
-
-    protected void writeAMF3Dictionary(AMFDictionaryValue value) throws IOException {
-    	ensureCapacity(1);
-    	buffer[position++] = AMF3_DICTIONARY;
-
-        Map<?, ?> o = value.value;
-
-        int index = storedObjects.putIfAbsent(o);
-        if (index >= 0)
-        	writeAMF3UnsignedIntegerData(index << 1);
-        else {
-            int length = o.size();
-            writeAMF3UnsignedIntegerData(length << 1 | 0x01);
-        	
-            ensureCapacity(1);
-        	buffer[position++] = (byte)(value.weakKeys ? 0x01 : 0x00);
-
-            for (Map.Entry<?, ?> entry : o.entrySet()) {
-            	writeObject(entry.getKey());
-            	writeObject(entry.getValue());
-            }
-        }
-    }
-    
-    protected int getArrayOrCollectionLength(Object o) {
-    	if (o.getClass().isArray())
-    		return Array.getLength(o);
-    	return ((Collection<?>)o).size();
     }
 
     protected void writeAMF3Integer(int i) throws IOException {
@@ -1025,9 +785,250 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
             }
         }
     }
+    
+    protected void writeAMF3SpecialValue(AMFSpecialValue<?> value) throws IOException {
+        switch (value.type) {
+        case AMF3_DICTIONARY:
+			writeAMF3Dictionary((AMFDictionaryValue)value);
+			break;
+        case AMF3_VECTOR_INT:
+			writeAMF3VectorInt((AMFVectorIntValue)value);
+        	break;
+        case AMF3_VECTOR_NUMBER:
+			writeAMF3VectorNumber((AMFVectorNumberValue)value);
+        	break;
+        case AMF3_VECTOR_UINT:
+			writeAMF3VectorUint((AMFVectorUintValue)value);
+        	break;
+        case AMF3_VECTOR_OBJECT:
+			writeAMF3VectorObject((AMFVectorObjectValue)value);
+        	break;
+        default:
+			throw new RuntimeException("Unsupported AMF special value: " + value);
+        }
+    }
+    
+    protected void writeAMF3VectorObject(AMFVectorObjectValue value) throws IOException {
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_VECTOR_OBJECT;
+
+        Object o = value.value;
+        
+        int index = storedObjects.putIfAbsent(o);
+        if (index >= 0)
+        	writeAMF3UnsignedIntegerData(index << 1);
+        else {
+            int length = getArrayOrCollectionLength(o);
+            writeAMF3UnsignedIntegerData(length << 1 | 0x01);
+
+            ensureCapacity(1);
+        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
+            
+        	writeAMF3StringData(value.type);
+
+            if (o.getClass().isArray()) {
+                for (int i = 0; i < length; i++)
+                    writeObject(Array.get(o, i));
+            }
+            else {
+            	for (Object item : (Collection<?>)o)
+            		writeObject(item);
+            }
+        }
+    }
+    
+    protected void writeAMF3VectorInt(AMFVectorIntValue value) throws IOException {
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_VECTOR_INT;
+
+        Object o = value.value;
+
+        int index = storedObjects.putIfAbsent(o);
+        if (index >= 0)
+        	writeAMF3UnsignedIntegerData(index << 1);
+        else {
+            int length = getArrayOrCollectionLength(o);
+            writeAMF3UnsignedIntegerData(length << 1 | 0x01);
+        	
+            ensureCapacity(1);
+        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
+
+            if (o.getClass().isArray()) {
+                for (int i = 0; i < length; i++) {
+                	ensureCapacity(4);
+                	position = writeIntData(buffer, position, ((Number)Array.get(o, i)).intValue());
+                }
+            }
+            else {
+            	for (Object item : (Collection<?>)o) {
+                	ensureCapacity(4);
+                	position = writeIntData(buffer, position, ((Number)item).intValue());
+            	}
+            }
+        }
+    }
+    
+    protected void writeAMF3VectorNumber(AMFVectorNumberValue value) throws IOException {
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_VECTOR_NUMBER;
+
+        Object o = value.value;
+
+        int index = storedObjects.putIfAbsent(o);
+        if (index >= 0)
+        	writeAMF3UnsignedIntegerData(index << 1);
+        else {
+            int length = getArrayOrCollectionLength(o);
+            writeAMF3UnsignedIntegerData(length << 1 | 0x01);
+        	
+            ensureCapacity(1);
+        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
+
+            if (o.getClass().isArray()) {
+                for (int i = 0; i < length; i++) {
+                	ensureCapacity(8);
+                	position = writeLongData(buffer, position, Double.doubleToLongBits(((Number)Array.get(o, i)).doubleValue()));
+                }
+            }
+            else {
+            	for (Object item : (Collection<?>)o) {
+                	ensureCapacity(8);
+                	position = writeLongData(buffer, position, Double.doubleToLongBits(((Number)item).doubleValue()));
+            	}
+            }
+        }
+    }
+    
+    protected void writeAMF3VectorUint(AMFVectorUintValue value) throws IOException {
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_VECTOR_UINT;
+
+        Object o = value.value;
+
+        int index = storedObjects.putIfAbsent(o);
+        if (index >= 0)
+        	writeAMF3UnsignedIntegerData(index << 1);
+        else {
+            int length = getArrayOrCollectionLength(o);
+            writeAMF3UnsignedIntegerData(length << 1 | 0x01);
+        	
+            ensureCapacity(1);
+        	buffer[position++] = (byte)(value.fixed ? 0x01 : 0x00);
+
+            if (o.getClass().isArray()) {
+                for (int i = 0; i < length; i++) {
+                	ensureCapacity(4);
+                	position = writeIntData(buffer, position, ((Number)Array.get(o, i)).intValue());
+                }
+            }
+            else {
+            	for (Object item : (Collection<?>)o) {
+                	ensureCapacity(4);
+                	position = writeIntData(buffer, position, ((Number)item).intValue());
+            	}
+            }
+        }
+    }
+
+    protected void writeAMF3Dictionary(AMFDictionaryValue value) throws IOException {
+    	ensureCapacity(1);
+    	buffer[position++] = AMF3_DICTIONARY;
+
+        Map<?, ?> o = value.value;
+
+        int index = storedObjects.putIfAbsent(o);
+        if (index >= 0)
+        	writeAMF3UnsignedIntegerData(index << 1);
+        else {
+            int length = o.size();
+            writeAMF3UnsignedIntegerData(length << 1 | 0x01);
+        	
+            ensureCapacity(1);
+        	buffer[position++] = (byte)(value.weakKeys ? 0x01 : 0x00);
+
+            for (Map.Entry<?, ?> entry : o.entrySet()) {
+            	writeObject(entry.getKey());
+            	writeObject(entry.getValue());
+            }
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Utilities.
+    
+    protected int getArrayOrCollectionLength(Object o) {
+    	if (o.getClass().isArray())
+    		return Array.getLength(o);
+    	return ((Collection<?>)o).size();
+    }
+    
+    protected AMF3Writer getWriter(Class<?> cls) {
+    	
+    	if (cls.isPrimitive())
+    		throw new RuntimeException("Illegal primitive class: " + cls);
+    	
+    	if (Externalizable.class.isAssignableFrom(cls))
+    		return AMF3_OBJECT_WRITER;
+		
+    	if (cls == String.class || cls == Character.class)
+			return AMF3_STRING_WRITER;
+		
+    	if (Number.class.isAssignableFrom(cls)) {
+			if (cls == Integer.class || cls == Short.class || cls == Byte.class)
+				return AMF3_INTEGER_WRITER;
+			if (externalizeLong && cls == Long.class)
+				return AMF3_OBJECT_WRITER;
+			if (externalizeBigInteger && BigInteger.class.isAssignableFrom(cls))
+				return AMF3_OBJECT_WRITER;
+			if (externalizeBigDecimal && BigDecimal.class.isAssignableFrom(cls))
+				return AMF3_OBJECT_WRITER;
+			return AMF3_NUMBER_WRITER;
+		}
+		
+    	if (Collection.class.isAssignableFrom(cls))
+			return AMF3_COLLECTION_WRITER;
+		
+    	if (cls.isArray()) {
+			Class<?> componentType = cls.getComponentType();
+			if (componentType == boolean.class)
+				return AMF3_BOOLEAN_ARRAY_WRITER;
+			if (componentType == char.class)
+				return AMF3_CHAR_ARRAY_WRITER;
+			if (componentType == Character.class)
+				return AMF3_CHAR_OBJECT_ARRAY_WRITER;
+			if (componentType == byte.class)
+				return AMF3_BYTE_ARRAY_WRITER;
+			if (componentType == Byte.class)
+				return AMF3_BYTE_OBJECT_ARRAY_WRITER;
+			if (componentType == short.class)
+				return AMF3_SHORT_ARRAY_WRITER;
+			if (componentType == int.class)
+				return AMF3_INT_ARRAY_WRITER;
+			if (componentType == long.class)
+				return AMF3_LONG_ARRAY_WRITER;
+			if (componentType == float.class)
+				return AMF3_FLOAT_ARRAY_WRITER;
+			if (componentType == double.class)
+				return AMF3_DOUBLE_ARRAY_WRITER;
+			return AMF3_OBJECT_ARRAY_WRITER;
+		}
+		
+    	if (cls == Boolean.class)
+			return AMF3_BOOLEAN_WRITER;
+		
+    	if (Date.class.isAssignableFrom(cls))
+			return AMF3_DATE_WRITER;
+		if (Calendar.class.isAssignableFrom(cls))
+			return AMF3_CALENDAR_WRITER;
+		
+		if (Document.class.isAssignableFrom(cls))
+			return AMF3_DOCUMENT_WRITER;
+		
+		if (AMFSpecialValue.class.isAssignableFrom(cls))
+			return AMF3_SPECIAL_VALUE_WRITER;
+		
+		return AMF3_OBJECT_WRITER;
+    }
     
     protected JavaClassDescriptor writeAndGetAMF3Descriptor(Class<?> cls) throws IOException {
     	JavaClassDescriptor desc = null;
@@ -1112,8 +1113,8 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
 	}
 	
 	///////////////////////////////////////////////////////////////////////////
-	// ObjectOutput implementation: not optimized as these methods shouldn't
-	// be used with AMF3...
+	// ObjectOutput implementation (except writeObject): not optimized as these
+    // methods are very unlikely used with AMF3...
 	
 	@Override
 	public void writeBoolean(boolean v) throws IOException {
@@ -1281,8 +1282,12 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
 		flushBuffer();
 		out.close();
 	}
+
+	///////////////////////////////////////////////////////////////////////////
+	// General interface for specific AMF3 writers (see static writers above).
 	
 	protected interface AMF3Writer {
+		
 		public void write(AMF3Serializer serializer, Object o) throws IOException;
 	}
 }

@@ -104,12 +104,18 @@ public class Collection2Collection extends Converter {
                 Collection<Object> targetInstance = null;
                 try {
                     targetInstance = CollectionUtil.newCollection(targetClass, c.size());
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     throw new IllegalConverterArgumentException(this, value, targetType, e);
                 }
 
                 Converter itemConverter = null;
                 for (Object item : c) {
+                	
+                	if (item == null || item.getClass() == targetComponentType) {
+                		targetInstance.add(item);
+                		continue;
+                	}
 
                     if (itemConverter == null)
                         itemConverter = converters.getConverter(item, targetComponentType);

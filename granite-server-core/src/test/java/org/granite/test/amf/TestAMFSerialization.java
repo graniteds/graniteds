@@ -42,6 +42,11 @@ import org.granite.context.SimpleGraniteContext;
 import org.granite.messaging.amf.io.AMF3Constants;
 import org.granite.messaging.amf.io.AMF3Deserializer;
 import org.granite.messaging.amf.io.AMF3Serializer;
+import org.granite.messaging.amf.types.AMFDictionaryValue;
+import org.granite.messaging.amf.types.AMFVectorIntValue;
+import org.granite.messaging.amf.types.AMFVectorNumberValue;
+import org.granite.messaging.amf.types.AMFVectorObjectValue;
+import org.granite.messaging.amf.types.AMFVectorUintValue;
 import org.granite.util.XMLUtil;
 import org.granite.util.XMLUtilFactory;
 import org.junit.Assert;
@@ -1533,6 +1538,222 @@ public class TestAMFSerialization implements AMF3Constants {
 		o = deserialize(bytes);
 		Assert.assertTrue(o instanceof HashMap);
 		Assert.assertEquals(map.size() - 1, ((HashMap<?, ?>)o).size());
+		
+		for (Map.Entry<?, ?> e : ((HashMap<?, ?>)o).entrySet()) {
+			Assert.assertTrue(map.containsKey(e.getKey()));
+			Assert.assertEquals(e.getValue(), map.get(e.getKey())); 
+		}
+	}
+
+	@Test
+	public void testAMFVectorInt() throws IOException {
+		byte[] bytes = serialize(new AMFVectorIntValue(new int[0]));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_INT, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof int[]);
+		Assert.assertEquals(0, ((int[])o).length);
+		
+		bytes = serialize(new AMFVectorIntValue(new ArrayList<Integer>()));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_INT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof int[]);
+		Assert.assertEquals(0, ((int[])o).length);
+		
+		int[] array = {Integer.MIN_VALUE, -1, 0, 1, Integer.MAX_VALUE};
+		
+		bytes = serialize(new AMFVectorIntValue(array));
+		Assert.assertEquals(23, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_INT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof int[]);
+		Assert.assertEquals(array.length, ((int[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((int[])o)[i]);
+		
+		List<Integer> list = new ArrayList<Integer>(array.length);
+		for (int i : array)
+			list.add(i);
+		bytes = serialize(new AMFVectorIntValue(list));
+		Assert.assertEquals(23, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_INT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof int[]);
+		Assert.assertEquals(array.length, ((int[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((int[])o)[i]);
+	}
+
+	@Test
+	public void testAMFVectorUint() throws IOException {
+		byte[] bytes = serialize(new AMFVectorUintValue(new int[0]));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_UINT, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof long[]);
+		Assert.assertEquals(0, ((long[])o).length);
+		
+		bytes = serialize(new AMFVectorUintValue(new ArrayList<Integer>()));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_UINT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof long[]);
+		Assert.assertEquals(0, ((long[])o).length);
+		
+		int[] array = {Integer.MIN_VALUE, -1, 0, 1, Integer.MAX_VALUE};
+		
+		bytes = serialize(new AMFVectorUintValue(array));
+		Assert.assertEquals(23, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_UINT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof long[]);
+		Assert.assertEquals(array.length, ((long[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals((array[i] & 0xFFFFFFFFL), ((long[])o)[i]);
+		
+		List<Integer> list = new ArrayList<Integer>(array.length);
+		for (int i : array)
+			list.add(i);
+		bytes = serialize(new AMFVectorUintValue(list));
+		Assert.assertEquals(23, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_UINT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof long[]);
+		Assert.assertEquals(array.length, ((long[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals((array[i] & 0xFFFFFFFFL), ((long[])o)[i]);
+	}
+
+	@Test
+	public void testAMFVectorNumber() throws IOException {
+		byte[] bytes = serialize(new AMFVectorNumberValue(new double[0]));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_NUMBER, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof double[]);
+		Assert.assertEquals(0, ((double[])o).length);
+		
+		bytes = serialize(new AMFVectorNumberValue(new ArrayList<Double>()));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_NUMBER, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof double[]);
+		Assert.assertEquals(0, ((double[])o).length);
+		
+		double[] array = {Double.NEGATIVE_INFINITY, -Double.MAX_VALUE, -1.0, -Double.MIN_VALUE, -0.0,
+				Double.NaN, 0.0, Double.MIN_VALUE, 1.0, Double.MAX_VALUE, Double.POSITIVE_INFINITY};
+		
+		bytes = serialize(new AMFVectorNumberValue(array));
+		Assert.assertEquals(91, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_NUMBER, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof double[]);
+		Assert.assertEquals(array.length, ((double[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((double[])o)[i], 0.0);
+		
+		List<Double> list = new ArrayList<Double>(array.length);
+		for (double i : array)
+			list.add(i);
+		bytes = serialize(new AMFVectorNumberValue(list));
+		Assert.assertEquals(91, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_NUMBER, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof double[]);
+		Assert.assertEquals(array.length, ((double[])o).length);
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((double[])o)[i], 0.0);
+	}
+
+	@Test
+	public void testAMFVectorObject() throws IOException {
+		byte[] bytes = serialize(new AMFVectorObjectValue(new Object[0], "*"));
+		Assert.assertEquals(5, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_OBJECT, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof List);
+		Assert.assertEquals(0, ((List<?>)o).size());
+		
+		bytes = serialize(new AMFVectorObjectValue(new ArrayList<Object>(), "*"));
+		Assert.assertEquals(5, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_OBJECT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof List);
+		Assert.assertEquals(0, ((List<?>)o).size());
+		
+		String[] array = new String[]{null, "bla", "blo", "bla"};
+		
+		bytes = serialize(new AMFVectorObjectValue(array, String.class.getName()));
+		Assert.assertEquals(33, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_OBJECT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof List);
+		Assert.assertEquals(array.length, ((List<?>)o).size());
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((List<?>)o).get(i));
+		
+		List<String> list = new ArrayList<String>(array.length);
+		for (String i : array)
+			list.add(i);
+		
+		bytes = serialize(new AMFVectorObjectValue(list, String.class.getName()));
+		Assert.assertEquals(33, bytes.length);
+		Assert.assertEquals(AMF3_VECTOR_OBJECT, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof List);
+		Assert.assertEquals(array.length, ((List<?>)o).size());
+		
+		for (int i = 0; i < array.length; i++)
+			Assert.assertEquals(array[i], ((List<?>)o).get(i));
+	}
+	
+	@Test
+	public void testAMFDictionary() throws IOException {
+		byte[] bytes = serialize(new AMFDictionaryValue(new HashMap<Object, Object>()));
+		Assert.assertEquals(3, bytes.length);
+		Assert.assertEquals(AMF3_DICTIONARY, bytes[0]);
+		
+		Object o = deserialize(bytes);
+		Assert.assertTrue(o instanceof HashMap);
+		Assert.assertEquals(0, ((HashMap<?, ?>)o).size());
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put(null, Boolean.TRUE);
+		map.put("null", null);
+		map.put("bla", Double.MAX_VALUE);
+		map.put("bli", Integer.valueOf(345));
+		
+		bytes = serialize(new AMFDictionaryValue(map));
+		Assert.assertEquals(34, bytes.length);
+		Assert.assertEquals(AMF3_DICTIONARY, bytes[0]);
+		
+		o = deserialize(bytes);
+		Assert.assertTrue(o instanceof HashMap);
+		Assert.assertEquals(map.size(), ((HashMap<?, ?>)o).size());
 		
 		for (Map.Entry<?, ?> e : ((HashMap<?, ?>)o).entrySet()) {
 			Assert.assertTrue(map.containsKey(e.getKey()));
