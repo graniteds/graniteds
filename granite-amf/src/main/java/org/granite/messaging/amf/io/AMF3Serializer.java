@@ -387,10 +387,11 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
        
     	writeAMF3StringData(s);
     }
-
+    
     protected void writeAMF3StringData(String s) throws IOException {
+    	final int length = s.length();
 
-    	if (s.length() == 0) {
+    	if (length == 0) {
         	ensureCapacity(1);
         	buffer[position++] = 0x01;
             return;
@@ -401,84 +402,91 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         if (index >= 0)
         	writeAMF3UnsignedIntegerData(index << 1);
         else {
-            final int length = s.length();
-            
-            int c, count = 0;
-            for (int i = 0; i < length; i++) {
-                c = s.charAt(i);
-                if (c <= 0x007F)
-                	count++;
-                else if (c > 0x07FF)
-                	count += 3;
-                else
-                	count += 2;
-            }
-
+            final int count = utfByteCount(s);
             writeAMF3UnsignedIntegerData((count << 1) | 0x01);
             
         	final byte[] buffer = this.buffer;
-        	final int bufferLengthMinus3 = buffer.length - 3;
-            int position = this.position;
-
-            for (int i = 0; i < length; i++) {
-            	c = s.charAt(i);
-
-            	if (position >= bufferLengthMinus3) {
-            		this.position = position;
-            		flushBuffer();
-            		position = 0;
-            	}
-
-            	if (c <= 0x007F)
-                	buffer[position++] = (byte)c;
-                else if (c > 0x07FF) {
-                	buffer[position++] = (byte)(0xE0 | ((c >>> 12) & 0x0F));
-                	buffer[position++] = (byte)(0x80 | ((c >>> 6) & 0x3F));
-                	buffer[position++] = (byte)(0x80 | ((c >>> 0) & 0x3F));
+        	final int bufferLength = buffer.length;
+            
+        	int position = this.position;
+            
+            // String chars are in [0x0000, 0x007F]: write them directly as bytes.
+            if (count == length) {
+                if (length <= bufferLength - position) {
+                	for (int i = 0; i < length; i++)
+                		buffer[position++] = (byte)s.charAt(i);
+                	this.position = position;
                 }
                 else {
-                	buffer[position++] = (byte)(0xC0 | ((c >>> 6) & 0x1F));
-                	buffer[position++] = (byte)(0x80 | ((c >>> 0) & 0x3F));
+    	        	
+    	        	int i = 0;
+    	        	while (position < bufferLength)
+    	        		buffer[position++] = (byte)s.charAt(i++);
+    	        	this.position = position;
+    	        	
+    	        	do {
+    		        	flushBuffer();
+    		        	position = 0;
+
+    		        	int max = Math.min(bufferLength, length - i);
+    		        	while (position < max)
+    		        		buffer[position++] = (byte)s.charAt(i++);
+    		        	this.position = position;
+    	        	}
+    	        	while (i < length);
                 }
             }
-            
-            this.position = position;
-        }
-    }
+            // We have at least one char > 0x007F but enough buffer to write them all.
+            else if (count <= bufferLength - position) {
+            	
+            	for (int i = 0; i < length; i++) {
+                	char c = s.charAt(i);
+                	if (c <= 0x007F)
+                    	buffer[position++] = (byte)c;
+                    else if (c > 0x07FF) {
+                    	buffer[position++] = (byte)(0xE0 | (c >>> 12));
+                    	buffer[position++] = (byte)(0x80 | ((c >>> 6) & 0x3F));
+                    	buffer[position++] = (byte)(0x80 | (c & 0x3F));
+                    }
+                    else {
+                    	buffer[position++] = (byte)(0xC0 | ((c >>> 6) & 0x1F));
+                    	buffer[position++] = (byte)(0x80 | (c & 0x3F));
+                    }
+                }
+                
+                this.position = position;
+            }
+            // We have at least one char > 0x007F and not enough buffer to write them all.
+            else {
+	        	final int bufferLengthMinus3 = buffer.length - 3;
+            	
+            	int i = 0, total = 0;
+	        	do {
+	            	flushBuffer();
 
-    protected void writeAMF37BitsStringData(String s) throws IOException {
-        if (s.length() == 0) {
-        	ensureCapacity(1);
-        	buffer[position++] = 0x01;
-            return;
-        }
-        
-        int index = storedStrings.putIfAbsent(s);
-
-        if (index >= 0)
-        	writeAMF3UnsignedIntegerData(index << 1);
-        else {
-        	final int length = s.length();
-
-        	writeAMF3UnsignedIntegerData((length << 1) | 0x01);
-        	
-        	final byte[] buffer = this.buffer;
-        	final int bufferLength = buffer.length;
-            int position = this.position;
-        	
-        	int i = 0;
-        	while (i < length && position < bufferLength)
-        		buffer[position++] = (byte)s.charAt(i++);
-        	this.position = position;
-        	
-        	while (i < length) {
-        		flushBuffer();
-        		
-        		position = 0;
-            	while (i < length && position < bufferLength)
-            		buffer[position++] = (byte)s.charAt(i++);
-            	this.position = position;
-        	}
+	            	position = 0;
+	            	final int max = Math.min(count - total, bufferLengthMinus3);
+	            	
+	            	while (position < max) {
+	            		char c = s.charAt(i++);
+		            	if (c <= 0x007F)
+		                	buffer[position++] = (byte)c;
+		                else if (c > 0x07FF) {
+		                	buffer[position++] = (byte)(0xE0 | (c >>> 12));
+		                	buffer[position++] = (byte)(0x80 | ((c >>> 6) & 0x3F));
+		                	buffer[position++] = (byte)(0x80 | (c & 0x3F));
+		                }
+		                else {
+		                	buffer[position++] = (byte)(0xC0 | ((c >>> 6) & 0x1F));
+		                	buffer[position++] = (byte)(0x80 | (c & 0x3F));
+		                }
+	            	}
+	            	
+	            	total += position;
+	            	this.position = position;
+	        	}
+	        	while (total < count);
+            }
         }
     }
 
@@ -1045,10 +1053,10 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
             final int count = desc.getPropertiesCount();
 
             writeAMF3UnsignedIntegerData((count << 4) | (desc.getEncoding() << 2) | 0x03);
-            writeAMF37BitsStringData(desc.getName());
+            writeAMF3StringData(desc.getName());
 
             for (int i = 0; i < count; i++)
-            	writeAMF37BitsStringData(desc.getPropertyName(i));
+            	writeAMF3StringData(desc.getPropertyName(i));
         }
     	
         return desc;
@@ -1079,8 +1087,36 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         storedClassDescriptors.put(clazz, iDesc);
         return iDesc;
     }
+
+    protected void ensureCapacity(int capacity) throws IOException {
+		if (buffer.length - position < capacity)
+			flushBuffer();
+	}
 	
-    protected int writeIntData(byte[] buffer, int position, int i) {
+    protected void flushBuffer() throws IOException {
+		if (position > 0) {
+			out.write(buffer, 0, position);
+			position = 0;
+		}
+	}
+    
+    protected static int utfByteCount(String s) {
+    	final int length = s.length();
+    	
+    	int count = length;
+        for (int i = 0; i < length; i++) {
+        	char c = s.charAt(i);
+        	if (c > 0x007F) {
+        		if (c > 0x07FF)
+        			count += 2;
+        		else
+        			count++;
+        	}
+        }
+        return count;
+    }
+	
+    protected static int writeIntData(byte[] buffer, int position, int i) {
     	buffer[position++] = (byte)(i >>> 24);
     	buffer[position++] = (byte)(i >>> 16);
     	buffer[position++] = (byte)(i >>> 8);
@@ -1099,18 +1135,6 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     	buffer[position++] = (byte)l;
     	return position;
     }
-
-    protected void ensureCapacity(int capacity) throws IOException {
-		if (buffer.length - position < capacity)
-			flushBuffer();
-	}
-	
-    protected void flushBuffer() throws IOException {
-		if (position > 0) {
-			out.write(buffer, 0, position);
-			position = 0;
-		}
-	}
 	
 	///////////////////////////////////////////////////////////////////////////
 	// ObjectOutput implementation (except writeObject): not optimized as these

@@ -21,42 +21,11 @@
  */
 package org.granite.util;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 /**
  * @author Franck WOLFF
  */
-public class StringIndexedCache extends AbstractIndexedCache {
-	
-	private final static Field hash32Field;
-	private final static Method hash32Method;
-
-	static {
-		Field field = null;
-		try {
-			field = String.class.getDeclaredField("hash32");
-			field.setAccessible(true);
-		}
-		catch (Throwable t) {
-			field = null;
-		}
-		
-		Method method = null;
-		if (field != null) {
-			try {
-				method = String.class.getDeclaredMethod("hash32");
-				method.setAccessible(true);
-			}
-			catch (Throwable t) {
-				field = null;
-				method = null;
-			}
-		}
-		
-		hash32Field = field;
-		hash32Method = method;
-	}
+public class StringIndexedCache extends AbstractIndexedCache<String> {
 
 	public StringIndexedCache() {
 		super();
@@ -71,30 +40,18 @@ public class StringIndexedCache extends AbstractIndexedCache {
 	}
 
 	@Override
-	public final int hash(Object s) {
-		if (hash32Field != null) {
-			try {
-				int hash = hash32Field.getInt(s);
-				if (hash == 0)
-					hash = ((Integer)hash32Method.invoke(s)).intValue();
-				return hash;
-			}
-			catch (Throwable t) {
-				// fallback...
-			}
-		}
-
+	public final int hash(String s) {
 		int h = s.hashCode();
         h ^= (h >>> 20) ^ (h >>> 12);
         return h ^ (h >>> 7) ^ (h >>> 4);
 	}
 
 	@Override
-	public final int find(Entry head, int hash, Object o) {
+	public final int find(Entry head, int hash, String s) {
         do {
         	if (head.hash == hash) {
-        		Object eo = head.o;
-        		if (eo == o || eo.equals(o))
+        		Object ho = head.o;
+        		if (ho == s || ho.equals(s))
         			return head.index;
         	}
         }

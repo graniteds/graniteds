@@ -21,10 +21,11 @@
  */
 package org.granite.util;
 
+
 /**
  * @author Franck WOLFF
  */
-public abstract class AbstractIndexedCache {
+public abstract class AbstractIndexedCache<T> {
 
 	private static final int MAXIMUM_CAPACITY = 1 << 30;
 	private static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
@@ -59,10 +60,10 @@ public abstract class AbstractIndexedCache {
         this.table = new Entry[capacity];
 	}
     
-    public abstract int hash(Object o);
-    public abstract int find(Entry head, int hash, Object o);
+    public abstract int hash(T o);
+    public abstract int find(Entry head, int hash, T o);
 	
-	public final int putIfAbsent(Object o) {
+	public final int putIfAbsent(T o) {
         int hash = hash(o);
         int index = indexFor(hash, table.length);
         

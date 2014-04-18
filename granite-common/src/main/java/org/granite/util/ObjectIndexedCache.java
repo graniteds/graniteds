@@ -25,7 +25,7 @@ package org.granite.util;
 /**
  * @author Franck WOLFF
  */
-public class ObjectIndexedCache extends AbstractIndexedCache {
+public class ObjectIndexedCache extends AbstractIndexedCache<Object> {
 
 	public ObjectIndexedCache() {
 		super();
