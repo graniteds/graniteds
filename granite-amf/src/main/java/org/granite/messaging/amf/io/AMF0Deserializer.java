@@ -29,7 +29,6 @@
 package org.granite.messaging.amf.io;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -71,7 +70,7 @@ public class AMF0Deserializer {
      * The AMF input stream
      */
     private final InputStream rawInputStream;
-    private final DataInputStream dataInputStream;
+    private final ObjectInput dataInputStream;
 
     /**
      * Object to store the deserialized data
@@ -87,13 +86,15 @@ public class AMF0Deserializer {
      */
     public AMF0Deserializer(InputStream inputStream) throws IOException {
         //log.info("Deserializing Message, for more info turn on debug level");
-
         // Save the input stream for this object
     	this.rawInputStream = inputStream;
-        this.dataInputStream = inputStream instanceof DataInputStream
-        	? ((DataInputStream)inputStream)
-        	: new DataInputStream(inputStream);
-
+    	if (inputStream instanceof ObjectInput)
+    		this.dataInputStream = (ObjectInput)inputStream;
+    	else {
+    		AMF3Config config = GraniteContext.getCurrentInstance().getGraniteConfig();
+    		this.dataInputStream = config.newAMF3Deserializer(rawInputStream);
+    	}
+        
         // Read the binary header
         readHeaders();
         log.debug("readHeader");
@@ -327,10 +328,10 @@ public class AMF0Deserializer {
      * @return the AMF3 decoded object
      */
     protected Object readAMF3Data() throws IOException {
-    	AMF3Config config = GraniteContext.getCurrentInstance().getGraniteConfig(); 
-        ObjectInput amf3 = config.newAMF3Deserializer(rawInputStream);
         try {
-            return amf3.readObject();
+        	// Use the underlying AMF3 deserializer
+        	((AMF3Deserializer)dataInputStream).reset();
+            return dataInputStream.readObject();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -392,7 +393,7 @@ public class AMF0Deserializer {
      * This is a hacked verison of Java's DataInputStream.readUTF(), which only
      * supports Strings <= 65535 UTF-8-encoded characters
      */
-    private Object readLongUTF(DataInputStream in) throws IOException {
+    private Object readLongUTF(ObjectInput in) throws IOException {
         int utflen = in.readInt();
         StringBuffer str = new StringBuffer(utflen);
         byte bytearr [] = new byte[utflen];
@@ -442,7 +443,7 @@ public class AMF0Deserializer {
         return new String(str);
     }
 
-    public static Document convertToDOM(DataInputStream is) throws IOException {
+    public static Document convertToDOM(ObjectInput is) throws IOException {
         Document document = null;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         int length = is.readInt();

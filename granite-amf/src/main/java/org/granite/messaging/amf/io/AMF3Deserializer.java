@@ -57,9 +57,9 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
 
-    protected final List<String> storedStrings;
-    protected final List<Object> storedObjects;
-    protected final List<ActionScriptClassDescriptor> storedClassDescriptors;
+    protected List<String> storedStrings;
+    protected List<Object> storedObjects;
+    protected List<ActionScriptClassDescriptor> storedClassDescriptors;
     
     protected Map<String, Document> documentCache;
 
@@ -88,16 +88,20 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
         this.size = 0;
         this.eof = false;
         
-        this.storedStrings = new ArrayList<String>(64);
-        this.storedObjects = new ArrayList<Object>(64);
-        this.storedClassDescriptors = new ArrayList<ActionScriptClassDescriptor>();
-        this.documentCache = null; // created on demand.
+        reset();
         
         GraniteContext context = GraniteContext.getCurrentInstance();
         this.aliasRegistry = ((AliasRegistryConfig)context.getGraniteConfig()).getAliasRegistry();
         this.externalizersConfig = (ExternalizersConfig)context.getGraniteConfig();
         this.securizer = ((AMF3Config)context.getGraniteConfig()).getAmf3DeserializerSecurizer();
         this.xmlUtil = XMLUtilFactory.getXMLUtil();
+    }
+    
+    public void reset() {
+        this.storedStrings = new ArrayList<String>(64);
+        this.storedObjects = new ArrayList<Object>(64);
+        this.storedClassDescriptors = new ArrayList<ActionScriptClassDescriptor>();
+        this.documentCache = null; // created on demand.
     }
 
     ///////////////////////////////////////////////////////////////////////////

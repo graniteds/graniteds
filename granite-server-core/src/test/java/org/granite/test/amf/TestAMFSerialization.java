@@ -37,12 +37,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.Vector;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.context.SimpleGraniteContext;
+import org.granite.messaging.amf.AMF0Body;
+import org.granite.messaging.amf.AMF0Message;
+import org.granite.messaging.amf.AMF3Object;
+import org.granite.messaging.amf.io.AMF0Deserializer;
+import org.granite.messaging.amf.io.AMF0Serializer;
 import org.granite.messaging.amf.io.AMF3Constants;
 import org.granite.messaging.amf.io.AMF3Deserializer;
 import org.granite.messaging.amf.io.AMF3Serializer;
@@ -59,6 +65,8 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import flex.messaging.io.ArrayCollection;
+import flex.messaging.messages.CommandMessage;
+import flex.messaging.messages.RemotingMessage;
 
 public class TestAMFSerialization implements AMF3Constants {
 	
@@ -1776,9 +1784,50 @@ public class TestAMFSerialization implements AMF3Constants {
 		Assert.assertTrue(tf.equals(o));
 	}
 	
+	@Test
+	public void testAMF0Message() throws IOException {
+		CommandMessage commandMessage = new CommandMessage();
+		commandMessage.setClientId("KJFHDJKH");
+		commandMessage.setDestination("bla");
+		commandMessage.setMessageId(UUID.randomUUID().toString());
+		commandMessage.setOperation(CommandMessage.LOGIN_OPERATION);
+		
+		RemotingMessage bla = new RemotingMessage();
+		bla.setClientId("bla");
+		bla.setDestination("blo");
+		bla.setMessageId("lkjqdflksdjqfk");
+		bla.setOperation("098908");
+		bla.setBody(Arrays.asList("test", "test2"));
+		bla.setCorrelationId("lhjldskfj");
+		
+		RemotingMessage remotingMessage = new RemotingMessage();
+		remotingMessage.setClientId(commandMessage.getClientId());
+		remotingMessage.setDestination(commandMessage.getDestination());
+		remotingMessage.setMessageId(UUID.randomUUID().toString());
+		remotingMessage.setOperation("save");
+		remotingMessage.setBody(new Object[] { "Bla bla", bla });
+		
+		AMF0Message message = new AMF0Message();
+		message.addBody("", "/1", new Object[] { new AMF3Object(commandMessage) }, AMF0Body.DATA_TYPE_AMF3_OBJECT);
+		message.addBody("", "/2", new Object[] { new AMF3Object(remotingMessage) }, AMF0Body.DATA_TYPE_AMF3_OBJECT);
+		
+		SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, null);
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);		
+		AMF0Serializer ser = new AMF0Serializer(baos);
+		ser.serializeMessage(message);
+		
+		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+		AMF0Deserializer deser = new AMF0Deserializer(bais);
+		AMF0Message readMessage = deser.getAMFMessage();
+		
+		Assert.assertEquals("Bodies", 2, readMessage.getBodyCount());
+		Assert.assertEquals("Content", 2, ((Object[])((RemotingMessage)(((List<Object>)readMessage.getBody(1).getValue())).get(0)).getBody()).length);
+	}
+	
 	private byte[] serialize(Object o) throws IOException {
 		SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, null);
-
+		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		AMF3Serializer serializer = new AMF3Serializer(baos);
 		serializer.writeObject(o);
