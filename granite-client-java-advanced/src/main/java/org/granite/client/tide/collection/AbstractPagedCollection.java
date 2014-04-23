@@ -221,6 +221,10 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 			entityNames.add(this.elementName);
 	}
 	
+	public Class<? extends E> getElementClass() {
+		return elementClass;
+	}
+	
 	
 	public void setCancelPendingCalls(boolean cancel) {
 		this.cancelPendingCalls = cancel;
@@ -487,7 +491,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 
 		@Override
 		public Future<Page<E>> find(Object filter, PageInfo pageInfo, TideResponder<Page<E>> responder) {
-			return component.call(methodName, pageInfo, responder);
+			return component.call(methodName, filter, pageInfo, responder);
 		}
 	}
 	
@@ -502,7 +506,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 
 		@Override
 		public Future<Map<String, Object>> find(Object filter, int first, int max, String[] order, boolean[] desc, TideResponder<Map<String, Object>> responder) {
-			return component.call(methodName, first, max, order, desc, responder);
+			return component.call(methodName, filter, first, max, order, desc, responder);
 		}
 	}
 	
