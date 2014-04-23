@@ -76,10 +76,19 @@ public class FilterExampleSpecification<T> implements Specification<T> {
 		}
 		
 		for (PropertyDescriptor pd : pds) {
+			if (pd.getReadMethod().getDeclaringClass() == Object.class)
+				continue;
+			
 			if (pd.getReadMethod().isAnnotationPresent(FilterMapping.class) && pd.getReadMethod().getAnnotation(FilterMapping.class).mode() == FilterMode.EXCLUDE)
 				continue;
 			
-			Attribute<?, ?> attribute = filterType.getAttribute(pd.getName());
+			Attribute<?, ?> attribute = null;
+			try {
+				attribute = filterType.getAttribute(pd.getName());
+			}
+			catch (IllegalArgumentException e) {
+				// attribute not found
+			}
 			if (attribute == null)
 				continue;
 			
