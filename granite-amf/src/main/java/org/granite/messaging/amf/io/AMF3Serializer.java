@@ -251,8 +251,8 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         this.buffer = new byte[capacity];
         this.position = 0;
         
-        this.storedStrings = new StringIndexedCache(64);
-        this.storedObjects = new ObjectIndexedCache(64);
+        this.storedStrings = new StringIndexedCache();
+        this.storedObjects = new ObjectIndexedCache();
         this.storedClassDescriptors = new IdentityHashMap<Class<?>, IndexedJavaClassDescriptor>();
         this.writersCache = new IdentityHashMap<Class<?>, AMF3Writer>(64);
         
@@ -772,7 +772,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
             	final int count = desc.getPropertiesCount();
             	for (int i = 0; i < count; i++) {
             		Property property = desc.getProperty(i);
-            		writeObject(property.getProperty(o));
+            		writeObject(property.getValue(o));
             	}
 
                 if (desc.isDynamic()) {

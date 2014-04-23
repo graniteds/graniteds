@@ -21,98 +21,59 @@
  */
 package org.granite.util;
 
-
 /**
  * @author Franck WOLFF
  */
 public abstract class AbstractIndexedCache<T> {
-
-	private static final int MAXIMUM_CAPACITY = 1 << 30;
-	private static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
-	private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 	
-	private final float loadFactor;
+	protected static final int MAXIMUM_CAPACITY = 1 << 30;
+	protected static final int DEFAULT_INITIAL_CAPACITY = 1 << 6;
+	protected static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
-	private Entry[] table;
-	private int threshold;
-	private int size;
-
-	public AbstractIndexedCache() {
-		this(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR);
+	protected Entry[] entries;
+	protected int threshold;
+	protected int size;
+	
+	protected final void init(int capacity) {
+        this.threshold = (int)Math.min(capacity * DEFAULT_LOAD_FACTOR, MAXIMUM_CAPACITY + 1);
+        this.entries = new Entry[capacity];
+        this.size = 0;
 	}
-
-    public AbstractIndexedCache(int initialCapacity) {
-        this(initialCapacity, DEFAULT_LOAD_FACTOR);
-    }
 	
-	public AbstractIndexedCache(int initialCapacity, float loadFactor) {
-        if (initialCapacity < 0)
-            throw new IllegalArgumentException("Illegal initial capacity: " + initialCapacity);
-        if (initialCapacity > MAXIMUM_CAPACITY)
-            initialCapacity = MAXIMUM_CAPACITY;
-        if (loadFactor <= 0 || Float.isNaN(loadFactor))
-            throw new IllegalArgumentException("Illegal load factor: " + loadFactor);
-
-        this.loadFactor = loadFactor;
-        
-        int capacity = roundUpToPowerOf2(initialCapacity);
-        this.threshold = (int)Math.min(capacity * loadFactor, MAXIMUM_CAPACITY + 1);
-        this.table = new Entry[capacity];
+	public abstract int putIfAbsent(T key);
+	
+	public final int size() {
+		return size;
 	}
     
-    public abstract int hash(T o);
-    public abstract int find(Entry head, int hash, T o);
-	
-	public final int putIfAbsent(T o) {
-        int hash = hash(o);
-        int index = indexFor(hash, table.length);
-        
-        Entry head = table[index];
-        if (head != null) {
-        	int found = find(head, hash, o);
-        	if (found != -1)
-        		return found;
-        }
-        
-        addEntry(hash, o, index);
+	protected final int resize(int newCapacity) {
+        Entry[] oldEntries = entries;
 
-        return -1;
-	}
-    
-	private void addEntry(int hash, Object o, int index) {
-		if (size >= threshold && table[index] != null) {
-            resize(2 * table.length);
-            index = indexFor(hash, table.length);
-        }
-
-        table[index] = new Entry(hash, o, size, table[index]);
-        size++;
-    }
-    
-	private void resize(int newCapacity) {
-        Entry[] oldTable = table;
-
-        if (oldTable.length == MAXIMUM_CAPACITY) {
+        if (oldEntries.length == MAXIMUM_CAPACITY) {
             threshold = Integer.MAX_VALUE;
-            return;
+            return (MAXIMUM_CAPACITY - 1);
         }
 
-        Entry[] newTable = new Entry[newCapacity];
-        for (Entry e : oldTable) {
-            while (e != null) {
-                Entry next = e.next;
-                int i = indexFor(e.hash, newCapacity);
-                e.next = newTable[i];
-                newTable[i] = e;
-                e = next;
+		final int indexMask = newCapacity - 1;
+        
+		Entry[] newEntries = new Entry[newCapacity];
+        for (Entry entry : oldEntries) {
+            while (entry != null) {
+                int i = entry.hash & indexMask;
+                Entry next = entry.next;
+                entry.next = newEntries[i];
+                newEntries[i] = entry;
+                entry = next;
             }
         }
         
-        table = newTable;
-        threshold = (int)Math.min(newCapacity * loadFactor, MAXIMUM_CAPACITY + 1);
+        entries = newEntries;
+        threshold = (int)Math.min(newCapacity * DEFAULT_LOAD_FACTOR, MAXIMUM_CAPACITY + 1);
+        
+        return indexMask;
     }
     
-    private static int roundUpToPowerOf2(int number) {
+	protected static int roundUpToPowerOf2(int number) {
     	if (number >= MAXIMUM_CAPACITY)
     		return MAXIMUM_CAPACITY;
     	int rounded = Integer.highestOneBit(number);
@@ -122,22 +83,18 @@ public abstract class AbstractIndexedCache<T> {
     		return rounded << 1;
     	return rounded;
     }
-    
-    private static int indexFor(int h, int length) {
-        return h & (length-1);
-    }
 	
 	protected final static class Entry {
 		
+		public final Object key;
 		public final int hash;
-		public final Object o;
 		public final int index;
 		
 		public Entry next;
 		
-		public Entry(int hash, Object o, int index, Entry next) {
+		public Entry(Object key, int hash, int index, Entry next) {
+			this.key = key;
 			this.hash = hash;
-			this.o = o;
 			this.index = index;
 			this.next = next;
 		}

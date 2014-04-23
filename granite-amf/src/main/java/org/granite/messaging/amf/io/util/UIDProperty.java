@@ -56,12 +56,12 @@ public class UIDProperty extends Property {
 	}
 
     @Override
-    public void setProperty(Object instance, Object value, boolean convert) {
+    public void setValue(Object instance, Object value, boolean convert) {
         // NOOP.
     }
 
     @Override
-    public Object getProperty(Object instance) {
+    public Object getValue(Object instance) {
         return "";
     }
 }

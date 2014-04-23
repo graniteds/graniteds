@@ -21,41 +21,43 @@
  */
 package org.granite.util;
 
-
 /**
  * @author Franck WOLFF
  */
-public class StringIndexedCache extends AbstractIndexedCache<String> {
-
+public final class StringIndexedCache extends AbstractIndexedCache<String> {
+	
 	public StringIndexedCache() {
-		super();
+		init(DEFAULT_INITIAL_CAPACITY);
 	}
-
-	public StringIndexedCache(int initialCapacity) {
-		super(initialCapacity);
+	
+	public StringIndexedCache(int capacity) {
+		init(roundUpToPowerOf2(capacity));
 	}
+	
+	public int putIfAbsent(String key) {
+		final int hash = key.hashCode();
+        
+		int index = hash & (entries.length - 1);
+		Entry head = entries[index];
+		
+		if (head != null) {
+			Entry entry = head;
+			do {
+				if (hash == entry.hash && key.equals(entry.key))
+					return entry.index;
+				entry = entry.next;
+			}
+			while (entry != null);
+			
+			if (size >= threshold) {
+	            index = hash & resize(entries.length * 2);
+	            head = entries[index];
+			}
+		}
 
-	public StringIndexedCache(int initialCapacity, float loadFactor) {
-		super(initialCapacity, loadFactor);
-	}
-
-	@Override
-	public final int hash(String s) {
-		int h = s.hashCode();
-        h ^= (h >>> 20) ^ (h >>> 12);
-        return h ^ (h >>> 7) ^ (h >>> 4);
-	}
-
-	@Override
-	public final int find(Entry head, int hash, String s) {
-        do {
-        	if (head.hash == hash) {
-        		Object ho = head.o;
-        		if (ho == s || ho.equals(s))
-        			return head.index;
-        	}
-        }
-        while ((head = head.next) != null);
+        entries[index] = new Entry(key, hash, size, head);
+        size++;
+        
         return -1;
 	}
 }

@@ -66,7 +66,7 @@ public class FieldProperty extends Property {
 	}
 
     @Override
-    public void setProperty(Object instance, Object value, boolean convert) {
+    public void setValue(Object instance, Object value, boolean convert) {
         try {
             field.set(instance, convert ? convert(value) : value);
         }
@@ -76,7 +76,7 @@ public class FieldProperty extends Property {
     }
 
     @Override
-    public Object getProperty(Object instance) {
+    public Object getValue(Object instance) {
         try {
             Object o = field.get(instance);
             if (factory != null)

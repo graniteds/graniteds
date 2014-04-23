@@ -127,7 +127,7 @@ public class TopLinkExternalizer extends DefaultExternalizer {
                     Object value = in.readObject();
 
                     if (value instanceof ValueHolderInterface) {
-                        topLinkFields.get("_toplink_" + field.getName() + "_vh").setProperty(o, value, false);
+                        topLinkFields.get("_toplink_" + field.getName() + "_vh").setValue(o, value, false);
                     }
                     else if (!(field instanceof MethodProperty && field.isAnnotationPresent(Include.class, true))) { 
                         if (value instanceof AbstractExternalizablePersistentCollection)
@@ -137,7 +137,7 @@ public class TopLinkExternalizer extends DefaultExternalizer {
                             value = converters.convert(value, targetType);
                         }
                         
-                        field.setProperty(o, value, false);
+                        field.setValue(o, value, false);
                     }
                 }
             }
@@ -231,7 +231,7 @@ public class TopLinkExternalizer extends DefaultExternalizer {
                         out.writeObject(proxy);
                     }
                     else {
-                        Object value = field.getProperty(o);
+                        Object value = field.getValue(o);
         
                         // Persistent collections & maps.
                         if (value instanceof IndirectContainer)
@@ -244,7 +244,7 @@ public class TopLinkExternalizer extends DefaultExternalizer {
                     }
                 }
                 else {
-                    ValueHolderInterface vh = (ValueHolderInterface)field.getProperty(o);
+                    ValueHolderInterface vh = (ValueHolderInterface)field.getValue(o);
                     if (!vh.isInstantiated())
                         lazyFieldNames.add(field.getName().substring("_toplink_".length(), field.getName().length()-3));
                 }

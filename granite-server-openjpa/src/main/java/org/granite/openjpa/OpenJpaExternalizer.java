@@ -155,7 +155,7 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
                 		value = converters.convert(value, targetType);
                     }
                     
-                	field.setProperty(o, value, false);
+                	field.setValue(o, value, false);
                 }
             }
         }
@@ -201,7 +201,7 @@ public class OpenJpaExternalizer extends DefaultExternalizer {
         	Map<String, Boolean> loadedState = getLoadedState(pco, oClass);
             log.debug("Writing entity %s with fields %s", o.getClass().getName(), fields);
             for (Property field : fields) {
-                Object value = field.getProperty(o);
+                Object value = field.getValue(o);
                 
                 // Uninitialized associations.
                 if (value == null && loadedState.containsKey(field.getName()) && !loadedState.get(field.getName())) {

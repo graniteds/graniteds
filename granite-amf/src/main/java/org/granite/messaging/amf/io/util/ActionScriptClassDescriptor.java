@@ -102,7 +102,7 @@ public abstract class ActionScriptClassDescriptor {
         if (value instanceof AbstractInstantiator<?>)
             ((AbstractInstantiator<?>)value).addReferer(instance, prop);
         else
-            prop.setProperty(instance, value);
+            prop.setValue(instance, value);
     }
 
     public void setPropertyValue(String name, Object instance, Object value) {
@@ -111,7 +111,7 @@ public abstract class ActionScriptClassDescriptor {
         if (value instanceof AbstractInstantiator<?>)
             ((AbstractInstantiator<?>)value).addReferer(instance, prop);
         else
-            prop.setProperty(instance, value);
+            prop.setValue(instance, value);
     }
 
     @Override

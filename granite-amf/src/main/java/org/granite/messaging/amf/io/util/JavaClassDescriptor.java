@@ -112,6 +112,6 @@ public abstract class JavaClassDescriptor {
     }
 
     public Object getPropertyValue(int index, Object instance) {
-        return properties[index].getProperty(instance);
+        return properties[index].getValue(instance);
     }
 }
