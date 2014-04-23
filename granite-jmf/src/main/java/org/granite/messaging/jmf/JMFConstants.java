@@ -52,9 +52,8 @@ public interface JMFConstants {
 	static final int JMF_HASH_SET			= 0x0B; // JMF_XXX0_1011
 	static final int JMF_HASH_MAP			= 0x0C; // JMF_XXX0_1100
 	static final int JMF_OBJECT				= 0x0D; // JMF_XXX0_1101
-
-	static final int JMF_XXX0_1110			= 0x0E; // JMF_XXX0_1110
-	static final int JMF_XXX0_1111			= 0x0F; // JMF_XXX0_1111
+	static final int JMF_GENERIC_COLLECTION	= 0x0E; // JMF_XXX0_1110
+	static final int JMF_GENERIC_MAP		= 0x0F; // JMF_XXX0_1111
 	
 	// Types with 2 bits of parameters (bit 6 always 0, bit 5 and 4 always 1)
 
