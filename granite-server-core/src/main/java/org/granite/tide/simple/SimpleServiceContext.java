@@ -78,7 +78,7 @@ public class SimpleServiceContext extends TideServiceContext {
     }
 
     @Override
-    public Object findComponent(String componentName, Class<?> componentClass) {
+    public Object findComponent(String componentName, Class<?> componentClass, String methodName) {
     	if ("identity".equals(componentName))
     		return identity;
     	
@@ -127,7 +127,7 @@ public class SimpleServiceContext extends TideServiceContext {
 	 * @see org.granite.tide.ejb.EJBServiceContextIntf#findComponentClass(java.lang.String)
 	 */
     @Override
-    public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass) {
+    public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass, String methodName) {
     	if ("identity".equals(componentName)) {
     		Set<Class<?>> classes = new HashSet<Class<?>>(1);
     		classes.add(SimpleIdentity.class);
@@ -136,7 +136,7 @@ public class SimpleServiceContext extends TideServiceContext {
     	
         SimpleComponent component = cache.get(componentName);
         if (component == null)
-            findComponent(componentName, componentClass);
+            findComponent(componentName, componentClass, methodName);
         return cache.get(componentName).classes;
     }
 
@@ -166,7 +166,7 @@ public class SimpleServiceContext extends TideServiceContext {
 
         InvocationResult ires = new InvocationResult(result, results);
         if (componentName != null || componentClass != null) {
-            Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
+            Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass, null);
             if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
                 ires.setMerge(false);
         }

@@ -22,17 +22,20 @@
 package org.granite.test.tide.spring.service;
 
 import org.granite.messaging.service.annotations.RemoteDestination;
+import org.granite.test.tide.data.Contact;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-@Controller("helloController")
+@Controller
 @RemoteDestination
-public class HelloController {
+public interface Hello4Controller {
     
-	@RequestMapping("/hello/hello")
-    public String hello(@RequestParam(value="name", required=true) String name) {
-        return "Hello " + name;
-    }
+	@RequestMapping(value="/hello4/hello")
+    public String hello(@RequestBody Contact contact);
+    
+	@RequestMapping(value="/hello4/hello2")
+    public String hello2(@RequestBody Contact contact, @RequestParam("greet") String greet);
 }

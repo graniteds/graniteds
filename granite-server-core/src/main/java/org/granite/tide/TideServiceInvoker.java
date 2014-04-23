@@ -124,7 +124,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
 	    	String name = this.destination.getProperties().get(VALIDATOR_NAME);
 	    	if (name != null) {
 	    		try {
-	    			validator = (EntityValidator)tideContext.findComponent(name, EntityValidator.class);
+	    			validator = (EntityValidator)tideContext.findComponent(name, EntityValidator.class, null);
 	    		}
 	    		catch (ServiceException e) {
 	    			name = null;
@@ -158,7 +158,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
     		if (constructorArgClassName != null) {
 	    		try {
 	    			constructorArgClass = TypeUtil.forName(constructorArgClassName);
-	    			constructorArg = tideContext.findComponent(null, constructorArgClass);
+	    			constructorArg = tideContext.findComponent(null, constructorArgClass, null);
 	    		}
 	    		catch (Exception e) {
 	    			// Constructor arg not found 
@@ -230,6 +230,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         if ("invokeComponent".equals(methodName)) {
             String componentName = (String)args[0];
             String componentClassName = (String)args[1];
+            String componentPath = (String)args[2];
             Class<?> componentClass = null;
             try {
 	            if (componentClassName != null)
@@ -240,8 +241,8 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
             }
             log.debug("Setting invokee to %s", componentName);
             
-            Object instance = tideContext.findComponent(componentName, componentClass);
-            Set<Class<?>> componentClasses = instance != null ? tideContext.findComponentClasses(componentName, componentClass) : null;
+            Object instance = tideContext.findComponent(componentName, componentClass, componentPath);
+            Set<Class<?>> componentClasses = instance != null ? tideContext.findComponentClasses(componentName, componentClass, componentPath) : null;
             
             GraniteContext context = GraniteContext.getCurrentInstance();
             if (instance != null && componentClasses != null && ((GraniteConfig)context.getGraniteConfig()).isComponentTideEnabled(componentName, componentClasses, instance))
@@ -299,7 +300,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
         if (componentName != null || componentClass != null) {
 	    	Converters converters = ((ConvertersConfig)graniteContext.getGraniteConfig()).getConverters();
 	    	
-	    	Set<Class<?>> componentClasses = tideContext.findComponentClasses(componentName, componentClass);
+	    	Set<Class<?>> componentClasses = tideContext.findComponentClasses(componentName, componentClass, null);
 	    	for (Class<?> cClass : componentClasses) {
 	    		try {
 	    			Method m = cClass.getMethod(context.getMethod().getName(), context.getMethod().getParameterTypes());

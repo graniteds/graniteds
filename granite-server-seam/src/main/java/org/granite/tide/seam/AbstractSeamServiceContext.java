@@ -210,7 +210,7 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
      * @param componentName component name
      */
     @Override
-    public Object findComponent(String componentName, Class<?> componentClass) {
+    public Object findComponent(String componentName, Class<?> componentClass, String methodName) {
         Component component = TideInit.lookupComponent(componentName);
         if (component == null)
             return null;
@@ -223,7 +223,7 @@ public abstract class AbstractSeamServiceContext extends TideServiceContext {
      * @param componentName component name
      */
     @Override
-    public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass) {
+    public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass, String methodName) {
         Component component = TideInit.lookupComponent(componentName);
         if (component == null)
             return null;

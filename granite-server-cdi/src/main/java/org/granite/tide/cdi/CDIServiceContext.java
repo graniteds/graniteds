@@ -197,7 +197,7 @@ public class CDIServiceContext extends TideServiceContext {
      * @param componentName component name
      */
     @Override
-    public Object findComponent(String componentName, Class<?> componentClass) {
+    public Object findComponent(String componentName, Class<?> componentClass, String methodName) {
     	Bean<?> bean = findBean(componentName, componentClass);
     	if (bean == null)
     		return null;
@@ -211,7 +211,7 @@ public class CDIServiceContext extends TideServiceContext {
      * @param componentName component name
      */
     @Override
-    public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass) {
+    public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass, String methodName) {
     	Bean<?> bean = findBean(componentName, componentClass);
     	if (bean == null)
     	    return null;
@@ -387,7 +387,7 @@ public class CDIServiceContext extends TideServiceContext {
         // Initialize an empty data context
         DataContext.init();
         
-        DataUpdatePostprocessor dataUpdatePostprocessor = (DataUpdatePostprocessor)findComponent(null, DataUpdatePostprocessor.class);
+        DataUpdatePostprocessor dataUpdatePostprocessor = (DataUpdatePostprocessor)findComponent(null, DataUpdatePostprocessor.class, null);
         if (dataUpdatePostprocessor != null)
         	DataContext.get().setDataUpdatePostprocessor(dataUpdatePostprocessor);
         
@@ -455,7 +455,7 @@ public class CDIServiceContext extends TideServiceContext {
         ires.setScope(scope);
         ires.setRestrict(restrict);
         if (componentName != null || componentClass != null) {
-			Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
+			Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass, null);
 	    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
 				ires.setMerge(false);
         }

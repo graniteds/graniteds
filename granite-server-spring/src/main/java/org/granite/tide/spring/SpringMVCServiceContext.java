@@ -42,11 +42,11 @@ import org.granite.config.ConvertersConfig;
 import org.granite.context.GraniteContext;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converter;
-import org.granite.messaging.amf.io.util.ClassGetter;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceInvocationContext;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.messaging.webapp.ServletGraniteContext;
+import org.granite.spring.ServerFilter;
 import org.granite.tide.IInvocationCall;
 import org.granite.tide.IInvocationResult;
 import org.granite.tide.annotations.BypassTideMerge;
@@ -69,7 +69,9 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.HandlerAdapter;
+import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.servlet.mvc.Controller;
@@ -101,26 +103,8 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     @Override
     public Object adjustInvokee(Object instance, String componentName, Set<Class<?>> componentClasses) {
     	for (Class<?> componentClass : componentClasses) {
-	    	if (componentClass.isAnnotationPresent(org.springframework.stereotype.Controller.class)) {
-	    		return new AnnotationMethodHandlerAdapter() {
-	    			{
-	    				HttpMessageConverter<?>[] messageConverters = new HttpMessageConverter<?>[getMessageConverters().length+1];
-	    				System.arraycopy(getMessageConverters(), 0, messageConverters, 0, getMessageConverters().length);
-	    				messageConverters[messageConverters.length-1] = new ControllerRequestBodyConverter();
-	    				setMessageConverters(messageConverters);
-	    			}
-	    			
-	    			@Override
-	    			protected ServletRequestDataBinder createBinder(HttpServletRequest request, Object target, String objectName) throws Exception {
-	    				return new ControllerRequestDataBinder(request, target, objectName);
-	    			}
-	    			
-	    			@Override
-	    			protected HttpInputMessage createHttpInputMessage(HttpServletRequest request) throws Exception {
-	    				return new ControllerInputMessage(request);
-	    			}
-	    		};
-	    	}
+	    	if (componentClass.isAnnotationPresent(org.springframework.stereotype.Controller.class))
+	    		return new ControllerMethodHandlerAdapter();
     	}
     	if (Controller.class.isInstance(instance) || (componentName != null && componentName.endsWith("Controller")))
     		return new SimpleControllerHandlerAdapter();
@@ -129,25 +113,45 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     }
     
     @Override
-    protected Object internalFindComponent(String componentName, Class<?> componentClass) {
+    protected Object internalFindComponent(final String componentName, final Class<?> componentClass, final String componentPath) {
     	try {
-    		return super.internalFindComponent(componentName, componentClass);
+    		return super.internalFindComponent(componentName, componentClass, componentPath);
     	}
-    	catch (NoSuchBeanDefinitionException e) {
-//    		Map<String, HandlerMapping> handlerMappingsMap = springContext.getBeansOfType(HandlerMapping.class);
-//    		if (handlerMappingsMap)
-	    	if (componentName != null && componentName.endsWith("Controller")) {
-	    		try {
-	    			int idx = componentName.lastIndexOf(".");
-	    			String controllerName = idx > 0 
-	    				? componentName.substring(0, idx+1) + componentName.substring(idx+1, idx+2).toUpperCase() + componentName.substring(idx+2)
-	    				: componentName.substring(0, 1).toUpperCase() + componentName.substring(1);
-	    				
-	    			return springContext.getBean(controllerName);
-	    		}
-	        	catch (NoSuchBeanDefinitionException nexc2) {
-	        	}
-	    	}
+    	catch (NoSuchBeanDefinitionException nsbde) {
+    		if (componentPath == null)
+    			return null;
+    		
+    		HttpServletRequestWrapper wrappedRequest = new HttpServletRequestWrapper(((ServletGraniteContext)GraniteContext.getCurrentInstance()).getRequest()) {
+    			@Override
+    			public String getRequestURI() {
+    				return "/" + componentName + "/" + componentPath;
+    			}
+    		};
+			try {
+				for (HandlerMapping handlerMapping : springContext.getBeansOfType(HandlerMapping.class).values()) {
+	    			Object handler = handlerMapping.getHandler(wrappedRequest);
+    				if (handler instanceof HandlerExecutionChain)
+    					handler = ((HandlerExecutionChain)handler).getHandler();
+	    			if (handler != null && !(handler instanceof ServerFilter))
+	    				return handler;
+				}
+    		}
+			catch (Exception e) {
+				// Ignore or not ignore ?
+				log.warn(e, "Could not find handler mapping for path " + componentPath);
+			}
+//	    	if (componentName != null && componentName.endsWith("Controller")) {
+//	    		try {
+//	    			int idx = componentName.lastIndexOf(".");
+//	    			String controllerName = idx > 0 
+//	    				? componentName.substring(0, idx+1) + componentName.substring(idx+1, idx+2).toUpperCase() + componentName.substring(idx+2)
+//	    				: componentName.substring(0, 1).toUpperCase() + componentName.substring(1);
+//	    				
+//	    			return springContext.getBean(controllerName);
+//	    		}
+//	        	catch (NoSuchBeanDefinitionException nexc2) {
+//	        	}
+//	    	}
     	}
     	
     	return null;    	
@@ -165,6 +169,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     		
     		String componentName = (String)args[0];
     		String componentClassName = (String)args[1];
+    		String componentPath = (String)args[2];
             Class<?> componentClass = null;
             try {
     	        if (componentClassName != null)
@@ -173,8 +178,8 @@ public class SpringMVCServiceContext extends SpringServiceContext {
             catch (ClassNotFoundException e) {
             	throw new ServiceException("Component class not found " + componentClassName, e);
             }
-    		Object component = findComponent(componentName, componentClass);
-    		Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
+    		Object component = findComponent(componentName, componentClass, componentPath);
+    		Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass, componentPath);
     		Object handler = component;
     		if (grails && componentName.endsWith("Controller")) {
     			// Special handling for Grails controllers
@@ -240,7 +245,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     	if (componentName == null)
     		return;
     	
-		Object component = findComponent(componentName, componentClass);
+		Object component = findComponent(componentName, componentClass, null);
 		
 		if (context.getBean() instanceof HandlerAdapter) {
 			// In case of Spring controllers, call interceptors
@@ -255,7 +260,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 	        for (int i = 0; i < interceptorNames.length; i++)
 	            interceptors[j++] = (HandlerInterceptor)webContext.getBean(interceptorNames[i]);
 	        
-			HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
+			ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
 			
 			graniteContext.getRequestMap().put(HandlerInterceptor.class.getName(), interceptors);
 			
@@ -279,7 +284,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     	
     	Object component = null;
     	if (componentName != null && context.getBean() instanceof HandlerAdapter) {
-			component = findComponent(componentName, componentClass);
+			component = findComponent(componentName, componentClass, null);
 			
 			HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
 			
@@ -331,7 +336,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 			if (grails) {
 				// Special handling for Grails controllers: get flash content
 				try {
-		    		Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
+		    		Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass, null);
 		    		for (Class<?> cClass : componentClasses) {
 		    			if (cClass.isInterface())
 		    				continue;
@@ -376,7 +381,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     	if (componentName != null && context.getBean() instanceof HandlerAdapter) {
 			HttpGraniteContext graniteContext = (HttpGraniteContext)GraniteContext.getCurrentInstance();
 			
-			Object component = findComponent(componentName, componentClass);
+			Object component = findComponent(componentName, componentClass, null);
 			
 			HandlerInterceptor[] interceptors = (HandlerInterceptor[])graniteContext.getRequestMap().get(HandlerInterceptor.class.getName());
 	
@@ -400,28 +405,47 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 			}
 		}
     }
+    
+    
+    private class ControllerMethodHandlerAdapter extends AnnotationMethodHandlerAdapter {
+    	
+    	public ControllerMethodHandlerAdapter() {
+			HttpMessageConverter<?>[] messageConverters = new HttpMessageConverter<?>[getMessageConverters().length+1];
+			System.arraycopy(getMessageConverters(), 0, messageConverters, 0, getMessageConverters().length);
+			messageConverters[messageConverters.length-1] = new ControllerRequestBodyConverter();
+			setMessageConverters(messageConverters);
+		}
+    	
+		@Override
+		protected ServletRequestDataBinder createBinder(HttpServletRequest request, Object target, String objectName) throws Exception {
+			return new ControllerRequestDataBinder(request, target, objectName);
+		}
+		
+		@Override
+		protected HttpInputMessage createHttpInputMessage(HttpServletRequest request) throws Exception {
+			return new ControllerInputMessage(request);
+		}
 
+		@Override
+		protected ModelAndView invokeHandlerMethod(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+			return super.invokeHandlerMethod(request, response, handler);
+		}
+	}
     
+    private static final MediaType REQUEST_BODY_TYPE = new MediaType("application", "x-graniteds-springmvc");
     
-    private class ControllerRequestWrapper extends HttpServletRequestWrapper {
-    	private final String initialComponentName;
+	private class ControllerRequestWrapper extends HttpServletRequestWrapper {
     	private final String componentName;
-    	private final String methodName;
+    	private final String componentPath;
     	private final Object requestBody;
     	private final Map<String, Object> requestMap;
     	private final Map<String, Object> valueMap;
     	private final boolean localBinding;
     	
-		public ControllerRequestWrapper(boolean grails, HttpServletRequest request, String componentName, String methodName, Object requestBody, Map<String, Object> requestMap, Map<String, Object> valueMap) {
+		public ControllerRequestWrapper(boolean grails, HttpServletRequest request, String componentName, String componentPath, Object requestBody, Map<String, Object> requestMap, Map<String, Object> valueMap) {
 			super(request);
-			this.initialComponentName = componentName;
-			String actualComponentName = componentName.substring(0, componentName.length()-"Controller".length());
-			if (actualComponentName.indexOf(".") > 0)
-				actualComponentName = actualComponentName.substring(actualComponentName.lastIndexOf(".")+1);
-			if (grails)
-				actualComponentName = actualComponentName.substring(0, 1).toLowerCase() + actualComponentName.substring(1);
-			this.componentName = actualComponentName;
-			this.methodName = methodName;
+			this.componentName = componentName;
+			this.componentPath = "/" + (componentName.endsWith("Controller") ? componentName.substring(0, componentName.length()-"Controller".length()) : componentName) + "/" + componentPath;
 			this.requestBody = requestBody;
 			this.requestMap = requestMap;
 			this.valueMap = valueMap;
@@ -430,7 +454,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     	
 		@Override
 		public String getRequestURI() {
-			return getContextPath() + "/" + componentName + "/" + methodName;
+			return getContextPath() + componentPath;
 		}
 		
 		@Override
@@ -440,7 +464,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		
 		@Override
 		public String getServletPath() {
-			return "/" + componentName + "/" + methodName;
+			return componentPath;
 		}
 		
 		public Object getRequestBody() {
@@ -455,8 +479,8 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 			if (valueMap == null)
 				return null;
 			
-			return localBinding && valueMap.containsKey(initialComponentName + "." + key)
-					? valueMap.get(initialComponentName + "." + key)
+			return localBinding && valueMap.containsKey(componentName + "." + key)
+					? valueMap.get(componentName + "." + key)
 					: valueMap.get(key);
 		}
 		
@@ -489,11 +513,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 				ht.putAll(requestMap);
 			return ht.keys();
 		}
-    }
-    
-    
-    private static final MediaType REQUEST_BODY_TYPE = new MediaType("application", "x-graniteds-springmvc");
-    
+    }    
     
     private class ControllerRequestBodyConverter implements HttpMessageConverter<Object> {
     	
@@ -522,7 +542,6 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		}
     }
     
-    
     private class ControllerInputMessage implements HttpInputMessage {
 
     	private final ControllerRequestWrapper wrapper;
@@ -548,8 +567,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		}
     	
     }
-    
-    
+        
     private class ControllerRequestDataBinder extends ServletRequestDataBinder {
     	
     	private final ControllerRequestWrapper wrapper;
@@ -563,7 +581,6 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		
 		private Object getBindValue(boolean request, Class<?> requiredType) {
 			ConvertersConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
-			ClassGetter classGetter = config.getClassGetter();
 			Object value = request ? wrapper.getRequestValue(getObjectName()) : wrapper.getBindValue(getObjectName());
 			if (requiredType != null) {
 				Converter converter = config.getConverters().getConverter(value, requiredType);
@@ -571,7 +588,7 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 					value = converter.convert(value, requiredType);
 			}
 			if (value != null && !request)
-				return SpringMVCServiceContext.this.mergeExternal(classGetter, value, null, null, null);
+				return SpringMVCServiceContext.this.mergeExternal(value, null);
 			return value;
 		}
 

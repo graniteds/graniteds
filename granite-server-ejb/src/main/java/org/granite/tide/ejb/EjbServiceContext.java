@@ -161,7 +161,7 @@ public class EjbServiceContext extends TideServiceContext  {
 		name = name.substring(0, 1).toLowerCase() + name.substring(1);
 		if (name.endsWith("Bean"))
 			name = name.substring(0, name.length() - "Bean".length());
-		Object invokee = findComponent(name, null);
+		Object invokee = findComponent(name, null, null);
 		method = invokee.getClass().getMethod(method.getName(), method.getParameterTypes());
 		return method.invoke(invokee, args);
     }
@@ -174,7 +174,7 @@ public class EjbServiceContext extends TideServiceContext  {
 	 * @see org.granite.tide.ejb.EJBServiceContextIntf#findComponent(java.lang.String)
 	 */
     @Override
-    public Object findComponent(String componentName, Class<?> componentClass) {
+    public Object findComponent(String componentName, Class<?> componentClass, String methodName) {
     	if ("identity".equals(componentName))
     		return identity;
     	
@@ -248,7 +248,7 @@ public class EjbServiceContext extends TideServiceContext  {
 	 * @see org.granite.tide.ejb.EJBServiceContextIntf#findComponentClass(java.lang.String)
 	 */
     @Override
-    public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass) {
+    public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass, String methodName) {
     	if ("identity".equals(componentName)) {
     		Set<Class<?>> classes = new HashSet<Class<?>>(1);
     		classes.add(EjbIdentity.class);
@@ -257,7 +257,7 @@ public class EjbServiceContext extends TideServiceContext  {
     	
         EjbComponent component = ejbLookupCache.get(componentName);
         if (component == null)
-            findComponent(componentName, componentClass);
+            findComponent(componentName, componentClass, methodName);
         return ejbLookupCache.get(componentName).ejbClasses;
     }
 
@@ -307,7 +307,7 @@ public class EjbServiceContext extends TideServiceContext  {
     		
 	        InvocationResult ires = new InvocationResult(result, results);
 	        if (componentName != null || componentClass != null) {
-				Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass);
+				Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass, null);
 		    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
 					ires.setMerge(false);
 	        }

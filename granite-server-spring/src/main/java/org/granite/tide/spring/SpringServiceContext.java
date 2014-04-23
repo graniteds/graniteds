@@ -108,7 +108,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
     }    
     
     @Override
-    public Object findComponent(String componentName, Class<?> componentClass) {
+    public Object findComponent(String componentName, Class<?> componentClass, String componentPath) {
     	Object bean = null;
     	String key = COMPONENT_ATTR + (componentName != null ? componentName : "_CLASS_" + componentClass.getName());
     	
@@ -120,7 +120,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
     	}
     	
     	try {
-			bean = internalFindComponent(componentName, componentClass);
+			bean = internalFindComponent(componentName, componentClass, componentPath);
 			
 	        if (context != null)
 	        	context.getRequestMap().put(key, bean);
@@ -138,7 +138,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
         }    
     }
 
-	protected Object internalFindComponent(String componentName, Class<?> componentClass) {
+	protected Object internalFindComponent(String componentName, Class<?> componentClass, String componentPath) {
 		Object bean = null;
 		
 		if (componentClass != null) {
@@ -175,7 +175,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
     
     @Override
     @SuppressWarnings("unchecked")
-    public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass) {
+    public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass, String methodName) {
     	String key = COMPONENT_CLASS_ATTR + componentName;
     	Set<Class<?>> classes = null; 
     	GraniteContext context = GraniteContext.getCurrentInstance();
@@ -185,7 +185,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
     			return classes;
     	}
     	
-        Object bean = findComponent(componentName, componentClass);
+        Object bean = findComponent(componentName, componentClass, methodName);
         classes = buildComponentClasses(bean);        
         if (classes == null)
         	return null;
@@ -257,7 +257,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
     public void prepareCall(ServiceInvocationContext context, IInvocationCall c, String componentName, Class<?> componentClass) {
     	DataContext.init();
     	
-    	DataUpdatePostprocessor dupp = (DataUpdatePostprocessor)findComponent(null, DataUpdatePostprocessor.class);
+    	DataUpdatePostprocessor dupp = (DataUpdatePostprocessor)findComponent(null, DataUpdatePostprocessor.class, null);
     	if (dupp != null)
     		DataContext.get().setDataUpdatePostprocessor(dupp);
     }
@@ -343,7 +343,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
             String emfBeanName = entityManagerFactoryBeanName != null ? entityManagerFactoryBeanName : "entityManagerFactory";
             try {
             	// Lookup the specified entity manager factory
-                Object emf = findComponent(emfBeanName, null);
+                Object emf = findComponent(emfBeanName, null, null);
                 
                 // Try to determine the Spring transaction manager
                 TideTransactionManager tm = null;
@@ -387,6 +387,6 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
             }
         }
         
-        return (TidePersistenceManager)findComponent(persistenceManagerBeanName, null);
+        return (TidePersistenceManager)findComponent(persistenceManagerBeanName, null, null);
     }
 }

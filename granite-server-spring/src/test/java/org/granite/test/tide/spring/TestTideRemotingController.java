@@ -44,6 +44,15 @@ public class TestTideRemotingController extends AbstractTideTestCase {
     }
 	
 	@Test
+    public void testSimpleCall2() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("name", "joe");
+        InvocationResult result = invokeComponent("hello", null, "hello", new Object[] { params });
+        
+        Assert.assertEquals("Hello joe", result.getResult());
+    }	
+	
+	@Test
     public void testObjectCall() {
 		Contact c = new Contact();
 		c.setEmail("joe");
@@ -90,6 +99,19 @@ public class TestTideRemotingController extends AbstractTideTestCase {
         InvocationResult result = invokeComponent("hello3Controller", null, "hello2", new Object[] { c, params, true }, 
         		new Object[] { new Object[] { "hello3Controller", "contact", c } },
         		new String[0], null 
+        );
+        
+        Assert.assertEquals("Hello joe", result.getResult());
+    }
+	
+	@Test
+    public void testObjectInterfaceCallBody() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("greet", "Hello");
+		Contact c = new Contact();
+		c.setEmail("joe");
+        InvocationResult result = invokeComponent("hello4", null, "hello2", new Object[] { c, params }, 
+        		new Object[] {}, new String[0], null 
         );
         
         Assert.assertEquals("Hello joe", result.getResult());

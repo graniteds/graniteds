@@ -89,9 +89,9 @@ public abstract class TideServiceContext implements Serializable {
     	return new Object[] { args[2], args[3] };
     }
     
-    public abstract Object findComponent(String componentName, Class<?> componentClass);
+    public abstract Object findComponent(String componentName, Class<?> componentClass, String componentPath);
     
-    public abstract Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass);
+    public abstract Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass, String componentPath);
     
     public abstract void prepareCall(ServiceInvocationContext context, IInvocationCall call, String componentName, Class<?> componentClass);
     

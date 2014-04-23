@@ -66,7 +66,7 @@ public class SeamServiceInvoker extends TideServiceInvoker<SeamServiceFactory> {
     public Object initializeObject(Object parent, String[] propertyNames) {
     	AbstractSeamServiceContext context = (AbstractSeamServiceContext)getTideContext();
     	
-    	SeamInitializer s = (SeamInitializer)context.findComponent("org.granite.tide.seam.seamInitializer", SeamInitializer.class);
+    	SeamInitializer s = (SeamInitializer)context.findComponent("org.granite.tide.seam.seamInitializer", SeamInitializer.class, null);
     	
     	return s.lazyInitialize(parent, propertyNames);
     }

@@ -30,9 +30,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RemoteDestination
+@RequestMapping(value="/hello2")
 public class Hello2Controller {
     
-	@RequestMapping(value="/hello2/hello")
+	@RequestMapping(value="/hello")
     public String hello(@ModelAttribute("contact") Contact contact) {
         return "Hello " + contact.getEmail();
     }

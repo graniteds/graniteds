@@ -33,6 +33,6 @@
   	
   	<mvc:annotation-driven/>
   	
-  	<context:component-scan base-package="org.granite.test.tide.spring" resource-pattern="**/Hello*Controller.class"/>
+  	<context:component-scan base-package="org.granite.test.tide.spring" resource-pattern="**/Hello*Controller*.class"/>
     
 </beans>
