@@ -37,6 +37,8 @@ package org.granite.client.test.javafx.tide;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -53,13 +55,17 @@ import org.granite.client.messaging.messages.responses.ResultMessage;
 import org.granite.client.test.MockRemoteService;
 import org.granite.client.test.ResponseBuilder;
 import org.granite.client.test.tide.MockAMFChannelFactory;
+import org.granite.client.test.tide.MockComponent;
 import org.granite.client.test.tide.MockInstanceStoreFactory;
 import org.granite.client.test.tide.MockServiceFactory;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.impl.DefaultApplication;
 import org.granite.client.tide.impl.SimpleContextManager;
 import org.granite.client.tide.server.ServerSession;
+import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideRpcEvent;
+import org.granite.tide.data.model.Page;
+import org.granite.tide.data.model.PageInfo;
 import org.granite.util.ContentType;
 import org.junit.After;
 import org.junit.Assert;
@@ -208,6 +214,35 @@ public class TestPagedQuery {
         ctx.set("personList", personList);
         
         Assert.assertEquals("Persons filter", Document.class, personList.getFilter().getClass());
-        //Assert.assertNull("Person element", personList.getElementClass());
+        Assert.assertEquals("Person element", Person.class, personList.getElementClass());
     }
+    
+    @Test
+    public void testPagedQueryFilter() throws Exception {
+    	TestService testService = new TestService();
+    	PagedQuery<Person, Map<String, Object>> personList1 = new PagedQuery<Person, Map<String, Object>>(testService, "findByFilter", 25) {};
+    	ctx.set("personList1", personList1);
+    	personList1.refresh();
+    	Assert.assertTrue(testService.getLastFilter() instanceof Map<?, ?>);
+    	
+    	PagedQuery<Person, Document> personList2 = new PagedQuery<Person, Document>(testService, "findByFilter", 25) {};
+    	personList2.getFilter().setName("test");
+    	ctx.set("personList2", personList2);
+    	personList2.refresh();
+    	Assert.assertEquals("test", ((Document)testService.getLastFilter()).getName());
+    }
+    
+	private static class TestService extends MockComponent {
+		private Object lastFilter = null;
+		
+		@SuppressWarnings("unused")
+		public Future<Page<Person>> findByFilter(Object filter, PageInfo pageInfo, TideResponder<Page<Person>> responder) {
+			this.lastFilter = filter;
+			return null;
+		}
+		
+		public Object getLastFilter() {
+			return lastFilter;
+		}
+	}
 }
