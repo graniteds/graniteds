@@ -35,9 +35,12 @@
 package org.granite.client.javafx.tide;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -64,6 +67,8 @@ public class ManagedEntity<T> implements ContextAware {
 	
 	private BooleanProperty saved = new SimpleBooleanProperty(this, "saved", true);
 	private BooleanProperty dirty = new SimpleBooleanProperty(this, "dirty", false);
+	
+	private List<InstanceBinding<T, ?>> instanceBindings = new ArrayList<InstanceBinding<T, ?>>();
 
     public ManagedEntity() {
     }
@@ -101,10 +106,13 @@ public class ManagedEntity<T> implements ContextAware {
 		return dirty.get();
 	}
 	
-	private ChangeListener<Object> entityChangeListener = new ChangeListener<Object>() {
+	private ChangeListener<T> entityChangeListener = new ChangeListener<T>() {
 		@Override
-		public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+		public void changed(ObservableValue<? extends T> observable, T oldValue, T newValue) {
 			if (oldValue != null) {
+				for (InstanceBinding<T, ?> instanceBinding : instanceBindings)
+					instanceBinding.unbind(oldValue);
+				
 				ReadOnlyProperty<Object> versionProperty = getVersionProperty(oldValue);
 				versionProperty.removeListener(versionChangeListener);
 				dirty.unbind();
@@ -125,6 +133,9 @@ public class ManagedEntity<T> implements ContextAware {
 				throw new RuntimeException("Entity " + newValue + " cannot be attached: already attached to another entity manager");
 			
 			dirty.bind(dataManager.deepDirtyEntity(newValue));
+			
+			for (InstanceBinding<T, ?> instanceBinding : instanceBindings)
+				instanceBinding.bind(newValue);			
 		}
 	};
 	
@@ -148,6 +159,14 @@ public class ManagedEntity<T> implements ContextAware {
 		this.instance.addListener(entityChangeListener);
 	}
 	
+	public <P> void addInstanceBinding(Property<P> property, ObservableValueGetter<T, P> propertyGetter) {
+		instanceBindings.add(new UnidirectionalInstanceBinding<P>(property, propertyGetter));
+	}
+	
+	public <P> void addBidirectionalInstanceBinding(Property<P> property, PropertyGetter<T, P> propertyGetter) {
+		instanceBindings.add(new BidirectionalInstanceBinding<P>(property, propertyGetter));
+	}
+	
 	public void reset() {
 		if (instance.get() == null)
 			return;
@@ -166,5 +185,62 @@ public class ManagedEntity<T> implements ContextAware {
 		catch (Exception e) {
 			throw new RuntimeException("Could not get version property on entity " + value, e);
 		}		
+	}
+	
+	
+	private interface InstanceBinding<T, P> {
+		
+		public void bind(T instance);
+		
+		public void unbind(T instance);
+	}
+	
+	private final class BidirectionalInstanceBinding<P> implements InstanceBinding<T, P> {
+		
+		private final Property<P> inputProperty;
+		private final PropertyGetter<T, P> entityPropertyGetter;
+		
+		public BidirectionalInstanceBinding(Property<P> inputProperty, PropertyGetter<T, P> entityPropertyGetter) {
+			this.inputProperty = inputProperty;
+			this.entityPropertyGetter = entityPropertyGetter;
+		}
+		
+		public void bind(T instance) {
+			this.inputProperty.bindBidirectional(entityPropertyGetter.getProperty(instance));
+		}
+		
+		public void unbind(T instance) {
+			this.inputProperty.unbindBidirectional(entityPropertyGetter.getProperty(instance));
+		}
+	}
+
+	private final class UnidirectionalInstanceBinding<P> implements InstanceBinding<T, P> {
+		
+		private final Property<P> inputProperty;
+		private final ObservableValueGetter<T, P> entityPropertyGetter;
+		
+		public UnidirectionalInstanceBinding(Property<P> inputProperty, ObservableValueGetter<T, P> entityPropertyGetter) {
+			this.inputProperty = inputProperty;
+			this.entityPropertyGetter = entityPropertyGetter;
+		}
+		
+		public void bind(T instance) {
+			this.inputProperty.bind(entityPropertyGetter.getObservableValue(instance));
+		}
+		
+		public void unbind(T instance) {
+			this.inputProperty.unbind();
+		}
+	}
+
+	
+	public static interface PropertyGetter<T, P> {
+		
+		public Property<P> getProperty(T instance);
+	}
+
+	public static interface ObservableValueGetter<T, P> {
+		
+		public ObservableValue<P> getObservableValue(T instance);
 	}
 }
