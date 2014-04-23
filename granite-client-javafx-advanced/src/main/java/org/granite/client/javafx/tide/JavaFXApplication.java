@@ -36,6 +36,9 @@ package org.granite.client.javafx.tide;
 
 import java.util.Map;
 
+import javafx.application.Application;
+import javafx.stage.Stage;
+
 import javax.validation.TraversableResolver;
 import javax.validation.ValidatorFactory;
 
@@ -51,10 +54,29 @@ import org.granite.logging.Logger;
 public class JavaFXApplication implements org.granite.client.tide.Application {
     
     private static final Logger log = Logger.getLogger(JavaFXApplication.class);
+    
+    private final Application application;
+    private final Stage stage;
+    
+    public JavaFXApplication() {
+    	this.application = null;
+    	this.stage = null;
+    }
+    
+    public JavaFXApplication(Application application, Stage stage) {
+    	this.application = application;
+    	this.stage = stage;
+    }
+    
 	
 	public void initContext(Context context, Map<String, Object> initialBeans) {
 	    DataManager dataManager = new JavaFXDataManager();
 	    context.setDataManager(dataManager);
+	    
+	    if (application != null)
+	    	initialBeans.put(Application.class.getName(), application);
+	    if (stage != null)
+	    	initialBeans.put(Stage.class.getName(), stage);
 	    
 	    try {
             new BeanValidationConfiguration().configure(context, initialBeans);
@@ -67,7 +89,7 @@ public class JavaFXApplication implements org.granite.client.tide.Application {
 	
 	public void configure(Object instance) {
 		if (instance instanceof ServerSession)
-			((ServerSession)instance).setStatus(new JavaFXServerSessionStatus());
+			((ServerSession)instance).setStatus(new JavaFXServerSessionStatus(stage));
 	}
 	
 	@Override
@@ -80,9 +102,9 @@ public class JavaFXApplication implements org.granite.client.tide.Application {
         public void configure(Context context, Map<String, Object> initialBeans) {
             TraversableResolver traversableResolver = new JavaFXTraversableResolver(context.getDataManager());
             ValidatorFactory validatorFactory = NotifyingValidation.byDefaultProvider().configure().traversableResolver(traversableResolver).buildValidatorFactory();
-
-            initialBeans.put("traversableResolver", traversableResolver);
-            initialBeans.put("validatorFactory", validatorFactory);
+            
+            initialBeans.put(TraversableResolver.class.getName(), traversableResolver);
+            initialBeans.put(ValidatorFactory.class.getName(), validatorFactory);
         }
     }
 }

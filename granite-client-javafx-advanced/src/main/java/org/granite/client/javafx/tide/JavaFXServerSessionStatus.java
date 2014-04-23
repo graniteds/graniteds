@@ -50,27 +50,33 @@ import org.granite.client.tide.server.ServerSession.Status;
  */
 public class JavaFXServerSessionStatus implements Status {
 	
-	private Stage stage = null;
+	private Stage stage;
 	
 	private BooleanProperty busy = new ReadOnlyBooleanWrapper(this, "busy", false);
 	private BooleanProperty connected = new ReadOnlyBooleanWrapper(this, "connected", false);
 	private BooleanProperty showBusyCursor = new SimpleBooleanProperty(this, "showBusyCursor", true);
 	
-	
+
 	public JavaFXServerSessionStatus() {
+		this(null);
+	}
+	
+	public JavaFXServerSessionStatus(Stage stage) {
+		this.stage = stage;
+	
 		busy.addListener(new ChangeListener<Boolean>() {
 			
 			private Cursor saveCursor = Cursor.DEFAULT;
 			
 			@Override
 			public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
-				if (stage != null && stage.getScene() != null && showBusyCursor.get()) {
+				if (JavaFXServerSessionStatus.this.stage != null && JavaFXServerSessionStatus.this.stage.getScene() != null && showBusyCursor.get()) {
 					if (Boolean.FALSE.equals(oldValue)) {
-						saveCursor = stage.getScene().getCursor();
-						stage.getScene().setCursor(Cursor.WAIT);
+						saveCursor = JavaFXServerSessionStatus.this.stage.getScene().getCursor();
+						JavaFXServerSessionStatus.this.stage.getScene().setCursor(Cursor.WAIT);
 					}
 					else
-						stage.getScene().setCursor(saveCursor);
+						JavaFXServerSessionStatus.this.stage.getScene().setCursor(saveCursor);
 				}
 			}
 		});

@@ -36,6 +36,8 @@ package org.granite.client.javafx.tide.cdi;
 
 import java.util.Set;
 
+import javafx.stage.Stage;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
@@ -77,9 +79,14 @@ public class JavaFXTideClientExtension implements Extension {
 	
 	private static final Logger log = Logger.getLogger(JavaFXTideClientExtension.class);
 	
-	private Application application = new JavaFXApplication();
+	private Application application;
 	
-	public JavaFXTideClientExtension() {	    
+	public JavaFXTideClientExtension() {
+		this.application = new JavaFXApplication(null, null);
+	}
+	
+	public JavaFXTideClientExtension(javafx.application.Application application, Stage stage) {
+		this.application = new JavaFXApplication(application, stage);
 	}
 	
 	public JavaFXTideClientExtension(Application application) {

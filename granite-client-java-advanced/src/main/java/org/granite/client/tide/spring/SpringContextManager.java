@@ -36,11 +36,11 @@ package org.granite.client.tide.spring;
 
 import java.util.Map.Entry;
 
+import org.granite.client.tide.Application;
+import org.granite.client.tide.ApplicationConfigurable;
 import org.granite.client.tide.ContextAware;
 import org.granite.client.tide.EventBus;
 import org.granite.client.tide.NameAware;
-import org.granite.client.tide.Application;
-import org.granite.client.tide.ApplicationConfigurable;
 import org.granite.client.tide.data.Conflicts;
 import org.granite.client.tide.data.DataConflictListener;
 import org.granite.client.tide.data.EntityManager;
@@ -50,26 +50,31 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * @author William DRAI
  */
-public class SpringContextManager extends SimpleContextManager implements ApplicationContextAware, BeanPostProcessor, BeanFactoryPostProcessor {
+public class SpringContextManager extends SimpleContextManager implements BeanPostProcessor, BeanFactoryPostProcessor {
 	
-	private ApplicationContext applicationContext;
+	private ConfigurableApplicationContext applicationContext;
 	
-	public SpringContextManager(Application application) {
-		super(application, new SpringEventBus());
-	}
-
+	// Testing
 	public SpringContextManager(Application application, EventBus eventBus) {
 		super(application, eventBus);
 	}
 	
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public SpringContextManager(ConfigurableApplicationContext applicationContext, Application application) {
+		super(application, new SpringEventBus());
+		setApplicationContext(applicationContext);
+	}
+
+	public SpringContextManager(ConfigurableApplicationContext applicationContext, Application application, EventBus eventBus) {
+		super(application, eventBus);
+		setApplicationContext(applicationContext);
+	}
+	
+	private void setApplicationContext(ConfigurableApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 		setInstanceStoreFactory(new SpringInstanceStoreFactory(applicationContext));
         if (eventBus instanceof SpringEventBus)
@@ -94,18 +99,36 @@ public class SpringContextManager extends SimpleContextManager implements Applic
 	
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		beanFactory.registerSingleton("context", getContext());
-		EntityManager entityManager = getContext().getEntityManager();
-		entityManager.addListener(new SpringDataConflictListener());
-		beanFactory.registerSingleton("entityManager", entityManager);
-        beanFactory.registerSingleton("eventBus", eventBus);
-		beanFactory.registerSingleton("dataManager", getContext().getDataManager());
-		for (Entry<String, Object> entry : getContext().getInitialBeans().entrySet())
-		    beanFactory.registerSingleton(entry.getKey(), entry.getValue());
-		beanFactory.registerScope("view", new ViewScope());
+		if (!beanFactory.containsSingleton("context"))
+			beanFactory.registerSingleton("context", getContext());
+		if (!beanFactory.containsSingleton("entityManager")) {
+			EntityManager entityManager = getContext().getEntityManager();
+			entityManager.addListener(new SpringDataConflictListener());
+			beanFactory.registerSingleton("entityManager", entityManager);
+		}
+		if (!beanFactory.containsSingleton("eventBus"))
+			beanFactory.registerSingleton("eventBus", eventBus);
+		if (!beanFactory.containsSingleton("dataManager"))
+			beanFactory.registerSingleton("dataManager", getContext().getDataManager());
+		for (Entry<String, Object> entry : getContext().getInitialBeans().entrySet()) {
+			if (!beanFactory.containsSingleton(entry.getKey()))
+				beanFactory.registerSingleton(entry.getKey(), entry.getValue());
+		}
+		if (beanFactory.getRegisteredScope("view") == null)
+			beanFactory.registerScope("view", new ViewScope());
 	}
 
+	public void configure() {
+		applicationContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
+			@Override
+			public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+				if (!beanFactory.containsSingleton(SpringContextManager.class.getName()))
+					beanFactory.registerSingleton(SpringContextManager.class.getName(), SpringContextManager.this);
+			}
+		});
+	}
 
+	
     private final class SpringDataConflictListener implements DataConflictListener {
 		@Override
 		public void onConflict(EntityManager entityManager, Conflicts conflicts) {
