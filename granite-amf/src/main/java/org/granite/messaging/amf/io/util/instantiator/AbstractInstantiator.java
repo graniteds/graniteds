@@ -52,7 +52,7 @@ public abstract class AbstractInstantiator<T> extends HashMap<String, Object> {
         if (object == null)
         	throw new InstantiationException("Instantiator newInstance() method cannot return null");
         for (Referer referer : referers)
-            referer.property.setProperty(referer.object, object);
+            referer.property.setValue(referer.object, object);
         return object;
     }
 

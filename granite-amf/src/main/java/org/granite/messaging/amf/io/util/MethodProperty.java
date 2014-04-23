@@ -99,23 +99,25 @@ public class MethodProperty extends Property {
 	}
 
     @Override
-    public void setProperty(Object instance, Object value, boolean convert) {
+    public void setValue(Object instance, Object value, boolean convert) {
         try {
             setter.invoke(instance, convert ? convert(value) : value);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }
+        catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 
     @Override
-    public Object getProperty(Object instance) {
+    public Object getValue(Object instance) {
         try {
             Object o = getter.invoke(instance);
             if (factory != null)
             	o = factory.create(o);
             return o;
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
+        }
+        catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 }

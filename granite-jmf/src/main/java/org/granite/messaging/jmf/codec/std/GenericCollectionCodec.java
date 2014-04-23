@@ -19,45 +19,22 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.util;
+package org.granite.messaging.jmf.codec.std;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+
+import org.granite.messaging.jmf.InputContext;
+import org.granite.messaging.jmf.OutputContext;
+import org.granite.messaging.jmf.codec.ConditionalObjectCodec;
 
 /**
  * @author Franck WOLFF
  */
-public final class StringIndexedCache extends AbstractIndexedCache<String> {
-	
-	public StringIndexedCache() {
-		init(DEFAULT_INITIAL_CAPACITY);
-	}
-	
-	public StringIndexedCache(int capacity) {
-		init(roundUpToPowerOf2(capacity));
-	}
-	
-	public int putIfAbsent(String key) {
-		final int hash = key.hashCode();
-        
-		int index = hash & (entries.length - 1);
-		Entry head = entries[index];
-		
-		if (head != null) {
-			Entry entry = head;
-			do {
-				if (hash == entry.hash && key.equals(entry.key))
-					return entry.index;
-				entry = entry.next;
-			}
-			while (entry != null);
-			
-			if (size >= threshold) {
-	            index = hash & resize(entries.length * 2);
-	            head = entries[index];
-			}
-		}
+public interface GenericCollectionCodec extends ConditionalObjectCodec {
 
-        entries[index] = new Entry(key, hash, size, head);
-        size++;
-        
-        return -1;
-	}
+	void encode(OutputContext ctx, Object v) throws IOException;
+	Object decode(InputContext ctx, int parameterizedJmfType)
+		throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException,
+		InvocationTargetException, SecurityException, NoSuchMethodException;
 }

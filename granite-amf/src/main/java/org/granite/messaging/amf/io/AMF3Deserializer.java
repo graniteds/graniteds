@@ -472,9 +472,9 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
             Object value = readObject(readUnsignedByte());
             
             if (value != null && value.getClass() == property.getType())
-            	property.setProperty(result, value, false);
+            	property.setValue(result, value, false);
             else
-            	property.setProperty(result, value, true);
+            	property.setValue(result, value, true);
         }
 
         // dynamic values...

@@ -50,12 +50,12 @@ public abstract class Property {
         return converters;
     }
 
-    public void setProperty(Object instance, Object value) {
-        setProperty(instance, value, true);
+    public void setValue(Object instance, Object value) {
+        setValue(instance, value, true);
     }
 
-    public abstract void setProperty(Object instance, Object value, boolean convert);
-    public abstract Object getProperty(Object instance);
+    public abstract void setValue(Object instance, Object value, boolean convert);
+    public abstract Object getValue(Object instance);
     public abstract Type getType();
     public abstract Class<?> getDeclaringClass();
     

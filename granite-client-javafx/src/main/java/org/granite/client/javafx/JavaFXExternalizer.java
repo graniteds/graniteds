@@ -190,7 +190,7 @@ public class JavaFXExternalizer extends DefaultExternalizer {
             log.debug("Reading entity %s with fields %s", o.getClass().getName(), fields);
             for (Property field : fields) {
                 Object value = in.readObject();
-                field.setProperty(o, value, true);
+                field.setValue(o, value, true);
             }
         }
     	else {
@@ -200,7 +200,7 @@ public class JavaFXExternalizer extends DefaultExternalizer {
             	if (!field.isAnnotationPresent(Id.class))
             		continue;
                 Object value = in.readObject();
-                field.setProperty(o, value, true);
+                field.setValue(o, value, true);
             }    		
     	}
     }
@@ -242,7 +242,7 @@ public class JavaFXExternalizer extends DefaultExternalizer {
 	        	for (Property field : findOrderedFields(o.getClass(), false)) {
 	        		if (field.isAnnotationPresent(Id.class)) {
 		            	// Write entity id.
-		                out.writeObject(field.getProperty(o));
+		                out.writeObject(field.getValue(o));
 		                break;
 	        		}
 	        	}
@@ -259,7 +259,7 @@ public class JavaFXExternalizer extends DefaultExternalizer {
         List<Property> fields = findOrderedFields(o.getClass(), false);
         log.debug("Writing entity %s with fields %s", o.getClass().getName(), fields);
         for (Property field : fields) {
-            Object value = field.getProperty(o);
+            Object value = field.getValue(o);
             
             if (value != null && value instanceof PropertyHolder)
             	value = ((PropertyHolder)value).getObject();

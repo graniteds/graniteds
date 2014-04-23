@@ -55,6 +55,8 @@ import org.granite.messaging.jmf.codec.std.impl.DateCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.DoubleCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.EnumCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.FloatCodecImpl;
+import org.granite.messaging.jmf.codec.std.impl.GenericCollectionCodecImpl;
+import org.granite.messaging.jmf.codec.std.impl.GenericMapCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.HashMapCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.HashSetCodecImpl;
 import org.granite.messaging.jmf.codec.std.impl.IntegerCodecImpl;
@@ -286,6 +288,8 @@ public class DefaultCodecRegistry implements CodecRegistry {
 			new HashMapCodecImpl(),
 
 			new EnumCodecImpl(),
+			new GenericCollectionCodecImpl(),
+			new GenericMapCodecImpl(),
 			new PrimitiveArrayCodecImpl(),
 			new ObjectArrayCodecImpl(),
 			new ClassCodecImpl(),

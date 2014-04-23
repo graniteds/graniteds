@@ -118,7 +118,8 @@ public class VFS3Scanner implements Scanner {
     	
     	if (markerUrl != null) {
     		try {
-	    		VirtualFile markerFile = VFS.getChild(markerUrl);
+	    		@SuppressWarnings("deprecation")
+				VirtualFile markerFile = VFS.getChild(markerUrl);
 	    		markerItem = new VFS3FileScannedItem(this, null, markerFile, markerFile);
 	            for (ScannedItemHandler handler : handlers) {
 	            	boolean skip = handler.handleMarkerItem(markerItem);
@@ -186,7 +187,8 @@ public class VFS3Scanner implements Scanner {
     	}
 
     	try {
-	    	VirtualFile top = VFS.getChild(vfsurl);
+	    	@SuppressWarnings("deprecation")
+			VirtualFile top = VFS.getChild(vfsurl);
 	    	top = top.getChild(relative);
 	    	while (parentDepth > 0) {
 	    		if (top == null)

@@ -112,7 +112,7 @@ public class JavaFXProperty extends Property {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void setProperty(Object instance, Object value, boolean convert) {
+	public void setValue(Object instance, Object value, boolean convert) {
 		try {
 			Class<?> fieldType = field.getType();
 			Object convertedValue = value;
@@ -160,7 +160,7 @@ public class JavaFXProperty extends Property {
 	}
 
 	@Override
-	public Object getProperty(Object instance) {
+	public Object getValue(Object instance) {
 		try {
 			Object fieldValue = field.get(instance);
 			

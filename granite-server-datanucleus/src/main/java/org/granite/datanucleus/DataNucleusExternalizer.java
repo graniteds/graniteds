@@ -197,7 +197,7 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
                 		value = converters.convert(value, targetType);
                     }
                     
-                	field.setProperty(o, value, false);
+                	field.setValue(o, value, false);
                 }
             }
         }
@@ -297,7 +297,7 @@ public class DataNucleusExternalizer extends DefaultExternalizer {
                 if (field.getName().equals("jdoDetachedState"))
                 	continue;
                 
-                Object value = field.getProperty(o);
+                Object value = field.getValue(o);
                 if (isValueIgnored(value)) {
                 	out.writeObject(null);
                 	continue;

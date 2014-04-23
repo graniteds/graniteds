@@ -120,7 +120,7 @@ public class DefaultExternalizer implements Externalizer {
             for (Property field : fields) {
                 Object value = in.readObject();
                 if (!(field instanceof MethodProperty && field.isAnnotationPresent(Include.class, true)))
-                	field.setProperty(o, value);
+                	field.setValue(o, value);
             }
         }
     }
@@ -149,7 +149,7 @@ public class DefaultExternalizer implements Externalizer {
             List<Property> fields = findOrderedFields(o.getClass());
             log.debug("Writing bean %s with fields %s", o.getClass().getName(), fields);
             for (Property field : fields) {
-                Object value = field.getProperty(o);
+                Object value = field.getValue(o);
                 if (value instanceof Map<?, ?>)
                     value = BasicMap.newInstance((Map<?, ?>)value);
                 if (isValueIgnored(value))

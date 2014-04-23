@@ -21,37 +21,43 @@
  */
 package org.granite.util;
 
-
 /**
  * @author Franck WOLFF
  */
-public class ObjectIndexedCache extends AbstractIndexedCache {
+public final class ObjectIndexedCache extends AbstractIndexedCache<Object> {
 
 	public ObjectIndexedCache() {
-		super();
+		init(DEFAULT_INITIAL_CAPACITY);
 	}
-
-	public ObjectIndexedCache(int initialCapacity) {
-		super(initialCapacity);
+	
+	public ObjectIndexedCache(int capacity) {
+		init(roundUpToPowerOf2(capacity));
 	}
+	
+	public int putIfAbsent(Object key) {
+		final int hash = System.identityHashCode(key);
+        
+		int index = hash & (entries.length - 1);
+		Entry head = entries[index];
+		
+		if (head != null) {
+			Entry entry = head;
+			do {
+				if (key == entry.key)
+					return entry.index;
+				entry = entry.next;
+			}
+			while (entry != null);
+			
+			if (size >= threshold) {
+	            index = hash & resize(entries.length * 2);
+	            head = entries[index];
+			}
+		}
 
-	public ObjectIndexedCache(int initialCapacity, float loadFactor) {
-		super(initialCapacity, loadFactor);
-	}
-
-	@Override
-	public final int hash(Object o) {
-        int h = System.identityHashCode(o);
-        return ((h << 1) - (h << 8));
-	}
-
-	@Override
-	public final int find(Entry head, int hash, Object o) {
-        do {
-        	if (head.o == o)
-        		return head.index;
-        }
-        while ((head = head.next) != null);
+        entries[index] = new Entry(key, hash, size, head);
+        size++;
+        
         return -1;
 	}
 }

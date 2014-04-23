@@ -44,8 +44,7 @@ public class TestGraniteConfig {
         GraniteConfig graniteConfig = ServletGraniteConfig.loadConfig(servletContext);
         
         Date dt = new Date();
-        Object converted = graniteConfig.getConverters().convert(dt, Date.class);
+        Object converted = graniteConfig.getConverters().convert(dt, Long.class);
         Assert.assertTrue("Converted to Long", converted instanceof Long);
     }
-
 }
