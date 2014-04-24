@@ -75,24 +75,24 @@ public class AMFEndpoint {
 	    OutputStream os = null;
 	    
 	    try {
-    		is = new BufferedInputStream(request.getInputStream());
+    		is = request.getInputStream();
 	    	
 	        HttpGraniteContext.createThreadIntance(
 	            graniteConfig, servicesConfig, context,
 	            request, response
 	        );
-	
+	        
 	        log.debug(">> Deserializing AMF0 request...");
-	
+	        
 	        AMF0Deserializer deserializer = new AMF0Deserializer(is);
 	        AMF0Message amf0Request = deserializer.getAMFMessage();
-
+	        
             log.debug(">> Processing AMF0 request: %s", amf0Request);
-
+            
             AMF0Message amf0Response = AMF0MessageProcessor.process(amf0Request);
-	
+            
 	        log.debug("<< Serializing AMF0 response: %s", amf0Response);
-	
+	        
 	        response.setStatus(HttpServletResponse.SC_OK);
 	        response.setContentType(ContentType.AMF.mimeType());
 	        response.setDateHeader("Expire", 0L);
