@@ -121,17 +121,23 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     		if (componentPath == null)
     			return null;
     		
-    		HttpServletRequestWrapper wrappedRequest = new HttpServletRequestWrapper(((ServletGraniteContext)GraniteContext.getCurrentInstance()).getRequest()) {
+    		final HttpServletRequest request = ((ServletGraniteContext)GraniteContext.getCurrentInstance()).getRequest();
+    		final String requestPath = "/" + (componentName.endsWith("Controller") ? componentName.substring(0, componentName.length()-"Controller".length()) : componentName) + "/" + componentPath;
+    		
+    		HttpServletRequestWrapper wrappedRequest = new HttpServletRequestWrapper(request) {
     			@Override
     			public String getRequestURI() {
-    				return "/" + componentName + "/" + componentPath;
+    				return request.getContextPath() + requestPath;
+    			}    			
+    			@Override
+    			public String getServletPath() {
+    				return requestPath;
     			}
     		};
 			try {
 				for (HandlerMapping handlerMapping : springContext.getBeansOfType(HandlerMapping.class).values()) {
 	    			Object handler = handlerMapping.getHandler(wrappedRequest);
-    				if (handler instanceof HandlerExecutionChain)
-    					handler = ((HandlerExecutionChain)handler).getHandler();
+	    			handler = unwrapHandler(handler);
 	    			if (handler != null && !(handler instanceof ServerFilter))
 	    				return handler;
 				}
@@ -155,6 +161,27 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     	}
     	
     	return null;    	
+    }
+    
+    
+    private static final Class<?> handlerMethodClass;    
+    static {
+    	Class<?> c = null;
+    	try {
+    		c = TypeUtil.forName("org.springframework.web.method.HandlerMethod");
+    	}
+    	catch (Exception e) {
+    	}
+		handlerMethodClass = c;
+    }
+    
+    private static Object unwrapHandler(Object handler) throws Exception {
+		if (handler instanceof HandlerExecutionChain)
+			handler = ((HandlerExecutionChain)handler).getHandler();
+		if (handlerMethodClass != null && handlerMethodClass.isInstance(handler))
+			handler = handlerMethodClass.getMethod("getBean").invoke(handler);
+		
+		return handler;
     }
     
     
