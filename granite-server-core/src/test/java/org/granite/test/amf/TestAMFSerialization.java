@@ -1784,6 +1784,7 @@ public class TestAMFSerialization implements AMF3Constants {
 		Assert.assertTrue(tf.equals(o));
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testAMF0Message() throws IOException {
 		CommandMessage commandMessage = new CommandMessage();

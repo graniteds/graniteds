@@ -30,13 +30,15 @@ public abstract class AbstractIndexedCache<T> {
 	protected static final int DEFAULT_INITIAL_CAPACITY = 1 << 6;
 	protected static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
+	protected int initialCapacity;
 	protected Entry[] entries;
 	protected int threshold;
 	protected int size;
 	
 	protected final void init(int capacity) {
-        this.threshold = (int)Math.min(capacity * DEFAULT_LOAD_FACTOR, MAXIMUM_CAPACITY + 1);
+		this.initialCapacity = capacity;
         this.entries = new Entry[capacity];
+        this.threshold = (int)Math.min(capacity * DEFAULT_LOAD_FACTOR, MAXIMUM_CAPACITY + 1);
         this.size = 0;
 	}
 	
@@ -44,6 +46,10 @@ public abstract class AbstractIndexedCache<T> {
 	
 	public final int size() {
 		return size;
+	}
+	
+	public final void clear() {
+		init(initialCapacity);
 	}
     
 	protected final int resize(int newCapacity) {

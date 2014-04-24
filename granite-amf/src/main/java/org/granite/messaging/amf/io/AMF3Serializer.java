@@ -279,6 +279,12 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
     		return channelConfig.getChannelProperty(channelId, name);
     	return false;
     }
+    
+    public void reset() {
+    	this.storedStrings.clear();
+    	this.storedObjects.clear();
+    	this.storedClassDescriptors.clear();
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // AMF3 entry point: ObjectOutput.writeObject(...) implementation.

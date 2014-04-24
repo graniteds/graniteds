@@ -57,9 +57,9 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
 
-    protected List<String> storedStrings;
-    protected List<Object> storedObjects;
-    protected List<ActionScriptClassDescriptor> storedClassDescriptors;
+    protected final List<String> storedStrings;
+    protected final List<Object> storedObjects;
+    protected final List<ActionScriptClassDescriptor> storedClassDescriptors;
     
     protected Map<String, Document> documentCache;
 
@@ -88,7 +88,10 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
         this.size = 0;
         this.eof = false;
         
-        reset();
+        this.storedStrings = new ArrayList<String>(64);
+        this.storedObjects = new ArrayList<Object>(64);
+        this.storedClassDescriptors = new ArrayList<ActionScriptClassDescriptor>();
+        this.documentCache = null; // created on demand.
         
         GraniteContext context = GraniteContext.getCurrentInstance();
         this.aliasRegistry = ((AliasRegistryConfig)context.getGraniteConfig()).getAliasRegistry();
@@ -98,10 +101,10 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
     }
     
     public void reset() {
-        this.storedStrings = new ArrayList<String>(64);
-        this.storedObjects = new ArrayList<Object>(64);
-        this.storedClassDescriptors = new ArrayList<ActionScriptClassDescriptor>();
-        this.documentCache = null; // created on demand.
+        this.storedStrings.clear();
+        this.storedObjects.clear();
+        this.storedClassDescriptors.clear();
+        this.documentCache = null;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -766,17 +769,8 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
 	}
 
 	@Override
-	@SuppressWarnings("resource")
 	public String readUTF() throws IOException {
-		// Highly inefficient, but readUTF() should never be used
-		// when deserializing AMF3 data...
-		return new DataInputStream(new InputStream() {
-			@Override
-			public int read() throws IOException {
-				ensureAvailable(1);
-				return buffer[position++];
-			}
-		}).readUTF();
+		return DataInputStream.readUTF(this);
 	}
 
 	@Override

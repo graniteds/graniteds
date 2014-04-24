@@ -28,10 +28,8 @@
 
 package org.granite.messaging.amf.io;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
@@ -86,8 +84,7 @@ public class AMF0Serializer {
     /**
      * The output stream
      */
-    private final DataOutputStream dataOutputStream;
-    private final OutputStream rawOutputStream;
+    private final DataOutput dataOutput;
 
     private final Map<Object, Integer> storedObjects = new IdentityHashMap<Object, Integer>();
     private int storedObjectCount = 0;
@@ -98,10 +95,8 @@ public class AMF0Serializer {
      * @param outputStream
      */
     public AMF0Serializer(OutputStream outputStream) {
-    	this.rawOutputStream = outputStream;
-        this.dataOutputStream = outputStream instanceof DataOutputStream
-        	? ((DataOutputStream)outputStream)
-        	: new DataOutputStream(outputStream);
+        AMF3Config config = GraniteContext.getCurrentInstance().getGraniteConfig(); 
+        this.dataOutput = config.newAMF3Serializer(outputStream);
     }
 
     /**
@@ -111,25 +106,30 @@ public class AMF0Serializer {
      * @throws IOException
      */
     public void serializeMessage(AMF0Message message) throws IOException {
-        //if (log.isInfoEnabled())
-        //    log.info("Serializing Message, for more info turn on debug level");
+        // reset
+    	clearStoredObjects();
 
-        clearStoredObjects();
-        dataOutputStream.writeShort(message.getVersion());
+        // write AMF version
+        dataOutput.writeShort(message.getVersion());
+        
         // write header
-        dataOutputStream.writeShort(message.getHeaderCount());
+        dataOutput.writeShort(message.getHeaderCount());
         Iterator<AMF0Header> headers = message.getHeaders().iterator();
         while (headers.hasNext()) {
             AMF0Header header = headers.next();
             writeHeader(header);
         }
+        
         // write body
-        dataOutputStream.writeShort(message.getBodyCount());
+        dataOutput.writeShort(message.getBodyCount());
         Iterator<AMF0Body> bodies = message.getBodies();
         while (bodies.hasNext()) {
             AMF0Body body = bodies.next();
             writeBody(body);
         }
+        
+        // flush any buffered data to the output
+        ((AMF3Serializer)dataOutput).flush();
     }
     /**
      * Writes message header
@@ -138,10 +138,10 @@ public class AMF0Serializer {
      * @throws IOException
      */
     protected void writeHeader(AMF0Header header) throws IOException {
-        dataOutputStream.writeUTF(header.getKey());
-        dataOutputStream.writeBoolean(header.isRequired());
+        dataOutput.writeUTF(header.getKey());
+        dataOutput.writeBoolean(header.isRequired());
         // Always, always there is four bytes of FF, which is -1 of course
-        dataOutputStream.writeInt(-1);
+        dataOutput.writeInt(-1);
         writeData(header.getValue());
     }
     /**
@@ -153,18 +153,18 @@ public class AMF0Serializer {
     protected void writeBody(AMF0Body body) throws IOException {
         // write url
         if (body.getTarget() == null) {
-            dataOutputStream.writeUTF(NULL_MESSAGE);
+            dataOutput.writeUTF(NULL_MESSAGE);
         } else {
-            dataOutputStream.writeUTF(body.getTarget());
+            dataOutput.writeUTF(body.getTarget());
         }
         // write response
         if (body.getResponse() == null) {
-            dataOutputStream.writeUTF(NULL_MESSAGE);
+            dataOutput.writeUTF(NULL_MESSAGE);
         } else {
-            dataOutputStream.writeUTF(body.getResponse());
+            dataOutput.writeUTF(body.getResponse());
         }
         // Always, always there is four bytes of FF, which is -1 of course
-        dataOutputStream.writeInt(-1);
+        dataOutput.writeInt(-1);
         // Write the data to the output stream
         writeData(body.getValue());
     }
@@ -178,31 +178,31 @@ public class AMF0Serializer {
     protected void writeData(Object value) throws IOException {
         if (value == null) {
             // write null object
-            dataOutputStream.writeByte(AMF0Body.DATA_TYPE_NULL);
+            dataOutput.writeByte(AMF0Body.DATA_TYPE_NULL);
         } else if (value instanceof AMF3Object) {
             writeAMF3Data((AMF3Object)value);
         } else if (isPrimitiveArray(value)) {
             writePrimitiveArray(value);
         } else if (value instanceof Number) {
             // write number object
-            dataOutputStream.writeByte(AMF0Body.DATA_TYPE_NUMBER);
-            dataOutputStream.writeDouble(((Number) value).doubleValue());
+            dataOutput.writeByte(AMF0Body.DATA_TYPE_NUMBER);
+            dataOutput.writeDouble(((Number) value).doubleValue());
         } else if (value instanceof String) {
            writeString((String)value);
         } else if (value instanceof Character) {
             // write String object
-            dataOutputStream.writeByte(AMF0Body.DATA_TYPE_STRING);
-            dataOutputStream.writeUTF(value.toString());
+            dataOutput.writeByte(AMF0Body.DATA_TYPE_STRING);
+            dataOutput.writeUTF(value.toString());
         } else if (value instanceof Boolean) {
             // write boolean object
-            dataOutputStream.writeByte(AMF0Body.DATA_TYPE_BOOLEAN);
-            dataOutputStream.writeBoolean(((Boolean) value).booleanValue());
+            dataOutput.writeByte(AMF0Body.DATA_TYPE_BOOLEAN);
+            dataOutput.writeBoolean(((Boolean) value).booleanValue());
         } else if (value instanceof Date) {
             // write Date object
-            dataOutputStream.writeByte(AMF0Body.DATA_TYPE_DATE);
-            dataOutputStream.writeDouble(((Date) value).getTime());
+            dataOutput.writeByte(AMF0Body.DATA_TYPE_DATE);
+            dataOutput.writeDouble(((Date) value).getTime());
             int offset = TimeZone.getDefault().getRawOffset();
-            dataOutputStream.writeShort(offset / MILLS_PER_HOUR);
+            dataOutput.writeShort(offset / MILLS_PER_HOUR);
         } else {
 
             if (storedObjects.containsKey(value)) {
@@ -251,7 +251,7 @@ public class AMF0Serializer {
         }
         log.debug("Writing object, class = %s", object.getClass());
 
-        dataOutputStream.writeByte(AMF0Body.DATA_TYPE_OBJECT);
+        dataOutput.writeByte(AMF0Body.DATA_TYPE_OBJECT);
         try {
             PropertyDescriptor[] properties = Introspector.getPropertyDescriptors(object.getClass());
             if (properties == null)
@@ -269,12 +269,12 @@ public class AMF0Serializer {
                         propertyValue = readMethod.invoke(object, new Object[0]);
                     }
                     log.debug("%s=%s", propertyName, propertyValue);
-                    dataOutputStream.writeUTF(propertyName);
+                    dataOutput.writeUTF(propertyName);
                     writeData(propertyValue);
                 }
             }
-            dataOutputStream.writeShort(0);
-            dataOutputStream.writeByte(AMF0Body.DATA_TYPE_OBJECT_END);
+            dataOutput.writeShort(0);
+            dataOutput.writeByte(AMF0Body.DATA_TYPE_OBJECT_END);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -290,8 +290,8 @@ public class AMF0Serializer {
      * @throws IOException
      */
     protected void writeArray(Object[] array) throws IOException {
-        dataOutputStream.writeByte(AMF0Body.DATA_TYPE_ARRAY);
-        dataOutputStream.writeInt(array.length);
+        dataOutput.writeByte(AMF0Body.DATA_TYPE_ARRAY);
+        dataOutput.writeInt(array.length);
         for (int i = 0; i < array.length; i++) {
             writeData(array[i]);
         }
@@ -411,8 +411,8 @@ public class AMF0Serializer {
      * @throws IOException
      */
     protected void write(Collection<?> collection) throws IOException {
-        dataOutputStream.writeByte(AMF0Body.DATA_TYPE_ARRAY);
-        dataOutputStream.writeInt(collection.size());
+        dataOutput.writeByte(AMF0Body.DATA_TYPE_ARRAY);
+        dataOutput.writeInt(collection.size());
         for (Iterator<?> objects = collection.iterator(); objects.hasNext();) {
             Object object = objects.next();
             writeData(object);
@@ -427,21 +427,21 @@ public class AMF0Serializer {
     protected void writeMap(Map<?, ?> map) throws IOException {
         if (map instanceof ASObject && ((ASObject) map).getType() != null) {
             log.debug("Writing Custom Class: %s", ((ASObject) map).getType());
-            dataOutputStream.writeByte(AMF0Body.DATA_TYPE_CUSTOM_CLASS);
-            dataOutputStream.writeUTF(((ASObject) map).getType());
+            dataOutput.writeByte(AMF0Body.DATA_TYPE_CUSTOM_CLASS);
+            dataOutput.writeUTF(((ASObject) map).getType());
         } else {
             log.debug("Writing Map");
-            dataOutputStream.writeByte(AMF0Body.DATA_TYPE_MIXED_ARRAY);
-            dataOutputStream.writeInt(0);
+            dataOutput.writeByte(AMF0Body.DATA_TYPE_MIXED_ARRAY);
+            dataOutput.writeInt(0);
         }
         for (Iterator<?> entrys = map.entrySet().iterator(); entrys.hasNext();) {
             Map.Entry<?, ?> entry = (Map.Entry<?, ?>)entrys.next();
             log.debug("%s: %s", entry.getKey(), entry.getValue());
-            dataOutputStream.writeUTF(entry.getKey().toString());
+            dataOutput.writeUTF(entry.getKey().toString());
             writeData(entry.getValue());
         }
-        dataOutputStream.writeShort(0);
-        dataOutputStream.writeByte(AMF0Body.DATA_TYPE_OBJECT_END);
+        dataOutput.writeShort(0);
+        dataOutput.writeByte(AMF0Body.DATA_TYPE_OBJECT_END);
     }
 
     /**
@@ -451,14 +451,15 @@ public class AMF0Serializer {
      * @throws IOException
      */
     protected void write(Document document) throws IOException {
-        dataOutputStream.writeByte(AMF0Body.DATA_TYPE_XML);
+        dataOutput.writeByte(AMF0Body.DATA_TYPE_XML);
         Element docElement = document.getDocumentElement();
         String xmlData = convertDOMToString(docElement);
+        
         log.debug("Writing xmlData: \n%s", xmlData);
-        ByteArrayOutputStream baOutputStream = new ByteArrayOutputStream();
-        baOutputStream.write(xmlData.getBytes("UTF-8"));
-        dataOutputStream.writeInt(baOutputStream.size());
-        baOutputStream.writeTo(dataOutputStream);
+        
+        byte[] data = xmlData.getBytes("UTF-8");
+        dataOutput.writeInt(data.length);
+        dataOutput.write(data, 0, data.length);
     }
 
     /**
@@ -492,10 +493,10 @@ public class AMF0Serializer {
 	     */
 	    byte[] bytearr;
 	    if (utflen <= 65535) {
-	    	dataOutputStream.writeByte(AMF0Body.DATA_TYPE_STRING);
+	    	dataOutput.writeByte(AMF0Body.DATA_TYPE_STRING);
 	    	bytearr = new byte[utflen+2];
 	    } else {
-	        dataOutputStream.writeByte(AMF0Body.DATA_TYPE_LONG_STRING);
+	        dataOutput.writeByte(AMF0Body.DATA_TYPE_LONG_STRING);
 	        bytearr = new byte[utflen+4];
 	        bytearr[count++] = (byte) ((utflen >>> 24) & 0xFF);
 	        bytearr[count++] = (byte) ((utflen >>> 16) & 0xFF);
@@ -517,14 +518,14 @@ public class AMF0Serializer {
 	        }
 	    }
 	
-	    dataOutputStream.write(bytearr);
+	    dataOutput.write(bytearr);
 	    return utflen + 2;
     }
 
     private void writeStoredObject(Object obj) throws IOException {
         log.debug("Writing object reference for %s", obj);
-        dataOutputStream.write(AMF0Body.DATA_TYPE_REFERENCE_OBJECT);
-        dataOutputStream.writeShort((storedObjects.get(obj)).intValue());
+        dataOutput.write(AMF0Body.DATA_TYPE_REFERENCE_OBJECT);
+        dataOutput.writeShort((storedObjects.get(obj)).intValue());
     }
 
     private void storeObject(Object obj) {
@@ -543,11 +544,10 @@ public class AMF0Serializer {
     }
 
     private void writeAMF3Data(AMF3Object data) throws IOException {
-        dataOutputStream.writeByte(AMF0Body.DATA_TYPE_AMF3_OBJECT);
-        AMF3Config config = GraniteContext.getCurrentInstance().getGraniteConfig(); 
-        ObjectOutput amf3 = config.newAMF3Serializer(rawOutputStream);
+        dataOutput.writeByte(AMF0Body.DATA_TYPE_AMF3_OBJECT);
+        AMF3Serializer amf3 = (AMF3Serializer)dataOutput;
+        amf3.reset();
         amf3.writeObject(data.getValue());
-        amf3.flush();
     }
 
     public static String convertDOMToString(Node node) {

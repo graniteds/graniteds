@@ -29,9 +29,9 @@
 package org.granite.messaging.amf.io;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInput;
 import java.io.UTFDataFormatException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -69,8 +69,7 @@ public class AMF0Deserializer {
     /**
      * The AMF input stream
      */
-    private final InputStream rawInputStream;
-    private final ObjectInput dataInputStream;
+    private final DataInput dataInput;
 
     /**
      * Object to store the deserialized data
@@ -85,15 +84,8 @@ public class AMF0Deserializer {
      * @throws IOException
      */
     public AMF0Deserializer(InputStream inputStream) throws IOException {
-        //log.info("Deserializing Message, for more info turn on debug level");
-        // Save the input stream for this object
-    	this.rawInputStream = inputStream;
-    	if (inputStream instanceof ObjectInput)
-    		this.dataInputStream = (ObjectInput)inputStream;
-    	else {
-    		AMF3Config config = GraniteContext.getCurrentInstance().getGraniteConfig();
-    		this.dataInputStream = config.newAMF3Deserializer(rawInputStream);
-    	}
+    	AMF3Config config = GraniteContext.getCurrentInstance().getGraniteConfig();
+    	this.dataInput = config.newAMF3Deserializer(inputStream);
         
         // Read the binary header
         readHeaders();
@@ -114,22 +106,22 @@ public class AMF0Deserializer {
      */
     protected void readHeaders() throws IOException {
         // version
-        message.setVersion(dataInputStream.readUnsignedShort());
+        message.setVersion(dataInput.readUnsignedShort());
         // Find total number of header elements
-        int headerCount = dataInputStream.readUnsignedShort();
+        int headerCount = dataInput.readUnsignedShort();
         log.debug("headerCount = %d", headerCount);
 
         // Loop over all the header elements
         for (int i = 0; i < headerCount; i++) {
             // clear storedObjects - references are new for every header
             storedObjects = new ArrayList<Object>();
-            String key = dataInputStream.readUTF();
+            String key = dataInput.readUTF();
             // Find the must understand flag
-            boolean required = dataInputStream.readBoolean();
+            boolean required = dataInput.readBoolean();
             // Grab the length of the header element
-            /*long length =*/ dataInputStream.readInt();
+            /*long length =*/ dataInput.readInt();
             // Grab the type of the element
-            byte type = dataInputStream.readByte();
+            byte type = dataInput.readByte();
             // Turn the element into real data
             Object value = readData(type);
             // Save the name/value into the headers array
@@ -144,7 +136,7 @@ public class AMF0Deserializer {
      */
     protected void readBodies() throws IOException {
         // Find the total number of body elements
-        int bodyCount = dataInputStream.readUnsignedShort();
+        int bodyCount = dataInput.readUnsignedShort();
         log.debug("bodyCount = %d", bodyCount);
 
         // Loop over all the body elements
@@ -152,13 +144,13 @@ public class AMF0Deserializer {
             //clear storedObjects
             storedObjects = new ArrayList<Object>();
             // The target method
-            String method = dataInputStream.readUTF();
+            String method = dataInput.readUTF();
             // The target that the client understands
-            String target = dataInputStream.readUTF();
+            String target = dataInput.readUTF();
             // Get the length of the body element
-            /*long length =*/ dataInputStream.readInt();
+            /*long length =*/ dataInput.readInt();
             // Grab the type of the element
-            byte type = dataInputStream.readByte();
+            byte type = dataInput.readByte();
             log.debug("type = 0x%02X", type);
             // Turn the argument elements into real data
             Object data = readData(type);
@@ -175,7 +167,7 @@ public class AMF0Deserializer {
      */
     protected Object readCustomClass() throws IOException {
         // Grab the explicit type - somehow it works
-        String type = dataInputStream.readUTF();
+        String type = dataInput.readUTF();
         log.debug("Reading Custom Class: %s", type);
         /*
         String mappedJavaClass = OpenAMFConfig.getInstance().getJavaClassName(type);
@@ -205,10 +197,10 @@ public class AMF0Deserializer {
         // Init the array
         log.debug("reading object");
         // Grab the key
-        String key = dataInputStream.readUTF();
-        for (byte type = dataInputStream.readByte();
+        String key = dataInput.readUTF();
+        for (byte type = dataInput.readByte();
              type != 9;
-             type = dataInputStream.readByte()) {
+             type = dataInput.readByte()) {
             // Grab the value
             Object value = readData(type);
             // Save the name/value pair in the map
@@ -219,7 +211,7 @@ public class AMF0Deserializer {
                 log.debug(" adding {key=%s, value=%s, type=%d}", key, value, type);
             }
             // Get the next name
-            key = dataInputStream.readUTF();
+            key = dataInput.readUTF();
         }
         log.debug("finished reading object");
         // Return the map
@@ -238,12 +230,12 @@ public class AMF0Deserializer {
         storeObject(array);
         log.debug("Reading array");
         // Grab the length of the array
-        long length = dataInputStream.readInt();
+        long length = dataInput.readInt();
         log.debug("array length = %d", length);
         // Loop over all the elements in the data
         for (long i = 0; i < length; i++) {
             // Grab the type for each element
-            byte type = dataInputStream.readByte();
+            byte type = dataInput.readByte();
             // Grab the element
             Object data = readData(type);
             array.add(data);
@@ -269,12 +261,12 @@ public class AMF0Deserializer {
      * @throws IOException
      */
     protected Date readDate() throws IOException {
-        long ms = (long) dataInputStream.readDouble(); // Date in millis from 01/01/1970
+        long ms = (long) dataInput.readDouble(); // Date in millis from 01/01/1970
 
       // here we have to read in the raw
       // timezone offset (which comes in minutes, but incorrectly signed),
       // make it millis, and fix the sign.
-      int timeoffset = dataInputStream.readShort() * 60000 * -1; // now we have millis
+      int timeoffset = dataInput.readShort() * 60000 * -1; // now we have millis
 
       TimeZone serverTimeZone = TimeZone.getDefault();
 
@@ -308,7 +300,7 @@ public class AMF0Deserializer {
      * @throws IOException
      */
     protected Object readFlushedSO() throws IOException {
-        int index = dataInputStream.readUnsignedShort();
+        int index = dataInput.readUnsignedShort();
         log.debug("Object Index: %d", index);
         return storedObjects.get(index);
     }
@@ -328,13 +320,9 @@ public class AMF0Deserializer {
      * @return the AMF3 decoded object
      */
     protected Object readAMF3Data() throws IOException {
-        try {
-        	// Use the underlying AMF3 deserializer
-        	((AMF3Deserializer)dataInputStream).reset();
-            return dataInputStream.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+    	AMF3Deserializer amf3 = (AMF3Deserializer)dataInput;
+    	amf3.reset();
+        return amf3.readObject();
     }
 
     /**
@@ -348,11 +336,11 @@ public class AMF0Deserializer {
         log.debug("Reading data of type: %s", AMF0Body.getObjectTypeDescription(type));
         switch (type) {
             case AMF0Body.DATA_TYPE_NUMBER: // 0
-                return new Double(dataInputStream.readDouble());
+                return new Double(dataInput.readDouble());
             case AMF0Body.DATA_TYPE_BOOLEAN: // 1
-                return new Boolean(dataInputStream.readBoolean());
+                return new Boolean(dataInput.readBoolean());
             case AMF0Body.DATA_TYPE_STRING: // 2
-                return dataInputStream.readUTF();
+                return dataInput.readUTF();
             case AMF0Body.DATA_TYPE_OBJECT: // 3
                 return readObject();
             case AMF0Body.DATA_TYPE_MOVIE_CLIP: // 4
@@ -363,7 +351,7 @@ public class AMF0Deserializer {
             case AMF0Body.DATA_TYPE_REFERENCE_OBJECT: // 7
                 return readFlushedSO();
             case AMF0Body.DATA_TYPE_MIXED_ARRAY: // 8
-                /*long length =*/ dataInputStream.readInt();
+                /*long length =*/ dataInput.readInt();
                 //don't do anything with the length
                 return readObject();
             case AMF0Body.DATA_TYPE_OBJECT_END: // 9
@@ -373,13 +361,13 @@ public class AMF0Deserializer {
             case AMF0Body.DATA_TYPE_DATE: // 11
                 return readDate();
             case AMF0Body.DATA_TYPE_LONG_STRING: // 12
-                return readLongUTF(dataInputStream);
+                return readLongUTF(dataInput);
             case AMF0Body.DATA_TYPE_AS_OBJECT: // 13
                 return readASObject();
             case AMF0Body.DATA_TYPE_RECORDSET: // 14
                 return null;
             case AMF0Body.DATA_TYPE_XML: // 15
-                return convertToDOM(dataInputStream);
+                return convertToDOM(dataInput);
             case AMF0Body.DATA_TYPE_CUSTOM_CLASS: // 16
                 return readCustomClass();
             case AMF0Body.DATA_TYPE_AMF3_OBJECT: // 17
@@ -393,7 +381,7 @@ public class AMF0Deserializer {
      * This is a hacked verison of Java's DataInputStream.readUTF(), which only
      * supports Strings <= 65535 UTF-8-encoded characters
      */
-    private Object readLongUTF(ObjectInput in) throws IOException {
+    private Object readLongUTF(DataInput in) throws IOException {
         int utflen = in.readInt();
         StringBuffer str = new StringBuffer(utflen);
         byte bytearr [] = new byte[utflen];
@@ -443,7 +431,7 @@ public class AMF0Deserializer {
         return new String(str);
     }
 
-    public static Document convertToDOM(ObjectInput is) throws IOException {
+    public static Document convertToDOM(DataInput is) throws IOException {
         Document document = null;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         int length = is.readInt();
