@@ -21,6 +21,7 @@
  */
 package org.granite.messaging.jmf;
 
+import java.io.Externalizable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import org.granite.messaging.jmf.codec.std.FloatCodec;
 import org.granite.messaging.jmf.codec.std.IntegerCodec;
 import org.granite.messaging.jmf.codec.std.LongCodec;
 import org.granite.messaging.jmf.codec.std.NullCodec;
+import org.granite.messaging.jmf.codec.std.ObjectCodec;
 import org.granite.messaging.jmf.codec.std.ShortCodec;
 import org.granite.messaging.jmf.codec.std.StringCodec;
 import org.granite.messaging.jmf.codec.std.impl.ArrayListCodecImpl;
@@ -108,6 +110,7 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	private FloatCodec floatCodec;
 	private DoubleCodec doubleCodec;
 	private StringCodec stringCodec;
+	private ObjectCodec objectCodec;
 	
 	private final StandardCodec<?>[] typeToCodec = new StandardCodec<?>[256];
 	
@@ -159,6 +162,8 @@ public class DefaultCodecRegistry implements CodecRegistry {
 			else if (codec instanceof ConditionalObjectCodec) {
 				assertNull(typeToCodecMap.put(codec.getObjectType(), codec));
 				conditionalObjectCodecs.add((ConditionalObjectCodec)codec);
+				if (codec instanceof ObjectCodec)
+					initObjectCodec((ObjectCodec)codec);
 			}
 			else
 				throw new JMFConfigurationException("Codec must implement BijectiveCodec or ConditionalObjectCodec: " + codec);
@@ -218,18 +223,25 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> StandardCodec<T> getCodec(Object v) {
-		Class<?> cls = (v != null ? v.getClass() : null);
+	public <T> StandardCodec<T> getCodec(ExtendedObjectOutput out, Object v) {
+		if (v == null)
+			return (StandardCodec<T>)nullCodec;
+		
+		Class<?> cls = v.getClass();
+		
 		StandardCodec<T> codec = (StandardCodec<T>)classToCodec.get(cls);
-		if (codec == null) {
-			for (ConditionalObjectCodec condCodec : conditionalObjectCodecs) {
-				if (condCodec.canEncode(v)) {
-					codec = (StandardCodec<T>)condCodec;
-					break;
-				}
-			}
+		if (codec != null)
+			return codec;
+		
+		if (Externalizable.class.isAssignableFrom(cls) || findExtendedEncoder(out, v) != null)
+			return (StandardCodec<T>)objectCodec;
+		
+		for (ConditionalObjectCodec condCodec : conditionalObjectCodecs) {
+			if (condCodec.canEncode(v))
+				return (StandardCodec<T>)condCodec;
 		}
-		return codec;
+
+		return null;
 	}
 
 	public ExtendedObjectCodec findExtendedEncoder(ExtendedObjectOutput out, Object v) {
@@ -326,6 +338,9 @@ public class DefaultCodecRegistry implements CodecRegistry {
 		
 		if (stringCodec == null)
 			throw new JMFConfigurationException("No String codec");
+		
+		if (objectCodec == null)
+			throw new JMFConfigurationException("No Object codec");
 	}
 
 	private void initBooleanCodec(BooleanCodec codec) {
@@ -422,6 +437,10 @@ public class DefaultCodecRegistry implements CodecRegistry {
 				property.setDouble(holder, doubleCodec.decodePrimitive(ctx));
 			}
 		});
+	}
+
+	private void initObjectCodec(ObjectCodec codec) {
+		objectCodec = codec;
 	}
 
 	private void initStringCodec(StringCodec codec) {
