@@ -692,26 +692,29 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 	public Message publishMessage(AsyncMessage message) {
     	return publishMessage(serverChannel, message);
     }
-
+	
     public Message publishMessage(Channel fromChannel, AsyncMessage message) {
+    	boolean shouldReleaseContext = GraniteContext.getCurrentInstance() == null;
         try {
             initThread(null, fromChannel != null ? fromChannel.getClientType() : serverChannel.getClientType());
 
             return handlePublishMessage(null, message, fromChannel != null ? fromChannel : serverChannel);
         }
         finally {
-            releaseThread();
+        	if (shouldReleaseContext)
+        		releaseThread();
         }
     }
 
     public Message sendRequest(Channel fromChannel, AsyncMessage message) {
+    	boolean shouldReleaseContext = GraniteContext.getCurrentInstance() == null;
         try {
             initThread(null, fromChannel != null ? fromChannel.getClientType() : serverChannel.getClientType());
-
+            
             if (message.getMessageId() == null)
                 message.setMessageId(UUIDUtil.randomUUID());
             message.setTimestamp(System.currentTimeMillis());
-
+            
             long timeout = 5000L;
             if (message.getTimeToLive() > 0)
                 timeout = message.getTimeToLive();
@@ -735,6 +738,10 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
             errorMessage.setFaultCode("Server.Messaging.ReplyInterrupted");
             errorMessage.setFaultString("Reply interrupted for message " + message.getMessageId());
             return errorMessage;
+        }
+        finally {
+        	if (shouldReleaseContext)
+        		releaseThread();
         }
     }
 
@@ -803,9 +810,9 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
     private Message handleSecurityMessage(final ChannelFactory<?> channelFactory, CommandMessage message) {
         GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
-
+        
         Message response = null;
-
+        
         if (!config.hasSecurityService())
             log.warn("Ignored security operation (no security settings in granite-config.xml): %s", message);
         else if (!config.getSecurityService().acceptsContext())
