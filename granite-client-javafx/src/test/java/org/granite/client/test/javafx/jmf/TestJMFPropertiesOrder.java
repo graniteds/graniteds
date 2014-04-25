@@ -24,6 +24,7 @@ package org.granite.client.test.javafx.jmf;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.granite.client.messaging.ClientAliasRegistry;
@@ -108,6 +109,39 @@ public class TestJMFPropertiesOrder {
 		Assert.assertEquals(((ClientConcretePersistableChild)clientEntity).getId(), ((ConcretePersistableChild)serverEntity).getId());
 		Assert.assertEquals(((ClientConcretePersistableChild)clientEntity).getA(), ((ConcretePersistableChild)serverEntity).getA());
 		Assert.assertEquals(((ClientConcretePersistableChild)clientEntity).getZ(), ((ConcretePersistableChild)serverEntity).getZ());
+	}
+
+	@Test
+	public void testEntityPropertiesOrder() throws ClassNotFoundException, IOException {
+		
+		clientAliasRegistry.registerAlias(ClientConcreteEntity.class);
+
+		ConcreteEntity entity = new ConcreteEntity();
+		entity.setId(12L);
+		entity.setCreateDate(new Date());
+		entity.setCreateUser("John");
+		entity.setBla("3247932");
+		entity.setCla("eiwuryti");
+		
+		Object clientEntity = serializeAndDeserializeServerToClient(entity, true);
+		Assert.assertTrue(clientEntity instanceof ClientConcreteEntity);
+		Assert.assertEquals(entity.getId(), ((ClientConcreteEntity)clientEntity).getId());
+		Assert.assertEquals(entity.getUid(), ((ClientConcreteEntity)clientEntity).getUid());
+		Assert.assertEquals(entity.getVersion(), ((ClientConcreteEntity)clientEntity).getVersion());
+		Assert.assertEquals(entity.getCreateDate(), ((ClientConcreteEntity)clientEntity).getCreateDate());
+		Assert.assertEquals(entity.getCreateUser(), ((ClientConcreteEntity)clientEntity).getCreateUser());
+		Assert.assertEquals(entity.getBla(), ((ClientConcreteEntity)clientEntity).getBla());
+		Assert.assertEquals(entity.getCla(), ((ClientConcreteEntity)clientEntity).getCla());
+		
+		Object serverEntity = serializeAndDeserializeClientToServer(clientEntity, true);
+		Assert.assertTrue(serverEntity instanceof ConcreteEntity);
+		Assert.assertEquals(((ClientConcreteEntity)clientEntity).getId(), ((ConcreteEntity)serverEntity).getId());
+		Assert.assertEquals(((ClientConcreteEntity)clientEntity).getUid(), ((ConcreteEntity)serverEntity).getUid());
+		Assert.assertEquals(((ClientConcreteEntity)clientEntity).getVersion(), ((ConcreteEntity)serverEntity).getVersion());
+		Assert.assertEquals(((ClientConcreteEntity)clientEntity).getCreateDate(), ((ConcreteEntity)serverEntity).getCreateDate());
+		Assert.assertEquals(((ClientConcreteEntity)clientEntity).getCreateUser(), ((ConcreteEntity)serverEntity).getCreateUser());
+		Assert.assertEquals(((ClientConcreteEntity)clientEntity).getBla(), ((ConcreteEntity)serverEntity).getBla());
+		Assert.assertEquals(((ClientConcreteEntity)clientEntity).getCla(), ((ConcreteEntity)serverEntity).getCla());
 	}
 //	
 //	private Object serializeAndDeserializeServerToServer(Object obj, boolean dump) throws ClassNotFoundException, IOException {

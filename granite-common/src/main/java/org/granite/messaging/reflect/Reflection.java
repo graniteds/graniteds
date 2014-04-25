@@ -29,16 +29,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.granite.messaging.annotations.Exclude;
-import org.granite.messaging.annotations.Include;
-import org.granite.messaging.annotations.Serialized;
 
 /**
  * Reflection provider
@@ -164,80 +159,6 @@ public class Reflection {
 	
 	protected MethodProperty newMethodProperty(Method getter, Method setter, String name) {
 		return new SimpleMethodProperty(getter, setter, name);
-	}
-
-	protected List<Property> findSerializableDeclaredProperties(Class<?> cls) throws SecurityException {
-		
-		if (!isRegularClass(cls))
-			throw new IllegalArgumentException("Not a regular class: " + cls);
-		
-		Field[] declaredFields = cls.getDeclaredFields();
-		List<Property> serializableProperties = new ArrayList<Property>(declaredFields.length);
-		for (Field field : declaredFields) {
-			int modifiers = field.getModifiers();
-			if ((modifiers & STATIC_TRANSIENT_MASK) == 0 && !field.isAnnotationPresent(Exclude.class)) {
-				field.setAccessible(true);
-				serializableProperties.add(newFieldProperty(field));
-			}
-		}
-		
-		Method[] declaredMethods = cls.getDeclaredMethods();
-		for (Method method : declaredMethods) {
-			int modifiers = method.getModifiers();
-			if ((modifiers & STATIC_PRIVATE_PROTECTED_MASK) == 0 &&
-				method.isAnnotationPresent(Include.class) &&
-				method.getParameterTypes().length == 0 &&
-				method.getReturnType() != Void.TYPE) {
-				
-				String name = method.getName();
-				if (name.startsWith("get")) {
-					if (name.length() <= 3)
-						continue;
-					name = name.substring(3, 4).toLowerCase() + name.substring(4);
-				}
-				else if (name.startsWith("is") &&
-					(method.getReturnType() == Boolean.class || method.getReturnType() == Boolean.TYPE)) {
-					if (name.length() <= 2)
-						continue;
-					name = name.substring(2, 3).toLowerCase() + name.substring(3);
-				}
-				else
-					continue;
-				
-				serializableProperties.add(newMethodProperty(method, null, name));
-			}
-		}
-		
-		Serialized serialized = cls.getAnnotation(Serialized.class);
-		if (serialized != null && serialized.propertiesOrder().length > 0) {
-			String[] value = serialized.propertiesOrder();
-			
-			if (value.length != serializableProperties.size())
-				throw new ReflectionException("Illegal @Serialized(propertiesOrder) value: " + serialized + " on: " + cls.getName() + " (bad length)");
-			
-			for (int i = 0; i < value.length; i++) {
-				String propertyName = value[i];
-				
-				boolean found = false;
-				for (int j = i; j < value.length; j++) {
-					Property property = serializableProperties.get(j);
-					if (property.getName().equals(propertyName)) {
-						found = true;
-						if (i != j) {
-							serializableProperties.set(j, serializableProperties.get(i));
-							serializableProperties.set(i, property);
-						}
-						break;
-					}
-				}
-				if (!found)
-					throw new ReflectionException("Illegal @Serialized(propertiesOrder) value: " + serialized + " on: " + cls.getName() + " (\"" + propertyName + "\" isn't a property name)");
-			}
-		}
-		else
-			Collections.sort(serializableProperties, lexicalPropertyComparator);
-		
-		return serializableProperties;
 	}
 	
 	public boolean isRegularClass(Class<?> cls) {
