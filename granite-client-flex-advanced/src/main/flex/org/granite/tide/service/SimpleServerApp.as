@@ -56,13 +56,14 @@ package org.granite.tide.service {
         
         private static var log:ILogger = Log.getLogger("org.granite.tide.service.SimpleServerApp");
 
+        private static const DEFAULT_CONTEXT_ROOT:String = "{context.root}";
         private static const DEFAULT_SERVER_NAME:String = "{server.name}";
         private static const DEFAULT_SERVER_PORT:String = "{server.port}";
 
-        private var _contextRoot:String = "";
+        private var _contextRoot:String = DEFAULT_CONTEXT_ROOT;
 		private var _secure:Boolean = false;
-        private var _serverName:String = "{server.name}";
-        private var _serverPort:String = "{server.port}";
+        private var _serverName:String = DEFAULT_SERVER_NAME;
+        private var _serverPort:String = DEFAULT_SERVER_PORT;
 
 
 		/**
@@ -71,7 +72,7 @@ package org.granite.tide.service {
 		 * 	@param name component name
 		 *  @param context current context
 		 */
-        public function SimpleServerApp(contextRoot:String = "", secure:Boolean = false, serverName:String = DEFAULT_SERVER_NAME, serverPort:String = DEFAULT_SERVER_PORT) {
+        public function SimpleServerApp(contextRoot:String = DEFAULT_CONTEXT_ROOT, secure:Boolean = false, serverName:String = DEFAULT_SERVER_NAME, serverPort:String = DEFAULT_SERVER_PORT) {
             _secure = secure;
             _serverName = serverName;
             _serverPort = serverPort;
@@ -123,19 +124,19 @@ package org.granite.tide.service {
                     if (idx > 0) {
                         var idx1:int = application.url.indexOf(":", idx0+3);
                         if (idx1 > 0) {
-                            if (!_serverName || _serverName == DEFAULT_SERVER_NAME)
+                            if (_serverName == null || _serverName == DEFAULT_SERVER_NAME)
                                 _serverName = application.url.substring(idx0+3, idx1);
-                            if (!_serverPort || _serverPort == DEFAULT_SERVER_PORT)
+                            if (_serverPort == null || _serverPort == DEFAULT_SERVER_PORT)
                                 _serverPort = application.url.substring(idx1+1, idx);
                         }
                         else {
-                            if (!_serverName || _serverName == DEFAULT_SERVER_NAME)
+                            if (_serverName == null || _serverName == DEFAULT_SERVER_NAME)
                                 _serverName = application.url.substring(idx0+3, idx);
-                            if (!_serverPort || _serverPort == DEFAULT_SERVER_PORT)
+                            if (_serverPort == null || _serverPort == DEFAULT_SERVER_PORT)
                                 _serverPort = _secure ? "443" : "80";
                         }
                         var idx2:int = application.url.indexOf("/", idx+1);
-                        if (!_contextRoot && idx2 > 0 && idx2 > idx)
+                        if ((_contextRoot == null || _contextRoot == DEFAULT_CONTEXT_ROOT) && idx2 > 0 && idx2 > idx)
                             _contextRoot = application.url.substring(idx, idx2);
                     }
                 }
