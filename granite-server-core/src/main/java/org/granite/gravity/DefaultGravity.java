@@ -688,6 +688,15 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
             return timeChannel.getChannel();
         return null;
     }
+    
+    public Channel findCurrentChannel(String destination) {
+    	DistributedData gdd = getGraniteConfig().getDistributedDataFactory().getInstance();
+    	if (gdd != null) {
+    		String clientId = gdd.getDestinationClientId(destination);
+    		return findConnectedChannelByClientId(clientId);
+    	}
+    	return null;
+    }
 
 	public Message publishMessage(AsyncMessage message) {
     	return publishMessage(serverChannel, message);

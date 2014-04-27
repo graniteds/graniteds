@@ -62,7 +62,8 @@ public interface Gravity {
     public Set<Principal> getConnectedUsersByDestination(String destination);
     public List<Channel> findConnectedChannelsByUser(String name);
     public Channel findConnectedChannelByClientId(String clientId);
-
+    public Channel findCurrentChannel(String destination);
+    
     public Message handleMessage(Message message);
     public Message handleMessage(Message message, boolean skipInterceptor);
 

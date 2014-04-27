@@ -98,7 +98,11 @@ public class GravityBean implements Gravity {
     public Channel findConnectedChannelByClientId(String clientId) {
         return getGravity().findConnectedChannelByClientId(clientId);
     }
-
+    @Override
+    public Channel findCurrentChannel(String destination) {
+        return getGravity().findCurrentChannel(destination);
+    }
+    
     public void start() throws Exception {
         getGravity().start();
     }

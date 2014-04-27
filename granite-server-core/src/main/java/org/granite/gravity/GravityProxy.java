@@ -120,6 +120,10 @@ public class GravityProxy implements Gravity {
     public Channel findConnectedChannelByClientId(String clientId) {
         return getGravity().findConnectedChannelByClientId(clientId);
     }
+    @Override
+    public Channel findCurrentChannel(String destination) {
+        return getGravity().findCurrentChannel(destination);
+    }
 
     @Override
     public Message handleMessage(Message message) {
