@@ -109,7 +109,7 @@ public class JMSDataDispatcher extends AbstractDataDispatcher {
 	}
 	
 	@Override
-	public void publishUpdate(Map<String, String> params, Object body) {
+	public void publishUpdate(Map<String, Object> params, Object body) {
 		if (jmsClient != null) {
 			try {
 				jmsClient.send(params, body, 0L);
@@ -124,9 +124,9 @@ public class JMSDataDispatcher extends AbstractDataDispatcher {
 				Session jmsSession = jmsConnection.createSession(transacted, Session.AUTO_ACKNOWLEDGE);
 				MessageProducer jmsProducer = jmsSession.createProducer(topic);
 				ObjectMessage jmsMessage = jmsSession.createObjectMessage((Serializable)body);
-				for (Entry<String, String> hh : params.entrySet())
-					jmsMessage.setStringProperty(hh.getKey(), hh.getValue());
-			
+				for (Entry<String, Object> hh : params.entrySet())
+					jmsMessage.setObjectProperty(hh.getKey(), hh.getValue());
+				
 				jmsProducer.send(jmsMessage);
 				log.debug("Data message dispatched on JMS topic %s", topicName);
 			}

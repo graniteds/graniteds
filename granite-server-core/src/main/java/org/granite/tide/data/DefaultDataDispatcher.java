@@ -122,10 +122,10 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 	}
 	
 	@Override
-	public void publishUpdate(Map<String, String> params, Object body) {
+	public void publishUpdate(Map<String, Object> params, Object body) {
 		AsyncMessage message = new AsyncMessage();
 		message.setDestination(topicName);
-		for (Entry<String, String> hh : params.entrySet())
+		for (Entry<String, Object> hh : params.entrySet())
 			message.setHeader(hh.getKey(), hh.getValue());
 		message.setBody(body);
 		

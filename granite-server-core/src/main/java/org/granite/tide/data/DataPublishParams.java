@@ -28,14 +28,14 @@ import java.util.Map;
 
 public class DataPublishParams {
 	
-	private Map<String, String> params = new HashMap<String, String>();
+	private Map<String, Object> params = new HashMap<String, Object>();
 	private Map<String, Integer> priorities = new HashMap<String, Integer>(); 
 	
 	
-	public void setValue(String paramName, String value) {
+	public void setValue(String paramName, Object value) {
 		setValue(paramName, value, 0);
 	}
-	public void setValue(String paramName, String value, int priority) {
+	public void setValue(String paramName, Object value, int priority) {
 		if (paramName == null || value == null)
 			throw new NullPointerException("paramName and value cannot be null");
 		
@@ -47,7 +47,7 @@ public class DataPublishParams {
 	}
 	
 	
-	public Map<String, String> getHeaders() {
-		return new HashMap<String, String>(params);
+	public Map<String, Object> getHeaders() {
+		return new HashMap<String, Object>(params);
 	}
 }
