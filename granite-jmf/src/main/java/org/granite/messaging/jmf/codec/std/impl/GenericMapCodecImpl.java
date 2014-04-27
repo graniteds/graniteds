@@ -75,7 +75,7 @@ public class GenericMapCodecImpl extends AbstractStandardCodec<Object> implement
 		
 		int indexOrLength = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) & 0x03);
 		if ((parameterizedJmfType & 0x80) != 0)
-			return (Map<?, ?>)ctx.getObject(indexOrLength);
+			return ctx.getObject(indexOrLength);
 
 		String className = ClassNameUtil.decodeClassName(ctx);
 		className = ctx.getAlias(className);

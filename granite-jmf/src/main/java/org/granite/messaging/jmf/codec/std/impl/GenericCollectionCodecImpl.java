@@ -74,7 +74,7 @@ public class GenericCollectionCodecImpl extends AbstractStandardCodec<Object> im
 		
 		int indexOrLength = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) & 0x03);
 		if ((parameterizedJmfType & 0x80) != 0)
-			return (Collection<?>)ctx.getObject(indexOrLength);
+			return ctx.getObject(indexOrLength);
 
 		String className = ctx.getAlias(ClassNameUtil.decodeClassName(ctx));
 		
