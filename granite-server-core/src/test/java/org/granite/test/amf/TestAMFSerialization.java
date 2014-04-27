@@ -68,6 +68,7 @@ import flex.messaging.io.ArrayCollection;
 import flex.messaging.messages.CommandMessage;
 import flex.messaging.messages.RemotingMessage;
 
+@SuppressWarnings("cast")
 public class TestAMFSerialization implements AMF3Constants {
 	
 	private GraniteConfig graniteConfig;
