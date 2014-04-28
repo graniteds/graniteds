@@ -63,7 +63,7 @@ public class ServerEntity implements Serializable {
 	@Basic
 	private String name;
 	
-	@OneToMany(mappedBy="collectionEntity")
+	@OneToMany(mappedBy="entity")
 	private List<ServerCollectionEntity> list = new ArrayList<ServerCollectionEntity>();
 
 	public ServerEntity() {

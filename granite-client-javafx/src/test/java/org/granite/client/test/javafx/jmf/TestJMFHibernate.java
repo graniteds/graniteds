@@ -69,11 +69,15 @@ import org.granite.hibernate.jmf.PersistentMapCodec;
 import org.granite.hibernate.jmf.PersistentSetCodec;
 import org.granite.hibernate.jmf.PersistentSortedMapCodec;
 import org.granite.hibernate.jmf.PersistentSortedSetCodec;
+import org.granite.messaging.amf.AMF0Body;
+import org.granite.messaging.amf.AMF0Message;
+import org.granite.messaging.amf.AMF3Object;
 import org.granite.messaging.jmf.DefaultCodecRegistry;
 import org.granite.messaging.jmf.DefaultSharedContext;
 import org.granite.messaging.jmf.JMFDumper;
 import org.granite.messaging.jmf.SharedContext;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
+import org.granite.tide.invocation.InvocationResult;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.collection.PersistentBag;
 import org.hibernate.collection.PersistentList;
@@ -85,6 +89,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import flex.messaging.messages.AcknowledgeMessage;
 
 public class TestJMFHibernate {
 	
@@ -943,6 +949,49 @@ public class TestJMFHibernate {
 		Assert.assertEquals(name, ((ServerEntity)serverEntityCopy).getName());
 		Assert.assertTrue(((ServerEntity)serverEntityCopy).getList().size() == 1);
 		Assert.assertTrue(((ServerEntity)serverEntityCopy).getList().get(0) instanceof ServerCollectionEntity);
+	}
+	
+	@Test
+	public void testFXUpdate() throws Exception {
+		clientAliasRegistry.registerAlias(ClientFXEntity.class);
+		clientAliasRegistry.registerAlias(ClientFXCollectionEntity.class);
+
+		ServerCollectionEntity serverCollEntity = new ServerCollectionEntity(10, 0);
+		serverCollEntity.setUid(UUID.randomUUID().toString());
+		serverCollEntity.setName("Bla");
+		ServerEntity serverEntity = new ServerEntity(1, 0);
+		serverCollEntity.setEntity(serverEntity);
+		serverEntity.setUid(UUID.randomUUID().toString());
+		serverEntity.setName("Blo");
+		serverEntity.getList().add(serverCollEntity);
+		
+		Object[][] updates = { { "PERSIST", serverEntity }, { "PERSIST", serverCollEntity } };
+		InvocationResult ires = new InvocationResult(serverEntity);
+		ires.setUpdates(updates);
+		
+		AcknowledgeMessage message = new AcknowledgeMessage();
+		message.setClientId(UUID.randomUUID().toString());
+		message.setMessageId(UUID.randomUUID().toString());
+		message.setCorrelationId(UUID.randomUUID().toString());
+		message.setDestination(null);
+		message.setTimestamp(System.currentTimeMillis());
+		message.setTimeToLive(0L);
+		message.getHeaders().put("org.granite.time", System.currentTimeMillis());
+		message.getHeaders().put("org.granite.sessionId", "12wazj7gskg311q0agmfg056i9");
+		message.getHeaders().put("org.granite.sessionExp", 30000);
+		message.setBody(ires);
+		
+		AMF0Message message0 = new AMF0Message();
+		message0.addBody("/10/onResult", "", new AMF3Object(message), AMF0Body.DATA_TYPE_AMF3_OBJECT);
+		
+		Object copy = serializeAndDeserializeServerToClient(message0, false);
+		 
+		Assert.assertTrue(copy instanceof AMF0Message);
+		InvocationResult ir = (InvocationResult)(((AcknowledgeMessage)((AMF3Object)(((AMF0Message)copy).getBody(0).getValue())).getValue()).getBody());
+		Object[][] updatesCopy = ir.getUpdates();
+		
+		Assert.assertEquals("PERSIST", updatesCopy[0][0]);
+		Assert.assertEquals("PERSIST", updatesCopy[1][0]);
 	}
 	
 	private Object serializeAndDeserializeServerToServer(Object obj, boolean dump) throws ClassNotFoundException, IOException {

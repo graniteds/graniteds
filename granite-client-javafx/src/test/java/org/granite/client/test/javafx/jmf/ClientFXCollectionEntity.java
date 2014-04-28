@@ -36,8 +36,10 @@ package org.granite.client.test.javafx.jmf;
 
 import java.io.Serializable;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -68,6 +70,8 @@ public class ClientFXCollectionEntity implements Serializable {
 	private ReadOnlyObjectWrapper<Integer> version = new ReadOnlyObjectWrapper<Integer>(this, "version", 0);
 
 	private StringProperty name = new SimpleStringProperty(this, "name", null);
+	
+	private ObjectProperty<ClientFXEntity> entity = new SimpleObjectProperty<ClientFXEntity>(this, "entity", null);
 
 	public ClientFXCollectionEntity() {
 	}
@@ -109,5 +113,15 @@ public class ClientFXCollectionEntity implements Serializable {
 	}
 	public void setName(String name) {
 		this.name.set(name);
+	}
+	
+	public ObjectProperty<ClientFXEntity> entityProperty() {
+		return entity;
+	}
+	public ClientFXEntity getEntity() {
+		return entity.get();
+	}
+	public void setEntity(ClientFXEntity entity) {
+		this.entity.set(entity);
 	}
 }
