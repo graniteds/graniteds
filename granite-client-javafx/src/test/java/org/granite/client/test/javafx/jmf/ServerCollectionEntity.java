@@ -28,6 +28,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 
 @Entity
@@ -46,6 +47,10 @@ public class ServerCollectionEntity implements Serializable {
 	
 	@Basic
 	private String name;
+	
+	@ManyToOne
+	private ServerEntity entity;
+	
 
 	public ServerCollectionEntity() {
 	}
@@ -75,5 +80,12 @@ public class ServerCollectionEntity implements Serializable {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public ServerEntity getEntity() {
+		return entity;
+	}
+	public void setEntity(ServerEntity serverEntity) {
+		this.entity = serverEntity;
 	}
 }

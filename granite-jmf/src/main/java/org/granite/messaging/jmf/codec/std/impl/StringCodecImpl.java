@@ -129,11 +129,13 @@ public class StringCodecImpl extends AbstractStandardCodec<String> implements St
 			return uid;
 		}
 		
-		int length = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) & 0x03);
+		int length = IntegerUtil.decodeInteger(ctx, (parameterizedJmfType >>> INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) & 0x03);		
+		if (length == 0)
+			return "";
+		
 		byte[] bytes = new byte[length];
 		ctx.safeReadFully(bytes);
 		String s = new String(bytes, UTF8);
-		
 		ctx.addToStrings(s);
 		
 		return s;

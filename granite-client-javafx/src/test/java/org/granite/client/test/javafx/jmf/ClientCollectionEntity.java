@@ -50,6 +50,8 @@ public class ClientCollectionEntity implements Serializable {
 	private Integer version;
 
 	private String name;
+	
+	private ClientEntity entity;
 
 	public Integer getId() {
 		return id;
@@ -69,8 +71,14 @@ public class ClientCollectionEntity implements Serializable {
 	public String getName() {
 		return name;
 	}
-
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public ClientEntity getEntity() {
+		return entity;
+	}
+	public void setEntity(ClientEntity entity) {
+		this.entity = entity;
 	}
 }
