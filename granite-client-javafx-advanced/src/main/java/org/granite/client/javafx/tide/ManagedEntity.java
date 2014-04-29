@@ -47,6 +47,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.granite.client.tide.Context;
@@ -62,6 +63,7 @@ public class ManagedEntity<T> implements ContextAware {
     
     private ObjectProperty<T> instance = new SimpleObjectProperty<T>(this, "instance");
     
+    @Inject
 	private EntityManager entityManager;
 	private JavaFXDataManager dataManager;
 	
@@ -110,6 +112,8 @@ public class ManagedEntity<T> implements ContextAware {
 		@Override
 		public void changed(ObservableValue<? extends T> observable, T oldValue, T newValue) {
 			if (oldValue != null) {
+				entityManager.resetEntity(oldValue);
+				
 				for (InstanceBinding<T, ?> instanceBinding : instanceBindings)
 					instanceBinding.unbind(oldValue);
 				
@@ -152,19 +156,24 @@ public class ManagedEntity<T> implements ContextAware {
     }
 
 	private void init(EntityManager entityManager) {
-        if (this.entityManager != null)
-            return;
-		this.entityManager = entityManager;
-		this.dataManager = (JavaFXDataManager)entityManager.getDataManager();		
+        if (this.entityManager == null)
+        	this.entityManager = entityManager;
+		this.dataManager = (JavaFXDataManager)this.entityManager.getDataManager();		
 		this.instance.addListener(entityChangeListener);
 	}
 	
 	public <P> void addInstanceBinding(Property<P> property, ObservableValueGetter<T, P> propertyGetter) {
-		instanceBindings.add(new UnidirectionalInstanceBinding<P>(property, propertyGetter));
+		InstanceBinding<T, P> instanceBinding = new UnidirectionalInstanceBinding<P>(property, propertyGetter); 
+		instanceBindings.add(instanceBinding);
+		if (instance.get() != null)
+			instanceBinding.bind(instance.get());
 	}
 	
 	public <P> void addBidirectionalInstanceBinding(Property<P> property, PropertyGetter<T, P> propertyGetter) {
-		instanceBindings.add(new BidirectionalInstanceBinding<P>(property, propertyGetter));
+		InstanceBinding<T, P> instanceBinding = new BidirectionalInstanceBinding<P>(property, propertyGetter); 
+		instanceBindings.add(instanceBinding);
+		if (instance.get() != null)
+			instanceBinding.bind(instance.get());
 	}
 	
 	public void reset() {

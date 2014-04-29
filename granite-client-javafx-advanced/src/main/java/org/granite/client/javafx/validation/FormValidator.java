@@ -48,9 +48,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -78,15 +80,17 @@ public class FormValidator {
 
 	public static final String UNHANDLED_VIOLATIONS = "unhandledViolations";
 	
-	protected Parent form;
+	private ObjectProperty<Object> entity = new SimpleObjectProperty<Object>(this, "entity");
 	
-	protected List<Node> inputs = new ArrayList<Node>();
-	protected Map<Node, Property<?>> inputProperties = new IdentityHashMap<Node, Property<?>>();
-	protected Map<Node, Property<?>> entityProperties = new IdentityHashMap<Node, Property<?>>();
-	protected Set<Node> focusedOutOnce = new HashSet<Node>();
+	private Parent form;
+	
+	private List<Node> inputs = new ArrayList<Node>();
+	private Map<Node, Property<?>> inputProperties = new IdentityHashMap<Node, Property<?>>();
+	private Map<Node, Property<?>> entityProperties = new IdentityHashMap<Node, Property<?>>();
+	private Set<Node> focusedOutOnce = new HashSet<Node>();
 
-	protected List<ConstraintViolation<?>> violations = new ArrayList<ConstraintViolation<?>>();
-	protected ObservableList<ConstraintViolation<?>> unhandledViolations = FXCollections.observableArrayList();
+	private List<ConstraintViolation<?>> violations = new ArrayList<ConstraintViolation<?>>();
+	private ObservableList<ConstraintViolation<?>> unhandledViolations = FXCollections.observableArrayList();
 	
 	private final NotifyingValidator validator;
 	
@@ -97,6 +101,24 @@ public class FormValidator {
 	 */	
 	public FormValidator(NotifyingValidatorFactory validatorFactory) {
 	    this.validator = validatorFactory.getValidator();
+	    entity.addListener(new ChangeListener<Object>() {
+			@Override
+			public void changed(ObservableValue<? extends Object> object, Object oldValue, Object newValue) {
+				if (form == null)
+					return;
+				// Reattach validator to same form to update entity
+				setupForm(null);
+				setupForm(form);
+			}
+	    });
+	}
+	
+	
+	public ObjectProperty<Object> entityProperty() {
+		return entity;
+	}
+	public Object getEntity() {
+		return entity;
 	}
 	
 	/**
@@ -182,8 +204,8 @@ public class FormValidator {
 			entityProperties.clear();
 			log.warn("Entity properties were not cleared correctly");
 		}
-		if (!trackedParents.isEmpty()) {
-			trackedParents.clear();
+		if (!trackedNodes.isEmpty()) {
+			trackedNodes.clear();
 			log.warn("Tracked parents were not cleared correctly");
 		}
 			
@@ -219,24 +241,28 @@ public class FormValidator {
     }
     
     
-    private IdentityHashMap<Parent, Boolean> trackedParents = new IdentityHashMap<Parent, Boolean>();
+    private IdentityHashMap<Node, Boolean> trackedNodes = new IdentityHashMap<Node, Boolean>();
     
 
 	protected void trackNode(Node node) {
 		if (form == null)
 			return;
 		
+		if (trackedNodes.containsKey(node))
+			return;
+		
 		setupNode(node);
 		
-		if (node instanceof Skinnable && ((Skinnable)node).getSkin() != null)
+		trackedNodes.put(node, Boolean.TRUE);
+		
+		if (node instanceof Skinnable && ((Skinnable)node).getSkin() != null && ((Skinnable)node).getSkin().getNode() != node)
 			trackNode(((Skinnable)node).getSkin().getNode());
 		
-		if (node instanceof Parent && !trackedParents.containsKey(node)) {
+		if (node instanceof Parent) {
 			for (Node child : ((Parent)node).getChildrenUnmodifiable())
 				trackNode(child);
 			
 			((Parent)node).getChildrenUnmodifiable().addListener(childChangeListener);
-			trackedParents.put((Parent)node, true);
 			
 			log.debug("Setup children tracking for parent %s", node);
 		}
@@ -246,9 +272,15 @@ public class FormValidator {
 		if (form == null)
 			return;
 		
+		if (!trackedNodes.containsKey(node))
+			return;
+		
+		unsetupNode(node);
+		
+		trackedNodes.remove(node);
+		
 		if (node instanceof Parent) {
 			((Parent)node).getChildrenUnmodifiable().removeListener(childChangeListener);
-			trackedParents.remove(node);
 			
 			log.debug("Unset children tracking for parent %s", node.toString());
 			
@@ -256,10 +288,8 @@ public class FormValidator {
 				untrackNode(child);
 		}
 		
-		if (node instanceof Skinnable && ((Skinnable)node).getSkin() != null)
+		if (node instanceof Skinnable && ((Skinnable)node).getSkin() != null && ((Skinnable)node).getSkin().getNode() != node)
 			untrackNode(((Skinnable)node).getSkin().getNode());
-		
-		unsetupNode(node);
 	}
 	
 	private void setupNode(Node node) {

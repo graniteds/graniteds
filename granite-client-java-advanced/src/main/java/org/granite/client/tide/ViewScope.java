@@ -42,6 +42,8 @@ public interface ViewScope {
 	
 	public String getViewId();
 	
+	public void ensureViewId(String viewId);
+	
 	public Object get(String name);
 	
 	public void put(String name, Object instance);

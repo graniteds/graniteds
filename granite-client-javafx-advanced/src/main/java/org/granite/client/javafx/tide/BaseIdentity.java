@@ -186,6 +186,10 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
     }
 
     
+    public void logout() {
+    	logout(null);
+    }
+    
     public void logout(final TideResponder<Void> tideResponder) {
     	final Observer observer = new Observer() {
 			@SuppressWarnings("unchecked")

@@ -61,8 +61,12 @@ public class DefaultViewScope implements ViewScope {
 	public String getViewId() {
 		return viewId;
 	}
-	public void setViewId(String viewId) {
-		this.viewId = viewId;
+	public void ensureViewId(String viewId) {
+    	if (viewId.equals(this.viewId))
+    		return;
+    	
+		reset();
+    	this.viewId = viewId;
 	}
 	
 	public Object get(String name) {
@@ -116,6 +120,7 @@ public class DefaultViewScope implements ViewScope {
 		
 		instanceCache.clear();
 		resettersMap.clear();
+		viewId = null;
 	}
 	
 	public void setResetter(GlobalResetter resetter) {
