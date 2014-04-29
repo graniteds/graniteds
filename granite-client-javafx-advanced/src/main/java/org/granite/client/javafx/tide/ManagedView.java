@@ -82,6 +82,14 @@ public abstract class ManagedView {
 		return new FXMLView(url);
 	}
 	
+	public static FXMLView fxml(String url, Class<?> resourceRoot) {
+		return new FXMLView(url, resourceRoot);
+	}
+	
+	public static FXMLView fxml(Class<?> resourceRoot) {
+		return new FXMLView(resourceRoot.getSimpleName() + ".fxml", resourceRoot);
+	}
+	
 	
 	public static class SimpleView extends ManagedView {
 		
@@ -102,16 +110,24 @@ public abstract class ManagedView {
 		
 		private static final Logger log = Logger.getLogger(FXMLView.class);
 		
+		private final Class<?> resourceRoot;
+		
 		public FXMLView(String viewId) {
 			super(viewId);
+			this.resourceRoot = getClass();
+		}
+		
+		public FXMLView(String viewId, Class<?> root) {
+			super(viewId);
+			this.resourceRoot = root;
 		}
 		
 	    public Parent load(Context context) {
 	        InputStream fxmlStream = null;
 	        try {
-	            fxmlStream = getClass().getClassLoader().getResourceAsStream(getViewId());
+	            fxmlStream = resourceRoot.getResourceAsStream(getViewId());
 	            FXMLLoader loader = new FXMLLoader();
-	            loader.setLocation(getClass().getClassLoader().getResource(getViewId()));
+	            loader.setLocation(resourceRoot.getResource(getViewId()));
 	            loader.setControllerFactory(new ControllerFactory(context));
 	        	loader.getNamespace().putAll(context.allByAnnotatedWith(Named.class));
 	            

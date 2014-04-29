@@ -52,6 +52,7 @@ import org.granite.client.tide.Context;
 import org.granite.client.tide.Identity;
 import org.granite.client.tide.impl.ComponentImpl;
 import org.granite.client.tide.server.ExceptionHandler;
+import org.granite.client.tide.server.FaultException;
 import org.granite.client.tide.server.ServerSession;
 import org.granite.client.tide.server.SimpleTideResponder;
 import org.granite.client.tide.server.TideFaultEvent;
@@ -166,7 +167,11 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
     	    loggedIn = checkLoggedIn(tideResponder);
             loggedIn.get();
     	}
+    	catch (FaultException e) {
+    		// Remote exception, should be handled by responder
+    	}
     	catch (Exception e) {
+    		throw new RuntimeException("Could not login", e);
     	}
         return loggedIn;
     }
@@ -181,7 +186,11 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
     	    // so next remote calls use the correct session id
     	    checkLoggedIn(tideResponder).get();
     	}
+    	catch (FaultException e) {
+    		// Remote exception, should be handled by responder
+    	}
     	catch (Exception e) {
+    		throw new RuntimeException("Could not login", e);
     	}
     }
 

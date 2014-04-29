@@ -50,16 +50,21 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * @author William DRAI
  */
-public class SpringContextManager extends SimpleContextManager implements BeanPostProcessor, BeanFactoryPostProcessor {
+public class SpringContextManager extends SimpleContextManager implements ApplicationContextAware, BeanPostProcessor, BeanFactoryPostProcessor {
 	
-	private ConfigurableApplicationContext applicationContext;
+	private ApplicationContext applicationContext;
 	
-	// Testing
+	public SpringContextManager(Application application) {
+		super(application, new SpringEventBus());
+	}
+	
 	public SpringContextManager(Application application, EventBus eventBus) {
 		super(application, eventBus);
 	}
@@ -74,8 +79,9 @@ public class SpringContextManager extends SimpleContextManager implements BeanPo
 		setApplicationContext(applicationContext);
 	}
 	
-	private void setApplicationContext(ConfigurableApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = (ConfigurableApplicationContext)applicationContext;
 		setInstanceStoreFactory(new SpringInstanceStoreFactory(applicationContext));
         if (eventBus instanceof SpringEventBus)
             ((SpringEventBus)eventBus).setApplicationContext(applicationContext);
@@ -119,7 +125,10 @@ public class SpringContextManager extends SimpleContextManager implements BeanPo
 	}
 
 	public void configure() {
-		applicationContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
+		if (!(applicationContext instanceof ConfigurableApplicationContext))
+			throw new IllegalStateException("Cannot configure, " + applicationContext.getClass().getName() + " is not a ConfigurableApplicationContext");
+		
+		((ConfigurableApplicationContext)applicationContext).addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
 			@Override
 			public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 				if (!beanFactory.containsSingleton(SpringContextManager.class.getName()))
