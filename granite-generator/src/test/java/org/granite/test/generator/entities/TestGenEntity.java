@@ -114,7 +114,6 @@ public class TestGenEntity {
 		Assert.assertEquals("Output", 2, outputs.length);
 		
 		String base = Util.readFile(outputs[0].getFile());
-		System.out.println(base);
 		Assert.assertTrue("Base contains setter", base.indexOf("public function set parent(value:Entity4):void") >= 0);
 	}
 	
