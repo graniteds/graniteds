@@ -175,16 +175,18 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
     	}
         return loggedIn;
     }
-
-    public void login(final String username, String password, Charset charset, final TideResponder<String> tideResponder) {
+    
+    public Future<String> login(final String username, String password, Charset charset, final TideResponder<String> tideResponder) {
     	getServerSession().login(username, password, charset);
     	
     	clearSecurityCache();
     	
+        Future<String> loggedIn = null;
     	try {
     	    // Force synchronous operation to prevent issues with Spring session fixation protection
     	    // so next remote calls use the correct session id
-    	    checkLoggedIn(tideResponder).get();
+    	    loggedIn = checkLoggedIn(tideResponder);
+    	    loggedIn.get();
     	}
     	catch (FaultException e) {
     		// Remote exception, should be handled by responder
@@ -192,6 +194,7 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
     	catch (Exception e) {
     		throw new RuntimeException("Could not login", e);
     	}
+        return loggedIn;
     }
 
     

@@ -24,8 +24,6 @@ package org.granite.client.persistence.collection;
 import java.util.Collection;
 import java.util.Map;
 
-import org.granite.messaging.jmf.ExtendedObjectInput;
-import org.granite.messaging.jmf.ExtendedObjectOutput;
 import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 import org.granite.util.ContentType;
 import org.granite.util.TypeUtil;
@@ -36,11 +34,11 @@ import org.granite.util.TypeUtil;
 public abstract class PersistentCollectionSnapshotFactory {
 
 	public static PersistentCollectionSnapshotFactory newInstance(Object io) {
-		if (io instanceof ExtendedObjectInput || io instanceof ExtendedObjectOutput)
-			return newInstance(ContentType.JMF_AMF);
-		return newInstance(ContentType.AMF);
+		if (io.getClass().getSimpleName().startsWith("AMF3"))	// AMF3Serializer / AMF3Deserializer
+			return newInstance(ContentType.AMF);
+		return newInstance(ContentType.JMF_AMF);
 	}
-
+	
 	
 	public static PersistentCollectionSnapshotFactory newInstance(ContentType contentType) {
 		try {

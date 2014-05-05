@@ -71,24 +71,6 @@ public class TideResponders {
 		private final TideFaultHandler faultHandler;
 		private final T mergeWith;
 		
-		public LambdaTideResponder(TideResultHandler<T> resultHandler) {
-			this.resultHandler = resultHandler;
-			this.faultHandler = null;
-			this.mergeWith = null;
-		}
-		
-		public LambdaTideResponder(TideResultHandler<T> resultHandler, TideFaultHandler faultHandler) {
-			this.resultHandler = resultHandler;
-			this.faultHandler = faultHandler;
-			this.mergeWith = null;
-		}
-		
-		public LambdaTideResponder(TideResultHandler<T> resultHandler, T mergeWith) {
-			this.resultHandler = resultHandler;
-			this.faultHandler = null;
-			this.mergeWith = mergeWith;
-		}
-		
 		public LambdaTideResponder(TideResultHandler<T> resultHandler, TideFaultHandler faultHandler, T mergeWith) {
 			this.resultHandler = resultHandler;
 			this.faultHandler = faultHandler;
@@ -140,8 +122,8 @@ public class TideResponders {
      * @param <T> expected result type
      * @return a new responder
      */
-	public static <T> TideMergeResponder<T> from(TideResultHandler<T> resultHandler) {
-		return new LambdaTideResponder<T>(resultHandler);
+	public static <T> TideMergeResponder<T> of(TideResultHandler<T> resultHandler) {
+		return new LambdaTideResponder<T>(resultHandler, null, null);
 	}
 	
     /**
@@ -151,30 +133,41 @@ public class TideResponders {
      * @param <T> expected result type
      * @return a new responder
      */
-	public static <T> TideMergeResponder<T> fromMergeWith(TideResultHandler<T> resultHandler, T mergeWith) {
-		return new LambdaTideResponder<T>(resultHandler, mergeWith);
+	public static <T> TideMergeResponder<T> mergeWith(T mergeWith, TideFaultHandler faultHandler) {
+		return new LambdaTideResponder<T>(null, faultHandler, mergeWith);
 	}
 	
     /**
      * Create an responder from a lambda for the result handler
      * @param resultHandler result handler
-     * @param faultHandler fault handler
-     * @param <T> expected result type
-     * @return a new responder
-     */
-	public static <T> TideMergeResponder<T> from(TideResultHandler<T> resultHandler, TideFaultHandler faultHandler) {
-		return new LambdaTideResponder<T>(resultHandler, faultHandler);
-	}
-	
-    /**
-     * Create an responder from a lambda for the result handler
-     * @param resultHandler result handler
-     * @param faultHandler fault handler
      * @param mergeWith object to merge the result with
      * @param <T> expected result type
      * @return a new responder
      */
-	public static <T> TideMergeResponder<T> fromMergeWith(TideResultHandler<T> resultHandler, TideFaultHandler faultHandler, T mergeWith) {
+	public static <T> TideMergeResponder<T> mergeWith(TideResultHandler<T> resultHandler, T mergeWith) {
+		return new LambdaTideResponder<T>(resultHandler, null, mergeWith);
+	}
+	
+    /**
+     * Create an responder from a lambda for the result handler
+     * @param resultHandler result handler
+     * @param faultHandler fault handler
+     * @param <T> expected result type
+     * @return a new responder
+     */
+	public static <T> TideMergeResponder<T> of(TideResultHandler<T> resultHandler, TideFaultHandler faultHandler) {
+		return new LambdaTideResponder<T>(resultHandler, faultHandler, null);
+	}
+	
+    /**
+     * Create an responder from a lambda for the result handler
+     * @param resultHandler result handler
+     * @param mergeWith object to merge the result with
+     * @param faultHandler fault handler
+     * @param <T> expected result type
+     * @return a new responder
+     */
+	public static <T> TideMergeResponder<T> mergeWith(TideResultHandler<T> resultHandler, T mergeWith, TideFaultHandler faultHandler) {
 		return new LambdaTideResponder<T>(resultHandler, faultHandler, mergeWith);
 	}
 
