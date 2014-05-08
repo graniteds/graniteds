@@ -507,7 +507,7 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
     }
     
     protected ActionScriptClassDescriptor readActionScriptClassDescriptor(int flags) throws IOException {
-    	if (((flags >>> 1) & 0x01) == 0)
+    	if ((flags & 0x02) == 0)
     		return storedClassDescriptors.get(flags >>> 2);
     	return readInlineActionScriptClassDescriptor(flags);
     }
