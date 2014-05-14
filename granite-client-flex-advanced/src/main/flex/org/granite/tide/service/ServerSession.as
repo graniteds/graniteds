@@ -110,7 +110,7 @@ package org.granite.tide.service {
         public var disconnected:Boolean = false;
 
 
-        public function ServerSession(contextRoot:String = "", secure:Boolean = false, serverName:String = "", serverPort:String = "", destination:String = "server"):void {
+        public function ServerSession(contextRoot:String = null, secure:Boolean = false, serverName:String = null, serverPort:String = null, destination:String = "server"):void {
             _destination = destination;
             _serverApp = new SimpleServerApp(contextRoot, secure, serverName, serverPort);
 

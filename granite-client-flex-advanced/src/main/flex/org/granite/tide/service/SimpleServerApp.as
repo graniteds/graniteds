@@ -109,35 +109,42 @@ package org.granite.tide.service {
         public function set contextRoot(value:String):void {
             _contextRoot = value;
         }
-
+        
         public function initialize():void {
             var application:Object = Tide.currentApplication();
 
-            if (application.url && application.url.indexOf("https") == 0)
-                _secure = true;
-
-            if (application.url.indexOf("http") == 0) {
-                var idx0:int = application.url.indexOf("://");
-                if (idx0 > 0) {
-                    var idx:int = application.url.indexOf("/", idx0+3);
-                    if (idx > 0) {
-                        var idx1:int = application.url.indexOf(":", idx0+3);
-                        if (idx1 > 0) {
-                            if (_serverName == null || _serverName == DEFAULT_SERVER_NAME)
-                                _serverName = application.url.substring(idx0+3, idx1);
-                            if (_serverPort == null || _serverPort == DEFAULT_SERVER_PORT)
-                                _serverPort = application.url.substring(idx1+1, idx);
-                        }
-                        else {
-                            if (_serverName == null || _serverName == DEFAULT_SERVER_NAME)
-                                _serverName = application.url.substring(idx0+3, idx);
-                            if (_serverPort == null || _serverPort == DEFAULT_SERVER_PORT)
-                                _serverPort = _secure ? "443" : "80";
-                        }
-                        var idx2:int = application.url.indexOf("/", idx+1);
-                        if ((_contextRoot == null || _contextRoot == DEFAULT_CONTEXT_ROOT) && idx2 > 0 && idx2 > idx)
-                            _contextRoot = application.url.substring(idx, idx2);
+            if (application.url && application.url.indexOf("http") == 0)
+            	parseUrl(application.url);
+        }
+        
+        public function parseUrl(url:String):void {
+			if (url.indexOf("https") == 0)
+				_secure = true;
+			
+            var idx0:int = url.indexOf("://");
+            if (idx0 > 0) {
+                var idx:int = url.indexOf("/", idx0+3);
+                if (idx > 0) {
+                    var idx1:int = url.indexOf(":", idx0+3);
+                    if (idx1 > 0) {
+                        if (serverName == null || serverName == DEFAULT_SERVER_NAME)
+                            serverName = url.substring(idx0+3, idx1);
+                        if (serverPort == null || serverPort == DEFAULT_SERVER_PORT)
+                            serverPort = url.substring(idx1+1, idx);
                     }
+                    else {
+                        if (serverName == null || serverName == DEFAULT_SERVER_NAME)
+                            serverName = url.substring(idx0+3, idx);
+                        if (serverPort == null || serverPort == DEFAULT_SERVER_PORT)
+                            serverPort = secure ? "443" : "80";
+                    }
+                    var idx2:int = url.indexOf("/", idx+1);
+                    if ((contextRoot == null || contextRoot == DEFAULT_CONTEXT_ROOT)) {
+						if (idx2 > idx)
+							contextRoot = url.substring(idx, idx2);
+						else if (idx2 < 0)
+							contextRoot = "";
+					}
                 }
             }
         }
