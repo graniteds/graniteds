@@ -85,6 +85,10 @@ public class MockJavaFXGroovyConfiguration implements JavaAs3GroovyConfiguration
 	public As3TypeFactory getAs3TypeFactory() {
 		return as3TypeFactory;
 	}
+	
+	public void setAs3TypeFactory(As3TypeFactory typeFactory) {
+		this.as3TypeFactory = typeFactory;
+	}
 
 	private List<PackageTranslator> translators = new ArrayList<PackageTranslator>();
 	

@@ -94,9 +94,9 @@ public interface JMFConstants {
 	static final int JMF_SQL_TIME			= 0xF9; // JMF_1111_1001
 	static final int JMF_SQL_TIMESTAMP		= 0xFA; // JMF_1111_1010
 
-	static final int JMF_1111_1011			= 0xFB; // JMF_1111_1011
-	static final int JMF_1111_1100			= 0xFC; // JMF_1111_1100
-	static final int JMF_1111_1101			= 0xFD; // JMF_1111_1101
+	static final int JMF_LOCALDATE			= 0xFB; // JMF_1111_1011
+	static final int JMF_LOCALTIME			= 0xFC; // JMF_1111_1100
+	static final int JMF_LOCALDATETIME		= 0xFD; // JMF_1111_1101
 	static final int JMF_1111_1110			= 0xFE; // JMF_1111_1110
 	static final int JMF_1111_1111			= 0xFF; // JMF_1111_1111
 }

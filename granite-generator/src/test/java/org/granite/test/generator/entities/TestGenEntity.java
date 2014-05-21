@@ -33,13 +33,13 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
 import org.junit.Assert;
-
 import org.granite.generator.Generator;
 import org.granite.generator.as3.JavaAs3GroovyTransformer;
 import org.granite.generator.as3.JavaAs3Input;
 import org.granite.generator.as3.JavaAs3Output;
 import org.granite.generator.gsp.GroovyTemplate;
 import org.granite.generator.java.JavaGroovyTransformer;
+import org.granite.generator.javafx.DefaultJavaFX8TypeFactory;
 import org.granite.test.generator.MockJavaAs3GroovyConfiguration;
 import org.granite.test.generator.MockJavaFXGroovyConfiguration;
 import org.granite.test.generator.MockListener;
@@ -226,6 +226,31 @@ public class TestGenEntity {
 		Assert.assertTrue("Bean1Base contains list", base.indexOf("private ReadOnlyListWrapper<String> list = FXPersistentCollections.readOnlyObservablePersistentList(this, \"list\")") >= 0);
         Assert.assertTrue("Bean1Base contains list property", base.indexOf("public ReadOnlyListProperty<String> listProperty()") >= 0);
         Assert.assertTrue("Bean1Base contains list property", base.indexOf("return list.getReadOnlyProperty()") >= 0);
+	}
+	
+	@Test
+	public void testTideTemplateJFXEntityDate() throws Exception {
+		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
+		config.setTide(true);
+		config.addFileSetClasses(Entity6.class);
+		config.setAs3TypeFactory(new DefaultJavaFX8TypeFactory());
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, new MockListener()) {
+			@Override
+			public boolean isOutdated(JavaAs3Input input, GroovyTemplate template, File outputFile, boolean hasBaseTemplate) {
+				return true;
+			}
+		};
+		Generator generator = new Generator(config);
+		generator.add(provider);
+		JavaAs3Input input = new JavaAs3Input(Entity6.class, 
+				new File(Entity6.class.getClassLoader().getResource(Entity6.class.getName().replace('.', '/') + ".class").toURI()));
+		JavaAs3Output[] outputs = (JavaAs3Output[])generator.generate(input);
+		
+		Assert.assertEquals("Output", 2, outputs.length);
+		
+		String base = Util.readFile(outputs[0].getFile());
+		Assert.assertTrue("Entity6Base contains name", base.indexOf("private StringProperty name = new SimpleStringProperty(this, \"name\");") >= 0);
+		Assert.assertTrue("Entity6Base contains date", base.indexOf("private ObjectProperty<LocalDateTime> date = new SimpleObjectProperty<LocalDateTime>(this, \"date\");") >= 0);
 	}
 	
 	@Test

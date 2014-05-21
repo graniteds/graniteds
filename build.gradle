@@ -419,7 +419,6 @@ project('granite-jmf') {
 }
 
 // JMF Serialization implementation - Java 8 extension
-/*
 project('granite-jmf-java8') {
 	
 	description = 'Granite JMF Serialization library - Java 8 extension'
@@ -440,7 +439,6 @@ project('granite-jmf-java8') {
 		executable = "${jdk8Home}/bin/javadoc"		
 	}
 }
-*/
 
 // Core project
 // AMF/JMF Serialization + Remoting + Gravity + Tide server-side data management

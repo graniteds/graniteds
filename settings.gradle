@@ -1,7 +1,7 @@
 include 'granite-common'
 include 'granite-amf'
 include 'granite-jmf'
-//include 'granite-jmf-java8'
+include 'granite-jmf-java8'
 
 include 'granite-server-core'
 include 'granite-server-servlet3'

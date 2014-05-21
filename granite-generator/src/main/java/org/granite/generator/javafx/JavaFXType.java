@@ -43,6 +43,10 @@ public class JavaFXType implements ClientType {
     public static final JavaFXType DOUBLE = new JavaFXType(null, "double", Double.valueOf(0.0));
     public static final JavaFXType STRING = new JavaFXType(null, "String", null);
     
+    public static final JavaFXType LOCALDATE = new JavaFXType("java.time", "LocalDate", null);
+    public static final JavaFXType LOCALDATETIME = new JavaFXType("java.time", "LocalDateTime", null);
+    public static final JavaFXType LOCALTIME = new JavaFXType("java.time", "LocalTime", null);
+    
     public static final JavaFXType PAGE_INFO = new JavaFXType("org.granite.tide.data.model", "PageInfo", null);
     public static final JavaFXType SORT_INFO = new JavaFXType("org.granite.tide.data.model", "SortInfo", null);
     
@@ -54,6 +58,10 @@ public class JavaFXType implements ClientType {
     public static final JavaFXType FLOAT_PROPERTY = new JavaFXType(null, "float", "javafx.beans.property.FloatProperty", "javafx.beans.property.SimpleFloatProperty", Float.valueOf(0.0f));
     public static final JavaFXType DOUBLE_PROPERTY = new JavaFXType(null, "double", "javafx.beans.property.DoubleProperty", "javafx.beans.property.SimpleDoubleProperty", Double.valueOf(0.0));
     public static final JavaFXType STRING_PROPERTY = new JavaFXType(null, "String", "javafx.beans.property.StringProperty", "javafx.beans.property.SimpleStringProperty", null);
+
+    public static final JavaFXType LOCALDATE_PROPERTY = new JavaFXType("java.time", "LocalDate", "javafx.beans.property.ObjectProperty<LocalDate>", "javafx.beans.property.SimpleObjectProperty<LocalDate>", null);
+    public static final JavaFXType LOCALDATETIME_PROPERTY = new JavaFXType("java.time", "LocalDateTime", "javafx.beans.property.ObjectProperty<LocalDateTime>", "javafx.beans.property.SimpleObjectProperty<LocalDateTime>", null);
+    public static final JavaFXType LOCALTIME_PROPERTY = new JavaFXType("java.time", "LocalTime", "javafx.beans.property.ObjectProperty<LocalTime>", "javafx.beans.property.SimpleObjectProperty<LocalTime>", null);
     
     public static final JavaFXType BOOLEAN_READONLY_PROPERTY = new JavaFXType(null, "boolean", "javafx.beans.property.ReadOnlyBooleanProperty", "javafx.beans.property.ReadOnlyBooleanWrapper", null, Boolean.FALSE, true);
     public static final JavaFXType INT_READONLY_PROPERTY = new JavaFXType(null, "int", "javafx.beans.property.ReadOnlyIntegerProperty", "javafx.beans.property.ReadOnlyIntegerWrapper", null, Integer.valueOf(0), true);
@@ -61,6 +69,10 @@ public class JavaFXType implements ClientType {
     public static final JavaFXType FLOAT_READONLY_PROPERTY = new JavaFXType(null, "float", "javafx.beans.property.ReadOnlyFloatProperty", "javafx.beans.property.ReadOnlyFloatWrapper", null, Float.valueOf(0.0f), true);
     public static final JavaFXType DOUBLE_READONLY_PROPERTY = new JavaFXType(null, "double", "javafx.beans.property.ReadOnlyDoubleProperty", "javafx.beans.property.ReadOnlyDoubleWrapper", null, Double.valueOf(0.0), true);
     public static final JavaFXType STRING_READONLY_PROPERTY = new JavaFXType(null, "String", "javafx.beans.property.ReadOnlyStringProperty", "javafx.beans.property.ReadOnlyStringWrapper", null, null, true);
+
+    public static final JavaFXType LOCALDATE_READONLY_PROPERTY = new JavaFXType("java.time", "LocalDate", "javafx.beans.property.ReadOnlyObjectProperty<LocalDate>", "javafx.beans.property.ReadOnlyObjectWrapper<LocalDate>", null);
+    public static final JavaFXType LOCALDATETIME_READONLY_PROPERTY = new JavaFXType("java.time", "LocalDateTime", "javafx.beans.property.ReadOnlyObjectProperty<LocalDateTime>", "javafx.beans.property.ReadOnlyObjectWrapper<LocalDateTime>", null);
+    public static final JavaFXType LOCALTIME_READONLY_PROPERTY = new JavaFXType("java.time", "LocalTime", "javafx.beans.property.ReadOnlyObjectProperty<LocalTime>", "javafx.beans.property.ReadOnlyObjectWrapper<LocalTime>", null);
     
     private final String packageName;
     private final String name;

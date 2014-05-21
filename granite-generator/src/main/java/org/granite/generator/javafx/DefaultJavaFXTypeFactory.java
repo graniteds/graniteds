@@ -49,9 +49,9 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
 
-    private final Map<String, ClientType> simpleJava2JavaFXType = new HashMap<String, ClientType>();
-    private final Map<String, ClientType> propertyJava2JavaFXType = new HashMap<String, ClientType>();
-    private final Map<String, ClientType> readOnlyPropertyJava2JavaFXType = new HashMap<String, ClientType>();
+    protected final Map<String, ClientType> simpleJava2JavaFXType = new HashMap<String, ClientType>();
+    protected final Map<String, ClientType> propertyJava2JavaFXType = new HashMap<String, ClientType>();
+    protected final Map<String, ClientType> readOnlyPropertyJava2JavaFXType = new HashMap<String, ClientType>();
     
     
     ///////////////////////////////////////////////////////////////////////////
@@ -88,10 +88,10 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 	public void configure(boolean externalizeLong, boolean externalizeBigInteger, boolean externalizeBigDecimal) {
 	}
     
-    private static final String buildCacheKey(Type jType) {
+    protected static final String buildCacheKey(Type jType) {
     	return buildCacheKey(jType, null, null);
     }
-    private static final String buildCacheKey(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes) {
+    protected static final String buildCacheKey(Type jType, Class<?> declaringClass, ParameterizedType[] declaringTypes) {
 		String key = jType.toString();
 		if (declaringClass != null)
 			key += "::" + declaringClass.toString();
