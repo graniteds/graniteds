@@ -134,7 +134,7 @@ public abstract class ManagedView {
 	            return (Parent)loader.load(fxmlStream);
 	        }
 	        catch (IOException e) {
-	        	throw new RuntimeException("Could not load view " + getViewId());
+	        	throw new RuntimeException("Could not load view " + getViewId(), e);
 	        }
 	        finally {
 	            if (fxmlStream != null) {
