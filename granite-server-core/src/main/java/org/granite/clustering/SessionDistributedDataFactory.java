@@ -46,6 +46,14 @@ public class SessionDistributedDataFactory implements DistributedDataFactory {
 			return null;
 		}
 		
+		try {
+			session.getAttribute("dummy_checkValid");
+		}
+		catch (IllegalStateException e) {
+			// Session already invalidated
+			return null;
+		}
+		
 		return new SessionDistributedData(session);
 	}
 }

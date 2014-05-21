@@ -1065,7 +1065,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 		        if (fromChannel == null)
 		            return handleUnknownClientMessage(message);
 
-                if (message.getCorrelationId() != null) {
+                if (message.getCorrelationId() != null && message.getCorrelationId().length() > 0) {
                     AsyncReply asyncReply = asyncReplies.remove(message.getCorrelationId());
                     if (asyncReply != null) {
                         asyncReply.reply(message);
