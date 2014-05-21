@@ -320,7 +320,22 @@ public abstract class TypeUtil {
     private static String getIsMethodName(String name) {
     	return "is" + name.substring(0, 1).toUpperCase() + name.substring(1);
     }
-   
+    
+    public static Object getProperty(Object bean, String name) {
+    	PropertyDescriptor[] pds = getProperties(bean.getClass());
+    	for (PropertyDescriptor pd : pds) {
+    		if (pd.getName().equals(name) && pd.getReadMethod() != null) {
+    			try {
+    				return pd.getReadMethod().invoke(bean);
+    			}
+    			catch (Exception e) {
+    				throw new RuntimeException("Could not get value for property " + name + " on object " + bean, e);
+    			}
+    		}
+    	}
+    	throw new RuntimeException("Property " + name + " not found on object " + bean);
+    }
+    
     public static ClassLoader getClassLoader(Class<?> clazz) {
         return (clazz.getClassLoader() != null ? clazz.getClassLoader() : ClassLoader.getSystemClassLoader());
     }

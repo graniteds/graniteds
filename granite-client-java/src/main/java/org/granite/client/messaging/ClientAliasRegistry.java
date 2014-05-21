@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.granite.client.configuration.ClassScanner;
 import org.granite.client.platform.Platform;
 import org.granite.logging.Logger;
 import org.granite.messaging.AliasRegistry;
@@ -45,9 +46,9 @@ public class ClientAliasRegistry implements AliasRegistry {
 	
 	public void scan(Set<String> packageNames) {
 		if (packageNames != null && !packageNames.isEmpty()) {
-			RemoteAliasScanner scanner = Platform.getInstance().newRemoteAliasScanner();
+			ClassScanner scanner = Platform.getInstance().newClassScanner();
 			
-			Set<Class<?>> aliases = scanner.scan(packageNames);
+			Set<Class<?>> aliases = scanner.scan(packageNames, RemoteAlias.class);
 			for (Class<?> alias : aliases)
 				registerAlias(alias);
 			

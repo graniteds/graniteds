@@ -42,11 +42,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.granite.client.collection.CollectionChangeEvent;
-import org.granite.client.collection.CollectionChangeListener;
-import org.granite.client.collection.ObservableCollection;
-import org.granite.client.collection.CollectionChangeEvent.Kind;
-import org.granite.client.tide.impl.BindingUtil;
+import org.granite.binding.PropertyChangeHelper;
+import org.granite.binding.collection.CollectionChangeEvent;
+import org.granite.binding.collection.CollectionChangeListener;
+import org.granite.binding.collection.ObservableCollection;
+import org.granite.binding.collection.CollectionChangeEvent.Kind;
 import org.granite.client.util.WeakIdentityHashMap;
 import org.granite.util.Introspector;
 import org.granite.util.PropertyDescriptor;
@@ -85,7 +85,12 @@ public class JavaBeanDataManager extends AbstractDataManager {
 	    	PropertyDescriptor[] pds = Introspector.getPropertyDescriptors(entity.getClass());
 			for (PropertyDescriptor pd : pds) {
 				if (pd.getName().equals(name) && pd.getWriteMethod() != null) {
+					Object oldValue = null;
+					if (pd.getReadMethod() != null)
+						oldValue = pd.getReadMethod().invoke(entity);
 					pd.getWriteMethod().invoke(entity, value);
+					if (pd.getReadMethod() != null)
+						PropertyChangeHelper.firePropertyChange(entity, name, oldValue, value);
 					found = true;
 					break;
 				}
@@ -208,7 +213,7 @@ public class JavaBeanDataManager extends AbstractDataManager {
             }
         }
         else if (parent != null || isEntity(previous)) {
-        	BindingUtil.addPropertyChangeListener(previous, entityPropertyChangeListener);
+        	PropertyChangeHelper.addPropertyChangeListener(previous, entityPropertyChangeListener);
             trackingListeners.put(previous, TrackingType.ENTITY_PROPERTY);
         }
     }
@@ -237,7 +242,7 @@ public class JavaBeanDataManager extends AbstractDataManager {
             	((ObservableCollection)previous).removeCollectionChangeListener(mapChangeListener);
         }
         else if (parent != null || isEntity(previous)) {
-    		BindingUtil.removePropertyChangeListener(previous, entityPropertyChangeListener);
+    		PropertyChangeHelper.removePropertyChangeListener(previous, entityPropertyChangeListener);
         }
         
         trackingListeners.remove(previous);
@@ -260,7 +265,7 @@ public class JavaBeanDataManager extends AbstractDataManager {
             	((ObservableCollection)obj).removeCollectionChangeListener(mapChangeListener);
                 break;
             case ENTITY_PROPERTY:
-        		BindingUtil.removePropertyChangeListener(obj, entityPropertyChangeListener);
+        		PropertyChangeHelper.removePropertyChangeListener(obj, entityPropertyChangeListener);
                 break;
             case ENTITY_LIST:
             	((ObservableCollection)obj).removeCollectionChangeListener(entityListChangeListener);
@@ -286,10 +291,10 @@ public class JavaBeanDataManager extends AbstractDataManager {
     	this.dirty = dirty;
     	pcs.firePropertyChange("dirty", oldDirty, dirty);
     }
-
+    
     @Override
     public void notifyEntityDirtyChange(Object entity, boolean oldDirtyEntity, boolean newDirtyEntity) {
-    	pcs.firePropertyChange("dirtyEntity", oldDirtyEntity, newDirtyEntity);
-    	pcs.firePropertyChange("deepDirtyEntity", oldDirtyEntity, newDirtyEntity);
+    	pcs.firePropertyChange(new PropertyChangeEvent(entity, "dirtyEntity", oldDirtyEntity, newDirtyEntity));
+    	pcs.firePropertyChange(new PropertyChangeEvent(entity, "deepDirtyEntity", oldDirtyEntity, newDirtyEntity));
     }
 }

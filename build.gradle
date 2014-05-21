@@ -12,6 +12,7 @@ buildscript {
 		classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
         classpath group: 'org.gradlefx', name: 'gradlefx', version: '0.8.1'
 		classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.5.0'
+		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
     }
 }
 
@@ -128,7 +129,7 @@ configure(subprojects.findAll { it.name.startsWith('granite') && !it.name.starts
 	configurations {
 		create('javadoc')
 	}
-
+	
 	task sourcesJar(type: Jar, dependsOn: 'classes') {
 		classifier = 'sources'
 		from sourceSets.main.allSource
@@ -296,7 +297,7 @@ configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith
 	
 	signing {
 		required { 
-			gradle.taskGraph.hasTask(':dist:uploadArchives') 
+			gradle.taskGraph.hasTask(':dist:uploadArchives') || gradle.taskGraph.hasTask(':dist:bintrayUpload')
 		}
 		sign configurations.archives
 	}
@@ -331,7 +332,10 @@ configure(subprojects.findAll { it.name != 'reference-docs' && !it.name.endsWith
 				repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
 					authentication(userName: sonatypeOssUserName, password: sonatypeOssPassword)
 				}
-
+				snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+					authentication(userName: sonatypeOssUserName, password: sonatypeOssPassword)
+				}
+				
 				pom.project {
 					name subproject.description
 					packaging 'swc'
@@ -413,6 +417,30 @@ project('granite-jmf') {
 		testCompile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
 	}
 }
+
+// JMF Serialization implementation - Java 8 extension
+/*
+project('granite-jmf-java8') {
+	
+	description = 'Granite JMF Serialization library - Java 8 extension'
+	
+	dependencies {
+		compile project(':granite-jmf')
+	}
+	
+	compileJava {
+		sourceCompatibility=1.8
+		targetCompatibility=1.8
+		
+		options.fork = true
+		options.forkOptions.executable = "${jdk8Home}/bin/javac"
+	}
+	
+	javadoc {
+		executable = "${jdk8Home}/bin/javadoc"		
+	}
+}
+*/
 
 // Core project
 // AMF/JMF Serialization + Remoting + Gravity + Tide server-side data management
@@ -2061,6 +2089,13 @@ project('granite-client-java') {
     }
 }
 
+
+// Simple data binding library
+project('granite-binding') {
+	description = 'GraniteDS Binding library'
+}
+
+
 // Java Advanced client library
 project('granite-client-java-advanced') {
 	description = 'GraniteDS Advanced Java client'
@@ -2156,6 +2191,17 @@ project('granite-client-java-advanced') {
         testGlassFishv4Runtime(project(':granite-server-glassfishv3')) { transitive = false }
         testGlassFishv4Runtime project(':granite-server-glassfishv3').sourceSets.test.output
         testGlassFishv4Runtime(project(':granite-server-eclipselink')) { transitive = false }
+	}
+	
+	sourceSets {
+		main {
+			java {
+				source project(':granite-binding').sourceSets.main.java
+			}
+			resources {
+				source project(':granite-binding').sourceSets.main.resources
+			}
+		}
 	}
 	
     def runtimeExcludes = { f ->
@@ -2485,6 +2531,7 @@ List androidJavaExcludes = [
 	'org/granite/logging/impl/**',
 	'org/granite/messaging/persistence/*Externalizable*',
 	'org/granite/scan/**',
+	'org/granite/client/scan/**',
 	'org/granite/client/configuration/Client*',
 	'org/granite/client/configuration/Simple*',
 	'org/granite/client/messaging/alias/**',
@@ -2506,6 +2553,7 @@ List androidJavaExcludes = [
 ]
 
 List androidResourceExcludes = [
+	'unused.txt',
 	'org/granite/config/*.xsd',
 	'org/granite/config/*.dtd',
 	'org/granite/config/*.xml',
@@ -2563,6 +2611,27 @@ project('granite-client-android') {
 	}
 }
 
+
+// Android data binding library
+project('granite-binding-android') {
+	
+	dependencies {
+		compile 'com.google.android:android:4.0.1.2'
+	}
+	
+	sourceSets {
+		main {
+			java {
+				source project(':granite-binding').sourceSets.main.java
+			}
+			resources {
+				source project(':granite-binding').sourceSets.main.resources
+			}
+		}
+	}
+}
+
+
 // Android advanced client library
 project('granite-client-android-advanced') {
 
@@ -2592,11 +2661,13 @@ project('granite-client-android-advanced') {
 		main {
 			java {
 				source project(':granite-client-java-advanced').sourceSets.main.java
+				source project(':granite-binding-android').sourceSets.main.java
 				
 				exclude androidJavaExcludes
 			}
 			resources {
 				source project(':granite-client-java-advanced').sourceSets.main.resources
+				source project(':granite-binding-android').sourceSets.main.resources
 				
 				exclude androidResourceExcludes
 			}
@@ -2669,6 +2740,8 @@ project('reference-docs') {
 
 // Distribution
 project('dist') {
+	
+	apply plugin: 'bintray'
 
     defaultTasks 'dist'
 	
@@ -2700,11 +2773,11 @@ project('dist') {
 		javaClient javaClientProjects
 		flexClient flexClientProjects
 		generator generatorProjects
-
-        javaClientDeps 'org.apache.httpcomponents:httpasyncclient:4.0'
-
+		
+        javaClientDeps 'org.apache.httpcomponents:httpasyncclient:4.0.1'
+		
         androidClientDeps project(':granite-client-android').files('lib/android-async-http-1.4.3.jar')
-
+		
         javaClientWebsocket 'org.eclipse.jetty:jetty-client:8.1.14.v20131031',
             'org.eclipse.jetty:jetty-websocket:8.1.14.v20131031'
 	}
@@ -2806,6 +2879,30 @@ project('dist') {
         }
         into ('docs/client-android/api') {
             from project(':granite-client-android').fileTree('build/docs/javadoc')
+        }
+    }
+	
+	artifacts {
+		archives file: dist.archivePath, name: 'graniteds-dist', extension: 'zip', builtBy: dist
+		archives file: docs.archivePath, name: 'graniteds-docs', extension: 'zip', builtBy: docs
+	}
+	
+	def bintrayVersion = granitedsVersion
+
+	bintray {
+        user = bintrayUserName
+        key = bintrayApiKey
+        configurations = [ 'archives' ]
+        pkg {
+            repo = 'graniteds'
+            userOrg = 'graniteds'
+            name = 'graniteds-distribution'
+            desc = 'GraniteDS main distribution'
+            licenses = [ 'LGPL-2.1', 'GPL-3.0' ]
+            labels = [ 'graniteds', 'flex', 'amf', 'javafx', 'android' ]
+			version {
+				name = bintrayVersion
+			}
         }
     }
 }

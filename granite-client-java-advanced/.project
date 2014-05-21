@@ -15,4 +15,11 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>binding-java</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-binding/src/main/java</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

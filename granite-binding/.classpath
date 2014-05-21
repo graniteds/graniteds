@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry kind="src" path="src/test/resources"/>
+	<classpathentry exported="true" kind="src" path="/granite-client-java"/>
+	<classpathentry exported="true" kind="src" path="/granite-server-core"/>
+	<classpathentry exported="true" kind="src" path="/granite-server-servlet3"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/granite-amf"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/granite-jmf"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

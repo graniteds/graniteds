@@ -50,7 +50,7 @@ public class DefaultApplication implements Application {
 	public void configure(Object instance) {
 	}
     
-    public void execute(Runnable runnable) {
+    public void execute(Object context, Runnable runnable) {
         runnable.run();
     }
 }

@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.granite.client.configuration.Configuration;
-import org.granite.client.messaging.RemoteAliasScanner;
+import org.granite.client.configuration.ClassScanner;
 import org.granite.client.messaging.channel.ChannelType;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.client.persistence.Persistence;
@@ -157,19 +157,19 @@ public class Platform {
 		this.context = context;
 	}
 
-	public RemoteAliasScanner newRemoteAliasScanner() {
+	public ClassScanner newClassScanner() {
 		try {
-			return TypeUtil.newInstance("org.granite.client.messaging.alias.ExtCosRemoteAliasScanner", RemoteAliasScanner.class);
+			return TypeUtil.newInstance("org.granite.client.scan.ExtCosClassScanner", ClassScanner.class);
 		}
 		catch (Throwable t) {
 			log.debug(t, "Extcos scanner not available, using classpath scanner");
 		}
 		
 		try {
-			return TypeUtil.newInstance("org.granite.client.messaging.alias.StandardRemoteAliasScanner", RemoteAliasScanner.class);
+			return TypeUtil.newInstance("org.granite.client.scan.StandardClassScanner", ClassScanner.class);
 		}
 		catch (Throwable t) {
-			throw new RuntimeException("Could not create remote alias scanner", t);
+			throw new RuntimeException("Could not create class scanner", t);
 		}
 	}
 	

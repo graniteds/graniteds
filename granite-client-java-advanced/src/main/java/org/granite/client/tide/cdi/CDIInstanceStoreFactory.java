@@ -50,6 +50,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.InstanceStore;
 import org.granite.client.tide.InstanceStoreFactory;
+import org.granite.client.tide.impl.InstanceFactory;
 
 /**
  * @author William DRAI
@@ -63,7 +64,7 @@ public class CDIInstanceStoreFactory implements InstanceStoreFactory {
 	}
 
 	@Override
-	public InstanceStore createStore(Context context) {
+	public InstanceStore createStore(Context context, InstanceFactory instanceFactory) {
 		return new CDIInstanceStore(context, beanManager);
 	}
 
@@ -91,7 +92,11 @@ public class CDIInstanceStoreFactory implements InstanceStoreFactory {
 			CreationalContext<?> cc = beanManager.createCreationalContext(bean);
 			return (T)beanManager.getReference(bean, Object.class, cc);
 		}
-
+		
+		public boolean exists(String name) {
+			return beanManager.getBeans(name).size() > 0;
+		}
+		
 		@SuppressWarnings("unchecked")
 		@Override
 		public <T> T byName(String name, Context context) {
@@ -182,8 +187,18 @@ public class CDIInstanceStoreFactory implements InstanceStoreFactory {
 		}
 		
 		@Override
+		public void remove(Object instance) {
+			// Nothing, managed by CDI
+		}
+		
+		@Override
 		public void clear() {
 			// Nothing, managed by CDI
+		}
+		
+		@Override
+		public void inject(Object instance, String name, Map<String, Object> properties) {
+			// Nothing, managed by CDI			
 		}
 	}
 }

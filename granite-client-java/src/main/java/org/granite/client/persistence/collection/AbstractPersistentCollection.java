@@ -47,6 +47,8 @@ import org.granite.util.TypeUtil;
  */
 public abstract class AbstractPersistentCollection<C> implements PersistentCollection {
 	
+	private static final long serialVersionUID = 1L;
+	
 	private static final Logger log = Logger.getLogger(AbstractPersistentCollection.class);
 
 	private volatile C collection = null;

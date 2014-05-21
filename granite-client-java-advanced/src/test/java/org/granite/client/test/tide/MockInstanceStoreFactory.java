@@ -37,11 +37,12 @@ package org.granite.client.test.tide;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.InstanceStore;
 import org.granite.client.tide.InstanceStoreFactory;
+import org.granite.client.tide.impl.InstanceFactory;
 
 public class MockInstanceStoreFactory implements InstanceStoreFactory {
 
 	@Override
-	public InstanceStore createStore(Context context) {
-		return new MockInstanceStore(context);
+	public InstanceStore createStore(Context context, InstanceFactory instanceFactory) {
+		return new MockInstanceStore(context, instanceFactory);
 	}
 }

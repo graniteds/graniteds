@@ -38,7 +38,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.granite.client.collection.ObservableSet;
+import org.granite.binding.collection.ObservableSetWrapper;
 import org.granite.client.persistence.Loader;
 import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.persistence.collection.PersistentSet;
@@ -47,12 +47,26 @@ import org.granite.client.persistence.collection.UnsafePersistentCollection;
 /**
  * @author William DRAI
  */
-public class ObservablePersistentSet<E> extends ObservableSet<E> implements UnsafePersistentCollection<PersistentSet<E>> {
+public class ObservablePersistentSet<E> extends ObservableSetWrapper<E> implements UnsafePersistentCollection<PersistentSet<E>> {
 	
     private static final long serialVersionUID = 1L;
 	
+	private final PersistentSet<E> persistentSet;
+	
+	public ObservablePersistentSet() {
+		super(new PersistentSet<E>());
+		this.persistentSet = (PersistentSet<E>)getWrappedObservable();
+	}
+	
 	public ObservablePersistentSet(PersistentSet<E> persistentSet) {
 		super(persistentSet);
+		
+		this.persistentSet = persistentSet;
+	}
+	
+	@Override
+	public PersistentSet<E> internalPersistentCollection() {
+		return persistentSet;
 	}
 
 	@Override
@@ -138,11 +152,6 @@ public class ObservablePersistentSet<E> extends ObservableSet<E> implements Unsa
 	@Override
 	public void withInitialized(InitializationCallback callback) {
 		internalPersistentCollection().withInitialized(callback);
-	}
-	
-	@Override
-	public PersistentSet<E> internalPersistentCollection() {
-		return internalPersistentCollection();
 	}
 
 }

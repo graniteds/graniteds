@@ -31,6 +31,8 @@ import java.util.Set;
  */
 public abstract class AbstractPersistentMapCollection<K, V, C extends Map<K, V>> extends AbstractPersistentCollection<C> implements Map<K, V> {
 
+	private static final long serialVersionUID = 1L;
+	
 	public AbstractPersistentMapCollection() {
 	}
 

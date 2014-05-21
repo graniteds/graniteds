@@ -38,7 +38,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.granite.client.collection.ObservableList;
+import org.granite.binding.collection.ObservableListWrapper;
 import org.granite.client.persistence.Loader;
 import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.persistence.collection.PersistentList;
@@ -47,12 +47,25 @@ import org.granite.client.persistence.collection.UnsafePersistentCollection;
 /**
  * @author William DRAI
  */
-public class ObservablePersistentList<E> extends ObservableList<E> implements UnsafePersistentCollection<PersistentList<E>> {
+public class ObservablePersistentList<E> extends ObservableListWrapper<E> implements UnsafePersistentCollection<PersistentList<E>> {
 	
     private static final long serialVersionUID = 1L;
 	
+	private final PersistentList<E> persistentList;
+	
+	public ObservablePersistentList() {
+		super(new PersistentList<E>());		
+		this.persistentList = (PersistentList<E>)getWrappedObservable();
+	}
+	
 	public ObservablePersistentList(PersistentList<E> persistentList) {
-		super(persistentList);
+		super(persistentList);		
+		this.persistentList = persistentList;
+	}
+	
+	@Override
+	public PersistentList<E> internalPersistentCollection() {
+		return persistentList;
 	}
 
 	@Override
@@ -138,11 +151,6 @@ public class ObservablePersistentList<E> extends ObservableList<E> implements Un
 	@Override
 	public void withInitialized(InitializationCallback callback) {
 		internalPersistentCollection().withInitialized(callback);
-	}
-	
-	@Override
-	public PersistentList<E> internalPersistentCollection() {
-		return internalPersistentCollection();
 	}
 
 }

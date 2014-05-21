@@ -35,12 +35,13 @@
 package org.granite.client.test.tide;
 
 import org.granite.client.tide.Context;
+import org.granite.client.tide.impl.InstanceFactory;
 import org.granite.client.tide.impl.SimpleInstanceStore;
 
 
 public class MockInstanceStore extends SimpleInstanceStore {
 
-    public MockInstanceStore(Context context) {
-		super(context);
+    public MockInstanceStore(Context context, InstanceFactory instanceFactory) {
+		super(context, instanceFactory);
 	}
 }

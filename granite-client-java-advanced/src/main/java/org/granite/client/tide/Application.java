@@ -61,7 +61,8 @@ public interface Application {
 
     /**
      * Integration with deferred execution of a runnable on the UI thread
+     * @param context context to run the UI thread
      * @param runnable runnable to execute in the UI thread
      */
-	public void execute(Runnable runnable);
+	public void execute(Object context, Runnable runnable);
 }

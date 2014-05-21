@@ -1,6 +1,7 @@
 include 'granite-common'
 include 'granite-amf'
 include 'granite-jmf'
+//include 'granite-jmf-java8'
 
 include 'granite-server-core'
 include 'granite-server-servlet3'
@@ -20,6 +21,7 @@ include 'granite-server-weblogic'
 include 'granite-server-appengine'
 
 include 'granite-server-activemq'
+//include 'granite-server-hazelcast'
 
 include 'granite-server'
 include 'granite-generator-share'
@@ -48,6 +50,8 @@ include 'granite-client-flex45-advanced'
 include 'granite-client-flex45-tests'
 include 'granite-client-flex-udp'
 
+include 'granite-binding'
+
 include 'granite-client-java'
 include 'granite-client-java-advanced'
 include 'granite-client-java-udp'
@@ -55,6 +59,7 @@ include 'granite-client-java-udp'
 include 'granite-client-javafx'
 include 'granite-client-javafx-advanced'
 
+include 'granite-binding-android'
 include 'granite-client-android'
 include 'granite-client-android-advanced'
 

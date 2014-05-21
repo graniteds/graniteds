@@ -35,10 +35,12 @@
 package org.granite.client.tide;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.granite.client.tide.data.EntityManager;
 import org.granite.client.tide.data.impl.EntityManagerImpl;
@@ -71,9 +73,11 @@ public class Context {
     private boolean finished = false;
     
     private ContextManager contextManager = null;
+    private Object platformContext = null;
     
-    private InstanceStore instanceStore = new SimpleInstanceStore(this);
+    private InstanceStore instanceStore = new SimpleInstanceStore(this, null);
     private Map<String, Object> initialBeans = new HashMap<String, Object>();
+    private Map<String, Object> properties = new HashMap<String, Object>();
     
     private Application application = new DefaultApplication();
 	private EventBus eventBus = new SimpleEventBus();
@@ -101,11 +105,27 @@ public class Context {
     }
 
     /**
-     * Managed for this context
+     * Manager for this context
      * @return context manager
      */
     public ContextManager getContextManager() {
     	return contextManager;
+    }
+    
+    /**
+     * Set the internal platform context
+     * @param context internal context
+     */
+    public void setPlatformContext(Object context) {
+    	this.platformContext = context;
+    }
+    
+    /**
+     * Get platform context
+     * @return internal context
+     */
+    public Object getPlatformContext() {
+    	return platformContext;
     }
 
     /**
@@ -140,6 +160,14 @@ public class Context {
     public Map<String, Object> getInitialBeans() {
         return Collections.unmodifiableMap(initialBeans);
     }
+    
+    /**
+     * Is this context the global context ?
+     * @return is global context
+     */
+    public boolean isGlobal() {
+    	return contextManager.isGlobal(this);
+    }
 
     /**
      * Initialize the context
@@ -167,7 +195,6 @@ public class Context {
     }
     
     public void postInit() {
-        // TODO: postInit ?
     }
 
     /**
@@ -317,7 +344,16 @@ public class Context {
     public void remove(String name) {
     	instanceStore.remove(name);
     }
-
+    
+    /**
+     * Remove the component instance from the context
+     * May not work with all containers (Spring and CDI are static and cannot be modified after initialization)
+     * @param instance component instance
+     */
+    public void remove(Object instance) {
+    	instanceStore.remove(instance);
+    }
+    
     /**
      * Clear all data and instances in the context
      */
@@ -340,7 +376,71 @@ public class Context {
     		((Initializable)instance).init();
     	if (instance.getClass().isAnnotationPresent(ApplicationConfigurable.class))
     		application.configure(instance);
+    	instanceStore.inject(instance, name, properties);
     }
+    
+    /**
+     * Destroy an instance when it is removed from the context
+     * @param instance component instance
+     */
+    public void destroyInstance(Object instance) {
+    }
+    
+    
+    public static interface Properties {
+    	
+    	public Set<String> keySet();
+    	
+    	public Object get(String key);
+    }
+    
+    public void defineProperties(Properties properties) {
+    	if (properties == null)
+    		return;
+    	
+    	for (String key : properties.keySet()) {
+    		if (!key.startsWith("$"))
+    			continue;
+    		
+    		int idx = key.indexOf(".", 1);
+    		if (idx < 0)
+    			continue;
+    		
+    		this.properties.put(key.substring(1), properties.get(key));
+    		
+    		String componentName = key.substring(1, idx);
+    		if (!instanceStore.exists(componentName))
+    			continue;
+    		
+    		Object instance = instanceStore.byName(componentName, this);
+    		if (instance == null)
+    			continue;
+    		
+    		String propertyName = key.substring(idx+1);
+    		Object value = properties.get(key);
+    		
+    		String setterName = "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+    		Method setter = null;
+    		for (Method s : instance.getClass().getMethods()) {
+    			if (s.getName().equals(setterName)) {
+    				setter = s;
+    				break;
+    			}
+    		}
+    		if (setter == null) {
+    			log.warn("No setter found for %s", key);
+    			continue;
+    		}
+    		
+    		try {
+    			setter.invoke(instance, value);
+    		}
+    		catch (Exception e) {
+    			throw new RuntimeException("Could not set value for bundle property " + key);
+    		}
+    	}
+    }
+    
 
     /**
      * Check that this context is not finished
@@ -356,7 +456,7 @@ public class Context {
      * @param runnable runnable method
      */
     public void callLater(Runnable runnable) {
-    	application.execute(runnable);
+    	application.execute(platformContext, runnable);
     }
 
     /**

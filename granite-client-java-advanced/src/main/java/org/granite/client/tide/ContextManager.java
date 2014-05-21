@@ -81,6 +81,13 @@ public interface ContextManager {
      * @return the created context
      */
     public Context newContext(String contextId, String parentContextId);
+    
+    /**
+     * True if context is global context
+     * @param context context
+     * @return true if global context
+     */
+    public boolean isGlobal(Context context);
 
     /**
      * Get or create the context for the specified context id and server conversation flags

@@ -73,6 +73,21 @@ public interface InstanceStore {
     public void remove(String name);
 
     /**
+     * Remove a bean from the container
+     * Not applicable to statically configured containers (Spring/CDI)
+     * @param instance bean instance
+     */
+    public void remove(Object instance);
+    
+    /**
+     * Inject context value into provided instance
+     * @param instance instance to inject into
+     * @param name component name
+     * @param properties properties defined on the context
+     */
+    public void inject(Object instance, String name, Map<String, Object> properties);
+
+    /**
      * Clear all beans from the container
      * Not applicable to statically configured containers (Spring/CDI)
      */
@@ -83,6 +98,13 @@ public interface InstanceStore {
      * @return list of bean names
      */
     public List<String> allNames();
+    
+    /**
+     * Indicate if a bean of the specified name exists in the store
+     * @param name component name
+     * @return true if exists
+     */
+    public boolean exists(String name);
 
     /**
      * Lookup a bean by its name

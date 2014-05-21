@@ -31,6 +31,8 @@ import org.granite.messaging.persistence.PersistentCollectionSnapshot;
  */
 public abstract class AbstractPersistentSimpleCollection<E, C extends Collection<E>> extends AbstractPersistentCollection<C> implements Collection<E> {
 
+	private static final long serialVersionUID = 1L;
+	
 	public AbstractPersistentSimpleCollection() {
 	}
 

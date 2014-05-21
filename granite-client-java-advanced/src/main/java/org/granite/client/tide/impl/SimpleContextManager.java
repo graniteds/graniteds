@@ -35,17 +35,24 @@
 package org.granite.client.tide.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import org.granite.client.configuration.ClassScanner;
+import org.granite.client.platform.Platform;
 import org.granite.client.tide.Application;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextManager;
 import org.granite.client.tide.EventBus;
+import org.granite.client.tide.Factory;
 import org.granite.client.tide.InstanceStore;
 import org.granite.client.tide.InstanceStoreFactory;
+import org.granite.client.tide.Module;
 
 /**
  * @author William DRAI
@@ -60,6 +67,7 @@ public class SimpleContextManager implements ContextManager {
     protected final Application application;
     protected final EventBus eventBus;
     private InstanceStoreFactory instanceStoreFactory = new DefaultInstanceStoreFactory();
+    private InstanceFactory instanceFactory = new InstanceFactory();
     private Map<String, Context> contextsById = new HashMap<String, Context>();
     private List<String> contextsToDestroy = new ArrayList<String>();
     
@@ -69,7 +77,7 @@ public class SimpleContextManager implements ContextManager {
     	this.application = new DefaultApplication();
     	this.eventBus = new SimpleEventBus();
     }
-
+    
     /**
      * Create a simple context manager using the specified application
      * @param application application
@@ -99,8 +107,8 @@ public class SimpleContextManager implements ContextManager {
     
     public static class DefaultInstanceStoreFactory implements InstanceStoreFactory {
 		@Override
-		public InstanceStore createStore(Context context) {
-			return new SimpleInstanceStore(context);
+		public InstanceStore createStore(Context context, InstanceFactory instanceFactory) {
+			return new SimpleInstanceStore(context, instanceFactory);
 		}    	
     }
     
@@ -126,7 +134,8 @@ public class SimpleContextManager implements ContextManager {
     
     protected Context createContext(Context parentCtx, String contextId) {
         Context ctx = new Context(this, parentCtx, contextId);
-        ctx.initContext(application, eventBus, instanceStoreFactory.createStore(ctx));
+        InstanceStore instanceStore = instanceStoreFactory.createStore(ctx, instanceFactory); 
+        ctx.initContext(application, eventBus, instanceStore);
         return ctx;
     }
     
@@ -139,6 +148,8 @@ public class SimpleContextManager implements ContextManager {
             
             ctx = createContext(parentCtx, contextId);
             contextsById.put(contextId != null ? contextId : DEFAULT_CONTEXT, ctx);
+            instanceFactory.initContext(ctx);
+            
             if (contextId != null)
             	ctx.getEventBus().raiseEvent(ctx, CONTEXT_CREATE);
             ctx.postInit();
@@ -293,6 +304,52 @@ public class SimpleContextManager implements ContextManager {
         if (previousContextId != null)
             contextsById.remove(previousContextId);
         contextsById.put(context.getContextId(), context);
+    }
+    
+    
+    /**
+     * Scan specific packages and configure found modules
+     * @param moduleClassNames module package names
+     */
+    public void scanModules(String... packageNames) {
+    	ClassScanner classScanner = Platform.getInstance().newClassScanner();
+    	Set<Class<?>> moduleClasses = classScanner.scan(new HashSet<String>(Arrays.asList(packageNames)), Module.class);
+    	instanceFactory.initModules(moduleClasses);    	
+    }
+    
+    /**
+     * Configure modules for specified class names
+     * @param moduleClassNames module classes
+     */
+    public void initModules(String... moduleClassNames) {
+    	Set<Class<?>> moduleClasses = new HashSet<Class<?>>();
+    	for (String className : moduleClassNames) {
+    		try {
+				Class<?> c = Class.forName(className);
+				moduleClasses.add(c);
+			} 
+    		catch (ClassNotFoundException e) {
+				throw new RuntimeException("Could not init module " + className);
+			}
+    	}
+    	instanceFactory.initModules(moduleClasses);
+    }
+    
+    /**
+     * Configure modules for specified class names
+     * @param moduleClassNames module classes
+     */
+    public void initModules(Class<?>... moduleClasses) {
+    	instanceFactory.initModules(new HashSet<Class<?>>(Arrays.asList(moduleClasses)));
+    }
+    
+    
+    public void registerFactory(String name, Factory<?> factory) {
+    	instanceFactory.registerFactory(name, factory);
+    }
+    
+    public void registerFactory(Class<?> type, Factory<?> factory) {
+    	instanceFactory.registerFactory(type, factory);
     }
 
 }

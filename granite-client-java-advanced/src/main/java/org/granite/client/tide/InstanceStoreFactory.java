@@ -34,10 +34,12 @@
  */
 package org.granite.client.tide;
 
+import org.granite.client.tide.impl.InstanceFactory;
+
 /**
  * @author William DRAI
  */
 public interface InstanceStoreFactory {
     
-    public InstanceStore createStore(Context context);
+    public InstanceStore createStore(Context context, InstanceFactory instanceFactory);
 }

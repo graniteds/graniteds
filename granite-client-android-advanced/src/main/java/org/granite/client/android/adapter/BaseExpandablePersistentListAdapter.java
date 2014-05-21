@@ -50,7 +50,6 @@ public abstract class BaseExpandablePersistentListAdapter<E> extends BaseExpanda
     private final List<E> list;
     
     private ChangeListener listChangeListener = new ChangeListener() {
-
 		@Override
 		public void changed(PersistentCollection coll) {
 			notifyDataSetChanged();

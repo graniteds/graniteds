@@ -21,7 +21,12 @@
  */
 package org.granite.client.android.platform;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import org.granite.client.android.messaging.reflect.AndroidBypassConstructorAllocator;
+import org.granite.messaging.reflect.FieldProperty;
+import org.granite.messaging.reflect.MethodProperty;
 import org.granite.messaging.reflect.Reflection;
 
 /**
@@ -31,5 +36,15 @@ public class AndroidReflection extends Reflection {
 
 	public AndroidReflection(ClassLoader classLoader) {
 		super(classLoader, new AndroidBypassConstructorAllocator());
+	}
+
+	@Override
+	protected FieldProperty newFieldProperty(Field field) {
+		return new AndroidFieldProperty(field);
+	}
+
+	@Override
+	protected MethodProperty newMethodProperty(Method getter, Method setter, String name) {
+		return new AndroidMethodProperty(getter, setter, name);
 	}
 }

@@ -81,7 +81,7 @@ public class SpringContextManager extends SimpleContextManager implements Applic
 	
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = (ConfigurableApplicationContext)applicationContext;
+		this.applicationContext = applicationContext;
 		setInstanceStoreFactory(new SpringInstanceStoreFactory(applicationContext));
         if (eventBus instanceof SpringEventBus)
             ((SpringEventBus)eventBus).setApplicationContext(applicationContext);
@@ -123,20 +123,20 @@ public class SpringContextManager extends SimpleContextManager implements Applic
 		if (beanFactory.getRegisteredScope("view") == null)
 			beanFactory.registerScope("view", new ViewScope());
 	}
-
-	public void configure() {
-		if (!(applicationContext instanceof ConfigurableApplicationContext))
-			throw new IllegalStateException("Cannot configure, " + applicationContext.getClass().getName() + " is not a ConfigurableApplicationContext");
+	
+	public static SpringContextManager configure(ConfigurableApplicationContext applicationContext, Application application) {
+		final SpringContextManager contextManager = new SpringContextManager(applicationContext, application);
 		
-		((ConfigurableApplicationContext)applicationContext).addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
+		applicationContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
 			@Override
 			public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 				if (!beanFactory.containsSingleton(SpringContextManager.class.getName()))
-					beanFactory.registerSingleton(SpringContextManager.class.getName(), SpringContextManager.this);
+					beanFactory.registerSingleton(SpringContextManager.class.getName(), contextManager);
 			}
 		});
+		return contextManager;
 	}
-
+	
 	
     private final class SpringDataConflictListener implements DataConflictListener {
 		@Override

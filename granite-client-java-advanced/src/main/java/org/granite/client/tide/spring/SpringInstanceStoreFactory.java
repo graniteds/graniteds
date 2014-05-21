@@ -37,12 +37,14 @@ package org.granite.client.tide.spring;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.granite.client.tide.Context;
 import org.granite.client.tide.InstanceStore;
 import org.granite.client.tide.InstanceStoreFactory;
+import org.granite.client.tide.impl.InstanceFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
@@ -58,7 +60,7 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 	}
 
 	@Override
-	public InstanceStore createStore(Context context) {
+	public InstanceStore createStore(Context context, InstanceFactory instanceFactory) {
 		return new SpringInstanceStore(context, applicationContext);
 	}
 
@@ -90,6 +92,21 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		public void remove(String name) {
 			// Nothing, managed by Spring
 		}
+
+		@Override
+		public void remove(Object instance) {
+			// Nothing, managed by Spring
+		}
+		
+		@Override
+		public boolean exists(String name) {
+			return applicationContext.containsBean(name);
+		}
+		
+		@Override
+		public void inject(Object instance, String name, Map<String, Object> properties) {
+			// Nothing, managed by Spring
+		}
 		
 		@Override
 		public void clear() {
@@ -115,6 +132,9 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
             }
             catch (NoSuchBeanDefinitionException e) {
             }
+            catch (IllegalStateException e) {
+            	// ApplicationContext stopped, callback may have happened during app shutdown
+            }
             return null;
 		}
 
@@ -125,20 +145,35 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
             }
             catch (NoSuchBeanDefinitionException e) {
             }
+            catch (IllegalStateException e) {
+            	// ApplicationContext stopped, callback may have happened during app shutdown
+            }
             return null;
 		}
 		
 		@SuppressWarnings("unchecked")
 		@Override
 		public <T> T[] allByType(Class<T> type, Context context, boolean create) {
-			Map<String, T> instancesMap = applicationContext.getBeansOfType(type, true, create);
-			T[] all = (T[])Array.newInstance(type, instancesMap.size());
-			return instancesMap.values().toArray(all);
+			try {
+				Map<String, T> instancesMap = applicationContext.getBeansOfType(type, true, create);
+				T[] all = (T[])Array.newInstance(type, instancesMap.size());
+				return instancesMap.values().toArray(all);
+			}
+            catch (IllegalStateException e) {
+            	// ApplicationContext stopped, callback may have happened during app shutdown
+            }
+			return null;
 		}
 		
 		@Override
 		public Map<String, Object> allByAnnotatedWith(Class<? extends Annotation> annotationClass, Context context) {
-			return applicationContext.getBeansWithAnnotation(annotationClass);
+			try {
+				return applicationContext.getBeansWithAnnotation(annotationClass);
+			}
+            catch (IllegalStateException e) {
+            	// ApplicationContext stopped, callback may have happened during app shutdown
+            }
+			return Collections.emptyMap();
 		}
 	}
 }

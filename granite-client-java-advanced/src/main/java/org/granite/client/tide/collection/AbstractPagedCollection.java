@@ -684,16 +684,23 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
             if (elementClass == null || (o != null && o.getClass().isAssignableFrom(elementClass)))
                 elementClass = (Class<? extends E>)o.getClass();
         }
-        localIndex = (E[])Array.newInstance(elementClass, list.size());
-        localIndex = list.toArray(localIndex);
-        if (localIndex != null) {
-            for (int i = 0; i < localIndex.length; i++) {
-                String entityName = localIndex[i].getClass().getSimpleName();
-                if (!entityName.equals(elementName))
-                    entityNames.add(entityName);
-            }
+        
+        if (elementClass == null) {
+        	localIndex = (E[])new Object[0];
+        	log.warn("Cannot determine elementClass from empty content, consider calling setElementClass manually");
         }
-
+        else {
+	        localIndex = (E[])Array.newInstance(elementClass, list.size());
+	        localIndex = list.toArray(localIndex);
+	        if (localIndex != null) {
+	            for (int i = 0; i < localIndex.length; i++) {
+	                String entityName = localIndex[i].getClass().getSimpleName();
+	                if (!entityName.equals(elementName))
+	                    entityNames.add(entityName);
+	            }
+	        }
+        }
+        
         int previousFirst = this.first;
         int previousLast = this.last;
 

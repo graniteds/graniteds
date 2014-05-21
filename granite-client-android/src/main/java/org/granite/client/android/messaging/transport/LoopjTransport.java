@@ -146,7 +146,7 @@ public class LoopjTransport extends AbstractTransport<Context> {
                     return;
                 }
                 try {
-                    channel.onMessage(new ByteArrayInputStream(bytes));
+                    channel.onMessage(message, new ByteArrayInputStream(bytes));
                 }
                 catch (Exception e) {
                     getStatusHandler().handleException(new TransportIOException(message, "Could not deserialize message", e));
@@ -164,7 +164,7 @@ public class LoopjTransport extends AbstractTransport<Context> {
             @Override
             public void onFinish() {
             	if (!handled)
-            		channel.onMessage(new ByteArrayInputStream(new byte[0]));
+            		channel.onMessage(message, new ByteArrayInputStream(new byte[0]));
             	
                 if (!message.isConnect())
                     getStatusHandler().handleIO(false);

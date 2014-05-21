@@ -34,30 +34,33 @@
  */
 package org.granite.client.android.tide;
 
+import org.granite.client.platform.Platform;
 import org.granite.client.tide.impl.DefaultApplication;
 import org.granite.client.tide.server.ServerSession;
 
 import android.app.Activity;
+import android.app.Application;
 
 /**
  * @author William DRAI
  */
 public class AndroidApplication extends DefaultApplication {
 	
-	private Activity activity;
+	private Application application;
 	
-	public AndroidApplication(Activity activity) {
-		this.activity = activity;
+	public AndroidApplication(Application application) {
+		this.application = application;
+		Platform.getInstance().setContext(application.getBaseContext());
 	}
 	
 	@Override
 	public void configure(Object object) {
 		if (object instanceof ServerSession)
-			((ServerSession)object).setPlatformContext(activity);
+			((ServerSession)object).setPlatformContext(application.getApplicationContext());
 	}
 	
 	@Override
-	public void execute(Runnable runnable) {
-		activity.runOnUiThread(runnable);
+	public void execute(Object activity, Runnable runnable) {
+		((Activity)activity).runOnUiThread(runnable);
 	}
 }

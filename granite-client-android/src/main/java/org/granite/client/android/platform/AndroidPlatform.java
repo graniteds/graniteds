@@ -21,10 +21,10 @@
  */
 package org.granite.client.android.platform;
 
-import org.granite.client.android.messaging.DexRemoteAliasScanner;
 import org.granite.client.android.messaging.transport.LoopjTransport;
+import org.granite.client.android.scan.DexClassScanner;
+import org.granite.client.configuration.ClassScanner;
 import org.granite.client.configuration.Configuration;
-import org.granite.client.messaging.RemoteAliasScanner;
 import org.granite.client.messaging.transport.Transport;
 import org.granite.client.platform.Platform;
 import org.granite.messaging.reflect.Reflection;
@@ -49,11 +49,11 @@ public class AndroidPlatform extends Platform {
 	}
 
 	@Override
-	public RemoteAliasScanner newRemoteAliasScanner() {
+	public ClassScanner newClassScanner() {
 		if (!(context instanceof Context))
 			throw new IllegalArgumentException("context must be an Android application context: " + context);
 		
-		return new DexRemoteAliasScanner((Context)context);
+		return new DexClassScanner((Context)context);
 	}
 	
 	@Override

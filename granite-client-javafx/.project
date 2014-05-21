@@ -15,4 +15,11 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>client-java</name>
+			<type>2</type>
+			<location>WORKSPACE_LOC/graniteds/granite-client-java/src/main/java</location>
+		</link>
+	</linkedResources>
 </projectDescription>
