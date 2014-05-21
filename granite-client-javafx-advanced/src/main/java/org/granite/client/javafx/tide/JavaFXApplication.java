@@ -93,7 +93,7 @@ public class JavaFXApplication implements org.granite.client.tide.Application {
 	}
 	
 	@Override
-    public void execute(Runnable runnable) {
+    public void execute(Object platformContext, Runnable runnable) {
         javafx.application.Platform.runLater(runnable);
     }
 
