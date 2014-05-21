@@ -39,9 +39,9 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Future;
 
-import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -64,7 +64,7 @@ import org.granite.client.tide.server.TideResultEvent;
  */
 public abstract class BaseIdentity extends ComponentImpl implements Identity, ExceptionHandler {
 	
-	private BooleanProperty loggedIn = new SimpleBooleanProperty(this, "loggedIn");
+	private ReadOnlyBooleanWrapper loggedIn = new ReadOnlyBooleanWrapper(this, "loggedIn");
 	private StringProperty username = new ReadOnlyStringWrapper(this, "username", null);
 
 
@@ -93,8 +93,8 @@ public abstract class BaseIdentity extends ComponentImpl implements Identity, Ex
     }
 
 
-	public BooleanProperty loggedInProperty() {
-		return loggedIn;
+	public ReadOnlyBooleanProperty loggedInProperty() {
+		return loggedIn.getReadOnlyProperty();
 	}
 	
 	public boolean isLoggedIn() {
