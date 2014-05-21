@@ -41,6 +41,8 @@ import java.util.List;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -67,14 +69,14 @@ public class ManagedEntity<T> implements ContextAware {
 	private EntityManager entityManager;
 	private JavaFXDataManager dataManager;
 	
-	private BooleanProperty saved = new SimpleBooleanProperty(this, "saved", true);
-	private BooleanProperty dirty = new SimpleBooleanProperty(this, "dirty", false);
+	private ReadOnlyBooleanWrapper saved = new ReadOnlyBooleanWrapper(this, "saved", true);
+	private ReadOnlyBooleanWrapper dirty = new ReadOnlyBooleanWrapper(this, "dirty", false);
 	
 	private List<InstanceBinding<T, ?>> instanceBindings = new ArrayList<InstanceBinding<T, ?>>();
-
+	
     public ManagedEntity() {
     }
-
+    
 	public ManagedEntity(EntityManager entityManager) {
 		init(entityManager);
 	}
@@ -94,15 +96,15 @@ public class ManagedEntity<T> implements ContextAware {
 	    this.instance.set(value);
 	}
 	
-	public BooleanProperty savedProperty() {
-		return saved;
+	public ReadOnlyBooleanProperty savedProperty() {
+		return saved.getReadOnlyProperty();
 	}
 	public boolean isSaved() {
 		return saved.get();
 	}
 	
-	public BooleanProperty dirtyProperty() {
-		return dirty;
+	public ReadOnlyBooleanProperty dirtyProperty() {
+		return dirty.getReadOnlyProperty();
 	}
 	public boolean isDirty() {
 		return dirty.get();
