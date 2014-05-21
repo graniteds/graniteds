@@ -60,6 +60,7 @@ import org.granite.client.tide.collection.PageFilterFinder;
 import org.granite.client.tide.collection.SimpleFilterFinder;
 import org.granite.client.tide.server.Component;
 import org.granite.client.tide.server.ServerSession;
+import org.granite.client.tide.server.TideResultEvent;
 import org.granite.client.tide.server.TideRpcEvent;
 
 /**
@@ -210,7 +211,9 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 	}
 	
 	public void firePageChange(TideRpcEvent event, int previousFirst, int previousLast) {
-		fireItemsUpdated(0, Math.min(this.count, this.last)-this.first);
+		if (event instanceof TideResultEvent<?>)
+			fireItemsUpdated(0, Math.min(this.count, this.last)-this.first);
+		
 		pageChangeHelper.fireEvent(this, event);
 	}
 	
