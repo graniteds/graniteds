@@ -32,7 +32,7 @@
  *   Please visit http://www.granitedataservices.com/license for more
  *   details.
  */
-package org.granite.client.tide.spring;
+package org.granite.client.tide.security.spring;
 
 import javax.inject.Named;
 
