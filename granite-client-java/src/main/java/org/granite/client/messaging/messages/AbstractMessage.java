@@ -34,6 +34,8 @@ import org.granite.util.UUIDUtil;
  */
 public abstract class AbstractMessage implements Message {
 	
+	private static final long serialVersionUID = 1L;
+	
     private String id = UUIDUtil.randomUUID();
     private String clientId = null;
 

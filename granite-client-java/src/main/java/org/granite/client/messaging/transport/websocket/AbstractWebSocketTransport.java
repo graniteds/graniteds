@@ -156,7 +156,7 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
     }
 
     protected void onBinaryMessage(Channel channel, byte[] data, int offset, int length) {
-        channel.onMessage(new ByteArrayInputStream(data, offset, length));
+        channel.onMessage(connectMessage, new ByteArrayInputStream(data, offset, length));
     }
 
     protected void onClose(Channel channel, int closeCode, String message) {

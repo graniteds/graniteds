@@ -154,7 +154,7 @@ public class ApacheAsyncTransport extends AbstractTransport<Object> {
 	        		InputStream is = null;
 	        		try {
 	        			is = response.getEntity().getContent();
-	        			channel.onMessage(is);
+	        			channel.onMessage(message, is);
 	        		}
 	        		catch (Exception e) {
 		            	getStatusHandler().handleException(new TransportIOException(message, "Could not deserialize message", e));

@@ -161,7 +161,7 @@ public interface Channel {
      * Callback method called by the transport when a message is received
      * @param is data input stream of the incoming message
      */
-	void onMessage(InputStream is);
+	void onMessage(TransportMessage message, InputStream is);
 
     /**
      * Callback method called by the transport when an exception occurs during communication

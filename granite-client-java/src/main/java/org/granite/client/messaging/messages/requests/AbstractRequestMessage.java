@@ -31,6 +31,8 @@ import org.granite.client.messaging.messages.RequestMessage;
  */
 public abstract class AbstractRequestMessage extends AbstractMessage implements RequestMessage {
 
+	private static final long serialVersionUID = 1L;
+	
 	public AbstractRequestMessage() {
 	}
 

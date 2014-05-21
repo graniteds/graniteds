@@ -407,7 +407,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
     }
 
 	@Override
-	public void onMessage(InputStream is) {
+	public void onMessage(TransportMessage message, InputStream is) {
 		try {
 			ResponseMessage response = decodeResponse(is);
 			
@@ -443,6 +443,10 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		}
 		catch (Exception e) {
 			log.error(e, "Could not deserialize or dispatch incoming messages");
+			
+			AsyncToken token = message != null ? tokensMap.remove(message.getId()) : null;
+			if (token != null)
+				token.dispatchFailure(e);
 		}
 	}
 

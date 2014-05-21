@@ -36,6 +36,8 @@ import org.granite.client.messaging.messages.ResponseMessage;
  */
 public abstract class AbstractResponseMessage extends AbstractMessage implements ResponseMessage {
 
+	private static final long serialVersionUID = 1L;
+	
 	private String correlationId;
 	private ResponseMessage next;
 	

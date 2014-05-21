@@ -29,6 +29,8 @@ import org.granite.client.messaging.messages.AbstractMessage;
  * @author Franck WOLFF
  */
 public abstract class AbstractTopicRequestMessage extends AbstractRequestMessage {
+	
+	private static final long serialVersionUID = 1L;
 
 	private String destination = null;
 	private String topic = null;
