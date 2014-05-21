@@ -250,8 +250,10 @@ public class ServerSession implements ContextAware {
      */
 	public void setContext(Context context) {
 		this.context = context;
+		if (platformContext == null)
+			platformContext = context.getPlatformContext();
 	}
-
+	
     /**
      * Current Tide context
      * @return Tide context
@@ -343,9 +345,8 @@ public class ServerSession implements ContextAware {
 
     /**
      * Configure and start the server session
-     * @throws Exception
      */
-	public void start() throws Exception {
+	public void start() {
 	    if (channelFactory != null)    // Already started
 	        return;
 	    
@@ -360,11 +361,21 @@ public class ServerSession implements ContextAware {
 	            configuration.setClientType(ClientType.JAVA);
 	            configuration.load();
 	            convertersConfig = configuration.getGraniteConfig();
-	            channelFactory = constructor.newInstance(platformContext, configuration);
+	            try {
+	            	channelFactory = constructor.newInstance(platformContext, configuration);
+		        }
+		        catch (Exception e) {
+	                throw new RuntimeException("Could not create ChannelFactory", e);
+		        }	        
 	        }
-	        catch (NoSuchMethodException e) {
-	            constructor = channelFactoryClass.getConstructor(Object.class);
-                channelFactory = constructor.newInstance(platformContext);
+	        catch (NoSuchMethodException nsme) {
+	            try {
+		            constructor = channelFactoryClass.getConstructor(Object.class);
+	            	channelFactory = constructor.newInstance(platformContext);
+		        }
+		        catch (Exception e) {
+	                throw new RuntimeException("Could not create ChannelFactory", e);
+		        }	        
 	        }	        
 	    }
 	    else if (contentType == ContentType.JMF_AMF) {
@@ -420,9 +431,8 @@ public class ServerSession implements ContextAware {
 
     /**
      * Stop the server session and cleanup resources
-     * @throws Exception
      */
-	public void stop() throws Exception {
+	public void stop() {
 		try {
 			if (sessionExpirationFuture != null) {
 				sessionExpirationFuture.cancel(false);
@@ -438,7 +448,7 @@ public class ServerSession implements ContextAware {
 				channelFactory.stop();
 				channelFactory = null;
 			}
-	            
+	        
             remotingChannel = null;
 			messagingChannelsByType.clear();
             aliasRegistry = null;
@@ -544,6 +554,7 @@ public class ServerSession implements ContextAware {
             return messagingChannel;
 
         messagingChannel = channelFactory.newMessagingChannel(channelType, channelType + "amf", serverApp);
+        messagingChannel.setSessionId(sessionId);
         messagingChannelsByType.put(channelType, messagingChannel);
         return messagingChannel;
     }
