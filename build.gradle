@@ -2779,7 +2779,7 @@ project('dist') {
     def javaClientProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-client-java') || it.name.startsWith('granite-client-android') }
     def flexClientProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-client-flex') && !it.name.endsWith('-tests') }
     def generatorProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-generator') }
-	def extensionProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-jmf-java8') }
+	def extensionsProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-jmf-java8') }
 	def androidBindingProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-binding-android') } 
 
 	dependencies {
