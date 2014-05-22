@@ -2761,20 +2761,26 @@ project('dist') {
 		create('generator')
         create('javaClientDeps')
         create('androidClientDeps')
+		create('androidBinding')
         create('javaClientWebsocket')
-
+		create('extensions')
+	
         server { transitive = false }
         serverCore { transitive = false }
         javaClient { transitive = false }
         flexClient { transitive = false }
         generator { transitive = false }
+		extensions { transitive = false }
+		androidBinding { transitive = false }
 	}
-
+	
     def serverProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-server') && !coreProjects.contains(it.path) }
     def serverCoreProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-server') && coreProjects.contains(it.path) }
     def javaClientProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-client-java') || it.name.startsWith('granite-client-android') }
     def flexClientProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-client-flex') && !it.name.endsWith('-tests') }
     def generatorProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-generator') }
+	def extensionProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-jmf-java8') }
+	def androidBindingProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-binding-android') } 
 
 	dependencies {
 		server serverProjects
@@ -2782,6 +2788,8 @@ project('dist') {
 		javaClient javaClientProjects
 		flexClient flexClientProjects
 		generator generatorProjects
+		extensions extensionsProjects
+		androidBinding androidBindingProjects
 		
         javaClientDeps 'org.apache.httpcomponents:httpasyncclient:4.0.1'
 		
@@ -2811,6 +2819,9 @@ project('dist') {
         into ('libraries/server/submodules') {
             from configurations.serverCore
         }
+		into ('libraries/extensions') {
+			from configurations.extensions
+		}
 		into ('libraries/java-client') {
 			from configurations.javaClient
 		}
@@ -2825,6 +2836,9 @@ project('dist') {
         }
 		into ('libraries/flex-client') {
 			from configurations.flexClient
+		}
+		into ('libraries/binding-android') {
+			from configurations.androidBinding
 		}
 		
 		into ('tools') {
