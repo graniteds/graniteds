@@ -425,6 +425,8 @@ project('granite-jmf-java8') {
 	
 	dependencies {
 		compile project(':granite-jmf')
+		
+		testCompile project(':granite-jmf').sourceSets.test.output
 	}
 	
 	compileJava {
@@ -434,6 +436,15 @@ project('granite-jmf-java8') {
 		options.fork = true
 		options.forkOptions.executable = "${jdk8Home}/bin/javac"
 	}
+	compileTestJava {
+		sourceCompatibility=1.8
+		targetCompatibility=1.8
+		
+		options.fork = true
+		options.forkOptions.executable = "${jdk8Home}/bin/javac"
+	}
+	
+	test.executable = "${jdk8Home}/bin/java"
 	
 	javadoc {
 		executable = "${jdk8Home}/bin/javadoc"		
