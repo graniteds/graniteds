@@ -102,6 +102,8 @@ public class ChainedObservableValue<T, P> implements ObservableValue<P>, ChangeL
 
 	@Override
 	public P getValue() {
+		if (targetObservableValue == null)
+			return null;
 		return targetObservableValue.getValue();
 	}
 	

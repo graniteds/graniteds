@@ -102,21 +102,29 @@ public class ChainedProperty<T, P> implements Property<P>, ChangeListener<T>, Tr
 	
 	@Override
 	public Object getBean() {
+		if (targetProperty == null)
+			return null;
 		return targetProperty.getBean();
 	}
 
 	@Override
 	public String getName() {
+		if (targetProperty == null)
+			return null;
 		return targetProperty.getName();
 	}
 
 	@Override
 	public P getValue() {
+		if (targetProperty == null)
+			return null;
 		return targetProperty.getValue();
 	}
 	
 	@Override
 	public void setValue(P value) {
+		if (targetProperty == null)
+			return;
 		targetProperty.setValue(value);
 	}
 	
@@ -149,7 +157,7 @@ public class ChainedProperty<T, P> implements Property<P>, ChangeListener<T>, Tr
 	public void bindBidirectional(Property<P> property) {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	@Override
 	public boolean isBound() {
 		throw new UnsupportedOperationException();
