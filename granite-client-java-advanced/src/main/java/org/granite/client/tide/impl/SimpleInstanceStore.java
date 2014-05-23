@@ -255,8 +255,16 @@ public class SimpleInstanceStore implements InstanceStore {
     				}
     				else {
     					try {
-    						Object value = context.byType(f.getType());
-	    					f.set(target, value);
+	    					if (f.getType().isArray()) {
+	    						Object values = context.allByType(f.getType().getComponentType());
+	    						if (values != null)
+	    							f.set(target, values);
+	    					}
+	    					else {
+	    						Object value = context.byType(f.getType());
+	    						if (value != null)
+	    							f.set(target, value);
+	    					}
 						} 
 						catch (Exception e) {
 							throw new RuntimeException("Cannot inject field " + f.getName(), e);
