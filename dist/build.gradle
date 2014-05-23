@@ -1,0 +1,194 @@
+// Distribution
+
+apply plugin: 'bintray'
+
+defaultTasks 'dist'
+
+configurations {
+	create('server')
+	create('javaClient')
+	create('flexClient')
+	create('generator')
+	create('javaClientDeps')
+	create('androidClientDeps')
+	create('androidBinding')
+	create('javaClientWebsocket')
+	create('java8Support')
+
+	server { transitive = false }
+	serverCore { transitive = false }
+	javaClient { transitive = false }
+	flexClient { transitive = false }
+	generator { transitive = false }
+	androidBinding { transitive = false }
+	java8Support { transitive = false }
+}
+
+def serverProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-server') && !coreProjects.contains(it.path) }
+def serverCoreProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-server') && coreProjects.contains(it.path) }
+def javaClientProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-client-java') || it.name.startsWith('granite-client-android') }
+def flexClientProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-client-flex') && !it.name.endsWith('-tests') }
+def generatorProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-generator') }
+def androidBindingProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-binding-android') } 
+def java8SupportProjects = rootProject.subprojects.findAll { it.name.startsWith('granite-jmf-java8') }
+def allJavaProjects = serverProjects + serverCoreProjects + javaClientProjects + generatorProjects + androidBindingProjects + java8SupportProjects
+def allFlexProjects = flexClientProjects
+def allProjects = allJavaProjects + allFlexProjects
+
+evaluationDependsOn(':granite-eclipse')
+allProjects.each { evaluationDependsOn(':' + it.name) }
+
+dependencies {
+	server serverProjects
+	serverCore serverCoreProjects
+	javaClient javaClientProjects
+	flexClient flexClientProjects
+	generator generatorProjects
+	androidBinding androidBindingProjects
+	java8Support java8SupportProjects
+	
+	javaClientDeps 'org.apache.httpcomponents:httpasyncclient:4.0.1'
+	
+	androidClientDeps project(':granite-client-android').files('lib/android-async-http-1.4.3.jar')
+	
+	javaClientWebsocket 'org.eclipse.jetty:jetty-client:' + jetty9Version,
+		'org.eclipse.jetty.websocket:websocket-client:' + jetty9Version
+}
+
+task dist(type: Zip, dependsOn: ':granite-eclipse:buildUpdateSite') {
+	allJavaProjects.each { dependsOn ':' + it.name + ':jar' }
+	allFlexProjects.each { dependsOn ':' + it.name + ':compileFlex' }
+	
+	archiveName = 'graniteds-dist-' + granitedsVersion + '.zip'
+
+	into ('graniteds-' + granitedsVersion)
+
+	from file('README.adoc')
+
+	from file('LICENSES.adoc')
+
+	into ('licenses') {
+		from fileTree('licenses')
+		exclude 'LICENSES.adoc'
+	}
+	
+	into ('libraries/server') {
+		from configurations.server
+	}
+	into ('libraries/server/submodules') {
+		from configurations.serverCore
+	}
+	into ('libraries/server/optional-java8') {
+		from configurations.java8Support
+	}
+	into ('libraries/java-client') {
+		from configurations.javaClient
+	}
+	into ('libraries/java-client/dependencies') {
+		from configurations.javaClientDeps
+	}
+	into ('libraries/java-client/dependencies-android') {
+		from configurations.androidClientDeps
+	}
+	into ('libraries/java-client/optional-websocket') {
+		from configurations.javaClientWebsocket
+	}
+	into ('libraries/java-client/optional-java8') {
+		from configurations.java8Support
+	}
+	into ('libraries/flex-client') {
+		from configurations.flexClient
+	}
+	into ('libraries/binding-android') {
+		from configurations.androidBinding
+	}
+	
+	into ('tools') {
+		from project(':granite-eclipse').configurations.lib
+		rename { it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null }
+	}
+
+	into ('tools/eclipse') {
+		from project(':granite-eclipse').file('build/tycho/granite-eclipse-builder-plugin/target/org.granite.builder-' + pluginVersion + '.jar')
+	}
+
+	allJavaProjects.each { subproject ->
+		subproject.configurations.archives.allArtifacts.findAll { it.classifier == 'sources' }.each { artifact ->
+			into ('sources/java') { from artifact.file }
+		}
+	}
+	allFlexProjects.each { subproject ->
+		subproject.configurations.archives.allArtifacts.findAll { it.classifier == 'sources' }.each { artifact ->
+			into ('sources/as3') { from artifact.file }
+		}
+	}
+}
+
+task docs(type: Zip, dependsOn: [ ':reference-docs:asciidoctor' ]) {
+	allJavaProjects.each { dependsOn ':' + it.name + ':javadoc' }
+	allFlexProjects.each { dependsOn ':' + it.name + ':asdoc' }
+	
+	archiveName = 'graniteds-docs-' + granitedsVersion + '.zip'
+
+	into ('graniteds-' + granitedsVersion)
+
+	from file('LICENSES.adoc')
+
+	into ('licenses') {
+		from fileTree('licenses')
+		exclude 'LICENSES.adoc'
+	}
+
+	into ('docs/reference') {
+		from project(':reference-docs').fileTree('build/docs')
+	}
+	
+	into ('docs/server/api') {
+		from project(':granite-server').fileTree('build/docs/javadoc')
+	}
+	into ('docs/server-udp/api') {
+		from project(':granite-server-udp').fileTree('build/docs/javadoc')
+	}
+	into ('docs/client-flex/api') {
+		from project(':granite-client-flex45-advanced').fileTree('build/docs/asdoc')
+	}
+	into ('docs/client-flex-udp/api') {
+		from project(':granite-client-flex-udp').fileTree('build/docs/asdoc')
+	}
+	into ('docs/client-java/api') {
+		from project(':granite-client-java').fileTree('build/docs/javadoc')
+	}
+	into ('docs/client-java-udp/api') {
+		from project(':granite-client-java-udp').fileTree('build/docs/javadoc')
+	}
+	into ('docs/client-javafx/api') {
+		from project(':granite-client-javafx').fileTree('build/docs/javadoc')
+	}
+	into ('docs/client-android/api') {
+		from project(':granite-client-android').fileTree('build/docs/javadoc')
+	}
+}
+
+artifacts {
+	archives file: dist.archivePath, name: 'graniteds-dist', extension: 'zip', builtBy: dist
+	archives file: docs.archivePath, name: 'graniteds-docs', extension: 'zip', builtBy: docs
+}
+
+def bintrayVersion = granitedsVersion
+
+bintray {
+	user = bintrayUserName
+	key = bintrayApiKey
+	configurations = [ 'archives' ]
+	pkg {
+		repo = 'graniteds'
+		userOrg = 'graniteds'
+		name = 'graniteds-distribution'
+		desc = 'GraniteDS main distribution'
+		licenses = [ 'LGPL-2.1', 'GPL-3.0' ]
+		labels = [ 'graniteds', 'flex', 'amf', 'javafx', 'android' ]
+		version {
+			name = bintrayVersion
+		}
+	}
+}

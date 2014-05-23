@@ -1,0 +1,46 @@
+// CDI integration
+	
+description = 'GraniteDS CDI integration server library'
+
+dependencies {
+	compile 'javax.enterprise:cdi-api:1.0-SP4'
+	compile 'javax.el:el-api:2.2.1-b04'
+	compile 'javax.inject:javax.inject:1'
+	compile 'org.jboss.weld:weld-api:1.1.Final'
+	compile 'org.jboss.weld:weld-spi:1.1.Final'
+	compile 'org.jboss.weld:weld-core:1.1.14.Final'
+	compile 'org.jboss.weld.servlet:weld-servlet:1.1.14.Final'
+	compile 'org.jboss.interceptor:jboss-interceptor-core:2.0.0.Final'
+	compile 'org.apache.openwebbeans:openwebbeans-web:1.2.0'
+	
+	compile project(':granite-server-core')
+	
+	testCompile 'org.jboss.weld.se:weld-se-core:1.1.14.Final'
+	
+	testRuntime 'org.hibernate:hibernate-core:3.6.10.Final'
+	testRuntime 'org.hibernate:hibernate-entitymanager:3.6.10.Final'
+	testRuntime 'org.hsqldb:hsqldb:2.3.0'
+}
+
+// Include core sources for tests for compilation
+// Note: force same output folder for resources and classes otherwise Weld does not find beans.xml
+sourceSets {
+	main {
+		output.resourcesDir = output.classesDir			
+	}
+	
+	test {
+		java {
+			source project(':granite-server-core').sourceSets.test.java
+		}
+		resources {
+			source project(':granite-server-core').sourceSets.test.resources
+		}
+		
+		output.resourcesDir = output.classesDir
+	}
+}
+
+test {
+	includes = [ 'org/granite/test/tide/cdi/Test*' ]
+}

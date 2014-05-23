@@ -1,0 +1,42 @@
+// JavaFX client library
+
+apply plugin: 'cobertura'
+
+dependencies {
+	
+	compile 'javax.enterprise:cdi-api:1.0-SP4',
+		'javax.inject:javax.inject:1',
+		'javax.validation:validation-api:1.0.0.GA',
+		'org.springframework:spring-beans:3.1.4.RELEASE',
+		'org.springframework:spring-context:3.1.4.RELEASE'
+	
+	compile files(System.properties.'java.home' + '/lib/jfxrt.jar')
+	
+	compile project(':granite-client-javafx')
+	
+	testCompile 'org.hibernate:hibernate-core:3.6.10.Final',
+		'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
+		'antlr:antlr:2.7.7'
+	
+	testCompile project(':granite-server-core')
+	testCompile project(':granite-server-hibernate')
+	
+	testCompile project(':granite-client-java').sourceSets.test.output
+	testCompile project(':granite-client-java-advanced').sourceSets.test.output
+}
+
+// Include sources of advanced java client
+sourceSets {
+	main {
+		java {
+			source project(':granite-client-java-advanced').sourceSets.main.java
+		}
+		resources {
+			source project(':granite-client-java-advanced').sourceSets.main.resources
+		}
+	}
+}
+
+javadoc {
+	source = sourceSets.main.java		// Redefine here so filter is applied
+}

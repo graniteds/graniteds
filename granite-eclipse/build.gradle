@@ -1,0 +1,89 @@
+// Generator Eclipse plugins
+
+description = 'GraniteDS Eclipse plugins'
+
+configurations {
+	create('lib')
+	create('mvn')
+	create('eclipse')
+
+	lib { transitive = false }
+}
+
+dependencies {
+	lib 'antlr:antlr:2.7.7',
+			'asm:asm:2.2.3',
+			'org.codehaus.groovy:groovy:1.6.4',
+			'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
+			'javax.jdo:jdo2-api:2.3-eb',
+			'xpp3:xpp3:1.1.4c',
+			'com.thoughtworks.xstream:xstream:1.3.1'
+
+	lib project(':granite-generator')
+	lib project(':granite-generator-share')
+
+	mvn 'org.apache.maven:maven-ant-tasks:2.1.3'
+}
+
+build {
+	it.dependsOn ':granite-generator:jar'
+	it.dependsOn ':granite-generator-share:jar'
+} << {
+	copy {
+		into project(':granite-eclipse').file('granite-eclipse-builder-plugin/lib')
+		from configurations.lib
+		rename {
+			it.startsWith('granite-generator') ? it.substring(0, it.length()-5-granitedsVersion.length()) + '.jar' : null
+		}
+	}
+
+	mkdir project(':granite-eclipse').file('build/tycho')
+
+	copy {
+		into project(':granite-eclipse').file('build/tycho')
+		from project(':granite-eclipse').file('.')
+		include 'granite-eclipse-*/**'
+	}
+}
+
+task buildUpdateSite(dependsOn: 'build') << {
+	def mvnHome = mavenHome
+	if (!mvnHome)
+		mvnHome = System.env['MAVEN_HOME']
+	if (!mvnHome) {
+		println 'MAVEN_HOME not set, disable build of Eclipse plugin'
+	}
+	else {
+		ant.taskdef(name: 'mvn', classname: 'org.apache.maven.artifact.ant.Mvn', classpath: configurations.mvn.asPath)
+
+		mkdir project(':granite-eclipse').file('build/tycho/granite-eclipse-builder-plugin/bin')
+
+		println 'Building update site for plugin version ' + pluginVersion
+
+		ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+			arg(value: 'tycho-versions:set-version')
+			arg(value: '-DnewVersion=' + pluginVersion)
+		}
+
+		ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+			arg(value: 'install')
+		}
+	}
+}
+
+task uploadUpdateSite(dependsOn: 'buildUpdateSite') << {
+	def mvnHome = mavenHome
+	if (!mvnHome)
+		mvnHome = System.env['MAVEN_HOME']
+	if (!mvnHome) {
+		println 'MAVEN_HOME not set, disable build of Eclipse plugin'
+	}
+	else {
+		ant.taskdef(name: 'mvn', classname: 'org.apache.maven.artifact.ant.Mvn', classpath: configurations.mvn.asPath)
+
+		ant.mvn(pom: project(':granite-eclipse').file('build/tycho/granite-eclipse-parent/pom.xml').absolutePath, mavenHome: mvnHome, fork: true) {
+			arg(value: 'install')
+			arg(value: '-Pupload')
+		}
+	}
+}

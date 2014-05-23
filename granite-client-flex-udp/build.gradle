@@ -1,0 +1,51 @@
+// Flex UDP client library
+
+description = "GraniteDS Flex UDP client library"
+
+type = 'swc'
+srcDirs = [ 'src/main/flex' ]
+
+dependencies {
+	flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
+	
+	external project(':granite-client-flex')
+	external project(':granite-client-flex-advanced')
+}
+
+// Use afterEvaluate because the flexHome variable is defined after project configuration
+afterEvaluate {
+	dependencies {
+		external files(flexHome + '/frameworks/libs/air/aircore.swc')
+		external files(flexHome + '/frameworks/libs/air/airglobal.swc')
+		external files(flexHome + '/frameworks/libs/air/airframework.swc')
+	}
+}
+
+asdoc {
+	outputDir 'build/docs/asdoc'
+
+	additionalASDocOptions = [
+		"-window-title", "GraniteDS Flex API Documentation",
+		"-main-title", "GraniteDS Flex API Documentation - " + granitedsVersion
+	]
+}
+
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from srcDirs
+}
+
+task javadocJar(type: Jar, dependsOn: 'asdoc') {
+	classifier = 'javadoc'
+	from asdoc.outputDir
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+build {
+	it.dependsOn 'sourcesJar'
+	it.dependsOn 'javadocJar'
+}

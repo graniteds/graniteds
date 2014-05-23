@@ -1,0 +1,10 @@
+// ActiveMQ integration
+
+description = 'GraniteDS ActiveMQ integration server library'
+
+dependencies {
+	compile 'org.apache.activemq:activemq-core:5.7.0'
+	
+	compile project(':granite-server-core')
+}
+

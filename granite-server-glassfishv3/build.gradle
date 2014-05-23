@@ -1,0 +1,18 @@
+// GlassFish v3 support (security + gravity + websockets)
+
+description = 'GraniteDS GlassFish v3+ support server library'
+
+dependencies {
+	compile 'javax.servlet:javax.servlet-api:3.0.1'			// Must add because catalina comes with 2.5
+	compile group: 'org.glassfish.main.web', name: 'web-core', version: '3.1.2.2', transitive: false
+	compile group: 'org.glassfish.main.security', name: 'websecurity', version: '3.1.2.2', transitive: false
+	compile 'com.sun.grizzly:grizzly-utils:1.9.59'
+	compile 'com.sun.grizzly:grizzly-websockets:1.9.59'
+	
+	compile project(':granite-server-core')
+
+	testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3',
+			'org.glassfish.main.extras:glassfish-embedded-all:3.1.2.2'
+
+	testCompile project(':granite-server-core').sourceSets.test.output
+}

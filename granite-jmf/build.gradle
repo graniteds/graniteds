@@ -1,0 +1,9 @@
+// JMF Serialization implementation
+
+description = 'GraniteDS JMF Serialization library'
+
+dependencies {
+	compile project(':granite-common')
+	
+	testCompile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+}

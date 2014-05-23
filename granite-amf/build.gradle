@@ -1,0 +1,7 @@
+// AMF Serialization implementation
+
+description = 'GraniteDS AMF Serialization library'
+
+dependencies {
+	compile project(':granite-common')
+}

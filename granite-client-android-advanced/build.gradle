@@ -1,0 +1,50 @@
+// Android advanced client library
+
+evaluationDependsOn(':granite-client-android')
+
+dependencies {
+
+	compile 'javax.inject:javax.inject:1',
+		'com.google.android:android:4.0.1.2'
+	
+	compile 'org.jboss.spec.javax.websocket:jboss-websocket-api_1.0_spec:1.0.0.Final',
+		'org.glassfish.tyrus:tyrus-client:1.4'
+	
+	compile files('lib/android-async-http-1.4.3.jar')
+	
+	compile project(':granite-client-android')
+	
+	testCompile project(':granite-client-java').sourceSets.test.output
+	
+	testCompile 'org.hibernate:hibernate-core:3.6.10.Final',
+		'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
+		'antlr:antlr:2.7.7'
+		
+	testCompile project(':granite-server-core'), project(':granite-server-hibernate')
+}
+
+// Include sources of java client
+sourceSets {
+	main {
+		java {
+			source project(':granite-client-java-advanced').sourceSets.main.java
+			source project(':granite-binding-android').sourceSets.main.java
+			
+			exclude androidJavaExcludes
+		}
+		resources {
+			source project(':granite-client-java-advanced').sourceSets.main.resources
+			source project(':granite-binding-android').sourceSets.main.resources
+			
+			exclude androidResourceExcludes
+		}
+	}
+}
+
+sourceSets.main.java.filter.exclude androidJavaExcludes
+
+sourceSets.main.resources.filter.exclude androidResourceExcludes
+
+javadoc {
+	source = sourceSets.main.java		// Redefine here so filter is applied
+}

@@ -1,0 +1,11 @@
+// Jetty 6 support (security + gravity)
+
+description = 'GraniteDS Jetty 6 support server library'
+
+dependencies {
+	compile 'org.mortbay.jetty:jetty:6.1.26'
+	compile 'org.mortbay.jetty:jetty-util:6.1.26'
+	
+	compile project(':granite-server-core')
+}
+

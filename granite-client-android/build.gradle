@@ -1,0 +1,88 @@
+// Android client library
+
+rootProject.ext.androidJavaExcludes = [
+	'org/granite/config/api/**',
+	'org/granite/config/flex/**',
+	'org/granite/collections/**',
+	'org/granite/context/**',
+	'org/granite/logging/impl/**',
+	'org/granite/messaging/persistence/*Externalizable*',
+	'org/granite/scan/**',
+	'org/granite/client/scan/**',
+	'org/granite/client/configuration/Client*',
+	'org/granite/client/configuration/Simple*',
+	'org/granite/client/messaging/alias/**',
+	'org/granite/client/messaging/amf/**',
+	'org/granite/client/messaging/channel/AMF*',
+	'org/granite/client/messaging/channel/amf/AMF*',
+	'org/granite/client/messaging/codec/AMF*',
+	'org/granite/client/messaging/codec/ClientJavaClassDescriptor*',
+	'org/granite/client/messaging/transport/jetty9/**',
+	'org/granite/client/messaging/transport/jetty/**',
+	'org/granite/client/messaging/transport/apache/**',
+	'org/granite/client/validation/Default*',
+	'org/granite/client/validation/Notifying*',
+	'org/granite/client/validation/Server*',
+	'org/granite/client/validation/Validation*',
+	'org/granite/client/tide/spring/**',
+	'org/granite/client/tide/cdi/**',
+	'org/granite/client/tide/validation/**'
+]
+
+rootProject.ext.androidResourceExcludes = [
+	'unused.txt',
+	'org/granite/config/*.xsd',
+	'org/granite/config/*.dtd',
+	'org/granite/config/*.xml',
+	'org/granite/client/configuration/granite-config.xml'
+]
+
+evaluationDependsOn(':granite-common')
+evaluationDependsOn(':granite-jmf')
+evaluationDependsOn(':granite-client-java')
+
+dependencies {
+
+	compile 'com.google.android:android:4.0.1.2'
+	
+	compile 'org.jboss.spec.javax.websocket:jboss-websocket-api_1.0_spec:1.0.0.Final',
+		'org.glassfish.tyrus:tyrus-client:1.4'
+	
+	compile files('lib/android-async-http-1.4.3.jar')
+	
+	testCompile project(':granite-client-java').sourceSets.test.output
+	
+	testCompile 'org.hibernate:hibernate-core:3.6.10.Final',
+		'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final',
+		'antlr:antlr:2.7.7'
+		
+	testCompile project(':granite-server-core'), project(':granite-server-hibernate')
+}
+
+// Include sources of java client
+sourceSets {
+	main {
+		java {
+			source project(':granite-common').sourceSets.main.java
+			source project(':granite-jmf').sourceSets.main.java
+			source project(':granite-client-java').sourceSets.compact.java
+			
+			exclude androidJavaExcludes
+		}
+		resources {
+			source project(':granite-common').sourceSets.main.resources
+			source project(':granite-jmf').sourceSets.main.resources
+			source project(':granite-client-java').sourceSets.compact.resources
+			
+			exclude androidResourceExcludes
+		}
+	}
+}
+
+sourceSets.main.java.filter.exclude androidJavaExcludes
+
+sourceSets.main.resources.filter.exclude androidResourceExcludes
+
+javadoc {
+	source = sourceSets.main.java		// Redefine here so filter is applied
+}

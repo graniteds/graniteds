@@ -1,0 +1,10 @@
+// GlassFish v2 support (security)
+
+description = 'GraniteDS GlassFish v2 support server library'
+
+dependencies {
+	compile files('lib/appserv-rt.jar')
+	
+	compile project(':granite-server-core')
+}
+

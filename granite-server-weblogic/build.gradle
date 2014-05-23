@@ -1,0 +1,10 @@
+// WebLogic support (security + gravity)
+
+description = 'GraniteDS WebLogic 10+ support server library'
+
+dependencies {
+	compile files('lib/weblogic10-compat.jar')
+	
+	compile project(':granite-server-core')
+}
+

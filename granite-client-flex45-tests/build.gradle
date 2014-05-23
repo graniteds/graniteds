@@ -1,0 +1,100 @@
+// Flex 4.5+ tests: must be compiled as main project because gradlefx does not support additional compiler options
+// when running flexunit
+
+description = "GraniteDS Advanced Flex 4.5+ client library"
+
+type = 'swf'
+srcDirs = [ 'src/test/flex' ]
+mainClass = 'TestRunner'
+
+additionalCompilerOptions = [
+	'-debug=true',
+	'-keep-as3-metadata=Managed,ChangeEvent,NonCommittingChangeEvent,Transient,'
+		+ 'Id,Version,Lazy,Name,In,Inject,Out,Produces,ManagedEvent,Observer,PostConstruct,Destroy,'
+		+ 'Valid,Size,Test,Ignore,Suite,RunWith'
+]
+
+dependencies {
+	flexSDK group: 'com.adobe', name: 'flex-sdk', version: '4.5', ext: 'zip'
+	
+	internal project(':granite-client-flex')
+	merged project(':granite-client-flex45-advanced')
+	
+	merged files('lib/flexunit-core-flex-4.1.0.swc')
+	merged files('lib/flexunit-cilistener-4.1.0.swc')
+	merged files('lib/flexunit-uilistener-4.1.0.swc')
+	
+	test files('lib/flexUnitTasks-4.1.0.jar')
+}
+
+beforeEvaluate {
+	if (configurations.flexSDK.resolvedConfiguration.hasError()) {
+		println 'Project ' + project.name + ': Flex SDK not found, disable build of Flex libraries'
+		project.configurations.remove(project.configurations.flexSDK)
+		project.configurations.create('flexSDK')
+		project.flexHome = project(':granite-client-flex').file('flex-sdk')
+		project.tasks.each { it.enabled = false }
+	}
+}
+
+beforeEvaluate {
+	File cmd = new File(flexUnitCommand)
+	if (!cmd.exists()) {
+		println 'Flash Player location not defined correctly, skip FlexUnit tests'
+		tasks.getByName('test').enabled = false
+		tasks.getByName('testFlex').enabled = false
+	}
+}
+
+flexUnit {
+	excludes = [ '**' ]			// Disable default GradleFX task
+	
+	toDir = new File(buildDir, 'test-results')
+}
+
+// Use FlexUnit ant task directly, GradleFX built-in test task tries to compile the tests 
+task testFlex << {
+	ant.taskdef(resource: 'flexUnitTasks.tasks', classpath: configurations.test.asPath)
+	
+	File reportDir = file(flexUnit.toDir)
+	
+	// you can't write to a directory that doesn't exist
+	if (!reportDir.exists()) reportDir.mkdirs()
+	
+	Set<File> libraries = configurations.internal.files +
+			configurations.external.files +
+			configurations.merged.files +
+			configurations.test.files
+	
+	ant.flexunit (
+		swf:			 buildDir.name + '/' + output + '.swf',
+		player:          flexUnit.player,
+		command:         flexUnitCommand,
+		toDir:           flexUnit.toDir,
+		workingDir:      buildDir.name,
+		haltonfailure:   flexUnit.haltOnFailure,
+		verbose:         flexUnit.verbose,
+		localTrusted:    flexUnit.localTrusted,
+		port:            flexUnit.port,
+		buffer:          flexUnit.buffer,
+		timeout:         flexUnit.timeout,
+		failureproperty: flexUnit.failureProperty,
+		headless:        flexUnitHeadless,
+		display:         flexUnit.display) {
+		
+		libraries.each { File libraryFile ->
+			library(dir: libraryFile.parent) {
+				include(name: libraryFile.name)
+			}
+		}
+	}
+	
+	if (ant.properties[flexUnit.failureProperty] == "true") {
+		println "Tests failed"
+	}
+
+}
+
+test {
+	it.dependsOn 'copytestresources', 'testFlex'
+}

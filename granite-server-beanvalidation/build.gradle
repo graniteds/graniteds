@@ -1,0 +1,11 @@
+// Bean Validation support
+
+description = 'GraniteDS Bean Validation support library'
+
+dependencies {
+	compile 'javax.validation:validation-api:1.0.0.GA'
+	
+	compile project(':granite-server-core')
+}
+
+

@@ -1,0 +1,50 @@
+// Reference docs
+
+apply plugin: 'asciidoctor'
+
+task docFlex(type: org.asciidoctor.gradle.AsciidoctorTask) {
+	sourceDocumentName = new File(sourceDir, 'graniteds-refguide-flex.adoc')
+	outputDir = new File("$buildDir/docs/flex")
+	options = [
+		doctype: 'book',
+		attributes: [
+			version: granitedsVersion,
+			flex: '',
+			copycss: '',
+			toc2: '',
+			'source-highlighter': 'highlightjs',
+			idprefix: '',
+			idseparator: '-'
+		]
+	]
+
+	copy {
+		from new File(sourceDir, 'images')
+		into new File(outputDir, 'images')
+	}
+}
+
+task docJava(type: org.asciidoctor.gradle.AsciidoctorTask) {
+	sourceDocumentName = new File(sourceDir, 'graniteds-refguide-java.adoc')
+	outputDir = new File("$buildDir/docs/java")
+	options = [
+		doctype: 'book',
+		attributes: [
+			version: granitedsVersion,
+			java: '',
+			copycss: '',
+			toc2: '',
+			'source-highlighter': 'highlightjs',
+			idprefix: '',
+			idseparator: '-'
+		]
+	]
+
+	copy {
+		from new File(sourceDir, 'images')
+		into new File(outputDir, 'images')
+	}
+}
+
+task asciidoctor(overwrite: true, dependsOn: [ 'docFlex', 'docJava' ]) {		
+}

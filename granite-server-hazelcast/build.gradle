@@ -1,0 +1,10 @@
+// Hazelcast integration
+
+description = 'GraniteDS Hazelcast integration server library'
+
+dependencies {
+	compile 'com.hazelcast:hazelcast:3.2'
+	
+	compile project(':granite-server-core')
+}
+

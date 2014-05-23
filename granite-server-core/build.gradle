@@ -1,0 +1,51 @@
+// Core project
+// AMF/JMF Serialization + Remoting + Gravity + Tide server-side data management
+
+description = 'GraniteDS Core server library'
+
+dependencies {
+	compile 'javax.servlet:javax.servlet-api:3.0.1'				// Should use 2.5 but 3.0 required by ServletGraniteContext.BasicRequest
+
+	compile 'javassist:javassist:3.12.1.GA'
+	compile 'log4j:log4j:1.2.17'
+	compile 'org.slf4j:slf4j-api:1.7.0'
+
+	// Tide dependencies
+	compile 'org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.1_spec:1.0.1.Final'
+	compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+	compile 'javax.jdo:jdo2-api:2.3-eb'
+	compile 'javax.jms:jms-api:1.1-rev-1'
+	compile 'javax.transaction:transaction-api:1.1-rev-1'
+	compile 'javax.enterprise:cdi-api:1.0-SP4'					// Required for @NonBinding annotation on @DataEnabled
+}
+
+sourceSets {
+	main {
+		java {
+			source project(':granite-common').sourceSets.main.java
+			source project(':granite-amf').sourceSets.main.java
+			source project(':granite-jmf').sourceSets.main.java
+		}
+		resources {
+			source project(':granite-common').sourceSets.main.resources
+			source project(':granite-amf').sourceSets.main.resources
+			source project(':granite-jmf').sourceSets.main.resources
+		}
+	}
+	
+	test {
+		java {
+			exclude 'org/granite/test/amf/**'
+		}
+	}
+}
+
+javadoc {
+	source = sourceSets.main.java		// Redefine here so filter is applied
+}
+
+jar {
+	metaInf {
+		from 'LICENSE.txt'
+	}
+}

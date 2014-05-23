@@ -1,0 +1,50 @@
+// JavaFX client library
+
+apply plugin: 'cobertura'
+
+dependencies {
+	
+	compile files(System.properties.'java.home' + '/lib/jfxrt.jar')
+	
+	// Dependencies from granite-common
+	compile 'log4j:log4j:1.2.17'
+	
+	compile group: 'org.eclipse.jetty', name: 'jetty-continuation', version: jetty8Version, transitive: false
+	compile group: 'org.eclipse.jetty', name: 'jetty-http', version: jetty8Version, transitive: false
+	compile group: 'org.eclipse.jetty', name: 'jetty-io', version: jetty8Version, transitive: false
+	compile group: 'org.eclipse.jetty', name: 'jetty-server', version: jetty8Version, transitive: false
+	compile group: 'org.eclipse.jetty', name: 'jetty-websocket', version: jetty8Version, transitive: false
+
+	compile group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: jetty9Version, transitive: false
+	compile group: 'org.eclipse.jetty.websocket', name: 'websocket-common', version: jetty9Version, transitive: false
+	compile group: 'org.eclipse.jetty.websocket', name: 'websocket-api', version: jetty9Version, transitive: false
+	compile group: 'org.eclipse.jetty.websocket', name: 'javax-websocket-client-impl', version: jetty9Version, transitive: false
+
+	compile 'org.glassfish.tyrus:tyrus-client:1.4'
+
+	compile project(':granite-client-java').files('lib/jetty-util-89.jar')     // Use custom merged jar to compile both Jetty 8 and Jetty 9 websocket clients
+	
+	compile 'org.apache.httpcomponents:httpasyncclient:4.0.1',
+			'net.sf.extcos:extcos:0.3b'
+	
+	testCompile project(':granite-server-core')
+	testCompile project(':granite-server-hibernate')
+	
+	testCompile project(':granite-client-java').sourceSets.test.output
+}
+
+// Include sources of advanced java client
+sourceSets {
+	main {
+		java {
+			source project(':granite-client-java').sourceSets.main.java
+		}
+		resources {
+			source project(':granite-client-java').sourceSets.main.resources
+		}
+	}
+}
+
+javadoc {
+	source = sourceSets.main.java		// Redefine here so filter is applied
+}

@@ -1,0 +1,21 @@
+// Jetty 8 support (security + gravity + websockets)
+
+description = 'GraniteDS Jetty 8 support server library'
+
+dependencies {
+	compile 'org.eclipse.jetty:jetty-server:' + jetty8Version
+	compile 'org.eclipse.jetty:jetty-util:' + jetty8Version
+	compile 'org.eclipse.jetty:jetty-websocket:' + jetty8Version
+	
+	compile project(':granite-server-core')
+
+	testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3',
+			'org.jboss.shrinkwrap.container:shrinkwrap-extension-jetty-70:1.0.0-beta-1',
+			'org.eclipse.jetty:jetty-webapp:' + jetty8Version,
+			'org.eclipse.jetty:jetty-util:' + jetty8Version,
+			'org.eclipse.jetty:jetty-plus:' + jetty8Version,
+			'org.eclipse.jetty:jetty-annotations:' + jetty8Version
+
+	testCompile project(':granite-server-core').sourceSets.test.output
+}
+

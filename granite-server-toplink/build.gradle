@@ -1,0 +1,10 @@
+// TopLink Essentials support
+
+description = 'GraniteDS TopLink Essentials support library'
+
+dependencies {
+	compile files('lib/toplink-essentials.jar')
+	
+	compile project(':granite-server-core')
+}
+

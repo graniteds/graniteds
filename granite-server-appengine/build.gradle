@@ -1,0 +1,11 @@
+// Google App Engine support (serialization + gravity)
+
+description = 'GraniteDS Google AppEngine support server library'
+
+dependencies {
+	compile 'javax.servlet:javax.servlet-api:3.0.1'
+	compile 'com.google.appengine:appengine-api-1.0-sdk:1.6.4'	// KeyConverter
+	
+	compile project(':granite-server-core')
+}
+

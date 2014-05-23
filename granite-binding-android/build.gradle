@@ -1,0 +1,17 @@
+// Android data binding library
+
+dependencies {
+	compile 'com.google.android:android:4.0.1.2'
+}
+
+sourceSets {
+	main {
+		java {
+			source project(':granite-binding').sourceSets.main.java
+		}
+		resources {
+			source project(':granite-binding').sourceSets.main.resources
+		}
+	}
+}
+

@@ -1,0 +1,10 @@
+// Tomcat 6 support (security + gravity)
+
+description = 'GraniteDS Tomcat 6 support server library'
+
+dependencies {
+	compile 'org.apache.tomcat:catalina:6.0.32'
+	
+	compile project(':granite-server-core')
+}
+

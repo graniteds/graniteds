@@ -1,0 +1,7 @@
+// UDP Integration for Gravity
+	
+description = 'GraniteDS UDP support server library'
+
+dependencies {
+	compile project(':granite-server-core')
+}

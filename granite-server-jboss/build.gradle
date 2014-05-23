@@ -1,0 +1,20 @@
+// JBossWeb support (gravity)
+
+description = 'GraniteDS JBoss support server library'
+
+dependencies {
+	compile files('lib/jbossweb.jar')
+
+	compile files('lib/jboss-vfs.jar')							// Used conditionally by VFSScanner impl
+	compile files('lib/jboss-vfs3.jar')							// Used conditionally by VFS3Scanner impl
+	compile files('lib/jbossmq.jar')							// Used by JBossMQSelector impl
+
+	compile project(':granite-server-core')
+
+	testCompile 'org.jboss.shrinkwrap:shrinkwrap-impl-base:1.1.3',
+			'org.jboss.as:jboss-as-embedded:7.1.3.Final',
+			'org.jboss.as:jboss-as-server:7.1.3.Final'
+
+	testCompile project(':granite-server-core').sourceSets.test.output
+}
+

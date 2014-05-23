@@ -1,0 +1,87 @@
+// Lib shared with generator (don't delete, used in flexmojos)
+
+description = 'GraniteDS generator shared'
+
+apply plugin: 'java'
+
+dependencies {
+	compile project(':granite-server-core')
+}
+
+configurations {
+	create('sources')
+	create('javadoc')
+}
+
+task sourcesJar(type: Jar, dependsOn: 'classes') {
+	classifier = 'sources'
+
+	from project(':granite-server-core').sourceSets.main.allSource
+	include 'org/granite/messaging/amf/io/util/Property.java',
+			'org/granite/messaging/amf/io/util/externalizer/Externalizer.java',
+			'org/granite/messaging/amf/io/util/externalizer/annotation/**',
+			'org/granite/messaging/service/annotations/**',
+			'org/granite/messaging/annotations/**',
+			'org/granite/messaging/service/security/*DestinationSecurizer.java',
+			'org/granite/tide/annotations/**',
+			'org/granite/tide/data/Lazy.java'
+}
+
+task javadocJar(type: Jar, dependsOn: 'javadoc') {
+	classifier = 'javadoc'
+
+	from project(':granite-server-core').javadoc.destinationDir
+	include 'org/granite/messaging/amf/io/util/Property.html',
+			'org/granite/messaging/amf/io/util/externalizer/Externalizer.html',
+			'org/granite/messaging/amf/io/util/externalizer/annotation/**',
+			'org/granite/messaging/service/annotations/**',
+			'org/granite/messaging/annotations/**',
+			'org/granite/messaging/service/security/*DestinationSecurizer.html',
+			'org/granite/tide/annotations/**',
+			'org/granite/tide/data/Lazy.html'
+}
+
+jar {
+	from project(':granite-server-core').sourceSets.main.output.classesDir
+	include 'org/granite/messaging/amf/io/util/Property.class',
+			'org/granite/messaging/amf/io/util/externalizer/Externalizer.class',
+			'org/granite/messaging/amf/io/util/externalizer/annotation/**',
+			'org/granite/messaging/service/annotations/**',
+			'org/granite/messaging/annotations/**',
+			'org/granite/messaging/service/security/*DestinationSecurizer.class',
+			'org/granite/tide/annotations/**',
+			'org/granite/tide/data/Lazy.class'
+
+	metaInf {
+		from 'LICENSE.txt'
+	}
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+dependencies {
+	javadoc 'log4j:log4j:1.2.17'
+
+	testCompile 'junit:junit:4.11'
+}
+
+javadoc {
+	title 'GraniteDS API Documentation'
+
+	classpath.add(configurations.javadoc)
+
+	configure(options) {
+		version = true
+		author = true
+		use = true
+		linkSource = true
+		stylesheetFile = file('../jdstyle.css')
+		windowTitle = 'GraniteDS API Documentation'
+		docTitle = 'GraniteDS API Documentation - ' + granitedsVersion
+		links = rootProject.ext.javadocLinks
+	}
+}
+

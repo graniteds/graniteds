@@ -1,0 +1,53 @@
+// Flex client library
+
+description = "GraniteDS Flex client library"
+
+type = 'swc'
+srcDirs = [ 'src/main/flex' ]
+
+dependencies {
+	flexSDK group: 'com.adobe', name: 'flex-sdk', version: '3.6', ext: 'zip'
+	
+	external group: 'org.graniteds', name: 'flex-websocket-client', version: '1.0', ext: 'swc'
+}
+
+beforeEvaluate {
+	if (configurations.flexSDK.resolvedConfiguration.hasError()) {
+		println 'Project ' + project.name + ': Flex SDK not found, disable build of Flex libraries'
+		project.configurations.remove(project.configurations.flexSDK)
+		project.configurations.create('flexSDK')
+		project.flexHome = project(':granite-client-flex').file('flex-sdk')
+		project.tasks.each { it.enabled = false }
+	}
+}
+
+asdoc {
+	outputDir 'build/docs/asdoc'
+	
+	additionalASDocOptions = [
+		"-window-title", "GraniteDS Flex API Documentation",
+		"-main-title", "GraniteDS Flex API Documentation - " + granitedsVersion
+	]
+}
+
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from srcDirs
+}
+
+task javadocJar(type: Jar, dependsOn: 'asdoc') {
+	classifier = 'javadoc'
+	from asdoc.outputDir
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+build {
+	it.dependsOn 'sourcesJar'
+	it.dependsOn 'javadocJar'
+}
+
+

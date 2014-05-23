@@ -1,0 +1,17 @@
+// Generator (engine + ant task)
+
+description = 'GraniteDS Code generator'
+
+dependencies {
+	compile 'org.codehaus.groovy:groovy:1.6.4'
+	compile 'org.apache.ant:ant:1.8.4'
+	compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+	compile 'javax.jdo:jdo2-api:2.3-eb'
+
+	compile project(':granite-generator-share')
+}
+
+test {
+	it.dependsOn ':granite-client-java:jar', ':granite-client-javafx:jar', ':granite-client-android:jar'
+}
+

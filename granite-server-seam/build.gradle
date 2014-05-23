@@ -1,0 +1,27 @@
+// Seam 2.1 integration
+
+description = 'GraniteDS Seam 2.1+ integration server library'
+
+dependencies {
+	compile files('lib/jboss-seam.jar')
+	compile 'javax.faces:jsf-api:1.2_15'
+	compile 'javax.ejb:ejb-api:3.0'
+	
+	compile project(':granite-server-core')
+	compile project(':granite-server-hibernate')
+	
+	testCompile project(':granite-server-core').sourceSets.test.output
+	
+	testRuntime 'javassist:javassist:3.12.0.GA'
+	testRuntime 'javax.el:el-api:1.0'
+	testRuntime 'org.hibernate:hibernate-entitymanager:3.3.2.GA'
+	testRuntime project(':granite-server-hibernate').files('lib/hibernate-validator.jar')
+	testRuntime files('lib/jboss-el.jar')
+	testRuntime 'org.hsqldb:hsqldb:2.3.0'
+}
+
+// Ensure tests find seam.properties and other resources
+sourceSets.main.output.resourcesDir = sourceSets.main.output.classesDir
+sourceSets.test.output.resourcesDir = sourceSets.test.output.classesDir
+
+

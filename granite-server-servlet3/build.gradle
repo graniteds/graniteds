@@ -1,0 +1,10 @@
+// Servlet 3 Integration for Gravity async I/O and auto configuration
+
+description = 'GraniteDS Servlet 3 support server library'
+
+dependencies {
+	compile 'javax.servlet:javax.servlet-api:3.0.1'
+	compile 'org.jboss.spec.javax.websocket:jboss-websocket-api_1.0_spec:1.0.0.Final'
+	
+	compile project(':granite-server-core')
+}

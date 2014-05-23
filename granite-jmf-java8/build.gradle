@@ -1,0 +1,30 @@
+// JMF Serialization implementation - Java 8 extension
+
+description = 'Granite JMF Serialization library - Java 8 extension'
+
+dependencies {
+	compile project(':granite-jmf')
+	
+	testCompile project(':granite-jmf').sourceSets.test.output
+}
+
+compileJava {
+	sourceCompatibility=1.8
+	targetCompatibility=1.8
+	
+	options.fork = true
+	options.forkOptions.executable = "${jdk8Home}/bin/javac"
+}
+compileTestJava {
+	sourceCompatibility=1.8
+	targetCompatibility=1.8
+	
+	options.fork = true
+	options.forkOptions.executable = "${jdk8Home}/bin/javac"
+}
+
+test.executable = "${jdk8Home}/bin/java"
+
+javadoc {
+	executable = "${jdk8Home}/bin/javadoc"		
+}

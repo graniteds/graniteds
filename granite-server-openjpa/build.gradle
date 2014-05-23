@@ -1,0 +1,21 @@
+// OpenJPA support
+
+description = 'GraniteDS OpenJPA support library'
+
+dependencies {
+	compile 'org.apache.openjpa:openjpa:2.2.2'
+	
+	compile project(':granite-server-core')
+	testCompile project(':granite-server-core').sourceSets.test.output
+	
+	testRuntime 'org.hsqldb:hsqldb:2.3.0'
+}
+
+File openjpa = configurations.compile.find { it.name.startsWith('openjpa') }
+
+test {
+	jvmArgs = [ '-javaagent:' + openjpa ]
+	
+	includes = [ 'org/granite/test/openjpa/**/Test*' ]
+}
+

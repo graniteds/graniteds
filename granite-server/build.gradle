@@ -1,0 +1,71 @@
+// All server libs
+
+description = 'GraniteDS Server all libs'
+
+apply plugin: 'java'
+
+configurations {
+	create('sources')
+	create('javadoc')
+}
+
+task sourcesJar(type: Jar, dependsOn: 'classes') {
+	classifier = 'sources'
+	
+	coreProjects.each { 
+		from project(it).sourceSets.main.allSource 
+	}
+}
+
+task javadocJar(type: Jar, dependsOn: 'javadoc') {
+	classifier = 'javadoc'
+
+	from javadoc.destinationDir
+}
+
+jar {
+	def server = it
+	coreProjects.each {
+		server.dependsOn it + ':classes'
+		from project(it).sourceSets.main.output.classesDir
+		from project(it).sourceSets.main.output.resourcesDir
+	}
+	
+	metaInf {
+		from 'LICENSE.txt'
+	}
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+dependencies {
+	javadoc 'log4j:log4j:1.2.17'
+}
+
+javadoc {
+	title 'GraniteDS API Documentation'
+
+	allProjects.each {
+		source project(it).sourceSets.main.allJava
+	}
+	
+	classpath.add(configurations.javadoc)
+
+	allProjects.each {
+		classpath.add(project(it).sourceSets.main.compileClasspath)
+	}
+	
+	configure(options) {
+		version = true
+		author = true
+		use = true
+		linkSource = true
+		stylesheetFile = file('../jdstyle.css')
+		windowTitle = 'GraniteDS API Documentation'
+		docTitle = 'GraniteDS API Documentation - ' + granitedsVersion
+		links = rootProject.ext.javadocLinks
+	}
+}
