@@ -210,9 +210,9 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 		pageChangeHelper.removeListener(listener);
 	}
 	
-	public void firePageChange(TideRpcEvent event, int previousFirst, int previousLast) {
+	public void firePageChange(TideRpcEvent event, int previousFirst, int previousLast, List<E> savedSnapshot) {
 		if (event instanceof TideResultEvent<?>)
-			fireItemsUpdated(0, Math.min(this.count, this.last)-this.first);
+			fireItemsUpdated(0, Math.min(this.count, this.last)-this.first, savedSnapshot);
 		
 		pageChangeHelper.fireEvent(this, event);
 	}
@@ -226,18 +226,110 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 	    }
 	}
 	
-	public void fireItemsUpdated(final int from, final int to) {
-        if (to < from)
-            return;
+	public void fireItemsUpdated(final int from, final int to, final List<E> savedSnapshot) {
+		if (savedSnapshot != null) {
+			// Detect removals
+			final List<Integer> removals = new ArrayList<Integer>();
+			for (int i = 0; i < savedSnapshot.size(); i++) {
+				if (!getInternalWrappedList().contains(savedSnapshot.get(i)))
+					removals.add(i);
+			}
+			
+			// Detect permutations
+			int start = -1;
+			for (int i = 0; i < savedSnapshot.size(); i++) {
+				if (getInternalWrappedList().contains(savedSnapshot.get(i))) {
+					start = i;
+					break;
+				}
+			}
+			final List<Integer> permutations = new ArrayList<Integer>();
+			if (start >= 0) {
+				for (int i = start; i < savedSnapshot.size(); i++) {
+					int idx = getInternalWrappedList().indexOf(savedSnapshot.get(i));
+					if (idx < 0)
+						break;
+					permutations.add(idx);
+				}
+			}
+			final int[] perms = new int[permutations.size()];
+			for (int i = 0; i < permutations.size(); i++)
+				perms[i] = permutations.get(i);
+			
+			final int permutationStart = start;
+			
+			// Notify of elements removed
+			ListChangeListener.Change<E> change = new ListChangeListener.Change<E>(wrappedList) {
+				private int changeIndex = -1;
+				
+				@Override
+				public int getFrom() {
+					if (changeIndex < removals.size())
+						return first+removals.get(changeIndex);
+					if (!permutations.isEmpty())
+						return first+permutationStart;
+					return -1;
+				}
+				
+				@Override
+				public int getTo() {
+					if (changeIndex < removals.size())
+						return first+removals.get(changeIndex);
+					if (!permutations.isEmpty())
+						return first+permutationStart+perms.length;
+					return -1;
+				}
+				
+				@Override
+				public boolean wasUpdated() {
+					return false;
+				}
+				
+				@Override
+				protected int[] getPermutation() {
+					if (changeIndex == removals.size())
+						return perms;
+					return EMPTY_PERMUTATION;
+				}
+				
+				@Override
+				public List<E> getRemoved() {
+					if (changeIndex < removals.size())
+						return Collections.singletonList(savedSnapshot.get(removals.get(changeIndex)));
+					return Collections.emptyList();
+				}
+				
+				@Override
+				public boolean next() {
+					changeIndex++;
+					return changeIndex <= removals.size();
+				}
+				
+				@Override
+				public void reset() {
+					changeIndex = -1;
+				}			
+			};
+			helper.fireValueChangedEvent(change);
+			
+			return;
+		}
+		
+		if (to < from)
+			return;
+		
+        // Notify of content change
 		ListChangeListener.Change<E> change = new ListChangeListener.Change<E>(wrappedList) {
+			private boolean next = true;
+			
 			@Override
 			public int getFrom() {
-				return first+from;
+				return from;
 			}
 
 			@Override
 			public int getTo() {
-				return first+to;
+				return to;
 			}
 			
 			@Override
@@ -252,16 +344,21 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 
 			@Override
 			public List<E> getRemoved() {
-				return null;
+				return Collections.emptyList();
 			}
-
+			
 			@Override
 			public boolean next() {
+				if (next) {
+					next = false;
+					return true;
+				}
 				return false;
 			}
 
 			@Override
 			public void reset() {
+				next = true;
 			}			
 		};
 		helper.fireValueChangedEvent(change);
@@ -360,12 +457,12 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 	
 	@Override
 	public Object[] toArray() {
-		return wrappedList.toArray();
+		return internalWrappedList.toArray();
 	}
 
 	@Override
 	public <T> T[] toArray(T[] a) {
-		return wrappedList.toArray(a);
+		return internalWrappedList.toArray(a);
 	}
 
 	@Override

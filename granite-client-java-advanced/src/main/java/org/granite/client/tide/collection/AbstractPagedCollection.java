@@ -40,6 +40,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -607,8 +608,9 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 	 *  @param event the remote event (ResultEvent or FaultEvent)
 	 *  @param previousFirst index of first element before last updated list
 	 *  @param previousLast index of last element before last updated list
+	 *  @param savedSnapshot collection snapshot before last change
 	 */
-	protected abstract void firePageChange(TideRpcEvent event, int previousFirst, int previousLast);
+	protected abstract void firePageChange(TideRpcEvent event, int previousFirst, int previousLast, List<E> savedSnapshot);
 	
 	
 	/**
@@ -707,6 +709,8 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
         this.first = nextFirst;
         this.last = nextLast;
 
+        List<E> savedSnapshot = null;
+        
     	if (initializing) {
             initializing = false;
 
@@ -714,6 +718,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
         }
         else {
     		log.debug("Adjusting from %d-%d to %d-%d size %d", previousFirst, previousLast, nextFirst, nextLast, list.size());
+    		
     		// Adjust internal list to expected results without triggering events
 	    	if (nextFirst > previousFirst && nextFirst < previousLast) {
     			getInternalWrappedList().subList(0, Math.min(getInternalWrappedList().size(), nextFirst - previousFirst)).clear();
@@ -745,9 +750,11 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
     				getInternalWrappedList().add(i, elt);
 	    		}
 	    	}
+	    	else
+	    		savedSnapshot = new ArrayList<E>(getInternalWrappedList());
     	}
 		
-		firePageChange(event, previousFirst, previousLast);
+		firePageChange(event, previousFirst, previousLast, savedSnapshot);
 	}
 	
 	/**
@@ -766,6 +773,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 	 * 
 	 *  @param event the fault event
 	 */
+	@SuppressWarnings("unchecked")
 	protected void handleFault(TideFaultEvent event, int first, int max) {
 		log.debug("findFault: %s", event);
 		
@@ -783,7 +791,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 		if (initializing)
 			initSent = false;
 		
-		firePageChange(event, this.first, this.last);
+		firePageChange(event, this.first, this.last, (List<E>)Collections.EMPTY_LIST);
 	}
 	
 	

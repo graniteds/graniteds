@@ -183,7 +183,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 	}
 	
 	
-	public void firePageChange(TideRpcEvent event, int previousFirst, int previousLast) {
+	public void firePageChange(TideRpcEvent event, int previousFirst, int previousLast, List<E> savedSnapshot) {
 		ccs.fireCollectionChangeEvent(Kind.PAGE_CHANGE, event, null);
 	}
 	

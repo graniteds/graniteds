@@ -381,10 +381,13 @@ public class JavaFXDataManager extends AbstractDataManager {
             }
         }
         else if (parent != null || isEntity(previous)) {
-            for (ObservableValue<?> property : instrospectProperties(previous)) {
+        	List<ObservableValue<?>> properties = instrospectProperties(previous);
+        	
+            for (ObservableValue<?> property : properties) {
             	if (property instanceof WritableValue<?>)
             		property.addListener(entityPropertyChangeListener);
             }
+            
             trackingListeners.put(previous, TrackingType.ENTITY_PROPERTY);
         }
     }
@@ -413,7 +416,9 @@ public class JavaFXDataManager extends AbstractDataManager {
                 ((ObservableMap<?, ?>)previous).removeListener(mapChangeListener);
         }
         else if (parent != null || isEntity(previous)) {
-            for (ObservableValue<?> property : instrospectProperties(previous)) {
+        	List<ObservableValue<?>> properties = instrospectProperties(previous);
+        	
+            for (ObservableValue<?> property : properties) {
             	if (property instanceof WritableValue<?>)
             		property.removeListener(entityPropertyChangeListener);
             }
