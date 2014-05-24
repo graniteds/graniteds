@@ -293,8 +293,8 @@ package org.granite.tide.data {
 						if (saveval !== undefined && ((!val && saveval) || !val.equals(saveval)))
 							return true;
 					}
-					else if (save && (val is IUID || saveval is IUID)) {
-						if (saveval !== undefined && val !== save[p])
+					else if (val is IUID || saveval is IUID) {
+						if (save && val !== saveval)
 							return true;
 						
 						if (isEntityDeepChanged(val, cache))

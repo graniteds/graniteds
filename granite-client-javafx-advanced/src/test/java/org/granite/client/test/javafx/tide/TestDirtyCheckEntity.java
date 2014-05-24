@@ -92,16 +92,20 @@ public class TestDirtyCheckEntity {
         
         BooleanProperty personDirty = new SimpleBooleanProperty();
         personDirty.bind(dataManager.dirtyEntity(person));
+        BooleanProperty contactDeepDirty = new SimpleBooleanProperty();
+        contactDeepDirty.bind(dataManager.deepDirtyEntity(contact));
         BooleanProperty ctxDirty = new SimpleBooleanProperty();
         ctxDirty.bind(dataManager.dirtyProperty());
         
         contact.setEmail("toto");
 
         Assert.assertTrue("Contact dirty", dataManager.isDirtyEntity(contact));
+        Assert.assertTrue("Contact deep dirty", dataManager.isDeepDirtyEntity(contact));
         
         contact.setEmail(null);
         
         Assert.assertFalse("Contact not dirty", dataManager.isDirtyEntity(contact));
+        Assert.assertFalse("Contact not deep dirty", dataManager.isDeepDirtyEntity(contact));
         
         contact.getPerson().setFirstName("toto");
         
@@ -110,6 +114,8 @@ public class TestDirtyCheckEntity {
         Assert.assertTrue("Context dirty", dataManager.isDirty());
         Assert.assertTrue("Context dirty 2", ctxDirty.get());
         Assert.assertFalse("Contact not dirty", dataManager.isDirtyEntity(contact));
+        Assert.assertTrue("Contact deep dirty", dataManager.isDeepDirtyEntity(contact));
+        Assert.assertTrue("Contact deep dirty 2", contactDeepDirty.get());
         
         contact.getPerson().setFirstName(null);
         
@@ -118,16 +124,18 @@ public class TestDirtyCheckEntity {
         Assert.assertFalse("Context not dirty", dataManager.isDirty());
         Assert.assertFalse("Context not dirty 2", ctxDirty.get());
         Assert.assertFalse("Contact not dirty", dataManager.isDirtyEntity(contact));
+        Assert.assertFalse("Contact not deep dirty", dataManager.isDirtyEntity(contact));
         
         Contact contact2 = new Contact(2L, 0L, "C2", null);
         contact2.setPerson(person);
         person.getContacts().add(contact2);
-                    
+        
         Assert.assertTrue("Person dirty", dataManager.isDirtyEntity(person));
         Assert.assertTrue("Person dirty 2", personDirty.get());
         Assert.assertTrue("Context dirty", entityManager.isDirty());
         Assert.assertTrue("Context dirty 2", ctxDirty.get());
         Assert.assertFalse("Contact not dirty", dataManager.isDirtyEntity(contact));
+        Assert.assertTrue("Contact deep dirty", dataManager.isDeepDirtyEntity(contact));
         
         person.getContacts().remove(1);
         
@@ -136,6 +144,7 @@ public class TestDirtyCheckEntity {
         Assert.assertFalse("Context not dirty", entityManager.isDirty());
         Assert.assertFalse("Context not dirty 2", ctxDirty.get());
         Assert.assertFalse("Contact not dirty", dataManager.isDirtyEntity(contact));
+        Assert.assertFalse("Contact not deep dirty", dataManager.isDeepDirtyEntity(contact));
         
         contact.setEmail("toto");
         person2.setLastName("tutu");

@@ -198,7 +198,7 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
                     break;
                 }
             }
-            else if ((val instanceof Collection<?> || val instanceof Map<?, ?>)) {
+            else if (val instanceof Collection<?> || val instanceof Map<?, ?>) {
                 if (!dataManager.isInitialized(val))
                     continue;
 
@@ -252,10 +252,10 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
                     return true;
                 }
             }
-            else if (save != null && (isEntity(val) || isEntity(saveval))) {
-                if (saveval != null && val != save.get(p))
+            else if (isEntity(val) || isEntity(saveval)) {
+                if (save != null && val != saveval)
                     return true;
-
+                
                 if (isEntityDeepChanged(val, null, cache))
                     return true;
             }
