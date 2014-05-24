@@ -5,11 +5,11 @@
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="src" path="src/test/resources"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/granite-common"/>
-	<classpathentry exported="true" kind="src" path="/granite-server-core"/>
+	<classpathentry kind="src" path="/granite-server-core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/granite-server-servlet3"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/granite-amf"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/granite-jmf"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/granite-amf"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/granite-jmf"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

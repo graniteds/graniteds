@@ -59,7 +59,7 @@ public class TestChainedBindings {
 	
 	private static class A {
 		
-		private ObjectProperty<B> b = new SimpleObjectProperty(this, "b");
+		private ObjectProperty<B> b = new SimpleObjectProperty<B>(this, "b");
 		
 		public ObjectProperty<B> bProperty() {
 			return b;
