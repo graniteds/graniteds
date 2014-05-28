@@ -327,11 +327,16 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
     	ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
     	boolean springFilterNotApplied = graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null;
     	HttpSession session = graniteContext.getSession(false);
-
-    	if (session != null && securityContextRepository.containsContext(graniteContext.getRequest())) {
-            authenticationExtension.endSession(session);
-            session.invalidate();
-        }
+    	
+    	try {
+	    	if (session != null && securityContextRepository.containsContext(graniteContext.getRequest())) {
+	            authenticationExtension.endSession(session);
+	            session.invalidate();
+	        }
+    	}
+    	catch (IllegalStateException e) {
+    		// Session already invalid
+    	}
         
     	if (springFilterNotApplied)
     		SecurityContextHolder.clearContext();

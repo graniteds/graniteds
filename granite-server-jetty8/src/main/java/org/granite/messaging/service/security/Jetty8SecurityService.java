@@ -182,7 +182,13 @@ public class Jetty8SecurityService extends AbstractSecurityService {
 
             if (request.getSession(false) != null) {
                 endLogout();
-                request.getSession(false).invalidate();
+                
+                try {
+                	request.getSession(false).invalidate();
+                }
+                catch (IllegalStateException e) {
+                	// Session already invalid
+                }
             }
         }
         else {
@@ -191,10 +197,21 @@ public class Jetty8SecurityService extends AbstractSecurityService {
                 AuthenticationContext authenticationContext = (AuthenticationContext)session.getAttribute(AuthenticationContext.class.getName());
                 authenticationContext.logout();
 
-                session.removeAttribute(AuthenticationContext.class.getName());
+                try {
+                	session.removeAttribute(AuthenticationContext.class.getName());
+                }
+                catch (IllegalStateException e) {
+                	// Session already invalid
+                }
+                
                 endLogout();
-
-                session.invalidate();
+                
+                try {
+                	session.invalidate();
+                }
+                catch (IllegalStateException e) {
+                	// Session already invalid
+                }
             }
         }
     }

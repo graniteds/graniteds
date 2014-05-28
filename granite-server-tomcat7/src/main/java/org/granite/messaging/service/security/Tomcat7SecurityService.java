@@ -210,7 +210,7 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
         ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
         if (graniteContext instanceof HttpGraniteContext) {
             Session session = getSession(graniteContext.getRequest(), false);
-            if (session != null && session.getPrincipal() != null) {
+            if (session != null && session.getPrincipal() != null && session.isValid()) {
                 session.setAuthType(null);
                 session.setPrincipal(null);
                 session.removeNote(Constants.SESS_USERNAME_NOTE);
@@ -224,11 +224,21 @@ public class Tomcat7SecurityService extends AbstractSecurityService {
         else {
             HttpSession session = graniteContext.getSession();
             if (session != null) {
-                session.removeAttribute(AuthenticationContext.class.getName());
-
-                endLogout();
-
-                session.invalidate();
+	            try {
+	                session.removeAttribute(AuthenticationContext.class.getName());
+	            }
+            	catch (IllegalStateException e) {
+            		// Session already invalid
+            	}
+	                
+            	endLogout();
+            	
+	            try {
+	                session.invalidate();
+            	}
+            	catch (IllegalStateException e) {
+            		// Session already invalid
+            	}
             }
         }
     }
