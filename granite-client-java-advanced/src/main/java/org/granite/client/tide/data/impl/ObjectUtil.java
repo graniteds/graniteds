@@ -34,22 +34,66 @@
  */
 package org.granite.client.tide.data.impl;
 
+import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 import org.granite.client.tide.data.spi.DataManager;
 import org.granite.client.util.PropertyHolder;
+import org.granite.util.TypeUtil;
 
 /**
  * @author William DRAI
  */
 public class ObjectUtil {
+	
+	private static final Class<?> LOCAL_DATE = initClass("java.time.LocalDate");
+	private static final Class<?> LOCAL_DATETIME = initClass("java.time.LocalDateTime");
+	private static final Class<?> LOCAL_TIME = initClass("java.time.LocalTime");
+	
+	private static Class<?> initClass(String type) {
+		try {
+			return TypeUtil.forName(type);
+		}
+		catch (Throwable t) {
+			// No Java 8
+		}
+		return null;
+	}
+	
 
     public static boolean isSimple(Object value) {
-        return value instanceof String || value instanceof Boolean || value instanceof Number || value instanceof Date;
+        return value instanceof String || value instanceof Boolean || value instanceof Number || value instanceof Date
+        		|| (LOCAL_DATE != null && LOCAL_DATE.isInstance(value))
+        		|| (LOCAL_DATETIME != null && LOCAL_DATETIME.isInstance(value))
+        		|| (LOCAL_TIME != null && LOCAL_TIME.isInstance(value));        		
     }
     
     public static String toString(Object obj) {
         return obj != null ? obj.toString() : "null";
+    }
+    
+    /**
+     *  Check if a value is empty
+     *
+     *	@param val value
+     *  @return value is empty
+     */ 
+    public static boolean isEmpty(Object val) {
+        if (val == null)
+            return true;
+        else if (val instanceof String)
+            return val.equals("");
+        else if (val.getClass().isArray())
+            return Array.getLength(val) == 0;
+        else if (val instanceof Date)
+            return ((Date)val).getTime() == 0L;
+        else if (val instanceof Collection<?>)
+            return ((Collection<?>)val).size() == 0;
+        else if (val instanceof Map<?, ?>)
+            return ((Map<?, ?>)val).size() == 0;
+        return false; 
     }
     
     /**

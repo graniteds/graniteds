@@ -38,7 +38,6 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -63,7 +62,7 @@ import org.granite.logging.Logger;
  */
 public class DirtyCheckContextImpl implements DirtyCheckContext {
     
-    private static Logger log = Logger.getLogger("org.granite.client.tide.data.DirtyCheckContextImpl");
+    private static Logger log = Logger.getLogger(DirtyCheckContextImpl.class);
     
     private DataManager dataManager;
     private int dirtyCount = 0;
@@ -238,11 +237,11 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
             embedded = entity;
 
         Map<String, Object> save = savedProperties.get(entity);
-
+        
         for (String p : pval.keySet()) {
             Object val = pval.get(p);
             Object saveval = save != null ? save.get(p) : null;
-
+            
             if (save != null && ((val != null && (ObjectUtil.isSimple(val) || val instanceof byte[]))
                     || (saveval != null && (ObjectUtil.isSimple(saveval) || saveval instanceof byte[])))) {
                 return true;
@@ -262,7 +261,7 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
             else if (val instanceof Collection<?> || val instanceof Map<?, ?>) {
                  if (!dataManager.isInitialized(val))
                      continue;
-
+                 
                  @SuppressWarnings("unchecked")
                  List<Change> savedArray = (List<Change>)saveval;
                  if (savedArray != null && !savedArray.isEmpty())
@@ -295,9 +294,9 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 
 
     private boolean isSame(Object val1, Object val2) {
-        if (val1 == null && isEmpty(val2))
+        if (val1 == null && ObjectUtil.isEmpty(val2))
             return true;
-        else if (val2 == null && isEmpty(val1))
+        else if (val2 == null && ObjectUtil.isEmpty(val1))
             return true;
         else if (ObjectUtil.isSimple(val1) && ObjectUtil.isSimple(val2))
             return val1.equals(val2);
@@ -356,9 +355,9 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
     }
     
     private boolean isSameExt(Object val1, Object val2) {
-        if (val1 == null && isEmpty(val2))
+        if (val1 == null && ObjectUtil.isEmpty(val2))
             return true;
-        else if (val2 == null && isEmpty(val1))
+        else if (val2 == null && ObjectUtil.isEmpty(val1))
             return true;
         else if (ObjectUtil.isSimple(val1) && ObjectUtil.isSimple(val2))
             return val1.equals(val2);
@@ -1112,30 +1111,7 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
         if (dirtyCount > 0)
             log.error("Incomplete reset of context, could be a bug");
     }
-    
-    
-    /**
-     *  Check if a value is empty
-     *
-     *	@param val value
-     *  @return value is empty
-     */ 
-    public boolean isEmpty(Object val) {
-        if (val == null)
-            return true;
-        else if (val instanceof String)
-            return val.equals("");
-        else if (val.getClass().isArray())
-            return Array.getLength(val) == 0;
-        else if (val instanceof Date)
-            return ((Date)val).getTime() == 0L;
-        else if (val instanceof Collection<?>)
-            return ((Collection<?>)val).size() == 0;
-        else if (val instanceof Map<?, ?>)
-            return ((Map<?, ?>)val).size() == 0;
-        return false; 
-    }
-    
+        
 
     public static class Change {
         
