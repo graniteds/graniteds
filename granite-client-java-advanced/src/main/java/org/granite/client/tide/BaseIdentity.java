@@ -177,6 +177,10 @@ public class BaseIdentity extends ComponentImpl implements Identity, ExceptionHa
     }
     
     
+    public void logout() {
+    	logout(null);
+    }
+    
     public void logout(final TideResponder<Void> tideResponder) {
     	final Observer observer = new Observer() {
 			@SuppressWarnings("unchecked")
@@ -191,7 +195,7 @@ public class BaseIdentity extends ComponentImpl implements Identity, ExceptionHa
 				        tideResponder.fault((TideFaultEvent)event);
 		        }
 			}
-            	};
+        };
     	
     	getServerSession().logout(observer);
     }

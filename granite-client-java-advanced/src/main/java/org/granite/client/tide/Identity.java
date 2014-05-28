@@ -51,5 +51,7 @@ public interface Identity {
     
     public Future<String> login(final String username, String password, final TideResponder<String> tideResponder);
     
+    public void logout();    
+    
     public void logout(final TideResponder<Void> tideResponder);    
 }
