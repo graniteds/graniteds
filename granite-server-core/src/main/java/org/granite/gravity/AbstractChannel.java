@@ -428,7 +428,7 @@ public abstract class AbstractChannel implements Channel {
 		}
 	}
 
-    public void destroy() {
+    public final void destroy() {
     	destroy(false);
     }
     

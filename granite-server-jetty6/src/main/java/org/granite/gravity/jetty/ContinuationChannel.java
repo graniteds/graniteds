@@ -120,9 +120,9 @@ public class ContinuationChannel extends AbstractChannel {
     }
 
 	@Override
-	public void destroy() {
+	public void destroy(boolean timeout) {
 		try {
-			super.destroy();
+			super.destroy(timeout);
 		}
 		finally {
 			synchronized (this) {

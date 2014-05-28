@@ -201,12 +201,14 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
                     responses[responseIndex++] = response;
                 }
             }
-
-            logFine.debug("<< [AMF3 RESPONSES] %s", (Object)responses);
-
-            byte[] resultData = serialize(getGravity(), responses);
-
-            sendBytes(resultData);
+            
+            if (isConnected()) {	// Check in case of disconnect message
+	            logFine.debug("<< [AMF3 RESPONSES] %s", (Object)responses);
+	
+	            byte[] resultData = serialize(getGravity(), responses);
+	
+	            sendBytes(resultData);
+            }
         }
         catch (ClassNotFoundException e) {
             log.error(e, "Could not handle incoming message data");
@@ -323,11 +325,11 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
             }
         }
     }
-
+    
     @Override
-    public void destroy() {
+    public void destroy(boolean timeout) {
         try {
-            super.destroy();
+            super.destroy(timeout);
         }
         finally {
             close();

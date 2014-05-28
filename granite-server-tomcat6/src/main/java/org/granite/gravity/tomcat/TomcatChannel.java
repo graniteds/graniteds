@@ -147,9 +147,9 @@ public class TomcatChannel extends AbstractChannel {
 	}
 
 	@Override
-	public void destroy() {
+	public void destroy(boolean timeout) {
 		try {
-			super.destroy();
+			super.destroy(timeout);
 		}
 		finally {
 			close();
