@@ -437,6 +437,8 @@ public class JavaFXDataManager extends AbstractDataManager {
         while (ikey.hasNext()) {
             Object obj = ikey.next();
             TrackingType type = trackingListeners.get(obj);
+            if (type == null)	// gc'ed during iteration ??
+            	continue;
             switch (type) {
             case LIST:
                 ((ObservableList<?>)obj).removeListener(listChangeListener);
