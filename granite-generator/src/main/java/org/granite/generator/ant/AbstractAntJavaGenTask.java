@@ -569,6 +569,12 @@ public abstract class AbstractAntJavaGenTask extends Task implements JavaAs3Groo
     }
 	
 	private TemplateUri[] createTemplateUris(String baseUri, String uri) {
+		if (uri == null || uri.length() == 0)
+			return new TemplateUri[0];
+		
+		if (baseUri != null && baseUri.length() == 0)
+			baseUri = null;
+		
 		TemplateUri[] templateUris = new TemplateUri[baseUri == null ? 1 : 2];
 		int i = 0;
 		if (baseUri != null)
