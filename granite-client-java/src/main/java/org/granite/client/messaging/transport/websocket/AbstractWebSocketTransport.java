@@ -46,6 +46,7 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
 //	private final static int CLOSE_PROTOCOL = 1002;
 	
 	private boolean connected = false;
+	private boolean disconnecting = false;
 	
 	private int maxIdleTime = 3000000;
     @SuppressWarnings("unused")
@@ -89,19 +90,22 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
             if (message != null) {
                 if (message.isConnect())
                     connectMessage = message;
-                else
+                else {
+                	if (message.isDisconnect())
+                		disconnecting = true;
                     pending = true;
+                }
             }
         }
-
-        if (!transportData.isConnected()) {
+        
+        if (!transportData.isConnected() && !disconnecting) {
             connected = true;
             connect(channel, message);
             return null;
         }
         else if (pending) // Ignore ping message
             transportData.pendingMessages.addLast(message);
-
+        
         synchronized (channel) {
             while (!transportData.pendingMessages.isEmpty()) {
                 TransportMessage pendingMessage = transportData.pendingMessages.removeFirst();
@@ -165,7 +169,8 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
 
         // Mark the connection as closed, the channel should reopen a connection if needed for the next message
         ((TransportData<?>)channel.getTransportData()).disconnect();
-
+        channel.setTransportData(null);
+        
         if (stopping || !isStarted()) {
             log.debug("Websocket connection marked as disconnected");
             connected = false;
@@ -175,12 +180,18 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
             getStatusHandler().handleException(new TransportException("Transport could not connect code: " + closeCode + " " + message));
             return;
         }
-
+        
+        if (disconnecting) {
+        	channel.onDisconnect();
+        	disconnecting = false;
+        	connected = false;
+        }
+        
         if (connected) {
             synchronized (channel) {
                 if (waitBeforeReconnect || reconnectAttempts >= reconnectMaxAttempts) {
                     connected = false;
-
+                    
                     // Notify the channel of disconnect so it can schedule a reconnect if needed
                     log.debug("Websocket disconnected");
                     channel.onError(connectMessage, new RuntimeException(message + " (code=" + closeCode + ")"));

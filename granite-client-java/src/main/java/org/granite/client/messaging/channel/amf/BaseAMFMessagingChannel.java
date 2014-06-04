@@ -39,10 +39,12 @@ import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.channel.ResponseMessageFuture;
 import org.granite.client.messaging.codec.MessagingCodec;
+import org.granite.client.messaging.messages.Message.Type;
 import org.granite.client.messaging.messages.RequestMessage;
 import org.granite.client.messaging.messages.ResponseMessage;
 import org.granite.client.messaging.messages.requests.DisconnectMessage;
 import org.granite.client.messaging.messages.responses.AbstractResponseMessage;
+import org.granite.client.messaging.messages.responses.FaultMessage;
 import org.granite.client.messaging.messages.responses.ResultMessage;
 import org.granite.client.messaging.transport.DefaultTransportMessage;
 import org.granite.client.messaging.transport.Transport;
@@ -85,7 +87,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 			log.info("Messaging channel %s set sessionId %s", clientId, sessionId);
 		}				
 	}
-
+	
 	protected boolean connect() {
 		
 		// Connecting: make sure we don't have an active reconnect timer task.
@@ -110,7 +112,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		connectMessage.setClientId(clientId);
 
 		try {
-			transport.send(this, new DefaultTransportMessage<Message[]>(id, true, clientId, sessionId, new Message[]{connectMessage}, codec));
+			transport.send(this, new DefaultTransportMessage<Message[]>(id, true, false, clientId, sessionId, new Message[] { connectMessage }, codec));
 			
 			return true;
 		}
@@ -132,19 +134,31 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 
 	@Override
 	public boolean removeConsumer(Consumer consumer) {
-		return (consumersMap.remove(consumer.getSubscriptionId()) != null);
+		return consumersMap.remove(consumer.getSubscriptionId()) != null;
 	}
+	
+    @Override
+    public ResponseMessageFuture logout(boolean sendLogout, ResponseListener... listeners) {
+		log.info("Logging out channel %s", clientId);
+		
+    	ResponseMessageFuture future = super.logout(sendLogout, listeners);
+    	
+    	// Force disconnection for streaming transports to ensure next calls are in a new session/authentication context
+		disconnect();
+    	
+    	return future;
+    }
 	
 	public synchronized ResponseMessageFuture disconnect(ResponseListener...listeners) {
 		cancelReconnectTimerTask();
 		
-		connectMessageId.set(null);
-		reconnectAttempts = 0L;
-		
 		for (Consumer consumer : consumersMap.values())
 			consumer.onDisconnect();
 		
-		consumersMap.clear();	
+		consumersMap.clear();
+		
+		connectMessageId.set(null);
+		reconnectAttempts = 0L;
 		
 		return send(new DisconnectMessage(clientId), listeners);
 	}
@@ -152,7 +166,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	@Override
 	protected TransportMessage createTransportMessage(AsyncToken token) throws UnsupportedEncodingException {
 		Message[] messages = convertToAmf(token.getRequest());
-		return new DefaultTransportMessage<Message[]>(token.getId(), false, clientId, sessionId, messages, codec);
+		return new DefaultTransportMessage<Message[]>(token.getId(), false, token.isDisconnectRequest(), clientId, sessionId, messages, codec);
 	}
 
 	@Override
@@ -168,13 +182,19 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 					reconnect = false;
 
 					final AbstractResponseMessage response = convertFromAmf((AcknowledgeMessage)messages[0]);
-		
+					
 					if (response instanceof ResultMessage) {
+						Type requestType = null;
 						RequestMessage request = getRequest(response.getCorrelationId());
-						if (request != null) {
+						if (request != null)
+							requestType = request.getType();
+						else if (response.getCorrelationId().equals(connectMessageId.get())) // Reconnect
+							requestType = Type.PING;
+						
+						if (requestType != null) {
 							ResultMessage result = (ResultMessage)response;
-							switch (request.getType()) {
-
+							switch (requestType) {
+							
 							case PING:
 								if (messages[0].getBody() instanceof Map) {
 									Map<?, ?> advices = (Map<?, ?>)messages[0].getBody();
@@ -187,13 +207,56 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 								}
                                 if (messages[0].getHeaders().containsKey("JSESSIONID"))
                                     setSessionId((String)messages[0].getHeader("JSESSIONID"));
-
+                                
+                                if (clientId != null && clientId.equals(result.getClientId()))
+                                	log.warn("Received PING result for unknown clientId " + request.getClientId());
+                                else {
+                                    log.debug("Channel %s pinged clientId %s", id, clientId);
+                                	clientId = result.getClientId();
+            						pinged = true;
+            						
+            						authenticate(null);
+                                }            					
                                 break;
+                                
+							case LOGIN:
+								authenticating = false;
+								authenticated = true;
+								break;
 							
 							case SUBSCRIBE:
 								result.setResult(messages[0].getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER));
 								break;
 
+							default:
+								break;
+							}
+						}
+					}
+					else if (response instanceof FaultMessage) {
+						Type requestType = null;
+						RequestMessage request = getRequest(response.getCorrelationId());
+						if (request != null)
+							requestType = request.getType();
+						else if (response.getCorrelationId().equals(connectMessageId.get())) // Reconnect
+							requestType = Type.PING;
+						
+						if (requestType != null) {
+							switch (requestType) {
+							
+							case PING:
+								clientId = null;
+								pinged = false;
+								
+								authenticating = false;
+								authenticated = false;
+                                break;
+                                
+							case LOGIN:
+								authenticating = false;
+								authenticated = false;
+								break;
+							
 							default:
 								break;
 							}
@@ -253,8 +316,9 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 
 		super.onError(message, e);
 		
-		if (message != null && connectMessageId.compareAndSet(message.getId(), null))
+		if (message != null && connectMessageId.compareAndSet(message.getId(), null)) {
 			scheduleReconnectTimerTask();
+		}
 	}
 
 	protected void cancelReconnectTimerTask() {
@@ -264,7 +328,12 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	}
 	
 	protected void scheduleReconnectTimerTask() {
-        log.debug("Channel %s schedule reconnect", getId());
+        log.info("Channel %s schedule reconnect", getId());
+        
+        pinged = false;
+        authenticating = false;
+        authenticated = false;
+        
 		ReconnectTimerTask task = new ReconnectTimerTask();
 		
 		ReconnectTimerTask previousTask = reconnectTimerTask.getAndSet(task);

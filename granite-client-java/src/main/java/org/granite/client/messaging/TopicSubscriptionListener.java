@@ -19,31 +19,29 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  *   USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.granite.client.messaging.transport;
+package org.granite.client.messaging;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import org.granite.client.messaging.events.IssueEvent;
+import org.granite.client.messaging.events.ResultEvent;
 
-import org.granite.client.messaging.codec.MessagingCodec.ClientType;
 
 /**
+ * Callback interface for message listeners
+ * Called when an incoming message is received
+ *
  * @author Franck WOLFF
  */
-public interface TransportMessage {
+public interface TopicSubscriptionListener {
 
-	ClientType getClientType();
+	void onSubscribing(Consumer consumer);
+	
+	void onSubscriptionSuccess(Consumer consumer, ResultEvent event, String subscriptionId);
 
-	String getId();
+	void onSubscriptionFault(Consumer consumer, IssueEvent event);
+
+	void onUnsubscribing(Consumer consumer);
 	
-	boolean isConnect();
+	void onUnsubscriptionSuccess(Consumer consumer, ResultEvent event, String subscriptionId);
 	
-	boolean isDisconnect();
-	
-	String getClientId();
-	
-	String getSessionId();
-	
-	String getContentType();
-	
-	void encode(OutputStream os) throws IOException;
+	void onUnsubscriptionFault(Consumer consumer, IssueEvent event, String subscriptionId);
 }

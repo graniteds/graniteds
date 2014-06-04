@@ -216,6 +216,8 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
             AuthenticationContext authenticationContext = (AuthenticationContext)graniteContext.getSession().getAttribute(AuthenticationContext.class.getName());
             if (authenticationContext != null)
                 principal = authenticationContext.authenticate(decoded[0], decoded[1]);
+            else
+            	return null;
         }
 
         if (principal == null)

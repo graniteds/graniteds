@@ -56,6 +56,7 @@ public class Consumer extends AbstractTopicAgent {
 	private static final Logger log = Logger.getLogger(Consumer.class);
 
 	private final ConcurrentHashMap<TopicMessageListener, Boolean> listeners = new ConcurrentHashMap<TopicMessageListener, Boolean>();
+	private final ConcurrentHashMap<TopicSubscriptionListener, Boolean> subscriptionListeners = new ConcurrentHashMap<TopicSubscriptionListener, Boolean>();
 	
 	private String subscriptionId = null;
 	private String selector = null;
@@ -120,11 +121,17 @@ public class Consumer extends AbstractTopicAgent {
 			public void onResult(ResultEvent event) {
 				subscriptionId = (String)event.getResult();
 				channel.addConsumer(consumer);
+				
+				for (TopicSubscriptionListener subscriptionListener : subscriptionListeners.keySet())
+					subscriptionListener.onSubscriptionSuccess(Consumer.this, event, subscriptionId);
 			}
 			
 			@Override
 			public void onIssue(IssueEvent event) {
 				log.error("Subscription failed %s: %s", consumer, event);
+				
+				for (TopicSubscriptionListener subscriptionListener : subscriptionListeners.keySet())
+					subscriptionListener.onSubscriptionFault(Consumer.this, event);
 			}
 		};
 		
@@ -136,6 +143,9 @@ public class Consumer extends AbstractTopicAgent {
 			tmp[0] = listener;
 			listeners = tmp;
 		}
+		
+		for (TopicSubscriptionListener subscriptionListener : subscriptionListeners.keySet())
+			subscriptionListener.onSubscribing(this);
 		
 		return channel.send(subscribeMessage, listeners);
 	}
@@ -155,12 +165,22 @@ public class Consumer extends AbstractTopicAgent {
 			@Override
 			public void onResult(ResultEvent event) {
 				channel.removeConsumer(consumer);
+				
+				for (TopicSubscriptionListener subscriptionListener : subscriptionListeners.keySet())
+					subscriptionListener.onUnsubscriptionSuccess(Consumer.this, event, subscriptionId);
+				
 				subscriptionId = null;
 			}
 			
 			@Override
 			public void onIssue(IssueEvent event) {
 				log.error("Unsubscription failed %s: %s", consumer, event);
+				channel.removeConsumer(consumer);
+				
+				for (TopicSubscriptionListener subscriptionListener : subscriptionListeners.keySet())
+					subscriptionListener.onUnsubscriptionFault(Consumer.this, event, subscriptionId);
+				
+				subscriptionId = null;
 			}
 		};
 		
@@ -172,7 +192,10 @@ public class Consumer extends AbstractTopicAgent {
 			tmp[listeners.length] = listener;
 			listeners = tmp;
 		}
-
+		
+		for (TopicSubscriptionListener subscriptionListener : subscriptionListeners.keySet())
+			subscriptionListener.onUnsubscribing(this);
+		
 		return channel.send(unsubscribeMessage, listeners);
 	}
 
@@ -183,7 +206,7 @@ public class Consumer extends AbstractTopicAgent {
 	public void addMessageListener(TopicMessageListener listener) {
 		listeners.putIfAbsent(listener, Boolean.TRUE);
 	}
-
+	
     /**
      * Unregister a message listener for this consumer
      * @param listener message listener
@@ -191,6 +214,23 @@ public class Consumer extends AbstractTopicAgent {
      */
 	public boolean removeMessageListener(TopicMessageListener listener) {
 		return listeners.remove(listener) != null;
+	}
+
+    /**
+     * Register a subscription listener for this consumer
+     * @param listener subscription listener
+     */
+	public void addSubscriptionListener(TopicSubscriptionListener listener) {
+		subscriptionListeners.putIfAbsent(listener, Boolean.TRUE);
+	}
+	
+    /**
+     * Unregister a subscription listener for this consumer
+     * @param listener subscription listener
+     * @return true if the listener was actually removed (if it was registered before)
+     */
+	public boolean removeSubscriptionListener(TopicSubscriptionListener listener) {
+		return subscriptionListeners.remove(listener) != null;
 	}
 
     /**

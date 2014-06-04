@@ -147,7 +147,6 @@ public class DataObserver implements ContextAware, NameAware {
 		subscribing = true;
 		consumer.addMessageListener(messageListener);
 	    consumer.subscribe(subscriptionListener);
-	    serverSession.checkWaitForLogout();
 	}
 	
 	public synchronized void unsubscribe() {
@@ -160,19 +159,14 @@ public class DataObserver implements ContextAware, NameAware {
 		unsubscribing = true;
 		consumer.removeMessageListener(messageListener);
 		consumer.unsubscribe(unsubscriptionListener);
-	    serverSession.checkWaitForLogout();
 	}
 	
-	private ResponseListener subscriptionListener = new SubscriptionListenerImpl(); 
-	private ResponseListener unsubscriptionListener = new UnsubscriptionListenerImpl(); 
-	
-	private class SubscriptionListenerImpl extends ResultFaultIssuesResponseListener {
+	private ResponseListener subscriptionListener = new ResultFaultIssuesResponseListener() {
 		@Override
 		public void onResult(ResultEvent event) {
 			log.info("Destination %s subscribed sid: %s", destination, consumer.getSubscriptionId());
 			
 			subscribing = false;
-			serverSession.tryLogout();
 		}
 
 		@Override
@@ -180,7 +174,6 @@ public class DataObserver implements ContextAware, NameAware {
 			log.error("Destination %s could not be subscribed: %s", destination, event.getCode());
 			
 			subscribing = false;
-			serverSession.tryLogout();
 		}
 
 		@Override
@@ -188,17 +181,15 @@ public class DataObserver implements ContextAware, NameAware {
 			log.error("Destination %s could not be subscribed: %s", destination, event.getType());
 			
 			subscribing = false;
-			serverSession.tryLogout();
 		}
-	}
+	};
 	
-	private class UnsubscriptionListenerImpl extends ResultFaultIssuesResponseListener {
+	private ResponseListener unsubscriptionListener = new ResultFaultIssuesResponseListener() {
 		@Override
 		public void onResult(ResultEvent event) {
 			log.info("Destination %s unsubscribed", destination);
 			
 			unsubscribing = false;
-			serverSession.tryLogout();
 		}
 
 		@Override
@@ -206,7 +197,6 @@ public class DataObserver implements ContextAware, NameAware {
 			log.error("Destination %s could not be unsubscribed: %s", destination, event.getCode());
 			
 			unsubscribing = false;
-			serverSession.tryLogout();
 		}
 
 		@Override
@@ -214,14 +204,11 @@ public class DataObserver implements ContextAware, NameAware {
 			log.error("Destination %s could not be unsubscribed: %s", destination, event.getType());
 			
 			unsubscribing = false;
-			serverSession.tryLogout();
 		}
-	}
+	};
 
 	
-	private TopicMessageListener messageListener = new TopicMessageListenerImpl();
-	
-    public class TopicMessageListenerImpl implements TopicMessageListener {
+	private TopicMessageListener messageListener = new TopicMessageListener() {
         /**
          * 	Message handler that merges data from the JMS topic in the current context.<br/>
          *  Could be overriden to provide custom behaviour.
@@ -261,5 +248,5 @@ public class DataObserver implements ContextAware, NameAware {
 				}
 	        });
 		}
-    }
+    };
 }

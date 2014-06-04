@@ -136,9 +136,10 @@ public class RemoteInitializerImpl implements RemoteInitializer {
 			
 	    	RemoteService rs = serverSession.getRemoteService();
 			for (Object entity : initMap.keySet()) {
-				rs.newInvocation("initializeObject", entity, initMap.get(entity).toArray(), new InvocationCall())
-					.addListener(new InitializerListener(serverSession, entity)).invoke();
+				serverSession.checkWaitForLogout();
 				
+				rs.newInvocation("initializeObject", entity, initMap.get(entity).toArray(), new InvocationCall())
+					.addListener(new InitializerListener(serverSession, entity)).invoke();				
 			}
     	}
 	}
@@ -153,9 +154,11 @@ public class RemoteInitializerImpl implements RemoteInitializer {
     		this.serverSession = serverSession;
     		this.entity = entity;
     	}
-
+    	
 		@Override
 		public void onResult(final ResultEvent event) {
+			serverSession.tryLogout();
+			
 			context.callLater(new Runnable() {
 				public void run() {
 					EntityManager entityManager = PersistenceManager.getEntityManager(entity);
@@ -164,8 +167,10 @@ public class RemoteInitializerImpl implements RemoteInitializer {
 					try {
 						entityManager.setUninitializeAllowed(false);
 						
+						InvocationResult invocationResult = (InvocationResult)event.getResult();
+						
 						// Assumes objects is a PersistentCollection or PersistentMap
-                        new ResultHandler<Object>(serverSession, null, null).handleResult(context, (InvocationResult) event.getResult(), ((InvocationResult) event.getResult()).getResult(), null);
+                        new ResultHandler<Object>(serverSession, event).handleResult(context, invocationResult, invocationResult.getResult());
 					}
 					finally {
 						entityManager.setUninitializeAllowed(saveUninitializeAllowed);
@@ -176,22 +181,26 @@ public class RemoteInitializerImpl implements RemoteInitializer {
 
 		@Override
 		public void onFault(final FaultEvent event) {
+			serverSession.tryLogout();
+			
 			context.callLater(new Runnable() {
 				public void run() {
 					log.error("Fault initializing collection " + ObjectUtil.toString(entity) + " " + event.toString());
 
-                    new FaultHandler<Object>(serverSession, null, null).handleFault(context, event.getMessage());
+                    new FaultHandler<Object>(serverSession, event).handleFault(context, event.getMessage(), null);
 				}
 			});
 		}   	
 
 		@Override
 		public void onIssue(final IssueEvent event) {
+			serverSession.tryLogout();
+			
 			context.callLater(new Runnable() {
 				public void run() {
 					log.error("Fault initializing collection " + ObjectUtil.toString(entity) + " " + event.toString());
-
-                    new FaultHandler<Object>(serverSession, null, null).handleFault(context, null);
+					
+                    new FaultHandler<Object>(serverSession, event).handleFault(context, null, null);
 				}
 			});
 		}   	

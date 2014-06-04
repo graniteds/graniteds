@@ -99,12 +99,23 @@ public class FaultHandler<T> implements Runnable {
 		this.componentListener = componentListener;
 	}
 
+	public FaultHandler(ServerSession serverSession, Event event) {
+		this.serverSession = serverSession;
+		this.sourceContext = null;
+		this.componentName = null;
+		this.operation = null;
+		this.event = event;
+		this.info = null;
+		this.tideResponder = null;
+		this.componentListener = null;
+	}
+
 	public void run() {
 		if (executed)
 			return;
 		executed = true;
 		
-        log.error("fault %s", event.toString());
+        log.debug("fault %s", event.toString());
        
         // TODO: conversation contexts
 //        var sessionId:String = faultEvent.message.headers[Tide.SESSION_ID_TAG];
@@ -140,32 +151,46 @@ public class FaultHandler<T> implements Runnable {
 	        }
 	        while (m != null);
 	        
-	        serverSession.onFaultEvent((FaultEvent) event, emsg);
+	        serverSession.onFaultEvent((FaultEvent)event, emsg);
         }
         else
-	        serverSession.onIssueEvent((IssueEvent) event);
+	        serverSession.onIssueEvent((IssueEvent)event);
         
-        handleFault(context, emsg);
+        boolean handled = handleFault(context, emsg, extendedData);
+        
+        if (!handled && !serverSession.isLogoutInProgress())
+        	context.getEventBus().raiseEvent(context, ServerSession.CONTEXT_FAULT, event instanceof FaultEvent ? ((FaultEvent)event).getMessage() : null);
+        
+        serverSession.tryLogout();
+    }
+
+
+    public boolean handleFault(Context context, FaultMessage emsg, Map<String, Object> extendedData) {
         
         boolean handled = false;
+        
         Fault fault = null;
         if (event instanceof FaultEvent) {
         	fault = new Fault(emsg.getCode(), emsg.getDescription(), emsg.getDetails());
 	        fault.setContent(((FaultEvent)event).getMessage());
 	        fault.setCause(((FaultEvent)event).getCause());
         }
-        else if (event.getType() == Type.FAILURE) {
+        else if (event != null && event.getType() == Type.FAILURE) {
         	fault = new Fault(Code.CLIENT_CALL_FAILED, null, ((FailureEvent)event).getCause() != null ? ((FailureEvent)event).getCause().getMessage() : null);
         	fault.setCause(((FailureEvent)event).getCause());
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_FAILED, null, null, null, null);
         }
-        else if (event.getType() == Type.TIMEOUT) {
+        else if (event != null && event.getType() == Type.TIMEOUT) {
         	fault = new Fault(Code.CLIENT_CALL_TIMED_OUT, null, String.valueOf(((TimeoutEvent)event).getTime()));
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_TIMED_OUT, null, null, null, null);
         }
-        else if (event.getType() == Type.CANCELLED) {
+        else if (event != null && event.getType() == Type.CANCELLED) {
         	fault = new Fault(Code.CLIENT_CALL_CANCELLED, null, null);
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_CANCELLED, null, null, null, null);
+        }
+        else {
+        	fault = new Fault(Code.UNKNOWN, null, null);
+        	emsg = new FaultMessage(null, null, Code.UNKNOWN, null, null, null, null);
         }
         
         TideFaultEvent faultEvent = new TideFaultEvent(context, serverSession, componentListener, fault, extendedData);
@@ -198,13 +223,6 @@ public class FaultHandler<T> implements Runnable {
             }
         }
         
-        if (!handled && !serverSession.isLogoutInProgress())
-        	context.getEventBus().raiseEvent(context, ServerSession.CONTEXT_FAULT, event instanceof FaultEvent ? ((FaultEvent)event).getMessage() : null);
-        
-        serverSession.tryLogout();
-    }
-
-
-    public void handleFault(Context context, FaultMessage emsg) {
+        return handled;
     }
 }

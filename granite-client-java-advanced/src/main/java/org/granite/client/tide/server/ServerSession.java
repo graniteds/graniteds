@@ -63,6 +63,7 @@ import org.granite.client.messaging.RemoteService;
 import org.granite.client.messaging.ResultFaultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicAgent;
+import org.granite.client.messaging.TopicSubscriptionListener;
 import org.granite.client.messaging.channel.ChannelBuilder;
 import org.granite.client.messaging.channel.ChannelFactory;
 import org.granite.client.messaging.channel.MessagingChannel;
@@ -139,7 +140,7 @@ public class ServerSession implements ContextAware {
 	
 	private String sessionId = null;
 
-	private LogoutState logoutState = new LogoutState();
+	private LogoutState logoutState = new LogoutState(1500);
 		
 	private String destination = "server";
 	private Object platformContext = null;
@@ -241,7 +242,11 @@ public class ServerSession implements ContextAware {
 	public void setServerApp(ServerApp serverApp) {
         this.serverApp = serverApp;
     }
-
+	
+	public void setLogoutTimeout(long timeout) {
+		logoutState.setTimeout(timeout);
+	}
+	
     /**
      * Set the Tide context for this server session
      * (internal method, should be set by the context itself)
@@ -575,14 +580,15 @@ public class ServerSession implements ContextAware {
 			throw new IllegalStateException("Channel not defined in server session for type " + channelType + "");
 		
 		String key = "C:" + destination + '@' + topic;
-		TopicAgent consumer = topicAgents.get(key);
+		Consumer consumer = (Consumer)topicAgents.get(key);
 		if (consumer == null) {
-			consumer = serviceFactory.newConsumer(messagingChannel, destination, topic);
+			consumer = serviceFactory.newConsumer(messagingChannel, destination, topic);			
+			consumer.addSubscriptionListener(consumerSubscriptionListener);
 			topicAgents.put(key, consumer);
 		}
-		return consumer instanceof Consumer ? (Consumer)consumer : null;
+		return consumer;
 	}
-
+	
     /**
      * Build a consumer for the default channel type and destination
      * @param destination destination name
@@ -592,6 +598,52 @@ public class ServerSession implements ContextAware {
     public synchronized Consumer getConsumer(String destination, String topic) {
         return getConsumer(destination, topic, channelFactory.getDefaultChannelType());
     }
+    
+    /**
+     * Detach a consumer from the session
+     * @param consumer consumer
+     * @throws IllegalArgumentException when the consumer has not been created from the session
+     */
+    public synchronized void removeConsumer(Consumer consumer) {
+    	String key = "C:" + consumer.getDestination() + "@" + consumer.getTopic();
+    	if (topicAgents.get(key) != consumer)
+    		throw new IllegalArgumentException("Consumer " + key + " not managed by session");
+    	
+    	consumer.removeSubscriptionListener(consumerSubscriptionListener);
+    	topicAgents.remove(key);
+    }
+	
+	private final TopicSubscriptionListener consumerSubscriptionListener = new TopicSubscriptionListener() {				
+		@Override
+		public void onUnsubscribing(Consumer consumer) {
+			checkWaitForLogout();
+		}
+		
+		@Override
+		public void onUnsubscriptionSuccess(Consumer consumer, ResultEvent event, String subscriptionId) {
+			tryLogout();
+		}
+		
+		@Override
+		public void onUnsubscriptionFault(Consumer consumer, IssueEvent event, String subscriptionId) {
+			tryLogout();
+		}
+		
+		@Override
+		public void onSubscribing(Consumer consumer) {
+			checkWaitForLogout();
+		}
+		
+		@Override
+		public void onSubscriptionSuccess(Consumer consumer, ResultEvent event, String subscriptionId) {
+			tryLogout();
+		}
+		
+		@Override
+		public void onSubscriptionFault(Consumer consumer, IssueEvent event) {
+			tryLogout();
+		}
+	};
 
     /**
      * Build a producer for the specified channel type and destination
@@ -609,12 +661,12 @@ public class ServerSession implements ContextAware {
 			throw new IllegalStateException("Channel not defined for server session");
 		
 		String key = "P:" + destination + '@' + topic;
-		TopicAgent producer = topicAgents.get(key);
+		Producer producer = (Producer)topicAgents.get(key);
 		if (producer == null) {
 			producer = serviceFactory.newProducer(messagingChannel, destination, topic);
 			topicAgents.put(key, producer);
 		}
-		return producer instanceof Producer ? (Producer)producer : null;
+		return producer;
 	}
 
     /**
@@ -625,6 +677,19 @@ public class ServerSession implements ContextAware {
      */
     public synchronized Producer getProducer(String destination, String topic) {
         return getProducer(destination, topic, channelFactory.getDefaultChannelType());
+    }
+    
+    /**
+     * Detach a producer from the session
+     * @param producer producer
+     * @throws IllegalArgumentException when the producer has not been created from the session
+     */
+    public synchronized void removeProducer(Producer producer) {
+    	String key = "P:" + producer.getDestination() + "@" + producer.getTopic();
+    	if (topicAgents.get(key) != producer)
+    		throw new IllegalArgumentException("Producer " + key + " not managed by session");
+    	
+    	topicAgents.remove(key);
     }
 
     /**
@@ -814,24 +879,21 @@ public class ServerSession implements ContextAware {
      */
     public void sessionExpired() {
 		log.info("Application session expired");
-
-        if (remotingChannel.isAuthenticated())
-            remotingChannel.logout(false);
-        for (MessagingChannel messagingChannel : messagingChannelsByType.values()) {
-            if (messagingChannel.isAuthenticated())
-                messagingChannel.logout(false);
-        }
-
-		sessionId = null;
-		if (remotingChannel instanceof SessionAwareChannel)
-		    ((SessionAwareChannel)remotingChannel).setSessionId(null);
-        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
-            messagingChannel.setSessionId(null);
 		
 		logoutState.sessionExpired();
 		
 		context.getEventBus().raiseEvent(context, SESSION_EXPIRED);		
 		context.getEventBus().raiseEvent(context, LOGOUT);		
+
+        remotingChannel.logout(false);
+        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+            messagingChannel.logout(false);
+        
+		sessionId = null;
+		if (remotingChannel instanceof SessionAwareChannel)
+		    ((SessionAwareChannel)remotingChannel).setSessionId(null);
+        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+            messagingChannel.setSessionId(null);
     }
 
 	/**
@@ -881,7 +943,7 @@ public class ServerSession implements ContextAware {
 		    return;
 		}
 		
-		if (remotingChannel != null && remotingChannel.isAuthenticated()) {
+		if (remotingChannel != null) {
 			remotingChannel.logout(new ResultFaultIssuesResponseListener() {
 				@Override
 				public void onResult(final ResultEvent event) {
@@ -889,7 +951,7 @@ public class ServerSession implements ContextAware {
 						public void run() {
 							log.info("Application session logged out");
 
-                            new ResultHandler<Object>(ServerSession.this, null, "logout").handleResult(context, null, null, null);
+                            new ResultHandler<Object>(ServerSession.this, null, "logout").handleResult(context, null, null);
 							context.getContextManager().destroyContexts();
 							
 							logoutState.loggedOut(new TideResultEvent<Object>(context, ServerSession.this, null, event.getResult()));
@@ -903,7 +965,7 @@ public class ServerSession implements ContextAware {
 						public void run() {
 							log.error("Could not log out %s", event.getDescription());
 
-                            new FaultHandler<Object>(ServerSession.this, null, "logout").handleFault(context, event.getMessage());
+                            new FaultHandler<Object>(ServerSession.this, null, "logout").handleFault(context, event.getMessage(), null);
 
 					        Fault fault = new Fault(event.getCode(), event.getDescription(), event.getDetails());
 					        fault.setContent(event.getMessage());
@@ -919,7 +981,7 @@ public class ServerSession implements ContextAware {
 						public void run() {
 							log.error("Could not logout %s", event.getType());
 
-                            new FaultHandler<Object>(ServerSession.this, null, "logout").handleFault(context, null);
+                            new FaultHandler<Object>(ServerSession.this, null, "logout").handleFault(context, null, null);
 							
 					        Fault fault = new Fault(Code.SERVER_CALL_FAILED, event.getType().name(), "");
 							logoutState.loggedOut(new TideFaultEvent(context, ServerSession.this, null, fault, null));
@@ -930,7 +992,7 @@ public class ServerSession implements ContextAware {
 		}
 
         for (MessagingChannel messagingChannel : messagingChannelsByType.values()) {
-		    if (messagingChannel != remotingChannel && messagingChannel.isAuthenticated())
+		    if (messagingChannel != remotingChannel)
 			    messagingChannel.logout();
         }
 	}
@@ -938,15 +1000,24 @@ public class ServerSession implements ContextAware {
 
 	private static class LogoutState extends Observable {
 		
+		private long timeout = 1500;
 		private boolean logoutInProgress = false;
 		private int waitForLogout = 0;
 		private boolean sessionExpired = false;
 		private Timer logoutTimeout = null;
 		
+		public LogoutState(long timeout) {
+			this.timeout = timeout;
+		}
+		
+		public void setTimeout(long timeout) {
+			this.timeout = timeout;
+		}
+		
 		public synchronized void logout(Observer logoutObserver, TimerTask forceLogout) {
 			logout(logoutObserver);
 			logoutTimeout = new Timer(true);
-			logoutTimeout.schedule(forceLogout, 1000L);
+			logoutTimeout.schedule(forceLogout, timeout);
 		}
 		
 		public synchronized void logout(Observer logoutObserver) {

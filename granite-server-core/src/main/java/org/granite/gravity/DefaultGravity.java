@@ -24,6 +24,7 @@ package org.granite.gravity;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,12 +56,14 @@ import org.granite.jmx.MBeanServerLocator;
 import org.granite.jmx.OpenMBean;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.process.AMF3MessageInterceptor;
+import org.granite.messaging.service.security.AbstractSecurityContext;
 import org.granite.messaging.service.security.SecurityService;
 import org.granite.messaging.service.security.SecurityServiceException;
 import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ServiceLoader;
 import org.granite.util.TypeUtil;
 import org.granite.util.UUIDUtil;
+import org.granite.util.XMap;
 
 import flex.messaging.messages.AcknowledgeMessage;
 import flex.messaging.messages.AsyncMessage;
@@ -798,7 +801,24 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
         }
     }
 
+    
+    private Message authorize(GraniteConfig config, final Message message, final AbstractSecurityContext securityContext) {
+        try {
+            if (config.hasSecurityService()) {
+                if (config.getSecurityService().acceptsContext())
+                    return (Message)config.getSecurityService().authorize(securityContext);
 
+                throw SecurityServiceException.newNotLoggedInException("User not logged in");
+            }
+
+            return (Message)securityContext.invoke();
+        }
+        catch (Exception e) {
+            return new ErrorMessage(message, e, true);
+        }
+    }
+
+    
     private Message handlePingMessage(ChannelFactory<?> channelFactory, CommandMessage message) {
         
     	Channel channel = createChannel(channelFactory, (String)message.getClientId());
@@ -816,26 +836,54 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
         return reply;
     }
+    
+    private static class LoginSecurityContext extends AbstractSecurityContext {
+    	
+    	private static final List<String> EMPTY_CHANNELS = Collections.emptyList();
+    	private static final Destination EMPTY_DESTINATION = new Destination("__login__", EMPTY_CHANNELS, new XMap(), null, null, null); 
+    	
+    	public LoginSecurityContext(CommandMessage message) {
+    		super(message, EMPTY_DESTINATION);
+    	}
+    	
+    	@Override
+		public Object invoke() throws Exception {
+			return null;
+		}
+    }
 
-    private Message handleSecurityMessage(final ChannelFactory<?> channelFactory, CommandMessage message) {
-        GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
+    private Message handleSecurityMessage(final ChannelFactory<?> channelFactory, final CommandMessage message) {
+    	GraniteContext context = GraniteContext.getCurrentInstance();
+        GraniteConfig config = context.getGraniteConfig();
         
         Message response = null;
         
         if (!config.hasSecurityService())
             log.warn("Ignored security operation (no security settings in granite-config.xml): %s", message);
-        else if (!config.getSecurityService().acceptsContext())
-            log.info("Ignored security operation (security service does not handle this kind of granite context)", message);
+        else if (!config.getSecurityService().acceptsContext()) {
+            log.debug("Could not process security operation in non supported current context: %s", message);
+        	response = new ErrorMessage(message, SecurityServiceException.newNotLoggedInException("Invalid context"), true);
+        }
         else {
             SecurityService securityService = config.getSecurityService();
             try {
                 Channel channel = getChannel(channelFactory, (String)message.getClientId());
-
+                
                 if (message.isLoginOperation()) {
-                    Principal principal = securityService.login(message.getBody(), (String)message.getHeader(Message.CREDENTIALS_CHARSET_HEADER));
-
-                    if (channel != null)
-                        channel.setUserPrincipal(principal);
+                    // Try to retrieve an existing authentication if the current session has already been authenticated by remoting
+                    response = authorize(config, message, new LoginSecurityContext(message));
+                    
+                    Principal principal = context.getPrincipal();
+                    if (principal == null)
+                    	principal = securityService.login(message.getBody(), (String)message.getHeader(Message.CREDENTIALS_CHARSET_HEADER));
+                    
+                    if (principal == null)
+                    	response = new ErrorMessage(message, SecurityServiceException.newNotLoggedInException("Invalid context"), true);
+                    else {
+                    	response = null;
+                    	if (channel != null)
+                    		channel.setUserPrincipal(principal);
+                    }
                 }
                 else {
                     securityService.logout();
@@ -975,20 +1023,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
         }
         
         // Check security 2 (security service).
-        GraniteConfig config = context.getGraniteConfig();
-        try {
-            if (config.hasSecurityService()) {
-                if (config.getSecurityService().acceptsContext())
-                    return (Message)config.getSecurityService().authorize(invocationContext);
-
-                throw SecurityServiceException.newNotLoggedInException("User not logged in");
-            }
-
-            return (Message)invocationContext.invoke();
-        }
-        catch (Exception e) {
-            return new ErrorMessage(message, e, true);
-        }
+        return authorize((GraniteConfig)context.getGraniteConfig(), message, invocationContext);
     }
 
     private Message handleUnsubscribeMessage(final ChannelFactory<?> channelFactory, CommandMessage message) {
@@ -1105,18 +1140,9 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
                 return new ErrorMessage(message, e, true);
             }
         }
-	
+        
         // Check security 2 (security service).
-        GraniteConfig config = context.getGraniteConfig();
-        try {
-        	if (config.hasSecurityService() && config.getSecurityService().acceptsContext())
-                return (Message)config.getSecurityService().authorize(invocationContext);
-
-        	return (Message)invocationContext.invoke();
-        } 
-        catch (Exception e) {
-            return new ErrorMessage(message, e, true);
-        }
+    	return authorize((GraniteConfig)context.getGraniteConfig(), message, invocationContext);
     }
 
     private Message handleUnknownClientMessage(Message message) {

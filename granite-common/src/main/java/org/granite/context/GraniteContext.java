@@ -21,6 +21,7 @@
  */
 package org.granite.context;
 
+import java.security.Principal;
 import java.util.Map;
 
 /**
@@ -42,6 +43,9 @@ public abstract class GraniteContext {
     private final AMFContext amfContext;
     private final String sessionId;
     private final String clientType;
+    
+    private Principal principal;
+    
 
     public GraniteContext(Object graniteConfig, Object servicesConfig, String sessionId) {
     	this(graniteConfig, servicesConfig, sessionId, null);
@@ -87,6 +91,15 @@ public abstract class GraniteContext {
     public String getSessionId() {
     	return sessionId;
     }
+    
+    public Principal getPrincipal() {
+    	return principal;
+    }
+    
+    public void setPrincipal(Principal principal) {
+    	this.principal = principal;
+    }
+    
     
     public abstract Object getSessionLock();
 

@@ -137,10 +137,16 @@ public class LoopjTransport extends AbstractTransport<Context> {
                 if (!message.isConnect())
                     getStatusHandler().handleIO(true);
             }
-
+            
             @Override
             public void onSuccess(int statusCode, byte[] bytes) {
                 handled = true;
+                
+                if (message.isDisconnect()) {
+                	channel.onDisconnect();
+                	return;
+                }
+
                 if (statusCode != HttpStatus.SC_OK) {
                     channel.onError(message, new TransportHttpStatusException(statusCode, "HTTP Error: " + statusCode));
                     return;
@@ -152,10 +158,16 @@ public class LoopjTransport extends AbstractTransport<Context> {
                     getStatusHandler().handleException(new TransportIOException(message, "Could not deserialize message", e));
                 }
             }
-
+            
             @Override
             public void onFailure(Throwable throwable, String s) {
                 handled = true;
+                
+                if (message.isDisconnect()) {
+                	channel.onDisconnect();
+                	return;
+                }
+            	
                 Exception e = new TransportException(throwable);
                 channel.onError(message, new TransportException(e));
                 getStatusHandler().handleException(new TransportIOException(message, "Request failed", e));
@@ -163,14 +175,20 @@ public class LoopjTransport extends AbstractTransport<Context> {
 
             @Override
             public void onFinish() {
-            	if (!handled)
+            	if (!handled) {
+	                if (message.isDisconnect()) {
+	                	channel.onDisconnect();
+	                	return;
+	                }
+	            	
             		channel.onMessage(message, new ByteArrayInputStream(new byte[0]));
+            	}
             	
                 if (!message.isConnect())
                     getStatusHandler().handleIO(false);
             }
         });
-
+        
         return new TransportFuture() {
             @Override
             public boolean cancel() {

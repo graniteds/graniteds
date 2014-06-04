@@ -37,6 +37,7 @@ import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TimeoutEvent;
 import org.granite.client.messaging.messages.RequestMessage;
 import org.granite.client.messaging.messages.ResponseMessage;
+import org.granite.client.messaging.messages.requests.DisconnectMessage;
 import org.granite.client.messaging.messages.responses.FaultMessage;
 import org.granite.client.messaging.messages.responses.ResultMessage;
 
@@ -80,6 +81,10 @@ public class AsyncToken extends TimerTask implements ResponseMessageFuture {
 
 	public RequestMessage getRequest() {
 		return request;
+	}
+	
+	public boolean isDisconnectRequest() {
+		return request instanceof DisconnectMessage;
 	}
 	
 	public synchronized Event setChannelListener(ResponseListener channelListener) {

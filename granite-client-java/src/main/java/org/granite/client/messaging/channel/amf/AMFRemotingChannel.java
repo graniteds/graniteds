@@ -71,7 +71,7 @@ public class AMFRemotingChannel extends AbstractAMFChannel implements RemotingCh
 		    AMF0Body body = new AMF0Body("", "/" + (index++), new Object[]{data}, AMF0Body.DATA_TYPE_AMF3_OBJECT);
 		    amf0Message.addBody(body);
 		}
-		return new DefaultTransportMessage<AMF0Message>(token.getId(), false, clientId, null, amf0Message, codec);
+		return new DefaultTransportMessage<AMF0Message>(token.getId(), false, token.isDisconnectRequest(), clientId, null, amf0Message, codec);
 	}
 
 	@Override

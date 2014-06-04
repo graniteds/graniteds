@@ -44,6 +44,7 @@ import org.granite.client.messaging.events.Event.Type;
 import org.granite.client.messaging.messages.MessageChain;
 import org.granite.client.messaging.messages.RequestMessage;
 import org.granite.client.messaging.messages.ResponseMessage;
+import org.granite.client.messaging.messages.requests.DisconnectMessage;
 import org.granite.client.messaging.messages.requests.LoginMessage;
 import org.granite.client.messaging.messages.requests.LogoutMessage;
 import org.granite.client.messaging.messages.requests.PingMessage;
@@ -64,6 +65,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	
 	private final BlockingQueue<AsyncToken> tokensQueue = new LinkedBlockingQueue<AsyncToken>();
 	private final ConcurrentMap<String, AsyncToken> tokensMap = new ConcurrentHashMap<String, AsyncToken>();
+	private AsyncToken disconnectToken = null;
 
 	private Thread senderThread = null;
 	private Semaphore connections;
@@ -71,6 +73,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	
 	protected volatile boolean pinged = false;
 	protected volatile boolean authenticated = false;
+	protected volatile boolean authenticating = false;
 	protected volatile int maxConcurrentRequests;
 	protected volatile long defaultTimeToLive = DEFAULT_TIME_TO_LIVE; // 1 mn.
 	
@@ -170,6 +173,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			
 			tokensMap.clear();
 			tokensQueue.clear();
+			disconnectToken = null;
             internalStop();
 			
 			Thread thread = this.senderThread;
@@ -189,6 +193,28 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
     }
 
 
+    protected void authenticate(AsyncToken dependentToken) {
+		if (authenticating || authenticated)
+			return;
+		
+		Credentials credentials = this.credentials;
+		if (credentials == null)
+			return;
+		
+		LoginMessage loginMessage = new LoginMessage(clientId, credentials);
+		if (dependentToken != null) {
+			ResultMessage result = sendBlockingToken(loginMessage, dependentToken);
+			if (result == null)
+				return;
+			authenticated = true;
+			authenticating = false;
+		}
+		else {
+			send(loginMessage);
+			authenticating = true;
+		}
+    }
+    
 	@Override
 	public void run() {
 
@@ -209,16 +235,8 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
                     log.debug("Channel %s pinged clientId %s", id, clientId);
 					pinged = true;
 				}
-
-				if (!authenticated) {
-					Credentials credentials = this.credentials;
-					if (credentials != null) {
-						ResultMessage result = sendBlockingToken(new LoginMessage(clientId, credentials), token);
-						if (result == null)
-							continue;
-						authenticated = true;
-					}
-				}
+				
+				authenticate(token);
 				
 				sendToken(token);
 			}
@@ -327,10 +345,16 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			// Make sure we have set a clientId (can be null for ping message).
 			token.getRequest().setClientId(clientId);
 			
-		    // Add the token to active tokens map.
-		    if (tokensMap.putIfAbsent(token.getId(), token) != null)
-				throw new RuntimeException("MessageId isn't unique: " + token.getId());
-
+			if (token.getRequest() instanceof DisconnectMessage) {
+				// Store disconnect token
+				disconnectToken = token;
+			}
+			else {
+			    // Add the token to active tokens map.
+			    if (tokensMap.putIfAbsent(token.getId(), token) != null)
+					throw new RuntimeException("MessageId isn't unique: " + token.getId());
+			}
+			
 	    	// Actually send the message content.
 		    TransportFuture transportFuture = transport.send(this, createTransportMessage(token));
 		    
@@ -411,35 +435,35 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		try {
 			ResponseMessage response = decodeResponse(is);
 			
-			if (response != null) {
-				
-				AsyncToken token = tokensMap.remove(response.getCorrelationId());
-				if (token == null) {
-					log.warn("Unknown correlation id: %s", response.getCorrelationId());
-					return;
-				}
-				
-				switch (response.getType()) {
-					case RESULT:
-						token.dispatchResult((ResultMessage)response);
-						break;
-					case FAULT:
-					    FaultMessage faultMessage = (FaultMessage)response;
-					    if (isAuthenticated() && faultMessage.getCode() == FaultMessage.Code.NOT_LOGGED_IN || faultMessage.getCode() == FaultMessage.Code.SESSION_EXPIRED) {
-					        authenticated = false;
-					        credentials = null;
-					    }
-					    
-						token.dispatchFault((FaultMessage)response);
-						break;
-					default:
-						token.dispatchFailure(new RuntimeException("Unknown message type: " + response));
-						break;
-				}
-				
-				if (timer != null)
-					timer.purge();	// Must purge to cleanup timer references to AsyncToken
+			if (response == null)
+				return;
+			
+			AsyncToken token = tokensMap.remove(response.getCorrelationId());
+			if (token == null) {
+				log.warn("Unknown correlation id: %s", response.getCorrelationId());
+				return;
 			}
+			
+			switch (response.getType()) {
+				case RESULT:
+					token.dispatchResult((ResultMessage)response);
+					break;
+				case FAULT:
+				    FaultMessage faultMessage = (FaultMessage)response;
+				    if (isAuthenticated() && faultMessage.getCode() == FaultMessage.Code.NOT_LOGGED_IN || faultMessage.getCode() == FaultMessage.Code.SESSION_EXPIRED) {
+				        authenticated = false;
+				        credentials = null;
+				    }
+				    
+					token.dispatchFault((FaultMessage)response);
+					break;
+				default:
+					token.dispatchFailure(new RuntimeException("Unknown message type: " + response));
+					break;
+			}
+			
+			if (timer != null)
+				timer.purge();	// Must purge to cleanup timer references to AsyncToken
 		}
 		catch (Exception e) {
 			log.error(e, "Could not deserialize or dispatch incoming messages");
@@ -449,27 +473,55 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 				token.dispatchFailure(e);
 		}
 	}
-
+	
+	@Override
+	public void onDisconnect() {
+		log.info("Disconnecting channel %s", clientId);
+		
+		tokensMap.clear();
+		tokensQueue.clear();
+		
+		if (timer != null)
+			timer.purge();	// Must purge to cleanup timer references to AsyncToken
+		
+		if (disconnectToken != null) {
+			// Handle "hard" disconnect
+			ResultMessage resultMessage = new ResultMessage(clientId, disconnectToken.getRequest().getId(), true);
+			disconnectToken.dispatchResult(resultMessage);
+			disconnectToken = null;
+		}
+		
+		clientId = null;
+		pinged = false;
+		authenticating = false;
+		authenticated = false;
+	}
+	
 	@Override
 	public void onError(TransportMessage message, Exception e) {
-		if (message != null) {
-			AsyncToken token = tokensMap.remove(message.getId());
-			if (token != null) {
-				token.dispatchFailure(e);
-				if (timer != null)
-					timer.purge();	// Must purge to cleanup timer references to AsyncToken
-			}
-		}
+		if (message == null)
+			return;
+		
+		AsyncToken token = tokensMap.remove(message.getId());
+		if (token == null)
+			return;
+		
+		token.dispatchFailure(e);
+		
+		if (timer != null)
+			timer.purge();	// Must purge to cleanup timer references to AsyncToken
 	}
-
+	
 	@Override
 	public void onCancelled(TransportMessage message) {
 		AsyncToken token = tokensMap.remove(message.getId());
-		if (token != null) {
-			token.dispatchCancelled();
-			if (timer != null)
-				timer.purge();	// Must purge to cleanup timer references to AsyncToken
-		}
+		if (token == null)
+			return;
+		
+		token.dispatchCancelled();
+		
+		if (timer != null)
+			timer.purge();	// Must purge to cleanup timer references to AsyncToken
 	}
 	
 	private static class ChannelResponseListener extends AllInOneResponseListener {

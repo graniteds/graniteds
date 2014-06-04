@@ -83,6 +83,17 @@ public class ResultHandler<T> implements Runnable {
         this.componentListener = null;
     }
 
+	public ResultHandler(ServerSession serverSession, Event event) {
+		this.serverSession = serverSession;
+		this.sourceContext = null;
+		this.componentName = null;
+		this.operation = null;
+		this.event = event;
+		this.info = null;
+		this.tideResponder = null;
+		this.componentListener = null;
+	}
+
 	public ResultHandler(ServerSession serverSession, Context sourceContext, String componentName, String operation,
 			Event event, Object info, TideResponder<T> tideResponder, ComponentListener<T> componentListener) {
 		this.serverSession = serverSession;
@@ -136,18 +147,10 @@ public class ResultHandler<T> implements Runnable {
         
         serverSession.onResultEvent(event);
         
-        handleResult(context, invocationResult, result,
-                tideResponder instanceof TideMergeResponder<?> ? ((TideMergeResponder<T>) tideResponder).getMergeResultWith() : null);
+        boolean handled = handleResult(context, invocationResult, result);
+		
         if (invocationResult != null)
             result = invocationResult.getResult();
-        
-		boolean handled = false;
-        if (tideResponder != null) {
-            TideResultEvent<T> resultEvent = new TideResultEvent<T>(context, serverSession, componentListener, (T)result);
-            tideResponder.result(resultEvent);
-            if (resultEvent.isDefaultPrevented())
-                handled = true;
-        }
         
         componentListener.setResult((T)result);
         
@@ -166,7 +169,7 @@ public class ResultHandler<T> implements Runnable {
 
     private static final Logger log = Logger.getLogger(ResultHandler.class);
 
-    public void handleResult(Context context, InvocationResult invocationResult, Object result, Object mergeWith) {
+    public boolean handleResult(Context context, InvocationResult invocationResult, Object result) {
         log.debug("result {0}", result);
 
         List<EntityManager.Update> updates = null;
@@ -192,8 +195,10 @@ public class ResultHandler<T> implements Runnable {
 
             // Merges final result object
             if (result != null) {
-                if (mergeExternal)
+                if (mergeExternal) {
+                    Object mergeWith = tideResponder instanceof TideMergeResponder<?> ? ((TideMergeResponder<T>)tideResponder).getMergeResultWith() : null;
                     result = entityManager.mergeExternal(mergeContext, result, mergeWith, null, null, false);
+                }
                 else
                     log.debug("skipped merge of remote result");
                 if (invocationResult != null)
@@ -225,5 +230,19 @@ public class ResultHandler<T> implements Runnable {
         }
 
         log.debug("result merged into local context");
+        
+		if (invocationResult != null)
+            result = invocationResult.getResult();
+        
+		boolean handled = false;
+        if (tideResponder != null) {
+            @SuppressWarnings("unchecked")
+			TideResultEvent<T> resultEvent = new TideResultEvent<T>(context, serverSession, componentListener, (T)result);
+            tideResponder.result(resultEvent);
+            if (resultEvent.isDefaultPrevented())
+                handled = true;
+        }
+        
+        return handled;
     }
 }

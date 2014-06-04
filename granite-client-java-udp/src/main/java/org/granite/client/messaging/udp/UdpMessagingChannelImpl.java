@@ -159,7 +159,7 @@ public class UdpMessagingChannelImpl extends BaseAMFMessagingChannel implements 
 		connectMessage.setHeader(GDS_CLIENT_UPD_PORT, Integer.valueOf(port));
 
 		try {
-			transport.send(this, new DefaultTransportMessage<Message[]>(id, true, clientId, sessionId, new Message[]{connectMessage}, codec));
+			transport.send(this, new DefaultTransportMessage<Message[]>(id, true, false, clientId, sessionId, new Message[]{connectMessage}, codec));
 			
 			return true;
 		}

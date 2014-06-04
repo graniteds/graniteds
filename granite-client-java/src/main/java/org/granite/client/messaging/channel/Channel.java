@@ -164,6 +164,11 @@ public interface Channel {
 	void onMessage(TransportMessage message, InputStream is);
 
     /**
+     * Callback method called by the transport when it is disconnecting
+     */
+	void onDisconnect();
+
+    /**
      * Callback method called by the transport when an exception occurs during communication
      * @param message message triggering the error
      * @param e exception throws during send of message

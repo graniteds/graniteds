@@ -164,7 +164,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
         List<String> decodedCredentials = Arrays.asList(decodeBase64Credentials(credentials, charset));
         
         if (!(GraniteContext.getCurrentInstance() instanceof HttpGraniteContext)) {
-        	log.info("Login from non HTTP granite context ignored");
+        	log.debug("Login from non HTTP granite context ignored");
         	return null;
         }
 
@@ -209,6 +209,8 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
             securityContext.setAuthentication(authentication);
             SecurityContextHolder.setContext(securityContext);
             principal = authentication;
+            graniteContext.setPrincipal(principal);
+            
             try {
                 securityContextRepository.saveContext(securityContext, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
             }
@@ -273,6 +275,8 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
                     authentication = contextBeforeChainExecution.getAuthentication();
                     log.debug("Restore authentication from repository: %s", authentication != null ? authentication.getName() : "none");
                 }
+                
+                graniteContext.setPrincipal(authentication);
             }
 	        
 	        if (context.getDestination().isSecured()) {

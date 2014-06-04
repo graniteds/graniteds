@@ -37,7 +37,13 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.granite.client.messaging.channel.Channel;
-import org.granite.client.messaging.transport.*;
+import org.granite.client.messaging.transport.AbstractTransport;
+import org.granite.client.messaging.transport.TransportException;
+import org.granite.client.messaging.transport.TransportFuture;
+import org.granite.client.messaging.transport.TransportHttpStatusException;
+import org.granite.client.messaging.transport.TransportIOException;
+import org.granite.client.messaging.transport.TransportMessage;
+import org.granite.client.messaging.transport.TransportStateException;
 import org.granite.logging.Logger;
 import org.granite.util.PublicByteArrayOutputStream;
 
@@ -143,6 +149,11 @@ public class ApacheAsyncTransport extends AbstractTransport<Object> {
 	            	if (!message.isConnect())
 	            		getStatusHandler().handleIO(false);
 	            	
+	                if (message.isDisconnect()) {
+	                	channel.onDisconnect();
+	                	return;
+	                }
+	            	
 	            	if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
 	            		channel.onError(message, new TransportHttpStatusException(
 	            			response.getStatusLine().getStatusCode(),
@@ -171,14 +182,24 @@ public class ApacheAsyncTransport extends AbstractTransport<Object> {
 	            public void failed(Exception e) {
 	            	if (!message.isConnect())
 	            		getStatusHandler().handleIO(false);
-	
-	            	channel.onError(message, e);
-	            	getStatusHandler().handleException(new TransportIOException(message, "Request failed", e));
+	            	
+	                if (message.isDisconnect()) {
+	                	channel.onDisconnect();
+	                	return;
+	                }
+	                
+                	channel.onError(message, e);
+                	getStatusHandler().handleException(new TransportIOException(message, "Request failed", e));
 	            }
 	
 	            public void cancelled() {
 	            	if (!message.isConnect())
 	            		getStatusHandler().handleIO(false);
+	            	
+	                if (message.isDisconnect()) {
+	                	channel.onDisconnect();
+	                	return;
+	                }
 	            	
 	            	channel.onCancelled(message);
 	            }
