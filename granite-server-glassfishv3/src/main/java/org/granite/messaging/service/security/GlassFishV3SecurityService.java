@@ -222,6 +222,8 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
 
         if (principal == null)
             throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
+        
+        graniteContext.setPrincipal(principal);
 
         if (graniteContext instanceof HttpGraniteContext) {
             request.setAuthType(AUTH_TYPE);
@@ -270,6 +272,8 @@ public class GlassFishV3SecurityService extends AbstractSecurityService {
             }
         }
 
+        graniteContext.setPrincipal(principal);
+        
         if (context.getDestination().isSecured()) {
             if (principal == null) {
                 if (httpRequest != null && httpRequest.getRequestedSessionId() != null) {

@@ -106,6 +106,8 @@ public class UndertowSecurityService extends AbstractSecurityService {
         if (principal == null)
             throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
 
+        graniteContext.setPrincipal(principal);
+        
         endLogin(credentials, charset);
 
         return principal;
@@ -138,6 +140,8 @@ public class UndertowSecurityService extends AbstractSecurityService {
             }
         }
 
+        graniteContext.setPrincipal(principal);
+        
         if (context.getDestination().isSecured()) {
             if (principal == null) {
                 if (httpRequest != null && httpRequest.getRequestedSessionId() != null) {

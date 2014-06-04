@@ -129,6 +129,8 @@ public class Jetty9SecurityService extends AbstractSecurityService {
         if (principal == null)
             throw SecurityServiceException.newInvalidCredentialsException("Wrong username or password");
 
+        graniteContext.setPrincipal(principal);
+        
         endLogin(credentials, charset);
 
         return principal;
@@ -171,6 +173,8 @@ public class Jetty9SecurityService extends AbstractSecurityService {
                     principal = authenticationContext.getPrincipal();
             }
         }
+        
+        graniteContext.setPrincipal(principal);
 
         if (context.getDestination().isSecured()) {
             if (principal == null) {
