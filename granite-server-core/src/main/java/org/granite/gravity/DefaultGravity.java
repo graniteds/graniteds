@@ -709,7 +709,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     	boolean shouldReleaseContext = GraniteContext.getCurrentInstance() == null;
         try {
             initThread(null, fromChannel != null ? fromChannel.getClientType() : serverChannel.getClientType());
-
+            
             return handlePublishMessage(null, message, fromChannel != null ? fromChannel : serverChannel);
         }
         finally {
@@ -804,12 +804,8 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     
     private Message authorize(GraniteConfig config, final Message message, final AbstractSecurityContext securityContext) {
         try {
-            if (config.hasSecurityService()) {
-                if (config.getSecurityService().acceptsContext())
-                    return (Message)config.getSecurityService().authorize(securityContext);
-
-                throw SecurityServiceException.newNotLoggedInException("User not logged in");
-            }
+            if (config.hasSecurityService() && config.getSecurityService().acceptsContext())
+                return (Message)config.getSecurityService().authorize(securityContext);
 
             return (Message)securityContext.invoke();
         }
