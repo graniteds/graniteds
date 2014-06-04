@@ -209,14 +209,14 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
                                     setSessionId((String)messages[0].getHeader("JSESSIONID"));
                                 
                                 if (clientId != null && clientId.equals(result.getClientId()))
-                                	log.warn("Received PING result for unknown clientId " + request.getClientId());
+                                	log.warn("Received PING result for unknown clientId %s", request != null ? request.getClientId() : "(no request)");
                                 else {
                                     log.debug("Channel %s pinged clientId %s", id, clientId);
                                 	clientId = result.getClientId();
             						pinged = true;
             						
             						authenticate(null);
-                                }            					
+                                }
                                 break;
                                 
 							case LOGIN:
