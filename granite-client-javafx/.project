@@ -19,7 +19,7 @@
 		<link>
 			<name>client-java</name>
 			<type>2</type>
-			<location>WORKSPACE_LOC/graniteds/granite-client-java/src/main/java</location>
+			<location>PARENT-1-PROJECT_LOC/granite-client-java/src/main/java</location>
 		</link>
 	</linkedResources>
 </projectDescription>

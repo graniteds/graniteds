@@ -12,5 +12,6 @@
 	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/granite-amf"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/granite-jmf"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/granite-common"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

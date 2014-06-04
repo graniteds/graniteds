@@ -19,17 +19,17 @@
 		<link>
 			<name>binding-android-java</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/graniteds/granite-binding-android/src/main/java</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-binding-android/src/main/java</locationURI>
 		</link>
 		<link>
 			<name>binding-java</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/graniteds/granite-binding/src/main/java</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-binding/src/main/java</locationURI>
 		</link>
 		<link>
 			<name>client-adv-java</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/graniteds/granite-client-java-advanced/src/main/java</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-client-java-advanced/src/main/java</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

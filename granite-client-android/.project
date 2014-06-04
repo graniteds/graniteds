@@ -19,17 +19,17 @@
 		<link>
 			<name>client-java</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/graniteds/granite-client-java/src/main/java</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-client-java/src/main/java</locationURI>
 		</link>
 		<link>
 			<name>common-java</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/graniteds/granite-common/src/main/java</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-common/src/main/java</locationURI>
 		</link>
 		<link>
 			<name>jmf-java</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/graniteds/granite-jmf/src/main/java</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-jmf/src/main/java</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -19,7 +19,7 @@
 		<link>
 			<name>spring-java</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/graniteds/granite-server-spring/src/main/java</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-server-spring/src/main/java</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<flexLibProperties includeAllClasses="false" useMultiPlatformConfig="false" version="3">
+<flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
   <includeClasses>
     <classEntry path="mx.data.IManaged"/>
     <classEntry path="mx.data.utils.Managed"/>
@@ -236,6 +236,7 @@
     <classEntry path="org.granite.validation.helper.ConstraintHelper"/>
     <classEntry path="org.granite.validation.helper.ParameterDefinition"/>
     <classEntry path="org.granite.validators.CompareStringValidator"/>
+    <classEntry path="org.granite.test.tide.server.TestServerApp"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>
