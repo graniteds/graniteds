@@ -109,11 +109,11 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 		ClientType javafxType = getFromCache(key, propertyType);
 		
         if (javafxType == null) {
-        	if (jType instanceof GenericArrayType) {
+        	if (propertyType == PropertyType.SIMPLE && jType instanceof GenericArrayType) {
         		Type componentType = ((GenericArrayType)jType).getGenericComponentType();
         		javafxType = getClientType(componentType, declaringClass, declaringTypes, PropertyType.SIMPLE).toArrayType();
         	}
-        	else if (jType instanceof Class<?> && ((Class<?>)jType).isArray()) {
+        	else if (propertyType == PropertyType.SIMPLE && jType instanceof Class<?> && ((Class<?>)jType).isArray()) {
         		javafxType = getClientType(((Class<?>)jType).getComponentType(), declaringClass, declaringTypes, PropertyType.SIMPLE).toArrayType();
         	}
         	else {

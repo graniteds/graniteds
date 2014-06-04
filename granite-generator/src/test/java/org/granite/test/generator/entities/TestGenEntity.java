@@ -311,6 +311,32 @@ public class TestGenEntity {
 			new JavaSourceCodeObject("org.granite.test.generator.entities.Entity1Id", Util.readFile(outputs2[1].getFile()))
 		);
 	}
+	
+	@Test
+	public void testTideTemplateJFXEntityByteArray() throws Exception {
+		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
+		config.setTide(true);
+		config.addFileSetClasses(Entity7.class);
+		config.setAs3TypeFactory(new DefaultJavaFX8TypeFactory());
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, new MockListener()) {
+			@Override
+			public boolean isOutdated(JavaAs3Input input, GroovyTemplate template, File outputFile, boolean hasBaseTemplate) {
+				return true;
+			}
+		};
+		Generator generator = new Generator(config);
+		generator.add(provider);
+		JavaAs3Input input = new JavaAs3Input(Entity7.class, 
+				new File(Entity7.class.getClassLoader().getResource(Entity6.class.getName().replace('.', '/') + ".class").toURI()));
+		JavaAs3Output[] outputs = (JavaAs3Output[])generator.generate(input);
+		
+		Assert.assertEquals("Output", 2, outputs.length);
+		
+		String base = Util.readFile(outputs[0].getFile());
+		Assert.assertTrue("Entity7Base contains name", base.indexOf("private StringProperty name = new SimpleStringProperty(this, \"name\");") >= 0);
+		Assert.assertTrue("Entity7Base contains byteArray", base.indexOf("private ObjectProperty<Byte[]> byteArray = new SimpleObjectProperty<Byte[]>(this, \"byteArray\");") >= 0);
+		Assert.assertTrue("Entity7Base contains byteArray2", base.indexOf("private ObjectProperty<byte[]> byteArray2 = new SimpleObjectProperty<byte[]>(this, \"byteArray2\");") >= 0);
+	}
 
 
     public static void main(String[] args) {
