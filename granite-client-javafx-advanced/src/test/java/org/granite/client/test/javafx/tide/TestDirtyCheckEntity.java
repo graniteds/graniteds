@@ -157,7 +157,7 @@ public class TestDirtyCheckEntity {
         receivedContact.setPerson(receivedPerson);
         receivedPerson.getContacts().add(receivedContact);
 
-        new ResultHandler<Person>(serverSession, null, null).handleResult(ctx, null, receivedPerson, null);
+        new ResultHandler<Person>(serverSession, null, null).handleResult(ctx, null, receivedPerson);
         
         Assert.assertFalse("Contact not dirty", dataManager.isDirtyEntity(contact));
         Assert.assertTrue("Person 2 dirty", dataManager.isDirtyEntity(person2));
@@ -165,7 +165,7 @@ public class TestDirtyCheckEntity {
         
         receivedPerson = new Person(2L, 1L, person2.getUid(), null, null);
 
-        new ResultHandler<Person>(serverSession, null, null).handleResult(ctx, null, receivedPerson, null);
+        new ResultHandler<Person>(serverSession, null, null).handleResult(ctx, null, receivedPerson);
         Assert.assertFalse("Person 2 dirty", dataManager.isDirtyEntity(person2));
         Assert.assertFalse("Context dirty", entityManager.isDirty());
     }

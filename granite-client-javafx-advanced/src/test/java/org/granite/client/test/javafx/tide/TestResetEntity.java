@@ -161,7 +161,7 @@ public class TestResetEntity {
         Contact contact = new Contact(1L, 0L, "C1", null);
         contact.setPerson(person);
         contact = (Contact)entityManager.mergeExternalData(contact);
-        new ResultHandler<Object>(serverSession, null, null).handleResult(ctx, null, null, null);
+        new ResultHandler<Object>(serverSession, null, null).handleResult(ctx, null, null);
         
         contact.setPerson(new Person());
         entityManager.resetEntity(contact);
@@ -173,7 +173,7 @@ public class TestResetEntity {
         c.setPerson(p);
         p.getContacts().add(c);
         person = (Person)entityManager.mergeExternalData(p);
-        new ResultHandler<Object>(serverSession, null, null).handleResult(ctx, null, null, null);
+        new ResultHandler<Object>(serverSession, null, null).handleResult(ctx, null, null);
         
         person.getContacts().remove(0);
         
