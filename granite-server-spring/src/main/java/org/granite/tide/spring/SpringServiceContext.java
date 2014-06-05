@@ -207,7 +207,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
 	        classes.add(AopUtils.getTargetClass(bean));
         }
         catch (Exception e) {
-            log.warn(e, "Could not get AOP class for component " + bean.getClass());
+            log.warn(e, "Could not get AOP class for component %s", bean.getClass().getName());
         	return null;
         }
         
@@ -226,7 +226,7 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
 	        	return true;
         }
         catch (Exception e) {
-            log.warn(e, "Could not get AOP class for component " + bean.getClass());
+            log.warn(e, "Could not get AOP class for component %s", bean.getClass().getName());
         }
         
         return false;
@@ -245,8 +245,11 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
 	        if (m.isAnnotationPresent(annotationClass))
 	        	return true;
 		}
+    	catch (NoSuchMethodException nsme) {
+    		// Might happen in the AOP target if the method is implemented by a proxy
+    	}
     	catch (Exception e) {
-    		log.warn("Could not find bean method", e);
+    		log.warn(e, "Could not get AOP class for component %s (looking for method %s)", bean.getClass().getName(), methodName);
     	}
     	
     	return false;
