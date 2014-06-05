@@ -52,7 +52,7 @@ package org.granite.tide.service {
 
 		
 		public function accepts(emsg:ErrorMessage):Boolean {
-			return emsg.faultCode == "Server.Security.NotLoggedIn";
+			return emsg.faultCode == "Server.Security.NotLoggedIn" || emsg.faultCode == "Client.Authentication";
 		}
 		
 		public function handle(serverSession:ServerSession, context:BaseContext, emsg:ErrorMessage):void {
