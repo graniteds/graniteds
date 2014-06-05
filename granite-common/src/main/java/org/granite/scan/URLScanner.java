@@ -133,7 +133,8 @@ public class URLScanner implements Scanner {
         }
 
         for (String urlPath : paths) {
-            File file = new File(urlPath);
+        	 urlPath = urlPath.replace("%20", " "); // Fix for GDS-1288
+        	 File file = new File(urlPath);
             if (file.isDirectory())
                 handleDirectory(file, file);
             else
