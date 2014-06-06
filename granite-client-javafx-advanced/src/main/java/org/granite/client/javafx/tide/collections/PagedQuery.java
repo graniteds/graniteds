@@ -249,10 +249,10 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 					int idx = getInternalWrappedList().indexOf(savedSnapshot.get(i));
 					if (idx < 0)
 						break;
-					permutations.add(idx);
+					permutations.add(first+idx);
 				}
 			}
-			final int[] perms = new int[permutations.size()];
+			final int[] perms = permutations.size() > 0 ? new int[permutations.size()] : null;
 			for (int i = 0; i < permutations.size(); i++)
 				perms[i] = permutations.get(i);
 			
@@ -266,7 +266,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 				public int getFrom() {
 					if (changeIndex < removals.size())
 						return first+removals.get(changeIndex);
-					if (!permutations.isEmpty())
+					if (perms != null)
 						return first+permutationStart;
 					return -1;
 				}
@@ -275,7 +275,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 				public int getTo() {
 					if (changeIndex < removals.size())
 						return first+removals.get(changeIndex);
-					if (!permutations.isEmpty())
+					if (perms != null)
 						return first+permutationStart+perms.length;
 					return -1;
 				}
@@ -291,6 +291,16 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 						return perms;
 					return EMPTY_PERMUTATION;
 				}
+			    
+			    @Override
+		        public int getPermutation(int i) {
+		            if (changeIndex != removals.size()) {
+		                throw new IllegalStateException("Not a permutation change");
+		            }
+		            if (i-getFrom() >= 0 && i-getFrom() < perms.length)
+		            	return perms[i - getFrom()];
+		            return -1;
+		        }
 				
 				@Override
 				public List<E> getRemoved() {
@@ -302,7 +312,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 				@Override
 				public boolean next() {
 					changeIndex++;
-					return changeIndex <= removals.size();
+					return perms != null ? changeIndex <= removals.size() : changeIndex < removals.size();
 				}
 				
 				@Override
