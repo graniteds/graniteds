@@ -37,6 +37,7 @@ package org.granite.client.persistence.collection.observable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.List;
 
 import org.granite.binding.collection.ObservableListWrapper;
 import org.granite.client.persistence.Loader;
@@ -47,7 +48,7 @@ import org.granite.client.persistence.collection.UnsafePersistentCollection;
 /**
  * @author William DRAI
  */
-public class ObservablePersistentList<E> extends ObservableListWrapper<E> implements UnsafePersistentCollection<PersistentList<E>> {
+public class ObservablePersistentList<E> extends ObservableListWrapper<E> implements UnsafePersistentCollection<List<E>> {
 	
     private static final long serialVersionUID = 1L;
 	
@@ -89,8 +90,13 @@ public class ObservablePersistentList<E> extends ObservableListWrapper<E> implem
 	}
 
 	@Override
-	public void initialize() {
-		internalPersistentCollection().initialize();
+	public void initialize(List<E> list, final Initializer<List<E>> initializer) {
+		internalPersistentCollection().initialize(list, initializer != null ? initializer : new Initializer<List<E>>() {
+			@Override
+			public void initialize(List<E> list) {
+				addAll(list);
+			}
+		});
 	}
 
 	@Override
@@ -99,17 +105,17 @@ public class ObservablePersistentList<E> extends ObservableListWrapper<E> implem
 	}
 
 	@Override
-	public PersistentCollection clone(boolean uninitialize) {
+	public PersistentCollection<List<E>> clone(boolean uninitialize) {
 		return internalPersistentCollection().clone(uninitialize);
 	}
 
 	@Override
-	public Loader<PersistentCollection> getLoader() {
+	public Loader<List<E>> getLoader() {
 		return internalPersistentCollection().getLoader();
 	}
 
 	@Override
-	public void setLoader(Loader<PersistentCollection> loader) {
+	public void setLoader(Loader<List<E>> loader) {
 		internalPersistentCollection().setLoader(loader);
 	}
 
@@ -129,27 +135,27 @@ public class ObservablePersistentList<E> extends ObservableListWrapper<E> implem
 	}
 
     @Override
-    public void addListener(ChangeListener listener) {
+    public void addListener(ChangeListener<List<E>> listener) {
     	internalPersistentCollection().addListener(listener);
     }
 
     @Override
-    public void removeListener(ChangeListener listener) {
+    public void removeListener(ChangeListener<List<E>> listener) {
     	internalPersistentCollection().removeListener(listener);
     }
 
     @Override
-    public void addListener(InitializationListener listener) {
+    public void addListener(InitializationListener<List<E>> listener) {
     	internalPersistentCollection().addListener(listener);
     }
 
     @Override
-    public void removeListener(InitializationListener listener) {
+    public void removeListener(InitializationListener<List<E>> listener) {
     	internalPersistentCollection().removeListener(listener);
     }
 
 	@Override
-	public void withInitialized(InitializationCallback callback) {
+	public void withInitialized(InitializationCallback<List<E>> callback) {
 		internalPersistentCollection().withInitialized(callback);
 	}
 

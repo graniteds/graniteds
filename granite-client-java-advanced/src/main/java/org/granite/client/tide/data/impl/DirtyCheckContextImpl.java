@@ -375,8 +375,8 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
             return true;
         }
         else if (val1 instanceof Set<?> && val2 instanceof Set<?>) {
-			if ((val1 instanceof PersistentCollection && !((PersistentCollection)val1).wasInitialized()) 
-					|| (val2 instanceof PersistentCollection && !((PersistentCollection)val2).wasInitialized()))
+			if ((val1 instanceof PersistentCollection && !((PersistentCollection<?>)val1).wasInitialized()) 
+					|| (val2 instanceof PersistentCollection && !((PersistentCollection<?>)val2).wasInitialized()))
 				return false;
             Collection<?> coll1 = (Collection<?>)val1;
             Collection<?> coll2 = (Collection<?>)val2;
@@ -407,8 +407,8 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
             return true;
         }
         else if (val1 instanceof List<?> && val2 instanceof List<?>) {
-			if ((val1 instanceof PersistentCollection && !((PersistentCollection)val1).wasInitialized()) 
-					|| (val2 instanceof PersistentCollection && !((PersistentCollection)val2).wasInitialized()))
+			if ((val1 instanceof PersistentCollection && !((PersistentCollection<?>)val1).wasInitialized()) 
+					|| (val2 instanceof PersistentCollection && !((PersistentCollection<?>)val2).wasInitialized()))
 				return false;
             List<?> list1 = (List<?>)val1;
             List<?> list2 = (List<?>)val2;
@@ -421,8 +421,8 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
             return true;
         }
         else if (val1 instanceof Collection<?> && val2 instanceof Collection<?>) {
-            if ((val1 instanceof PersistentCollection && !((PersistentCollection)val1).wasInitialized()) 
-                    || (val2 instanceof PersistentCollection && !((PersistentCollection)val2).wasInitialized()))
+            if ((val1 instanceof PersistentCollection && !((PersistentCollection<?>)val1).wasInitialized()) 
+                    || (val2 instanceof PersistentCollection && !((PersistentCollection<?>)val2).wasInitialized()))
                 return false;
             Collection<?> coll1 = (Collection<?>)val1;
             Collection<?> coll2 = (Collection<?>)val2;
@@ -453,8 +453,8 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
             return true;
         }
         else if (val1 instanceof Map<?, ?> && val2 instanceof Map<?, ?>) {
-			if ((val1 instanceof PersistentCollection && !((PersistentCollection)val1).wasInitialized()) 
-					|| (val2 instanceof PersistentCollection && !((PersistentCollection)val2).wasInitialized()))
+			if ((val1 instanceof PersistentCollection && !((PersistentCollection<?>)val1).wasInitialized()) 
+					|| (val2 instanceof PersistentCollection && !((PersistentCollection<?>)val2).wasInitialized()))
 				return false;
             Map<?, ?> map1 = (Map<?, ?>)val1;
             Map<?, ?> map2 = (Map<?, ?>)val2;
@@ -824,11 +824,11 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 			else if (isEntity(sourceValue)) {
 				save.put(propName, mergeContext.getFromCache(sourceValue));
 			}
-			else if (sourceValue instanceof Collection<?> && !(sourceValue instanceof PersistentCollection && !((PersistentCollection)sourceValue).wasInitialized())) {
+			else if (sourceValue instanceof Collection<?> && !(sourceValue instanceof PersistentCollection && !((PersistentCollection<?>)sourceValue).wasInitialized())) {
 				List<Object> snapshot = new ArrayList<Object>((Collection<?>)sourceValue);
 				save.put(propName, snapshot);
 			}
-			else if (sourceValue instanceof Map<?, ?> && !(sourceValue instanceof PersistentCollection && !((PersistentCollection)sourceValue).wasInitialized())) {
+			else if (sourceValue instanceof Map<?, ?> && !(sourceValue instanceof PersistentCollection && !((PersistentCollection<?>)sourceValue).wasInitialized())) {
 				Map<?, ?> map = (Map<?, ?>)sourceValue;
 				List<Object[]> snapshot = new ArrayList<Object[]>(map.size());
 				for (Entry<?, ?> entry : map.entrySet())
@@ -886,7 +886,7 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 				
 				Object value = dataManager.getPropertyValue(object, p);
 				if (value instanceof Collection<?>) {
-					if (value instanceof PersistentCollection && !((PersistentCollection)value).wasInitialized())
+					if (value instanceof PersistentCollection && !((PersistentCollection<?>)value).wasInitialized())
 						continue;
 					
 					@SuppressWarnings("unchecked")
@@ -931,7 +931,7 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 						ip.remove();
 				}
 				else if (value instanceof Map<?, ?>) {
-					if (value instanceof PersistentCollection && !((PersistentCollection)value).wasInitialized())
+					if (value instanceof PersistentCollection && !((PersistentCollection<?>)value).wasInitialized())
 						continue;
 					
 					@SuppressWarnings("unchecked")

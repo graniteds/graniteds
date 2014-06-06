@@ -55,10 +55,10 @@ public class PersistentMap<K, V> extends AbstractPersistentMapCollection<K, V, M
 	}
 	
 	@Override
-	public void doInitialize() {
-		init(new HashMap<K, V>(), null, false);
+	public void doInitialize(Map<K, V> map, boolean empty) {
+		init(empty ? new HashMap<K, V>() : map, null, false);
 	}
-
+	
 	@Override
 	protected PersistentCollectionSnapshot createSnapshot(Object io, boolean forReading) {
 		PersistentCollectionSnapshotFactory factory = PersistentCollectionSnapshotFactory.newInstance(io);

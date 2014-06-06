@@ -32,7 +32,7 @@ import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 /**
  * @author Franck WOLFF
  */
-public class PersistentSortedMap<K, V> extends AbstractPersistentMapCollection<K, V, SortedMap<K, V>> implements SortedMap<K, V>, PersistentSortedCollection<K> {
+public class PersistentSortedMap<K, V> extends AbstractPersistentMapCollection<K, V, SortedMap<K, V>> implements SortedMap<K, V>, PersistentSortedCollection<SortedMap<K, V>, K> {
 
     private static final long serialVersionUID = 1L;
 	
@@ -53,10 +53,10 @@ public class PersistentSortedMap<K, V> extends AbstractPersistentMapCollection<K
 	}
 	
 	@Override
-	public void doInitialize() {
-		init(new TreeMap<K, V>(), null, false);
+	public void doInitialize(SortedMap<K, V> sortedMap, boolean empty) {
+		init(empty ? new TreeMap<K, V>(sortedMap.comparator()) : sortedMap, null, false);
 	}
-
+	
 	public Comparator<? super K> comparator() {
 		return getCollection().comparator();
 	}

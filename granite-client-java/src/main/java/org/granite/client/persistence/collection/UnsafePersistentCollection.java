@@ -27,7 +27,7 @@ package org.granite.client.persistence.collection;
  *
  * @author Franck WOLFF
  */
-public interface UnsafePersistentCollection<C extends PersistentCollection> extends PersistentCollection {
+public interface UnsafePersistentCollection<C> extends PersistentCollection<C> {
 
-	C internalPersistentCollection();
+	PersistentCollection<C> internalPersistentCollection();
 }

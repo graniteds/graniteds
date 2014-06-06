@@ -38,6 +38,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -46,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 
 import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.tide.Context;
@@ -535,7 +538,7 @@ public class EntityManagerImpl implements EntityManager {
             dataManager.stopTracking(obj, parent);
         }
         
-        if (obj instanceof PersistentCollection && !((PersistentCollection)obj).wasInitialized())
+        if (obj instanceof PersistentCollection && !((PersistentCollection<?>)obj).wasInitialized())
         	return removed;
         
         if (obj instanceof Iterable<?>) {
@@ -605,9 +608,9 @@ public class EntityManagerImpl implements EntityManager {
                 if (obj == null) {
                     next = null;
                 }
-                else if (((obj instanceof PersistentCollection && !((PersistentCollection)obj).wasInitialized()) 
+                else if (((obj instanceof PersistentCollection && !((PersistentCollection<?>)obj).wasInitialized()) 
                     || (obj instanceof PersistentCollection && !(previous instanceof PersistentCollection))) && isEntity(parent) && propertyName != null) {
-                    next = mergePersistentCollection(mergeContext, (PersistentCollection)obj, previous, parent, propertyName);
+                    next = mergePersistentCollection(mergeContext, (PersistentCollection<?>)obj, previous, parent, propertyName);
                     addRef = true;
                 }
                 else if (obj instanceof List<?>) {
@@ -901,20 +904,20 @@ public class EntityManagerImpl implements EntityManager {
         		&& dataManager.isLazyProperty(parent, propertyName)) {
                 mergeContext.pushMerge(coll, previous);
                 
-                if (previous instanceof PersistentCollection && ((PersistentCollection)previous).wasInitialized()) {
+                if (previous instanceof PersistentCollection && ((PersistentCollection<List<?>>)previous).wasInitialized()) {
 	                log.debug("uninitialize lazy collection %s", ObjectUtil.toString(previous));
-	                ((PersistentCollection)previous).uninitialize();
+	                ((PersistentCollection<List<?>>)previous).uninitialize();
                 }
                 
                 return (List<?>)previous;
             }
         }
         
-        if (previous != null && previous instanceof PersistentCollection && !((PersistentCollection)previous).wasInitialized()) {
+        if (previous != null && previous instanceof PersistentCollection && !((PersistentCollection<List<?>>)previous).wasInitialized()) {
             log.debug("initialize lazy collection %s", ObjectUtil.toString(previous));
             mergeContext.pushMerge(coll, previous);
             
-            ((PersistentCollection)previous).initializing();
+            ((PersistentCollection<List<?>>)previous).initializing();
             
             List<Object> added = new ArrayList<Object>(coll.size());
             for (int i = 0; i < coll.size(); i++) {
@@ -924,8 +927,7 @@ public class EntityManagerImpl implements EntityManager {
                 added.add(obj);
             }
             
-            ((PersistentCollection)previous).initialize();
-            ((Collection<Object>)previous).addAll(added);
+            ((PersistentCollection<List<?>>)previous).initialize(added, null);
             
             // Keep notified of collection updates to notify the server at next remote call
             dataManager.startTracking(previous, parent);
@@ -1035,13 +1037,13 @@ public class EntityManagerImpl implements EntityManager {
         
         // Wrap/instrument persistent collections
         if (isEntity(parent) && propertyName != null && nextList instanceof PersistentCollection 
-        		&& !(((PersistentCollection)nextList).getLoader() instanceof CollectionLoader)) {
+        		&& !(((PersistentCollection<?>)nextList).getLoader() instanceof CollectionLoader)) {
             log.debug("instrument persistent collection from %s", ObjectUtil.toString(nextList));
             
-            ((PersistentCollection)nextList).setLoader(new CollectionLoader(mergeContext.getServerSession(), parent, propertyName));
+            ((PersistentCollection<List<?>>)nextList).setLoader(new CollectionLoader<List<?>>(mergeContext.getServerSession(), parent, propertyName));
         }
         else
-            log.debug("mergeCollection result: %s", ObjectUtil.toString(nextList));
+            log.debug("mergeList result: %s", ObjectUtil.toString(nextList));
         
         mergeContext.pushMerge(coll, nextList, false);
         
@@ -1071,22 +1073,22 @@ public class EntityManagerImpl implements EntityManager {
                 && dataManager.isLazyProperty(parent, propertyName)) {
                 mergeContext.pushMerge(coll, previous);
                 
-            	if (previous instanceof PersistentCollection && ((PersistentCollection)previous).wasInitialized()) {
+            	if (previous instanceof PersistentCollection && ((PersistentCollection<Set<?>>)previous).wasInitialized()) {
 	                log.debug("uninitialize lazy collection %s", ObjectUtil.toString(previous));
-	                ((PersistentCollection)previous).uninitialize();
+	                ((PersistentCollection<Set<?>>)previous).uninitialize();
             	}
             	
                 return (Set<?>)previous;
             }
         }
         
-        if (previous != null && previous instanceof PersistentCollection && !((PersistentCollection)previous).wasInitialized()) {
+        if (previous != null && previous instanceof PersistentCollection && !((PersistentCollection<Set<?>>)previous).wasInitialized()) {
             log.debug("initialize lazy collection %s", ObjectUtil.toString(previous));
             mergeContext.pushMerge(coll, previous);
             
-            ((PersistentCollection)previous).initializing();
+            ((PersistentCollection<Set<?>>)previous).initializing();
             
-            Set<Object> added = new HashSet<Object>(coll.size());
+            final Set<Object> added = new HashSet<Object>(coll.size());
             for (Iterator<Object> icoll = coll.iterator(); icoll.hasNext(); ) {
                 Object obj = icoll.next();
 
@@ -1094,8 +1096,7 @@ public class EntityManagerImpl implements EntityManager {
                 added.add(obj);
             }
             
-            ((PersistentCollection)previous).initialize();
-            ((Collection<Object>)previous).addAll(added);
+            ((PersistentCollection<Set<?>>)previous).initialize(added, null);
             
             // Keep notified of collection updates to notify the server at next remote call
             dataManager.startTracking(previous, parent);
@@ -1111,7 +1112,15 @@ public class EntityManagerImpl implements EntityManager {
             set = (Set<Object>)previous;
         else if (mergeContext.getSourceEntityManager() != null) {
             try {
-                set = coll.getClass().newInstance();
+            	if (coll instanceof SortedSet<?>) {
+            		try {
+            			set = coll.getClass().getConstructor(Comparator.class).newInstance(((SortedSet<?>)coll).comparator());
+            		}
+            		catch (NoSuchMethodException nsme) {
+            		}
+            	}
+            	if (set == null)
+            		set = coll.getClass().newInstance();
             }
             catch (Exception e) {
                 throw new RuntimeException("Could not create class " + coll.getClass());
@@ -1198,13 +1207,13 @@ public class EntityManagerImpl implements EntityManager {
         
         // Wrap/instrument persistent collections
         if (isEntity(parent) && propertyName != null && nextSet instanceof PersistentCollection 
-                && !(((PersistentCollection)nextSet).getLoader() instanceof CollectionLoader)) {
+                && !(((PersistentCollection<Set<?>>)nextSet).getLoader() instanceof CollectionLoader)) {
             log.debug("instrument persistent collection from %s", ObjectUtil.toString(nextSet));
             
-            ((PersistentCollection)nextSet).setLoader(new CollectionLoader(mergeContext.getServerSession(), parent, propertyName));
+            ((PersistentCollection<Set<?>>)nextSet).setLoader(new CollectionLoader<Set<?>>(mergeContext.getServerSession(), parent, propertyName));
         }
         else
-            log.debug("mergeCollection result: %s", ObjectUtil.toString(nextSet));
+            log.debug("mergeSet result: %s", ObjectUtil.toString(nextSet));
         
         mergeContext.pushMerge(coll, nextSet, false);
         
@@ -1235,20 +1244,20 @@ public class EntityManagerImpl implements EntityManager {
                 
                 mergeContext.pushMerge(map, previous);
                 
-                if (previous instanceof PersistentCollection && ((PersistentCollection)previous).wasInitialized()) {
+                if (previous instanceof PersistentCollection && ((PersistentCollection<Map<?, ?>>)previous).wasInitialized()) {
                     log.debug("uninitialize lazy map %s", ObjectUtil.toString(previous));
-                	((PersistentCollection)previous).uninitialize();
+                	((PersistentCollection<Map<?, ?>>)previous).uninitialize();
                 }
                 
                 return (Map<?, ?>)previous;
             }
         }
 
-        if (previous != null && previous instanceof PersistentCollection && !((PersistentCollection)previous).wasInitialized()) {
+        if (previous != null && previous instanceof PersistentCollection && !((PersistentCollection<Map<?, ?>>)previous).wasInitialized()) {
             log.debug("initialize lazy map %s", ObjectUtil.toString(previous));
             mergeContext.pushMerge(map, previous);
             
-            ((PersistentCollection)previous).initializing();
+            ((PersistentCollection<Map<?, ?>>)previous).initializing();
             
             Map<Object, Object> added = new HashMap<Object, Object>();
             for (Entry<?, ?> me : map.entrySet()) {
@@ -1257,8 +1266,7 @@ public class EntityManagerImpl implements EntityManager {
                 added.put(key, value);
             }
             
-            ((PersistentCollection)previous).initialize();
-            ((Map<Object, Object>)previous).putAll(added);
+            ((PersistentCollection<Map<?, ?>>)previous).initialize(added, null);
             
             // Keep notified of collection updates to notify the server at next remote call
             dataManager.startTracking(previous, parent);
@@ -1274,7 +1282,15 @@ public class EntityManagerImpl implements EntityManager {
             m = (Map<Object, Object>)previous;
         else if (mergeContext.getSourceEntityManager() != null) {
             try {
-                m = TypeUtil.newInstance(map.getClass(), Map.class);
+	        	if (map instanceof SortedMap<?, ?>) {
+	        		try {
+	        			m = map.getClass().getConstructor(Comparator.class).newInstance(((SortedMap<?, ?>)map).comparator());
+	        		}
+	        		catch (NoSuchMethodException nsme) {
+	        		}
+	        	}
+	        	if (m == null)
+	                m = TypeUtil.newInstance(map.getClass(), Map.class);
             }
             catch (Exception e) {
                 throw new RuntimeException("Could not create class " + map.getClass());
@@ -1338,10 +1354,10 @@ public class EntityManagerImpl implements EntityManager {
         }
         
         if (isEntity(parent) && propertyName != null && nextMap instanceof PersistentCollection 
-        		&& !(((PersistentCollection)nextMap).getLoader() instanceof CollectionLoader)) {
+        		&& !(((PersistentCollection<Map<?, ?>>)nextMap).getLoader() instanceof CollectionLoader)) {
             log.debug("instrument persistent map from %s", ObjectUtil.toString(nextMap));
             
-            ((PersistentCollection)nextMap).setLoader(new CollectionLoader(mergeContext.getServerSession(), parent, propertyName));
+            ((PersistentCollection<Map<?, ?>>)nextMap).setLoader(new CollectionLoader<Map<?, ?>>(mergeContext.getServerSession(), parent, propertyName));
         }
         else
             log.debug("mergeMap result: %s", ObjectUtil.toString(nextMap));
@@ -1366,30 +1382,31 @@ public class EntityManagerImpl implements EntityManager {
      * 
      *  @return the wrapped persistent collection
      */ 
-    protected Object mergePersistentCollection(MergeContext mergeContext, PersistentCollection coll, Object previous, Object parent, String propertyName) {
+    @SuppressWarnings("unchecked")
+	protected Object mergePersistentCollection(MergeContext mergeContext, PersistentCollection<?> coll, Object previous, Object parent, String propertyName) {
         if (previous instanceof PersistentCollection) {
             mergeContext.pushMerge(coll, previous);
-            if (((PersistentCollection)previous).wasInitialized()) {
+            if (((PersistentCollection<?>)previous).wasInitialized()) {
                 if (mergeContext.isUninitializeAllowed() && mergeContext.hasVersionChanged(parent)) {
                     log.debug("uninitialize lazy collection %s", ObjectUtil.toString(previous));
-                    ((PersistentCollection)previous).uninitialize();
+                    ((PersistentCollection<?>)previous).uninitialize();
                 }
                 else
                     log.debug("keep initialized collection %s", ObjectUtil.toString(previous));
             }
             
-            if (!(((PersistentCollection)previous).getLoader() instanceof CollectionLoader)) {
+            if (!(((PersistentCollection<?>)previous).getLoader() instanceof CollectionLoader)) {
 	            log.debug("instrument persistent collection from %s", ObjectUtil.toString(previous));
-	            ((PersistentCollection)previous).setLoader(new CollectionLoader(mergeContext.getServerSession(), parent, propertyName));
+	            ((PersistentCollection<Object>)previous).setLoader(new CollectionLoader<Object>(mergeContext.getServerSession(), parent, propertyName));
             }
             
             dataManager.startTracking(previous, parent);
             return previous;
         }
         
-		PersistentCollection pcoll = coll;
+		PersistentCollection<?> pcoll = coll;
 		if (previous instanceof PersistentCollection)
-			pcoll = (PersistentCollection)previous;
+			pcoll = (PersistentCollection<?>)previous;
 		if (coll.getLoader() instanceof CollectionLoader)
 			pcoll = duplicatePersistentCollection(mergeContext, coll, parent, propertyName);
 		else if (mergeContext.getSourceEntityManager() != null)
@@ -1399,7 +1416,6 @@ public class EntityManagerImpl implements EntityManager {
         
         if (pcoll.wasInitialized()) {
         	if (pcoll instanceof List<?>) {
-        		@SuppressWarnings("unchecked")
 				List<Object> plist = (List<Object>)pcoll;
 	            for (int i = 0; i < plist.size(); i++) {
 	                Object obj = mergeExternal(mergeContext, plist.get(i), null, parent, propertyName, false);
@@ -1408,7 +1424,6 @@ public class EntityManagerImpl implements EntityManager {
 	            }
         	}
         	else {
-        		@SuppressWarnings("unchecked")
 				Collection<Object> pset = (Collection<Object>)pcoll;
         		List<Object> toAdd = new ArrayList<Object>();
         		for (Iterator<Object> iset = pset.iterator(); iset.hasNext(); ) {
@@ -1428,16 +1443,16 @@ public class EntityManagerImpl implements EntityManager {
         
         if (!(coll.getLoader() instanceof CollectionLoader)) {
             log.debug("instrument persistent collection from %s", ObjectUtil.toString(pcoll));
-            pcoll.setLoader(new CollectionLoader(mergeContext.getServerSession(), parent, propertyName));
+            ((PersistentCollection<Object>)pcoll).setLoader(new CollectionLoader<Object>(mergeContext.getServerSession(), parent, propertyName));
         }
         return pcoll;
     }
     
-    private PersistentCollection duplicatePersistentCollection(MergeContext mergeContext, Object coll, Object parent, String propertyName) {
+    private PersistentCollection<?> duplicatePersistentCollection(MergeContext mergeContext, Object coll, Object parent, String propertyName) {
     	if (!(coll instanceof PersistentCollection))
 			throw new RuntimeException("Not a persistent collection/map " + ObjectUtil.toString(coll));
 		
-    	PersistentCollection ccoll = ((PersistentCollection)coll).clone(mergeContext.isUninitializing());
+    	PersistentCollection<?> ccoll = ((PersistentCollection<?>)coll).clone(mergeContext.isUninitializing());
 		
 		if (mergeContext.isUninitializing() && parent != null && propertyName != null) {
 			if (dataManager.hasVersionProperty(parent) && dataManager.getVersion(parent) != null && dataManager.isLazyProperty(parent, propertyName))
@@ -1614,7 +1629,7 @@ public class EntityManagerImpl implements EntityManager {
 	                if (owners != null) {
 	                    for (Object[] owner : owners) {
 	                        Object val = dataManager.getPropertyValue(owner[0], (String)owner[1]);
-	                        if (val instanceof PersistentCollection && !((PersistentCollection)val).wasInitialized())
+	                        if (val instanceof PersistentCollection && !((PersistentCollection<?>)val).wasInitialized())
 	                            continue;
 	                        if (val instanceof List<?>) {
 	                            List<?> list = (List<?>)val;

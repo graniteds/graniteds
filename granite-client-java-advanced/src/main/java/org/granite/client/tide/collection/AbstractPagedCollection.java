@@ -750,8 +750,11 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
     				getInternalWrappedList().add(i, elt);
 	    		}
 	    	}
-	    	else
+	    	else {
 	    		savedSnapshot = new ArrayList<E>(getInternalWrappedList());
+	    		getInternalWrappedList().clear();
+	    		getInternalWrappedList().addAll(list);
+	    	}
     	}
 		
 		firePageChange(event, previousFirst, previousLast, savedSnapshot);
@@ -791,7 +794,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 		if (initializing)
 			initSent = false;
 		
-		firePageChange(event, this.first, this.last, (List<E>)Collections.EMPTY_LIST);
+		firePageChange(event, this.first, this.last, Collections.EMPTY_LIST);
 	}
 	
 	

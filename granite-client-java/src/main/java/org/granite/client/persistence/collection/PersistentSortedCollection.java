@@ -29,7 +29,7 @@ import java.util.Comparator;
  *
  * @author Franck WOLFF
  */
-public interface PersistentSortedCollection<E> extends PersistentCollection {
+public interface PersistentSortedCollection<C, E> extends PersistentCollection<C> {
 
     /**
      * Comparator for the sorting

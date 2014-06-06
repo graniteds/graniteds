@@ -37,6 +37,7 @@ package org.granite.client.persistence.collection.observable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Set;
 
 import org.granite.binding.collection.ObservableSetWrapper;
 import org.granite.client.persistence.Loader;
@@ -47,7 +48,7 @@ import org.granite.client.persistence.collection.UnsafePersistentCollection;
 /**
  * @author William DRAI
  */
-public class ObservablePersistentSet<E> extends ObservableSetWrapper<E> implements UnsafePersistentCollection<PersistentSet<E>> {
+public class ObservablePersistentSet<E> extends ObservableSetWrapper<E> implements UnsafePersistentCollection<Set<E>> {
 	
     private static final long serialVersionUID = 1L;
 	
@@ -90,8 +91,13 @@ public class ObservablePersistentSet<E> extends ObservableSetWrapper<E> implemen
 	}
 
 	@Override
-	public void initialize() {
-		internalPersistentCollection().initialize();
+	public void initialize(Set<E> set, Initializer<Set<E>> initializer) {
+		internalPersistentCollection().initialize(set, initializer != null ? initializer : new Initializer<Set<E>>() {
+			@Override
+			public void initialize(Set<E> set) {
+				addAll(set);
+			}
+		});
 	}
 
 	@Override
@@ -100,17 +106,17 @@ public class ObservablePersistentSet<E> extends ObservableSetWrapper<E> implemen
 	}
 
 	@Override
-	public PersistentCollection clone(boolean uninitialize) {
+	public PersistentCollection<Set<E>> clone(boolean uninitialize) {
 		return internalPersistentCollection().clone(uninitialize);
 	}
 
 	@Override
-	public Loader<PersistentCollection> getLoader() {
+	public Loader<Set<E>> getLoader() {
 		return internalPersistentCollection().getLoader();
 	}
 
 	@Override
-	public void setLoader(Loader<PersistentCollection> loader) {
+	public void setLoader(Loader<Set<E>> loader) {
 		internalPersistentCollection().setLoader(loader);
 	}
 
@@ -130,27 +136,27 @@ public class ObservablePersistentSet<E> extends ObservableSetWrapper<E> implemen
 	}
 
     @Override
-    public void addListener(ChangeListener listener) {
+    public void addListener(ChangeListener<Set<E>> listener) {
     	internalPersistentCollection().addListener(listener);
     }
 
     @Override
-    public void removeListener(ChangeListener listener) {
+    public void removeListener(ChangeListener<Set<E>> listener) {
     	internalPersistentCollection().removeListener(listener);
     }
 
     @Override
-    public void addListener(InitializationListener listener) {
+    public void addListener(InitializationListener<Set<E>> listener) {
     	internalPersistentCollection().addListener(listener);
     }
 
     @Override
-    public void removeListener(InitializationListener listener) {
+    public void removeListener(InitializationListener<Set<E>> listener) {
     	internalPersistentCollection().removeListener(listener);
     }
 
 	@Override
-	public void withInitialized(InitializationCallback callback) {
+	public void withInitialized(InitializationCallback<Set<E>> callback) {
 		internalPersistentCollection().withInitialized(callback);
 	}
 

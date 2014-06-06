@@ -45,7 +45,7 @@ import org.granite.util.TypeUtil;
 /**
  * @author Franck WOLFF
  */
-public abstract class AbstractPersistentCollection<C> implements PersistentCollection {
+public abstract class AbstractPersistentCollection<C> implements PersistentCollection<C> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -54,9 +54,9 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 	private volatile C collection = null;
 	private volatile boolean dirty = false;
 	private volatile String detachedState = null;
-	private Loader<PersistentCollection> loader = new DefaultCollectionLoader();
-    private List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
-    private List<InitializationListener> initializationListeners = new ArrayList<InitializationListener>();
+	private Loader<C> loader = new DefaultCollectionLoader<C>();
+    private List<ChangeListener<C>> changeListeners = new ArrayList<ChangeListener<C>>();
+    private List<InitializationListener<C>> initializationListeners = new ArrayList<InitializationListener<C>>();
 	
 	protected AbstractPersistentCollection() {
 	}
@@ -68,10 +68,10 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 		this.dirty = dirty;
 	}
 	
-	public Loader<PersistentCollection> getLoader() {
+	public Loader<C> getLoader() {
 		return this.loader;
 	}
-	public void setLoader(Loader<PersistentCollection> loader) {
+	public void setLoader(Loader<C> loader) {
 		this.loader = loader;
 	}
 	
@@ -109,7 +109,7 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 
 	public void dirty() {
 		dirty = true;
-        for (ChangeListener listener : changeListeners)
+        for (ChangeListener<C> listener : changeListeners)
             listener.changed(this);
 	}
 
@@ -118,7 +118,7 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 	}
 	
 	
-	public PersistentCollection clone(boolean uninitialize) {
+	public PersistentCollection<C> clone(boolean uninitialize) {
 		try {
 		    @SuppressWarnings("unchecked")
 			AbstractPersistentCollection<C> collection = TypeUtil.newInstance(getClass(), AbstractPersistentCollection.class);
@@ -551,19 +551,19 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 
 	
     
-    public void addListener(ChangeListener listener) {
+    public void addListener(ChangeListener<C> listener) {
         if (!changeListeners.contains(listener))
             changeListeners.add(listener);
     }
     
-    public void removeListener(ChangeListener listener) {
+    public void removeListener(ChangeListener<C> listener) {
         changeListeners.remove(listener);
     }
 	
 	
-	private static class DefaultCollectionLoader implements Loader<PersistentCollection> {
+	private static class DefaultCollectionLoader<C> implements Loader<C> {
 		
-		public void load(PersistentCollection collection, InitializationCallback callback) {
+		public void load(PersistentCollection<C> collection, InitializationCallback<C> callback) {
 			throw new LazyInitializationException(collection.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(collection)));
 		}
 		
@@ -577,12 +577,12 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 		}
 	}
     
-    public void addListener(InitializationListener listener) {
+    public void addListener(InitializationListener<C> listener) {
         if (!initializationListeners.contains(listener))
             initializationListeners.add(listener);
     }
     
-    public void removeListener(InitializationListener listener) {
+    public void removeListener(InitializationListener<C> listener) {
         initializationListeners.remove(listener);
     }
     
@@ -590,23 +590,25 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
     	loader.onInitializing();
     }
     
-	public void initialize() {
+	public void initialize(C content, Initializer<C> initializer) {        
     	loader.onInitialize();
+    	
+        doInitialize(content, initializer != null);
+        if (initializer != null)
+        	initializer.initialize(content);
         
-        for (InitializationListener listener : initializationListeners)
+        for (InitializationListener<C> listener : initializationListeners)
             listener.initialized(this);
         
-        doInitialize();
-        
         log.debug("initialized");
-    }
+	}
     
-    protected abstract void doInitialize();
+    protected abstract void doInitialize(C content, boolean empty);
     
     public void uninitialize() {
         loader.onUninitialize();
         
-        for (InitializationListener listener : initializationListeners)
+        for (InitializationListener<C> listener : initializationListeners)
             listener.uninitialized(this);
 
         collection = null;
@@ -614,7 +616,7 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
         log.debug("uninitialized");
     }
     
-    public void withInitialized(InitializationCallback callback) {
+    public void withInitialized(InitializationCallback<C> callback) {
         if (wasInitialized())
             callback.call(this);
         else

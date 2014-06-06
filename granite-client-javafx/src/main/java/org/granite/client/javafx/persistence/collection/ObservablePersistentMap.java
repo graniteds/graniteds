@@ -24,6 +24,7 @@ package org.granite.client.javafx.persistence.collection;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Map;
 
 import org.granite.client.persistence.Loader;
 import org.granite.client.persistence.collection.PersistentCollection;
@@ -35,7 +36,7 @@ import com.sun.javafx.collections.ObservableMapWrapper;
 /**
  * @author Franck WOLFF
  */
-public class ObservablePersistentMap<K, V> extends ObservableMapWrapper<K, V> implements UnsafePersistentCollection<PersistentMap<K, V>> {
+public class ObservablePersistentMap<K, V> extends ObservableMapWrapper<K, V> implements UnsafePersistentCollection<Map<K, V>> {
 	
     private static final long serialVersionUID = 1L;
 	
@@ -68,27 +69,31 @@ public class ObservablePersistentMap<K, V> extends ObservableMapWrapper<K, V> im
 	}
 
 	@Override
-	public void initialize() {
-		persistentMap.initialize();
+	public void initialize(Map<K, V> map, Initializer<Map<K, V>> initializer) {
+		persistentMap.initialize(map, initializer != null ? initializer : new Initializer<Map<K, V>>() {
+			public void initialize(Map<K, V> map) {
+				putAll(map);
+			}
+		});		
 	}
-
+	
 	@Override
 	public void initializing() {
 		persistentMap.initializing();
 	}
 
 	@Override
-	public PersistentCollection clone(boolean uninitialize) {
+	public PersistentCollection<Map<K, V>> clone(boolean uninitialize) {
 		return persistentMap.clone(uninitialize);
 	}
 
 	@Override
-	public Loader<PersistentCollection> getLoader() {
+	public Loader<Map<K, V>> getLoader() {
 		return persistentMap.getLoader();
 	}
 
 	@Override
-	public void setLoader(Loader<PersistentCollection> loader) {
+	public void setLoader(Loader<Map<K, V>> loader) {
 		persistentMap.setLoader(loader);
 	}
 
@@ -108,27 +113,27 @@ public class ObservablePersistentMap<K, V> extends ObservableMapWrapper<K, V> im
 	}
 
     @Override
-    public void addListener(ChangeListener listener) {
+    public void addListener(ChangeListener<Map<K, V>> listener) {
         persistentMap.addListener(listener);
     }
 
     @Override
-    public void removeListener(ChangeListener listener) {
+    public void removeListener(ChangeListener<Map<K, V>> listener) {
         persistentMap.removeListener(listener);
     }
 
     @Override
-    public void addListener(InitializationListener listener) {
+    public void addListener(InitializationListener<Map<K, V>> listener) {
         persistentMap.addListener(listener);
     }
 
     @Override
-    public void removeListener(InitializationListener listener) {
+    public void removeListener(InitializationListener<Map<K, V>> listener) {
         persistentMap.removeListener(listener);
     }
 
 	@Override
-	public void withInitialized(InitializationCallback callback) {
+	public void withInitialized(InitializationCallback<Map<K, V>> callback) {
 		persistentMap.withInitialized(callback);
 	}
 	

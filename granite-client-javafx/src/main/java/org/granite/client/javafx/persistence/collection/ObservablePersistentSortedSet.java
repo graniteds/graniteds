@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Iterator;
+import java.util.SortedSet;
 
 import org.granite.client.persistence.Loader;
 import org.granite.client.persistence.collection.PersistentCollection;
@@ -36,7 +37,7 @@ import com.sun.javafx.collections.ObservableSetWrapper;
 /**
  * @author Franck WOLFF
  */
-public class ObservablePersistentSortedSet<E> extends ObservableSetWrapper<E> implements UnsafePersistentCollection<PersistentSortedSet<E>> {
+public class ObservablePersistentSortedSet<E> extends ObservableSetWrapper<E> implements UnsafePersistentCollection<SortedSet<E>> {
 	
     private static final long serialVersionUID = 1L;
 	
@@ -75,27 +76,31 @@ public class ObservablePersistentSortedSet<E> extends ObservableSetWrapper<E> im
 	}
 
 	@Override
-	public void initialize() {
-		persistentSortedSet.initialize();
+	public void initialize(SortedSet<E> set, Initializer<SortedSet<E>> initializer) {
+		persistentSortedSet.initialize(set, initializer != null ? initializer : new Initializer<SortedSet<E>>() {
+			public void initialize(SortedSet<E> set) {
+				addAll(set);
+			}
+		});
 	}
-
+	
 	@Override
 	public void initializing() {
 		persistentSortedSet.initializing();
 	}
 
 	@Override
-	public PersistentCollection clone(boolean uninitialize) {
+	public PersistentCollection<SortedSet<E>> clone(boolean uninitialize) {
 		return persistentSortedSet.clone(uninitialize);
 	}
 
 	@Override
-	public Loader<PersistentCollection> getLoader() {
+	public Loader<SortedSet<E>> getLoader() {
 		return persistentSortedSet.getLoader();
 	}
 
 	@Override
-	public void setLoader(Loader<PersistentCollection> loader) {
+	public void setLoader(Loader<SortedSet<E>> loader) {
 		persistentSortedSet.setLoader(loader);
 	}
 
@@ -115,27 +120,27 @@ public class ObservablePersistentSortedSet<E> extends ObservableSetWrapper<E> im
 	}
 
     @Override
-    public void addListener(ChangeListener listener) {
+    public void addListener(ChangeListener<SortedSet<E>> listener) {
         persistentSortedSet.addListener(listener);
     }
 
     @Override
-    public void removeListener(ChangeListener listener) {
+    public void removeListener(ChangeListener<SortedSet<E>> listener) {
         persistentSortedSet.removeListener(listener);
     }
 
     @Override
-    public void addListener(InitializationListener listener) {
+    public void addListener(InitializationListener<SortedSet<E>> listener) {
         persistentSortedSet.addListener(listener);
     }
 
     @Override
-    public void removeListener(InitializationListener listener) {
+    public void removeListener(InitializationListener<SortedSet<E>> listener) {
         persistentSortedSet.removeListener(listener);
     }
 
 	@Override
-	public void withInitialized(InitializationCallback callback) {
+	public void withInitialized(InitializationCallback<SortedSet<E>> callback) {
 		persistentSortedSet.withInitialized(callback);
 	}
 	

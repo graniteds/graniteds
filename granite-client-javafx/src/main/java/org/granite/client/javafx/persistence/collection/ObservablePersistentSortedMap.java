@@ -24,6 +24,7 @@ package org.granite.client.javafx.persistence.collection;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.SortedMap;
 
 import org.granite.client.persistence.Loader;
 import org.granite.client.persistence.collection.PersistentCollection;
@@ -35,7 +36,7 @@ import com.sun.javafx.collections.ObservableMapWrapper;
 /**
  * @author Franck WOLFF
  */
-public class ObservablePersistentSortedMap<K, V> extends ObservableMapWrapper<K, V> implements UnsafePersistentCollection<PersistentSortedMap<K, V>> {
+public class ObservablePersistentSortedMap<K, V> extends ObservableMapWrapper<K, V> implements UnsafePersistentCollection<SortedMap<K, V>> {
 	
     private static final long serialVersionUID = 1L;
 	
@@ -68,27 +69,31 @@ public class ObservablePersistentSortedMap<K, V> extends ObservableMapWrapper<K,
 	}
 
 	@Override
-	public void initialize() {
-		persistentSortedMap.initialize();
+	public void initialize(SortedMap<K, V> map, Initializer<SortedMap<K, V>> initializer) {
+		persistentSortedMap.initialize(map, initializer != null ? initializer : new Initializer<SortedMap<K, V>>() {
+			public void initialize(SortedMap<K, V> map) {
+				putAll(map);
+			}
+		});
 	}
-
+	
 	@Override
 	public void initializing() {
 		persistentSortedMap.initializing();
 	}
 
 	@Override
-	public PersistentCollection clone(boolean uninitialize) {
+	public PersistentCollection<SortedMap<K, V>> clone(boolean uninitialize) {
 		return persistentSortedMap.clone(uninitialize);
 	}
 
 	@Override
-	public Loader<PersistentCollection> getLoader() {
+	public Loader<SortedMap<K, V>> getLoader() {
 		return persistentSortedMap.getLoader();
 	}
 
 	@Override
-	public void setLoader(Loader<PersistentCollection> loader) {
+	public void setLoader(Loader<SortedMap<K, V>> loader) {
 		persistentSortedMap.setLoader(loader);
 	}
 
@@ -108,27 +113,27 @@ public class ObservablePersistentSortedMap<K, V> extends ObservableMapWrapper<K,
 	}
 
     @Override
-    public void addListener(ChangeListener listener) {
+    public void addListener(ChangeListener<SortedMap<K, V>> listener) {
         persistentSortedMap.addListener(listener);
     }
 
     @Override
-    public void removeListener(ChangeListener listener) {
+    public void removeListener(ChangeListener<SortedMap<K, V>> listener) {
         persistentSortedMap.removeListener(listener);
     }
 
     @Override
-    public void addListener(InitializationListener listener) {
+    public void addListener(InitializationListener<SortedMap<K, V>> listener) {
         persistentSortedMap.addListener(listener);
     }
 
     @Override
-    public void removeListener(InitializationListener listener) {
+    public void removeListener(InitializationListener<SortedMap<K, V>> listener) {
         persistentSortedMap.removeListener(listener);
     }
 
 	@Override
-	public void withInitialized(InitializationCallback callback) {
+	public void withInitialized(InitializationCallback<SortedMap<K, V>> callback) {
 		persistentSortedMap.withInitialized(callback);
 	}
 	

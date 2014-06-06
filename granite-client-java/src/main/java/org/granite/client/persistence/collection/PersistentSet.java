@@ -56,8 +56,8 @@ public class PersistentSet<E> extends AbstractPersistentSimpleCollection<E, Set<
 	}
 	
 	@Override
-	public void doInitialize() {
-		init(new HashSet<E>(), null, false);
+	public void doInitialize(Set<E> set, boolean empty) {
+		init(empty ? new HashSet<E>() : set, null, false);
 	}
 
 	@SuppressWarnings("unchecked")

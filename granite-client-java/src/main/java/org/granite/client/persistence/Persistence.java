@@ -83,7 +83,7 @@ public class Persistence {
 	
 	public boolean isInitialized(Object o) {
 		if (o instanceof PersistentCollection)
-			return ((PersistentCollection)o).wasInitialized();
+			return ((PersistentCollection<?>)o).wasInitialized();
 		
 		Class<?> cls = o.getClass();
 		if (!isEntity(cls))

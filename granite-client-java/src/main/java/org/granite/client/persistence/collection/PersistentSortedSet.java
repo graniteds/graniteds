@@ -32,7 +32,7 @@ import org.granite.messaging.persistence.PersistentCollectionSnapshot;
 /**
  * @author Franck WOLFF
  */
-public class PersistentSortedSet<E> extends AbstractPersistentSimpleCollection<E, SortedSet<E>> implements SortedSet<E>, PersistentSortedCollection<E> {
+public class PersistentSortedSet<E> extends AbstractPersistentSimpleCollection<E, SortedSet<E>> implements SortedSet<E>, PersistentSortedCollection<SortedSet<E>, E> {
 
     private static final long serialVersionUID = 1L;
 	
@@ -53,10 +53,10 @@ public class PersistentSortedSet<E> extends AbstractPersistentSimpleCollection<E
 	}
 	
 	@Override
-	protected void doInitialize() {
-		init(new TreeSet<E>(), null, false);
+	protected void doInitialize(SortedSet<E> sortedSet, boolean empty) {
+		init(empty ? new TreeSet<E>(sortedSet.comparator()) : sortedSet, null, false);
 	}
-
+	
 	public Comparator<? super E> comparator() {
 		return getCollection().comparator();
 	}

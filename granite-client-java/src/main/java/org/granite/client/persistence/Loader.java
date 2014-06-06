@@ -21,6 +21,7 @@
  */
 package org.granite.client.persistence;
 
+import org.granite.client.persistence.collection.PersistentCollection;
 import org.granite.client.persistence.collection.PersistentCollection.InitializationCallback;
 
 /**
@@ -28,14 +29,14 @@ import org.granite.client.persistence.collection.PersistentCollection.Initializa
  *
  * @author William DRAI
  */
-public interface Loader<T> {
+public interface Loader<C> {
 
     /**
      * Called when a lazy collection should be loaded
      * @param object the collection/map
      * @param callback a callback to call when loading is finished
      */
-    public void load(T object, InitializationCallback callback);
+    public void load(PersistentCollection<C> object, InitializationCallback<C>callback);
 
     /**
      * Called before starting loading

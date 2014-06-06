@@ -49,7 +49,7 @@ import org.granite.client.tide.server.ServerSession;
  * 
  *  @author William DRAI
  */
-public class CollectionLoader implements Loader<PersistentCollection> {
+public class CollectionLoader<C> implements Loader<C> {
     
     private final ServerSession serverSession;
     
@@ -59,7 +59,7 @@ public class CollectionLoader implements Loader<PersistentCollection> {
     private boolean localInitializing = false;
     private boolean initializing = false;
     @SuppressWarnings("unused")
-    private InitializationCallback initializationCallback = null;
+    private InitializationCallback<C> initializationCallback = null;
     
     
 	public CollectionLoader(ServerSession serverSession, Object entity, String propertyName) {
@@ -86,7 +86,7 @@ public class CollectionLoader implements Loader<PersistentCollection> {
         initializationCallback = null;
     }
     
-    public void load(PersistentCollection collection, InitializationCallback callback) {
+    public void load(PersistentCollection<C> collection, InitializationCallback<C> callback) {
         if (localInitializing)
             return;
         

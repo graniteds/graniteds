@@ -24,6 +24,7 @@ package org.granite.client.javafx.persistence.collection;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.List;
 
 import org.granite.client.persistence.Loader;
 import org.granite.client.persistence.collection.PersistentBag;
@@ -35,7 +36,7 @@ import com.sun.javafx.collections.ObservableListWrapper;
 /**
  * @author Franck WOLFF
  */
-public class ObservablePersistentBag<E> extends ObservableListWrapper<E> implements UnsafePersistentCollection<PersistentBag<E>> {
+public class ObservablePersistentBag<E> extends ObservableListWrapper<E> implements UnsafePersistentCollection<List<E>> {
 	
     private static final long serialVersionUID = 1L;
 	
@@ -68,8 +69,12 @@ public class ObservablePersistentBag<E> extends ObservableListWrapper<E> impleme
 	}
 
 	@Override
-	public void initialize() {
-		persistentBag.initialize();
+	public void initialize(List<E> list, final Initializer<List<E>> initializer) {
+		persistentBag.initialize(list, initializer != null ? initializer : new Initializer<List<E>>() {
+			public void initialize(List<E> list) {
+				addAll(list);
+			}
+		});
 	}
 
 	@Override
@@ -78,17 +83,17 @@ public class ObservablePersistentBag<E> extends ObservableListWrapper<E> impleme
 	}
 
 	@Override
-	public PersistentCollection clone(boolean uninitialize) {
+	public PersistentCollection<List<E>> clone(boolean uninitialize) {
 		return persistentBag.clone(uninitialize);
 	}
 
 	@Override
-	public Loader<PersistentCollection> getLoader() {
+	public Loader<List<E>> getLoader() {
 		return persistentBag.getLoader();
 	}
 
 	@Override
-	public void setLoader(Loader<PersistentCollection> loader) {
+	public void setLoader(Loader<List<E>> loader) {
 		persistentBag.setLoader(loader);
 	}
 
@@ -108,27 +113,27 @@ public class ObservablePersistentBag<E> extends ObservableListWrapper<E> impleme
 	}
 
     @Override
-    public void addListener(ChangeListener listener) {
+    public void addListener(ChangeListener<List<E>> listener) {
         persistentBag.addListener(listener);
     }
 
     @Override
-    public void removeListener(ChangeListener listener) {
+    public void removeListener(ChangeListener<List<E>> listener) {
         persistentBag.removeListener(listener);
     }
 
 	@Override
-	public void addListener(InitializationListener listener) {
+	public void addListener(InitializationListener<List<E>> listener) {
 		persistentBag.addListener(listener);
 	}
 
     @Override
-    public void removeListener(InitializationListener listener) {
+    public void removeListener(InitializationListener<List<E>> listener) {
         persistentBag.removeListener(listener);
     }
 
 	@Override
-	public void withInitialized(InitializationCallback callback) {
+	public void withInitialized(InitializationCallback<List<E>> callback) {
 		persistentBag.withInitialized(callback);
 	}
 	

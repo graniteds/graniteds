@@ -32,7 +32,7 @@ import org.granite.client.persistence.Loader;
  *
  * @author Franck WOLFF
  */
-public interface PersistentCollection extends Externalizable {
+public interface PersistentCollection<C> extends Externalizable {
 
     /**
      * Was the collection was initialized
@@ -44,11 +44,16 @@ public interface PersistentCollection extends Externalizable {
      * Unload the collection and unset its initialized state
      */
 	void uninitialize();
-
+	
+	public interface Initializer<C> {
+		
+		public void initialize(C content);
+	}
+	
     /**
      * Mark the collection as initialized, called after the content is loaded
      */
-	void initialize();
+	void initialize(C content, Initializer<C> initializer);
 
     /**
      * Mark the collection as currently initializing so next access do not trigger loading
@@ -60,19 +65,19 @@ public interface PersistentCollection extends Externalizable {
      * @param uninitialize true to get an uninitialized clone of a lazy collection
      * @return cloned collection
      */
-	PersistentCollection clone(boolean uninitialize);
+	PersistentCollection<C> clone(boolean uninitialize);
 
     /**
      * Loader for the collection
      * @return loader or null of none defined
      */
-	Loader<PersistentCollection> getLoader();
+	Loader<C> getLoader();
 
     /**
      * Set a loader for the collection
      * @param loader loader that will be called when a lazy collection is accessed
      */
-	void setLoader(Loader<PersistentCollection> loader);
+	void setLoader(Loader<C> loader);
 
     /**
      * Is the collection dirty ?
@@ -93,74 +98,74 @@ public interface PersistentCollection extends Externalizable {
     /**
      * Basic callback interface for change tracking on the collection
      */
-    public interface ChangeListener {
+    public interface ChangeListener<C> {
 
         /**
          * Callback called when the collection is modified
          * @param collection collection
          */
-        public void changed(PersistentCollection collection);
+        public void changed(PersistentCollection<C> collection);
     }
 
     /**
      * Register a change listener
      * @param listener listener
      */
-    public void addListener(ChangeListener listener);
+    public void addListener(ChangeListener<C> listener);
 
     /**
      * Unregister a change listener
      * @param listener listener
      */
-    public void removeListener(ChangeListener listener);
+    public void removeListener(ChangeListener<C> listener);
 
     /**
      * Basic callback interface for loading/unloading
      */
-    public interface InitializationListener {
+    public interface InitializationListener<C> {
 
         /**
          * Callback called when the collection has been loaded
          * @param collection collection
          */
-        public void initialized(PersistentCollection collection);
+        public void initialized(PersistentCollection<C> collection);
 
         /**
          * Callback called when the collection has been unloaded
          * @param collection collection
          */
-        public void uninitialized(PersistentCollection collection);
+        public void uninitialized(PersistentCollection<C> collection);
     }
 
     /**
      * Register a initialization listener
      * @param listener listener
      */
-    public void addListener(InitializationListener listener);
+    public void addListener(InitializationListener<C> listener);
 
     /**
      * Unregister a initialization listener
      * @param listener listener
      */
-    public void removeListener(InitializationListener listener);
+    public void removeListener(InitializationListener<C> listener);
 
     /**
      * Execute the specified callback after ensuring the collection has been loaded
      * If it was not loaded, the callack is called asynchronously after loading is complete
      * @param callback callback method to execute
      */
-    public void withInitialized(InitializationCallback callback);
+    public void withInitialized(InitializationCallback<C> callback);
 
     /**
      * Callback interface for ensuring working on loaded collections/maps
      */
-    public interface InitializationCallback {
+    public interface InitializationCallback<C> {
 
         /**
          * Called once the collection has been loaded
          * @param collection collection
          */
-        public void call(PersistentCollection collection);
+        public void call(PersistentCollection<C> collection);
     }
 
 }

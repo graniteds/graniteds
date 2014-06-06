@@ -53,8 +53,8 @@ public class PersistentList<E> extends AbstractPersistentSimpleCollection<E, Lis
 	}
 	
 	@Override
-	public void doInitialize() {
-		init(new ArrayList<E>(), null, false);
+	public void doInitialize(List<E> list, boolean empty) {
+		init(empty ? new ArrayList<E>() : list, null, false);
 	}
 	
 	public boolean addAll(int index, Collection<? extends E> c) {

@@ -184,7 +184,7 @@ public class ChangeMerger implements DataMerger {
 
                     if (val instanceof CollectionChanges) {
                         Object coll = mergeContext.getDataManager().getPropertyValue(dest, p);
-                        if (coll instanceof PersistentCollection && !((PersistentCollection)coll).wasInitialized()) {
+                        if (coll instanceof PersistentCollection && !((PersistentCollection<?>)coll).wasInitialized()) {
                             // Cannot update an uninitialized collection
                             log.debug("Incoming change for uninitialized collection {0}:{1}.{2}", change.getClassName(), change.getUid(), p);
                             continue;
@@ -206,7 +206,7 @@ public class ChangeMerger implements DataMerger {
                             receivedEntity = lookupEntity(mergeContext, val, dest, null);
                             // Check if we can find the complete initialized list in the incoming changes and use it instead of incremental updates
                             if (receivedEntity != null && mergeContext.getDataManager().getPropertyValue(receivedEntity, p) instanceof PersistentCollection
-                                    && ((PersistentCollection)mergeContext.getDataManager().getPropertyValue(receivedEntity, p)).wasInitialized())
+                                    && ((PersistentCollection<?>)mergeContext.getDataManager().getPropertyValue(receivedEntity, p)).wasInitialized())
                                 mergedColl = (List<Object>)mergeContext.getDataManager().getPropertyValue(receivedEntity, p);
                             else {
                                 Object target = coll instanceof PropertyHolder ? ((PropertyHolder)coll).getObject() : coll;
@@ -224,7 +224,7 @@ public class ChangeMerger implements DataMerger {
                             receivedEntity = lookupEntity(mergeContext, val, dest, null);
                             // Check if we can find the complete initialized list in the incoming changes and use it instead of incremental updates
                             if (receivedEntity != null && mergeContext.getDataManager().getPropertyValue(receivedEntity, p) instanceof PersistentCollection
-                                    && ((PersistentCollection)mergeContext.getDataManager().getPropertyValue(receivedEntity, p)).wasInitialized())
+                                    && ((PersistentCollection<?>)mergeContext.getDataManager().getPropertyValue(receivedEntity, p)).wasInitialized())
                                 mergedColl = (Set<Object>)mergeContext.getDataManager().getPropertyValue(receivedEntity, p);
                             else {
                                 Object target = coll instanceof PropertyHolder ? ((PropertyHolder)coll).getObject() : coll;
@@ -242,7 +242,7 @@ public class ChangeMerger implements DataMerger {
                             receivedEntity = lookupEntity(mergeContext, val, dest, null);
                             // Check if we can find the complete initialized map in the incoming changes and use it instead of incremental updates
                             if (receivedEntity != null && mergeContext.getDataManager().getPropertyValue(receivedEntity, p) instanceof PersistentCollection
-                                    && ((PersistentCollection)mergeContext.getDataManager().getPropertyValue(receivedEntity, p)).wasInitialized())
+                                    && ((PersistentCollection<?>)mergeContext.getDataManager().getPropertyValue(receivedEntity, p)).wasInitialized())
                                 mergedMap = (Map<Object, Object>)mergeContext.getDataManager().getPropertyValue(receivedEntity, p);
                             else {
                                 Object target = coll instanceof PropertyHolder ? ((PropertyHolder)coll).getObject() : coll;
@@ -587,7 +587,7 @@ public class ChangeMerger implements DataMerger {
             return null;
         }
 
-        if (graph instanceof PersistentCollection && !((PersistentCollection)graph).wasInitialized())
+        if (graph instanceof PersistentCollection && !((PersistentCollection<?>)graph).wasInitialized())
             return null;
         if (graph.getClass().isArray()) {
             for (int i = 0; i < Array.getLength(graph); i++) {
