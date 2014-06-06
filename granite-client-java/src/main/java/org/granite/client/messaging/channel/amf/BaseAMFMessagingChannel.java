@@ -134,7 +134,20 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 
 	@Override
 	public boolean removeConsumer(Consumer consumer) {
-		return consumersMap.remove(consumer.getSubscriptionId()) != null;
+		String subscriptionId = consumer.getSubscriptionId();
+		if (subscriptionId == null) {
+			for (String sid : consumersMap.keySet()) {
+				if (consumersMap.get(sid) == consumer) {
+					subscriptionId = sid;
+					break;
+				}
+			}
+		}
+		if (subscriptionId == null) {
+			log.warn("Trying to remove unexisting consumer for destination %s", consumer.getDestination());
+			return false;
+		}
+		return consumersMap.remove(subscriptionId) != null;
 	}
 	
     @Override
