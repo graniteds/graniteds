@@ -89,17 +89,17 @@ public class TestChangeSetEntity {
     public void testChangeSetEntity() {
     	Person person = new Person(1L, 0L, "P1", null, null);
     	dataManager.initProxy(person, 1L, true, "bla");
-    	((PersistentCollection)person.getContacts()).uninitialize();
+    	((PersistentCollection<?>)person.getContacts()).uninitialize();
     	
     	person = (Person)entityManager.mergeExternalData(person);
     	entityManager.clearCache();
     	
-    	person = new Person(1L, 0L, "P1", null, null);
-    	dataManager.initProxy(person, 1L, true, "bla");
-		Contact contact = new Contact(1L, 0L, "C1", person, null);
-		person.addContact(contact);
+    	Person personb = new Person(1L, 0L, "P1", null, null);
+    	dataManager.initProxy(personb, 1L, true, "bla");
+		Contact contactb = new Contact(1L, 0L, "C1", personb, null);
+		personb.addContact(contactb);
     	
-    	person = (Person)entityManager.mergeExternalData(person);
+    	entityManager.mergeExternalData(personb);
     	entityManager.clearCache();
 		
     	ChangeSet changeSet = new ChangeSetBuilder(entityManager, serverSession).buildChangeSet();
@@ -165,7 +165,7 @@ public class TestChangeSetEntity {
     public void testLocalChangeSetEntity() {
     	Person person = new Person(1L, 0L, "P1", null, null);
     	dataManager.initProxy(person, 1L, true, "bla");
-    	((PersistentCollection)person.getContacts()).uninitialize();
+    	((PersistentCollection<?>)person.getContacts()).uninitialize();
     	
     	person = (Person)entityManager.mergeExternalData(person);
     	entityManager.clearCache();
@@ -545,13 +545,12 @@ public class TestChangeSetEntity {
     	documentList.getDocuments().add(document);
 		
     	ChangeSet changeSet = new ChangeSetBuilder(entityManager, serverSession).buildChangeSet();
-		@SuppressWarnings("unchecked")
-		UnsafePersistentCollection<PersistentCollection> documents = (UnsafePersistentCollection<PersistentCollection>)changeSet.getChange(0).getCollectionChange("consents").getChangeValue(0, Consent.class).getDocumentList().getDocuments();
+		UnsafePersistentCollection<?> documents = (UnsafePersistentCollection<?>)changeSet.getChange(0).getCollectionChange("consents").getChangeValue(0, Consent.class).getDocumentList().getDocuments();
 		Assert.assertNotSame("Different set", documentList.getDocuments(), documents.internalPersistentCollection());
 		
 		Assert.assertEquals("ChangeSet 1", 1, changeSet.size());
 		
-		Assert.assertTrue("Document list initialized", ((PersistentCollection)documentList.getDocuments()).wasInitialized());
+		Assert.assertTrue("Document list initialized", ((PersistentCollection<?>)documentList.getDocuments()).wasInitialized());
 	}
     
     @Test

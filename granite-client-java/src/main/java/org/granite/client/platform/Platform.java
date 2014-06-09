@@ -158,6 +158,16 @@ public class Platform {
 	}
 
 	public ClassScanner newClassScanner() {
+		String scannerClassName = System.getProperty("scanner.className");
+		if (scannerClassName != null) {
+			try {
+				return TypeUtil.newInstance(scannerClassName, ClassScanner.class);
+			}
+			catch (Throwable t) {
+				throw new RuntimeException("Specified scanner class " + scannerClassName + " not available", t);
+			}
+		}
+		
 		try {
 			return TypeUtil.newInstance("org.granite.client.scan.ExtCosClassScanner", ClassScanner.class);
 		}

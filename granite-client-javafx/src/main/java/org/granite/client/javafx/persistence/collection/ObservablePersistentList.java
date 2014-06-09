@@ -75,7 +75,6 @@ public class ObservablePersistentList<E> extends ObservableListWrapper<E> implem
 				addAll(list);
 			}
 		});
-		addAll(list);
 	}
 	
 	@Override
