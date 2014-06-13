@@ -133,6 +133,10 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
         return messagingTransport;
     }
 
+    public Map<String, Transport> getMessagingTransports() {
+        return messagingTransports;
+    }
+    
     public Transport getMessagingTransport(String channelType) {
         if (channelType != null && messagingTransports.containsKey(channelType))
             return messagingTransports.get(channelType);

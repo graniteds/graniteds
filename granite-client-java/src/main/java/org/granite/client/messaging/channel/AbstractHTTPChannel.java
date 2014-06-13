@@ -203,6 +203,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		
 		LoginMessage loginMessage = new LoginMessage(clientId, credentials);
 		if (dependentToken != null) {
+			log.debug("Channel %s blocking authentication %s clientId %s", id, loginMessage.getId(), clientId);
 			ResultMessage result = sendBlockingToken(loginMessage, dependentToken);
 			if (result == null)
 				return;
@@ -210,6 +211,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			authenticating = false;
 		}
 		else {
+			log.debug("Channel %s non blocking authentication %s clientId %s", id, loginMessage.getId(), clientId);
 			send(loginMessage);
 			authenticating = true;
 		}

@@ -409,18 +409,15 @@ public class ServerSession implements ContextAware {
         if (defaultChannelType != null)
             channelFactory.setDefaultChannelType(defaultChannelType);
 		
-		if (remotingTransport != null) {
+		if (remotingTransport != null)
 			channelFactory.setRemotingTransport(remotingTransport);
-            remotingTransport.setStatusHandler(statusHandler);
-        }
-		if (messagingTransport != null) {
+		
+		if (messagingTransport != null)
 			channelFactory.setMessagingTransport(messagingTransport);
-            messagingTransport.setStatusHandler(statusHandler);
-        }
-        for (Map.Entry<String, Transport> me : messagingTransports.entrySet()) {
+		
+        for (Map.Entry<String, Transport> me : messagingTransports.entrySet())
             channelFactory.setMessagingTransport(me.getKey(), me.getValue());
-            me.getValue().setStatusHandler(statusHandler);
-        }
+            
         if (defaultChannelBuilder != null)
             channelFactory.setDefaultChannelBuilder(defaultChannelBuilder);
 		
@@ -428,6 +425,11 @@ public class ServerSession implements ContextAware {
 		    channelFactory.setDefaultTimeToLive(defaultTimeToLive);
 		
 		channelFactory.start();
+		
+		channelFactory.getRemotingTransport().setStatusHandler(statusHandler);
+		
+		for (Transport transport : channelFactory.getMessagingTransports().values())
+			transport.setStatusHandler(statusHandler);
 
         remotingChannel = channelFactory.newRemotingChannel("graniteamf", serverApp, 1);
 

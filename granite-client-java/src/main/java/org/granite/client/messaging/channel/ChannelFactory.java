@@ -22,6 +22,7 @@
 package org.granite.client.messaging.channel;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.Set;
 
 import org.granite.client.messaging.ServerApp;
@@ -138,6 +139,12 @@ public interface ChannelFactory {
      * @see org.granite.client.messaging.transport.Transport
      */
     Transport getMessagingTransport();
+    
+    /**
+     * The transports for messaging channels
+     * @return a map of transports keyed by channel type
+     */
+    Map<String, Transport> getMessagingTransports();
 
     /**
      * The transport for the specified messaging channel type
