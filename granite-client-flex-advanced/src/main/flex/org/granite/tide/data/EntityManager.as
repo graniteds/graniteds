@@ -965,19 +965,15 @@ package org.granite.tide.data {
                     		versionChangeCache[dest] = true;
                     		
 							var entityChanged:Boolean = _dirtyCheckContext.isEntityChanged(IEntity(dest));
-                    		if (_mergeContext.externalData && entityChanged) {
+                    		if (_mergeContext.externalData && entityChanged && _dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), obj)) {
                     			// Conflict between externally received data and local modifications
-                    			log.error("conflict with external data detected on {0} (current: {1}, received: {2})",
+                    			log.warn("conflict with external data detected on {0} (current: {1}, received: {2})",
                     				BaseContext.toString(dest), oldVersion, newVersion);
                     			
-								if (_dirtyCheckContext.checkAndMarkNotDirty(IEntity(dest), obj)) {
-									// Incoming data is different from local data
-	                				_mergeContext.addConflict(dest as IEntity, obj as IEntity);
-	                    			
-	                    			ignore = true;
-								}
-								else
-									_mergeContext.mergeUpdate = true;
+								// Incoming data is different from local data
+                				_mergeContext.addConflict(dest as IEntity, obj as IEntity);
+                    			
+                    			ignore = true;
                     		}
                     		else
                     			_mergeContext.mergeUpdate = true;

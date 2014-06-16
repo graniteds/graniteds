@@ -810,25 +810,20 @@ public class EntityManagerImpl implements EntityManager {
                         mergeContext.markVersionChanged(dest);
                         
 						boolean entityChanged = dirtyCheckContext.isEntityChanged(dest);
-                		if (mergeContext.getExternalDataSessionId() != null && entityChanged) {
+                		if (mergeContext.getExternalDataSessionId() != null && entityChanged && dirtyCheckContext.checkAndMarkNotDirty(mergeContext, dest, obj, null)) {
                             // Conflict between externally received data and local modifications
-                            log.error("conflict with external data detected on %s (current: %d, received: %d)",
+                            log.warn("conflict with external data detected on %s (current: %d, received: %d)",
                                 dest.toString(), oldVersion, newVersion);
                             
-                            // Check incoming values and local values
-                            if (dirtyCheckContext.checkAndMarkNotDirty(mergeContext, dest, obj, null)) {
-                                // Incoming data is different from local data
-                                Map<String, Object> save = dirtyCheckContext.getSavedProperties(dest);
-                                List<String> properties = new ArrayList<String>(save.keySet());
-                                properties.remove(dataManager.getVersionPropertyName(dest));
-                                Collections.sort(properties);
-                                
-                                mergeContext.addConflict(dest, obj, properties);
-                                
-                                ignore = true;
-                            }
-                            else
-                                mergeContext.setMergeUpdate(true);
+                            // Incoming data is different from local data
+                            Map<String, Object> save = dirtyCheckContext.getSavedProperties(dest);
+                            List<String> properties = new ArrayList<String>(save.keySet());
+                            properties.remove(dataManager.getVersionPropertyName(dest));
+                            Collections.sort(properties);
+                            
+                            mergeContext.addConflict(dest, obj, properties);
+                            
+                            ignore = true;
                         }
                         else
                             mergeContext.setMergeUpdate(true);
