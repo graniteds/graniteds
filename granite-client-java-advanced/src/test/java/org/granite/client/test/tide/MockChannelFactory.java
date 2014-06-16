@@ -36,12 +36,15 @@ package org.granite.client.test.tide;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import org.granite.client.messaging.ClientAliasRegistry;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.channel.ChannelBuilder;
 import org.granite.client.messaging.channel.ChannelFactory;
+import org.granite.client.messaging.channel.ChannelType;
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.channel.RemotingChannel;
 import org.granite.client.messaging.codec.JMFAMF0MessagingCodec;
@@ -55,7 +58,7 @@ import org.granite.util.ContentType;
 
 public class MockChannelFactory implements ChannelFactory {
 
-    private MockTransport transport = new MockTransport();
+    private Transport transport = new MockTransport();
     private ClientSharedContext sharedContext = new DefaultClientSharedContext();
 
     public MockChannelFactory(Object context) {
@@ -122,6 +125,11 @@ public class MockChannelFactory implements ChannelFactory {
     @Override
     public Transport getMessagingTransport() {
         return transport;
+    }
+
+    @Override
+    public Map<String, Transport> getMessagingTransports() {
+        return Collections.singletonMap(ChannelType.LONG_POLLING, transport);
     }
 
     @Override
