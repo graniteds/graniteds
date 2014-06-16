@@ -185,6 +185,10 @@ package org.granite.tide.data {
         public function setServerSession(serverSession:ServerSession):void {
             _mergeContext.serverSession = serverSession;
         }
+		
+		public function get merging():Boolean {
+			return _mergeContext.merging;
+		}
 
         /**
          *	@private 	

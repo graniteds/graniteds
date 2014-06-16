@@ -205,8 +205,8 @@ package org.granite.tide {
 		public function get meta_firstCall():Boolean {
 			return _firstCall;
 		} 
-
-        
+		
+		
         /**
          * 	@private
          */
@@ -543,7 +543,11 @@ package org.granite.tide {
             _tracking = tracking;
         }
         
-        
+
+		public function get meta_merging():Boolean {
+			return _entityManager.merging;
+		}
+       	
 		/**
          * 	@private
 		 *  @return allow uninitialize of collections

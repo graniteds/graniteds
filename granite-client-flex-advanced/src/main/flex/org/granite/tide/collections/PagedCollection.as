@@ -46,7 +46,7 @@ package org.granite.tide.collections {
     import mx.events.PropertyChangeEvent;
     import mx.logging.ILogger;
     import mx.logging.Log;
-
+    
     import org.granite.tide.BaseContext;
     import org.granite.tide.Tide;
     import org.granite.tide.events.TideContextEvent;
@@ -132,10 +132,8 @@ package org.granite.tide.collections {
 		public function PagedCollection() {
 		    log.debug("create collection");
 			super();
-			var sort:Sort = new Sort();
-			sort.fields = [];
-			this.sort = sort;
-			sort.compareFunction = nullCompare;
+			// Wrap sort to avoid client-side sorting
+			super.sort = new NullSort();
 			_ipes = null;
 			_first = 0;
 			_last = 0;
@@ -258,7 +256,6 @@ package org.granite.tide.collections {
 			// Recheck sort fields to listen for asc/desc change events
 			// (AdvancedDataGrid does not dispatch sortChanged when only asc/desc is changed)
 			if (sort != null) {
-				sort.compareFunction = nullCompare;
 				if (sort.fields != null && sort.fields.length != _sortFieldListenersSet) {
 					for each (var field:Object in sort.fields)
 						field.addEventListener("descendingChanged", sortFieldChangeHandler, false, 0, true);
@@ -331,8 +328,6 @@ package org.granite.tide.collections {
 		 */
 		private function sortChangedHandler(event:Event):void {
 		    _fullRefresh = true;
-			if (this.sort != null)
-				this.sort.compareFunction = nullCompare;	// Force compare function to do nothing as we use server-side sorting		
 		}
 		
         /**
@@ -394,9 +389,6 @@ package org.granite.tide.collections {
 		 */
 		protected function handleResult(result:Object, event:TideResultEvent = null):void {
 			list = result.resultList as IList;
-			
-			if (this.sort != null)
-				this.sort.compareFunction = nullCompare;	// Avoid automatic sorting
 			
 			var expectedFirst:int = 0;
 			var expectedLast:int = 0;
@@ -512,7 +504,6 @@ package org.granite.tide.collections {
 		    
 		    if (dispatchRefresh) {
                 // Hack with tempSort to prevent from client sorting during refresh
-		        _tempSort = new NullSort();
 	        	saveThrowIpe = _throwIpe;
 				try {
 		            _throwIpe = false;
@@ -521,7 +512,6 @@ package org.granite.tide.collections {
 				finally {
 			    	_throwIpe = saveThrowIpe;
 				}
-		        _tempSort = null;
 		    }
 		    
 		    _maxGetAfterHandle = -1;
@@ -532,12 +522,9 @@ package org.granite.tide.collections {
 		}
 
 
-		// Hack with tempSort to prevent from client sorting during refresh
-		private var _tempSort:NullSort = null;
-		
 		// Override get/set list/dispatch/reset^M
 		// to avoid the call to reset() in ListCollectionView when the received list^M
-		// is updated^M
+		// is updated
 		public override function dispatchEvent(event:Event):Boolean {
 			if (event.type == "listChanged")
 				return false;
@@ -563,13 +550,14 @@ package org.granite.tide.collections {
 		}
 		
         CONFIG::flex40 {
-            [Bindable("sortChanged")]
-            public override function get sort():Sort {
-                if (_tempSort && !_tempSort.sorted)
-                    return _tempSort;
-                return super.sort;
-            }
-
+	        [Bindable("sortChanged")]
+	        public override function get sort():Sort {
+				// Ignore sort during merge
+				if (_context && _context.meta_merging)
+					return null;
+	            return super.sort;
+	        }
+			
             public override function set sort(newSort:Sort):void {
                 // Track changes on sort fields
                 if (sort != null && sort.fields != null) {
@@ -577,15 +565,17 @@ package org.granite.tide.collections {
                         field.removeEventListener("descendingChanged", sortFieldChangeHandler);
                 }
                 _sortFieldListenersSet = 0;
-                super.sort = newSort;
+				// Update wrapped sort
+				NullSort(sort).wrappedSort = newSort;
             }
         }
 
         CONFIG::flex45 {
             [Bindable("sortChanged")]
             public override function get sort():ISort {
-                if (_tempSort && !_tempSort.sorted)
-                    return _tempSort;
+				// Ignore sort during merge
+				if (_context && _context.meta_merging)
+					return null;
                 return super.sort;
             }
 
@@ -596,7 +586,8 @@ package org.granite.tide.collections {
                         field.removeEventListener("descendingChanged", sortFieldChangeHandler);
                 }
                 _sortFieldListenersSet = 0;
-                super.sort = newSort;
+				// Update wrapped sort
+				NullSort(sort).wrappedSort = newSort;
             }
         }
 
@@ -823,22 +814,7 @@ package org.granite.tide.collections {
 			
 			return -1;
 		}
-		
-		private function nullCompare(o1:Object, o2:Object, fields:Array = null):int {
-			if (o1 is IUID && o2 is IUID) {
-				if (IUID(o1).uid == IUID(o2).uid)
-					return 0;
-				return 1;
-			}
-			// GDS-523
-			if (o1 != null && o2 != null && o1.hasOwnProperty(uidProperty) && o2.hasOwnProperty(uidProperty)) {
-				if (o1[uidProperty] == o2[uidProperty])
-					return 0;
-				return 1;
-			}
-			return 0;
-		}
-		
+			
         protected function startTrackUpdates(item:Object):void {
             if (item && item is IEventDispatcher)
                 IEventDispatcher(item).addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, itemUpdateHandler, false, 0, true);
@@ -866,7 +842,37 @@ import mx.collections.Sort;
 
 class NullSort extends Sort {
     
+	private var _wrappedSort:Object = null;
     private var _sorted:Boolean = false;
+	
+	public function NullSort(sort:Object = null):void {
+		_wrappedSort = sort;
+	}
+	
+	public function set wrappedSort(sort:Object):void {
+		_wrappedSort = sort;
+	}
+	
+	public override function propertyAffectsSort(property:String):Boolean {
+		return false;
+	}
+	
+	public override function findItem(items:Array, values:Object, mode:String, returnInsertionIndex:Boolean = false, compareFunction:Function = null):int {
+		for (var i:int = 0; i < items.length; i++) {
+			if (items[i] === values)
+				return i;
+		}
+		return -1;
+	}
+	
+	public override function get fields():Array {
+		return _wrappedSort != null ? _wrappedSort.fields : [];
+	}
+	
+	public override function set fields(fields:Array):void {
+		if (_wrappedSort)
+			_wrappedSort.fields = fields;
+	}
     
     public function get sorted():Boolean {
         return _sorted;
@@ -875,4 +881,7 @@ class NullSort extends Sort {
     public override function sort(array:Array):void {
         _sorted = true;
     }
+	
+	public override function reverse():void {		
+	}
 }
