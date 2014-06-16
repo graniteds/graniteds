@@ -75,11 +75,7 @@ public class GenericMapCodecImpl extends AbstractStandardCodec<Object> implement
 			os.write((count << INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) | JMF_GENERIC_MAP);
 			IntegerUtil.encodeInteger(ctx, snapshot.length, count);
 			
-			String className = ctx.getAlias(
-				SortedMap.class.isAssignableFrom(v.getClass())
-				? HashMap.class.getName()
-				: v.getClass().getName()
-			);
+			String className = ctx.getAlias(v.getClass().getName());
 			ClassNameUtil.encodeClassName(ctx, className);
 			
 			for (Map.Entry<?, ?> entry : snapshot) {

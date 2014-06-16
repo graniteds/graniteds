@@ -28,8 +28,6 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.SortedSet;
 
 import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DumpContext;
@@ -76,11 +74,7 @@ public class GenericCollectionCodecImpl extends AbstractStandardCodec<Object> im
 			os.write((count << INDEX_OR_LENGTH_BYTE_COUNT_OFFSET) | JMF_GENERIC_COLLECTION);
 			IntegerUtil.encodeInteger(ctx, snapshot.length, count);
 
-			String className = ctx.getAlias(
-				SortedSet.class.isAssignableFrom(v.getClass())
-				? HashSet.class.getName()
-				: v.getClass().getName()
-			);
+			String className = ctx.getAlias(v.getClass().getName());
 			ClassNameUtil.encodeClassName(ctx, className);
 
 			for (Object element : snapshot)
