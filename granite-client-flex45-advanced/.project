@@ -20,22 +20,22 @@
 		<link>
 			<name>[source path] main-flex</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/main/flex</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-client-flex-advanced/src/main/flex</locationURI>
 		</link>
 		<link>
 			<name>[source path] main-resources</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/main/resources</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-client-flex-advanced/src/main/resources</locationURI>
 		</link>
 		<link>
 			<name>[source path] test-flex</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/graniteds/granite-client-flex45-tests/src/test/flex</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-client-flex45-tests/src/test/flex</locationURI>
 		</link>
 		<link>
 			<name>[source path] test-resources</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/graniteds/granite-client-flex45-tests/src/test/resources</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/granite-client-flex45-tests/src/test/resources</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
