@@ -551,6 +551,8 @@ package org.granite.tide.collections {
 		
 		
 		public override function get filterFunction():Function {
+			// filterFunction cannot be null at the same time as sort
+			// because localIndex is not null and ListCollectionView expects localIndex not null only when sort or filter is active
 			if (_context && _context.meta_merging)
 				return noFilter;
 			return null;
