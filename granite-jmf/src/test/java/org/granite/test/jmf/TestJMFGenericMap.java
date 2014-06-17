@@ -24,7 +24,6 @@ package org.granite.test.jmf;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -99,7 +98,7 @@ public class TestJMFGenericMap implements JMFConstants {
 		
 		map = new TreeMap<Object, Object>();
 		clone = serializeDeserialize(map);
-		Assert.assertEquals(HashMap.class, clone.getClass());
+		Assert.assertEquals(TreeMap.class, clone.getClass());
 		Assert.assertEquals(map.size(), clone.size());
 		for (Map.Entry<Object, Object> entry : map.entrySet()) {
 			Assert.assertTrue(clone.containsKey(entry.getKey()));
@@ -111,7 +110,7 @@ public class TestJMFGenericMap implements JMFConstants {
 		map.put("bla", Boolean.TRUE);
 		map.put("blu", Boolean.FALSE);
 		clone = serializeDeserialize(map);
-		Assert.assertEquals(HashMap.class, clone.getClass());
+		Assert.assertEquals(TreeMap.class, clone.getClass());
 		Assert.assertEquals(map.size(), clone.size());
 		for (Map.Entry<Object, Object> entry : map.entrySet()) {
 			Assert.assertTrue(clone.containsKey(entry.getKey()));
