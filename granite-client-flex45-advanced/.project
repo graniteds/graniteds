@@ -20,12 +20,12 @@
 		<link>
 			<name>[source path] flex</name>
 			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/granite-client-flex-advanced/src/main/flex</locationURI>
+			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/main/flex</locationURI>
 		</link>
 		<link>
 			<name>[source path] resources</name>
 			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/granite-client-flex-advanced/src/main/resources</locationURI>
+			<locationURI>DOCUMENTS/graniteds/granite-client-flex-advanced/src/main/resources</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

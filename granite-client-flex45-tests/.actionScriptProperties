@@ -9,17 +9,14 @@
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/core.swc" useDefaultLinkType="false"/>
         </excludedEntries>
       </libraryPathEntry>
-      <libraryPathEntry kind="3" linkType="1" path="${PROJECT_LOC}/../granite-client-flex/bin/granite-client-flex.swc" sourcepath="${PROJECT_LOC}/../granite-client-flex/src/main/flex" useDefaultLinkType="false"/>
-      <libraryPathEntry kind="3" linkType="1" path="${PROJECT_LOC}/../granite-client-flex45-advanced/bin/granite-client-flex45-advanced.swc" sourcepath="${PROJECT_LOC}/../granite-client-flex45-advanced/src/main/flex" useDefaultLinkType="false"/>
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/Common"/>
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject"/>
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject_Extended"/>
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LOCALE_LOCATION}/version4locale/"/>
+      <libraryPathEntry kind="3" linkType="1" path="/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/granite-client-flex45-advanced/bin/granite-client-flex45-advanced.swc" useDefaultLinkType="false"/>
     </libraryPath>
-    <sourceAttachmentPath>
-      <sourceAttachmentPathEntry kind="3" linkType="1" path="${PROJECT_LOC}/../granite-client-flex/bin/granite-client-flex.swc" sourcepath="${PROJECT_LOC}/../granite-client-flex/src/main/flex" useDefaultLinkType="false"/>
-      <sourceAttachmentPathEntry kind="3" linkType="1" path="${PROJECT_LOC}/../granite-client-flex45-advanced/bin/granite-client-flex45-advanced.swc" sourcepath="${PROJECT_LOC}/../granite-client-flex45-advanced/src/main/flex" useDefaultLinkType="false"/>
-    </sourceAttachmentPath>
+    <sourceAttachmentPath/>
   </compiler>
   <applications>
     <application path="FlexUnitApplication.mxml"/>
