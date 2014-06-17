@@ -4,8 +4,6 @@
     <compilerSourcePath>
       <compilerSourcePathEntry kind="1" linkType="1" path="${PROJECT_LOC}/../granite-client-flex-advanced/src/main/flex"/>
       <compilerSourcePathEntry kind="1" linkType="1" path="${PROJECT_LOC}/../granite-client-flex-advanced/src/main/resources"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="${PROJECT_LOC}/../granite-client-flex45-tests/src/test/flex"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="${PROJECT_LOC}/../granite-client-flex45-tests/src/test/resources"/>
     </compilerSourcePath>
     <libraryPath defaultLinkType="1">
       <libraryPathEntry kind="4" path="">

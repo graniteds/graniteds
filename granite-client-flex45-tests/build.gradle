@@ -96,5 +96,5 @@ task testFlex << {
 }
 
 test {
-	it.dependsOn 'copytestresources', 'testFlex'
+	it.dependsOn 'compileFlex', 'copytestresources', 'testFlex'
 }

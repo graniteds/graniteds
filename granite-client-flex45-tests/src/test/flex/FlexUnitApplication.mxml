@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Ce fichier est généré automatiquement et n'est pas destiné à être modifié. -->
+
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:flexui="flexunit.flexui.*"
+			   minWidth="955" minHeight="600" creationComplete="onCreationComplete()">
+	<fx:Script>
+		<![CDATA[
+			import org.granite.test.tide.spring.TestSpringUninitPreprocessor;
+			import org.granite.test.tide.spring.TestSpringServerPagedQuery;
+			import org.granite.test.tide.spring.TestSpringRetryAfterFault;
+			import org.granite.test.tide.spring.TestSpringPagedQueryRefresh;
+			import org.granite.test.tide.spring.TestSpringPagedQueryController;
+			import org.granite.test.tide.spring.TestSpringMultiServer;
+			import org.granite.test.tide.spring.TestSpringFaultValidation;
+			import org.granite.test.tide.spring.TestSpringFaultExtendedData;
+			import org.granite.test.tide.spring.TestSpringExceptionHandler;
+			import org.granite.test.tide.spring.TestSpringComponentRestrict;
+			import org.granite.test.tide.spring.TestSpringClientPagedQueryUI;
+			import org.granite.test.tide.spring.TestSpringClientPagedQuery;
+			import org.granite.test.tide.spring.TestSpringChangeSetEntityRemote9;
+			import org.granite.test.tide.spring.TestSpringChangeSetEntityRemote8;
+			import org.granite.test.tide.spring.TestSpringChangeSetEntityRemote7;
+			import org.granite.test.tide.spring.TestSpringChangeSetEntityRemote6;
+			import org.granite.test.tide.spring.TestSpringChangeSetEntityRemote5;
+			import org.granite.test.tide.spring.TestSpringChangeSetEntityRemote4;
+			import org.granite.test.tide.spring.TestSpringChangeSetEntityRemote3;
+			import org.granite.test.tide.spring.TestSpringChangeSetEntityRemote2;
+			import org.granite.test.tide.spring.TestSpringChangeSetEntityRemote10;
+			import org.granite.test.tide.spring.TestSpringChangeSetEntityRemote;
+			import org.granite.test.tide.spring.TestSpringChangePreprocessor;
+			import org.granite.test.tide.spring.TestGrailsPagedQuery;
+			import org.granite.test.tide.spring.SuiteSpringChangeSet;
+			import org.granite.test.tide.spring.SuiteSpring;
+			
+			public function currentRunTestSuite():Array
+			{
+				var testsToRun:Array = new Array();
+				testsToRun.push(org.granite.test.tide.spring.SuiteSpring);
+				testsToRun.push(org.granite.test.tide.spring.SuiteSpringChangeSet);
+				testsToRun.push(org.granite.test.tide.spring.TestGrailsPagedQuery);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangePreprocessor);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangeSetEntityRemote);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangeSetEntityRemote10);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangeSetEntityRemote2);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangeSetEntityRemote3);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangeSetEntityRemote4);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangeSetEntityRemote5);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangeSetEntityRemote6);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangeSetEntityRemote7);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangeSetEntityRemote8);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringChangeSetEntityRemote9);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringClientPagedQuery);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringClientPagedQueryUI);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringComponentRestrict);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringExceptionHandler);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringFaultExtendedData);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringFaultValidation);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringMultiServer);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringPagedQueryController);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringPagedQueryRefresh);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringRetryAfterFault);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringServerPagedQuery);
+				testsToRun.push(org.granite.test.tide.spring.TestSpringUninitPreprocessor);
+				return testsToRun;
+			}
+			
+			
+			private function onCreationComplete():void
+			{
+				testRunner.runWithFlexUnit4Runner(currentRunTestSuite(), "granite-client-flex45-tests");
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Placer ici les éléments non visuels (services et objets de valeur, par exemple). -->
+	</fx:Declarations>
+	<flexui:FlexUnitTestRunnerUI id="testRunner" portNumber="8765">
+	</flexui:FlexUnitTestRunnerUI>
+</s:Application>

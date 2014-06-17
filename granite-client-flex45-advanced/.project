@@ -18,24 +18,14 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>[source path] main-flex</name>
+			<name>[source path] flex</name>
 			<type>2</type>
 			<locationURI>PARENT-1-PROJECT_LOC/granite-client-flex-advanced/src/main/flex</locationURI>
 		</link>
 		<link>
-			<name>[source path] main-resources</name>
+			<name>[source path] resources</name>
 			<type>2</type>
 			<locationURI>PARENT-1-PROJECT_LOC/granite-client-flex-advanced/src/main/resources</locationURI>
-		</link>
-		<link>
-			<name>[source path] test-flex</name>
-			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/granite-client-flex45-tests/src/test/flex</locationURI>
-		</link>
-		<link>
-			<name>[source path] test-resources</name>
-			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/granite-client-flex45-tests/src/test/resources</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
