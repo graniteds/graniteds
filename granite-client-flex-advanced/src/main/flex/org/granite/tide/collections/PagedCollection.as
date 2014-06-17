@@ -558,7 +558,7 @@ package org.granite.tide.collections {
 			return null;
 		}
 		
-		public function set filterFunction(f:Function):void {
+		public override function set filterFunction(f:Function):void {
 		}
 		
 		private function noFilter(item:Object):Boolean {
