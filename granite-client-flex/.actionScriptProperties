@@ -4,8 +4,6 @@
     <compilerSourcePath>
       <compilerSourcePathEntry kind="1" linkType="1" path="src/main/flex"/>
       <compilerSourcePathEntry kind="1" linkType="1" path="src/main/resources"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="src/test/actionscript"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="src/test/resources"/>
     </compilerSourcePath>
     <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">

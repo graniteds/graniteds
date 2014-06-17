@@ -2,8 +2,7 @@
 <actionScriptProperties analytics="false" mainApplicationPath="dummy.as" projectUUID="63586b13-89d3-4be8-a788-ca9f1c6979f4" version="10">
   <compiler additionalCompilerArguments="-define=CONFIG::debugging,false&#13;&#10;-define=CONFIG::flex40,false&#13;&#10;-define=CONFIG::flex45,true" autoRSLOrdering="true" copyDependentFiles="false" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="src/main/flex" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
     <compilerSourcePath>
-      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/graniteds/granite-client-flex-advanced/src/main/flex"/>
-      <compilerSourcePathEntry kind="1" linkType="1" path="${DOCUMENTS}/graniteds/granite-client-flex-advanced/src/main/resources"/>
+      <compilerSourcePathEntry kind="1" linkType="1" path="${PARENT-1-PROJECT_LOC}/granite-client-flex-advanced/src/main/flex"/>
     </compilerSourcePath>
     <libraryPath defaultLinkType="1">
       <libraryPathEntry kind="4" path="">
@@ -17,7 +16,7 @@
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/Common"/>
       <libraryPathEntry kind="1" linkType="1" path="${FLEXUNIT_LIB_LOCATION}/version4libs/FlexProject_Extended"/>
       <libraryPathEntry kind="1" linkType="1" path="${PROJECT_FRAMEWORKS}/locale/en_US"/>
-      <libraryPathEntry kind="3" linkType="1" path="/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="${PARENT-1-PROJECT_LOC}/granite-client-flex/bin/granite-client-flex.swc" useDefaultLinkType="false"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>
