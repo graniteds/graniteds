@@ -549,6 +549,20 @@ package org.granite.tide.collections {
 			super.mx_internal::reset();
 		}
 		
+		
+		public override function get filterFunction():Function {
+			if (_context && _context.meta_merging)
+				return noFilter;
+			return null;
+		}
+		
+		public function set filterFunction(f:Function):void {
+		}
+		
+		private function noFilter(item:Object):Boolean {
+			return true;
+		}
+		
         CONFIG::flex40 {
 	        [Bindable("sortChanged")]
 	        public override function get sort():Sort {
