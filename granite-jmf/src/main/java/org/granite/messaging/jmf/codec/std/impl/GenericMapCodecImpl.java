@@ -27,9 +27,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedMap;
 
 import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DumpContext;
