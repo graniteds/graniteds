@@ -112,7 +112,7 @@ package org.granite.test.tide.data
 			nc1.version = 0;
 			nc1.objectB = nb;
 			
-			_ctx.meta_mergeExternalData(na, null, null, [ nb, nc1 ], null);
+			_ctx.meta_mergeExternalData(na, null, false, [ nb, nc1 ], null);
         }
     }
 
