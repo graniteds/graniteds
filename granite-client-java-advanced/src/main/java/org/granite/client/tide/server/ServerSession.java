@@ -818,7 +818,7 @@ public class ServerSession implements ContextAware {
 		
 		@Override
 		public void handleException(TransportException e) {
-			log.warn(e, "Transport failed");
+			log.debug(e, "Transport failed");
 			notifyExceptionListeners(e);
 		}
 	};
