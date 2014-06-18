@@ -57,7 +57,7 @@ package org.granite.tide.ejb {
         private static var log:ILogger = Log.getLogger("org.granite.tide.ejb.EjbServerSession");
 
 
-        public function EjbServerSession(contextRoot:String = "", secure:Boolean = false, serverName:String = "", serverPort:String = "", destination:String = "server"):void {
+        public function EjbServerSession(contextRoot:String = null, secure:Boolean = false, serverName:String = null, serverPort:String = null, destination:String = "server"):void {
             super(contextRoot, secure, serverName, serverPort, destination);
         }
 

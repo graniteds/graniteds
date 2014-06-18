@@ -58,7 +58,7 @@ package org.granite.tide.seam {
         private static var log:ILogger = Log.getLogger("org.granite.tide.seam.SeamServerSession");
 
 
-        public function SeamServerSession(contextRoot:String = "", secure:Boolean = false, serverName:String = "", serverPort:String = "", destination:String = "server"):void {
+        public function SeamServerSession(contextRoot:String = null, secure:Boolean = false, serverName:String = null, serverPort:String = null, destination:String = "server"):void {
             super(contextRoot, secure, serverName, serverPort, destination);
         }
 

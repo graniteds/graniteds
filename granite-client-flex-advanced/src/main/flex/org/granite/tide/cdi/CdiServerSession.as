@@ -62,7 +62,7 @@ package org.granite.tide.cdi {
         private static var log:ILogger = Log.getLogger("org.granite.tide.cdi.CdiServerSession");
 
 
-        public function CdiServerSession(contextRoot:String = "", secure:Boolean = false, serverName:String = "", serverPort:String = "", destination:String = "server"):void {
+        public function CdiServerSession(contextRoot:String = null, secure:Boolean = false, serverName:String = null, serverPort:String = null, destination:String = "server"):void {
             super(contextRoot, secure, serverName, serverPort, destination);
         }
 
