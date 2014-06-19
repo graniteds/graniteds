@@ -138,6 +138,8 @@ public class DataContext {
     public static void addUpdate(EntityUpdateType type, Object entity, int priority) {
     	DataContext dc = get();
     	if (dc != null && dc.dataDispatcher != null) {
+    		if (entity instanceof Class<?>)
+    			entity = ((Class<?>)entity).getName();
     		for (EntityUpdate update : dc.dataUpdates) {
     			if (update.type.equals(type) && update.entity.equals(entity)) {
     				if (update.priority < priority)
@@ -187,7 +189,8 @@ public class DataContext {
     public enum EntityUpdateType {
     	PERSIST,
     	UPDATE,
-    	REMOVE
+    	REMOVE,
+    	REFRESH
     }
     
     public static class EntityUpdate implements Comparable<EntityUpdate> {

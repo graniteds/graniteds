@@ -37,12 +37,13 @@ package org.granite.tide {
     import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.events.IEventDispatcher;
+    import flash.net.getClassByAlias;
     import flash.system.ApplicationDomain;
     import flash.utils.Dictionary;
     import flash.utils.flash_proxy;
     import flash.utils.getQualifiedClassName;
     import flash.xml.XMLNode;
-
+    
     import mx.binding.utils.BindingUtils;
     import mx.binding.utils.ChangeWatcher;
     import mx.collections.IList;
@@ -1990,7 +1991,7 @@ package org.granite.tide {
 
             if (merges.length == 1)
                 meta_mergeExternalData(merges[0], null, externalData, removals, persists);
-            else
+            else if (merges.length > 1 || removals.length > 0 || persists.length > 0)
 			    meta_mergeExternalData(merges, null, externalData, removals, persists);
 		}
 		
@@ -2004,21 +2005,30 @@ package org.granite.tide {
 			var refreshes:Dictionary = new Dictionary();
 
 			for each (var update:Array in updates) {
-				var entity:Object = meta_getCachedObject(update[1], String(update[0]).toLowerCase() != "remove");
+				var updateType:String = String(update[0]).toLowerCase();
+				var entityName:String = null;
 				
-				if (entity) {
-					var updateType:String = String(update[0]).toLowerCase();
-					
-					var entityName:String = update[1] is IEntityRef ? ClassUtil.getUnqualifiedClassName(update[1].className) : ClassUtil.getUnqualifiedClassName(update[1]);
-					var eventType:String = "org.granite.tide.data." + updateType + "." + entityName;
-					raiseEvent(eventType, entity);
-					
-					if (updateType == "persist" || updateType == "remove") {
-						if (!refreshes[entityName])
-							refreshes[entityName] = [ entity ];
-						else
-							refreshes[entityName].push(entity);
-					} 
+				if (updateType == "refresh") {
+					entityName = ClassUtil.getUnqualifiedClassName(getClassByAlias(update[1]));
+					if (!refreshes[entityName])
+						refreshes[entityName] = [ entity ];
+					else
+						refreshes[entityName].push(entity);
+				}
+				else {
+					var entity:Object = meta_getCachedObject(update[1], updateType != "remove");				
+					if (entity) {
+						entityName = update[1] is IEntityRef ? ClassUtil.getUnqualifiedClassName(update[1].className) : ClassUtil.getUnqualifiedClassName(update[1]);
+						var eventType:String = "org.granite.tide.data." + updateType + "." + entityName;
+						raiseEvent(eventType, entity);
+						
+						if (updateType == "persist" || updateType == "remove") {
+							if (!refreshes[entityName])
+								refreshes[entityName] = [ entity ];
+							else
+								refreshes[entityName].push(entity);
+						} 
+					}
 				}
 			}
 			

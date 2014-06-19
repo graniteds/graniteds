@@ -2142,11 +2142,14 @@ public class EntityManagerImpl implements EntityManager {
             internalMergeExternalData(mergeContext, merges.get(0), null, removals, persists);
         else if (merges.size() > 1)
             internalMergeExternalData(mergeContext, merges, null, removals, persists);
-        else
+        else if (!removals.isEmpty() || !persists.isEmpty())
             internalMergeExternalData(mergeContext, null, null, removals, persists);
 
-        for (Update update : updates)
+        for (Update update : updates) {
+        	if (update.getEntity() instanceof String)
+        		continue;
             update.setEntity(getCachedObject(update.getEntity(), update.getKind() != UpdateKind.REMOVE));
+        }
     }
     
 	public void raiseUpdateEvents(Context context, List<EntityManager.Update> updates) {
@@ -2155,7 +2158,11 @@ public class EntityManagerImpl implements EntityManager {
 		for (EntityManager.Update update : updates) {
 			Object entity = update.getEntity();
 			
-			if (entity != null) {
+			if (update.getKind() == UpdateKind.REFRESH) {
+				String entityName = getUnqualifiedClassName((String)entity);
+				refreshes.add(entityName);
+			}
+			else if (entity != null) {
 				String entityName = entity instanceof EntityRef ? getUnqualifiedClassName(((EntityRef)entity).getClassName()) : entity.getClass().getSimpleName();
 				String eventType = update.getKind().eventName() + "." + entityName;
 				context.getEventBus().raiseEvent(context, eventType, entity);

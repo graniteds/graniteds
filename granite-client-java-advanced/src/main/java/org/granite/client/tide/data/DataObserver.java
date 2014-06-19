@@ -233,8 +233,13 @@ public class DataObserver implements ContextAware, NameAware {
 			        	
 				        Object[] updates = (Object[])message.getData();
 				        List<EntityManager.Update> upds = new ArrayList<EntityManager.Update>();
-				        for (Object update : updates)
-				        	upds.add(new EntityManager.Update(UpdateKind.forName(((Object[])update)[0].toString().toUpperCase()), ((Object[])update)[1]));
+				        for (Object update : updates) {
+				        	String updateType = ((Object[])update)[0].toString().toUpperCase();
+	        				Object entity = ((Object[])update)[1];
+	        				if (UpdateKind.REFRESH.toString().toLowerCase().equals(updateType) && entity instanceof String)
+	        					entity = serverSession.getAliasRegistry().getAliasForType((String)entity);
+				        	upds.add(new EntityManager.Update(UpdateKind.forName(updateType), entity));
+				        }
 				        
 			        	entityManager.handleUpdates(mergeContext, receivedSessionId, upds);
 			        	entityManager.raiseUpdateEvents(context, upds);
