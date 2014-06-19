@@ -77,6 +77,11 @@ public class TideDataPublishingTransactionTemplate extends TransactionTemplate i
             dataEnabled = action.getClass().getAnnotation(DataEnabled.class);
         else if ((action.getClass().isMemberClass() || action.getClass().isAnonymousClass()) && action.getClass().getEnclosingClass().isAnnotationPresent(DataEnabled.class))
             dataEnabled = action.getClass().getEnclosingClass().getAnnotation(DataEnabled.class);
+        else if (action.getClass().getDeclaredFields().length == 1 && action.getClass().getDeclaredFields()[0].getName().equals("arg$1")) {
+        	Class<?> enclosingClass = action.getClass().getDeclaredFields()[0].getType();
+        	if (enclosingClass.isAnnotationPresent(DataEnabled.class))
+        		dataEnabled = enclosingClass.getAnnotation(DataEnabled.class);
+        }
 
         if (dataEnabled == null || !dataEnabled.useInterceptor())
             return super.execute(action);
