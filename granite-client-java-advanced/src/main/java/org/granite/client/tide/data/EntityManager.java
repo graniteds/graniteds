@@ -327,6 +327,8 @@ public interface EntityManager {
                 return UPDATE;
             else if ("REMOVE".equals(kind))
                 return REMOVE;
+            else if ("REFRESH".equals(kind))
+            	return REFRESH;
             throw new IllegalArgumentException("Unknown update kind " + kind);
         }
         
