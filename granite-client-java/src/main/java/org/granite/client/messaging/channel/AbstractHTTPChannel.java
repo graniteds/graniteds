@@ -35,6 +35,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.granite.client.messaging.AllInOneResponseListener;
 import org.granite.client.messaging.ResponseListener;
@@ -63,10 +64,12 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	
 	private static final Logger log = Logger.getLogger(AbstractHTTPChannel.class);
 	
-	private final BlockingQueue<AsyncToken> tokensQueue = new LinkedBlockingQueue<AsyncToken>();
+	private final BlockingQueue<AsyncToken> tokensQueue = new LinkedBlockingQueue<AsyncToken>();;
 	private final ConcurrentMap<String, AsyncToken> tokensMap = new ConcurrentHashMap<String, AsyncToken>();
+	private final AsyncToken stopToken = new AsyncToken(new DisconnectMessage());
+	private final AtomicBoolean stopped = new AtomicBoolean(true);
 	private AsyncToken disconnectToken = null;
-
+	
 	private Thread senderThread = null;
 	private Semaphore connections;
 	private Timer timer = null;
@@ -121,28 +124,34 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 
 	@Override
 	public synchronized boolean start() {
-		if (senderThread == null) {
-			log.info("Starting channel %s...", id);
-			senderThread = new Thread(this);
-			try {
-				timer = new Timer(id + "_timer", true);
-				connections = new Semaphore(maxConcurrentRequests);
-				senderThread.start();
-				
-				transport.addStopListener(this);
-				
-				log.info("Channel %s started.", id);
+		if (senderThread != null)
+			return true;
+		
+		tokensQueue.clear();
+		tokensMap.clear();
+		disconnectToken = null;
+		stopped.set(false);
+		
+		log.info("Starting channel %s...", id);
+		senderThread = new Thread(this, id + "_sender");
+		try {
+			timer = new Timer(id + "_timer", true);
+			connections = new Semaphore(maxConcurrentRequests);
+			senderThread.start();
+			
+			transport.addStopListener(this);
+			
+			log.info("Channel %s started.", id);
+		}
+		catch (Exception e) {
+			if (timer != null) {
+				timer.cancel();
+				timer = null;
 			}
-			catch (Exception e) {
-				if (timer != null) {
-					timer.cancel();
-					timer = null;
-				}
-				connections = null;
-				senderThread = null;
-				log.error(e, "Channel %s failed to start.", id);
-				return false;
-			}
+			connections = null;
+			senderThread = null;
+			log.error(e, "Channel %s failed to start.", id);
+			return false;
 		}
 		return true;
 	}
@@ -154,39 +163,44 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 
 	@Override
 	public synchronized boolean stop() {
-		if (senderThread != null) {
-			log.info("Stopping channel %s...", id);
-			
-			if (timer != null) {
-				try {
-					timer.cancel();
-				}
-				catch (Exception e) {
-					log.error(e, "Channel %s timer failed to stop.", id);
-				}
-				finally {
-					timer = null;
-				}
+		if (senderThread == null)
+			return false;
+	
+		log.info("Stopping channel %s...", id);
+		
+		if (timer != null) {
+			try {
+				timer.cancel();
 			}
-			
-			connections = null;
-			
-			tokensMap.clear();
-			tokensQueue.clear();
-			disconnectToken = null;
-            internalStop();
-			
-			Thread thread = this.senderThread;
-			senderThread = null;
-			thread.interrupt();
-			
-			pinged = false;
-			clientId = null;
-			authenticated = false;
-			
-			return true;
+			catch (Exception e) {
+				log.error(e, "Channel %s timer failed to stop.", id);
+			}
+			finally {
+				timer = null;
+			}
 		}
-		return false;
+		
+        internalStop();
+		
+        log.debug("Interrupting thread %s", id);
+		
+		connections = null;
+		tokensMap.clear();
+		tokensQueue.clear();
+		disconnectToken = null;
+		
+		stopped.set(true);
+		tokensQueue.add(stopToken);
+        
+		Thread thread = this.senderThread;
+		senderThread = null;
+		thread.interrupt();
+		
+		pinged = false;
+		clientId = null;
+		authenticated = false;
+		
+		return true;
 	}
 
     protected void internalStop() {
@@ -222,7 +236,12 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 
 		while (!Thread.interrupted()) {
 			try {
+				if (stopped.get())
+					break;
+				
 				AsyncToken token = tokensQueue.take();
+				if (token == stopToken)
+					break;
 				
 				if (token.isDone())
 					continue;
