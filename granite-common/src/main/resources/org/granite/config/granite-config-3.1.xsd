@@ -60,6 +60,7 @@
         <xs:attribute name="use-long" type="xs:boolean" default="false"/>
         <xs:attribute name="use-big-integer" type="xs:boolean" default="false"/>
         <xs:attribute name="use-big-decimal" type="xs:boolean" default="false"/>
+        <xs:attribute name="enable-exception-logging" type="xs:boolean" default="true"/>
     </xs:attributeGroup>
     
     <xs:element name="tide-roles" type="graniteds:multiValuedProperty">

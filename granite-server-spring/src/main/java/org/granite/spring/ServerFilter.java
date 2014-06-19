@@ -88,6 +88,7 @@ public class ServerFilter implements InitializingBean, DisposableBean, Applicati
     private boolean useLong = false;
     private boolean useBigInteger = false;
     private boolean useBigDecimal = false;
+    private boolean enableExceptionLogging = true;
     private boolean tide = false;
     private String type = "server";
     
@@ -204,7 +205,9 @@ public class ServerFilter implements InitializingBean, DisposableBean, Applicati
         if (tide) {
         	Factory factory = servicesConfig.findFactoryById("tide-spring-factory");
         	if (factory == null) {
-        		factory = new Factory("tide-spring-factory", "org.granite.tide.spring.SpringServiceFactory", new XMap());
+        		XMap factoryProperties = new XMap();
+        		factoryProperties.put("enable-exception-logging", String.valueOf(enableExceptionLogging));
+        		factory = new Factory("tide-spring-factory", "org.granite.tide.spring.SpringServiceFactory", factoryProperties);
             	servicesConfig.addFactory(factory);
         	}
         	
@@ -240,7 +243,9 @@ public class ServerFilter implements InitializingBean, DisposableBean, Applicati
         else {
         	Factory factory = servicesConfig.findFactoryById("spring-factory");
         	if (factory == null) {
-        		factory = new Factory("spring-factory", "org.granite.spring.SpringServiceFactory", new XMap());
+        		XMap factoryProperties = new XMap();
+        		factoryProperties.put("enable-exception-logging", String.valueOf(enableExceptionLogging));
+        		factory = new Factory("spring-factory", "org.granite.spring.SpringServiceFactory", factoryProperties);
         		servicesConfig.addFactory(factory);
         	}
         	
@@ -303,6 +308,10 @@ public class ServerFilter implements InitializingBean, DisposableBean, Applicati
 
     public void setUseBigDecimal(boolean useBigDecimal) {
         this.useBigDecimal = useBigDecimal;
+    }
+    
+    public void setEnableExceptionLogging(boolean enableLogging) {
+    	this.enableExceptionLogging = enableLogging;
     }
 
     public void setTide(boolean tide) {

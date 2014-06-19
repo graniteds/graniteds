@@ -364,7 +364,9 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	    		}
 	    	}
 	    	factoryProperties.put("lookup", lookup);
-
+	    	
+	    	factoryProperties.put("enable-exception-logging", String.valueOf(serverFilter.enableExceptionLogging()));
+	    	
 	        if (useTide) {
 	        	Factory factory = servicesConfig.findFactoryById("tide-" + type + "-factory");
 	        	if (factory == null) {

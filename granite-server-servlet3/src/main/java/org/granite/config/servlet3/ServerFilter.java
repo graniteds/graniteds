@@ -85,4 +85,6 @@ public @interface ServerFilter {
 	boolean useBigInteger() default false;
 	
 	boolean useLong() default false;
+	
+	boolean enableExceptionLogging() default true;
 }
