@@ -53,6 +53,7 @@ import org.granite.client.tide.Factory;
 import org.granite.client.tide.InstanceStore;
 import org.granite.client.tide.InstanceStoreFactory;
 import org.granite.client.tide.Module;
+import org.granite.util.TypeUtil;
 
 /**
  * @author William DRAI
@@ -108,7 +109,13 @@ public class SimpleContextManager implements ContextManager {
     public static class DefaultInstanceStoreFactory implements InstanceStoreFactory {
 		@Override
 		public InstanceStore createStore(Context context, InstanceFactory instanceFactory) {
-			return new SimpleInstanceStore(context, instanceFactory);
+			try {
+				TypeUtil.forName("javax.inject.Inject");
+				return new SimpleInjectInstanceStore(context, instanceFactory);
+			}
+			catch (ClassNotFoundException e) {
+				return new SimpleInstanceStore(context, instanceFactory);
+			}
 		}    	
     }
     

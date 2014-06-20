@@ -36,8 +36,6 @@ package org.granite.client.tide.impl;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,9 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.granite.client.tide.Context;
 import org.granite.client.tide.Factory;
@@ -61,8 +56,8 @@ import org.granite.client.tide.server.Component;
  */
 public class SimpleInstanceStore implements InstanceStore {
     
-	private final Context context;
-    private final InstanceFactory instanceFactory;
+	protected final Context context;
+	protected final InstanceFactory instanceFactory;
 	private static final String TYPED = "__TYPED__";
     private Map<String, Object> instances = new LinkedHashMap<String, Object>();
     private Set<Factory<?>> appliedFactories = new HashSet<Factory<?>>();
@@ -232,81 +227,6 @@ public class SimpleInstanceStore implements InstanceStore {
     
     
     public void inject(Object target, String componentName, Map<String, Object> properties) {
-    	if (target == null)
-    		throw new IllegalArgumentException("Cannot inject null object");
-    	
-    	Class<?> c = target.getClass();
-    	while (c != null && c != Object.class) {
-    		for (Field f : c.getDeclaredFields()) {
-    			if (f.isAnnotationPresent(Inject.class)) {
-    				f.setAccessible(true);
-    				if (f.isAnnotationPresent(Named.class)) {
-    					String name = f.getAnnotation(Named.class).value();
-    					if ("".equals(name))
-    						name = f.getName();
-    					try {
-    						Object value = context.byName(name);
-    						if (value != null)
-    							f.set(target, value);
-						} 
-    					catch (Exception e) {
-    						throw new RuntimeException("Cannot inject field " + f.getName(), e);
-						}
-    				}
-    				else {
-    					try {
-	    					if (f.getType().isArray()) {
-	    						Object values = context.allByType(f.getType().getComponentType());
-	    						if (values != null)
-	    							f.set(target, values);
-	    					}
-	    					else {
-	    						Object value = context.byType(f.getType());
-	    						if (value != null)
-	    							f.set(target, value);
-	    					}
-						} 
-						catch (Exception e) {
-							throw new RuntimeException("Cannot inject field " + f.getName(), e);
-						}
-    				}
-    			}
-    		}
-    		c = c.getSuperclass();
-    	}
-    	
-    	if (componentName == null)
-    		return;
-        
-    	for (String key : properties.keySet()) {
-    		int idx = key.indexOf(".");
-    		if (idx < 0)
-    			continue;
-    		
-    		if (!componentName.equals(key.substring(0, idx)))
-    			continue;
-    		
-    		String propertyName = key.substring(idx+1);
-    		Object value = properties.get(key);
-    		
-    		String setterName = "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
-    		Method setter = null;
-    		for (Method s : target.getClass().getMethods()) {
-    			if (s.getName().equals(setterName)) {
-    				setter = s;
-    				break;
-    			}
-    		}
-    		if (setter == null)
-    			throw new RuntimeException("No setter found for " + key);
-    		
-    		try {
-    			setter.invoke(target, value);
-    		}
-    		catch (Exception e) {
-    			throw new RuntimeException("Could not set value for bundle property " + key);
-    		}
-        }
     }
 
 }
