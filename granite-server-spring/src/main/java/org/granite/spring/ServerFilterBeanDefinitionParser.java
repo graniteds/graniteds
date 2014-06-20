@@ -59,7 +59,7 @@ public class ServerFilterBeanDefinitionParser extends AbstractSingleBeanDefiniti
 
         element.setAttribute(ID_ATTRIBUTE, SERVER_FILTER_BEAN_NAME);
         
-        mapOptionalAttributes(element, parserContext, builder, "tide", "type", "useLong", "useBigDecimal", "useBigInteger", "enableExceptionLogging");
+        mapOptionalAttributes(element, parserContext, builder, "tide", "type", "use-long", "use-big-decimal", "use-big-integer", "enable-exception-logging");
         
         Object source = parserContext.extractSource(element);
 
