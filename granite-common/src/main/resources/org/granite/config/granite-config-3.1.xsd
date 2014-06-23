@@ -240,6 +240,24 @@
 		<xs:attribute name="durable" type="xs:boolean" default="false"/>
 		<xs:attribute name="file-store-root" type="xs:string"/>
     </xs:attributeGroup>
+    
+    
+	<xs:element name="hazelcast-topic-destination">		
+        <xs:annotation>
+			<xs:documentation></xs:documentation>
+		</xs:annotation>
+        
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="graniteds:roles"/>
+            </xs:choice>
+            <xs:attributeGroup ref="graniteds:attlist.MessagingDestination"/>
+            <xs:attributeGroup ref="graniteds:attlist.HazelcastTopicDestination" />
+      	</xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.HazelcastTopicDestination">
+		<xs:attribute name="instance-name" type="xs:string"/>
+    </xs:attributeGroup>
 	
 	
 	<xs:element name="tide-persistence">		

@@ -123,7 +123,7 @@ public class Subscription implements Serializable {
     
     
     public boolean accept(Channel fromClient, AsyncMessage message) {
-    	if (noLocal && fromClient.getId().equals(channel.getId()))
+    	if (noLocal && message.getClientId().equals(channel.getId()))
     		return false;
     	
         return selector == null || selector.accept(message);

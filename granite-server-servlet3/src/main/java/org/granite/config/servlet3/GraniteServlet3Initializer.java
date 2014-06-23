@@ -31,9 +31,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import javax.servlet.FilterRegistration;
@@ -440,20 +442,13 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
             securityServicesMap.put("org.apache.catalina.connector.Request", "org.granite.messaging.service.security.Tomcat7SecurityService");
         }
 
-	    private static void initSecurizer(AbstractMessagingDestination messagingDestination, Class<? extends GravityDestinationSecurizer> securizerClass, ConfigProvider configProvider) {
-			if (securizerClass != GravityDestinationSecurizer.class) {
-				if (configProvider != null)
-					messagingDestination.setSecurizer(configProvider.findInstance(securizerClass));
-				if (messagingDestination.getSecurizer() == null)
-					messagingDestination.setSecurizerClassName(securizerClass.getName());
-			}
-	    }
-
 		
 		public void configureGravityServices(ServletContext servletContext) throws ServletException {
 	        ServicesConfig servicesConfig = ServletServicesConfig.loadConfig(servletContext);
 	        
 	        ConfigProvider configProvider = (ConfigProvider)servletContext.getAttribute(GraniteConfigListener.GRANITE_CONFIG_PROVIDER_ATTRIBUTE);
+	        
+	        ServiceLoader<Servlet3Configurator> configurators = ServiceLoader.load(Servlet3Configurator.class);
 	        
 	        for (Field field : serverFilterClass.getDeclaredFields()) {
 	        	if (field.isAnnotationPresent(MessagingDestination.class)) {
@@ -508,7 +503,24 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	        		messagingDestination.setFileStoreRoot(md.fileStoreRoot());
 	        		messagingDestination.initServices(servicesConfig);
 	        	}
+	        	else {
+	        		for (Iterator<Servlet3Configurator> iconf = configurators.iterator(); iconf.hasNext(); ) {
+	        			Servlet3Configurator conf = iconf.next();
+	        			if (conf.handleField(field, configProvider, servicesConfig))
+	        				break;
+	        		}
+	        	}
 	        }
 		}
 	}
+	
+    public static void initSecurizer(AbstractMessagingDestination messagingDestination, Class<? extends GravityDestinationSecurizer> securizerClass, ConfigProvider configProvider) {
+		if (securizerClass != GravityDestinationSecurizer.class) {
+			if (configProvider != null)
+				messagingDestination.setSecurizer(configProvider.findInstance(securizerClass));
+			if (messagingDestination.getSecurizer() == null)
+				messagingDestination.setSecurizerClassName(securizerClass.getName());
+		}
+    }
+
 }

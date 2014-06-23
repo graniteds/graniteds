@@ -21,7 +21,7 @@ include 'granite-server-weblogic'
 include 'granite-server-appengine'
 
 include 'granite-server-activemq'
-//include 'granite-server-hazelcast'
+include 'granite-server-hazelcast'
 
 include 'granite-server'
 include 'granite-generator-share'

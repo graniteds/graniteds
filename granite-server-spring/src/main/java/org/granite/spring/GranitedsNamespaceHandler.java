@@ -21,9 +21,16 @@
  */
 package org.granite.spring;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.ServiceLoader;
+
 import org.granite.tide.spring.TideDataPublishingAdviceBeanDefinitionParser;
 import org.granite.tide.spring.TideIdentityBeanDefinitionParser;
 import org.granite.tide.spring.TidePersistenceBeanDefinitionParser;
+import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 
@@ -39,6 +46,17 @@ public class GranitedsNamespaceHandler extends NamespaceHandlerSupport {
         registerBeanDefinitionParser("tide-persistence", new TidePersistenceBeanDefinitionParser());
         registerBeanDefinitionParser("tide-identity", new TideIdentityBeanDefinitionParser());
         registerBeanDefinitionParser("tide-data-publishing-advice", new TideDataPublishingAdviceBeanDefinitionParser());
+        
+        Map<String, BeanDefinitionParser> parsersMap = new HashMap<String, BeanDefinitionParser>();
+        
+        ServiceLoader<SpringConfigurator> configurators = ServiceLoader.load(SpringConfigurator.class);
+        for (Iterator<SpringConfigurator> iconf = configurators.iterator(); iconf.hasNext(); ) {
+        	SpringConfigurator conf = iconf.next();
+        	conf.buildParsers(parsersMap);
+        }
+        
+    	for (Entry<String, BeanDefinitionParser> ep : parsersMap.entrySet())
+    		registerBeanDefinitionParser(ep.getKey(), ep.getValue());
     }
 
 }
