@@ -399,7 +399,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			return false;
 		}
 		finally {
-			if (releaseConnections)
+			if (releaseConnections && connections != null)
 				connections.release();
 		}
 	}
