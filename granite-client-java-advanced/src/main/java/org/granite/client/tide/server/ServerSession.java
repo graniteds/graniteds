@@ -812,9 +812,17 @@ public class ServerSession implements ContextAware {
 				busyCount++;
 			else
 				busyCount--;
-			status.setBusy(busyCount > 0);
+			
+			context.callLater(setBusy);
 			notifyIOListeners(status.isBusy());
 		}
+		
+		private final Runnable setBusy = new Runnable() {
+			@Override
+			public void run() {
+				status.setBusy(busyCount > 0);
+			}
+		};
 		
 		@Override
 		public void handleException(TransportException e) {
