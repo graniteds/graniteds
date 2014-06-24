@@ -316,7 +316,7 @@ public class SimpleContextManager implements ContextManager {
     
     /**
      * Scan specific packages and configure found modules
-     * @param moduleClassNames module package names
+     * @param packageNames module package names
      */
     public void scanModules(String... packageNames) {
     	ClassScanner classScanner = Platform.getInstance().newClassScanner();
