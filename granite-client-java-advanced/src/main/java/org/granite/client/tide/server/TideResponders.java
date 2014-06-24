@@ -100,7 +100,7 @@ public class TideResponders {
     /**
      * Create an empty responder which does not implement any operation
      * @param <T> expected result type
-     * @return a new responder
+     * @return a new empty responder
      */
 	public static <T> TideResponder<T> noop() {
 		return new EmptyTideResponder<T>(null);
@@ -127,9 +127,9 @@ public class TideResponders {
 	}
 	
     /**
-     * Create an responder from a lambda for the result handler
-     * @param resultHandler result handler
+     * Create an responder from a lambda for the fault handler
      * @param mergeWith object to merge the result with
+     * @param faultHandler fault handler
      * @param <T> expected result type
      * @return a new responder
      */
@@ -149,7 +149,7 @@ public class TideResponders {
 	}
 	
     /**
-     * Create an responder from a lambda for the result handler
+     * Create an responder from a lambda for the result handler and the fault handler
      * @param resultHandler result handler
      * @param faultHandler fault handler
      * @param <T> expected result type
@@ -160,7 +160,7 @@ public class TideResponders {
 	}
 	
     /**
-     * Create an responder from a lambda for the result handler
+     * Create an responder from a lambda for the result and fault handler
      * @param resultHandler result handler
      * @param mergeWith object to merge the result with
      * @param faultHandler fault handler
