@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.granite.messaging.jmf.CodecRegistry;
 import org.granite.messaging.jmf.DefaultCodecRegistry;
@@ -67,6 +68,14 @@ public class TestJMFDate implements JMFConstants {
 		checkDate(d);
 	}
 	
+	@Test
+	public void testSomeTimeZone() throws ClassNotFoundException, IOException {
+		for (String id : TimeZone.getAvailableIDs()) {
+			TimeZone tz = TimeZone.getTimeZone(id);
+			checkTimeZone(tz);
+		}
+	}
+	
 	private void checkDate(Date v) throws ClassNotFoundException, IOException {
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
 		serializer.writeObject(v);
@@ -84,6 +93,32 @@ public class TestJMFDate implements JMFConstants {
 		
 		if (!(u instanceof Date || u == null))
 			fail("u isn't a Date or null: " + u);
+		
+		if ((v != null && !v.equals(u)) || (v == null && u != null)) {
+			StringBuilder sb = new StringBuilder(String.format("%s != %s ", v, u))
+				.append(toHexString(bytes));
+			
+			fail(sb.toString());
+		}
+	}
+	
+	private void checkTimeZone(TimeZone v) throws ClassNotFoundException, IOException {
+		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(codecRegistry);
+		serializer.writeObject(v);
+		serializer.close();
+		byte[] bytes = serializer.toByteArray();
+		
+		PrintStream ps = Util.newNullPrintStream();
+		JMFDumper dumper = new ByteArrayJMFDumper(bytes, codecRegistry, ps);
+		dumper.dump();
+		dumper.close();
+		
+		ByteArrayJMFDeserializer deserializer = new ByteArrayJMFDeserializer(bytes, codecRegistry);
+		Object u = deserializer.readObject();
+		deserializer.close();
+		
+		if (!(u instanceof TimeZone || u == null))
+			fail("u isn't a TimeZone or null: " + u);
 		
 		if ((v != null && !v.equals(u)) || (v == null && u != null)) {
 			StringBuilder sb = new StringBuilder(String.format("%s != %s ", v, u))
