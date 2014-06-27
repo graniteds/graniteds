@@ -41,6 +41,7 @@ import org.granite.tide.data.CollectionChange;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataContext.EntityUpdate;
 import org.granite.tide.data.DataContext.EntityUpdateType;
+import org.granite.tide.data.ExcludeFromDataPublish;
 import org.granite.tide.data.Utils;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
@@ -71,10 +72,14 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
 
 
     public void onPostInsert(PostInsertEvent event) {
+    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    		return;
         DataContext.addUpdate(EntityUpdateType.PERSIST, event.getEntity());
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
+    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    		return;
     	int[] dirtyProperties = (int[])DataContext.getEntityExtraData(event.getEntity());
         if (dirtyProperties != null && dirtyProperties.length > 0) {
         	Change change = getChange(event.getPersister(), event.getPersister().getEntityName(), event.getId(), event.getEntity());
@@ -90,6 +95,8 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
     }
 
     public void onPostDelete(PostDeleteEvent event) {
+    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    		return;
     	String uid = getUid(event.getPersister(), event.getEntity());
     	if (uid != null) {
 			ChangeRef deleteRef = new ChangeRef(event.getPersister().getEntityName(), uid, event.getId());
@@ -132,7 +139,7 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
     @SuppressWarnings("unchecked")
 	public void onPreUpdateCollection(PreCollectionUpdateEvent event) {
     	Object owner = event.getAffectedOwnerOrNull();
-    	if (owner == null)
+    	if (owner == null || owner.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
     		return;
     	
     	CollectionEntry collectionEntry = event.getSession().getPersistenceContext().getCollectionEntry(event.getCollection());
@@ -267,6 +274,5 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
 			
 			DataContext.addEntityExtraData(entity, newDirtyProperties);
 		}
-	}
-    
+	}    
 }

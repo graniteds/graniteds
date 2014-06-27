@@ -39,6 +39,7 @@ import org.granite.tide.data.Change;
 import org.granite.tide.data.ChangeRef;
 import org.granite.tide.data.CollectionChange;
 import org.granite.tide.data.DataContext;
+import org.granite.tide.data.ExcludeFromDataPublish;
 import org.granite.tide.data.DataContext.EntityUpdate;
 import org.granite.tide.data.DataContext.EntityUpdateType;
 import org.granite.tide.data.Utils;
@@ -70,10 +71,14 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
 
 
     public void onPostInsert(PostInsertEvent event) {
+    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    		return;
         DataContext.addUpdate(EntityUpdateType.PERSIST, event.getEntity());
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
+    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    		return;
         if (event.getDirtyProperties() != null && event.getDirtyProperties().length > 0) {
         	Change change = getChange(event.getPersister(), event.getPersister().getEntityName(), event.getId(), event.getEntity());
         	if (change != null) {
@@ -88,6 +93,8 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     }
 
     public void onPostDelete(PostDeleteEvent event) {
+    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    		return;
     	String uid = getUid(event.getPersister(), event.getEntity());
     	if (uid != null) {
 			ChangeRef deleteRef = new ChangeRef(event.getPersister().getEntityName(), uid, event.getId());
@@ -130,7 +137,7 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     @SuppressWarnings("unchecked")
 	public void onPreUpdateCollection(PreCollectionUpdateEvent event) {
     	Object owner = event.getAffectedOwnerOrNull();
-    	if (owner == null)
+    	if (owner == null || owner.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
     		return;
     	
     	CollectionEntry collectionEntry = event.getSession().getPersistenceContext().getCollectionEntry(event.getCollection());
@@ -249,6 +256,5 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
 
 	public void onFlushEntity(FlushEntityEvent event) throws HibernateException {
 		defaultFlushEntityEventListener.onFlushEntity(event);
-	}
-    
+	}    
 }
