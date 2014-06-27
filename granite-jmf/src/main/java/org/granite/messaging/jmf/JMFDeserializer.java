@@ -156,32 +156,76 @@ public class JMFDeserializer implements InputContext {
 
 	@Deprecated
 	public int read() throws IOException {
-		throw new UnsupportedOperationException("Use readByte()");
+		return readByte();
 	}
 
 	@Deprecated
 	public int read(byte[] b) throws IOException {
-		throw new UnsupportedOperationException("Use (byte[])readObject()");
+		try {
+			byte[] bytes = (byte[])readObject();
+			int count = Math.min(bytes.length, b.length);
+			System.arraycopy(bytes, 0, b, 0, count);
+			return count;
+		}
+		catch (IOException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new IOException("Could not read byte array", e);
+		}
 	}
 
 	@Deprecated
 	public int read(byte[] b, int off, int len) throws IOException {
-		throw new UnsupportedOperationException("Use (byte[])readObject()");
+		try {
+			byte[] bytes = (byte[])readObject();
+			int count = Math.min(bytes.length, len);
+			System.arraycopy(bytes, 0, b, off, count);
+			return count;
+		}
+		catch (IOException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new IOException("Could not read byte array", e);
+		}
 	}
 	
 	@Deprecated
 	public void readFully(byte[] b) throws IOException {
-		throw new UnsupportedOperationException("Use (byte[])readObject()");
+		try {
+			byte[] bytes = (byte[])readObject();
+			if (bytes.length < b.length)
+				throw new IOException("Could not fully read byte array of length: " + b.length);
+			System.arraycopy(bytes, 0, b, 0, b.length);
+		}
+		catch (IOException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new IOException("Could not read byte array", e);
+		}
 	}
 
 	@Deprecated
 	public void readFully(byte[] b, int off, int len) throws IOException {
-		throw new UnsupportedOperationException("Use (byte[])readObject()");
+		try {
+			byte[] bytes = (byte[])readObject();
+			if (bytes.length < len)
+				throw new IOException("Could not fully read byte array of length: " + len);
+			System.arraycopy(bytes, 0, b, off, len);
+		}
+		catch (IOException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new IOException("Could not read byte array", e);
+		}
 	}
 	
 	@Deprecated
 	public String readLine() throws IOException {
-		throw new UnsupportedOperationException("Use readUTF()");
+		throw new UnsupportedOperationException();
 	}
 
 	@Deprecated

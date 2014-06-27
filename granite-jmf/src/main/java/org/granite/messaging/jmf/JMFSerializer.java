@@ -24,6 +24,7 @@ package org.granite.messaging.jmf;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -135,27 +136,27 @@ public class JMFSerializer implements OutputContext {
 
 	@Deprecated
 	public void write(int b) throws IOException {
-		throw new UnsupportedOperationException("Use writeByte(b)");
+		writeByte(b);
 	}
 
 	@Deprecated
 	public void write(byte[] b) throws IOException {
-		throw new UnsupportedOperationException("Use writeObject(b)");
+		writeObject(b);
 	}
 
 	@Deprecated
 	public void write(byte[] b, int off, int len) throws IOException {
-		throw new UnsupportedOperationException("Use writeObject(Arrays.copyOfRange(b, off, off+len))");
+		writeObject(Arrays.copyOfRange(b, off, off + len));
 	}
 
 	@Deprecated
 	public void writeBytes(String s) throws IOException {
-		throw new UnsupportedOperationException("Use writeUTF(s)");
+		writeUTF(s);
 	}
 
 	@Deprecated
 	public void writeChars(String s) throws IOException {
-		throw new UnsupportedOperationException("Use writeUTF(s)");
+		writeUTF(s);
 	}
 	
 	///////////////////////////////////////////////////////////////////////////
