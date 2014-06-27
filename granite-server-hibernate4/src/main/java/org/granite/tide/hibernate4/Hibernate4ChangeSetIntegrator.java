@@ -41,6 +41,7 @@ public class Hibernate4ChangeSetIntegrator implements Integrator {
 	        eventListenerRegistry.getEventListenerGroup(EventType.POST_INSERT).appendListener(listener);
 	        eventListenerRegistry.getEventListenerGroup(EventType.POST_UPDATE).appendListener(listener);
 	        eventListenerRegistry.getEventListenerGroup(EventType.POST_DELETE).appendListener(listener);
+	        eventListenerRegistry.getEventListenerGroup(EventType.PRE_COLLECTION_UPDATE).appendListener(listener);
 	        
 	        eventListenerRegistry.getEventListenerGroup(EventType.PERSIST).addDuplicationStrategy(new OverrideStrategy());
 	        eventListenerRegistry.getEventListenerGroup(EventType.PERSIST).appendListener(new HibernatePersistListener());
