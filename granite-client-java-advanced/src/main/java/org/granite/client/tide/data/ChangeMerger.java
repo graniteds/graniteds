@@ -99,7 +99,7 @@ public class ChangeMerger implements DataMerger {
     @SuppressWarnings("unchecked")
 	public Object merge(MergeContext mergeContext, Object changeSet, Object previous, Object parent, String propertyName) {
         if (changeSet != null || previous != null)
-            log.debug("merge Change: {0} previous {1} (change)", ObjectUtil.toString(changeSet), ObjectUtil.toString(previous));
+            log.debug("merge Change: %s previous %s (change)", ObjectUtil.toString(changeSet), ObjectUtil.toString(previous));
 
         Object next = null;
 
@@ -186,13 +186,13 @@ public class ChangeMerger implements DataMerger {
                         Object coll = mergeContext.getDataManager().getPropertyValue(dest, p);
                         if (coll instanceof PersistentCollection && !((PersistentCollection<?>)coll).wasInitialized()) {
                             // Cannot update an uninitialized collection
-                            log.debug("Incoming change for uninitialized collection {0}:{1}.{2}", change.getClassName(), change.getUid(), p);
+                            log.debug("Incoming change for uninitialized collection %s:%s.%s", change.getClassName(), change.getUid(), p);
                             continue;
                         }
 
                         String cacheKey = "CollChange::" + dest.getClass().getName() + ":" + mergeContext.getDataManager().getUid(dest) + "." + p;
                         if (mergeContext.getCachedMerge(cacheKey) != null) {
-                            log.warn("Incoming change skipped {0}:{1}.{2}, already processed", change.getClassName(), change.getUid(), p);
+                            log.warn("Incoming change skipped %s:%s.%s, already processed", change.getClassName(), change.getUid(), p);
                             continue;
                         }
                         mergeContext.pushMerge(cacheKey, coll, false);
@@ -296,7 +296,7 @@ public class ChangeMerger implements DataMerger {
             }
 
             if (dest != null)
-                log.debug("merge change result: {0}", ObjectUtil.toString(dest));
+                log.debug("merge change result: %s", ObjectUtil.toString(dest));
         }
 
         return next;
