@@ -57,6 +57,7 @@ import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 
 import org.granite.client.javafx.persistence.collection.FXPersistentCollections;
+import org.granite.client.javafx.persistence.collection.ObservablePersistentBag;
 import org.granite.client.javafx.persistence.collection.ObservablePersistentList;
 import org.granite.client.javafx.persistence.collection.ObservablePersistentMap;
 import org.granite.client.javafx.persistence.collection.ObservablePersistentSet;
@@ -88,6 +89,8 @@ public class JavaFXDataManager extends AbstractDataManager {
 	public <T> T newInstance(Object source, Class<T> cast) throws IllegalAccessException, InstantiationException {
         if (ObservablePersistentList.class.isInstance(source))
             return (T)FXPersistentCollections.observablePersistentList();
+        else if (ObservablePersistentBag.class.isInstance(source))
+        	return (T)FXPersistentCollections.observablePersistentBag();
         else if (ObservablePersistentSortedSet.class.isInstance(source))
             return (T)FXPersistentCollections.observablePersistentSortedSet();
         else if (ObservablePersistentSet.class.isInstance(source))
