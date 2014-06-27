@@ -329,6 +329,11 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 
 		super.onError(message, e);
 		
+		// Mark consumers as unsubscribed
+		// Should maybe not do it once consumers auto resubscribe after disconnect
+		for (Consumer consumer : consumersMap.values())
+			consumer.onDisconnect();
+		
 		if (message != null && connectMessageId.compareAndSet(message.getId(), null)) {
 			scheduleReconnectTimerTask();
 		}
