@@ -35,6 +35,7 @@ import java.util.Set;
 
 import javax.persistence.Entity;
 
+import org.granite.tide.data.AnnotationUtils;
 import org.granite.tide.data.Change;
 import org.granite.tide.data.ChangeRef;
 import org.granite.tide.data.CollectionChange;
@@ -85,7 +86,11 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
         	if (change != null) {
         		for (int i = 0; i < event.getDirtyProperties().length; i++) {
         			int pidx = event.getDirtyProperties()[i];
-    				change.getChanges().put(event.getPersister().getPropertyNames()[pidx], event.getState()[pidx]);
+        			String pname = event.getPersister().getPropertyNames()[pidx];
+        			if (AnnotationUtils.isAnnotatedWith(event.getEntity(), pname, ExcludeFromDataPublish.class))
+        				continue;
+        			
+    				change.getChanges().put(pname, event.getState()[pidx]);
         		}
         	}
         	else
@@ -124,6 +129,8 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     		change = new Change(entityName, id, version, uid);
     		DataContext.addUpdate(EntityUpdateType.UPDATE, change, 1);
     	}
+    	else
+    		change.updateVersion(version);
 		return change;
     }
 
@@ -143,13 +150,16 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     	
     	CollectionEntry collectionEntry = event.getSession().getPersistenceContext().getCollectionEntry(event.getCollection());
     	
+    	String propertyName = collectionEntry.getRole().substring(collectionEntry.getLoadedPersister().getOwnerEntityPersister().getEntityName().length()+1);
+		if (AnnotationUtils.isAnnotatedWith(owner, propertyName, ExcludeFromDataPublish.class))
+			return;
+		
     	Change change = getChange(collectionEntry.getLoadedPersister().getOwnerEntityPersister(), event.getAffectedOwnerEntityName(), event.getAffectedOwnerIdOrNull(), owner);
     	if (change == null)
     		return;
     	
     	PersistentCollection newColl = event.getCollection();
     	Serializable oldColl = collectionEntry.getSnapshot();
-    	String propertyName = collectionEntry.getRole().substring(collectionEntry.getLoadedPersister().getOwnerEntityPersister().getEntityName().length()+1);
     	
     	if (oldColl == null && newColl.hasQueuedOperations()) {
     		List<Object[]> added = new ArrayList<Object[]>();    		

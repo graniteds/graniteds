@@ -21,15 +21,37 @@
  */
 package org.granite.tide.data;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
+public class AnnotationUtils {
+	
+	public static boolean isAnnotatedWith(Object entity, String propertyName, Class<? extends Annotation> annotationClass) {
+		Field field = null;
+		Class<?> c = entity.getClass();
+		while (c != null && !c.equals(Object.class)) {
+			for (Field f : c.getDeclaredFields()) {
+				if (f.getName().equals(propertyName)) {
+					field = f;
+					break;
+				}
+			}
+			if (field != null)
+				break;
+			c = c.getSuperclass();
+		}
+		if (field.isAnnotationPresent(annotationClass))
+			return true;
+		
+		String getterName = "get" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+		try {
+			Method getter = entity.getClass().getMethod(getterName);
+			return getter.isAnnotationPresent(annotationClass);
+		} 
+		catch (NoSuchMethodException e) {
+			return false;
+		}
+	}
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD })
-@Inherited
-public @interface ExcludeFromDataPublish {
 }
