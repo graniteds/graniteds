@@ -333,8 +333,13 @@ public class ChangeMerger implements DataMerger {
                     }
                 }
                 else if (cc.getType() == 1) {
-                    if (cc.getKey() != null && (Integer)cc.getKey() >= 0)
-                        savedList.add(((Integer)cc.getKey()).intValue(), cc.getValue());
+                    if (cc.getKey() != null && (Integer)cc.getKey() >= 0) {
+                    	int key = (Integer)cc.getKey();
+                    	if (key > savedList.size())
+                    		log.warn("Could not add received element at index %d", key);
+                    	else
+                    		savedList.add(key, cc.getValue());
+                    }
                     else if (cc.getKey() != null)
                         savedList.add(cc.getValue());
                     else
@@ -385,8 +390,13 @@ public class ChangeMerger implements DataMerger {
                     }
                 }
                 else if (cc.getType() == 1) {
-                    if (cc.getKey() != null && (Integer)cc.getKey() >= 0)
-                        coll.add((Integer) cc.getKey(), cc.getValue());
+                    if (cc.getKey() != null && (Integer)cc.getKey() >= 0) {
+                    	int key = (Integer)cc.getKey();
+                    	if (key > coll.size())
+                    		log.warn("Could not add received element at index %d", key);
+                    	else
+                    		coll.add(key, cc.getValue());
+                    }
                     else if (cc.getKey() != null)
                         coll.add(cc.getValue());
                     else

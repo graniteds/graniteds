@@ -204,11 +204,15 @@ public class DataContext {
     		this.priority = priority;
     	}
 
+		@SuppressWarnings("unchecked")
 		public int compareTo(EntityUpdate u) {
 			if (type.ordinal() != u.type.ordinal())
 				return type.ordinal() - u.type.ordinal();
-		    if (!entity.equals(u.entity))
+		    if (!entity.equals(u.entity)) {
+		    	if (entity.getClass().equals(u.entity.getClass()) && Comparable.class.isAssignableFrom(entity.getClass()))
+		    		return ((Comparable<Object>)entity).compareTo(u.entity);
 		        return Math.abs(entity.hashCode()) - Math.abs(u.entity.hashCode()); // hashCode can be negative !!!
+		    }
 	        return priority - u.priority;
 		}
 		

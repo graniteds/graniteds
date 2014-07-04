@@ -34,7 +34,7 @@ import java.util.Map.Entry;
 /**
  * @author William DRAI
  */
-public class Change implements Externalizable {
+public class Change implements Externalizable, Comparable<Change> {
 
     private static final long serialVersionUID = 1L;
     
@@ -83,6 +83,10 @@ public class Change implements Externalizable {
 	public Number getVersion() {
 		return version;
 	}
+	
+	public void updateVersion(Number version) {
+		this.version = version;
+	}
 
 	public Map<String, Object> getChanges() {
 		return changes;
@@ -124,9 +128,18 @@ public class Change implements Externalizable {
     @Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(getClassName()).append(':').append(getUid()).append(":").append(getId()).append(':').append(getVersion()).append("={");
+		if (getClassName().indexOf(".") > 0)
+			sb.append(getClassName().substring(getClassName().lastIndexOf(".")+1));
+		else
+			sb.append(getClassName());
+		sb.append(':').append(getUid()).append(":").append(getId()).append(':').append(getVersion()).append("={");
+		boolean first = true;
 		for (Entry<String, Object> change : getChanges().entrySet()) {
-			sb.append(change.getKey()).append(": ").append(change.getValue() != null ? change.getValue().toString() : "null");
+			if (first)
+				first = false;
+			else
+				sb.append(", ");
+			sb.append(change.getKey()).append(": ").append(change.getValue());
 		}
 		sb.append("}");
 		return sb.toString();
@@ -147,5 +160,20 @@ public class Change implements Externalizable {
 		id = (Serializable)in.readObject();
 		version = (Number)in.readObject();
 		changes = (Map<String, Object>)in.readObject();
+	}
+
+	@Override
+	public int compareTo(Change o) {
+		if (!className.equals(o.getClassName()))
+			return className.compareTo(o.getClassName());
+		if (!uid.equals(o.getUid()))
+			return uid.compareTo(o.getUid());
+		if (version == null)
+			return o.getVersion() == null ? 0 : -1;
+		else if (version.equals(o.getVersion()))
+			return 0;
+		else if (o.getVersion() == null)
+			return 1;
+		return version.longValue() > o.getVersion().longValue() ? 1 : -1;
 	}
 }

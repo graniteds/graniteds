@@ -44,6 +44,8 @@ import org.granite.client.messaging.events.IncomingMessageEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.tide.Context;
 import org.granite.client.tide.data.EntityManager;
+import org.granite.client.tide.data.EntityManager.UpdateKind;
+import org.granite.client.tide.data.impl.ChangeEntityRef;
 import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.server.ComponentListener;
 import org.granite.client.tide.server.ServerSession;
@@ -51,6 +53,7 @@ import org.granite.client.tide.server.TideMergeResponder;
 import org.granite.client.tide.server.TideResponder;
 import org.granite.client.tide.server.TideResultEvent;
 import org.granite.logging.Logger;
+import org.granite.tide.data.ChangeRef;
 import org.granite.tide.invocation.InvocationResult;
 
 /**
@@ -170,7 +173,7 @@ public class ResultHandler<T> implements Runnable {
     private static final Logger log = Logger.getLogger(ResultHandler.class);
 
     public boolean handleResult(Context context, InvocationResult invocationResult, Object result) {
-        log.debug("result {0}", result);
+        log.debug("result %s", result);
 
         List<EntityManager.Update> updates = null;
         EntityManager entityManager = context.getEntityManager();
@@ -187,8 +190,17 @@ public class ResultHandler<T> implements Runnable {
 
                 if (invocationResult.getUpdates() != null && invocationResult.getUpdates().length > 0) {
                     updates = new ArrayList<EntityManager.Update>(invocationResult.getUpdates().length);
-                    for (Object[] u : invocationResult.getUpdates())
-                        updates.add(EntityManager.Update.forUpdate((String)u[0], u[1]));
+                    for (Object[] update : invocationResult.getUpdates()) {
+			        	String updateType = update[0].toString().toUpperCase();
+        				Object entity = update[1];
+        				if (UpdateKind.REFRESH.toString().toLowerCase().equals(updateType) && entity instanceof String)
+        					entity = serverSession.getAliasRegistry().getAliasForType((String)entity);
+        				else if (entity instanceof ChangeRef)
+        					entity = new ChangeEntityRef(entity, serverSession.getAliasRegistry());
+                    	
+                        updates.add(EntityManager.Update.forUpdate(updateType, entity));
+                    }
+                    
                     entityManager.handleUpdates(mergeContext, null, updates);
                 }
             }
