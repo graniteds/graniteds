@@ -64,7 +64,8 @@ public abstract class WebSocketTransport extends AbstractWebSocketTransport<Sess
 		
 		try {
             webSocketContainer = createContainer();
-
+            webSocketContainer.setDefaultMaxBinaryMessageBufferSize(getMaxMessageSize());
+            
 			log.info("WebSocket transport started.");
 			return true;
 		}

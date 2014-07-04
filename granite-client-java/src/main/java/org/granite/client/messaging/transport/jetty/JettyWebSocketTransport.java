@@ -86,7 +86,7 @@ public class JettyWebSocketTransport extends AbstractWebSocketTransport<Connecti
 			WebSocketClient webSocketClient = webSocketClientFactory.newWebSocketClient();
 			webSocketClient.setMaxIdleTime(getMaxIdleTime());
 			webSocketClient.setMaxTextMessageSize(1024);
-            webSocketClient.setMaxBinaryMessageSize(16384);
+            webSocketClient.setMaxBinaryMessageSize(getMaxMessageSize());
 			webSocketClient.setProtocol("org.granite.gravity." + transportMessage.getContentType().substring("application/x-".length()));
 
 			if (transportMessage.getSessionId() != null)

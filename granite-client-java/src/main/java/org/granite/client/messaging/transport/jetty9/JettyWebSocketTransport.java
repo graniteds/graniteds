@@ -57,7 +57,7 @@ public class JettyWebSocketTransport extends AbstractWebSocketTransport<Session>
 			webSocketClient = new WebSocketClient();
             webSocketClient.setMaxIdleTimeout(getMaxIdleTime());
             webSocketClient.setMaxTextMessageBufferSize(1024);
-            webSocketClient.setMaxBinaryMessageBufferSize(16384);
+            webSocketClient.setMaxBinaryMessageBufferSize(getMaxMessageSize());
             webSocketClient.setCookieStore(new HttpCookieStore());
             webSocketClient.start();
 

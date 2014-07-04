@@ -54,6 +54,8 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
 	private int reconnectMaxAttempts = 5;
     @SuppressWarnings("unused")
 	private int reconnectIntervalMillis = 60000;
+    
+    private int maxMessageSize = 16364;
 	
 	public void setMaxIdleTime(int maxIdleTime) {
 		this.maxIdleTime = maxIdleTime;
@@ -73,6 +75,13 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
 
     public boolean isReconnectAfterReceive() {
         return false;
+    }
+    
+    public void setMaxMessageSize(int maxMessageSize) {
+    	this.maxMessageSize = maxMessageSize;
+    }
+    public int getMaxMessageSize() {
+    	return maxMessageSize;
     }
 
 	@Override
