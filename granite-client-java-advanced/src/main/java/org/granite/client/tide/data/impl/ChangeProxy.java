@@ -35,6 +35,7 @@
 package org.granite.client.tide.data.impl;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.granite.client.persistence.Entity;
 import org.granite.client.persistence.Id;
@@ -109,4 +110,24 @@ public class ChangeProxy implements EntityProxy {
     public Object getWrappedObject() {
         return templateObject;
     }
+
+    @Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		if (getClassName().indexOf(".") > 0)
+			sb.append(getClassName().substring(getClassName().lastIndexOf(".")+1));
+		else
+			sb.append(getClassName());
+		sb.append(':').append(getUid()).append(":").append(getId()).append(':').append(version).append("={");
+		boolean first = true;
+		for (Entry<String, Object> change : changes.entrySet()) {
+			if (first)
+				first = false;
+			else
+				sb.append(", ");
+			sb.append(change.getKey()).append(": ").append(change.getValue());
+		}
+		sb.append("}");
+		return sb.toString();
+	}
 }

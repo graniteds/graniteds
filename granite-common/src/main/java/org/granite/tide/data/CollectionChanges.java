@@ -94,4 +94,19 @@ public class CollectionChanges implements Externalizable {
 		for (int i = 0; i < cs.length; i++)
 			changes[i] = (CollectionChange)cs[i];
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("CollectionChanges[");
+		boolean first = true;
+		for (CollectionChange cc : changes) {
+			if (first)
+				first = false;
+			else
+				sb.append(", ");
+			sb.append(cc.toString());
+		}
+		sb.append("]");
+		return sb.toString();
+	}
 }

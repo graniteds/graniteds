@@ -21,6 +21,7 @@
  */
 package org.granite.client.messaging.messages.push;
 
+import java.lang.reflect.Array;
 import java.util.Map;
 
 import org.granite.client.messaging.messages.AbstractMessage;
@@ -73,5 +74,20 @@ public class TopicMessage extends AbstractMessage {
 	
 	public Object getData() {
 		return data;
+	}
+	
+	@Override
+	public String toString() {
+		if (data != null && data.getClass().isArray()) {
+			StringBuilder sb = new StringBuilder("MSG:[");
+			for (int idx = 0; idx < Array.getLength(data); idx++) {
+				if (idx > 0)
+					sb.append(", ");
+				sb.append(Array.get(data, idx));
+			}
+			sb.append("]");
+			return sb.toString();
+		}
+		return "MSG:" + data;
 	}
 }

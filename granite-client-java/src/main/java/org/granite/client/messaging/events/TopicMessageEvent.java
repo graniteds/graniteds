@@ -62,4 +62,9 @@ public class TopicMessageEvent implements IncomingMessageEvent<TopicMessage> {
     public void reply(Object reply) {
         consumer.reply(message, reply);
     }
+    
+    @Override
+    public String toString() {
+    	return message.toString();
+    }
 }

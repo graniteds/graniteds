@@ -60,11 +60,15 @@ public class CollectionChange implements Externalizable {
 		return value;
 	}
 	
-//	public String toString() {
-//		return (type == 1 ? "add" : (type == -1 ? "remove" : "update"))
-//				+ "@" + key + "=" + ChangeSet.valueToString(value);
-//	}
-
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("{");
+		sb.append(type == 1 ? "add" : (type == -1 ? "remove" : "update"));
+		sb.append("@").append(key).append("=").append(value);
+		sb.append("}");
+		return sb.toString();
+	}
+	
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(type);
 		out.writeObject(key);

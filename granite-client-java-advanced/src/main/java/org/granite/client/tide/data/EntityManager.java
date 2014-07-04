@@ -373,6 +373,11 @@ public interface EntityManager {
         public static Update forUpdate(String kind, Object entity) {
             return new Update(UpdateKind.forName(kind), entity);
         }
+        
+        @Override
+        public String toString() {
+        	return kind.name() + ":" + entity;
+        }
     }
     
     /**

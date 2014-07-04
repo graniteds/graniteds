@@ -148,7 +148,7 @@ public abstract class AbstractPersistentCollection<C> implements PersistentColle
 	
 	@Override
 	public String toString() {
-		return getClass().getName() + " {initialized=" + wasInitialized() + ", dirty=" + isDirty() + "}" +
+		return getClass().getSimpleName() + " {initialized=" + wasInitialized() + ", dirty=" + isDirty() + "}" +
 			(collection != null ? ": " + collection.toString() : "");
 	}
 
