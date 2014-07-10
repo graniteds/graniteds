@@ -29,18 +29,18 @@ import org.granite.tide.data.ChangeSetApplier;
 import org.granite.tide.data.ChangeSetProxy;
 import org.hibernate.HibernateException;
 import org.hibernate.StaleObjectStateException;
-import org.hibernate.event.internal.DefaultMergeEventListener;
 import org.hibernate.event.spi.MergeEvent;
+import org.hibernate.event.spi.MergeEventListener;
 
 
-public class HibernateDataChangeMergeListener extends DefaultMergeEventListener {
+public class HibernateDataChangeMergeListener extends EventListenerWrapper<MergeEventListener> implements MergeEventListener {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	public void onMerge(MergeEvent event) throws HibernateException {
 		try {
-			super.onMerge(event);
+			wrappedListener.onMerge(event);
 		}
 		catch (StaleObjectStateException e) {
 			HibernateOptimisticLockException.rethrowOptimisticLockException(event.getSession(), e);
@@ -58,7 +58,7 @@ public class HibernateDataChangeMergeListener extends DefaultMergeEventListener 
 		}
 		
 		try {
-			super.onMerge(event, copiedAlready);
+			wrappedListener.onMerge(event, copiedAlready);
 		}
 		catch (StaleObjectStateException e) {
 			HibernateOptimisticLockException.rethrowOptimisticLockException(event.getSession(), e);

@@ -27,17 +27,17 @@ import org.granite.hibernate4.HibernateOptimisticLockException;
 import org.hibernate.HibernateException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.spi.PersistEvent;
-import org.hibernate.event.internal.DefaultPersistOnFlushEventListener;
+import org.hibernate.event.spi.PersistEventListener;
 
 
-public class HibernatePersistOnFlushListener extends DefaultPersistOnFlushEventListener {
+public class HibernatePersistOnFlushListener extends EventListenerWrapper<PersistEventListener> implements PersistEventListener {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	public void onPersist(PersistEvent event) throws HibernateException {
 		try {
-			super.onPersist(event);
+			wrappedListener.onPersist(event);
 		}
 		catch (StaleObjectStateException e) {
 			HibernateOptimisticLockException.rethrowOptimisticLockException(event.getSession(), e);
@@ -48,7 +48,7 @@ public class HibernatePersistOnFlushListener extends DefaultPersistOnFlushEventL
 	@Override
 	public void onPersist(PersistEvent event, Map copiedAlready) throws HibernateException {
 		try {
-			super.onPersist(event, copiedAlready);
+			wrappedListener.onPersist(event, copiedAlready);
 		}
 		catch (StaleObjectStateException e) {
 			HibernateOptimisticLockException.rethrowOptimisticLockException(event.getSession(), e);

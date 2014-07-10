@@ -27,17 +27,17 @@ import org.granite.hibernate4.HibernateOptimisticLockException;
 import org.hibernate.HibernateException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.spi.DeleteEvent;
-import org.hibernate.event.internal.DefaultDeleteEventListener;
+import org.hibernate.event.spi.DeleteEventListener;
 
 
-public class HibernateDeleteListener extends DefaultDeleteEventListener {
+public class HibernateDeleteListener extends EventListenerWrapper<DeleteEventListener> implements DeleteEventListener {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	public void onDelete(DeleteEvent event) throws HibernateException {
 		try {
-			super.onDelete(event);
+			wrappedListener.onDelete(event);
 		}
 		catch (StaleObjectStateException e) {
 			HibernateOptimisticLockException.rethrowOptimisticLockException(event.getSession(), e);
@@ -48,7 +48,7 @@ public class HibernateDeleteListener extends DefaultDeleteEventListener {
 	@Override
 	public void onDelete(DeleteEvent event, Set transientEntities) throws HibernateException {
 		try {
-			super.onDelete(event, transientEntities);
+			wrappedListener.onDelete(event, transientEntities);
 		}
 		catch (StaleObjectStateException e) {
 			HibernateOptimisticLockException.rethrowOptimisticLockException(event.getSession(), e);

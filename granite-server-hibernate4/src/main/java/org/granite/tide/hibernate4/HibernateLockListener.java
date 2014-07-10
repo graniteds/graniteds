@@ -25,17 +25,17 @@ import org.granite.hibernate4.HibernateOptimisticLockException;
 import org.hibernate.HibernateException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.spi.LockEvent;
-import org.hibernate.event.internal.DefaultLockEventListener;
+import org.hibernate.event.spi.LockEventListener;
 
 
-public class HibernateLockListener extends DefaultLockEventListener {
+public class HibernateLockListener extends EventListenerWrapper<LockEventListener> implements LockEventListener {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	public void onLock(LockEvent event) throws HibernateException {
 		try {
-			super.onLock(event);
+			wrappedListener.onLock(event);
 		}
 		catch (StaleObjectStateException e) {
 			HibernateOptimisticLockException.rethrowOptimisticLockException(event.getSession(), e);

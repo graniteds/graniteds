@@ -25,17 +25,17 @@ import org.granite.hibernate4.HibernateOptimisticLockException;
 import org.hibernate.HibernateException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.spi.FlushEvent;
-import org.hibernate.event.internal.DefaultFlushEventListener;
+import org.hibernate.event.spi.FlushEventListener;
 
 
-public class HibernateFlushListener extends DefaultFlushEventListener {
+public class HibernateFlushListener extends EventListenerWrapper<FlushEventListener> implements FlushEventListener {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	public void onFlush(FlushEvent event) throws HibernateException {
 		try {
-			super.onFlush(event);
+			wrappedListener.onFlush(event);
 		}
 		catch (StaleObjectStateException e) {
 			HibernateOptimisticLockException.rethrowOptimisticLockException(event.getSession(), e);

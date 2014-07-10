@@ -25,17 +25,17 @@ import org.granite.hibernate4.HibernateOptimisticLockException;
 import org.hibernate.HibernateException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.spi.SaveOrUpdateEvent;
-import org.hibernate.event.internal.DefaultSaveOrUpdateEventListener;
+import org.hibernate.event.spi.SaveOrUpdateEventListener;
 
 
-public class HibernateSaveOrUpdateListener extends DefaultSaveOrUpdateEventListener {
+public class HibernateSaveOrUpdateListener extends EventListenerWrapper<SaveOrUpdateEventListener> implements SaveOrUpdateEventListener {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	public void onSaveOrUpdate(SaveOrUpdateEvent event) throws HibernateException {
 		try {
-			super.onSaveOrUpdate(event);
+			wrappedListener.onSaveOrUpdate(event);
 		}
 		catch (StaleObjectStateException e) {
 			HibernateOptimisticLockException.rethrowOptimisticLockException(event.getSession(), e);

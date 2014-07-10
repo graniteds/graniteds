@@ -30,6 +30,7 @@ import org.hibernate.event.spi.PostInsertEvent;
 import org.hibernate.event.spi.PostInsertEventListener;
 import org.hibernate.event.spi.PostUpdateEvent;
 import org.hibernate.event.spi.PostUpdateEventListener;
+import org.hibernate.persister.entity.EntityPersister;
 
 
 public class HibernateDataPublishListener implements PostInsertEventListener, PostDeleteEventListener, PostUpdateEventListener {
@@ -47,5 +48,10 @@ public class HibernateDataPublishListener implements PostInsertEventListener, Po
 
 	public void onPostUpdate(PostUpdateEvent event) throws HibernateException {
 		DataContext.addUpdate(EntityUpdateType.UPDATE, event.getEntity());
+	}
+
+	@Override
+	public boolean requiresPostCommitHanding(EntityPersister persister) {
+		return false;
 	}
 }

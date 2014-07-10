@@ -269,5 +269,10 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
 		defaultFlushEntityEventListener.onFlushEntity(event);
 	}
 	
+	@Override
+	public boolean requiresPostCommitHanding(EntityPersister persister) {
+		return false;
+	}
+	
 	
 }
