@@ -23,17 +23,22 @@ package org.granite.test.tide.hibernate4.data;
 
 import java.io.Serializable;
 
-import org.granite.test.tide.data.*;
-import org.granite.tide.hibernate4.HibernateDataChangeMergeListener;
+import org.granite.test.tide.data.AbstractEntity;
+import org.granite.test.tide.data.Address;
+import org.granite.test.tide.data.Contact2;
+import org.granite.test.tide.data.Country;
+import org.granite.test.tide.data.Person2;
+import org.granite.test.tide.data.Phone2;
+import org.granite.tide.hibernate4.Hibernate4ChangeSetIntegrator;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.AnnotationConfiguration;
-import org.hibernate.event.service.spi.EventListenerRegistry;
-import org.hibernate.event.spi.EventType;
-import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.boot.registry.BootstrapServiceRegistryBuilder;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
 
-@SuppressWarnings("deprecation")
+
 public class TestHibernate4ChangeSetMerge extends AbstractTestChangeSetMerge {
 	
 	private SessionFactory sessionFactory;
@@ -42,7 +47,7 @@ public class TestHibernate4ChangeSetMerge extends AbstractTestChangeSetMerge {
 	
 	@Override
 	protected void initPersistence() {
-		AnnotationConfiguration configuration = new AnnotationConfiguration()
+		Configuration configuration = new Configuration()
 			.addAnnotatedClass(AbstractEntity.class)
 			.addAnnotatedClass(Address.class)
 			.addAnnotatedClass(Contact1.class)
@@ -59,10 +64,11 @@ public class TestHibernate4ChangeSetMerge extends AbstractTestChangeSetMerge {
 			.setProperty("hibernate.connection.url", "jdbc:h2:mem:test-loader")
 			.setProperty("hibernate.connection.username", "sa")
 			.setProperty("hibernate.connection.password", "");
-		sessionFactory = configuration.buildSessionFactory();
 		
-		EventListenerRegistry registry = ((SessionFactoryImpl)sessionFactory).getServiceRegistry().getService(EventListenerRegistry.class);
-		registry.setListeners(EventType.MERGE, new HibernateDataChangeMergeListener());
+		BootstrapServiceRegistryBuilder bsrb = new BootstrapServiceRegistryBuilder().with(new Hibernate4ChangeSetIntegrator());
+		StandardServiceRegistryBuilder ssrb = new StandardServiceRegistryBuilder(bsrb.build()).applySettings(configuration.getProperties());
+		ServiceRegistry serviceRegistry = ssrb.build();
+		sessionFactory = configuration.buildSessionFactory(serviceRegistry);
 	}
 	
 	@Override

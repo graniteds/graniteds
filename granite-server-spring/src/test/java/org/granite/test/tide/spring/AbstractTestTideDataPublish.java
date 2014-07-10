@@ -73,7 +73,7 @@ public class AbstractTestTideDataPublish extends AbstractTideTestCase {
 		Assert.assertNotNull(getLastMessage());
 		Object[] updates = (Object[])getLastMessage().getBody();
 		
-		Assert.assertEquals("Updates count", 3, updates.length);
+		Assert.assertEquals("Updates count", 1, updates.length);
 		Assert.assertTrue("Meeting", ((Object[])updates[0])[1] instanceof Meeting);
     }
     
@@ -86,13 +86,13 @@ public class AbstractTestTideDataPublish extends AbstractTideTestCase {
         Object[][] resultUpdates = result.getUpdates();
         
         Assert.assertNotNull("Result updates", resultUpdates);
-		Assert.assertEquals("Result updates count", 3, resultUpdates.length);
+		Assert.assertEquals("Result updates count", 1, resultUpdates.length);
 		Assert.assertTrue("Meeting", resultUpdates[0][1] instanceof Meeting);
         
 		Assert.assertNotNull(getLastMessage());
 		Object[] publishedUpdates = (Object[])getLastMessage().getBody();
 		
-		Assert.assertEquals("Published updates count", 3, publishedUpdates.length);
+		Assert.assertEquals("Published updates count", 1, publishedUpdates.length);
 		Assert.assertTrue("Meeting", ((Object[])publishedUpdates[0])[1] instanceof Meeting);
     }
 }

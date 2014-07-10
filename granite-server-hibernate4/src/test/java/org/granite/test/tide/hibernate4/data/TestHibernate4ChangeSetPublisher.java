@@ -58,23 +58,23 @@ import org.granite.tide.data.DataEnabled.PublishMode;
 import org.granite.tide.data.DefaultDataDispatcher;
 import org.granite.tide.data.DefaultDataTopicParams;
 import org.granite.tide.data.TidePersistenceAdapter;
-import org.granite.tide.hibernate4.HibernateDataChangePublishListener;
+import org.granite.tide.hibernate4.Hibernate4ChangeSetIntegrator;
 import org.granite.tide.hibernate4.HibernatePersistenceAdapter;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.boot.registry.BootstrapServiceRegistryBuilder;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.collection.internal.PersistentBag;
 import org.hibernate.collection.internal.PersistentList;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.event.service.spi.EventListenerRegistry;
-import org.hibernate.event.spi.EventType;
-import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.service.ServiceRegistry;
 import org.junit.Assert;
 import org.junit.Test;
 
-@SuppressWarnings("deprecation")
+
 public abstract class TestHibernate4ChangeSetPublisher {
 	
 	private SessionFactory sessionFactory;
@@ -82,7 +82,7 @@ public abstract class TestHibernate4ChangeSetPublisher {
 	private Transaction tx;
 	
 	protected void initPersistence() {
-		AnnotationConfiguration configuration = new AnnotationConfiguration()
+		Configuration configuration = new Configuration()
 			.addAnnotatedClass(AbstractEntity.class)
 			.addAnnotatedClass(LegalEntity.class)
 			.addAnnotatedClass(Address.class)
@@ -110,14 +110,10 @@ public abstract class TestHibernate4ChangeSetPublisher {
 			.setProperty("hibernate.connection.username", "sa")
 			.setProperty("hibernate.connection.password", "");
 		
-		sessionFactory = configuration.buildSessionFactory();
-		
-		EventListenerRegistry registry = ((SessionFactoryImpl)sessionFactory).getServiceRegistry().getService(EventListenerRegistry.class);
-		registry.setListeners(EventType.FLUSH_ENTITY, new HibernateDataChangePublishListener());
-		registry.setListeners(EventType.POST_INSERT, new HibernateDataChangePublishListener());
-		registry.setListeners(EventType.POST_UPDATE, new HibernateDataChangePublishListener());
-		registry.setListeners(EventType.POST_DELETE, new HibernateDataChangePublishListener());
-		registry.setListeners(EventType.PRE_COLLECTION_UPDATE, new HibernateDataChangePublishListener());
+		BootstrapServiceRegistryBuilder bsrb = new BootstrapServiceRegistryBuilder().with(new Hibernate4ChangeSetIntegrator());
+		StandardServiceRegistryBuilder ssrb = new StandardServiceRegistryBuilder(bsrb.build()).applySettings(configuration.getProperties());
+		ServiceRegistry serviceRegistry = ssrb.build();
+		sessionFactory = configuration.buildSessionFactory(serviceRegistry);
 	}
 	
 	protected abstract void setListeners(SessionFactory sessionFactory);

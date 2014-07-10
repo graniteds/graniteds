@@ -27,7 +27,7 @@
     version="2.0">
     
     <persistence-unit name="hibernate4-pu" transaction-type="RESOURCE_LOCAL">
-        <!--provider>org.hibernate.ejb.HibernatePersistence</provider-->
+        <!--provider>org.hibernate.jpa.HibernatePersistenceProvider</provider-->
         <class>org.granite.test.externalizers.Entity2</class>        
         <class>org.granite.test.externalizers.Entity3</class>        
         <class>org.granite.test.externalizers.Entity4</class>
@@ -38,6 +38,102 @@
         <class>org.granite.test.externalizers.EntityA</class>
         <class>org.granite.test.externalizers.EntityB</class>
         <class>org.granite.test.externalizers.EmbeddedEntity</class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.max_fetch_depth" value="3"/>
+        </properties>
+    </persistence-unit>
+    
+    <persistence-unit name="hibernate4-changesetmerge-pu" transaction-type="RESOURCE_LOCAL">
+        <!--provider>org.hibernate.jpa.HibernatePersistenceProvider</provider-->
+        <class>org.granite.test.tide.data.AbstractEntity</class>        
+        <class>org.granite.test.tide.data.Address</class>        
+        <class>org.granite.test.tide.data.Country</class>        
+        <class>org.granite.test.tide.data.Phone</class>        
+        <class>org.granite.test.tide.data.Contact2</class>        
+        <class>org.granite.test.tide.data.Person2</class>        
+        <class>org.granite.test.tide.data.Phone2</class>        
+        <class>org.granite.test.tide.hibernate4.data.Person1</class>        
+        <class>org.granite.test.tide.hibernate4.data.Contact1</class>        
+        <class>org.granite.test.tide.hibernate4.data.Phone</class>        
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.max_fetch_depth" value="3"/>
+        </properties>
+    </persistence-unit>
+    
+    <persistence-unit name="hibernate4-changesetapplier-pu" transaction-type="RESOURCE_LOCAL">
+        <!--provider>org.hibernate.jpa.HibernatePersistenceProvider</provider-->
+        <class>org.granite.test.tide.data.AbstractEntity</class>        
+        <class>org.granite.test.tide.data.Address</class>        
+        <class>org.granite.test.tide.data.Country</class>        
+        <class>org.granite.test.tide.data.Phone</class>        
+        <class>org.granite.test.tide.data.Contact2</class>        
+        <class>org.granite.test.tide.data.Person2</class>        
+        <class>org.granite.test.tide.data.Phone2</class>        
+        <class>org.granite.test.tide.data.Classification</class>        
+        <class>org.granite.test.tide.data.OrderRepo</class>        
+        <class>org.granite.test.tide.data.Order</class>        
+        <class>org.granite.test.tide.data.LineItemBag</class>        
+        <class>org.granite.test.tide.data.LineItemList</class>        
+        <class>org.granite.test.tide.data.Order2</class>        
+        <class>org.granite.test.tide.data.LineItemBag2</class>        
+        <class>org.granite.test.tide.data.LineItemList2</class>        
+        <class>org.granite.test.tide.data.Patient</class>        
+        <class>org.granite.test.tide.data.Medication</class>        
+        <class>org.granite.test.tide.data.Prescription</class>
+        <class>org.granite.test.tide.hibernate4.data.Person1</class>        
+        <class>org.granite.test.tide.hibernate4.data.Contact1</class>        
+        <class>org.granite.test.tide.hibernate4.data.Phone</class>        
+        <class>org.granite.test.tide.hibernate4.data.Patient2</class>
+        <class>org.granite.test.tide.hibernate4.data.Visit2</class>
+        <class>org.granite.test.tide.hibernate4.data.Test2</class>
+        <class>org.granite.test.tide.hibernate4.data.VitalSignTest2</class>
+        <class>org.granite.test.tide.hibernate4.data.VitalSignObservation2</class>
+        <class>org.granite.test.tide.hibernate4.data.VitalSignTest3</class>
+        <class>org.granite.test.tide.hibernate4.data.VitalSignObservation3</class>
+        <class>org.granite.test.tide.hibernate4.data.AbstractEntitySoftDelete</class>
+        <class>org.granite.test.tide.hibernate4.data.AddressSoftDelete</class>
+        <class>org.granite.test.tide.hibernate4.data.ContactSoftDelete</class>
+        <class>org.granite.test.tide.hibernate4.data.CountrySoftDelete</class>
+        <class>org.granite.test.tide.hibernate4.data.PersonSoftDelete</class>
+        <class>org.granite.test.tide.hibernate4.data.PhoneSoftDelete</class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.max_fetch_depth" value="3"/>
+        </properties>
+    </persistence-unit>
+    
+    
+    <persistence-unit name="hibernate4-publish-pu" transaction-type="RESOURCE_LOCAL">
+        <!--provider>org.hibernate.jpa.HibernatePersistenceProvider</provider-->
+        <class>org.granite.test.tide.data.AbstractEntity0</class>        
+        <class>org.granite.test.tide.data.Order3</class>        
+        <class>org.granite.test.tide.data.LineItem</class>        
+        <class>org.granite.test.tide.data.Contact5</class>        
+        <class>org.granite.test.tide.data.Alias5</class>        
+        <class>org.granite.test.tide.data.Location5</class>        
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.max_fetch_depth" value="3"/>
+        </properties>
+    </persistence-unit>
+    
+    <persistence-unit name="hibernate4-merge-pu" transaction-type="RESOURCE_LOCAL">
+        <!--provider>org.hibernate.jpa.HibernatePersistenceProvider</provider-->
+        <class>org.granite.test.tide.data.AbstractEntity</class>        
+        <class>org.granite.test.tide.data.Entree</class>        
+        <class>org.granite.test.tide.data.EntreeObs</class>        
+        <class>org.granite.test.tide.hibernate4.data.Person10</class>        
+        <class>org.granite.test.tide.hibernate4.data.KeyValue</class>        
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>

@@ -4,22 +4,23 @@ description = 'GraniteDS Hibernate 4.x support library'
 
 dependencies {
 	
-	compile 'org.hibernate:hibernate-core:4.0.1.Final'
+	compile 'org.hibernate:hibernate-core:4.3.5.Final'
 	compile project(':granite-server-core')
 	
-	testCompile 'org.hibernate:hibernate-entitymanager:4.0.1.Final'
-	testCompile 'org.springframework:spring-orm:3.1.4.RELEASE'
-	testCompile 'org.springframework:spring-webmvc:3.1.4.RELEASE'
-	testCompile 'org.springframework:spring-test:3.1.4.RELEASE'
-	testCompile 'org.springframework.data:spring-data-jpa:1.4.1.RELEASE'
+	testCompile 'org.hibernate:hibernate-entitymanager:4.3.5.Final'
+	testCompile 'org.springframework:spring-orm:4.0.6.RELEASE'
+	testCompile 'org.springframework:spring-webmvc:4.0.6.RELEASE'
+	testCompile 'org.springframework:spring-test:4.0.6.RELEASE'
+	testCompile 'org.springframework.data:spring-data-jpa:1.6.1.RELEASE'
 	testCompile 'com.h2database:h2:1.3.173'
 	testCompile project(':granite-jmf').sourceSets.test.output		
 	testCompile project(':granite-server-core').sourceSets.test.output
 	testCompile(project(':granite-server-spring')) { transitive = false }
+	testCompile(project(':granite-client-java')) { transitive = false } 
 	
 	testRuntime 'cglib:cglib:3.0'
 	testRuntime 'org.ow2.asm:asm-util:4.0'
-	testRuntime 'org.springframework.security:spring-security-web:3.1.4.RELEASE'
+	testRuntime 'org.springframework.security:spring-security-web:3.2.4.RELEASE'
 }
 
 // Recompile abstract test classes from Spring module with Hibernate 3

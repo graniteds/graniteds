@@ -23,10 +23,12 @@ package org.granite.test.tide.hibernate4.data;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
 import javax.servlet.ServletContext;
 
 import org.granite.config.GraniteConfig;
@@ -37,16 +39,8 @@ import org.granite.config.flex.ServicesConfig;
 import org.granite.config.flex.ServletServicesConfig;
 import org.granite.context.SimpleGraniteContext;
 import org.granite.test.tide.MockServletContext;
-import org.granite.test.tide.data.AbstractEntity0;
-import org.granite.test.tide.data.Alias5;
-import org.granite.test.tide.data.Contact5;
-import org.granite.test.tide.data.LineItem;
-import org.granite.test.tide.data.Location5;
-import org.granite.test.tide.data.Order3;
-import org.hibernate.ejb.Ejb3Configuration;
 
 
-@SuppressWarnings("deprecation")
 public class TestHibernate4JPADataPublish extends AbstractTestHibernate4DataPublish {
 	
 	private EntityManagerFactory entityManagerFactory;
@@ -54,22 +48,16 @@ public class TestHibernate4JPADataPublish extends AbstractTestHibernate4DataPubl
 	private EntityTransaction tx;
 	
 	protected void initPersistence() throws Exception {
-		Ejb3Configuration configuration = new Ejb3Configuration()
-			.addAnnotatedClass(AbstractEntity0.class)
-			.addAnnotatedClass(Order3.class)
-			.addAnnotatedClass(LineItem.class)
-			.addAnnotatedClass(Contact5.class)
-			.addAnnotatedClass(Alias5.class)
-			.addAnnotatedClass(Location5.class)
-            .setProperty("hibernate.dialect", org.hibernate.dialect.H2Dialect.class.getName())
-            .setProperty("hibernate.hbm2ddl.auto", "create-drop")
-            .setProperty("hibernate.show_sql", "true")
-            .setProperty("hibernate.connection.driver_class", "org.h2.Driver")
-            .setProperty("hibernate.connection.url", "jdbc:h2:mem:test-publish")
-            .setProperty("hibernate.connection.username", "sa")
-            .setProperty("hibernate.connection.password", "");
+		Map<String, String> props = new HashMap<String, String>();
+		props.put("hibernate.dialect", org.hibernate.dialect.H2Dialect.class.getName());
+		props.put("hibernate.hbm2ddl.auto", "create-drop");
+		props.put("hibernate.show_sql", "true");
+		props.put("hibernate.connection.driver_class", org.h2.Driver.class.getName());
+		props.put("hibernate.connection.url", "jdbc:h2:mem:test-publish");
+		props.put("hibernate.connection.username", "sa");
+		props.put("hibernate.connection.password", "");
 		
-		entityManagerFactory = configuration.buildEntityManagerFactory();
+		entityManagerFactory = Persistence.createEntityManagerFactory("hibernate4-publish-pu", props);
 		
 		ServletContext servletContext = new MockServletContext();
         Configuration cfg = new ConfigurationImpl();

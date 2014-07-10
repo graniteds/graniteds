@@ -22,19 +22,20 @@
 package org.granite.test.tide.hibernate4.data;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
 
 import org.granite.hibernate4.ProxyFactory;
-import org.granite.test.tide.data.*;
 import org.granite.tide.data.JPAPersistenceAdapter;
 import org.granite.tide.data.TidePersistenceAdapter;
-import org.hibernate.ejb.Ejb3Configuration;
 import org.hibernate.proxy.pojo.javassist.JavassistLazyInitializer;
 
-@SuppressWarnings("deprecation")
+
 public class TestHibernate4JPAChangeSetApplier extends AbstractTestChangeSetApplier {
 	
 	private EntityManagerFactory entityManagerFactory;
@@ -43,47 +44,16 @@ public class TestHibernate4JPAChangeSetApplier extends AbstractTestChangeSetAppl
 	
 	@Override
 	protected void initPersistence() {
-		Ejb3Configuration configuration = new Ejb3Configuration()
-			.addAnnotatedClass(AbstractEntity.class)
-			.addAnnotatedClass(Address.class)
-			.addAnnotatedClass(Contact1.class)
-			.addAnnotatedClass(Country.class)
-			.addAnnotatedClass(Person1.class)
-			.addAnnotatedClass(Phone.class)
-			.addAnnotatedClass(Contact2.class)
-			.addAnnotatedClass(Person2.class)
-			.addAnnotatedClass(Phone2.class)
-			.addAnnotatedClass(Classification.class)
-			.addAnnotatedClass(OrderRepo.class)
-			.addAnnotatedClass(Order.class)
-			.addAnnotatedClass(LineItemBag.class)
-			.addAnnotatedClass(LineItemList.class)
-			.addAnnotatedClass(Order2.class)
-			.addAnnotatedClass(LineItemBag2.class)
-			.addAnnotatedClass(LineItemList2.class)
-			.addAnnotatedClass(AbstractEntitySoftDelete.class)
-			.addAnnotatedClass(AddressSoftDelete.class)
-			.addAnnotatedClass(ContactSoftDelete.class)
-			.addAnnotatedClass(CountrySoftDelete.class)
-			.addAnnotatedClass(PersonSoftDelete.class)
-			.addAnnotatedClass(PhoneSoftDelete.class)
-			.addAnnotatedClass(Patient.class)
-			.addAnnotatedClass(Medication.class)
-			.addAnnotatedClass(Prescription.class)
-			.addAnnotatedClass(Patient2.class)
-			.addAnnotatedClass(Visit2.class)
-			.addAnnotatedClass(Test2.class)
-			.addAnnotatedClass(VitalSignTest2.class)
-			.addAnnotatedClass(VitalSignObservation2.class)
-			.addAnnotatedClass(VitalSignTest3.class)
-			.addAnnotatedClass(VitalSignObservation3.class)
-			.setProperty("hibernate.dialect", org.hibernate.dialect.H2Dialect.class.getName())
-			.setProperty("hibernate.hbm2ddl.auto", "create-drop")
-			.setProperty("hibernate.connection.driver_class", org.h2.Driver.class.getName())
-			.setProperty("hibernate.connection.url", "jdbc:h2:mem:test-changeset")
-			.setProperty("hibernate.connection.username", "sa")
-			.setProperty("hibernate.connection.password", "");
-		entityManagerFactory = configuration.buildEntityManagerFactory();
+		Map<String, String> props = new HashMap<String, String>();
+		props.put("hibernate.dialect", org.hibernate.dialect.H2Dialect.class.getName());
+		props.put("hibernate.hbm2ddl.auto", "create-drop");
+		props.put("hibernate.show_sql", "true");
+		props.put("hibernate.connection.driver_class", org.h2.Driver.class.getName());
+		props.put("hibernate.connection.url", "jdbc:h2:mem:test-changesetapplier");
+		props.put("hibernate.connection.username", "sa");
+		props.put("hibernate.connection.password", "");
+		
+		entityManagerFactory = Persistence.createEntityManagerFactory("hibernate4-changesetapplier-pu", props);
 	}
 
 	@Override

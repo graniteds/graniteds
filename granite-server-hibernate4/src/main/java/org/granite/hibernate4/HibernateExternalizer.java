@@ -78,6 +78,7 @@ import org.hibernate.proxy.LazyInitializer;
 /**
  * @author Franck WOLFF
  */
+@SuppressWarnings("deprecation")
 public class HibernateExternalizer extends DefaultExternalizer {
 
 	private static final Logger log = Logger.getLogger(HibernateExternalizer.class);

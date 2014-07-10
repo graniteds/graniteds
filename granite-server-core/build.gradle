@@ -6,13 +6,13 @@ description = 'GraniteDS Core server library'
 dependencies {
 	compile 'javax.servlet:javax.servlet-api:3.0.1'				// Should use 2.5 but 3.0 required by ServletGraniteContext.BasicRequest
 
-	compile 'javassist:javassist:3.12.1.GA'
+	compile 'org.javassist:javassist:3.18.2-GA'
 	compile 'log4j:log4j:1.2.17'
 	compile 'org.slf4j:slf4j-api:1.7.0'
 
 	// Tide dependencies
 	compile 'org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.1_spec:1.0.1.Final'
-	compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+	compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
 	compile 'javax.jdo:jdo2-api:2.3-eb'
 	compile 'javax.jms:jms-api:1.1-rev-1'
 	compile 'javax.transaction:transaction-api:1.1-rev-1'

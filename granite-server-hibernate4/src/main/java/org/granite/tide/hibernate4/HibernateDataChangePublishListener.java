@@ -72,12 +72,17 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
 
 
     public void onPostInsert(PostInsertEvent event) {
+    	if (DataContext.get() == null)
+    		return;
     	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
     		return;
+    	
         DataContext.addUpdate(EntityUpdateType.PERSIST, event.getEntity());
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
+    	if (DataContext.get() == null)
+    		return;
     	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
     		return;
     	
@@ -99,8 +104,11 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     }
 
     public void onPostDelete(PostDeleteEvent event) {
+    	if (DataContext.get() == null)
+    		return;
     	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
     		return;
+    	
     	String uid = getUid(event.getPersister(), event.getEntity());
     	if (uid != null) {
 			ChangeRef deleteRef = new ChangeRef(event.getPersister().getEntityName(), uid, event.getId());
@@ -144,6 +152,9 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
 
     @SuppressWarnings("unchecked")
 	public void onPreUpdateCollection(PreCollectionUpdateEvent event) {
+    	if (DataContext.get() == null)
+    		return;
+    	
     	Object owner = event.getAffectedOwnerOrNull();
     	if (owner == null || owner.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
     		return;

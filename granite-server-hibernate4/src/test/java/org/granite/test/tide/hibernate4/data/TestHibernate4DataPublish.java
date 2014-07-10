@@ -30,19 +30,18 @@ import org.granite.test.tide.data.Contact5;
 import org.granite.test.tide.data.LineItem;
 import org.granite.test.tide.data.Location5;
 import org.granite.test.tide.data.Order3;
-import org.granite.tide.hibernate4.HibernateDataPublishListener;
+import org.granite.tide.hibernate4.Hibernate4Integrator;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.boot.registry.BootstrapServiceRegistryBuilder;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.event.service.spi.EventListenerRegistry;
-import org.hibernate.event.spi.EventType;
-import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.service.ServiceRegistry;
 
 
-@SuppressWarnings("deprecation")
 public class TestHibernate4DataPublish extends AbstractTestHibernate4DataPublish {
 	
 	private SessionFactory sessionFactory;
@@ -50,7 +49,7 @@ public class TestHibernate4DataPublish extends AbstractTestHibernate4DataPublish
 	private Transaction tx;
 	
 	protected void initPersistence() throws Exception {
-		AnnotationConfiguration configuration = new AnnotationConfiguration()
+		Configuration configuration = new Configuration()
 			.addAnnotatedClass(AbstractEntity0.class)
 			.addAnnotatedClass(Order3.class)
 			.addAnnotatedClass(LineItem.class)
@@ -65,12 +64,10 @@ public class TestHibernate4DataPublish extends AbstractTestHibernate4DataPublish
             .setProperty("hibernate.connection.username", "sa")
             .setProperty("hibernate.connection.password", "");
 		
-		sessionFactory = configuration.buildSessionFactory();
-		
-		EventListenerRegistry registry = ((SessionFactoryImpl)sessionFactory).getServiceRegistry().getService(EventListenerRegistry.class);
-		registry.appendListeners(EventType.POST_INSERT, new HibernateDataPublishListener());
-		registry.appendListeners(EventType.POST_UPDATE, new HibernateDataPublishListener());
-		registry.appendListeners(EventType.POST_DELETE, new HibernateDataPublishListener());
+		BootstrapServiceRegistryBuilder bsrb = new BootstrapServiceRegistryBuilder().with(new Hibernate4Integrator());
+		StandardServiceRegistryBuilder ssrb = new StandardServiceRegistryBuilder(bsrb.build()).applySettings(configuration.getProperties());
+		ServiceRegistry serviceRegistry = ssrb.build();
+		sessionFactory = configuration.buildSessionFactory(serviceRegistry);
 	}
 	
 	protected void open() {

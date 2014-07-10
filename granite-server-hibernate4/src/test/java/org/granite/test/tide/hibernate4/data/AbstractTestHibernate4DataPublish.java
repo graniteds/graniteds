@@ -160,11 +160,10 @@ public abstract class AbstractTestHibernate4DataPublish {
         
         Object[][] updates = DataContext.get().getUpdates();
         
-        Assert.assertEquals("2 updates", 2, updates.length);
+        // Was 2 (PERSIST+UPDATE) with Hibernate 4.0
+        Assert.assertEquals("1 update", 1, updates.length);
         Assert.assertEquals("PERSIST", updates[0][0]);
         Assert.assertEquals(i2, updates[0][1]);
-        Assert.assertEquals("UPDATE", updates[1][0]);
-        Assert.assertEquals(o, updates[1][1]);
     }
     
     @Test
@@ -200,13 +199,12 @@ public abstract class AbstractTestHibernate4DataPublish {
         
         Object[][] updates = DataContext.get().getUpdates();
         
-        Assert.assertEquals("3 updates", 3, updates.length);
+        // Was 2 (P+U+U) with Hibernate 4.0
+        Assert.assertEquals("2 updates", 2, updates.length);
         Assert.assertEquals("PERSIST", updates[0][0]);
         Assert.assertEquals(i2, updates[0][1]);
         Assert.assertEquals("UPDATE", updates[1][0]);
         Assert.assertEquals(i2, updates[1][1]);
-        Assert.assertEquals("UPDATE", updates[2][0]);
-        Assert.assertEquals(o, updates[2][1]);
     }
     
     @Test
@@ -291,12 +289,11 @@ public abstract class AbstractTestHibernate4DataPublish {
 		close();
 		
         Object[][] updates = DataContext.get().getUpdates();
-        
-        Assert.assertEquals("3 updates", 3, updates.length);
-        Assert.assertEquals("UPDATE", updates[0][0]);
-        Assert.assertEquals(c, updates[0][1]);
+
+        // Was 3 (U+R+R) with Hibernate 4.0
+        Assert.assertEquals("2 updates", 2, updates.length);
+        Assert.assertEquals("REMOVE", updates[0][0]);
         Assert.assertEquals("REMOVE", updates[1][0]);
-        Assert.assertEquals("REMOVE", updates[2][0]);
 	}
 	
 	@Test
@@ -334,7 +331,7 @@ public abstract class AbstractTestHibernate4DataPublish {
 		Long cId = c.getId();
 		close();
 		
-		DataContext.init(null, null, PublishMode.MANUAL);
+		DataContext.init(new DefaultDataDispatcher(null, "testTopic", DefaultDataTopicParams.class), PublishMode.MANUAL);
 		
 		open();
 		c = find(Contact5.class, cId);
@@ -348,10 +345,9 @@ public abstract class AbstractTestHibernate4DataPublish {
 		
         Object[][] updates = DataContext.get().getUpdates();
         
-        Assert.assertEquals("3 updates", 3, updates.length);
-        Assert.assertEquals("UPDATE", updates[0][0]);
-        Assert.assertEquals(c, updates[0][1]);
+        // Was 3 (U+R+R) with Hibernate 4.0
+        Assert.assertEquals("2 updates", 2, updates.length);
+        Assert.assertEquals("REMOVE", updates[0][0]);
         Assert.assertEquals("REMOVE", updates[1][0]);
-        Assert.assertEquals("REMOVE", updates[2][0]);
 	}
 }

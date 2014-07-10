@@ -35,6 +35,8 @@ import org.granite.tide.data.ChangeSet;
 import org.granite.tide.data.CollectionChange;
 import org.granite.tide.data.CollectionChanges;
 import org.granite.tide.data.DataContext;
+import org.granite.tide.data.DefaultDataTopicParams;
+import org.granite.tide.data.DataEnabled.PublishMode;
 import org.hibernate.collection.internal.PersistentSet;
 import org.junit.Assert;
 import org.junit.Test;
@@ -71,6 +73,7 @@ public abstract class AbstractTestChangeSetMerge {
 		GraniteConfig graniteConfig = new GraniteConfig(null, is, null, "test");
 		ServicesConfig servicesConfig = new ServicesConfig(null, null, false);
 		SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		DataContext.init("topic", DefaultDataTopicParams.class, PublishMode.MANUAL);
 		
 		Change change = new Change(Person1.class.getName(), personId, 0L, "P1");
 		change.getChanges().put("lastName", "toto");
@@ -97,6 +100,7 @@ public abstract class AbstractTestChangeSetMerge {
 		DataContext.remove();
 		
 		SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		DataContext.init("topic", DefaultDataTopicParams.class, PublishMode.MANUAL);
 		
 		Person1 p2 = new Person1(personId, 1L, "P1");
 		p2.setContacts(new PersistentSet(null));

@@ -39,6 +39,13 @@ public class HibernateDataChangeMergeListener extends EventListenerWrapper<Merge
 
 	@Override
 	public void onMerge(MergeEvent event) throws HibernateException {
+		if (event.getOriginal() instanceof ChangeSetProxy || event.getOriginal() instanceof ChangeSet) {
+			ChangeSet changeSet = event.getOriginal() instanceof ChangeSet ? (ChangeSet)event.getOriginal() : ((ChangeSetProxy)event.getOriginal()).getChangeSetProxyData();
+			Object result = new ChangeSetApplier(new HibernatePersistenceAdapter(event.getSession())).applyChanges(changeSet)[0];
+			event.setResult(result);
+			return;
+		}
+		
 		try {
 			wrappedListener.onMerge(event);
 		}
