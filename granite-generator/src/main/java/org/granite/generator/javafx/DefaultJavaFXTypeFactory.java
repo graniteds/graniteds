@@ -273,6 +273,11 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
     					sb.append(" extends ").append(bounds);
 				}
 			}
+			else if (ata instanceof ParameterizedType) {
+				sb.append(ClassUtil.classOfType(ata).getSimpleName());
+				imports.add(getClientType(ata, declaringClass, declaringTypes, propertyType).getQualifiedName());
+				sb.append(buildGenericTypeName((ParameterizedType)ata, declaringClass, declaringTypes, propertyType, imports));
+			}
 			else {
 				sb.append(ClassUtil.classOfType(ata).getSimpleName());
 				imports.add(getClientType(ata, declaringClass, declaringTypes, propertyType).getQualifiedName());

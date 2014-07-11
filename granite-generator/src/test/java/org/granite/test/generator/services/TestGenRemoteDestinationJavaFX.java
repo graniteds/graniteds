@@ -111,4 +111,31 @@ public class TestGenRemoteDestinationJavaFX {
 		Assert.assertTrue("Base contains import", base.indexOf("import org.granite.client.persistence.Lazy") >= 0);
 	}
 	
+	@Test
+	public void testTideServiceGDS1316() throws Exception {
+		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
+		config.setTide(true);
+		config.addFileSetClasses(MapService.class, Entity1.class);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, new MockListener()) {
+			@Override
+			public boolean isOutdated(JavaAs3Input input, GroovyTemplate template, File outputFile, boolean hasBaseTemplate) {
+				return true;
+			}
+		};
+		Generator generator = new Generator(config);
+		generator.add(provider);
+		JavaAs3Input input = new JavaAs3Input(MapService.class, 
+				new File(MapService.class.getClassLoader().getResource(EntityService.class.getName().replace('.', '/') + ".class").toURI()));
+		JavaAs3Output[] outputs = (JavaAs3Output[])generator.generate(input);
+		
+		Assert.assertEquals("Output", 2, outputs.length);
+		
+		String base = Util.readFile(outputs[0].getFile());
+		Assert.assertTrue("Base contains findMap", base.indexOf("public Future<Map<String, Object>> findMap(String arg0, TideResponder<Map<String, Object>> tideResponder)") >= 0);
+		Assert.assertTrue("Base contains findHashMap", base.indexOf("public Future<HashMap<String, Object>> findHashMap(String arg0, TideResponder<HashMap<String, Object>> tideResponder)") >= 0);
+		Assert.assertTrue("Base contains findListHashMap", base.indexOf("public Future<List<HashMap<String, Object>>> findListHashMap(String arg0, TideResponder<List<HashMap<String, Object>>> tideResponder)") >= 0);
+		Assert.assertTrue("Base contains findListMapEntity", base.indexOf("public Future<List<Map<String, Entity1>>> findListMapEntity(String arg0, TideResponder<List<Map<String, Entity1>>> tideResponder)") >= 0);
+		Assert.assertTrue("Base contains findListMapListEntity", base.indexOf("public Future<List<Map<String, List<Entity1>>>> findListMapListEntity(String arg0, TideResponder<List<Map<String, List<Entity1>>>> tideResponder)") >= 0);
+	}
+	
 }
