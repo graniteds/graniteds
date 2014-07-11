@@ -73,7 +73,11 @@ public class AbstractTestTideDataPublish extends AbstractTideTestCase {
 		Assert.assertNotNull(getLastMessage());
 		Object[] updates = (Object[])getLastMessage().getBody();
 		
-		Assert.assertEquals("Updates count", 1, updates.length);
+		// Different behaviours for H3.x/4.0/4.1/4.2 and H4.3+
+		if (getClass().getSimpleName().indexOf("Hibernate3") >= 0)
+			Assert.assertEquals("Updates count", 3, updates.length);
+		else
+			Assert.assertEquals("Updates count", 1, updates.length);
 		Assert.assertTrue("Meeting", ((Object[])updates[0])[1] instanceof Meeting);
     }
     
@@ -86,13 +90,21 @@ public class AbstractTestTideDataPublish extends AbstractTideTestCase {
         Object[][] resultUpdates = result.getUpdates();
         
         Assert.assertNotNull("Result updates", resultUpdates);
-		Assert.assertEquals("Result updates count", 1, resultUpdates.length);
+		// Different behaviours for H3.x/4.0/4.1/4.2 and H4.3+
+		if (getClass().getSimpleName().indexOf("Hibernate3") >= 0)
+			Assert.assertEquals("Result updates count", 3, resultUpdates.length);
+		else
+			Assert.assertEquals("Result updates count", 1, resultUpdates.length);
 		Assert.assertTrue("Meeting", resultUpdates[0][1] instanceof Meeting);
         
 		Assert.assertNotNull(getLastMessage());
 		Object[] publishedUpdates = (Object[])getLastMessage().getBody();
 		
-		Assert.assertEquals("Published updates count", 1, publishedUpdates.length);
+		// Different behaviours for H3.x/4.0/4.1/4.2 and H4.3+
+		if (getClass().getSimpleName().indexOf("Hibernate3") >= 0)
+			Assert.assertEquals("Published updates count", 3, publishedUpdates.length);
+		else
+			Assert.assertEquals("Published updates count", 1, publishedUpdates.length);
 		Assert.assertTrue("Meeting", ((Object[])publishedUpdates[0])[1] instanceof Meeting);
     }
 }
