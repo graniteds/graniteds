@@ -45,8 +45,10 @@ import org.granite.tide.data.DataContext.EntityUpdateType;
 import org.granite.tide.data.ExcludeFromDataPublish;
 import org.granite.tide.data.Utils;
 import org.hibernate.HibernateException;
+import org.hibernate.Session;
 import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.engine.spi.CollectionEntry;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.internal.DefaultFlushEntityEventListener;
 import org.hibernate.event.spi.FlushEntityEvent;
 import org.hibernate.event.spi.FlushEntityEventListener;
@@ -87,18 +89,18 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     		return;
     	
         if (event.getDirtyProperties() != null && event.getDirtyProperties().length > 0) {
-        	Change change = getChange(event.getPersister(), event.getPersister().getEntityName(), event.getId(), event.getEntity());
-        	if (change != null) {
+        	Object change = getChange(event.getPersister(), event.getSession(), event.getPersister().getEntityName(), event.getId(), event.getEntity());
+        	if (change instanceof Change) {
         		for (int i = 0; i < event.getDirtyProperties().length; i++) {
         			int pidx = event.getDirtyProperties()[i];
         			String pname = event.getPersister().getPropertyNames()[pidx];
         			if (AnnotationUtils.isAnnotatedWith(event.getEntity(), pname, ExcludeFromDataPublish.class))
         				continue;
         			
-    				change.getChanges().put(pname, event.getState()[pidx]);
+    				((Change)change).getChanges().put(pname, event.getState()[pidx]);
         		}
         	}
-        	else
+        	else if (change == null)
         		DataContext.addUpdate(EntityUpdateType.UPDATE, event.getEntity());
         }
     }
@@ -118,27 +120,34 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     		DataContext.addUpdate(EntityUpdateType.REMOVE, event.getEntity());
     }
     
-    private static Change getChange(EntityPersister persister, String entityName, Serializable id, Object entity) {
+    private static Object getChange(EntityPersister persister, Session session, String entityName, Serializable id, Object entity) {
     	Number version = (Number)persister.getVersion(entity);
     	String uid = getUid(persister, entity);
     	if (uid == null)
     		return null;
     	
-		Change change = null;
+		Object change = null;
     	for (EntityUpdate du : DataContext.get().getDataUpdates()) {
-    		if (du.type.equals(EntityUpdateType.UPDATE.name()) 
-    				&& ((Change)du.entity).getClassName().equals(entityName)
-    	    		&& ((Change)du.entity).getId().equals(id)) {
-    			change = (Change)du.entity;
-    			break;
+    		if (du.entity instanceof Change) {
+	    		if (du.type == EntityUpdateType.UPDATE
+	    				&& ((Change)du.entity).getClassName().equals(entityName)
+	    	    		&& ((Change)du.entity).getId().equals(id)) {
+	    			change = (Change)du.entity;
+	    			break;
+	    		}
+    		}
+    		else if (du.entity.getClass().getName().equals(entityName)
+					&& id.equals(persister.getIdentifier(entity, (SessionImplementor)session))) {
+				change = du.entity;
+				break;
     		}
     	}
     	if (change == null) {
     		change = new Change(entityName, id, version, uid);
     		DataContext.addUpdate(EntityUpdateType.UPDATE, change, 1);
     	}
-    	else
-    		change.updateVersion(version);
+    	else if (change instanceof Change)
+    		((Change)change).updateVersion(version);
 		return change;
     }
 
@@ -165,8 +174,8 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
 		if (AnnotationUtils.isAnnotatedWith(owner, propertyName, ExcludeFromDataPublish.class))
 			return;
     	
-    	Change change = getChange(collectionEntry.getLoadedPersister().getOwnerEntityPersister(), event.getAffectedOwnerEntityName(), event.getAffectedOwnerIdOrNull(), owner);
-    	if (change == null)
+    	Object change = getChange(collectionEntry.getLoadedPersister().getOwnerEntityPersister(), event.getSession(), event.getAffectedOwnerEntityName(), event.getAffectedOwnerIdOrNull(), owner);
+    	if (change == null || !(change instanceof Change))
     		return;
     	
     	PersistentCollection newColl = event.getCollection();
@@ -217,7 +226,7 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     		for (Object[] obj : updated)
     			collChanges[idx++] = new CollectionChange(0, obj[0], obj[1]);
     		
-    		change.addCollectionChanges(propertyName, collChanges);
+    		((Change)change).addCollectionChanges(propertyName, collChanges);
     	}
     	else if (oldColl != null && newColl instanceof List<?>) {
     		List<?> oldSnapshot = (List<?>)oldColl;
@@ -230,7 +239,7 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     		for (Object[] obj : ops)
     			collChanges[idx++] = new CollectionChange((Integer)obj[0], obj[1], obj[2]);
     		
-    		change.addCollectionChanges(propertyName, collChanges);
+    		((Change)change).addCollectionChanges(propertyName, collChanges);
     	}
     	else if (oldColl != null && newColl instanceof Collection<?>) {
     		Map<?, ?> oldSnapshot = (Map<?, ?>)oldColl;
@@ -251,7 +260,7 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     		for (Object obj : removed)
     			collChanges[idx++] = new CollectionChange(-1, null, obj);
     		
-    		change.addCollectionChanges(propertyName, collChanges);
+    		((Change)change).addCollectionChanges(propertyName, collChanges);
     	}
     	else if (oldColl != null && newColl instanceof Map<?, ?>) {
     		Map<?, ?> oldSnapshot = (Map<?, ?>)oldColl;
@@ -272,7 +281,7 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     		for (Entry<?, ?> me : removed)
     			collChanges[idx++] = new CollectionChange(-1, me.getKey(), me.getValue());
     		
-    		change.addCollectionChanges(propertyName, collChanges);
+    		((Change)change).addCollectionChanges(propertyName, collChanges);
     	}
     }
 
