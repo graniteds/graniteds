@@ -50,10 +50,12 @@ import org.granite.client.tide.Context;
 import org.granite.client.tide.ContextAware;
 import org.granite.client.tide.NameAware;
 import org.granite.client.tide.data.EntityManager.UpdateKind;
+import org.granite.client.tide.data.impl.ChangeEntity;
 import org.granite.client.tide.data.impl.ChangeEntityRef;
 import org.granite.client.tide.data.spi.MergeContext;
 import org.granite.client.tide.server.ServerSession;
 import org.granite.logging.Logger;
+import org.granite.tide.data.Change;
 import org.granite.tide.data.ChangeRef;
 
 /**
@@ -242,6 +244,8 @@ public class DataObserver implements ContextAware, NameAware {
 	        					entity = serverSession.getAliasRegistry().getAliasForType((String)entity);
 	        				else if (entity instanceof ChangeRef)
 	        					entity = new ChangeEntityRef(entity, serverSession.getAliasRegistry());
+	        				else if (entity instanceof Change)
+	        					entity = new ChangeEntity((Change)entity, serverSession.getAliasRegistry());
 				        	upds.add(new EntityManager.Update(UpdateKind.forName(updateType), entity));
 				        }
 				        

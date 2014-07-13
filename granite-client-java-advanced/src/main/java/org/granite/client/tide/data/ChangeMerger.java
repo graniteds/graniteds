@@ -116,9 +116,9 @@ public class ChangeMerger implements DataMerger {
                 // Changes built locally must not be replaced merged
                 next = change;
             }
-
+            
             ChangeEntityRef changeEntityRef = new ChangeEntityRef(change, mergeContext.getServerSession().getAliasRegistry());
-
+            
             Object dest = mergeContext.getCachedObject(changeEntityRef);
             if (dest == null) {
                 // Entity not found locally : nothing to do, we can't apply incremental changes

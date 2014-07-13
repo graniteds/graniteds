@@ -383,7 +383,7 @@ public class EntityManagerImpl implements EntityManager {
         else if (object instanceof String) {
         	entity = entitiesByUid.get((String)object);
         }
-
+        
         if (entity != null)
             return entity;
         if (nullIfAbsent)
@@ -2144,11 +2144,13 @@ public class EntityManagerImpl implements EntityManager {
             internalMergeExternalData(mergeContext, merges, null, removals, persists);
         else if (!removals.isEmpty() || !persists.isEmpty())
             internalMergeExternalData(mergeContext, null, null, removals, persists);
-
+        
         for (Update update : updates) {
         	if (update.getEntity() instanceof String)
         		continue;
-            update.setEntity(getCachedObject(update.getEntity(), update.getKind() != UpdateKind.REMOVE));
+        	Object entity = getCachedObject(update.getEntity(), update.getKind() != UpdateKind.REMOVE);
+        	if (entity != null)
+        		update.setEntity(entity);
         }
     }
     
