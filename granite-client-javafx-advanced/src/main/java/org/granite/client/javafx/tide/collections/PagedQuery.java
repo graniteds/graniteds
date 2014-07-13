@@ -212,7 +212,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 	
 	public void firePageChange(TideRpcEvent event, int previousFirst, int previousLast, List<E> savedSnapshot) {
 		if (event instanceof TideResultEvent<?>)
-			fireItemsUpdated(0, Math.min(this.count, this.last)-this.first, savedSnapshot);
+			fireItemsUpdated(0, Math.min(this.count, this.last)-this.first, previousFirst, previousLast, savedSnapshot);
 		
 		pageChangeHelper.fireEvent(this, event);
 	}
@@ -226,13 +226,22 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 	    }
 	}
 	
-	public void fireItemsUpdated(final int from, final int to, final List<E> savedSnapshot) {
+	public void fireItemsUpdated(final int from, final int to, int previousFrom, int previousTo, final List<E> savedSnapshot) {
 		if (savedSnapshot != null) {
 			// Detect removals
 			final List<Integer> removals = new ArrayList<Integer>();
 			for (int i = 0; i < savedSnapshot.size(); i++) {
 				if (!getInternalWrappedList().contains(savedSnapshot.get(i)))
 					removals.add(i);
+			}
+			
+			// Detect additions
+			final List<Integer> adds = new ArrayList<Integer>();
+			if (from == previousFrom && to == previousTo) {
+				for (int i = 0; i < getInternalWrappedList().size(); i++) {
+					if (!savedSnapshot.contains(getInternalWrappedList().get(i)))
+						adds.add(i);
+				}
 			}
 			
 			// Detect permutations
@@ -266,6 +275,8 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 				public int getFrom() {
 					if (changeIndex < removals.size())
 						return first+removals.get(changeIndex);
+					if (changeIndex >= removals.size() && changeIndex < removals.size()+adds.size())
+						return first+adds.get(changeIndex);
 					if (perms != null)
 						return first+permutationStart;
 					return -1;
@@ -275,6 +286,8 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 				public int getTo() {
 					if (changeIndex < removals.size())
 						return first+removals.get(changeIndex);
+					if (changeIndex >= removals.size() && changeIndex < removals.size()+adds.size())
+						return first+adds.get(changeIndex);
 					if (perms != null)
 						return first+permutationStart+perms.length;
 					return -1;
@@ -284,23 +297,47 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 				public boolean wasUpdated() {
 					return false;
 				}
+
+				@Override
+				public boolean wasAdded() {
+					return changeIndex >= removals.size() && changeIndex < removals.size()+adds.size();
+				}
+				
+				@Override
+				public int getAddedSize() {
+					if (changeIndex >= removals.size() && changeIndex < removals.size()+adds.size())
+						return 1;
+					return -1;
+				}
+				
+				@Override
+				public List<E> getAddedSubList() {
+					if (changeIndex >= removals.size() && changeIndex < removals.size()+adds.size())
+						return internalWrappedList.subList(adds.get(changeIndex), adds.get(changeIndex)+1);
+					return Collections.emptyList();
+				}
 				
 				@Override
 				protected int[] getPermutation() {
-					if (changeIndex == removals.size())
+					if (changeIndex == removals.size()+adds.size())
 						return perms;
 					return EMPTY_PERMUTATION;
 				}
 			    
 			    @Override
 		        public int getPermutation(int i) {
-		            if (changeIndex != removals.size()) {
+		            if (changeIndex < removals.size()+adds.size()) {
 		                throw new IllegalStateException("Not a permutation change");
 		            }
 		            if (i-getFrom() >= 0 && i-getFrom() < perms.length)
 		            	return perms[i - getFrom()];
 		            return -1;
 		        }
+
+				@Override
+				public boolean wasRemoved() {
+					return changeIndex < removals.size();
+				}
 				
 				@Override
 				public List<E> getRemoved() {
@@ -312,7 +349,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 				@Override
 				public boolean next() {
 					changeIndex++;
-					return perms != null ? changeIndex <= removals.size() : changeIndex < removals.size();
+					return perms != null ? changeIndex <= removals.size()+adds.size() : changeIndex < removals.size()+adds.size();
 				}
 				
 				@Override
