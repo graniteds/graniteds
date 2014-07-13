@@ -264,7 +264,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
 	            return error;
 	        }
     	}
-
+    	
     	log.debug("Channel %s tried to publish a message to topic %s", fromClient, topicId);
     	ErrorMessage error = new ErrorMessage(message, null);
     	error.setFaultString("Server.Publish.Denied");
@@ -318,7 +318,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
         private Channel channel = null;
         private String topic = null;
         private javax.jms.Connection jmsConnection = null;
-        private javax.jms.Session jmsProducerSession = null;
+        private javax.jms.Session jmsSession = null;
         private javax.jms.MessageProducer jmsProducer = null;
         private Map<String, JMSConsumer> consumers = new HashMap<String, JMSConsumer>();
         private boolean useGlassFishNoExceptionListenerWorkaround = false;
@@ -335,7 +335,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
 					consumer.reset();
 				consumers.clear();
 				jmsConnection = null;
-				jmsProducerSession = null;
+				jmsSession = null;
 			}
         }
 
@@ -383,21 +383,21 @@ public class JMSServiceAdapter extends ServiceAdapter {
             	log.error(e, "Could not close JMS Producer for channel " + channel.getId());
             }
             finally {
+                for (JMSConsumer consumer : consumers.values()) {
+                	try {
+                		consumer.close();
+                	}
+                	catch (JMSException e) {
+                		log.error(e, "Could not close JMS Consumer " + consumer.subscriptionId + " for channel " + channel.getId());
+                	}
+                }
             	try {
-	                if (jmsProducerSession != null)
-	                    jmsProducerSession.close();
+	                if (jmsSession != null)
+	                    jmsSession.close();
 	            }
 	            catch (JMSException e) {
-	            	log.error(e, "Could not close JMS Producer Session for channel " + channel.getId());
+	            	log.error(e, "Could not close JMS Session for channel " + channel.getId());
 	            }
-            }
-            for (JMSConsumer consumer : consumers.values()) {
-            	try {
-            		consumer.close();
-            	}
-            	catch (JMSException e) {
-            		log.error(e, "Could not close JMS Consumer " + consumer.subscriptionId + " for channel " + channel.getId());
-            	}
             }
             try {
                 jmsConnection.stop();
@@ -424,9 +424,9 @@ public class JMSServiceAdapter extends ServiceAdapter {
             	int retryCount = failoverRetryCount;
             	do {
 	                try {
-	                	jmsProducer = jmsProducerSession.createProducer(getProducerDestination(topic != null ? topic : this.topic));
+	                	jmsProducer = jmsSession.createProducer(getProducerDestination(topic != null ? topic : this.topic));
 	                	if (retryCount < failoverRetryCount)	// We come from a failover, try to recover session
-	                		jmsProducerSession.recover();
+	                		jmsSession.recover();
 	                	break;
 	                }
 	                catch (Exception e) {
@@ -453,8 +453,8 @@ public class JMSServiceAdapter extends ServiceAdapter {
                 log.debug("Created JMS Producer for channel %s", channel.getId());
             }
             catch (JMSException e) {
-            	jmsProducerSession.close();
-            	jmsProducerSession = null;
+            	jmsSession.close();
+            	jmsSession = null;
             	throw e;
             }
         }
@@ -481,8 +481,8 @@ public class JMSServiceAdapter extends ServiceAdapter {
         public void internalSend(Map<String, Object> headers, Object msg, String messageId, String correlationId, long timestamp, long timeToLive) throws Exception {
             String topic = (String)headers.get(AsyncMessage.SUBTOPIC_HEADER);
                 
-            if (jmsProducerSession == null) {
-                jmsProducerSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
+            if (jmsSession == null) {
+                jmsSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
                 log.debug("Created JMS Producer Session for channel %s (transacted: %s, ack: %s)", channel.getId(), transactedSessions, acknowledgeMode);
             }
             
@@ -491,9 +491,9 @@ public class JMSServiceAdapter extends ServiceAdapter {
             
             javax.jms.Message jmsMessage = null;
             if (textMessages)
-                jmsMessage = jmsProducerSession.createTextMessage(msg.toString());
+                jmsMessage = jmsSession.createTextMessage(msg.toString());
             else
-                jmsMessage = jmsProducerSession.createObjectMessage((Serializable)msg);
+                jmsMessage = jmsSession.createObjectMessage((Serializable)msg);
 
             jmsMessage.setJMSMessageID(normalizeJMSMessageID(messageId));
             jmsMessage.setJMSCorrelationID(normalizeJMSMessageID(correlationId));
@@ -509,17 +509,17 @@ public class JMSServiceAdapter extends ServiceAdapter {
                     if (me.getValue() instanceof Integer)
                         jmsMessage.setJMSPriority((Integer) me.getValue());
                 }
-                else
+                else if (me.getValue() != null)
                     jmsMessage.setObjectProperty(me.getKey(), me.getValue());
             }
-
+            
             jmsProducer.send(jmsMessage);
             
             if (transactedSessions && !useGlassFishNoCommitWorkaround) {
             	// If we are in a container-managed transaction (data dispatch from an EJB interceptor for ex.), we should not commit the session
             	// but the behaviour is different between JBoss and GlassFish
             	try {
-            		jmsProducerSession.commit();
+            		jmsSession.commit();
             	}
             	catch (JMSException e) {
             		if (e.getMessage() != null && e.getMessage().startsWith("MQJMSRA_DS4001"))
@@ -586,7 +586,6 @@ public class JMSServiceAdapter extends ServiceAdapter {
         private class JMSConsumer implements MessageListener {
 
             private String subscriptionId = null;
-            private javax.jms.Session jmsConsumerSession = null;
             private javax.jms.MessageConsumer jmsConsumer = null;
             private boolean noLocal = false;
             private String selector = null;
@@ -609,10 +608,10 @@ public class JMSServiceAdapter extends ServiceAdapter {
             	
             	// Reconnect to the JMS provider in case no producer has already done it
             	JMSClientImpl.this.connect();
-                if (jmsConsumerSession == null) {
-                    jmsConsumerSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
+                if (jmsSession == null) {
+                    jmsSession = jmsConnection.createSession(transactedSessions, acknowledgeMode);
                     if (reconnected)
-                        jmsConsumerSession.recover();
+                        jmsSession.recover();
                     log.debug("Created JMS Consumer Session for channel %s (transacted: %s, ack: %s)", channel.getId(), transactedSessions, acknowledgeMode);
                 }
                 
@@ -624,7 +623,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                 	int retryCount = failoverRetryCount;
                 	do {
 		                try {
-		                	jmsConsumer = jmsConsumerSession.createConsumer(getConsumerDestination(topic), selector, noLocal);
+		                	jmsConsumer = jmsSession.createConsumer(getConsumerDestination(topic), selector, noLocal);
 		                	if (retryCount < failoverRetryCount)	// We come from a failover, try to recover session
 		                		reconnected = true;
 		                	break;
@@ -670,7 +669,6 @@ public class JMSServiceAdapter extends ServiceAdapter {
             
             public void reset() {
             	jmsConsumer = null;
-            	jmsConsumerSession = null;
             	
             	final TimerTask reconnectTask = new TimerTask() {
 					@Override
@@ -696,17 +694,9 @@ public class JMSServiceAdapter extends ServiceAdapter {
 				if (reconnectTimer != null)
 					reconnectTimer.cancel();
 				
-                try {
-	            	if (jmsConsumer != null) {
-	                    jmsConsumer.close();
-	                    jmsConsumer = null;
-	                }
-                }
-                finally {
-	                if (jmsConsumerSession != null) {
-	                    jmsConsumerSession.close();
-	                    jmsConsumerSession = null;
-	                }
+            	if (jmsConsumer != null) {
+                    jmsConsumer.close();
+                    jmsConsumer = null;
                 }
             }
             
@@ -719,7 +709,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                             message.acknowledge();
 
                         if (transactedSessions)
-                            jmsConsumerSession.commit();
+                            jmsSession.commit();
                     }
                     catch (JMSException e) {
                         log.error(e, "Could not ack/commit JMS onMessage");
@@ -807,7 +797,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                 catch (IOException e) {
                     if (transactedSessions) {
                         try {
-                            jmsConsumerSession.rollback();
+                            jmsSession.rollback();
                         }
                         catch (JMSException f) {
                             log.error("Could not rollback JMS session, messageId: %s", dmsg.getMessageId());
@@ -819,7 +809,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                 catch (JMSException e) {
                     if (transactedSessions) {
                         try {
-                            jmsConsumerSession.rollback();
+                            jmsSession.rollback();
                         }
                         catch (JMSException f) {
                             log.error("Could not rollback JMS session, messageId: %s", dmsg.getMessageId());
@@ -831,7 +821,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                 catch (MessageReceivingException e) {
                     if (transactedSessions) {
                         try {
-                            jmsConsumerSession.rollback();
+                            jmsSession.rollback();
                         }
                         catch (JMSException f) {
                             log.error("Could not rollback JMS session, messageId: %s", dmsg.getMessageId());
@@ -846,7 +836,7 @@ public class JMSServiceAdapter extends ServiceAdapter {
                         message.acknowledge();
 
                     if (transactedSessions && !useGlassFishNoCommitWorkaround)
-                        jmsConsumerSession.commit();
+                        jmsSession.commit();
                 }
                 catch (JMSException e) {
                     if (e.getMessage() != null && e.getMessage().startsWith("MQJMSRA_DS4001"))
