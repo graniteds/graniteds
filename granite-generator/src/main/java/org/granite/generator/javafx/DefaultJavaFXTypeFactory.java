@@ -177,10 +177,8 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
     	Set<String> imports = new HashSet<String>();
     	
     	Class<?> jClass = ClassUtil.classOfType(jType);
-    	String name = jClass.getSimpleName();
-    	if (jClass.isMemberClass())
-    		name = jClass.getEnclosingClass().getSimpleName() + '$' + jClass.getSimpleName();
-    	else if (jType instanceof ParameterizedType) {
+    	String name = getSimpleName(jClass);
+    	if (jType instanceof ParameterizedType) {
     		ParameterizedType type = (ParameterizedType)jType;
     		name += buildGenericTypeName(type, declaringClass, declaringTypes, propertyType, imports);
     	}
@@ -279,11 +277,18 @@ public class DefaultJavaFXTypeFactory implements As3TypeFactory {
 				sb.append(buildGenericTypeName((ParameterizedType)ata, declaringClass, declaringTypes, propertyType, imports));
 			}
 			else {
-				sb.append(ClassUtil.classOfType(ata).getSimpleName());
+				sb.append(getSimpleName(ClassUtil.classOfType(ata)));
 				imports.add(getClientType(ata, declaringClass, declaringTypes, propertyType).getQualifiedName());
 			}
 		}
 		sb.append(">");
 		return sb.toString();
+    }
+    
+    private static final String getSimpleName(Class<?> jClass) {
+    	String name = jClass.getSimpleName();
+    	if (jClass.isMemberClass())
+    		name = jClass.getEnclosingClass().getSimpleName() + '$' + jClass.getSimpleName();
+    	return name;
     }
 }
