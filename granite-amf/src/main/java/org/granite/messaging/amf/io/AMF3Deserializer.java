@@ -72,7 +72,6 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
 	private final byte[] buffer;
 	private int position;
 	private int size;
-	private boolean eof;
 	
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
@@ -86,7 +85,6 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
         this.buffer = new byte[capacity];
         this.position = 0;
         this.size = 0;
-        this.eof = false;
         
         this.storedStrings = new ArrayList<String>(64);
         this.storedObjects = new ArrayList<Object>(64);
@@ -585,11 +583,6 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
 	}
 
 	private void ensureAvailable0(int count) throws IOException {
-		if (eof) {
-			position = size = 0;
-			throw new EOFException();
-		}
-		
 		if (position > 0) {
 			size -= position;
 			System.arraycopy(buffer, position, buffer, 0, size);
@@ -598,10 +591,8 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
 		
 		do {
 			int read = in.read(buffer, size, buffer.length - size);
-			if (read == -1) {
-				eof = true;
+			if (read == -1)
 				throw new EOFException();
-			}
 			size += read;
 		}
 		while (size < count);
