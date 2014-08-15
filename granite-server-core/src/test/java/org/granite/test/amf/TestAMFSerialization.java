@@ -1777,12 +1777,17 @@ public class TestAMFSerialization implements AMF3Constants {
 	@Test
 	public void testAMFTuttyFrutty() throws IOException {
 		TuttyFrutty tf = new TuttyFrutty();
-		byte[] bytes = serialize(new TuttyFrutty());
-		Assert.assertEquals(AMF3_OBJECT, bytes[0]);
 		
-		Object o = deserialize(bytes);
-		Assert.assertTrue(o instanceof TuttyFrutty);
-		Assert.assertTrue(tf.equals(o));
+		for (int i = 0; i < 1024; i++) {
+			tf.property33 = tf.property33 + "a";
+			
+			byte[] bytes = serialize(tf);
+			Assert.assertEquals(AMF3_OBJECT, bytes[0]);
+			
+			Object o = deserialize(bytes);
+			Assert.assertTrue(o instanceof TuttyFrutty);
+			Assert.assertTrue(tf.equals(o));
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

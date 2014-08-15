@@ -209,11 +209,7 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
         	return "";
         
         String result;
-        if (lengthOrIndex <= size - position) {
-        	result = new String(buffer, position, lengthOrIndex, UTF8);
-        	position += lengthOrIndex;
-        }
-        else if (lengthOrIndex <= buffer.length) {
+        if (lengthOrIndex <= buffer.length) {
         	ensureAvailable(lengthOrIndex);
         	result = new String(buffer, position, lengthOrIndex, UTF8);
         	position += lengthOrIndex;
@@ -584,30 +580,21 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
     }
 	
 	private void ensureAvailable(int count) throws IOException {
-		// assert(count > 0);
 		if (size - position < count)
 			ensureAvailable0(count);
 	}
 
 	private void ensureAvailable0(int count) throws IOException {
-		final int left = size - position;
-		
-		// assert(left >= 0);
-		// assert(count > 0);
-		// assert(left < count);
-		
-		if (left > 0) {
-			if (left + count > buffer.length)
-				throw new IllegalArgumentException(Integer.toString(count));
-			System.arraycopy(buffer, position, buffer, 0, left);
-		}
-		else if (eof) {
+		if (eof) {
 			position = size = 0;
 			throw new EOFException();
 		}
 		
-		position = 0;
-		size = left;
+		if (position > 0) {
+			size -= position;
+			System.arraycopy(buffer, position, buffer, 0, size);
+			position = 0;
+		}
 		
 		do {
 			int read = in.read(buffer, size, buffer.length - size);
