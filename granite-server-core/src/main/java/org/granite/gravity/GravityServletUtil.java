@@ -91,7 +91,7 @@ public class GravityServletUtil {
 	public static Message[] deserialize(GravityInternal gravity, HttpServletRequest request) throws ClassNotFoundException, IOException {
 		InputStream is = request.getInputStream();
 		try {
-			return deserialize(gravity, request, request.getInputStream());
+			return deserialize(gravity, request, is);
 		}
 		finally {
 			is.close();
