@@ -582,7 +582,10 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
 			ensureAvailable0(count);
 	}
 
-	private void ensureAvailable0(int count) throws IOException {
+	private void ensureAvailable0(final int count) throws IOException {
+		if (count > buffer.length)
+			throw new IllegalArgumentException("Count=" + count + " cannot be larger than buffer.length=" + buffer.length);
+		
 		if (position > 0) {
 			size -= position;
 			System.arraycopy(buffer, position, buffer, 0, size);
@@ -591,8 +594,11 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
 		
 		do {
 			int read = in.read(buffer, size, buffer.length - size);
-			if (read == -1)
-				throw new EOFException();
+			if (read <= 0) {
+				if (read == -1)
+					throw new EOFException("Count not read " + count + " bytes from input stream");
+				throw new RuntimeException("Internal error: buffer.length=" + buffer.length + ", size=" + size + ", count=" + count);
+			}
 			size += read;
 		}
 		while (size < count);
