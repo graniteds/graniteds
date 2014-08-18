@@ -168,6 +168,11 @@ public class Subscription implements Serializable {
     }
 
 	@Override
+	public int hashCode() {
+		return (31 * getChannel().hashCode()) + getSubscriptionId().hashCode();
+	}
+
+	@Override
 	public String toString() {
 		return subscriptionId + ":" + subTopicId;
 	}

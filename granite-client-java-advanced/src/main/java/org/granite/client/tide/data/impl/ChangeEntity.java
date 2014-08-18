@@ -43,6 +43,8 @@ import org.granite.tide.data.Change;
  */
 public class ChangeEntity extends Change implements EntityRef {
 
+    private static final long serialVersionUID = 1L;
+
     public ChangeEntity(Change change, ClientAliasRegistry aliasRegistry) {
     	super(getTypeForAlias(aliasRegistry, change), change.getId(), change.getVersion(), change.getUid());
     	getChanges().putAll(change.getChanges());
