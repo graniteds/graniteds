@@ -64,8 +64,11 @@ import org.granite.client.messaging.ResultFaultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
 import org.granite.client.messaging.TopicAgent;
 import org.granite.client.messaging.TopicSubscriptionListener;
+import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.channel.ChannelBuilder;
 import org.granite.client.messaging.channel.ChannelFactory;
+import org.granite.client.messaging.channel.ChannelStatusListener;
+import org.granite.client.messaging.channel.ChannelStatusNotifier;
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.channel.RemotingChannel;
 import org.granite.client.messaging.channel.SessionAwareChannel;
@@ -432,6 +435,7 @@ public class ServerSession implements ContextAware {
 			transport.setStatusHandler(statusHandler);
 
         remotingChannel = channelFactory.newRemotingChannel("graniteamf", serverApp, 1);
+        setupChannel(remotingChannel);
 
 		sessionExpirationTimer = Executors.newSingleThreadScheduledExecutor();
 	}
@@ -456,7 +460,10 @@ public class ServerSession implements ContextAware {
 				channelFactory = null;
 			}
 	        
+			unsetupChannel(remotingChannel);
             remotingChannel = null;
+            for (Channel messagingChannel : messagingChannelsByType.values())
+            	unsetupChannel(messagingChannel);
 			messagingChannelsByType.clear();
             aliasRegistry = null;
 		}
@@ -521,6 +528,46 @@ public class ServerSession implements ContextAware {
 	public void setServiceFactory(ServiceFactory serviceFactory) {
 		this.serviceFactory = serviceFactory;
 	}
+	
+	private void setupChannel(Channel channel) {
+		channel.addListener(channelStatusBinder);
+		channel.bindStatus(channelStatusBinder);
+	}
+	
+	private void unsetupChannel(Channel channel) {
+		channel.removeListener(channelStatusBinder);
+		channel.unbindStatus(channelStatusBinder);
+	}
+	
+	private class ChannelStatusBinder implements ChannelStatusListener, ChannelStatusNotifier {
+		
+		private List<ChannelStatusListener> listeners = new ArrayList<ChannelStatusListener>();
+
+		@Override
+		public void addListener(ChannelStatusListener listener) {
+			listeners.add(listener);
+		}
+		
+		@Override
+		public void removeListener(ChannelStatusListener listener) {
+			listeners.remove(listener);
+		}
+		
+		@Override
+		public void pingedChanged(Channel channel, boolean pinged) {
+			for (ChannelStatusListener listener : listeners)
+				listener.pingedChanged(channel, pinged);
+		}
+		
+		@Override
+		public void authenticatedChanged(Channel channel, boolean authenticated) {
+			for (ChannelStatusListener listener : listeners)
+				listener.authenticatedChanged(channel, authenticated);
+		}
+		
+	}
+	
+	private ChannelStatusBinder channelStatusBinder = new ChannelStatusBinder();
 
     /**
      * Returns remote service for the internal destination
@@ -562,6 +609,7 @@ public class ServerSession implements ContextAware {
 
         messagingChannel = channelFactory.newMessagingChannel(channelType, channelType + "amf", serverApp);
         messagingChannel.setSessionId(sessionId);
+        setupChannel(messagingChannel);
         messagingChannelsByType.put(channelType, messagingChannel);
         return messagingChannel;
     }

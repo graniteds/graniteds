@@ -37,7 +37,7 @@ import org.granite.client.messaging.transport.TransportMessage;
  *
  * @author Franck WOLFF
  */
-public interface Channel {
+public interface Channel extends ChannelStatusNotifier {
 	
     static final String RECONNECT_INTERVAL_MS_KEY = "reconnect-interval-ms";
     static final String RECONNECT_MAX_ATTEMPTS_KEY = "reconnect-max-attempts";
@@ -180,4 +180,13 @@ public interface Channel {
      * @param message message cancelled
      */
 	void onCancelled(TransportMessage message);
+	
+	
+	public void bindStatus(ChannelStatusNotifier notifier);
+	
+	public void unbindStatus(ChannelStatusNotifier notifier);
+	
+	public void addListener(ChannelStatusListener listener);
+	
+	public void removeListener(ChannelStatusListener listener);
 }

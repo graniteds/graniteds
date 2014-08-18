@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,6 +72,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	protected final ConcurrentMap<String, Consumer> consumersMap = new ConcurrentHashMap<String, Consumer>();	
 	protected final AtomicReference<String> connectMessageId = new AtomicReference<String>(null);
 	protected final AtomicReference<ReconnectTimerTask> reconnectTimerTask = new AtomicReference<ReconnectTimerTask>();
+	protected final List<ChannelResponseListener> responseListeners = new ArrayList<ChannelResponseListener>();
 	
 	protected volatile long reconnectIntervalMillis = TimeUnit.SECONDS.toMillis(30L);
 	protected volatile long reconnectMaxAttempts = 60L;
@@ -150,6 +153,14 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		return consumersMap.remove(subscriptionId) != null;
 	}
 	
+	public void addListener(ChannelResponseListener listener) {
+		responseListeners.add(listener);
+	}
+	
+	public void removeListener(ChannelResponseListener listener) {
+		responseListeners.remove(listener);
+	}
+	
     @Override
     public ResponseMessageFuture logout(boolean sendLogout, ResponseListener... listeners) {
 		log.info("Logging out channel %s", clientId);
@@ -226,15 +237,14 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
                                 else {
                                     log.debug("Channel %s pinged clientId %s", id, clientId);
                                 	clientId = result.getClientId();
-            						pinged = true;
+                                	setPinged(true);
             						
             						authenticate(null);
                                 }
                                 break;
                                 
 							case LOGIN:
-								authenticating = false;
-								authenticated = true;
+								setAuthenticated(true);
 								break;
 							
 							case SUBSCRIBE:
@@ -259,15 +269,13 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 							
 							case PING:
 								clientId = null;
-								pinged = false;
+								setPinged(false);
 								
-								authenticating = false;
-								authenticated = false;
+								setAuthenticated(false);
                                 break;
                                 
 							case LOGIN:
-								authenticating = false;
-								authenticated = false;
+								setAuthenticated(false);
 								break;
 							
 							default:
@@ -286,9 +294,12 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 						current = next;
 					}
 					
+					for (ChannelResponseListener listener : responseListeners)
+						listener.onResponse(response);
+					
 					return response;
 				}
-
+				
                 if (messages.length == 0)
                     log.debug("Channel %s: received empty message array !!", clientId);
 				
@@ -348,9 +359,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	protected void scheduleReconnectTimerTask() {
         log.info("Channel %s schedule reconnect", getId());
         
-        pinged = false;
-        authenticating = false;
-        authenticated = false;
+        setPinged(false);
+        setAuthenticated(false);
         
 		ReconnectTimerTask task = new ReconnectTimerTask();
 		

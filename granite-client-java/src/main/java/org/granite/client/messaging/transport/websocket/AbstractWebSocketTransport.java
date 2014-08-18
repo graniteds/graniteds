@@ -177,8 +177,10 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
         boolean waitBeforeReconnect = !(closeCode == CLOSE_NORMAL && message != null && message.startsWith("Idle"));
 
         // Mark the connection as closed, the channel should reopen a connection if needed for the next message
-        ((TransportData<?>)channel.getTransportData()).disconnect();
-        channel.setTransportData(null);
+        if (channel.getTransportData() != null) {
+        	((TransportData<?>)channel.getTransportData()).disconnect();
+        	channel.setTransportData(null);
+        }
         
         if (stopping || !isStarted()) {
             log.debug("Websocket connection marked as disconnected");

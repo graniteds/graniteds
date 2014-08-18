@@ -23,6 +23,7 @@ package org.granite.client.messaging.channel;
 
 import org.granite.client.messaging.Consumer;
 import org.granite.client.messaging.ResponseListener;
+import org.granite.client.messaging.messages.ResponseMessage;
 
 /**
  * SPI for messaging channels
@@ -62,4 +63,22 @@ public interface MessagingChannel extends Channel, SessionAwareChannel {
      * @return future that will be triggered when the channel is disconnected
      */
 	public ResponseMessageFuture disconnect(ResponseListener...listeners);
+	
+	/**
+	 * Register a listener which will be notified of messages occuring on the channel
+	 * @param listener listener
+	 */
+	public void addListener(ChannelResponseListener listener);
+	
+	/**
+	 * Unregister a listener which will be notified of messages occuring on the channel
+	 * @param listener listener
+	 */
+	public void removeListener(ChannelResponseListener listener);
+	
+	
+	public static interface ChannelResponseListener {
+		
+		public void onResponse(ResponseMessage responseMessage);
+	}
 }

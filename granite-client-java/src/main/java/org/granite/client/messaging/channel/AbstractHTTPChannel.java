@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
@@ -74,9 +76,10 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	private Semaphore connections;
 	private Timer timer = null;
 	
-	protected volatile boolean pinged = false;
-	protected volatile boolean authenticated = false;
-	protected volatile boolean authenticating = false;
+	private List<ChannelStatusListener> statusListeners = new ArrayList<ChannelStatusListener>(); 
+	private volatile boolean pinged = false;
+	private volatile boolean authenticated = false;
+	private volatile boolean authenticating = false;
 	protected volatile int maxConcurrentRequests;
 	protected volatile long defaultTimeToLive = DEFAULT_TIME_TO_LIVE; // 1 mn.
 	
@@ -471,7 +474,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 					break;
 				case FAULT:
 				    FaultMessage faultMessage = (FaultMessage)response;
-				    if (isAuthenticated() && faultMessage.getCode() == FaultMessage.Code.NOT_LOGGED_IN || faultMessage.getCode() == FaultMessage.Code.SESSION_EXPIRED) {
+				    if (isAuthenticated() && (faultMessage.getCode() == FaultMessage.Code.NOT_LOGGED_IN || faultMessage.getCode() == FaultMessage.Code.SESSION_EXPIRED)) {
 				        authenticated = false;
 				        credentials = null;
 				    }
@@ -584,5 +587,57 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 					connections.release();
 			}
 		}
-	} 
+	}
+	
+	
+	public void addListener(ChannelStatusListener listener) {
+		statusListeners.add(listener);
+	}
+	
+	public void removeListener(ChannelStatusListener listener) {
+		statusListeners.remove(listener);
+	}
+	
+	protected void setPinged(boolean pinged) {
+		if (this.pinged == pinged)
+			return;
+		this.pinged = pinged;
+		for (ChannelStatusListener listener : statusListeners)
+			listener.pingedChanged(this, pinged);
+	}
+	
+	protected void setAuthenticated(boolean authenticated) {
+		if (!this.authenticating && this.authenticated == authenticated)
+			return;
+		this.authenticating = false;
+		this.authenticated = authenticated;
+		for (ChannelStatusListener listener : statusListeners)
+			listener.authenticatedChanged(this, authenticated);
+	}
+	
+	public void bindStatus(ChannelStatusNotifier notifier) {
+		notifier.addListener(statusListener);
+	}
+	
+	public void unbindStatus(ChannelStatusNotifier notifier) {
+		notifier.removeListener(statusListener);
+	}	
+	
+	private ChannelStatusListener statusListener = new ChannelStatusListener() {
+
+		@Override
+		public void pingedChanged(Channel channel, boolean pinged) {
+			if (channel == AbstractHTTPChannel.this)
+				return;
+			AbstractHTTPChannel.this.pinged = pinged;
+		}
+		
+		@Override
+		public void authenticatedChanged(Channel channel, boolean authenticated) {
+			if (channel == AbstractHTTPChannel.this)
+				return;
+			AbstractHTTPChannel.this.authenticating = false;
+			AbstractHTTPChannel.this.authenticated = authenticated;
+		}		
+	};
 }
