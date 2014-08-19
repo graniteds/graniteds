@@ -38,8 +38,6 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.util.HashMap;
 
-import javax.servlet.ServletException;
-
 import org.granite.context.AMFContextImpl;
 import org.granite.context.GraniteContext;
 import org.granite.context.SimpleGraniteContext;
@@ -103,9 +101,6 @@ public class UdpReceiverImpl implements UdpReceiver {
 	        int sent = udpChannel.write(os.buffer(), 0, os.size());
 	        if (sent != os.size())
 	        	log.debug("Partial data sent: %d of %d", sent, os.size());
-        }
-        catch (ServletException e) {
-        	throw new MessageReceivingException(message, e);
         }
         catch (IOException e) {
         	throw new MessageReceivingException(message, e);
