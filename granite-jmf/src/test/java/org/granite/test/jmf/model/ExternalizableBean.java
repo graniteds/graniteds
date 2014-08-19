@@ -371,4 +371,10 @@ public class ExternalizableBean implements Externalizable {
 			(otherBeanValue == null ? b.otherBeanValue == null : otherBeanValue.equals(b.otherBeanValue))
 		);
 	}
+
+	@Override
+	public int hashCode() {
+		// Makes compiler happy (unused)...
+		return super.hashCode();
+	}
 }

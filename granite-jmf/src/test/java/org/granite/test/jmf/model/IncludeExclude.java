@@ -70,4 +70,10 @@ public class IncludeExclude implements Serializable {
 		
 		return normal == b.normal;
 	}
+
+	@Override
+	public int hashCode() {
+		// Makes compiler happy (unused)...
+		return super.hashCode();
+	}
 }
