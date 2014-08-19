@@ -21,7 +21,6 @@
  */
 package org.granite.test.jmf.model;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 public class BeanWriteReplace implements Serializable {
@@ -38,7 +37,7 @@ public class BeanWriteReplace implements Serializable {
 		return value;
 	}
 	
-	private Object writeReplace() throws IOException {
+	private Object writeReplace() {
 		return new BeanReadResolve(value);
 	}
 }

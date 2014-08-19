@@ -242,7 +242,7 @@ public class TestHibernate4DataMerge {
 		
 		close();
 
-		CodecRegistry serverCodecRegistry = new DefaultCodecRegistry(Arrays.asList((ExtendedObjectCodec)new EntityCodec(), (ExtendedObjectCodec)new PersistentBagCodec()));
+		CodecRegistry serverCodecRegistry = new DefaultCodecRegistry(Arrays.asList(new EntityCodec(), new PersistentBagCodec()));
 		SharedContext serverSharedContext = new DefaultSharedContext(serverCodecRegistry);
 		CodecRegistry clientCodecRegistry = new DefaultCodecRegistry(Arrays.asList((ExtendedObjectCodec)new ClientEntityCodec()));		
 		ClientSharedContext clientSharedContext = new DefaultClientSharedContext(clientCodecRegistry, new ArrayList<String>(), null, new ClientAliasRegistry());

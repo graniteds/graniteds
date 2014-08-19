@@ -46,18 +46,20 @@ import android.widget.BaseAdapter;
  */
 public abstract class BasePersistentListAdapter<E> extends BaseAdapter {
 
-    private ChangeListener listChangeListener = new ChangeListener() {
+    @SuppressWarnings("rawtypes")
+	private ChangeListener listChangeListener = new ChangeListener() {
 		@Override
 		public void changed(PersistentCollection coll) {
 			notifyDataSetChanged();
 		}
     };
 
-    public BasePersistentListAdapter(List<E> list) {
+    @SuppressWarnings("unchecked")
+	public BasePersistentListAdapter(List<E> list) {
         super();
 
         if (list instanceof PersistentCollection)
-        	((PersistentCollection)list).addListener(listChangeListener);
+        	((PersistentCollection<?>)list).addListener(listChangeListener);
     }
 
     @Override

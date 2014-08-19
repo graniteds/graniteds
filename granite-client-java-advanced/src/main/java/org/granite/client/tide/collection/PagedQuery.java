@@ -154,11 +154,10 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 	protected F cloneFilter() {
 		if (filter != null)
 			return filter;
-		else {
-			// Copy filter map to avoid concurrent modifications
-			synchronized (internalFilterMap) {
-				return (F)new HashMap<String, Object>(internalFilterMap);
-			}
+
+		// Copy filter map to avoid concurrent modifications
+		synchronized (internalFilterMap) {
+			return (F)new HashMap<String, Object>(internalFilterMap);
 		}
 	}
 	

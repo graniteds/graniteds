@@ -100,7 +100,7 @@ public class Reflection {
 	@SuppressWarnings("unchecked")
 	public <T> T newInstance(Class<T> cls)
 		throws InstantiationException, IllegalAccessException, IllegalArgumentException,
-		InvocationTargetException, SecurityException, NoSuchMethodException {
+		InvocationTargetException, SecurityException {
 		
 		ClassDescriptor desc = descriptorCache.get(cls);
 		if (desc != null)
@@ -118,7 +118,7 @@ public class Reflection {
 	@SuppressWarnings("unchecked")
 	public <T> T newInstance(String className)
 		throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException,
-		InvocationTargetException, SecurityException, NoSuchMethodException {
+		InvocationTargetException, SecurityException {
 		
 		return newInstance((Class<T>)loadClass(className));
 	}

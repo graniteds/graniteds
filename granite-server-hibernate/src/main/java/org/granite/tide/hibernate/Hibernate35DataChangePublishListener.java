@@ -120,7 +120,8 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
     		DataContext.addUpdate(EntityUpdateType.REMOVE, event.getEntity());
     }
     
-    private static Object getChange(EntityPersister persister, String entityName, Serializable id, Object entity) {
+    @SuppressWarnings("deprecation")
+	private static Object getChange(EntityPersister persister, String entityName, Serializable id, Object entity) {
     	Number version = (Number)persister.getVersion(entity, EntityMode.POJO);
     	String uid = getUid(persister, entity);
     	if (uid == null)
@@ -132,7 +133,7 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
 	    		if (du.type == EntityUpdateType.UPDATE
 	    				&& ((Change)du.entity).getClassName().equals(entityName)
 	    	    		&& ((Change)du.entity).getId().equals(id)) {
-	    			change = (Change)du.entity;
+	    			change = du.entity;
 	    			break;
 	    		}
     		}

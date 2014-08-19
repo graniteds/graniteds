@@ -21,7 +21,6 @@
  */
 package org.granite.test.jmf.model;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
@@ -52,7 +51,7 @@ public class BeanReadResolve implements Serializable {
 		};
 	}
 	
-	private Object readResolve() throws IOException {
+	private Object readResolve() {
 		return new BeanWriteReplace(value);
 	}
 }

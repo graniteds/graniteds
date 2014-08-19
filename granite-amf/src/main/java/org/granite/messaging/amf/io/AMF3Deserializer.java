@@ -170,7 +170,7 @@ public class AMF3Deserializer implements ObjectInput, AMF3Constants {
         ensureAvailable(1);
         byte b = buffer[position++];
         if (b >= 0)
-        	return (int)b;
+        	return b;
         
         ensureAvailable(1);
         int result = (b & 0x7F) << 7; 

@@ -132,7 +132,7 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
 	    		if (du.type == EntityUpdateType.UPDATE
 	    				&& ((Change)du.entity).getClassName().equals(entityName)
 	    	    		&& ((Change)du.entity).getId().equals(id)) {
-	    			change = (Change)du.entity;
+	    			change = du.entity;
 	    			break;
 	    		}
     		}

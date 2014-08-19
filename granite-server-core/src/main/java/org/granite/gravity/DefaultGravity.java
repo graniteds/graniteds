@@ -1106,14 +1106,13 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
                         return acknowledgeMessage;
                     }
-                    else {
-                        ErrorMessage errorMessage = new ErrorMessage(message, true);
-                        errorMessage.setFaultCode("Server.Messaging.InvalidReply");
-                        errorMessage.setFaultString("Unknown correlationId " + message.getCorrelationId());
-                        errorMessage.setDestination(message.getDestination());
 
-                        return errorMessage;
-                    }
+                    ErrorMessage errorMessage = new ErrorMessage(message, true);
+                    errorMessage.setFaultCode("Server.Messaging.InvalidReply");
+                    errorMessage.setFaultString("Unknown correlationId " + message.getCorrelationId());
+                    errorMessage.setDestination(message.getDestination());
+
+                    return errorMessage;
                 }
 
 		        ServiceAdapter adapter = adapterFactory.getServiceAdapter(message);

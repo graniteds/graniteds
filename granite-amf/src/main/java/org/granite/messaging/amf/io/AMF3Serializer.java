@@ -522,7 +522,7 @@ public class AMF3Serializer implements ObjectOutput, AMF3Constants {
         	writeAMF3UnsignedIntegerData(0x01);
             
             ensureCapacity(8);
-            position = writeLongData(buffer, position, Double.doubleToRawLongBits((double)date.getTime()));
+            position = writeLongData(buffer, position, Double.doubleToRawLongBits(date.getTime()));
         }
     }
     

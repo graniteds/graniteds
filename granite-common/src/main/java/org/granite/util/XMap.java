@@ -445,7 +445,7 @@ public class XMap implements Serializable {
 	 * @param in the ObjectInputStream from which to read this XMap.
 	 * @throws IOException if readind fails.
 	 */
-	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+	private void readObject(ObjectInputStream in) throws IOException {
 		int size = in.readInt();
 		if (size > 0) {
 			byte[] content = new byte[size];

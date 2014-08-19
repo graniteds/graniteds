@@ -49,37 +49,41 @@ public abstract class BaseExpandablePersistentListAdapter<E> extends BaseExpanda
 
     private final List<E> list;
     
-    private ChangeListener listChangeListener = new ChangeListener() {
+    @SuppressWarnings("rawtypes")
+	private ChangeListener listChangeListener = new ChangeListener() {
 		@Override
 		public void changed(PersistentCollection coll) {
 			notifyDataSetChanged();
 		}
     };
 
-    public BaseExpandablePersistentListAdapter(List<E> list) {
+    @SuppressWarnings("unchecked")
+	public BaseExpandablePersistentListAdapter(List<E> list) {
         super();
         
         this.list = list;
         if (list instanceof PersistentCollection)
-        	((PersistentCollection)list).addListener(listChangeListener);
+        	((PersistentCollection<?>)list).addListener(listChangeListener);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
 	public void onGroupCollapsed(int groupPosition) {
 		super.onGroupCollapsed(groupPosition);
 		
 		Object group = getGroup(groupPosition);
 		if (group instanceof PersistentCollection)
-        	((PersistentCollection)group).removeListener(listChangeListener);
+        	((PersistentCollection<?>)group).removeListener(listChangeListener);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void onGroupExpanded(int groupPosition) {
 		super.onGroupExpanded(groupPosition);
 		
 		Object group = getGroup(groupPosition);
 		if (group instanceof PersistentCollection)
-        	((PersistentCollection)group).addListener(listChangeListener);
+        	((PersistentCollection<?>)group).addListener(listChangeListener);
 	}
 
 	@Override

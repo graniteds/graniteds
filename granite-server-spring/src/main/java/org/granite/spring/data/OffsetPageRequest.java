@@ -63,8 +63,7 @@ public class OffsetPageRequest implements Pageable {
 	public Pageable previousOrFirst() {
 		if (offset > pageSize)
 			return new OffsetPageRequest(offset-pageSize, pageSize, sort);
-		else
-			return new OffsetPageRequest(0, pageSize, sort);
+		return new OffsetPageRequest(0, pageSize, sort);
 	}
 	
 	public Pageable next() {

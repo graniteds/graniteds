@@ -279,7 +279,6 @@ public class DefaultCodecRegistry implements CodecRegistry {
 		return UNPARAMETERIZED_JMF_TYPES[parameterizedJmfType];
 	}
 	
-	@SuppressWarnings("unchecked")
 	protected List<StandardCodec<?>> getStandardCodecs() {
 		return Arrays.asList((StandardCodec<?>)
 			new NullCodecImpl(),
@@ -462,26 +461,26 @@ public class DefaultCodecRegistry implements CodecRegistry {
 	
 	public static final class Java8Ext {
 		
-		@SuppressWarnings("unchecked")
 		public static List<StandardCodec<?>> getStandardCodecs() {
+			List<StandardCodec<?>> codecs = new ArrayList<StandardCodec<?>>();
 			try {
-				StandardCodec<?> localDateCodecImpl = TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.LocalDateCodecImpl", StandardCodec.class);
-				StandardCodec<?> localTimeCodecImpl = TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.LocalTimeCodecImpl", StandardCodec.class);
-				StandardCodec<?> localDateTimeCodecImpl = TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.LocalDateTimeCodecImpl", StandardCodec.class);
-				return Arrays.asList(localDateCodecImpl, localTimeCodecImpl, localDateTimeCodecImpl);
+				codecs.add(TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.LocalDateCodecImpl", StandardCodec.class));
+				codecs.add(TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.LocalTimeCodecImpl", StandardCodec.class));
+				codecs.add(TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.LocalDateTimeCodecImpl", StandardCodec.class));
 			}
 			catch (Throwable t) {
 				// No Java 8 support
+				codecs.clear();
 				try {
-					StandardCodec<?> localDateCodecImpl = TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.Date8CodecImpl", StandardCodec.class);
-					StandardCodec<?> localTimeCodecImpl = TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.Time8CodecImpl", StandardCodec.class);
-					StandardCodec<?> localDateTimeCodecImpl = TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.DateTime8CodecImpl", StandardCodec.class);
-					return Arrays.asList(localDateCodecImpl, localTimeCodecImpl, localDateTimeCodecImpl);
+					codecs.add(TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.Date8CodecImpl", StandardCodec.class));
+					codecs.add(TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.Time8CodecImpl", StandardCodec.class));
+					codecs.add(TypeUtil.newInstance("org.granite.messaging.jmf.codec.std.impl.DateTime8CodecImpl", StandardCodec.class));
 				}
 				catch (Throwable t2) {
 					throw new RuntimeException("Could not setup Java 8 compatibility codecs", t2);
 				}
 			}
+			return codecs;
 		}
 	}
 }

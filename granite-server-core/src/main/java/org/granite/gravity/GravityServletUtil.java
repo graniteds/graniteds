@@ -98,25 +98,22 @@ public class GravityServletUtil {
 		}
 	}
 	
-	@SuppressWarnings("resource") // JDK7 warning (Resource leak: 'deserializer' is never closed)...
 	public static Message[] deserialize(GravityInternal gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException {
         if (ContentType.JMF_AMF.mimeType().equals(request.getContentType())) {
             JMFDeserializer deserializer = new JMFDeserializer(is, gravity.getGraniteConfig().getSharedContext());
             return (Message[])deserializer.readObject();
         }
-        else {
-    		ObjectInput amf3Deserializer = gravity.getGraniteConfig().newAMF3Deserializer(is);
-            Object[] objects = (Object[])amf3Deserializer.readObject();
-            Message[] messages = new Message[objects.length];
-            System.arraycopy(objects, 0, messages, 0, objects.length);            
-            return messages;
-        }
+
+		ObjectInput amf3Deserializer = gravity.getGraniteConfig().newAMF3Deserializer(is);
+        Object[] objects = (Object[])amf3Deserializer.readObject();
+        Message[] messages = new Message[objects.length];
+        System.arraycopy(objects, 0, messages, 0, objects.length);            
+        return messages;
 	}
 	
-	public static ObjectOutput newSerializer(GravityInternal gravity, OutputStream os, ContentType contentType) throws ServletException, IOException {
-        if (contentType == ContentType.JMF_AMF) {
+	public static ObjectOutput newSerializer(GravityInternal gravity, OutputStream os, ContentType contentType) {
+        if (contentType == ContentType.JMF_AMF)
             return new JMFSerializer(os, gravity.getGraniteConfig().getSharedContext());
-        }
     	return gravity.getGraniteConfig().newAMF3Serializer(os);
 	}
 	
