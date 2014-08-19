@@ -272,3 +272,7 @@ test {
 
 	excludes = [ 'org/granite/client/test/tide/server/Test*' ]
 }
+
+license {
+	exclude 'org/granite/binding/**'
+}
