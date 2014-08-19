@@ -195,124 +195,122 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 
 	@Override
 	protected ResponseMessage decodeResponse(InputStream is) throws IOException {
-		boolean reconnect = transport.isReconnectAfterReceive();
+		
+		boolean reconnect = false;
+		AbstractResponseMessage responseChain = null;
+		AbstractResponseMessage currentResponse = null;
 		
 		try {
 			if (is.available() > 0) {
 				final Message[] messages = codec.decode(is);
 				
-				if (messages.length > 0 && messages[0] instanceof AcknowledgeMessage) {
-					
-					reconnect = false;
-
-					final AbstractResponseMessage response = convertFromAmf((AcknowledgeMessage)messages[0]);
-					
-					if (response instanceof ResultMessage) {
-						Type requestType = null;
-						RequestMessage request = getRequest(response.getCorrelationId());
-						if (request != null)
-							requestType = request.getType();
-						else if (response.getCorrelationId().equals(connectMessageId.get())) // Reconnect
-							requestType = Type.PING;
-						
-						if (requestType != null) {
-							ResultMessage result = (ResultMessage)response;
-							switch (requestType) {
-							
-							case PING:
-								if (messages[0].getBody() instanceof Map) {
-									Map<?, ?> advices = (Map<?, ?>)messages[0].getBody();
-									Object reconnectIntervalMillis = advices.get(Channel.RECONNECT_INTERVAL_MS_KEY);
-									if (reconnectIntervalMillis instanceof Number)
-										this.reconnectIntervalMillis = ((Number)reconnectIntervalMillis).longValue();
-									Object reconnectMaxAttempts = advices.get(Channel.RECONNECT_MAX_ATTEMPTS_KEY);
-									if (reconnectMaxAttempts instanceof Number)
-										this.reconnectMaxAttempts = ((Number)reconnectMaxAttempts).longValue();
-								}
-                                if (messages[0].getHeaders().containsKey("JSESSIONID"))
-                                    setSessionId((String)messages[0].getHeader("JSESSIONID"));
-                                
-                                if (clientId != null && clientId.equals(result.getClientId()))
-                                	log.warn("Received PING result for unknown clientId %s", request != null ? request.getClientId() : "(no request)");
-                                else {
-                                    log.debug("Channel %s pinged clientId %s", id, clientId);
-                                	clientId = result.getClientId();
-                                	setPinged(true);
-            						
-            						authenticate(null);
-                                }
-                                break;
-                                
-							case LOGIN:
-								setAuthenticated(true);
-								break;
-							
-							case SUBSCRIBE:
-								result.setResult(messages[0].getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER));
-								break;
-
-							default:
-								break;
-							}
-						}
-					}
-					else if (response instanceof FaultMessage) {
-						Type requestType = null;
-						RequestMessage request = getRequest(response.getCorrelationId());
-						if (request != null)
-							requestType = request.getType();
-						else if (response.getCorrelationId().equals(connectMessageId.get())) // Reconnect
-							requestType = Type.PING;
-						
-						if (requestType != null) {
-							switch (requestType) {
-							
-							case PING:
-								clientId = null;
-								setPinged(false);
-								
-								setAuthenticated(false);
-                                break;
-                                
-							case LOGIN:
-								setAuthenticated(false);
-								break;
-							
-							default:
-								break;
-							}
-						}
-					}
-					
-					AbstractResponseMessage current = response;
-					for (int i = 1; i < messages.length; i++) {
-						if (!(messages[i] instanceof AcknowledgeMessage))
-							throw new RuntimeException("Message should be an AcknowledgeMessage: " + messages[i]);
-						
-						AbstractResponseMessage next = convertFromAmf((AcknowledgeMessage)messages[i]);
-						current.setNext(next);
-						current = next;
-					}
-					
-					for (ChannelResponseListener listener : responseListeners)
-						listener.onResponse(response);
-					
-					return response;
-				}
-				
-                if (messages.length == 0)
-                    log.debug("Channel %s: received empty message array !!", clientId);
-				
+                log.debug("Channel %s: received %d messages", clientId, messages.length);
+                    
 				for (Message message : messages) {
-					if (!(message instanceof AsyncMessage))
-						throw new RuntimeException("Message should be an AsyncMessage: " + message);
 					
-					String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
-					Consumer consumer = consumersMap.get(subscriptionId);
-					if (consumer != null)
-						consumer.onMessage(convertFromAmf((AsyncMessage)message));
-					else
-						log.warn("Channel %s: no consumer for subscriptionId: %s", clientId, subscriptionId);
+					if (message instanceof AcknowledgeMessage) {
+						AbstractResponseMessage response = convertFromAmf((AcknowledgeMessage)messages[0]);
+						
+						if (response instanceof ResultMessage) {
+							Type requestType = null;
+							RequestMessage request = getRequest(response.getCorrelationId());
+							if (request != null)
+								requestType = request.getType();
+							else if (response.getCorrelationId().equals(connectMessageId.get())) // Reconnect
+								requestType = Type.PING;
+							
+							if (requestType != null) {
+								ResultMessage result = (ResultMessage)response;
+								switch (requestType) {
+								
+								case PING:
+									if (messages[0].getBody() instanceof Map) {
+										Map<?, ?> advices = (Map<?, ?>)messages[0].getBody();
+										Object reconnectIntervalMillis = advices.get(Channel.RECONNECT_INTERVAL_MS_KEY);
+										if (reconnectIntervalMillis instanceof Number)
+											this.reconnectIntervalMillis = ((Number)reconnectIntervalMillis).longValue();
+										Object reconnectMaxAttempts = advices.get(Channel.RECONNECT_MAX_ATTEMPTS_KEY);
+										if (reconnectMaxAttempts instanceof Number)
+											this.reconnectMaxAttempts = ((Number)reconnectMaxAttempts).longValue();
+									}
+	                                if (messages[0].getHeaders().containsKey("JSESSIONID"))
+	                                    setSessionId((String)messages[0].getHeader("JSESSIONID"));
+	                                
+	                                if (clientId != null && clientId.equals(result.getClientId()))
+	                                	log.warn("Received PING result for unknown clientId %s", request != null ? request.getClientId() : "(no request)");
+	                                else {
+	                                    log.debug("Channel %s pinged clientId %s", id, clientId);
+	                                	clientId = result.getClientId();
+	                                	setPinged(true);
+	            						
+	            						authenticate(null);
+	                                }
+	                                break;
+	                                
+								case LOGIN:
+									setAuthenticated(true);
+									break;
+								
+								case SUBSCRIBE:
+									result.setResult(messages[0].getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER));
+									break;
+
+								default:
+									break;
+								}
+							}
+						}
+						else if (response instanceof FaultMessage) {
+							Type requestType = null;
+							RequestMessage request = getRequest(response.getCorrelationId());
+							if (request != null)
+								requestType = request.getType();
+							else if (response.getCorrelationId().equals(connectMessageId.get())) // Reconnect
+								requestType = Type.PING;
+							
+							if (requestType != null) {
+								switch (requestType) {
+								
+								case PING:
+									clientId = null;
+									setPinged(false);
+									
+									setAuthenticated(false);
+	                                break;
+	                                
+								case LOGIN:
+									setAuthenticated(false);
+									break;
+								
+								default:
+									break;
+								}
+							}
+						}
+						
+						for (ChannelResponseListener listener : responseListeners)
+							listener.onResponse(response);
+						
+						if (responseChain == null)
+							responseChain = currentResponse = response;
+						else {
+							currentResponse.setNext(response);
+							currentResponse = response;
+						}
+					}
+					else {
+						reconnect = transport.isReconnectAfterReceive();
+						
+						if (!(message instanceof AsyncMessage))
+							throw new RuntimeException("Message should be an AsyncMessage: " + message);
+						
+						String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
+						Consumer consumer = consumersMap.get(subscriptionId);
+						if (consumer != null)
+							consumer.onMessage(convertFromAmf((AsyncMessage)message));
+						else
+							log.warn("Channel %s: no consumer for subscriptionId: %s", clientId, subscriptionId);
+					}
 				}
 			}
 		}
@@ -323,7 +321,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 			}
 		}
 		
-		return null;
+		return responseChain;
 	}
 
     @Override
