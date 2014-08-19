@@ -26,7 +26,9 @@ import org.granite.logging.Logger;
 
 import javax.websocket.CloseReason;
 import javax.websocket.MessageHandler;
+import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -73,8 +75,12 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
 
     @Override
     protected void sendBytes(byte[] msg) throws IOException {
-        if (session != null && session.isOpen())
-            session.getBasicRemote().sendBinary(ByteBuffer.wrap(msg));
+        if (session != null && session.isOpen()) {
+        	Basic basic = session.getBasicRemote();
+        	synchronized (basic) {
+        		basic.sendBinary(ByteBuffer.wrap(msg));
+        	}
+        }
     }
 
 	public void close() {

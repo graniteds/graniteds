@@ -247,36 +247,28 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
                 return false;
             }
 
-            AsyncMessage[] messagesArray = new AsyncMessage[messages.size()];
-            int i = 0;
-            for (AsyncMessage message : messages)
-                messagesArray[i++] = message;
-
             // Setup serialization context (thread local)
             GravityInternal gravity = getGravity();
             SimpleGraniteContext.createThreadInstance(
-                    gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>(), clientType
+                gravity.getGraniteConfig(), gravity.getServicesConfig(), sessionId, new HashMap<String, Object>(), clientType
             );
+
+            AsyncMessage[] messagesArray = messages.toArray(new AsyncMessage[messages.size()]);
 
             logFine.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
 
             byte[] msg = serialize(gravity, messagesArray);
-            if (msg.length > 16000) {
-                // Split in ~2000 bytes chunks
-                int count = msg.length / 2000;
-                int chunkSize = Math.max(1, messagesArray.length / count);
-                int index = 0;
-                while (index < messagesArray.length) {
-                    AsyncMessage[] chunk = Arrays.copyOfRange(messagesArray, index, Math.min(messagesArray.length, index + chunkSize));
-                    msg = serialize(gravity, chunk);
-                    log.debug("Channel %s send chunked binary message: %d msgs (%d bytes)", getId(), chunk.length, msg.length);
-                    sendBytes(msg);
-                    index += chunkSize;
-                }
-            }
-            else {
+            if (msg.length <= 16000) {
                 log.debug("Channel %s send binary message: %d msgs (%d bytes)", getId(), messagesArray.length, msg.length);
                 sendBytes(msg);
+            }
+            else {
+            	int index = 1;
+            	for (AsyncMessage message : messagesArray) {
+            		msg = serialize(gravity, new AsyncMessage[]{ message });
+            		log.debug("Channel %s send chunked binary message: %d/%d msgs (%d bytes)", getId(), index++, messagesArray.length, msg.length);
+                    sendBytes(msg);
+            	}
             }
 
             return true; // Messages were delivered, http context isn't valid anymore.
