@@ -288,9 +288,6 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 							}
 						}
 						
-						for (ChannelResponseListener listener : responseListeners)
-							listener.onResponse(response);
-						
 						if (responseChain == null)
 							responseChain = currentResponse = response;
 						else {
@@ -312,6 +309,11 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 							log.warn("Channel %s: no consumer for subscriptionId: %s", clientId, subscriptionId);
 					}
 				}
+			}
+			
+			if (responseChain != null) {
+				for (ChannelResponseListener listener : responseListeners)
+					listener.onResponse(responseChain);
 			}
 		}
 		finally {
