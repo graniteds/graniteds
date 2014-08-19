@@ -457,8 +457,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	@Override
 	public void onMessage(TransportMessage message, InputStream is) {
 		try {
-			ResponseMessage response = decodeResponse(is);
-			
+			ResponseMessage response = decodeResponse(is);			
 			if (response == null)
 				return;
 			
@@ -485,9 +484,6 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 					token.dispatchFailure(new RuntimeException("Unknown message type: " + response));
 					break;
 			}
-			
-			if (timer != null)
-				timer.purge();	// Must purge to cleanup timer references to AsyncToken
 		}
 		catch (Exception e) {
 			log.error(e, "Could not deserialize or dispatch incoming messages");
@@ -495,6 +491,10 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			AsyncToken token = message != null ? tokensMap.remove(message.getId()) : null;
 			if (token != null)
 				token.dispatchFailure(e);
+		}
+		finally {
+			if (timer != null)
+				timer.purge();	// Must purge to cleanup timer references to AsyncToken
 		}
 	}
 	

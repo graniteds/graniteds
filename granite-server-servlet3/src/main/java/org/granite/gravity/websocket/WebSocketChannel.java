@@ -21,16 +21,15 @@
  */
 package org.granite.gravity.websocket;
 
-import org.granite.gravity.GravityInternal;
-import org.granite.logging.Logger;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import javax.websocket.CloseReason;
 import javax.websocket.MessageHandler;
-import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import org.granite.gravity.GravityInternal;
+import org.granite.logging.Logger;
 
 
 public class WebSocketChannel extends AbstractWebSocketChannel implements MessageHandler.Whole<byte[]> {
@@ -75,12 +74,8 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
 
     @Override
     protected void sendBytes(byte[] msg) throws IOException {
-        if (session != null && session.isOpen()) {
-        	Basic basic = session.getBasicRemote();
-        	synchronized (basic) {
-        		basic.sendBinary(ByteBuffer.wrap(msg));
-        	}
-        }
+        if (session != null && session.isOpen())
+        	session.getBasicRemote().sendBinary(ByteBuffer.wrap(msg));
     }
 
 	public void close() {

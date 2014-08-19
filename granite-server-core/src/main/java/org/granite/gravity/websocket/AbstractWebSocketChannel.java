@@ -21,22 +21,34 @@
  */
 package org.granite.gravity.websocket;
 
-import flex.messaging.messages.AsyncMessage;
-import flex.messaging.messages.Message;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+
+import javax.servlet.http.HttpSession;
+
 import org.granite.context.GraniteContext;
 import org.granite.context.SimpleGraniteContext;
-import org.granite.gravity.*;
+import org.granite.gravity.AbstractChannel;
+import org.granite.gravity.AsyncHttpContext;
+import org.granite.gravity.Channel;
+import org.granite.gravity.ChannelFactory;
+import org.granite.gravity.GravityConfig;
+import org.granite.gravity.GravityInternal;
+import org.granite.gravity.MessageReceivingException;
 import org.granite.logging.Logger;
 import org.granite.messaging.jmf.JMFDeserializer;
 import org.granite.messaging.jmf.JMFSerializer;
 import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ContentType;
 
-import javax.servlet.http.HttpSession;
-import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
+import flex.messaging.messages.AsyncMessage;
+import flex.messaging.messages.Message;
 
 /**
  * @author Franck WOLFF
@@ -192,7 +204,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
                 // Mark current channel (if any) as accessed.
                 if (!accessed)
                     accessed = getGravity().access(clientId);
-
+                
                 if (response != null) {
                     if (responses == null)
                         responses = new Message[1];
@@ -204,11 +216,15 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
             
             if (isConnected()) {	// Check in case of disconnect message
 	            logFine.debug("<< [AMF3 RESPONSES] %s", (Object)responses);
-	
-	            byte[] resultData = serialize(getGravity(), responses);
-	
-	            sendBytes(resultData);
+	            
+	            for (Message response : responses) {
+	            	if (response instanceof AsyncMessage)
+	            		receive((AsyncMessage)response);
+	            }
             }
+        }
+        catch (MessageReceivingException e) {
+            log.error(e, "Could not handle incoming message data");
         }
         catch (ClassNotFoundException e) {
             log.error(e, "Could not handle incoming message data");

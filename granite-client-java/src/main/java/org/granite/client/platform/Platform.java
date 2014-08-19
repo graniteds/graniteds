@@ -232,6 +232,13 @@ public class Platform {
                 }
                 catch (Throwable e3) {
                     // Jetty 8 websocket client not found
+                    try {
+                        TypeUtil.forName("org.glassfish.tyrus.client.ClientManager");
+                        transportMap.put(ChannelType.WEBSOCKET, TypeUtil.newInstance("org.granite.client.messaging.transport.tyrus.TyrusWebSocketTransport", Transport.class));
+                    }
+                    catch (Throwable e4) {
+                        // Tyrus websocket client not found
+                    }
                 }
             }
         }

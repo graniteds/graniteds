@@ -14,7 +14,7 @@ buildscript {
     }
 	
     dependencies {
-		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.6.0'
+		classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
 		classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
         classpath group: 'org.gradlefx', name: 'gradlefx', version: '0.8.1'
 		classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.5.0'
