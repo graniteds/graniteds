@@ -295,7 +295,15 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 							currentResponse = response;
 						}
 					}
-					else {
+				}
+				
+				if (responseChain != null) {
+					for (ChannelResponseListener listener : responseListeners)
+						listener.onResponse(responseChain);
+				}
+				
+				for (Message message : messages) {
+					if (!(message instanceof AcknowledgeMessage)) {
 						reconnect = transport.isReconnectAfterReceive();
 						
 						if (!(message instanceof AsyncMessage))
@@ -309,11 +317,6 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 							log.warn("Channel %s: no consumer for subscriptionId: %s", clientId, subscriptionId);
 					}
 				}
-			}
-			
-			if (responseChain != null) {
-				for (ChannelResponseListener listener : responseListeners)
-					listener.onResponse(responseChain);
 			}
 		}
 		finally {
