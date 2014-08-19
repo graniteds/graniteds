@@ -5,7 +5,7 @@
 	<classpathentry excluding="org/granite/logging/impl/**" kind="src" path="common-java"/>
 	<classpathentry excluding="org/granite/client/configuration/*Config.java|org/granite/client/configuration/Simple*.java|org/granite/client/messaging/amf/persistence/**|org/granite/client/messaging/channel/AMF*|org/granite/client/messaging/channel/amf/AMF*|org/granite/client/messaging/codec/*Descriptor.java|org/granite/client/messaging/codec/AMF*|org/granite/client/messaging/transport/apache/**|org/granite/client/messaging/transport/jetty/**|org/granite/client/messaging/transport/jetty9/**|org/granite/client/scan/**" kind="src" path="client-java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 7 [1.7.0_45]"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
