@@ -19,12 +19,12 @@
 		<link>
 			<name>binding-java</name>
 			<type>2</type>
-			<location>C:/Dev/workspace300M1/graniteds/granite-binding/src/main/java</location>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-binding</locationURI>
 		</link>
 		<link>
 			<name>client-java-adv</name>
 			<type>2</type>
-			<location>C:/Dev/workspace300M1/graniteds/granite-client-java-advanced/src/main/java</location>
+			<location>WORKSPACE_LOC/graniteds/granite-client-java-advanced/src/main/java</location>
 		</link>
 	</linkedResources>
 </projectDescription>

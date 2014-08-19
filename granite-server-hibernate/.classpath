@@ -7,7 +7,6 @@
 	<classpathentry exported="true" kind="src" path="/granite-server-core"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
-	<classpathentry kind="src" path="/granite-server-spring"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/granite-jmf"/>
+	<classpathentry exported="true" kind="src" path="/granite-server-spring"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
