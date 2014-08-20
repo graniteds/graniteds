@@ -800,7 +800,7 @@ public class ServerSession implements ContextAware {
 		else if (event instanceof IncomingMessageEvent<?>)
 			sessionId = (String)((IncomingMessageEvent<?>)event).getMessage().getHeader(SESSION_ID_TAG);
 		
-		if (sessionId == null || !sessionId.equals(oldSessionId))
+		if ((sessionId == null && oldSessionId != null) || (sessionId != null && !sessionId.equals(oldSessionId)))
 		    log.info("Received new sessionId %s", sessionId);
 		
 		if (oldSessionId != null || sessionId != null) {
