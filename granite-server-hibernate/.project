@@ -15,4 +15,16 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>java</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-server-spring/src/test/java</locationURI>
+		</link>
+		<link>
+			<name>resources</name>
+			<type>2</type>
+			<locationURI>WORKSPACE_LOC/graniteds/granite-server-spring/src/test/resources</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
