@@ -48,6 +48,8 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
     public void onWebSocketConnect(Session session) {
 		this.socketSession = session;
 		this.socketSession.setIdleTimeout(getGravity().getGravityConfig().getChannelIdleTimeoutMillis());
+		
+		setMaxBinaryMessageBufferSize(socketSession.getPolicy().getMaxBinaryMessageBufferSize());
 
         connect();
 

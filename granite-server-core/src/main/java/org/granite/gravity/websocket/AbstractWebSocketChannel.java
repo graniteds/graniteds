@@ -65,12 +65,26 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
     private ContentType contentType;
     private Object clientId;
     private byte[] connectAckMessage;
+    private int maxBinaryMessageBufferSize = 16384;
 
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
 
     protected AbstractWebSocketChannel(GravityInternal gravity, String id, ChannelFactory<? extends Channel> factory, String clientType) {
         super(gravity, id, factory, clientType);
+    }
+    
+    protected void setMaxBinaryMessageBufferSize(int maxBinaryMessageBufferSize) {
+    	if (maxBinaryMessageBufferSize < 512)
+    		throw new IllegalArgumentException("WebSocket MaxBinaryMessageBufferSize too low: " + maxBinaryMessageBufferSize);
+    	
+    	log.debug("Setting MaxBinaryMessageBufferSize to: %d", maxBinaryMessageBufferSize);
+    	
+    	this.maxBinaryMessageBufferSize = maxBinaryMessageBufferSize;
+    }
+    
+    public int getMaxBinaryMessageBufferSize() {
+    	return maxBinaryMessageBufferSize;
     }
 
     public void setSession(HttpSession session) {
@@ -274,7 +288,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
             logFine.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
 
             byte[] msg = serialize(gravity, messagesArray);
-            if (msg.length <= 16000) {
+            if (msg.length <= maxBinaryMessageBufferSize) {
                 log.debug("Channel %s send binary message: %d msgs (%d bytes)", getId(), messagesArray.length, msg.length);
                 sendBytes(msg);
             }

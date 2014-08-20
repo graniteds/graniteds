@@ -47,6 +47,9 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
 
     public void onWebSocketConnect(Session session) {
 		this.session = session;
+		
+		setMaxBinaryMessageBufferSize(session.getMaxBinaryMessageBufferSize());
+		
         session.addMessageHandler(this);
 
         connect();

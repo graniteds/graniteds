@@ -37,12 +37,15 @@ public class TomcatWebSocketChannel extends AbstractWebSocketChannel {
 	
 	private static final Logger log = Logger.getLogger(TomcatWebSocketChannel.class);
 	
-	private StreamInbound streamInbound = new MessageInboundImpl();
+	private StreamInbound streamInbound;
 	private WsOutbound connection;
 
 	
 	public TomcatWebSocketChannel(GravityInternal gravity, String id, TomcatWebSocketChannelFactory factory, String clientType) {
     	super(gravity, id, factory, clientType);
+    	
+    	streamInbound = new MessageInboundImpl();
+    	setMaxBinaryMessageBufferSize(streamInbound.getOutboundByteBufferSize());
     }
 
 	public StreamInbound getStreamInbound() {
