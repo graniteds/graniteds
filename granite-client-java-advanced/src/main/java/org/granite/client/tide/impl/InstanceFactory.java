@@ -153,16 +153,19 @@ public class InstanceFactory {
 		@SuppressWarnings("unchecked")
 		@Override
 		public T create(Context context) {
-			Object[] args = new Object[method.getParameterTypes().length];
+			final Class<?>[] parametersTypes = method.getParameterTypes();
+			final Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 			
-			for (int i = 0; i < method.getParameterTypes().length; i++) {
-				if (method.getParameterTypes()[i] == Context.class) {
+			Object[] args = new Object[parametersTypes.length];
+			
+			for (int i = 0; i < parametersTypes.length; i++) {
+				if (parametersTypes[i] == Context.class) {
 					args[i] = context;
 					continue;
 				}
 				
 				String name = null;
-				for (Annotation annotation : method.getParameterAnnotations()[i]) {
+				for (Annotation annotation : parameterAnnotations[i]) {
 					if (annotation.annotationType() == Named.class) {
 						name = ((Named)annotation).value();
 						if ("".equals(name))
@@ -173,10 +176,10 @@ public class InstanceFactory {
 				if (name != null)
 					args[i] = context.byName(name);
 				else
-					args[i] = context.byType(method.getParameterTypes()[i]);
+					args[i] = context.byType(parametersTypes[i]);
 				
 				if (args[i] == null)
-					throw new RuntimeException("Missing argument " + (name != null ? name : method.getParameterTypes()[i]));
+					throw new RuntimeException("Missing argument " + (name != null ? name : parametersTypes[i]));
 			}
 			
 			try {
