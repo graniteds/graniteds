@@ -36,8 +36,10 @@ package org.granite.client.tide.spring;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +49,7 @@ import org.granite.client.tide.InstanceStoreFactory;
 import org.granite.client.tide.impl.InstanceFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * @author William DRAI
@@ -100,6 +103,9 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		
 		@Override
 		public boolean exists(String name) {
+			if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+				return false;
+			
 			return applicationContext.containsBean(name);
 		}
 		
@@ -115,12 +121,18 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 
 		@Override
 		public List<String> allNames() {
+			if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+				return new ArrayList<String>();
+			
 			return Arrays.asList(applicationContext.getBeanDefinitionNames());
 		}
 
         @SuppressWarnings("unchecked")
         @Override
         public <T> T getNoProxy(String name, Context context) {
+			if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+				return null;
+			
             return (T)applicationContext.getBean(name);
         }
 
@@ -128,6 +140,9 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		@Override
 		public <T> T byName(String name, Context context) {
             try {
+				if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+					return null;
+				
     			return (T)applicationContext.getBean(name);
             }
             catch (NoSuchBeanDefinitionException e) {
@@ -141,6 +156,9 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		@Override
 		public <T> T byType(Class<T> type, Context context) {
             try {
+				if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+					return null;
+				
 			    return applicationContext.getBean(type);
             }
             catch (NoSuchBeanDefinitionException e) {
@@ -155,6 +173,9 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		@Override
 		public <T> T[] allByType(Class<T> type, Context context, boolean create) {
 			try {
+				if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+					return (T[])Array.newInstance(type, 0);
+				
 				Map<String, T> instancesMap = applicationContext.getBeansOfType(type, true, create);
 				T[] all = (T[])Array.newInstance(type, instancesMap.size());
 				return instancesMap.values().toArray(all);
@@ -168,6 +189,9 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		@Override
 		public Map<String, Object> allByAnnotatedWith(Class<? extends Annotation> annotationClass, Context context) {
 			try {
+				if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+					return new HashMap<String, Object>();
+				
 				return applicationContext.getBeansWithAnnotation(annotationClass);
 			}
             catch (IllegalStateException e) {
