@@ -340,7 +340,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	    	XMap factoryProperties = new XMap();
 	    	String lookup = null;
 	        if (useTide) {
-		    	lookup = "java:global/{context.root}/{capitalized.component.name}Bean";
+		    	lookup = "java:global{context.root}/{capitalized.component.name}Bean";
 		    	if (isJBoss6())
 		    		lookup = "{capitalized.component.name}Bean/local";
 		    	if (!("".equals(serverFilter.ejbLookup())))
