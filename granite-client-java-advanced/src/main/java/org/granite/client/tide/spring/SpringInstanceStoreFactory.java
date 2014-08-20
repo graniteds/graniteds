@@ -103,7 +103,7 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		
 		@Override
 		public boolean exists(String name) {
-			if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+			if (isActive())
 				return false;
 			
 			return applicationContext.containsBean(name);
@@ -121,7 +121,7 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 
 		@Override
 		public List<String> allNames() {
-			if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+			if (isActive())
 				return new ArrayList<String>();
 			
 			return Arrays.asList(applicationContext.getBeanDefinitionNames());
@@ -130,7 +130,7 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
         @SuppressWarnings("unchecked")
         @Override
         public <T> T getNoProxy(String name, Context context) {
-			if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+			if (isActive())
 				return null;
 			
             return (T)applicationContext.getBean(name);
@@ -140,7 +140,7 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		@Override
 		public <T> T byName(String name, Context context) {
             try {
-				if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+				if (isActive())
 					return null;
 				
     			return (T)applicationContext.getBean(name);
@@ -156,7 +156,7 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		@Override
 		public <T> T byType(Class<T> type, Context context) {
             try {
-				if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+				if (isActive())
 					return null;
 				
 			    return applicationContext.getBean(type);
@@ -173,7 +173,7 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		@Override
 		public <T> T[] allByType(Class<T> type, Context context, boolean create) {
 			try {
-				if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+				if (isActive())
 					return (T[])Array.newInstance(type, 0);
 				
 				Map<String, T> instancesMap = applicationContext.getBeansOfType(type, true, create);
@@ -189,7 +189,7 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 		@Override
 		public Map<String, Object> allByAnnotatedWith(Class<? extends Annotation> annotationClass, Context context) {
 			try {
-				if (applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive())
+				if (isActive())
 					return new HashMap<String, Object>();
 				
 				return applicationContext.getBeansWithAnnotation(annotationClass);
@@ -198,6 +198,10 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
             	// ApplicationContext stopped, callback may have happened during app shutdown
             }
 			return Collections.emptyMap();
+		}
+		
+		private boolean isActive() {
+			return applicationContext instanceof ConfigurableApplicationContext && !((ConfigurableApplicationContext)applicationContext).isActive();
 		}
 	}
 }
