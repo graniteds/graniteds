@@ -347,7 +347,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 		    		lookup = serverFilter.ejbLookup();
 	        }
 	        else {
-		    	lookup = "java:global/{context.root}/{capitalized.destination.id}Bean";
+		    	lookup = "java:global{context.root}/{capitalized.destination.id}Bean";
 		    	if (isJBoss6())
 		    		lookup = "{capitalized.destination.id}Bean/local";
 		    	if (!("".equals(serverFilter.ejbLookup())))
@@ -359,7 +359,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 	    			Method m = servletContext.getClass().getMethod("getContextPath");
                     m.setAccessible(true);
 	    			String contextPath = (String)m.invoke(servletContext);
-	    			lookup = lookup.replace("{context.root}", contextPath.substring(1));
+	    			lookup = lookup.replace("{context.root}", contextPath);
 	    		}
 	    		catch (Exception e) {
 	    			log.error(e, "Could not get context path, please define lookup manually in @ServerFilter");
