@@ -318,6 +318,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 					}
 				}
 			}
+			else
+				reconnect = transport.isReconnectAfterReceive();
 		}
 		finally {
 			if (reconnect) {
