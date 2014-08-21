@@ -39,35 +39,143 @@ public interface Gravity {
     ///////////////////////////////////////////////////////////////////////////
     // Granite/Services configs access.
 
+	/**
+	 * Current Gravity configuration
+	 * @return config
+	 */
     public GravityConfig getGravityConfig();
+    
+    /**
+     * Current services configuration
+     * @return config
+     */
     public ServicesConfig getServicesConfig();
+    
+    /**
+     * Current Granite configuration
+     * @return config
+     */
     public GraniteConfig getGraniteConfig();
 
     ///////////////////////////////////////////////////////////////////////////
     // Properties.
 
+    /**
+     * State of the Gravity component
+     * @return true if started
+     */
 	public boolean isStarted();
 
     ///////////////////////////////////////////////////////////////////////////
     // Operations.
-
+	
+	/**
+	 * Start the Gravity component
+	 * @throws Exception
+	 */
     public void start() throws Exception;
+    
+    /**
+     * Update the current configuration and restarts
+     * @param gravityConfig Gravity config
+     * @param graniteConfig Granite config
+     */
     public void reconfigure(GravityConfig gravityConfig, GraniteConfig graniteConfig);
+    
+    /**
+     * Stop the Gravity component
+     * @throws Exception
+     */
     public void stop() throws Exception;
+    
+    /**
+     * Stop the Gravity component, optionally forcing immediate shutdown (without waiting for channel closing)
+     * @throws Exception
+     */
     public void stop(boolean now) throws Exception;
 
+    /**
+     * Currently connected channels
+     * @return list of channels
+     */
     public List<Channel> getConnectedChannels();
+    
+    /**
+     * Currently connected authenticated users
+     * @return set of users
+     */
     public Set<Principal> getConnectedUsers();
+    
+    /**
+     * Channels currently connected for a specified destination
+     * @param destination a destination
+     * @return list of channels
+     */
     public List<Channel> getConnectedChannelsByDestination(String destination);
+    
+    /**
+     * Authenticated users currently connected for a specified destination
+     * @param destination a destination
+     * @return set of users
+     */
     public Set<Principal> getConnectedUsersByDestination(String destination);
+    
+    /**
+     * Find all channels for an authenticated user name
+     * @param name user name
+     * @return list of channels
+     */
     public List<Channel> findConnectedChannelsByUser(String name);
+    
+    /**
+     * Find the channel for a specified clientId
+     * @param clientId client id
+     * @return channel
+     */
     public Channel findConnectedChannelByClientId(String clientId);
+    
+    /**
+     * Current channel for the specified destination
+     * @param destination destination
+     * @return channel
+     */
     public Channel findCurrentChannel(String destination);
     
+    /**
+     * Handle a message using the configured service adapter
+     * @param message message
+     * @return acknowledge or error
+     */
     public Message handleMessage(Message message);
+    
+    /**
+     * Handle a message using the configured service adapter, optionally skipping interceptors
+     * @param message message
+     * @param skipInterceptor skip interceptors
+     * @return acknowledge or error
+     */
     public Message handleMessage(Message message, boolean skipInterceptor);
 
+    /**
+     * Publish a message to connected users from the default server channel
+     * @param message message to publish
+     * @return acknowledge or error
+     */
     public Message publishMessage(AsyncMessage message);
+    
+    /**
+     * Publish a message to connected users from the specified user channel
+     * @param fromChannel originating channel
+     * @param message message to publish
+     * @return acknowledge or error
+     */
     public Message publishMessage(Channel fromChannel, AsyncMessage message);
+    
+    /**
+     * Send a server-to-client request, waiting synchronously for the response
+     * @param fromChannel originating channel
+     * @param message request
+     * @return response
+     */
     public Message sendRequest(Channel fromChannel, AsyncMessage message);
 }

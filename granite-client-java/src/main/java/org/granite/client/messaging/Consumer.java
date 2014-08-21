@@ -255,12 +255,17 @@ public class Consumer extends AbstractTopicAgent {
 		}
 	}
 
+	/**
+	 * Reply to a server-to-client request
+	 * @param message incoming request message
+	 * @param reply response to send
+	 */
     public void reply(TopicMessage message, Object reply) {
         ReplyMessage replyMessage = new ReplyMessage(destination, topic, message.getId(), reply);
         replyMessage.getHeaders().putAll(message.getHeaders());
         channel.send(replyMessage);
     }
-
+    
 	@Override
 	public String toString() {
 		return getClass().getName() + " {subscriptionId=" + subscriptionId +
