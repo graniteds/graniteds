@@ -73,7 +73,7 @@ public class SimpleInjectInstanceStore extends SimpleInstanceStore {
     							f.set(target, value);
 						} 
     					catch (Exception e) {
-    						throw new RuntimeException("Cannot inject field " + f.getName(), e);
+    						throw new RuntimeException("Cannot inject field " + f.getName() + " in component " + componentName, e);
 						}
     				}
     				else {
@@ -90,7 +90,7 @@ public class SimpleInjectInstanceStore extends SimpleInstanceStore {
 	    					}
 						} 
 						catch (Exception e) {
-							throw new RuntimeException("Cannot inject field " + f.getName(), e);
+							throw new RuntimeException("Cannot inject field " + f.getName() + " in component " + componentName, e);
 						}
     				}
     			}

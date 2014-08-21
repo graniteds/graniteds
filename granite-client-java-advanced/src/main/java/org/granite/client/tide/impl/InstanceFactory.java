@@ -169,24 +169,27 @@ public class InstanceFactory {
 					if (annotation.annotationType() == Named.class) {
 						name = ((Named)annotation).value();
 						if ("".equals(name))
-							throw new RuntimeException("Can not inject Named value without explicit name");
+							throw new RuntimeException("Can not inject @Named value without explicit name for method " + method.getName() + " argument " + i);
 						break;
 					}
 				}
-				if (name != null)
+				if (name != null) {
 					args[i] = context.byName(name);
-				else
+					if (args[i] == null)
+						throw new RuntimeException("Cannot find injected value named " + name + " for arg " + i + " of method " + method.toGenericString());
+				}
+ 				else {
 					args[i] = context.byType(parametersTypes[i]);
-				
-				if (args[i] == null)
-					throw new RuntimeException("Missing argument " + (name != null ? name : parametersTypes[i]));
+					if (args[i] == null)
+						throw new RuntimeException("Cannot find injected value of type " + parametersTypes[i] + " for arg " + i + " of method " + method.toGenericString());
+ 				}
 			}
 			
 			try {
 				return (T)method.invoke(null, args);
 			}
 			catch (Exception e) {
-				throw new RuntimeException("Could not create instance with method " + method, e);
+				throw new RuntimeException("Could not create instance with method " + method.toGenericString(), e);
 			}
 		}
 		
