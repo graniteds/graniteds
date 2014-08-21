@@ -41,6 +41,7 @@ import org.granite.client.messaging.Consumer;
 import org.granite.client.messaging.ResponseListener;
 import org.granite.client.messaging.ResultFaultIssuesResponseListener;
 import org.granite.client.messaging.TopicMessageListener;
+import org.granite.client.messaging.channel.ResponseMessageFuture;
 import org.granite.client.messaging.events.FaultEvent;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
@@ -132,7 +133,7 @@ public class DataObserver implements ContextAware, NameAware {
 	
 	public void stop() {
 		if (consumer != null && consumer.isSubscribed())
-			unsubscribe();
+			unsubscribe(true);
 
         consumer = null;
 	}
@@ -153,7 +154,11 @@ public class DataObserver implements ContextAware, NameAware {
 	    consumer.subscribe(subscriptionListener);
 	}
 	
-	public synchronized void unsubscribe() {
+	public void unsubscribe() {
+		unsubscribe(false);
+	}
+	
+	public synchronized void unsubscribe(boolean onStop) {
 		if (consumer == null)
 			throw new IllegalStateException("Cannot unsubscribe, DataObserver " + this.destination + " not started");
 		
@@ -162,7 +167,18 @@ public class DataObserver implements ContextAware, NameAware {
 		
 		unsubscribing = true;
 		consumer.removeMessageListener(messageListener);
-		consumer.unsubscribe(unsubscriptionListener);
+		
+		if (!onStop)
+			consumer.unsubscribe(unsubscriptionListener);
+		else {
+			ResponseMessageFuture future = consumer.unsubscribe(unsubscriptionListener);
+			try {
+				future.get(2500L); // 2.5s.
+			}
+			catch (Exception e) {
+				log.error(e, "Destination %s could not be unsubscribed on stop: %s", destination);
+			}
+		}
 	}
 	
 	private ResponseListener subscriptionListener = new ResultFaultIssuesResponseListener() {

@@ -50,6 +50,11 @@ public class ImmediateFailureResponseMessageFuture implements ResponseMessageFut
 	}
 
 	@Override
+	public ResponseMessage get(long timeout) throws InterruptedException, ExecutionException, TimeoutException {
+		throw new ExecutionException(cause);
+	}
+
+	@Override
 	public boolean isCancelled() {
 		return false;
 	}

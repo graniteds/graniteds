@@ -107,10 +107,15 @@ public class AsyncToken extends TimerTask implements ResponseMessageFuture {
 
 	@Override
 	public ResponseMessage get() throws InterruptedException, ExecutionException, TimeoutException {
+		return get(0);
+	}
+
+	@Override
+	public ResponseMessage get(long timeout) throws InterruptedException, ExecutionException, TimeoutException {
 		synchronized (this) {
 			if (event == null) {
 				try {
-					wait();
+					wait(timeout);
 				}
 				catch (InterruptedException e) {
 					if (dispatchCancelled())

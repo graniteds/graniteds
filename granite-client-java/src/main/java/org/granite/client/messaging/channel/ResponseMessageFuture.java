@@ -49,6 +49,20 @@ public interface ResponseMessageFuture {
 	public ResponseMessage get() throws InterruptedException, ExecutionException, TimeoutException;
 
     /**
+     * Wait synchronously for the response. This method throws a TimeoutException if the
+     * specified amount of time ({@code timeout}) has elapsed before the response is received.
+     * If {@code timeout} is zero, however, then the method simply waits until the response
+     * is received or the default transport timeout has elapsed.
+     * 
+     * @param timeout the maximum time to wait in milliseconds.
+     * @return response
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws TimeoutException
+     */
+	public ResponseMessage get(long timeout) throws InterruptedException, ExecutionException, TimeoutException;
+
+    /**
      * Is the request cancelled ?
      * @return true if cancelled
      */
