@@ -1017,7 +1017,10 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
         for (String p : pval.keySet()) {
             Object val = pval.get(p);
             
-            if (val instanceof Collection<?> && dataManager.isInitialized(val)) {
+            if (val instanceof Collection<?>) {
+            	if (!dataManager.isInitialized(val))
+            		continue;
+            	
                 Collection<Object> coll = (Collection<Object>)val;
                 List<Object> savedArray = save != null ? (List<Object>)save.get(p) : null;
                 
@@ -1039,7 +1042,10 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
                         resetEntity(mergeContext, o, o, cache);
                 }
             }
-            else if (val instanceof Map<?, ?> && dataManager.isInitialized(val)) {
+            else if (val instanceof Map<?, ?>) {
+            	if (!dataManager.isInitialized(val))
+            		continue;
+            	
                 Map<Object, Object> map = (Map<Object, Object>)val;
                 List<Object[]> savedArray = save != null ? (List<Object[]>)save.get(p) : null;
                 

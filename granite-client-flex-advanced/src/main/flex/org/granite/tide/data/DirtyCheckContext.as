@@ -1012,7 +1012,10 @@ package org.granite.tide.data {
                 
                 var val:Object = entity[p];
                 var o:Object, removed:Array = null;
-				if (val is IList && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
+				if (val is IList) {
+					if (val is IPersistentCollection && !IPersistentCollection(val).isInitialized())
+						continue;
+				
 					var coll:IList = IList(val);
 					while (coll is ListCollectionView)
 						coll = ListCollectionView(coll).list;
@@ -1036,7 +1039,10 @@ package org.granite.tide.data {
 							resetEntity(IEntity(coll.getItemAt(z)), cache);
 					}
 				}
-				else if (val is IMap && !(val is IPersistentCollection && !IPersistentCollection(val).isInitialized())) {
+				else if (val is IMap) {
+					if (val is IPersistentCollection && !IPersistentCollection(val).isInitialized())
+						continue;
+				
 					var map:IMap = IMap(val);
 					if (map is IWrapper)
 						map = IWrapper(map).object as IMap;
