@@ -32,16 +32,22 @@ public class DataPublishListener {
     
     @PostPersist
     public void onPostPersist(Object entity) {
+    	if (entity.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    		return;
     	DataContext.addUpdate(EntityUpdateType.PERSIST, entity);
     }
     
     @PostRemove
     public void onPostRemove(Object entity) {
+    	if (entity.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    		return;
     	DataContext.addUpdate(EntityUpdateType.REMOVE, entity);
     }
     
     @PostUpdate
     public void onPostUpdate(Object entity) {
+    	if (entity.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    		return;
     	DataContext.addUpdate(EntityUpdateType.UPDATE, entity);
     }
 }
