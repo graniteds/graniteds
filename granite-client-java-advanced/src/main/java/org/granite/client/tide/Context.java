@@ -182,11 +182,11 @@ public class Context {
     	if (instanceStore != null)
     		this.instanceStore = instanceStore;
         application.initContext(this, initialBeans);
-        instanceStore.init();
         this.entityManager = new EntityManagerImpl("", dataManager);
         this.entityManager.setRemoteInitializer(new RemoteInitializerImpl(this));
+        instanceStore.init();
     }
-
+    
     /**
      * Event bus for this context
      * @return event bus
@@ -197,7 +197,7 @@ public class Context {
     
     public void postInit() {
     }
-
+    
     /**
      * Parent context for conversation contexts
      * @return parent context
