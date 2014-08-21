@@ -44,6 +44,8 @@ import java.util.Map;
  * @author William DRAI
  */
 public interface InstanceStore {
+	
+	public void init();
 
     /**
      * Set a named bean in the container

@@ -78,6 +78,9 @@ public class SpringInstanceStoreFactory implements InstanceStoreFactory {
 			this.context = context;
 			this.applicationContext = applicationContext;
 		}
+		
+		public void init() {
+		}
 	    
 		@Override
 		public <T> T set(String name, T instance) {

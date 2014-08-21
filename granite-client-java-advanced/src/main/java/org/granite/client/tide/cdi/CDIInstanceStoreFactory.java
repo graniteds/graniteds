@@ -79,6 +79,9 @@ public class CDIInstanceStoreFactory implements InstanceStoreFactory {
 			this.context = context;
 			this.beanManager = beanManager;
 		}
+		
+		public void init() {
+		}
 	    
 		@SuppressWarnings("unchecked")
 		@Override

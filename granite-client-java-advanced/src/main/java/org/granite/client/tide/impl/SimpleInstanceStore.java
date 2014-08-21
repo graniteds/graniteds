@@ -68,6 +68,11 @@ public class SimpleInstanceStore implements InstanceStore {
     	this.instanceFactory = instanceFactory;
     }
     
+    public void init() {
+    	for (Entry<String, Object> eb : context.getInitialBeans().entrySet())
+            instances.put(eb.getKey(), eb.getValue());
+    }
+    
     public <T> T set(String name, T instance) {
     	context.initInstance(instance, name);
         instances.put(name, instance);

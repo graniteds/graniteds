@@ -182,6 +182,7 @@ public class Context {
     	if (instanceStore != null)
     		this.instanceStore = instanceStore;
         application.initContext(this, initialBeans);
+        instanceStore.init();
         this.entityManager = new EntityManagerImpl("", dataManager);
         this.entityManager.setRemoteInitializer(new RemoteInitializerImpl(this));
     }
