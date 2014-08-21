@@ -58,6 +58,8 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
 
+	private static final int DEFAULT_MAX_BINARY_MESSAGE_BUFFER_SIZE = 16384;
+	
     private static final Logger log = Logger.getLogger(AbstractWebSocketChannel.class);
     private static final Logger logFine = Logger.getLogger(AbstractWebSocketChannel.class.getName() + "_fine");
 
@@ -65,7 +67,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
     private ContentType contentType;
     private Object clientId;
     private byte[] connectAckMessage;
-    private int maxBinaryMessageBufferSize = 16384;
+    private int maxBinaryMessageBufferSize = DEFAULT_MAX_BINARY_MESSAGE_BUFFER_SIZE;
 
     ///////////////////////////////////////////////////////////////////////////
     // Constructor.
@@ -76,11 +78,11 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
     
     protected void setMaxBinaryMessageBufferSize(int maxBinaryMessageBufferSize) {
     	if (maxBinaryMessageBufferSize < 512)
-    		throw new IllegalArgumentException("WebSocket MaxBinaryMessageBufferSize too low: " + maxBinaryMessageBufferSize);
-    	
-    	log.debug("Setting MaxBinaryMessageBufferSize to: %d", maxBinaryMessageBufferSize);
-    	
-    	this.maxBinaryMessageBufferSize = maxBinaryMessageBufferSize;
+    		log.warn("Trying to set WebSocket maxBinaryMessageBufferSize too low: %d (ignored)", maxBinaryMessageBufferSize);
+    	else {
+	    	log.debug("Setting MaxBinaryMessageBufferSize to: %d", maxBinaryMessageBufferSize);
+	    	this.maxBinaryMessageBufferSize = maxBinaryMessageBufferSize;
+    	}
     }
     
     public int getMaxBinaryMessageBufferSize() {
