@@ -33,8 +33,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 /**
  * Created by william on 20/02/14.
  * 
- * Note: Edit
- * [wildfly.home]/modules/system/layers/base/org/jboss/as/embedded/main/module.xml
+ * Note:
+ * 
+ * (1) Edit [wildfly.home]/modules/system/layers/base/org/jboss/as/embedded/main/module.xml
  * and fix module dependencies as follow:
  * 
  * <![CDATA[
@@ -53,6 +54,14 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  *      <module name="org.jboss.vfs"/>
  * </dependencies>
  * ]]>
+ * 
+ * (2) Edit [wildfly.home]/standalone/configuration/application-roles.properties and append:
+ * 
+ * user=user
+ * 
+ * (3) Edit [wildfly.home]/standalone/configuration/application-users.properties and append:
+ * 
+ * user=6202072911c699f7abeb7fae03232794
  */
 public class EmbeddedWildFly implements EmbeddedContainer {
 	
