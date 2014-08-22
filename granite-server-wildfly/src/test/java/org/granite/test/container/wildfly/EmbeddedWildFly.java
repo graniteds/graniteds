@@ -21,6 +21,8 @@
  */
 package org.granite.test.container.wildfly;
 
+import java.io.File;
+
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.test.container.Utils;
 import org.jboss.as.embedded.EmbeddedServerFactory;
@@ -28,14 +30,32 @@ import org.jboss.as.embedded.StandaloneServer;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-import java.io.File;
-import java.util.Properties;
-
 /**
  * Created by william on 20/02/14.
+ * 
+ * Note: Edit
+ * [wildfly.home]/modules/system/layers/base/org/jboss/as/embedded/main/module.xml
+ * and fix module dependencies as follow:
+ * 
+ * <![CDATA[
+ * <dependencies>
+ *      <module name="javax.ejb.api"/>
+ *      <module name="org.wildfly.security.manager"/>
+ *      <module name="org.jboss.as.server"/>
+ *      <module name="org.jboss.as.controller"/>
+ *      <module name="org.jboss.as.controller-client"/>
+ *      <module name="org.jboss.as.protocol"/>
+ *      <module name="org.jboss.msc"/>
+ *      <module name="org.jboss.jandex"/>
+ *      <module name="org.jboss.logging"/>
+ *      <module name="org.jboss.modules"/>
+ *      <module name="org.jboss.staxmapper"/>
+ *      <module name="org.jboss.vfs"/>
+ * </dependencies>
+ * ]]>
  */
 public class EmbeddedWildFly implements EmbeddedContainer {
-
+	
     private File jbossHome = new File(System.getProperty("jboss.home"));
     private File embeddedJbossHome;
     private StandaloneServer jboss;
@@ -52,11 +72,7 @@ public class EmbeddedWildFly implements EmbeddedContainer {
 
         File modulesHome = new File(jbossHome, "modules");
         File bundlesHome = new File(jbossHome, "bundles");
-
-        Properties properties = new Properties();
-        properties.put("jboss.home.dir", jbossHome.getAbsolutePath());
-        properties.put("jboss.embedded.root", embeddedJbossHome.getAbsolutePath());
-        properties.put("java.util.logging.manager", "org.jboss.logmanager.LogManager");
+        
         jboss = EmbeddedServerFactory.create(jbossHome.getAbsolutePath(), modulesHome.getAbsolutePath(), bundlesHome.getAbsolutePath());
 
         war.addAsLibraries(new File("granite-server-core/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
