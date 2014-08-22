@@ -38,32 +38,41 @@ import org.granite.gravity.GravityManager;
  */
 public class GravityWebSocketDeployer implements ServletContextListener {
 
+	private static final String WEBSOCKET_DEPLOYED_ATTR = GravityWebSocketDeployer.class.getName() + "_deployed";
+	
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         ServerContainer serverContainer = (ServerContainer)servletContextEvent.getServletContext().getAttribute(ServerContainer.class.getName());
-        if (serverContainer != null) {
-            Gravity gravity = GravityManager.getGravity(servletContextEvent.getServletContext());
-            try {
-                if (gravity == null)
-                    gravity = GravityManager.start(servletContextEvent.getServletContext());
+        if (serverContainer == null)
+        	return;
+    
+    	Object deployed = servletContextEvent.getServletContext().getAttribute(WEBSOCKET_DEPLOYED_ATTR);
+    	if (deployed != null)
+    		return;
+    	
+        Gravity gravity = GravityManager.getGravity(servletContextEvent.getServletContext());
+        try {
+            if (gravity == null)
+                gravity = GravityManager.start(servletContextEvent.getServletContext());
 
-                try {
-                    serverContainer.setDefaultMaxSessionIdleTimeout(gravity.getGravityConfig().getChannelIdleTimeoutMillis());
-                }
-                catch (UnsupportedOperationException e) {
-                    // GlassFish v4 ?
-                }
-                ServerEndpointConfig serverEndpointConfig = ServerEndpointConfig.Builder.create(GravityWebSocketEndpoint.class, "/websocketamf/amf")
-                        .configurator(new GravityWebSocketConfigurator())
-                        .subprotocols(Arrays.asList("org.granite.gravity.amf", "org.granite.gravity.jmf+amf"))
-                        .build();
-                serverEndpointConfig.getUserProperties().put("servletContext", servletContextEvent.getServletContext());
-                serverEndpointConfig.getUserProperties().put("gravity", gravity);
-                serverContainer.addEndpoint(serverEndpointConfig);
+            try {
+                serverContainer.setDefaultMaxSessionIdleTimeout(gravity.getGravityConfig().getChannelIdleTimeoutMillis());
             }
-            catch (Exception e) {
-                throw new RuntimeException("Could not deploy gravity websocket endpoint", e);
+            catch (UnsupportedOperationException e) {
+                // GlassFish v4 ?
             }
+            ServerEndpointConfig serverEndpointConfig = ServerEndpointConfig.Builder.create(GravityWebSocketEndpoint.class, "/websocketamf/amf")
+                    .configurator(new GravityWebSocketConfigurator())
+                    .subprotocols(Arrays.asList("org.granite.gravity.amf", "org.granite.gravity.jmf+amf"))
+                    .build();
+            serverEndpointConfig.getUserProperties().put("servletContext", servletContextEvent.getServletContext());
+            serverEndpointConfig.getUserProperties().put("gravity", gravity);
+            serverContainer.addEndpoint(serverEndpointConfig);
+            
+            servletContextEvent.getServletContext().setAttribute(WEBSOCKET_DEPLOYED_ATTR, true);
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Could not deploy gravity websocket endpoint", e);
         }
     }
 
