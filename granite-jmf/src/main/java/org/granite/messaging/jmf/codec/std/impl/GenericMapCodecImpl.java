@@ -65,6 +65,9 @@ public class GenericMapCodecImpl extends AbstractStandardCodec<Object> implement
 			IntegerUtil.encodeInteger(ctx, indexOfStoredObject, count);
 		}
 		else {
+			if (!(v instanceof Serializable))
+				throw new NotSerializableException(v.getClass().getName());
+
 			ctx.addToObjects(v);
 			
 			Map.Entry<?, ?>[] snapshot = ((Map<?, ?>)v).entrySet().toArray(new Map.Entry<?, ?>[0]);

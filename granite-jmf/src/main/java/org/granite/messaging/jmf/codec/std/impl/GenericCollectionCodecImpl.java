@@ -65,6 +65,9 @@ public class GenericCollectionCodecImpl extends AbstractStandardCodec<Object> im
 			IntegerUtil.encodeInteger(ctx, indexOfStoredObject, count);
 		}
 		else {
+			if (!(v instanceof Serializable))
+				throw new NotSerializableException(v.getClass().getName());
+
 			ctx.addToObjects(v);
 			
 			Collection<?> coll = (Collection<?>)v;
