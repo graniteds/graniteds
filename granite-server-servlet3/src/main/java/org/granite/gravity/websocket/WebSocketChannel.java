@@ -78,10 +78,10 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
     @Override
     protected void sendBytes(byte[] msg) throws IOException {
         if (session != null && session.isOpen()) {
-        	if (msg.length <= session.getMaxBinaryMessageBufferSize())
+        	if (msg.length <= getMaxBinaryMessageBufferSize())
         		session.getBasicRemote().sendBinary(ByteBuffer.wrap(msg));
         	else {
-        		final int length = session.getMaxBinaryMessageBufferSize();
+        		final int length = getMaxBinaryMessageBufferSize();
         		int offset = 0;
         		do {
 	        		session.getBasicRemote().sendBinary(ByteBuffer.wrap(msg, offset, length), false);
