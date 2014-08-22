@@ -309,7 +309,7 @@ The +Conflicts+ class exposes a few properties that give more details about the 
 When using the Hibernate native API (++Session++), the optimistick lock exception ++StaleObjectStateException++ is unfortunately missing a critical 
 information that is present in the JPA ++OptimistickLockException++ to allow for correct conflict handling. In this case, you should use the provided 
 Hibernate event listener wrappers that add the missing data to the Hibernate exception. 
-Here is what is will look like when configuring the ++SessionFactory++ with Spring : 
+Here is what is will look like when configuring the ++SessionFactory++ with Spring and Hibernate 3.x : 
 
 [source,xml]
 ----
@@ -413,6 +413,33 @@ This registers a client component with a page size defined by the server. It's a
 ----
 people.setMaxResults(25);              
 ----
+
+Alternatively, you can also pass the arguments to the constructor:
+
+[source,java]
+----
+PagedQuery people = new PagedQuery(peopleService, "list", 25);
+people.setElementClass(Person.class);
+ContextManager.getContext().set("people", people);            
+----
+
+You can omit the property +elementClass+ by using generics (note the +{}+ at the end to declare an anonymous subclass and let the runtime determine the 
+generic type parameters by reflection):
+
+[source,java]
+----
+PagedQuery<Person, Map<String, Object>> people = new PagedQuery<Person, Map<String, Object>>(peopleService, "list", 25) {};
+ContextManager.getContext().set("people", people);            
+----
+
+With Java 8, you can also use a typed method reference:
+
+[source,java]
+----
+PagedQuery<Person, Map<String, Object>> people = new PagedQuery<Person, Map<String, Object>>(peopleService, peopleService::list, 25) {};
+ContextManager.getContext().set("people", people);            
+----
+
 
 When using Spring on the client, you can simply declare a +PagedQuery+ bean in your Spring context, and configure its properties. 
 
@@ -667,7 +694,7 @@ public abstract class MyEntity {
 }
 ----
 
-When using the Hibernate native API instead of JPA, you can use the following listener configuration:         
+When using the Hibernate native API instead of JPA, you can use the following listener configuration (Hibernate 3.x):         
 
 [source,java]
 ----
@@ -729,7 +756,34 @@ And with Spring:
 </bean>       
 ----
 
-Then add the Tide data annotation on all services, example here with a Spring service: 
+For Hibernate 4.x, the way of declaring these listeners has completely changed and uses the +ServiceLoader+ API.
+You will have to add a text file containing the following line in +META-INF/services/org.hibernate.integrator.spi.Integrator+ of your application jar:
+
+.META-INF/services/org.hibernate.integrator.spi.Integrator
+----
+org.granite.tide.hibernate4.Hibernate4Integrator
+----
+
+NOTE: These listeners are registered for all managed entities. To exclude a particular entity type from the publishing process,
+you can annotate its class with +@ExcludeFromDataPublish+.
+
+In case the JPA provider is not able to detect changes on entities automatically, or you want to force manually the change detection, you can use the 
+following code to trigger a manual change:
+
+[source,java]
+----
+DataContext.addUpdate(EntityUpdateType.UPDATE, myEntity);
+----
+
+If you want to force a complete refresh of all instances of a particular type, you can use this:
+
+[source,java]
+----
+DataContext.addUpdate(EntityUpdateType.REFRESH, MyEntity.class);
+----
+
+
+Once the change detection is properly configured, you then have to add the Tide data annotation on all services, for example here with a Spring service: 
 
 [source,java]
 ----
@@ -740,10 +794,10 @@ public interface MyService {
 ----
 
 It's generally recommended to put the annotation on the service interface but it can also work when defined on the service implementation. 
-Note that even services that only read data should be annotated this +@DataEnabled+ because they also participate in the construction  of the message selector. 
+Note that even services that only read data should be annotated this +@DataEnabled+ because they also participate in the construction of the message selector. 
 
 The attributes of this annotations are:
- 
+
 * ++topic++: the name of the messaging topic that will be used to dispatch updates. Obviously this is the one we declared just before in +services-config.xml+. 
 * ++publish++: the publishing mode. +PublishMode.MANUAL+ means that you will have to trigger the dispatch manually, for example in an interceptor. 
     +$$PublishMode.ON_SUCCESS$$+ means that Tide will automatically dispatch the updates on any successful call. +$$PublishMode.ON_COMMIT$$+ means that Tide will
@@ -970,3 +1024,104 @@ You can setup a fully transactional dispatch by using the +$$ON_COMMIT$$+ mode w
     <adapter ref="jms"/>
 </destination>
 ----
+
+*Server to client change sets*
+
+Limiting the amount of data sent by one client to the server is important, but it's even more important to limit the amount of data sent
+from the server to the clients as the same change object can possibly be sent to a lot of clients when using real-time updates.
+
+GraniteDS can handle this with Hibernate 3.x by integrating with the Hibernate core through a specific native listener.
+From Hibernate 3.6+, the +HibernateDataChangePublishListener+ must be used instead of the standard JPA listener to publish changes
+instead of complete object graphs. The alternative +Hibernate35DataChangePublishListener+ must be used with older Hibernate 3.5+ versions.
+
+[source,java]
+----
+Configuration configuration = new Configuration();
+...
+configuration.setListener("post-insert", new HibernateDataChangePublishListener());
+configuration.setListener("post-update", new HibernateDataChangePublishListener());
+configuration.setListener("post-delete", new HibernateDataChangePublishListener());
+configuration.setListener("pre-collection-update", new HibernateDataChangePublishListener());
+configuration.setListener("flush-entity", new HibernateDataChangePublishListener());
+----
+
+With Hibernate XML config:
+
+[source,xml]
+----
+<hibernate-configuration>
+    <session-factory>
+       ...
+        <event type="post-insert">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/>
+        </event>
+        <event type="post-update">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/>
+        </event>
+        <event type="post-delete">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/>
+        </event>
+        <event type="pre-collection-update">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/>
+        </event>
+        <event type="flush-entity">
+            <listener class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/>
+        </event>
+    </session-factory>
+</hibernate-configuration>
+----
+
+And with Spring:
+
+[source,xml]
+----
+<bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="hibernateProperties">
+        <props>
+            <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+            <prop key="hibernate.show_sql">false</prop>
+            <prop key="hibernate.hbm2ddl.auto">update</prop>
+        </props>
+    </property>
+    <property name="eventListeners">
+        <map>
+            <entry key="post-insert">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/></list>
+            </entry>
+            <entry key="post-update">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/></list>
+            </entry>
+            <entry key="post-delete">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/></list>
+            </entry>
+            <entry key="pre-collection-update">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/></list>
+            </entry>
+            <entry key="flush-entity">
+                <list><bean class="org.granite.tide.hibernate.HibernateDataChangePublishListener"/></list>
+            </entry>
+        </map>
+    </property>
+    ...
+</bean>
+----
+
+For Hibernate 4.x, the configuration is totally different and uses the +ServiceLoader+ API.
+You will have to add a text file containing the following line in +META-INF/services/org.hibernate.integrator.spi.Integrator+ of your application jar:
+
+.META-INF/services/org.hibernate.integrator.spi.Integrator
+----
+org.granite.tide.hibernate4.Hibernate4ChangeSetIntegrator
+----
+
+Once this is configured, it's also necessary to configure the client to be able to merge these incoming +ChangeSet+ objects
+correctly. This can be done easily by setting up the +ChangeSetMerger+ components, for example:
+
+[source,java]
+----
+context.set(new ChangeSetMerger());
+----
+
+When all this is set up, *all* server to client updates will be sent as +ChangeSet+ objects.

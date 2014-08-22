@@ -2211,6 +2211,8 @@ To enable security, you simply put this kind of declaration in your +granite-con
     <security type="org.granite.messaging.service.security.GlassFishV3SecurityService"/>
     For WebLogic
     <security type="org.granite.messaging.service.security.WebLogicSecurityService"/>
+    For WildFly 8.x / Undertow
+    <security type="org.granite.messaging.service.security.UndertowSecurityService"/>
     -->
 </granite-config>
 ----

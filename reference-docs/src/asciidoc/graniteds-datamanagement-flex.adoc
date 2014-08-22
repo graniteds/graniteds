@@ -416,6 +416,25 @@ And with Spring:
 </bean>
 ----
 
+NOTE: In most cases the listeners are registered for all managed entities. To exclude a particular entity type from the publishing process,
+you can annotate its class with +@ExcludeFromDataPublish+.
+
+In case the JPA provider is not able to detect changes on entities automatically, or you want to force manually the change detection, you can use the 
+following code to trigger a manual change:
+
+[source,java]
+----
+DataContext.addUpdate(EntityUpdateType.UPDATE, myEntity);
+----
+
+If you want to force a complete refresh of all instances of a particular type, you can use this:
+
+[source,java]
+----
+DataContext.addUpdate(EntityUpdateType.REFRESH, MyEntity.class);
+----
+
+
 [[data.dirtycheck]]
 === Dirty checking and conflict handling
 
@@ -1094,7 +1113,7 @@ public abstract class MyEntity {
 }
 ----
 
-When using the Hibernate native API instead of JPA, you can use the following listener configuration:         
+When using the Hibernate native API instead of JPA, you can use the following listener configuration (for Hibernate 3.x):         
 
 [source,java]
 ----
@@ -1157,13 +1176,33 @@ And with Spring:
 ----
 
 For Hibernate 4.x, the way of declaring these listeners has completely changed and uses the +ServiceLoader+ API.
-You will have to add the following file in +META-INF/services/org.hibernate.integrator.spi.Integrator+ of your application jar:
+You will have to add a text file containing the following line in +META-INF/services/org.hibernate.integrator.spi.Integrator+ of your application jar:
 
+.META-INF/services/org.hibernate.integrator.spi.Integrator
 ----
 org.granite.tide.hibernate4.Hibernate4Integrator
 ----
 
-Then add the Tide data annotation on all services, example here with a Spring service:
+NOTE: These listeners are registered for all managed entities. To exclude a particular entity type from the publishing process,
+you can annotate its class with +@ExcludeFromDataPublish+.
+
+In case the JPA provider is not able to detect changes on entities automatically, or you want to force manually the change detection, you can use the 
+following code to trigger a manual change:
+
+[source,java]
+----
+DataContext.addUpdate(EntityUpdateType.UPDATE, myEntity);
+----
+
+If you want to force a complete refresh of all instances of a particular type, you can use this:
+
+[source,java]
+----
+DataContext.addUpdate(EntityUpdateType.REFRESH, MyEntity.class);
+----
+
+
+Once the change detection is properly configured, you then have to add the Tide data annotation on all services, for example here with a Spring service: 
 
 [source,java]
 ----
@@ -1413,7 +1452,7 @@ you will ensure that only successful database updates will be dispatched.
 Limiting the amount of data sent by one client to the server is important, but it's even more important to limit the amount of data sent
 from the server to the clients as the same change object can possibly be sent to a lot of clients when using real-time updates.
 
-GraniteDS can handle this with Hibernate 3.x by integrating with the Hibernate core through a specific native listener.
+GraniteDS can handle this with Hibernate 3.x or Hibernate 4.x by integrating with the Hibernate core through a specific native listener.
 From Hibernate 3.6+, the +HibernateDataChangePublishListener+ must be used instead of the standard JPA listener to publish changes
 instead of complete object graphs. The alternative +Hibernate35DataChangePublishListener+ must be used with older Hibernate 3.5+ versions.
 
@@ -1491,10 +1530,17 @@ And with Spring:
 </bean>
 ----
 
-Once this is configured, it's also necessary to configure the client to be able to merge these incoming +ChangeSet+ objects
-correctly. This can be done easily by setting up the +ChangeSetMerger+ components.
+For Hibernate 4.x, you will have to add a text file containing the following line in +META-INF/services/org.hibernate.integrator.spi.Integrator+ of your application jar:
 
-[source,actionscript]
+.META-INF/services/org.hibernate.integrator.spi.Integrator
+----
+org.granite.tide.hibernate4.Hibernate4ChangeSetIntegrator
+----
+
+Once this is configured, it's also necessary to configure the client to be able to merge these incoming +ChangeSet+ objects
+correctly. This can be done easily by setting up a +ChangeSetMerger+ components in your client context.
+
+[source,java]
 ----
 Tide.getInstance().addComponents([ChangeSetMerger]);
 ----

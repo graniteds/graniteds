@@ -209,7 +209,17 @@ public void test() {
 }
 ...
 ----
+
+The same with a UDP channel: 
+
+[source,java]
+----
+...
+MessagingChannel channel = channelFactory.newMessagingChannel(ChannelType.UDP, "mychannel", new URI("http://localhost:8080/myapp/graniteamf/amf"));
+...
+----
 endif::java[]
+
 
 [[messaging.selectors]]
 === Topics and Selectors
@@ -305,17 +315,20 @@ There are three main steps to configure Gravity in an application:
 * Declare the Gravity servlet implementation for your target server in +web.xml+ 
 * Declare a messaging service and destination in +services-config.xml+, mapped to a specific channel  definition of type +GravityChannel+ 
 
+Here is the configuration for servlet 3 compliant application servers:
+
 [source,xml]
 ----
-<web-app version="2.5" ...>
+<web-app version="3.0" ...>
     ...
     <listener>
         <listener-class>org.granite.config.GraniteConfigListener</listener-class>
     </listener>
-
+	
     <servlet>
         <servlet-name>GravityServlet</servlet-name>
-        <servlet-class>org.granite.gravity.tomcat.GravityTomcatServlet</servlet-class>
+        <servlet-class>org.granite.gravity.servlet3.GravityAsyncServlet</servlet-class>
+        <async-supported>true</async-supported>
     </servlet>
     <servlet-mapping>
         <servlet-name>GravityServlet</servlet-name>
@@ -325,7 +338,7 @@ There are three main steps to configure Gravity in an application:
 </web-app>
 ----
 
-This declaration is the one specific to the Tomcat application server. See below for all available Gravity servlet implementations. 
+See below for the other available Gravity servlet implementations for older pre-servlet 3 containers. 
 
 [NOTE]
 ====
@@ -406,13 +419,83 @@ Here is the table of the supported implementations:
 |Any other|+org.granite.gravity.generic.GravityGenericServlet+|Using blocking I/O (no asynchronous support)
 |===============
 
+For example, here is an example configuration for Tomcat 6.x:
+
+[source,xml]
+----
+<web-app version="2.5" ...>
+    ...
+    <listener>
+        <listener-class>org.granite.config.GraniteConfigListener</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>GravityServlet</servlet-name>
+        <servlet-class>org.granite.gravity.tomcat.GravityTomcatServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GravityServlet</servlet-name>
+        <url-pattern>/gravityamf/*</url-pattern>
+    </servlet-mapping>
+    ...
+</web-app>
+----
+
+[source,xml]
+----
+<web-app version="2.5" ...>
+    ...
+    <listener>
+        <listener-class>org.granite.config.GraniteConfigListener</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>GravityServlet</servlet-name>
+        <servlet-class>org.granite.gravity.tomcat.GravityTomcatServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GravityServlet</servlet-name>
+        <url-pattern>/gravityamf/*</url-pattern>
+    </servlet-mapping>
+    ...
+</web-app>
+----
+
 [[messaging.configappserver.websocket]]
 ==== Supported application servers for WebSocket
 
-There is no standard way before the release of the Servlet 3.1 specification to use WebSockets in Java EE application servers thus GraniteDS provides 
-support for native WebSocket implementations on some application servers. 
+Starting with Java EE 7, application servers should implement the standard JSR-356 specification which defines WebSocket support. For these servers
+(which include Tomcat 7.0.52+, Jetty 9+, GlassFish 4+, WildFly 8+ and probably a few more), the configuration in +web.xml+ is as follows:
 
-Here is the table of the supported implementations: 
+.web.xml
+[source,xml]
+----
+<listener>
+	<listener-class>org.granite.gravity.websocket.GravityWebSocketDeployer</listener-class>
+</listener>
+----
+
+This declaration is not necessary if you are using the Servlet 3 initializer mechanism (i.e. a configuration class annotated with +@ServerFilter+).
+
+GraniteDS also support native implementations for a few servers which do not support JSR-356. In this case the configuration is a servlet, for example
+here for Tomcat 7.x:
+
+.web.xml
+[source,xml]
+----
+<web-app version="3.0" ...>
+    ...
+    <servlet>
+        <servlet-name>WebSocketServlet</servlet-name>
+        <servlet-class>org.granite.gravity.tomcat.TomcatWebSocketServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>WebSocketServlet</servlet-name>
+        <url-pattern>/websocketamf/*</url-pattern>
+    </servlet-mapping>
+    ...
+</web-app>
+----
 
 [options="header"]
 |===============
