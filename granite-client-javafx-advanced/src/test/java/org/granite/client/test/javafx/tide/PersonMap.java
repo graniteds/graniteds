@@ -106,4 +106,7 @@ public class PersonMap extends AbstractEntity {
     public ObservableMap<String, SimpleEntity> getMapEntity() {
         return mapEntity.get();
     }
+    public void setMapEntity(ObservableMap<String, SimpleEntity> mapEntity) {
+    	this.mapEntity.set(mapEntity);
+    }
 }

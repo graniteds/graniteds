@@ -34,6 +34,7 @@
  */
 package org.granite.client.test.javafx.tide;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,6 +61,8 @@ import org.granite.client.tide.data.spi.DataManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.sun.javafx.collections.ObservableMapWrapper;
 
 
 @SuppressWarnings("unchecked")
@@ -464,7 +467,8 @@ public class TestManagedEntity {
         
         PersonEmbedColl p = (PersonEmbedColl)entityManager.mergeExternalData(p1);
 
-        Loader<PersistentCollection> loader = ((PersistentCollection)p.getContactList().getContacts()).getLoader();
+        @SuppressWarnings("rawtypes")
+		Loader<PersistentCollection> loader = ((PersistentCollection)p.getContactList().getContacts()).getLoader();
         Assert.assertTrue("Contacts loader", loader instanceof CollectionLoader);
     }
     
@@ -503,6 +507,29 @@ public class TestManagedEntity {
         
         Assert.assertNotNull("Map merged", p.getMapEmbed());
         Assert.assertEquals("Map size", 1, p.getMapEmbed().size());
+    }
+    
+    @Test
+    public void testMergeEntityMapGDS1332() throws Exception {
+        PersonMap p = new PersonMap(1L, 0L, "P1", "Toto", "Toto");
+        entityManager.mergeExternalData(p);
+        
+        PersonMap p2 = new PersonMap(1L, 1L, "P1", "Toto2", "Toto2");
+        p2.setMapEntity(null);
+        PersonMap p3 = (PersonMap)entityManager.mergeExternalData(p2);
+        
+        Assert.assertNull("Map merged", p3.getMapEntity());
+        
+        PersonMap p4 = new PersonMap(1L, 1L, "P1", "Toto2", "Toto2");
+        p4.setMapEntity(FXCollections.observableMap(new HashMap<String, SimpleEntity>()));
+        PersonMap p5 = (PersonMap)entityManager.mergeExternalData(p4);
+        
+        Assert.assertNotNull("Map merged", p5.getMapEntity());
+        Assert.assertTrue("Map wrapped", p5.getMapEntity() instanceof ObservableMapWrapper);
+        Field backingMapField = ObservableMapWrapper.class.getDeclaredField("backingMap");
+        backingMapField.setAccessible(true);
+        Object wrappedMap = backingMapField.get(p5.getMapEntity());
+        Assert.assertFalse("Map wrapped only once", wrappedMap instanceof ObservableMapWrapper);
     }
     
     @Test

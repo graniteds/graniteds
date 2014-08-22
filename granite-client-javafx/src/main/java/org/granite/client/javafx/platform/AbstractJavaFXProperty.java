@@ -45,13 +45,11 @@ import javafx.beans.value.WritableMapValue;
 import javafx.beans.value.WritableSetValue;
 import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
+import javafx.collections.ObservableSet;
 
 import org.granite.client.javafx.persistence.collection.FXPersistentCollections;
-import org.granite.client.javafx.persistence.collection.ObservablePersistentList;
-import org.granite.client.javafx.persistence.collection.ObservablePersistentMap;
-import org.granite.client.javafx.persistence.collection.ObservablePersistentSet;
-import org.granite.client.javafx.persistence.collection.ObservablePersistentSortedMap;
-import org.granite.client.javafx.persistence.collection.ObservablePersistentSortedSet;
 import org.granite.client.persistence.collection.PersistentBag;
 import org.granite.client.persistence.collection.PersistentList;
 import org.granite.client.persistence.collection.PersistentMap;
@@ -316,7 +314,7 @@ public abstract class AbstractJavaFXProperty implements JavaFXProperty {
 					value = FXPersistentCollections.observablePersistentBag((PersistentBag<Object>)value);
 				else if (value instanceof PersistentList)
 					value = FXPersistentCollections.observablePersistentList((PersistentList<Object>)value);
-				else if (value != null && !(value instanceof ObservablePersistentList))
+				else if (value != null && !(value instanceof ObservableList<?>))
 					value = FXCollections.observableList((List<Object>)value);
 			}
 			else if (writableValue instanceof WritableSetValue) {
@@ -324,7 +322,7 @@ public abstract class AbstractJavaFXProperty implements JavaFXProperty {
 					value = FXPersistentCollections.observablePersistentSortedSet((PersistentSortedSet<Object>)value);
 				else if (value instanceof PersistentSet)
 					value = FXPersistentCollections.observablePersistentSet((PersistentSet<Object>)value);
-				else if (value != null && !(value instanceof ObservablePersistentSortedSet) && !(value instanceof ObservablePersistentSet))
+				else if (value != null && !(value instanceof ObservableSet<?>))
 					value = FXCollections.observableSet((Set<Object>)value);
 			}
 			else if (writableValue instanceof WritableMapValue) {
@@ -332,10 +330,10 @@ public abstract class AbstractJavaFXProperty implements JavaFXProperty {
 					value = FXPersistentCollections.observablePersistentSortedMap((PersistentSortedMap<Object, Object>)value);
 				else if (value instanceof PersistentMap)
 					value = FXPersistentCollections.observablePersistentMap((PersistentMap<Object, Object>)value);
-				else if (value != null && !(value instanceof ObservablePersistentSortedMap) && !(value instanceof ObservablePersistentMap))
+				else if (value != null && !(value instanceof ObservableMap<?, ?>))
 					value = FXCollections.observableMap((Map<Object, Object>)value);
 			}
-
+			
 			writableValue.setValue(value);
 		}
 		else

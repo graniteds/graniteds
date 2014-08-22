@@ -314,6 +314,30 @@ public class TestGenEntity {
 	}
 	
 	@Test
+	public void testTideTemplateJFXEntityMap() throws Exception {
+		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
+		config.setTide(true);
+		config.addFileSetClasses(EntityMap.class, Entity1.class);
+		JavaGroovyTransformer provider = new JavaGroovyTransformer(config, new MockListener()) {
+			@Override
+			public boolean isOutdated(JavaAs3Input input, GroovyTemplate template, File outputFile, boolean hasBaseTemplate) {
+				return true;
+			}
+		};
+		Generator generator = new Generator(config);
+		generator.add(provider);
+		JavaAs3Input input = new JavaAs3Input(EntityMap.class, 
+				new File(EntityMap.class.getClassLoader().getResource(EntityMap.class.getName().replace('.', '/') + ".class").toURI()));
+		JavaAs3Output[] outputs = (JavaAs3Output[])generator.generate(input);
+		
+		Assert.assertEquals("Output", 2, outputs.length);
+		
+		String base = Util.readFile(outputs[0].getFile());
+		Assert.assertTrue("EntityMapBase contains readOnlyMap", base.indexOf("private ReadOnlyMapWrapper<String, Entity1> readOnlyMap = FXPersistentCollections.readOnlyObservablePersistentMap(this, \"readOnlyMap\");") >= 0);
+		Assert.assertTrue("EntityMapBase contains map", base.indexOf("private ReadOnlyMapWrapper<String, Entity1> map = FXPersistentCollections.readOnlyObservablePersistentMap(this, \"map\");") >= 0);
+	}
+	
+	@Test
 	public void testTideTemplateJFXEntityByteArray() throws Exception {
 		MockJavaFXGroovyConfiguration config = new MockJavaFXGroovyConfiguration();
 		config.setTide(true);

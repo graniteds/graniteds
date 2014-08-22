@@ -22,6 +22,7 @@
 package org.granite.client.test.javafx.jmf;
 
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -38,6 +39,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+
+import javafx.collections.FXCollections;
 
 import org.granite.client.javafx.platform.JavaFXPlatform;
 import org.granite.client.messaging.ClientAliasRegistry;
@@ -937,6 +940,48 @@ public class TestJMFHibernate {
 		Assert.assertTrue(((ServerEntity)serverEntityCopy).getList().size() == 1);
 		Assert.assertTrue(((ServerEntity)serverEntityCopy).getList().get(0) instanceof ServerCollectionEntity);
 	}
+
+	@Test
+	public void testFXEntityMapGDS1332() throws Exception {
+		clientAliasRegistry.registerAlias(ClientFXEntityMap.class);
+		clientAliasRegistry.registerAlias(ClientConcreteEntity.class);
+		
+		final Integer id = Integer.valueOf(3);
+		final String uid = UUID.randomUUID().toString();
+		final Integer version = Integer.valueOf(2);
+		final String name = "John Doe";
+		
+		ServerEntityMap serverEntity = new ServerEntityMap(id, version);
+		serverEntity.setUid(uid);
+		serverEntity.setName(name);
+		serverEntity.setMap(null);
+		
+		Object clientEntity = serializeAndDeserializeServerToClient(serverEntity, false);
+		Assert.assertNull("Client map", ((ClientFXEntityMap)clientEntity).getMap());
+		
+		Object serverEntity2 = serializeAndDeserializeClientToServer(clientEntity, false);
+		Assert.assertNull("Server map", ((ServerEntityMap)serverEntity2).getMap());
+		
+		serverEntity.setMap(new HashMap<String, ClientConcreteEntity>());
+		
+		clientEntity = serializeAndDeserializeServerToClient(serverEntity, false);
+		Assert.assertNotNull("Client map", ((ClientFXEntityMap)clientEntity).getMap());
+		
+		serverEntity2 = serializeAndDeserializeClientToServer(clientEntity, true);
+		Assert.assertNotNull("Server map", ((ServerEntityMap)serverEntity2).getMap());
+		
+		// GDS-1332
+		((ClientFXEntityMap)clientEntity).setMap(FXCollections.observableMap(((ClientFXEntityMap)clientEntity).getMap()));
+		
+		boolean error = false;
+		try {
+			serializeClientToServer(clientEntity, true);
+		}
+		catch (NotSerializableException e) {
+			error = true;
+		}
+		Assert.assertTrue("Not serializable", error);
+	}
 	
 	@Test
 	public void testFXUpdate() throws Exception {
@@ -993,6 +1038,10 @@ public class TestJMFHibernate {
 		return serializeAndDeserialize(clientSharedContext, dumpSharedContext, serverSharedContext, obj, dump);
 	}
 	
+	private void serializeClientToServer(Object obj, boolean dump) throws ClassNotFoundException, IOException {
+		serialize(clientSharedContext, dumpSharedContext, serverSharedContext, obj, dump);
+	}
+	
 	private Object serializeAndDeserialize(
 		SharedContext serializeSharedContext,
 		SharedContext dumpSharedContext,
@@ -1020,5 +1069,29 @@ public class TestJMFHibernate {
 		Object clone = deserializer.readObject();
 		deserializer.close();
 		return clone;
+	}
+	
+	private void serialize(
+		SharedContext serializeSharedContext,
+		SharedContext dumpSharedContext,
+		SharedContext deserializeSharedContext,
+		Object obj,
+		boolean dump) throws ClassNotFoundException, IOException {
+		
+		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(serializeSharedContext);
+		serializer.writeObject(obj);
+		serializer.close();
+		byte[] bytes = serializer.toByteArray();
+		
+		
+		PrintStream ps = Util.newNullPrintStream();
+		if (dump) {
+			System.out.println(bytes.length + "B. " + Util.toHexString(bytes));
+			ps = System.out;
+		}
+		
+		JMFDumper dumper = new ByteArrayJMFDumper(bytes, dumpSharedContext, ps);
+		dumper.dump();
+		dumper.close();
 	}
 }
