@@ -50,6 +50,8 @@ public @interface ServerFilter {
 	
 	String type() default "";
 	
+	boolean forceCreateSession() default false;
+	
 	Class<? extends ConfigProvider> configProviderClass() default ConfigProvider.class;
 	
 	Class<? extends ServiceFactory> factoryClass() default ServiceFactory.class;

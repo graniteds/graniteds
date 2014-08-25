@@ -47,6 +47,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
+import org.granite.clustering.CreateSessionFilter;
 import org.granite.config.ConfigProvider;
 import org.granite.config.GraniteConfig;
 import org.granite.config.GraniteConfigListener;
@@ -110,6 +111,11 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 			servletContext.setAttribute(GraniteConfigListener.GRANITE_CONFIG_ATTRIBUTE, new Servlet3ServiceConfigurator(clazz));
 			
 		    servletContext.addListener(new GraniteConfigListener());
+		    
+		    if (serverFilter.forceCreateSession() && servletContext.getFilterRegistration("CreateSessionFilter") == null) {
+		    	FilterRegistration.Dynamic createSessionFilter = servletContext.addFilter("CreateSessionFilter", CreateSessionFilter.class);
+		    	createSessionFilter.addMappingForUrlPatterns(null, true, serverFilter.graniteUrlMapping(), serverFilter.gravityUrlMapping());
+		    }
 			
 			if (servletContext.getFilterRegistration("AMFMessageFilter") == null) {
 				FilterRegistration.Dynamic graniteFilter = servletContext.addFilter("AMFMessageFilter", AMFMessageFilter.class);
