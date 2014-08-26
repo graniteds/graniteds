@@ -178,6 +178,11 @@ public class EjbServiceContext extends TideServiceContext  {
     	if ("identity".equals(componentName))
     		return identity;
     	
+    	if (componentName == null && componentClass != null) {
+        	log.error("Typed component lookup not supported for EJBs (requested class: " + componentClass + ")");
+            throw new ServiceException("Typed component lookup not supported for EJBs (requested class: " + componentClass + ")");
+    	}
+    	
         EjbComponent component = ejbLookupCache.get(componentName);
         if (component != null)
             return component.ejbInstance;
