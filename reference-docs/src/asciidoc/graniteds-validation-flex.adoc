@@ -452,6 +452,8 @@ A sample usage with Flex 4 (using the Person bean introduced above and bidirecti
 
 [source,xml]
 ----
+<s:Application xmlns:v="org.granite.validation.*" ...>
+
 <fx:Declarations>
     <v:FormValidator id="fValidator" form="{personForm}" entity="{person}"/>
 </fx:Declarations>
