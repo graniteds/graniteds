@@ -93,6 +93,16 @@ public class AndroidContextManager extends SimpleContextManager {
 		public boolean isSingleton() {
 			return false;
 		}
+		
+		@Override
+		public String getName() {
+			return null;
+		}
+		
+		@Override
+		public Set<Class<?>> getTargetTypes() {
+			return Collections.<Class<?>>singleton(Binder.class);
+		}
 	}
 	
 	public static Context getContext(Application application) {

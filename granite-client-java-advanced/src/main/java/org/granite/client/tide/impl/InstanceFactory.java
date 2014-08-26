@@ -39,6 +39,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -82,7 +83,7 @@ public class InstanceFactory {
 	    			String name = method.getAnnotation(Named.class).value();
 	    			if ("".equals(name))
 	    				name = method.getName();
-	    			registerFactory(name, new MethodFactory<Object>(method));
+	    			registerFactory(name, new MethodFactory<Object>(method, name));
 	    		}
 	    		else {
 	    			registerFactory(type, new MethodFactory<Object>(method));
@@ -93,6 +94,8 @@ public class InstanceFactory {
     
     public void registerFactory(String name, Factory<?> factory) {
     	factoriesByName.put(name, factory);
+    	for (Class<?> type : factory.getTargetTypes())
+    		registerFactory(type, factory);
     }
     
     public void registerFactory(Class<?> type, Factory<?> factory) {
@@ -127,7 +130,7 @@ public class InstanceFactory {
     	for (Entry<Class<?>, List<Factory<?>>> me : factoriesByType.entrySet()) {
     		if (type.isAssignableFrom(me.getKey())) {
     			for (Factory<?> factory : me.getValue()) {
-    				if (factory.isSingleton() || !singleton)
+    				if ((factory.isSingleton() || !singleton) && !factories.contains(factory))
     					factories.add(factory);
     			}
     		}
@@ -139,15 +142,24 @@ public class InstanceFactory {
 	private static class MethodFactory<T> implements Factory<T> {
 		
 		private final Method method;
+		private final String name;
 		private final boolean singleton;
 		
-		public MethodFactory(Method method) {
+		public MethodFactory(Method method, String name) {
 			this.method = method;
+			this.name = name;
 			this.singleton = method.isAnnotationPresent(Singleton.class);
+		}
+		public MethodFactory(Method method) {
+			this(method, null);
 		}
 		
 		public boolean isSingleton() {
 			return singleton;
+		}
+		
+		public String getName() {
+			return name;
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -191,6 +203,20 @@ public class InstanceFactory {
 			catch (Exception e) {
 				throw new RuntimeException("Could not create instance with method " + method.toGenericString(), e);
 			}
+		}
+		
+		public Set<Class<?>> getTargetTypes() {
+			Set<Class<?>> targetTypes = new HashSet<Class<?>>();
+			targetTypes.add(method.getReturnType());
+			for (Class<?> itf : method.getReturnType().getInterfaces()) {
+				Class<?> i = itf;
+				do {
+					targetTypes.add(i);
+					i = i.getSuperclass();
+				}
+				while (i != null && i != Object.class);
+			}
+			return targetTypes;
 		}
 		
 	}

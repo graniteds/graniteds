@@ -34,6 +34,8 @@
  */
 package org.granite.client.tide;
 
+import java.util.Set;
+
 
 /**
  * @author William DRAI
@@ -43,4 +45,8 @@ public interface Factory<T> {
 	public T create(Context context);
 	
 	public boolean isSingleton();
+	
+	public String getName();
+	
+	public Set<Class<?>> getTargetTypes();
 }

@@ -185,10 +185,11 @@ public class SimpleInstanceStore implements InstanceStore {
     			
     			if (appliedFactories.contains(factories.get(0)))
     				throw new IllegalStateException("Instance for type " + type + " already created by factory but not found");
+    			
     			instance = (T)factories.get(0).create(context);
     	    	if (!instances.containsValue(instance)) {
-        	    	context.initInstance(instance, null);
-    	    		String name = TYPED + (NUM_TYPED_INSTANCE++);
+        	    	context.initInstance(instance, factories.get(0).getName());
+    	    		String name = factories.get(0).getName() != null ? factories.get(0).getName() : TYPED + (NUM_TYPED_INSTANCE++);
     	    		instances.put(name, instance);
     	    		appliedFactories.add(factories.get(0));
     	    	}
@@ -208,9 +209,18 @@ public class SimpleInstanceStore implements InstanceStore {
     		for (Factory<?> factory : factories) {
     			if (appliedFactories.contains(factory))
     				continue;
-	    		String name = TYPED + (NUM_TYPED_INSTANCE++);
-    			Object instance = factory.create(context);
-    			context.initInstance(instance, null);
+	    		String name = null;
+	    		Object instance = null;
+    			if (factory.getName() != null) {
+    				name = factory.getName();
+    				instance = factory.create(context);
+    				context.initInstance(instance, factory.getName());
+    			}
+    			else {
+    				name = TYPED + (NUM_TYPED_INSTANCE++);
+        			instance = factory.create(context);
+        			context.initInstance(instance, null);
+    			}
     			instances.put(name, instance);
     			appliedFactories.add(factory);
     		}
