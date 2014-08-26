@@ -114,6 +114,7 @@ public class GraniteServlet3Initializer implements ServletContainerInitializer {
 		    
 		    if (serverFilter.forceCreateSession() && servletContext.getFilterRegistration("CreateSessionFilter") == null) {
 		    	FilterRegistration.Dynamic createSessionFilter = servletContext.addFilter("CreateSessionFilter", CreateSessionFilter.class);
+		    	createSessionFilter.setAsyncSupported(true);
 		    	createSessionFilter.addMappingForUrlPatterns(null, true, serverFilter.graniteUrlMapping(), serverFilter.gravityUrlMapping());
 		    }
 			
