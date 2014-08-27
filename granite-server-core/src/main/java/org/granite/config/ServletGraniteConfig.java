@@ -31,12 +31,15 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import org.granite.config.api.Configuration;
+import org.granite.config.flex.ServicesConfig;
+import org.granite.context.GraniteContext;
 import org.granite.jmx.MBeanUtil;
 import org.granite.logging.Logger;
 import org.granite.messaging.amf.io.convert.Converter;
 import org.granite.messaging.amf.io.util.ActionScriptClassDescriptor;
 import org.granite.messaging.amf.io.util.JavaClassDescriptor;
 import org.granite.messaging.amf.io.util.externalizer.Externalizer;
+import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ServletParams;
 import org.granite.util.StreamUtil;
 
@@ -91,7 +94,7 @@ public class ServletGraniteConfig implements ServletGraniteConfigMBean {
 
     public static synchronized GraniteConfig loadConfig(ServletContext context) throws ServletException {
         ServletGraniteConfig servletGraniteConfig = (ServletGraniteConfig)context.getAttribute(GRANITE_CONFIG_KEY);
-
+        
         if (servletGraniteConfig == null) {
         	String path = getCustomConfigPath(context);
 
@@ -113,6 +116,8 @@ public class ServletGraniteConfig implements ServletGraniteConfigMBean {
             	if (registerMBeans)
             		mbeanContextName = (String)ServletContext.class.getMethod("getContextPath").invoke(context);
 
+                ServletGraniteContext.createThreadInstance(null, null, context, (String)null, null);
+
                 GraniteConfig graniteConfig = new GraniteConfig(stdConfigPath, is, configuration, mbeanContextName);
                 
                 servletGraniteConfig = loadConfig(context, graniteConfig);
@@ -124,9 +129,12 @@ public class ServletGraniteConfig implements ServletGraniteConfigMBean {
             finally {
             	if (is != null) try {
             		is.close();
-            	} catch (IOException e) {
+            	} 
+            	catch (IOException e) {
             		// Ignore...
             	}
+            	
+            	GraniteContext.release();
             }
         }
 
@@ -179,6 +187,9 @@ public class ServletGraniteConfig implements ServletGraniteConfigMBean {
 		
 		try {
 	    	context.removeAttribute(GRANITE_CONFIG_KEY);
+	    	
+            ServletGraniteContext.createThreadInstance(null, null, context, (String)null, null);
+
 	    	GraniteConfig config = loadConfig(context);
 	    	for (GraniteConfigReloadListener listener : reloadListeners) {
 	    		try {
@@ -193,6 +204,8 @@ public class ServletGraniteConfig implements ServletGraniteConfigMBean {
 			throw new RuntimeException(e.getMessage(), e);
 		}
 		finally {
+			GraniteContext.release();
+			
 			if (context.getAttribute(GRANITE_CONFIG_KEY) == null)
 				context.setAttribute(GRANITE_CONFIG_KEY, oldConfig);
 		}
