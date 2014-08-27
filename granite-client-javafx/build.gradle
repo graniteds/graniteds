@@ -29,6 +29,7 @@ dependencies {
 	
 	testCompile project(':granite-server-core')
 	testCompile project(':granite-server-hibernate')
+	testCompile project(':granite-server-eclipselink')
 	
 	testCompile project(':granite-client-java').sourceSets.test.output
 }
