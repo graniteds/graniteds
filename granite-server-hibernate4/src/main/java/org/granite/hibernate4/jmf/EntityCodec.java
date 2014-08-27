@@ -92,8 +92,6 @@ public class EntityCodec implements ExtendedObjectCodec {
 	}
 
 	public void encode(ExtendedObjectOutput out, Object v) throws IOException, IllegalAccessException, InvocationTargetException {
-        String detachedState = null;
-        
         if (v instanceof HibernateProxy) {
             HibernateProxy proxy = (HibernateProxy)v;
 
@@ -112,7 +110,7 @@ public class EntityCodec implements ExtendedObjectCodec {
             	}
             	
             	Serializable id = proxy.getHibernateLazyInitializer().getIdentifier();
-            	log.debug("Writing uninitialized HibernateProxy %s with id %s", detachedState, id);
+            	log.debug("Writing uninitialized HibernateProxy %s with id %s", persistentClass, id);
             	
             	out.writeBoolean(false);
             	out.writeUTF(null);
