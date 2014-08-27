@@ -29,6 +29,8 @@ import java.util.Map;
 import javax.enterprise.context.Conversation;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 
@@ -38,6 +40,7 @@ import org.granite.messaging.amf.process.AMF3MessageInterceptor;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.messaging.webapp.HttpServletRequestParamWrapper;
+import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.tide.cdi.ConversationState;
 import org.granite.tide.cdi.EventState;
 import org.granite.tide.cdi.SessionState;
@@ -54,39 +57,55 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
     private static final String IS_LONG_RUNNING_CONVERSATION = "isLongRunningConversation";
     private static final String WAS_LONG_RUNNING_CONVERSATION_CREATED = "wasLongRunningConversationCreated";
     private static final String WAS_LONG_RUNNING_CONVERSATION_ENDED = "wasLongRunningConversationEnded";
-        
+    
     private final CDIConversationManager conversationManager;
     private final ServletRequestListener requestListener;
-
-
+    
+    
     public CDIInterceptor() {
+    	/**
+    	 * Awful pile of hacks to detect the CDI container
+    	 * and implement the corresponding behaviour
+    	 */
         CDIConversationManager conversationManager = null;
         ServletRequestListener listener = null;
-    	try {
-    		Thread.currentThread().getContextClassLoader().loadClass("org.jboss.weld.context.http.HttpConversationContext");
-    		conversationManager = TypeUtil.newInstance("org.granite.cdi.Weld11ConversationManager", CDIConversationManager.class);
+        try {
+    		Thread.currentThread().getContextClassLoader().loadClass("org.jboss.weld.manager.BeanManagerLookupService");
             listener = TypeUtil.newInstance("org.jboss.weld.servlet.WeldListener", ServletRequestListener.class);
-    		log.info("Detected JBoss Weld 1.1+");
-    	}
-    	catch (Exception e) {
-            try {
-                conversationManager = null;
-                // Hacky way to initialize a request listener for OWB
-                listener = TypeUtil.newInstance("org.apache.webbeans.servlet.WebBeansConfigurationListener", ServletRequestListener.class);
-                Field wbcField = listener.getClass().getDeclaredField("webBeansContext");
-                wbcField.setAccessible(true);
-                Object webBeansContext = wbcField.get(listener);
-                Field lcField = listener.getClass().getDeclaredField("lifeCycle");
-                lcField.setAccessible(true);
-                Method wbcGetService = webBeansContext.getClass().getMethod("getService", Class.class);
-                Object lifecycle = wbcGetService.invoke(webBeansContext, TypeUtil.forName("org.apache.webbeans.spi.ContainerLifecycle"));
-                lcField.set(listener, lifecycle);
-                log.info("Detected Apache OpenWebBeans, conversation support disabled");
-            }
-            catch (Exception f2) {
-                log.warn("Unsupported CDI container, conversation support disabled");
-            }
-    	}
+			if (listener instanceof ServletContextListener) {
+				ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();			
+				((ServletContextListener)listener).contextInitialized(new ServletContextEvent(graniteContext.getServletContext()));
+			}
+    		conversationManager = TypeUtil.newInstance("org.granite.cdi.Weld11ConversationManager", CDIConversationManager.class);
+    		log.info("Detected JBoss Weld 2.0+");
+        }
+        catch (Exception e1) {
+	    	try {
+	    		Thread.currentThread().getContextClassLoader().loadClass("org.jboss.weld.context.http.HttpConversationContext");
+	    		conversationManager = TypeUtil.newInstance("org.granite.cdi.Weld11ConversationManager", CDIConversationManager.class);
+	            listener = TypeUtil.newInstance("org.jboss.weld.servlet.WeldListener", ServletRequestListener.class);
+	    		log.info("Detected JBoss Weld 1.1+");
+	    	}
+	    	catch (Exception e2) {
+	            try {
+	                conversationManager = null;
+	                // Hacky way to initialize a request listener for OWB
+	                listener = TypeUtil.newInstance("org.apache.webbeans.servlet.WebBeansConfigurationListener", ServletRequestListener.class);
+	                Field wbcField = listener.getClass().getDeclaredField("webBeansContext");
+	                wbcField.setAccessible(true);
+	                Object webBeansContext = wbcField.get(listener);
+	                Field lcField = listener.getClass().getDeclaredField("lifeCycle");
+	                lcField.setAccessible(true);
+	                Method wbcGetService = webBeansContext.getClass().getMethod("getService", Class.class);
+	                Object lifecycle = wbcGetService.invoke(webBeansContext, TypeUtil.forName("org.apache.webbeans.spi.ContainerLifecycle"));
+	                lcField.set(listener, lifecycle);
+	                log.info("Detected Apache OpenWebBeans, conversation support disabled");
+	            }
+	            catch (Exception f2) {
+	                log.warn("Unsupported CDI container, conversation support disabled");
+	            }
+	    	}
+        }
         this.conversationManager = conversationManager;
         this.requestListener = listener;
     }
@@ -106,17 +125,25 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
 			if (context instanceof HttpGraniteContext) {
 				HttpGraniteContext httpContext = ((HttpGraniteContext)context);
 
-                if (requestListener != null) {
-                    Integer wrapCount = (Integer)httpContext.getRequest().getAttribute(MESSAGECOUNT_ATTR);
-                    if (wrapCount == null) {
-                        log.debug("Clearing default container request context");
-                        ServletRequestEvent event = new ServletRequestEvent(httpContext.getServletContext(), httpContext.getRequest());
-                        requestListener.requestDestroyed(event);
-                        httpContext.getRequest().setAttribute(MESSAGECOUNT_ATTR, 1);
-                    }
-                    else
-                        httpContext.getRequest().setAttribute(MESSAGECOUNT_ATTR, wrapCount+1);
+                BeanManager beanManager = CDIUtils.lookupBeanManager(((HttpGraniteContext)context).getServletContext());
 
+				ServletRequestListener requestListener = getRequestListener();
+                if (requestListener != null) {
+                	try {
+	                    Integer wrapCount = (Integer)httpContext.getRequest().getAttribute(MESSAGECOUNT_ATTR);
+	                    if (wrapCount == null) {
+	                        log.debug("Clearing default container request context");
+	                        ServletRequestEvent event = new ServletRequestEvent(httpContext.getServletContext(), httpContext.getRequest());
+	                        requestListener.requestDestroyed(event);
+	                        httpContext.getRequest().setAttribute(MESSAGECOUNT_ATTR, 1);
+	                    }
+	                    else
+	                        httpContext.getRequest().setAttribute(MESSAGECOUNT_ATTR, wrapCount+1);
+                	}
+                	catch (IllegalStateException e) {
+                		// Weld 2.x ?
+                	}
+                	
                     log.debug("Initializing wrapped AMF request");
 
                     HttpServletRequestParamWrapper requestWrapper = new HttpServletRequestParamWrapper(httpContext.getRequest());
@@ -138,29 +165,29 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
                     requestListener.requestInitialized(event);
                 }
 
-                BeanManager beanManager = CDIUtils.lookupBeanManager(((HttpGraniteContext)context).getServletContext());
-
                 if (conversationManager != null) {
                     // Initialize CDI conversation context
                     String conversationId = (String)amf3RequestMessage.getHeader(CONVERSATION_ID);
 
                     Conversation conversation = conversationManager.initConversation(beanManager, conversationId);
-
-                    @SuppressWarnings("unchecked")
-                    Bean<EventState> eventBean = (Bean<EventState>)beanManager.getBeans(EventState.class).iterator().next();
-                    EventState eventState = (EventState)beanManager.getReference(eventBean, EventState.class, beanManager.createCreationalContext(eventBean));
-                    if (!conversation.isTransient())
-                        eventState.setWasLongRunning(true);
-
-                    if (conversationId != null && conversation.isTransient()) {
-                        log.debug("Starting conversation " + conversationId);
-                        conversation.begin(conversationId);
-                    }
-
-                    if (Boolean.TRUE.toString().equals(amf3RequestMessage.getHeader("org.granite.tide.isFirstConversationCall")) && !conversation.isTransient()) {
-                        @SuppressWarnings("unchecked")
-                        Bean<ConversationState> csBean = (Bean<ConversationState>)beanManager.getBeans(ConversationState.class).iterator().next();
-                        ((ConversationState)beanManager.getReference(csBean, ConversationState.class, beanManager.createCreationalContext(csBean))).setFirstCall(true);
+                    
+                    if (conversation != null) {
+	                    @SuppressWarnings("unchecked")
+	                    Bean<EventState> eventBean = (Bean<EventState>)beanManager.getBeans(EventState.class).iterator().next();
+	                    EventState eventState = (EventState)beanManager.getReference(eventBean, EventState.class, beanManager.createCreationalContext(eventBean));
+	                    if (!conversation.isTransient())
+	                        eventState.setWasLongRunning(true);
+	
+	                    if (conversationId != null && conversation.isTransient()) {
+	                        log.debug("Starting conversation " + conversationId);
+	                        conversation.begin(conversationId);
+	                    }
+	
+	                    if (Boolean.TRUE.toString().equals(amf3RequestMessage.getHeader("org.granite.tide.isFirstConversationCall")) && !conversation.isTransient()) {
+	                        @SuppressWarnings("unchecked")
+	                        Bean<ConversationState> csBean = (Bean<ConversationState>)beanManager.getBeans(ConversationState.class).iterator().next();
+	                        ((ConversationState)beanManager.getReference(csBean, ConversationState.class, beanManager.createCreationalContext(csBean))).setFirstCall(true);
+	                    }
                     }
                 }
 
@@ -195,18 +222,20 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
 					    Bean<Conversation> conversationBean = (Bean<Conversation>)beanManager.getBeans(Conversation.class).iterator().next();
 					    Conversation conversation = (Conversation)beanManager.getReference(conversationBean, Conversation.class, beanManager.createCreationalContext(conversationBean));
 					    
-					    @SuppressWarnings("unchecked")
-					    Bean<EventState> eventBean = (Bean<EventState>)beanManager.getBeans(EventState.class).iterator().next();
-					    EventState eventState = (EventState)beanManager.getReference(eventBean, EventState.class, beanManager.createCreationalContext(eventBean));
-					    if (eventState.wasLongRunning() && !conversation.isTransient())
-					    	amf3ResponseMessage.setHeader(WAS_LONG_RUNNING_CONVERSATION_ENDED, true);
-						
-			            if (eventState.wasCreated() && !conversation.isTransient())
-			            	amf3ResponseMessage.setHeader(WAS_LONG_RUNNING_CONVERSATION_CREATED, true);
-			            
-			            amf3ResponseMessage.setHeader(CONVERSATION_ID, conversation.getId());
-						
-			            amf3ResponseMessage.setHeader(IS_LONG_RUNNING_CONVERSATION, !conversation.isTransient());
+					    if (conversation != null) {
+						    @SuppressWarnings("unchecked")
+						    Bean<EventState> eventBean = (Bean<EventState>)beanManager.getBeans(EventState.class).iterator().next();
+						    EventState eventState = (EventState)beanManager.getReference(eventBean, EventState.class, beanManager.createCreationalContext(eventBean));
+						    if (eventState.wasLongRunning() && !conversation.isTransient())
+						    	amf3ResponseMessage.setHeader(WAS_LONG_RUNNING_CONVERSATION_ENDED, true);
+							
+				            if (eventState.wasCreated() && !conversation.isTransient())
+				            	amf3ResponseMessage.setHeader(WAS_LONG_RUNNING_CONVERSATION_CREATED, true);
+				            
+				            amf3ResponseMessage.setHeader(CONVERSATION_ID, conversation.getId());
+							
+				            amf3ResponseMessage.setHeader(IS_LONG_RUNNING_CONVERSATION, !conversation.isTransient());
+					    }
 					}
 				}
 				finally {
@@ -214,16 +243,17 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
 					    conversationManager.destroyConversation(beanManager);
 					
 					HttpGraniteContext httpContext = ((HttpGraniteContext)context);
-
+					
+					ServletRequestListener requestListener = getRequestListener();
                     if (requestListener != null) {
                         // Destroy the CDI context
                         HttpServletRequestParamWrapper requestWrapper = (HttpServletRequestParamWrapper)httpContext.getRequest().getAttribute(REQUESTWRAPPER_ATTR);
                         httpContext.getRequest().removeAttribute(REQUESTWRAPPER_ATTR);
                         ServletRequestEvent event = new ServletRequestEvent(httpContext.getServletContext(), requestWrapper);
                         requestListener.requestDestroyed(event);
-
+                        
                         log.debug("Destroying wrapped CDI AMF request");
-
+                        
                         Integer wrapCount = (Integer)httpContext.getRequest().getAttribute(MESSAGECOUNT_ATTR);
                         if (wrapCount == 1) {
                             log.debug("Restoring default container request context");
@@ -241,5 +271,9 @@ public class CDIInterceptor implements AMF3MessageInterceptor {
             log.error(e, "Exception while post processing the response message.");
             throw new ServiceException("Error while post processing the response message - " + e.getMessage());
 		}
+	}
+		
+	private ServletRequestListener getRequestListener() {
+		return requestListener;
 	}
 }

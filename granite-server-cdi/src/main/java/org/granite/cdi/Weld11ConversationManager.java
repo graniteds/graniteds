@@ -21,6 +21,8 @@
  */
 package org.granite.cdi;
 
+import java.lang.reflect.Method;
+
 import javax.enterprise.context.Conversation;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -33,8 +35,13 @@ import org.jboss.weld.manager.BeanManagerImpl;
 public class Weld11ConversationManager implements CDIConversationManager {
 
 	public Conversation initConversation(BeanManager beanManager, String conversationId) {
-	    ConversationContext conversationContext = ((BeanManagerImpl)beanManager).instance().select(HttpConversationContext.class).get();
-	    conversationContext.activate(conversationId);
+		BeanManagerImpl beanManagerImpl = getBeanManagerImpl(beanManager);
+		if (beanManagerImpl == null)
+			return null;
+		
+	    ConversationContext conversationContext = beanManagerImpl.instance().select(HttpConversationContext.class).get();
+	    if (!conversationContext.isActive())
+	    	conversationContext.activate(conversationId);
 	    
     	@SuppressWarnings("unchecked")
     	Bean<Conversation> conversationBean = (Bean<Conversation>)beanManager.getBeans(Conversation.class).iterator().next();
@@ -43,7 +50,26 @@ public class Weld11ConversationManager implements CDIConversationManager {
 	}
 	
 	public void destroyConversation(BeanManager beanManager) {
-	    ConversationContext conversationContext = ((BeanManagerImpl)beanManager).instance().select(HttpConversationContext.class).get();
+		BeanManagerImpl beanManagerImpl = getBeanManagerImpl(beanManager);		
+		if (beanManagerImpl == null)
+			return;
+		
+	    ConversationContext conversationContext = beanManagerImpl.instance().select(HttpConversationContext.class).get();
 	    conversationContext.deactivate();
+	}
+	
+	private BeanManagerImpl getBeanManagerImpl(BeanManager beanManager) {
+		if (beanManager instanceof BeanManagerImpl)
+			return (BeanManagerImpl)beanManager;
+		
+		// Quick hack for Weld 2+
+		try {
+			Method m = beanManager.getClass().getMethod("delegate");
+			return (BeanManagerImpl)m.invoke(beanManager);
+		}
+		catch (Exception e) {
+			// Not Weld ??
+		}
+		return null;
 	}
 }
