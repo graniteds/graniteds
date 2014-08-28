@@ -123,9 +123,6 @@ public class SimpleServiceContext extends TideServiceContext {
         }
     }
     
-    /* (non-Javadoc)
-	 * @see org.granite.tide.ejb.EJBServiceContextIntf#findComponentClass(java.lang.String)
-	 */
     @Override
     public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass, String methodName) {
     	if ("identity".equals(componentName)) {
@@ -140,9 +137,6 @@ public class SimpleServiceContext extends TideServiceContext {
         return cache.get(componentName).classes;
     }
 
-    /* (non-Javadoc)
-	 * @see org.granite.tide.ejb.EJBServiceContextIntf#prepareCall(org.granite.messaging.service.ServiceInvocationContext, org.granite.tide.IInvocationCall, java.lang.String)
-	 */
     @Override
     public void prepareCall(ServiceInvocationContext context, IInvocationCall c, String componentName, Class<?> componentClass) {
         // Initialize an empty data context
@@ -155,9 +149,6 @@ public class SimpleServiceContext extends TideServiceContext {
         public Set<Class<?>> classes;
     }
     
-    /* (non-Javadoc)
-	 * @see org.granite.tide.ejb.EJBServiceContextIntf#postCall(org.granite.messaging.service.ServiceInvocationContext, java.lang.Object, java.lang.String)
-	 */
     @Override
     public IInvocationResult postCall(ServiceInvocationContext context, Object result, String componentName, Class<?> componentClass) {
         List<ContextUpdate> results = new ArrayList<ContextUpdate>();
@@ -175,9 +166,6 @@ public class SimpleServiceContext extends TideServiceContext {
         return ires;
     }
 
-    /* (non-Javadoc)
-	 * @see org.granite.tide.ejb.EJBServiceContextIntf#postCallFault(org.granite.messaging.service.ServiceInvocationContext, java.lang.Throwable, java.lang.String)
-	 */
     @Override
     public void postCallFault(ServiceInvocationContext context, Throwable t, String componentName, Class<?> componentClass) {
         AbstractContext.remove();

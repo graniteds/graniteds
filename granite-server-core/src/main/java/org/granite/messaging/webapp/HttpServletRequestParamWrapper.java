@@ -52,9 +52,6 @@ public class HttpServletRequestParamWrapper extends HttpServletRequestWrapper {
         this.requestAttributes = new HashMap();
     }
 
-    /* (non-Javadoc)
-     * @see javax.servlet.ServletRequestWrapper#getParameter(java.lang.String)
-     */
     @Override
     public String getParameter(String name) {
         String retValue = null;
@@ -65,25 +62,16 @@ public class HttpServletRequestParamWrapper extends HttpServletRequestWrapper {
         return retValue;
     }
 
-    /* (non-Javadoc)
-     * @see javax.servlet.ServletRequestWrapper#getParameterMap()
-     */
     @Override
     public Map getParameterMap() {
         return Collections.unmodifiableMap(requestParams);
     }
 
-    /* (non-Javadoc)
-     * @see javax.servlet.ServletRequestWrapper#getParameterNames()
-     */
     @Override
     public Enumeration getParameterNames() {
         return Collections.enumeration(requestParams.keySet());
     }
 
-    /* (non-Javadoc)
-     * @see javax.servlet.ServletRequestWrapper#getParameterValues(java.lang.String)
-     */
     @Override
     public String[] getParameterValues(String name) {
         String[] retValues = null;

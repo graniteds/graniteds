@@ -170,9 +170,6 @@ public class EjbServiceContext extends TideServiceContext  {
     	return remoteObservers;
     }
     
-    /* (non-Javadoc)
-	 * @see org.granite.tide.ejb.EJBServiceContextIntf#findComponent(java.lang.String)
-	 */
     @Override
     public Object findComponent(String componentName, Class<?> componentClass, String methodName) {
     	if ("identity".equals(componentName))
@@ -249,9 +246,6 @@ public class EjbServiceContext extends TideServiceContext  {
         }
     }
     
-    /* (non-Javadoc)
-	 * @see org.granite.tide.ejb.EJBServiceContextIntf#findComponentClass(java.lang.String)
-	 */
     @Override
     public Set<Class<?>> findComponentClasses(String componentName, Class<?> componentClass, String methodName) {
     	if ("identity".equals(componentName)) {
@@ -275,9 +269,6 @@ public class EjbServiceContext extends TideServiceContext  {
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
     
-    /* (non-Javadoc)
-	 * @see org.granite.tide.ejb.EJBServiceContextIntf#prepareCall(org.granite.messaging.service.ServiceInvocationContext, org.granite.tide.IInvocationCall, java.lang.String)
-	 */
     @Override
     public void prepareCall(ServiceInvocationContext context, IInvocationCall c, String componentName, Class<?> componentClass) {
     	if ((c instanceof InvocationCall) && ((InvocationCall)c).getListeners() != null)
@@ -295,9 +286,6 @@ public class EjbServiceContext extends TideServiceContext  {
         public EjbServiceMetadata ejbMetadata;
     }
     
-    /* (non-Javadoc)
-	 * @see org.granite.tide.ejb.EJBServiceContextIntf#postCall(org.granite.messaging.service.ServiceInvocationContext, java.lang.Object, java.lang.String)
-	 */
     @Override
     public IInvocationResult postCall(ServiceInvocationContext context, Object result, String componentName, Class<?> componentClass) {
     	try {    		
@@ -334,9 +322,6 @@ public class EjbServiceContext extends TideServiceContext  {
     	}
     }
 
-    /* (non-Javadoc)
-	 * @see org.granite.tide.ejb.EJBServiceContextIntf#postCallFault(org.granite.messaging.service.ServiceInvocationContext, java.lang.Throwable, java.lang.String)
-	 */
     @Override
     public void postCallFault(ServiceInvocationContext context, Throwable t, String componentName, Class<?> componentClass) {
     	try {

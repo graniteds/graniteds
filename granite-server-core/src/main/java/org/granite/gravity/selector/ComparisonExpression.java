@@ -111,17 +111,11 @@ public abstract class ComparisonExpression extends BinaryExpression implements B
             likePattern = Pattern.compile(regexp.toString(), Pattern.DOTALL);
         }
 
-        /**
-         * @see org.apache.activemq.filter.UnaryExpression#getExpressionSymbol()
-         */
         @Override
         public String getExpressionSymbol() {
             return "LIKE";
         }
 
-        /**
-         * @see org.apache.activemq.filter.Expression#evaluate(MessageEvaluationContext)
-         */
         public Object evaluate(MessageEvaluationContext message) throws JMSException {
 
             Object rv = this.getRight().evaluate(message);

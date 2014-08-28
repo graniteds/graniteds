@@ -65,9 +65,6 @@ public class SeamInterceptor implements AMF3MessageInterceptor {
 	private static final String MESSAGE_HEADER = "MESSAGE_HEADER";
 	private static final String MSG_SEP = ":;:";
     
-	/* (non-Javadoc)
-	 * @see org.granite.messaging.amf.process.AMF3MessageInterceptor#before(flex.messaging.messages.Message)
-	 */
 	public void before(Message amfReqMessage) {
 		if (log.isTraceEnabled())
 			log.trace("Pre processing of request message: %s", amfReqMessage);
@@ -95,9 +92,6 @@ public class SeamInterceptor implements AMF3MessageInterceptor {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.granite.messaging.amf.process.AMF3MessageInterceptor#after(flex.messaging.messages.Message, flex.messaging.messages.Message)
-	 */
 	public void after(Message amfReqMessage, Message amfRespMessage) {		
 		try {
 			if (log.isTraceEnabled())
