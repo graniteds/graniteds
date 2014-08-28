@@ -31,7 +31,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import org.granite.config.api.Configuration;
-import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
 import org.granite.jmx.MBeanUtil;
 import org.granite.logging.Logger;

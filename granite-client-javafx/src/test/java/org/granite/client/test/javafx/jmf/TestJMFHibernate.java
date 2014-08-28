@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -825,7 +824,7 @@ public class TestJMFHibernate {
 
     @SuppressWarnings("cast")
     @Test
-    public void testEntity() throws ClassNotFoundException, IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public void testEntity() throws ClassNotFoundException, IOException, IllegalArgumentException {
         clientAliasRegistry.registerAlias(ClientEntity.class);
         clientAliasRegistry.registerAlias(ClientCollectionEntity.class);
 
@@ -865,7 +864,7 @@ public class TestJMFHibernate {
 
     @SuppressWarnings("cast")
     @Test
-    public void testEntityArray() throws ClassNotFoundException, IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public void testEntityArray() throws ClassNotFoundException, IOException, IllegalArgumentException {
         clientAliasRegistry.registerAlias(ClientEntity.class);
         clientAliasRegistry.registerAlias(ClientCollectionEntity.class);
 
@@ -902,7 +901,7 @@ public class TestJMFHibernate {
 
 	@SuppressWarnings("cast")
 	@Test
-	public void testFXEntity() throws ClassNotFoundException, IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public void testFXEntity() throws ClassNotFoundException, IOException, IllegalArgumentException {
 		clientAliasRegistry.registerAlias(ClientFXEntity.class);
 		clientAliasRegistry.registerAlias(ClientFXCollectionEntity.class);
 
@@ -1038,7 +1037,7 @@ public class TestJMFHibernate {
 		return serializeAndDeserialize(clientSharedContext, dumpSharedContext, serverSharedContext, obj, dump);
 	}
 	
-	private void serializeClientToServer(Object obj, boolean dump) throws ClassNotFoundException, IOException {
+	private void serializeClientToServer(Object obj, boolean dump) throws IOException {
 		serialize(clientSharedContext, dumpSharedContext, serverSharedContext, obj, dump);
 	}
 	
@@ -1076,7 +1075,7 @@ public class TestJMFHibernate {
 		SharedContext dumpSharedContext,
 		SharedContext deserializeSharedContext,
 		Object obj,
-		boolean dump) throws ClassNotFoundException, IOException {
+		boolean dump) throws IOException {
 		
 		ByteArrayJMFSerializer serializer = new ByteArrayJMFSerializer(serializeSharedContext);
 		serializer.writeObject(obj);
