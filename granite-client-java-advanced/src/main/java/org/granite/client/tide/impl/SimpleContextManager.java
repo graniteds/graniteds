@@ -344,7 +344,7 @@ public class SimpleContextManager implements ContextManager {
     
     /**
      * Configure modules for specified class names
-     * @param moduleClassNames module classes
+     * @param moduleClasses module classes
      */
     public void initModules(Class<?>... moduleClasses) {
     	instanceFactory.initModules(new HashSet<Class<?>>(Arrays.asList(moduleClasses)));
