@@ -27,8 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.eclipse.persistence.indirection.IndirectList;
-import org.eclipse.persistence.internal.sessions.remote.RemoteValueHolder;
 import org.granite.client.messaging.ClientAliasRegistry;
 import org.granite.client.messaging.jmf.ClientSharedContext;
 import org.granite.client.messaging.jmf.DefaultClientSharedContext;
