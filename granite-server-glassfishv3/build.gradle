@@ -8,6 +8,7 @@ dependencies {
 	compile group: 'org.glassfish.main.security', name: 'websecurity', version: '3.1.2.2', transitive: false
 	compile 'com.sun.grizzly:grizzly-utils:1.9.59'
 	compile 'com.sun.grizzly:grizzly-websockets:1.9.59'
+	compile 'org.glassfish.hk2:hk2-deprecated:2.1.3'
 	
 	compile project(':granite-server-core')
 
