@@ -183,7 +183,6 @@ configure(subprojects.findAll { it.name.startsWith('granite') && !it.name.starts
 			author = true
 			use = true
 			linkSource = true
-			stylesheetFile = file('../jdstyle.css')
 			windowTitle = 'GraniteDS API Documentation'
 			docTitle = 'GraniteDS API Documentation - ' + granitedsVersion
 			links = rootProject.ext.javadocLinks
