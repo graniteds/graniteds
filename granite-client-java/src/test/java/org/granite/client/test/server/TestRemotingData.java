@@ -24,10 +24,15 @@ package org.granite.client.test.server;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.granite.client.configuration.ClientGraniteConfig;
+import org.granite.client.configuration.Configuration;
+import org.granite.client.configuration.SimpleConfiguration;
+import org.granite.client.messaging.ClientAliasRegistry;
 import org.granite.client.messaging.RemoteService;
 import org.granite.client.messaging.ResultFaultIssuesResponseListener;
 import org.granite.client.messaging.ServerApp;
@@ -35,15 +40,21 @@ import org.granite.client.messaging.channel.AMFChannelFactory;
 import org.granite.client.messaging.channel.ChannelFactory;
 import org.granite.client.messaging.channel.JMFChannelFactory;
 import org.granite.client.messaging.channel.RemotingChannel;
+import org.granite.client.messaging.codec.MessagingCodec.ClientType;
 import org.granite.client.messaging.events.FaultEvent;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
+import org.granite.client.messaging.jmf.ext.ClientEntityCodec;
 import org.granite.client.messaging.messages.ResponseMessage;
 import org.granite.client.messaging.messages.responses.FaultMessage;
+import org.granite.client.test.server.client.data.ClientData;
+import org.granite.client.test.server.client.data.amf.ClientDataAMF;
+import org.granite.client.test.server.client.data.jmf.ClientDataJMF;
 import org.granite.client.test.server.data.Data;
 import org.granite.client.test.server.data.DataApplication;
 import org.granite.client.test.server.data.DataServiceBean;
 import org.granite.logging.Logger;
+import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
 import org.granite.test.container.EmbeddedContainer;
 import org.granite.test.container.Utils;
 import org.granite.util.ContentType;
@@ -92,6 +103,7 @@ public class TestRemotingData {
         war.addAsWebInfResource(new File("granite-client-java/src/test/resources/META-INF/persistence.xml"), "classes/META-INF/persistence.xml");
         war.addAsWebInfResource(new File("granite-client-java/src/test/resources/META-INF/services-config.properties"), "classes/META-INF/services-config.properties");
         war.addAsLibraries(new File("granite-server-ejb/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
+        war.addAsLibraries(new File("granite-server-eclipselink/build/libs/").listFiles(new Utils.ArtifactFilenameFilter()));
 
         container = ContainerTestUtil.newContainer(war, false);
         container.start();
@@ -109,7 +121,22 @@ public class TestRemotingData {
 
     @Before
     public void before() throws Exception {
-        channelFactory = contentType.equals(ContentType.JMF_AMF) ? new JMFChannelFactory() : new AMFChannelFactory();
+    	channelFactory = null;
+    	if (contentType.equals(ContentType.JMF_AMF)) {
+    		channelFactory = new JMFChannelFactory();
+    		List<ExtendedObjectCodec> clientExtendedObjectCodecs = Arrays.asList((ExtendedObjectCodec)
+				new ClientEntityCodec()
+			);
+    		((JMFChannelFactory)channelFactory).setExtendedCodecs(clientExtendedObjectCodecs);
+    	}
+    	else {
+    		Configuration configuration = new SimpleConfiguration();
+    		configuration.setClientType(ClientType.JAVA);
+    		configuration.load();
+    		((ClientGraniteConfig)configuration.getGraniteConfig()).setAliasRegistry(new ClientAliasRegistry());
+    	 	channelFactory = new AMFChannelFactory(null, configuration);
+    	}
+        channelFactory.setScanPackageNames(Collections.singleton(contentType.equals(ContentType.JMF_AMF) ? "org.granite.client.test.server.client.data.jmf" : "org.granite.client.test.server.client.data.amf"));
         channelFactory.start();
         channel = channelFactory.newRemotingChannel("graniteamf", SERVER_APP_APP, 1);
     }
@@ -124,15 +151,16 @@ public class TestRemotingData {
     public void testCallJPASync() throws Exception {
         RemoteService remoteService = new RemoteService(channel, "dataService");
 
+        Object data = contentType.equals(ContentType.JMF_AMF) ? new ClientDataJMF("dataSync" + contentType) : new ClientDataAMF("dataSync" + contentType);
         @SuppressWarnings("unused")
-		ResponseMessage createResult = remoteService.newInvocation("create", new Data("dataSync" + contentType)).invoke().get();
+		ResponseMessage createResult = remoteService.newInvocation("create", data).invoke().get();
 
         ResponseMessage findAllResult = remoteService.newInvocation("findAll").invoke().get();
 
         @SuppressWarnings("unchecked")
-		List<Data> results = (List<Data>)findAllResult.getData();
+		List<ClientData> results = (List<ClientData>)findAllResult.getData();
         boolean found = false;
-        for (Data result : results) {
+        for (ClientData result : results) {
             if (result.getValue().equals("dataSync" + contentType)) {
                 found = true;
             }
@@ -145,16 +173,17 @@ public class TestRemotingData {
         final RemoteService remoteService = new RemoteService(channel, "dataService");
 
         final CountDownLatch waitForResult = new CountDownLatch(1);
-        final List<Data> results = new ArrayList<Data>();
+        final List<ClientData> results = new ArrayList<ClientData>();
 
-        remoteService.newInvocation("create", new Data("dataAsync" + contentType)).addListener(new ResultFaultIssuesResponseListener() {
+        Object data = contentType.equals(ContentType.JMF_AMF) ? new ClientDataJMF("dataAsync" + contentType) : new ClientDataAMF("dataAsync" + contentType);
+        remoteService.newInvocation("create", data).addListener(new ResultFaultIssuesResponseListener() {
             @Override
             public void onResult(ResultEvent event) {
                 remoteService.newInvocation("findAll").addListener(new ResultFaultIssuesResponseListener() {
                     @SuppressWarnings("unchecked")
 					@Override
                     public void onResult(ResultEvent event) {
-                        results.addAll((List<Data>)event.getResult());
+                        results.addAll((List<ClientData>)event.getResult());
                         waitForResult.countDown();
                     }
 
@@ -180,7 +209,7 @@ public class TestRemotingData {
         waitForResult.await(5, TimeUnit.SECONDS);
 
         boolean found = false;
-        for (Data result : results) {
+        for (ClientData result : results) {
             if (result.getValue().equals("dataAsync" + contentType)) {
                 found = true;
             }
