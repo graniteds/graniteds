@@ -21,19 +21,20 @@
  */
 package org.granite.gravity.websocket;
 
-import org.granite.gravity.Gravity;
-import org.granite.logging.Logger;
-import org.granite.util.ContentType;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
-import java.util.List;
+
+import org.granite.gravity.Gravity;
+import org.granite.logging.Logger;
+import org.granite.util.ContentType;
 
 /**
-* Created by william on 12/02/14.
-*/
+ * Created by william on 12/02/14.
+ */
 public class GravityWebSocketConfigurator extends ServerEndpointConfig.Configurator {
 
     private static final Logger log = Logger.getLogger(GravityWebSocketConfigurator.class);
@@ -49,50 +50,76 @@ public class GravityWebSocketConfigurator extends ServerEndpointConfig.Configura
 
     @Override
     public void modifyHandshake(ServerEndpointConfig config, HandshakeRequest request, HandshakeResponse response) {
-        // Tomcat websocket impl returns request headers in lowercase ????
-        String connectMessageId = request.getHeaders().get("connectId") != null
-                ? request.getHeaders().get("connectId").get(0)
-                : (request.getHeaders().get("connectid") != null
-                    ? request.getHeaders().get("connectid").get(0)
-                    : (request.getParameterMap().get("connectId") != null ? request.getParameterMap().get("connectId").get(0) : null));
-        String clientId = request.getHeaders().get("GDSClientId") != null
-                ? request.getHeaders().get("GDSClientId").get(0)
-                : (request.getHeaders().get("gdsclientid") != null
-                    ? request.getHeaders().get("gdsclientid").get(0)
-                    : (request.getParameterMap().get("GDSClientId") != null ? request.getParameterMap().get("GDSClientId").get(0) : null));
-        String clientType = request.getHeaders().get("GDSClientType") != null
-                ? request.getHeaders().get("GDSClientType").get(0)
-                : (request.getHeaders().get("gdsclienttype") != null
-                    ? request.getHeaders().get("gdsclienttype").get(0)
-                    : (request.getParameterMap().get("GDSClientType") != null ? request.getParameterMap().get("GDSClientType").get(0) : null));
+
+    	// Tomcat websocket impl returns request headers in lowercase ????
+    	String connectMessageId = getHeaderOrParameter(request, "connectId", true);
+    	String clientId = getHeaderOrParameter(request, "GDSClientId", true);
+    	String clientType = getHeaderOrParameter(request, "GDSClientType", true);
 
         HttpSession session = (HttpSession)request.getHttpSession();
 
-        log.debug("WebSocket configurator handshake ackId %s clientId %s sessionId %s", connectMessageId, clientId, session != null ? session.getId() : "(none)");
+        log.debug(
+        	"WebSocket configurator handshake ackId %s clientId %s sessionId %s",
+        	connectMessageId, clientId, session != null ? session.getId() : "(none)"
+        );
 
         Gravity gravity = (Gravity)config.getUserProperties().get("gravity");
         if (gravity.getGraniteConfig().getSecurityService() != null)
             gravity.getGraniteConfig().getSecurityService().prelogin(session, request, null);
 
-        String ctype = request.getHeaders().get("Content-Type") != null
-                ? request.getHeaders().get("Content-Type").get(0)
-                : (request.getHeaders().get("content-type") != null ? request.getHeaders().get("content-type").get(0) : null);
-        String protocol = null;
-        if (request.getHeaders().get("Sec-WebSocket-Protocol") != null)
-            protocol = request.getHeaders().get("Sec-WebSocket-Protocol").get(0);
-        else if (request.getHeaders().get("sec-websocket-protocol") != null)    // Tomcat
-            protocol = request.getHeaders().get("sec-websocket-protocol").get(0);
-        if (ctype == null && protocol != null)
-            ctype = "application/x-" + protocol.substring("org.granite.gravity.".length());
+        String ctype = getHeader(request, "Content-Type", true);
+        
+        if (ctype == null) {
+            String protocol = getHeader(request, "Sec-WebSocket-Protocol", true);
+        	
+            if (protocol != null) {
+        		if ("org.granite.gravity".equals(protocol))
+        			ctype = ContentType.AMF.mimeType();
+        		else if (protocol.startsWith("org.granite.gravity."))
+        			ctype = "application/x-" + protocol.substring("org.granite.gravity.".length());
+        		else
+        			throw new RuntimeException("Missing Content-Type and unsupported Sec-WebSocket-Protocol: " + protocol);
+        	}
+            else {
+            	ctype = ContentType.AMF.mimeType();
+            	log.warn("Missing Content-Type and Sec-WebSocket-Protocol in handshake request. Using: %s", ctype);
+            }
+        }
 
         ContentType contentType = ContentType.forMimeType(ctype);
         if (contentType == null) {
-            log.warn("No (or unsupported) content type in request: %s", ctype);
+            log.warn("No (or unsupported) content type in handshake request: %s. Using: %s", ctype, ContentType.AMF.mimeType());
             contentType = ContentType.AMF;
         }
 
         // Hack using a thread local to be sure that the endpoint gets the correct values
         // Jetty and GlassFish
         GravityWebSocketConfig.set(connectMessageId, clientId, clientType, contentType, session);
+    }
+    
+    private String getHeader(HandshakeRequest request, String key, boolean lower) {
+    	List<String> values = request.getHeaders().get(key);
+    	if (values != null && values.size() > 0)
+    		return values.get(0);
+    	if (lower) {
+	    	values = request.getHeaders().get(key.toLowerCase());
+	    	if (values != null && values.size() > 0)
+	    		return values.get(0);
+    	}
+    	return null;
+    }
+    
+    private String getParameter(HandshakeRequest request, String key) {
+    	List<String> values = request.getParameterMap().get(key);
+    	if (values != null && values.size() > 0)
+    		return values.get(0);
+    	return null;
+    }
+    
+    private String getHeaderOrParameter(HandshakeRequest request, String key, boolean lower) {
+    	String value = getHeader(request, key, lower);
+    	if (value == null)
+    		value = getParameter(request, key);
+    	return value;
     }
 }
