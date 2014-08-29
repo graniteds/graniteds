@@ -209,7 +209,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 				for (Message message : messages) {
 					
 					if (message instanceof AcknowledgeMessage) {
-						AbstractResponseMessage response = convertFromAmf((AcknowledgeMessage)messages[0]);
+						AbstractResponseMessage response = convertFromAmf((AcknowledgeMessage)message);
 						
 						if (response instanceof ResultMessage) {
 							Type requestType = null;
