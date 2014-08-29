@@ -152,7 +152,7 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 	private static String getHeaderOrParameter(HttpServletRequest request, String key) {
 		String value = request.getHeader(key);
 		if (value == null)
-			request.getParameter(key);
+			value = request.getParameter(key);
 		return value;
 	}
 	
