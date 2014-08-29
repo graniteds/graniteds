@@ -102,8 +102,9 @@ package org.granite.gravity.websocket {
 			var headers:String = "";
 			if (_clientId != null)
 				headers += "GDSClientId: " + _clientId + "\r\n";
-
-            _webSocket = new WebSocket(1, resolveUri(), [ "org.granite.gravity" ], "", _sessionId != null ? "JSESSIONID=" + _sessionId : "", headers);
+			
+			// Dummy necessary for Glassfish 4 (cookie parser fails with empty string)
+            _webSocket = new WebSocket(1, resolveUri(), [ "org.granite.gravity" ], "", _sessionId != null ? "JSESSIONID=" + _sessionId : "DUMMY=0", headers);
             _webSocket.addEventListener(WebSocketEvent.OPEN, onOpen);
 			_webSocket.addEventListener(WebSocketEvent.ERROR, onError);
 			_webSocket.addEventListener(WebSocketEvent.CLOSE, onClose);
