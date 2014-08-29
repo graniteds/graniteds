@@ -49,10 +49,10 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
 		this.session = session;
 		
 		setMaxBinaryMessageBufferSize(session.getMaxBinaryMessageBufferSize());
-		
-        session.addMessageHandler(this);
 
         connect();
+		
+        session.addMessageHandler(this);
 	}
 
     public void onWebSocketClose(int closeCode, String message) {
