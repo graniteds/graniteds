@@ -49,16 +49,8 @@ else
     ext.pluginVersion = granitedsVersion.substring(0, granitedsVersion.lastIndexOf('.')) + '.v' + timestamp
 
 ext.javadocLinks = [
-	"http://download.oracle.com/javase/1.5.0/docs/api/",
-	"http://docs.oracle.com/javaee/6/api",
-	"http://logging.apache.org/log4j/1.2/apidocs/",
-	"http://tomcat.apache.org/tomcat-6.0-doc/api/",
-	"http://tomcat.apache.org/tomcat-7.0-doc/api/",
-	"http://download.eclipse.org/jetty/stable-8/apidocs/",
-	"http://download.eclipse.org/jetty/stable-9/apidocs/",
-	"http://docs.jboss.org/hibernate/orm/3.5/javadocs/",
-	"http://docs.jboss.com/seam/2.2.0.GA/api/",
-	"http://docs.spring.io/spring/docs/3.1.x/javadoc-api/"
+	"http://docs.oracle.com/javase/7/docs/api/",
+	"http://docs.oracle.com/javaee/7/api/",
 ]
 
 // Main tasks for eclipse
@@ -182,7 +174,6 @@ configure(subprojects.findAll { it.name.startsWith('granite') && !it.name.starts
 			version = true
 			author = true
 			use = true
-			linkSource = true
 			windowTitle = 'GraniteDS API Documentation'
 			docTitle = 'GraniteDS API Documentation - ' + granitedsVersion
 			links = rootProject.ext.javadocLinks
