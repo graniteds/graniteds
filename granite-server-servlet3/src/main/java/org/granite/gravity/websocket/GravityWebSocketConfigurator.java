@@ -68,36 +68,16 @@ public class GravityWebSocketConfigurator extends ServerEndpointConfig.Configura
             gravity.getGraniteConfig().getSecurityService().prelogin(session, request, null);
 
         String ctype = getHeader(request, "Content-Type", true);
+        String protocol = getHeader(request, "Sec-WebSocket-Protocol", true);
         
-        if (ctype == null) {
-            String protocol = getHeader(request, "Sec-WebSocket-Protocol", true);
-        	
-            if (protocol != null) {
-        		if ("org.granite.gravity".equals(protocol))
-        			ctype = ContentType.AMF.mimeType();
-        		else if (protocol.startsWith("org.granite.gravity."))
-        			ctype = "application/x-" + protocol.substring("org.granite.gravity.".length());
-        		else
-        			throw new RuntimeException("Missing Content-Type and unsupported Sec-WebSocket-Protocol: " + protocol);
-        	}
-            else {
-            	ctype = ContentType.AMF.mimeType();
-            	log.warn("Missing Content-Type and Sec-WebSocket-Protocol in handshake request. Using: %s", ctype);
-            }
-        }
-
-        ContentType contentType = ContentType.forMimeType(ctype);
-        if (contentType == null) {
-            log.warn("No (or unsupported) content type in handshake request: %s. Using: %s", ctype, ContentType.AMF.mimeType());
-            contentType = ContentType.AMF;
-        }
+        ContentType contentType = WebSocketUtil.getContentType(ctype, protocol);
 
         // Hack using a thread local to be sure that the endpoint gets the correct values
         // Jetty and GlassFish
         GravityWebSocketConfig.set(connectMessageId, clientId, clientType, contentType, session);
     }
     
-    private String getHeader(HandshakeRequest request, String key, boolean lower) {
+    private static String getHeader(HandshakeRequest request, String key, boolean lower) {
     	List<String> values = request.getHeaders().get(key);
     	if (values != null && values.size() > 0)
     		return values.get(0);
@@ -109,14 +89,14 @@ public class GravityWebSocketConfigurator extends ServerEndpointConfig.Configura
     	return null;
     }
     
-    private String getParameter(HandshakeRequest request, String key) {
+    private static String getParameter(HandshakeRequest request, String key) {
     	List<String> values = request.getParameterMap().get(key);
     	if (values != null && values.size() > 0)
     		return values.get(0);
     	return null;
     }
     
-    private String getHeaderOrParameter(HandshakeRequest request, String key, boolean lower) {
+    private static String getHeaderOrParameter(HandshakeRequest request, String key, boolean lower) {
     	String value = getHeader(request, key, lower);
     	if (value == null)
     		value = getParameter(request, key);
