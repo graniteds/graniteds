@@ -63,7 +63,7 @@ public class GravityWebSocketDeployer implements ServletContextListener {
             }
             ServerEndpointConfig serverEndpointConfig = ServerEndpointConfig.Builder.create(GravityWebSocketEndpoint.class, "/websocketamf/amf")
                     .configurator(new GravityWebSocketConfigurator())
-                    .subprotocols(Arrays.asList("org.granite.gravity.amf", "org.granite.gravity.jmf+amf"))
+                    .subprotocols(Arrays.asList("org.granite.gravity", "org.granite.gravity.amf", "org.granite.gravity.jmf+amf"))
                     .build();
             serverEndpointConfig.getUserProperties().put("servletContext", servletContextEvent.getServletContext());
             serverEndpointConfig.getUserProperties().put("gravity", gravity);
