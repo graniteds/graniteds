@@ -21,22 +21,26 @@
  */
 package org.granite.gravity.jetty8;
 
-import flex.messaging.messages.CommandMessage;
-import flex.messaging.messages.Message;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketHandler;
 import org.granite.context.GraniteContext;
 import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
+import org.granite.gravity.websocket.WebSocketUtil;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ContentType;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import flex.messaging.messages.CommandMessage;
+import flex.messaging.messages.Message;
 
-
+/**
+ * @author William DRAI
+ */
 public class JettyWebSocketHandler extends WebSocketHandler {
 	
 	private static final Logger log = Logger.getLogger(JettyWebSocketHandler.class);
@@ -55,9 +59,10 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 		JettyWebSocketChannelFactory channelFactory = new JettyWebSocketChannelFactory(gravity);
 		
 		try {
-			String connectMessageId = request.getHeader("connectId") != null ? request.getHeader("connectId") : request.getParameter("connectId");
-			String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameter("GDSClientId");
-			String clientType = request.getHeader("GDSClientType") != null ? request.getHeader("GDSClientType") : request.getParameter("GDSClientType");
+			String connectMessageId = getHeaderOrParameter(request, "connectId");
+			String clientId = getHeaderOrParameter(request, "GDSClientId");
+			String clientType = getHeaderOrParameter(request, "GDSClientType");
+			
 			String sessionId = null;
 			HttpSession session = request.getSession("true".equals(servletContext.getInitParameter("org.granite.gravity.websocket.forceCreateSession")));
 			if (session != null) {
@@ -100,14 +105,7 @@ public class JettyWebSocketHandler extends WebSocketHandler {
             channel.setSession(session);
 
             String ctype = request.getContentType();
-            if (ctype == null && protocol.length() > "org.granite.gravity".length())
-                ctype = "application/x-" + protocol.substring("org.granite.gravity.".length());
-
-			ContentType contentType = ContentType.forMimeType(ctype);
-			if (contentType == null) {
-				log.warn("No (or unsupported) content type in request: %s", request.getContentType());
-				contentType = ContentType.AMF;
-			}
+            ContentType contentType = WebSocketUtil.getContentType(ctype, protocol);
 			channel.setContentType(contentType);
 			
 			if (!ackMessage.getClientId().equals(clientId))
@@ -118,5 +116,12 @@ public class JettyWebSocketHandler extends WebSocketHandler {
 		finally {
 			GraniteContext.release();
 		}
+    }
+    
+    private static String getHeaderOrParameter(HttpServletRequest servletRequest, String key) {
+    	String value = servletRequest.getHeader(key);
+    	if (value == null)
+    		value = servletRequest.getParameter(key);
+    	return value;
     }
 }

@@ -36,6 +36,7 @@ import org.granite.context.GraniteContext;
 import org.granite.gravity.GravityInternal;
 import org.granite.gravity.GravityManager;
 import org.granite.gravity.GravityServletUtil;
+import org.granite.gravity.websocket.WebSocketUtil;
 import org.granite.logging.Logger;
 import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.util.ContentType;
@@ -82,9 +83,10 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 		TomcatWebSocketChannelFactory channelFactory = new TomcatWebSocketChannelFactory(gravity);
 		
 		try {
-			String connectMessageId = request.getHeader("connectId") != null ? request.getHeader("connectId") : request.getParameter("connectId");
-			String clientId = request.getHeader("GDSClientId") != null ? request.getHeader("GDSClientId") : request.getParameter("GDSClientId");
-			String clientType = request.getHeader("GDSClientType") != null ? request.getHeader("GDSClientType") : request.getParameter("GDSClientType");
+			String connectMessageId = getHeaderOrParameter(request, "connectId");
+			String clientId = getHeaderOrParameter(request, "GDSClientId");
+			String clientType = getHeaderOrParameter(request, "GDSClientType");
+			
 			String sessionId = null;
 			HttpSession session = request.getSession(false);
 			if (session != null) {
@@ -134,14 +136,7 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
             }
 
             String ctype = request.getContentType();
-            if (ctype == null && protocol.length() > "org.granite.gravity".length())
-                ctype = "application/x-" + protocol.substring("org.granite.gravity.".length());
-
-            ContentType contentType = ContentType.forMimeType(ctype);
-			if (contentType == null) {
-				log.warn("No (or unsupported) content type in request: %s", request.getContentType());
-				contentType = ContentType.AMF;
-			}
+            ContentType contentType = WebSocketUtil.getContentType(ctype, protocol);
 			channel.setContentType(contentType);
 			
 			if (!ackMessage.getClientId().equals(clientId))
@@ -153,7 +148,14 @@ public class TomcatWebSocketServlet extends WebSocketServlet {
 			GraniteContext.release();
 		}
 	}
-//
+	
+	private static String getHeaderOrParameter(HttpServletRequest request, String key) {
+		String value = request.getHeader(key);
+		if (value == null)
+			request.getParameter(key);
+		return value;
+	}
+	
 //    @Override
 //    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 //
