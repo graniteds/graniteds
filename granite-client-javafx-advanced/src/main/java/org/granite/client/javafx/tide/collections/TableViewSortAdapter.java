@@ -39,6 +39,7 @@ import org.granite.tide.data.model.SortInfo;
 
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableView;
@@ -50,9 +51,16 @@ public class TableViewSortAdapter<S> implements SortAdapter {
 	
 	private TableView<S> tableView;
 	private S exampleData;
+	private SortInfo sortInfo = null;
 
 	public TableViewSortAdapter(final TableView<S> tableView, final Class<S> exampleDataClass) {
 		this.tableView = tableView;
+		this.tableView.getSortOrder().addListener(new ListChangeListener<TableColumn<S, ?>>() {
+			@Override
+			public void onChanged(ListChangeListener.Change<? extends TableColumn<S, ?>> change) {
+				retrieve(null);
+			}
+		});
 		try {
 			this.exampleData = exampleDataClass.newInstance();
 		}
@@ -78,9 +86,17 @@ public class TableViewSortAdapter<S> implements SortAdapter {
 				}
 			}
 		}
+		
+		this.sortInfo = sortInfo;
 	}
 	
 	public void retrieve(SortInfo sortInfo) {
+		if (sortInfo == null)
+			sortInfo = this.sortInfo;
+		
+		if (sortInfo == null)
+			return;
+		
 		int i = 0;
 		String[] order = new String[tableView.getSortOrder().size()];
 		boolean[] desc = new boolean[tableView.getSortOrder().size()];
