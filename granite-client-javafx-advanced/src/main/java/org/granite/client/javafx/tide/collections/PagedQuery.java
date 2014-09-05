@@ -276,7 +276,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 					if (changeIndex < removals.size())
 						return first+removals.get(changeIndex);
 					if (changeIndex >= removals.size() && changeIndex < removals.size()+adds.size())
-						return first+adds.get(changeIndex);
+						return first+adds.get(changeIndex-removals.size());
 					if (perms != null)
 						return first+permutationStart;
 					return -1;
@@ -287,7 +287,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 					if (changeIndex < removals.size())
 						return first+removals.get(changeIndex);
 					if (changeIndex >= removals.size() && changeIndex < removals.size()+adds.size())
-						return first+adds.get(changeIndex);
+						return first+adds.get(changeIndex-removals.size());
 					if (perms != null)
 						return first+permutationStart+perms.length;
 					return -1;

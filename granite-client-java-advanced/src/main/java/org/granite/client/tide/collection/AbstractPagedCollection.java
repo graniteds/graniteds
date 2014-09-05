@@ -677,6 +677,9 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
         if (localIndex != null) {
             List<String> entityNames = new ArrayList<String>();
             for (int i = 0; i < localIndex.length; i++) {
+            	if (localIndex[i] == null)
+            		continue;
+            	
                 String entityName = localIndex[i].getClass().getSimpleName();
                 if (!entityName.equals(elementName))
                     entityNames.remove(entityName);
@@ -696,6 +699,9 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 	        localIndex = list.toArray(localIndex);
 	        if (localIndex != null) {
 	            for (int i = 0; i < localIndex.length; i++) {
+	            	if (localIndex[i] == null)
+	            		continue;
+	            	
 	                String entityName = localIndex[i].getClass().getSimpleName();
 	                if (!entityName.equals(elementName))
 	                    entityNames.add(entityName);
