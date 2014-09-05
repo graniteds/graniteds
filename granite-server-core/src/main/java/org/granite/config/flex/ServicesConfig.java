@@ -369,7 +369,7 @@ public class ServicesConfig implements ChannelConfig, ScannedItemHandler {
 		}
 		if ("legacyXmlSerialization".equals(propertyName))
 			return channel.isLegacyXmlSerialization();
-		else if ("".equals(propertyName))
+		else if ("legacyCollectionSerialization".equals(propertyName))
 			return channel.isLegacyCollectionSerialization();
 		return false;
 	}
