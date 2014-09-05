@@ -67,7 +67,8 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
 
     @Override
     protected void sendBytes(byte[] msg) throws IOException {
-        connection.sendMessage(msg, 0, msg.length);
+    	if (connection != null)
+    		connection.sendMessage(msg, 0, msg.length);
     }
 
 	public void close() {
