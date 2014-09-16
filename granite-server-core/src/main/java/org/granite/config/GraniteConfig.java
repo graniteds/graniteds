@@ -890,7 +890,7 @@ public class GraniteConfig implements ConvertersConfig, AliasRegistryConfig, AMF
     private void loadCustomJMFReflection(XMap element, boolean custom) {
     	String jmfReflection = element.get("jmf-reflection/@type");
     	if (jmfReflection == null)
-    		this.jmfReflection = new Reflection(null);
+    		this.jmfReflection = new Reflection(Thread.currentThread().getContextClassLoader());
     	else {
 	    	try {
 	    		this.jmfReflection = (Reflection)TypeUtil.newInstance(jmfReflection);
