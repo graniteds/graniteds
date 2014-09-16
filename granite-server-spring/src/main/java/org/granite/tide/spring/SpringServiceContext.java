@@ -46,6 +46,7 @@ import org.granite.tide.annotations.BypassTideMerge;
 import org.granite.tide.async.AsyncPublisher;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataUpdatePostprocessor;
+import org.granite.tide.data.DisableRemoteUpdates;
 import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationResult;
 import org.granite.util.TypeUtil;
@@ -268,8 +269,6 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
     @Override
     public IInvocationResult postCall(ServiceInvocationContext context, Object result, String componentName, Class<?> componentClass) {
 		List<ContextUpdate> results = null;
-    	DataContext dataContext = DataContext.get();
-		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
 		
         InvocationResult ires = new InvocationResult(result, results);
     	if (isBeanAnnotationPresent(context.getBean(), BypassTideMerge.class))
@@ -277,7 +276,12 @@ public class SpringServiceContext extends TideServiceContext implements Applicat
     	else if (isBeanMethodAnnotationPresent(context.getBean(), context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
 			ires.setMerge(false);
     	
-        ires.setUpdates(updates);
+    	if (!isBeanAnnotationPresent(context.getBean(), DisableRemoteUpdates.class) && 
+    		!isBeanMethodAnnotationPresent(context.getBean(), context.getMethod().getName(), context.getMethod().getParameterTypes(), DisableRemoteUpdates.class)) {
+	    	DataContext dataContext = DataContext.get();
+			Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
+	        ires.setUpdates(updates);
+    	}
         
         return ires;
     }

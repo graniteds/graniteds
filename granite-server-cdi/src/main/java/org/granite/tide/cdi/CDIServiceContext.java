@@ -66,6 +66,7 @@ import org.granite.tide.async.AsyncPublisher;
 import org.granite.tide.cdi.lazy.CDIInitializer;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataUpdatePostprocessor;
+import org.granite.tide.data.DisableRemoteUpdates;
 import org.granite.tide.invocation.ContextEvent;
 import org.granite.tide.invocation.ContextResult;
 import org.granite.tide.invocation.ContextUpdate;
@@ -424,9 +425,6 @@ public class CDIServiceContext extends TideServiceContext {
         else
             results = tideInvocation.getResults();
 
-    	DataContext dataContext = DataContext.get();
-		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
-		
         Bean<?> bean = null;
         if (componentName != null || componentClass != null) {
             // Determines scope of component
@@ -460,7 +458,17 @@ public class CDIServiceContext extends TideServiceContext {
 				ires.setMerge(false);
         }
         
-        ires.setUpdates(updates);
+        boolean enableUpdates = true;
+        if (componentName != null || componentClass != null) {
+			Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass, null);
+	    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), DisableRemoteUpdates.class))
+	    		enableUpdates = false;
+        }
+    	if (enableUpdates) {
+	    	DataContext dataContext = DataContext.get();
+			Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
+	        ires.setUpdates(updates);
+    	}
         
         // Adds events in result object
         ires.setEvents(tideInvocation.getEvents());

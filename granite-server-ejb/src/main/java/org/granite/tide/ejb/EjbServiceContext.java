@@ -49,6 +49,7 @@ import org.granite.tide.TideServiceContext;
 import org.granite.tide.annotations.BypassTideMerge;
 import org.granite.tide.async.AsyncPublisher;
 import org.granite.tide.data.DataContext;
+import org.granite.tide.data.DisableRemoteUpdates;
 import org.granite.tide.data.JPAPersistenceManager;
 import org.granite.tide.invocation.ContextEvent;
 import org.granite.tide.invocation.ContextUpdate;
@@ -292,8 +293,6 @@ public class EjbServiceContext extends TideServiceContext  {
     		AbstractContext threadContext = AbstractContext.instance();
     		
     		List<ContextUpdate> results = new ArrayList<ContextUpdate>(threadContext.size());
-        	DataContext dataContext = DataContext.get();
-    		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
     		
     		for (Map.Entry<String, Object> entry : threadContext.entrySet())
     			results.add(new ContextUpdate(entry.getKey(), null, entry.getValue(), 3, false));
@@ -304,8 +303,18 @@ public class EjbServiceContext extends TideServiceContext  {
 		    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), BypassTideMerge.class))
 					ires.setMerge(false);
 	        }
+	        boolean enableUpdates = true;
+	        if (componentName != null || componentClass != null) {
+				Set<Class<?>> componentClasses = findComponentClasses(componentName, componentClass, null);
+		    	if (isBeanAnnotationPresent(componentClasses, context.getMethod().getName(), context.getMethod().getParameterTypes(), DisableRemoteUpdates.class))
+		    		enableUpdates = false;
+	        }
+	        if (enableUpdates) {
+	        	DataContext dataContext = DataContext.get();
+	    		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
+		        ires.setUpdates(updates);
+	        }
 	        
-	        ires.setUpdates(updates);
 	        ires.setEvents(new ArrayList<ContextEvent>(threadContext.getRemoteEvents()));
 	        
 	        if (componentName != null) {
