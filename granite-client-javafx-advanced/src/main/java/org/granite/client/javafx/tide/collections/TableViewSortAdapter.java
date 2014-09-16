@@ -38,8 +38,10 @@ import org.granite.client.tide.collection.SortAdapter;
 import org.granite.tide.data.model.SortInfo;
 
 import javafx.beans.property.ReadOnlyProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableView;
@@ -70,6 +72,11 @@ public class TableViewSortAdapter<S> implements SortAdapter {
 	}
 	
 	public void apply(SortInfo sortInfo) {
+		if (sortInfo == null)
+			sortInfo = this.sortInfo;
+		if (sortInfo == null)
+			return;
+		
 		String[] order = sortInfo.getOrder();
 		boolean[] desc = sortInfo.getDesc();
 		
@@ -107,10 +114,15 @@ public class TableViewSortAdapter<S> implements SortAdapter {
 				desc[i] = column.getSortType() == SortType.DESCENDING;
 				i++;
 			}
+			else if (property == null) {
+				throw new IllegalArgumentException("No suitable cell factory configured for column " + column.getId());
+			}
 			else
 				throw new IllegalArgumentException("Sortable cell values must implement Property to apply TableViewSort adapter");
 		}
 		sortInfo.setOrder(order.length > 0 ? order : null);
 		sortInfo.setDesc(desc.length > 0 ? desc : null);
+		
+		this.sortInfo = sortInfo;
 	}
 }

@@ -328,7 +328,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 	public void setSortAdapter(SortAdapter sortAdapter) {
 		this.sortAdapter = sortAdapter;
 		if (sortAdapter != null)
-			sortAdapter.apply(sortInfo);
+			sortAdapter.retrieve(sortInfo);
 	}
 	
 	public SortAdapter getSortAdapter() {
@@ -645,6 +645,8 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 	@SuppressWarnings("unchecked")
 	protected void handleResult(Page<E> page, TideResultEvent<?> event, int first, int max) {
 		List<E> list = page.getResultList();
+		
+		log.debug("handle result %d - %d (%s)", first, max, pendingRanges);
 		
 		int pendingIndex = -1;
 		for (Iterator<Integer[]> ipr = pendingRanges.iterator(); ipr.hasNext(); ) {
