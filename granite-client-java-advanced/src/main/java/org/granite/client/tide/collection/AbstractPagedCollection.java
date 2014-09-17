@@ -580,7 +580,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
         else
 			log.debug("refresh");			
         
-		if (!initialFind())
+		if (initSent || !initialFind())
 			executeFind(first, last);
 		return true;
 	}
