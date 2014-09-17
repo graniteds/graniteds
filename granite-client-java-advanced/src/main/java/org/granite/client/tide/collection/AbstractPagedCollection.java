@@ -634,6 +634,19 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 	    handleResult(page, event, first, max);
 	}
 	
+	private String pendingRangesString() {
+		if (pendingRanges == null || pendingRanges.size() == 0)
+			return "";
+		
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < pendingRanges.size(); i++) {
+			if (i > 0)
+				sb.append(",");
+			sb.append(pendingRanges.get(i)[0]).append("-").append(pendingRanges.get(i)[1]);
+		}
+		return sb.toString();
+	}
+	
 	/**
 	 *	Event handler for results query
 	 *
@@ -646,7 +659,8 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 	protected void handleResult(Page<E> page, TideResultEvent<?> event, int first, int max) {
 		List<E> list = page.getResultList();
 		
-		log.debug("handle result %d - %d (%s)", first, max, pendingRanges);
+		if (log.isDebugEnabled())
+			log.debug("handle result %d - %d (%s)", first, max, pendingRangesString());
 		
 		int pendingIndex = -1;
 		for (Iterator<Integer[]> ipr = pendingRanges.iterator(); ipr.hasNext(); ) {
