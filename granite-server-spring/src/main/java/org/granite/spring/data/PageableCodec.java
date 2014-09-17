@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.granite.logging.Logger;
 import org.granite.messaging.jmf.ExtendedObjectInput;
 import org.granite.messaging.jmf.ExtendedObjectOutput;
 import org.granite.messaging.jmf.codec.ExtendedObjectCodec;
@@ -42,18 +43,27 @@ import org.springframework.data.domain.Sort.Order;
  * @author Franck WOLFF
  */
 public class PageableCodec implements ExtendedObjectCodec {
+	
+	private static final Logger log = Logger.getLogger(PageableCodec.class);
     
 	private static final Field pageableField;
 	static {
 		Field pageableFieldTmp = null;
-		try {
-			pageableFieldTmp = PageImpl.class.getDeclaredField("pageable");
-			pageableFieldTmp.setAccessible(true);
+		Class<?> pageClass = PageImpl.class;
+		while (pageClass != null && !Object.class.equals(pageClass)) {
+			try {
+				pageableFieldTmp = pageClass.getDeclaredField("pageable");
+				pageableFieldTmp.setAccessible(true);
+				break;
+			}
+			catch (NoSuchFieldException e) {
+				// Other exception mean that Spring Data is not present
+			    // Don't catch so codec is not installed
+			}
+			pageClass = pageClass.getSuperclass();
 		}
-		catch (NoSuchFieldException e) {
-			// Other exception mean that Spring Data is not present
-		    // Don't catch so codec is not installed
-		}
+		if (pageableFieldTmp == null)
+			log.error("Could not determine pageable field in Spring Data PageImpl, expect wrong paging behaviour");
 		pageableField = pageableFieldTmp;
 	}
 
