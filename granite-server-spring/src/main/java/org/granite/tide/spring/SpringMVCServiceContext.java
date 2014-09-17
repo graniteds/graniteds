@@ -51,6 +51,7 @@ import org.granite.tide.IInvocationCall;
 import org.granite.tide.IInvocationResult;
 import org.granite.tide.annotations.BypassTideMerge;
 import org.granite.tide.data.DataContext;
+import org.granite.tide.data.DisableRemoteUpdates;
 import org.granite.tide.invocation.ContextUpdate;
 import org.granite.tide.invocation.InvocationCall;
 import org.granite.tide.invocation.InvocationResult;
@@ -385,9 +386,6 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 			}
     	}
 		
-    	DataContext dataContext = DataContext.get();
-		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
-		
         InvocationResult ires = new InvocationResult(result, results);
         if (component == null)
         	component = context.getBean();
@@ -398,7 +396,12 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     			ires.setMerge(false);
     	}
     	
-        ires.setUpdates(updates);
+    	if (!isBeanAnnotationPresent(component, DisableRemoteUpdates.class) && 
+        		!isBeanMethodAnnotationPresent(component, context.getMethod().getName(), context.getMethod().getParameterTypes(), DisableRemoteUpdates.class)) {
+        	DataContext dataContext = DataContext.get();
+    		Object[][] updates = dataContext != null ? dataContext.getUpdates() : null;
+            ires.setUpdates(updates);
+    	}
         
         return ires;
     }
