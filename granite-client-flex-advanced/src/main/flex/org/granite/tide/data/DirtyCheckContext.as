@@ -39,7 +39,9 @@ package org.granite.tide.data {
     import flash.utils.Dictionary;
     import flash.utils.getQualifiedClassName;
     
+    import mx.collections.ArrayCollection;
     import mx.collections.IList;
+    import mx.collections.ICollectionView;
     import mx.collections.ListCollectionView;
     import mx.core.IUID;
     import mx.events.CollectionEvent;
@@ -611,11 +613,18 @@ package org.granite.tide.data {
 					_dirtyCount++;
 			}
 		
-			var i:int;
+			var i:int, j:int;
         	var save:Array = esave[propName] as Array;
 			var coll:IList = IList(event.target);
-			while (coll is ListCollectionView)
+			var sortsAndFilters:Array = [];
+			while (coll is ListCollectionView) {
+				if (ListCollectionView(coll).filterFunction != null || ListCollectionView(coll).sort != null) {
+					// event.location is the index in the sorted/filtered view, adjust to unfiltered index
+					sortsAndFilters.push({ filterFunction: ListCollectionView(coll).filterFunction, sort: ListCollectionView(coll).sort });
+				}
+				
 				coll = ListCollectionView(coll).list;
+			}
 			
 			if (save == null) {
 				save = esave[propName] = [];
@@ -624,15 +633,28 @@ package org.granite.tide.data {
 				for (i = 0; i < coll.length; i++)
 					save.push(coll.getItemAt(i));
 				
+				// Reapply filters/sorts to current snapshot
+				var snapshot:ListCollectionView = new ArrayCollection(save);
+				for (j = sortsAndFilters.length-1; j >= 0; j--) {
+					snapshot.sort = sortsAndFilters[j].sort;
+					snapshot.filterFunction = sortsAndFilters[j].filterFunction;
+					
+					snapshot.refresh();
+					if (j > 0)
+						snapshot = new ListCollectionView(snapshot);
+				}
+				
 				// Adjust with last event
-				if (event.kind == CollectionEventKind.ADD)
-					save.splice(event.location, event.items.length);
+				if (event.kind == CollectionEventKind.ADD) {
+					for (j = 0; j < event.items.length; j++)
+						snapshot.removeItemAt(event.location);
+				}
 				else if (event.kind == CollectionEventKind.REMOVE) {
-					for (i = 0; i < event.items.length; i++)
-						save.splice(event.location+i, 0, event.items[i]);
+					for (j = 0; j < event.items.length; j++)
+						snapshot.addItemAt(event.items[j], event.location+j);
 				}
 				else if (event.kind == CollectionEventKind.REPLACE)
-					save[event.location] = event.items[0].oldValue;
+					snapshot.setItemAt(event.items[0].oldValue, event.location);
 			}
 			else {
 				if (isSameList(save, coll)) {

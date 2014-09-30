@@ -227,8 +227,14 @@ package org.granite.tide.data {
                             var diffOps:Array;
                             if (v is IMap)
                                 diffOps = DataUtils.diffMaps(collSnapshot, IMap(v));
-                            else
-                                diffOps = DataUtils.diffLists(collSnapshot, IList(v).toArray());
+                            else {
+                            	// If collection is filtered/sorted, get unfiltered data
+                    			var coll:IList = IList(v);
+                				while (coll is ListCollectionView)
+                					coll = ListCollectionView(coll).list;
+                            	
+                                diffOps = DataUtils.diffLists(collSnapshot, coll.toArray());
+                            }
 
                             for each (var op:Array in diffOps)
                                 collChanges.addChange(op[0], buildRef(op[1]), buildRef(op[2]));
