@@ -43,6 +43,8 @@ import java.util.Map;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -77,6 +79,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
     private Map<String, Object> internalFilterMap;
     private ObservableMap<String, Object> filterMap;
     private ObjectProperty<F> filter;
+    private ReadOnlyIntegerWrapper count = new ReadOnlyIntegerWrapper(this, "count", 0);
     
     
     protected PagedQuery() {
@@ -117,7 +120,17 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 		wrappedList = FXCollections.observableList(internalWrappedList);
 		wrappedList.addListener(new WrappedListListChangeListener());
 	}
-    	
+	
+	public ReadOnlyIntegerProperty countProperty() {
+		return count.getReadOnlyProperty();
+	}
+	
+	@Override
+	protected void updateCount(int cnt) {
+		super.updateCount(cnt);
+		count.set(cnt);
+	}
+    
 	@Override
     protected void initFilter() {
 		this.internalFilterMap = new HashMap<String, Object>();
@@ -212,7 +225,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
 	
 	public void firePageChange(TideRpcEvent event, int previousFirst, int previousLast, List<E> savedSnapshot) {
 		if (event instanceof TideResultEvent<?>)
-			fireItemsUpdated(0, Math.min(this.count, this.last)-this.first, previousFirst, previousLast, savedSnapshot);
+			fireItemsUpdated(0, Math.min(super.count, this.last)-this.first, previousFirst, previousLast, savedSnapshot);
 		
 		pageChangeHelper.fireEvent(this, event);
 	}

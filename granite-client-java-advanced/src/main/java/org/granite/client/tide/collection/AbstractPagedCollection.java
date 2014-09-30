@@ -155,7 +155,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 	    log.debug("create collection");
 		first = 0;
 		last = 0;
-		count = 0;
+		updateCount(0);
 		initializing = true;
 		
 		initComponent();
@@ -193,6 +193,10 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
         if (localIndex != null)
             return count;
 	    return 0;
+	}
+	
+	protected void updateCount(int cnt) {
+		this.count = cnt;
 	}
 	
 	/**
@@ -391,7 +395,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
         clearLocalIndex();
         first = 0;
         last = first+max;
-        count = 0;
+        updateCount(0);
         getWrappedList().clear();
 		initializing = true;
 		initSent = false;
@@ -688,7 +692,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 		int pageNum = max > 0 ? nextFirst / max : 0;
 		log.debug("handle result page %d (%d - %d)", pageNum, nextFirst, nextLast);
 
-        count = page.getResultCount();
+        updateCount(page.getResultCount());
 
         if (localIndex != null) {
             List<String> entityNames = new ArrayList<String>();
