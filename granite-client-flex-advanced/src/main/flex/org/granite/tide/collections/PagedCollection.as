@@ -133,7 +133,7 @@ package org.granite.tide.collections {
 		    log.debug("create collection");
 			super();
 			// Wrap sort to avoid client-side sorting
-			super.sort = new NullSort();
+			super.sort = null;
 			_ipes = null;
 			_first = 0;
 			_last = 0;
@@ -582,10 +582,13 @@ package org.granite.tide.collections {
                 }
                 _sortFieldListenersSet = 0;
 				// Update wrapped sort
-				NullSort(sort).wrappedSort = newSort;
+				if (super.sort == null)
+					super.sort = new NullSort(newSort);
+				else
+					NullSort(super.sort).wrappedSort = newSort;
             }
         }
-
+		
         CONFIG::flex45 {
             [Bindable("sortChanged")]
             public override function get sort():ISort {
@@ -603,7 +606,10 @@ package org.granite.tide.collections {
                 }
                 _sortFieldListenersSet = 0;
 				// Update wrapped sort
-				NullSort(sort).wrappedSort = newSort;
+				if (super.sort == null)
+					super.sort = new NullSort(newSort);
+				else
+					NullSort(super.sort).wrappedSort = newSort;
             }
         }
 
@@ -866,7 +872,8 @@ class NullSort extends Sort {
 	}
 	
 	public function set wrappedSort(sort:Object):void {
-		_wrappedSort = sort;
+		if (sort !== this)
+			_wrappedSort = sort;
 	}
 	
 	public override function propertyAffectsSort(property:String):Boolean {
