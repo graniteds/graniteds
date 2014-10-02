@@ -95,12 +95,23 @@ public class ExternalizerFactory implements ConfigurableFactory<Externalizer, Ex
                 type = annotation.type();
             else {
                 int maxWeight = -1;
+                
                 for (Externalizer e : scannedConfigurables) {
                     int weight = e.accept(beanClass);
                     if (weight > maxWeight) {
                         maxWeight = weight;
                         type = e.getClass();
+                        externalizer = e;
                     }
+                }
+                if (externalizer != NULL_EXTERNALIZER) {
+            		Externalizer previous = externalizersCache.putIfAbsent(type.getName(), externalizer);
+            		if (previous != null)
+            			externalizer = previous;
+            		else
+            			externalizer.configure(config.getExternalizersConfiguration());
+            		
+            		return externalizer;
                 }
             }
 
