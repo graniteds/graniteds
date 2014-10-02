@@ -122,8 +122,28 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     		if (componentPath == null)
     			return null;
     		
+    		boolean grails = springContext.getClass().getName().indexOf("Grails") > 0;
+    		String controllerName = componentName;
+    		String controllerPath = null;
+	    	if (componentName != null && componentName.endsWith("Controller")) {
+	    		if (grails) {
+	    			int idx = componentName.lastIndexOf(".");
+	    			controllerName = idx > 0 
+	    				? componentName.substring(0, idx+1) + componentName.substring(idx+1, idx+2).toUpperCase() + componentName.substring(idx+2)
+	    				: componentName.substring(0, 1).toUpperCase() + componentName.substring(1);
+	    				
+	    			controllerPath = idx > 0
+	    				? componentName.substring(idx+1, componentName.length()-"Controller".length())
+	    				: componentName.substring(0, componentName.length()-"Controller".length());
+	    		}
+	    		else {
+	    			controllerName = componentName;
+	    			controllerPath = componentName.substring(0, componentName.length()-"Controller".length());
+	    		}
+	    	}
+    		
     		final HttpServletRequest request = ((ServletGraniteContext)GraniteContext.getCurrentInstance()).getRequest();
-    		final String requestPath = "/" + (componentName.endsWith("Controller") ? componentName.substring(0, componentName.length()-"Controller".length()) : componentName) + "/" + componentPath;
+    		final String requestPath = "/" + controllerPath + "/" + componentPath;
     		
     		HttpServletRequestWrapper wrappedRequest = new HttpServletRequestWrapper(request) {
     			@Override
@@ -135,30 +155,42 @@ public class SpringMVCServiceContext extends SpringServiceContext {
     				return requestPath;
     			}
     		};
-			try {
-				for (HandlerMapping handlerMapping : springContext.getBeansOfType(HandlerMapping.class).values()) {
-	    			Object handler = handlerMapping.getHandler(wrappedRequest);
-	    			handler = unwrapHandler(handler);
-	    			if (handler != null && !(handler instanceof ServerFilter))
-	    				return handler;
+    		
+    		if (!grails) {
+				try {
+					for (HandlerMapping handlerMapping : springContext.getBeansOfType(HandlerMapping.class).values()) {
+		    			Object handler = handlerMapping.getHandler(wrappedRequest);
+		    			handler = unwrapHandler(handler);
+		    			if (handler != null && !(handler instanceof ServerFilter))
+		    				return handler;
+					}
+	    		}
+				catch (Exception e) {
+					// Ignore or not ignore ?
+					log.warn(e, "Could not find handler mapping for path " + componentPath);
 				}
     		}
-			catch (Exception e) {
-				// Ignore or not ignore ?
-				log.warn(e, "Could not find handler mapping for path " + componentPath);
-			}
-//	    	if (componentName != null && componentName.endsWith("Controller")) {
-//	    		try {
-//	    			int idx = componentName.lastIndexOf(".");
-//	    			String controllerName = idx > 0 
-//	    				? componentName.substring(0, idx+1) + componentName.substring(idx+1, idx+2).toUpperCase() + componentName.substring(idx+2)
-//	    				: componentName.substring(0, 1).toUpperCase() + componentName.substring(1);
-//	    				
-//	    			return springContext.getBean(controllerName);
-//	    		}
-//	        	catch (NoSuchBeanDefinitionException nexc2) {
-//	        	}
-//	    	}
+			// Grails controller lookup
+    		else if (componentName != null && componentName.endsWith("Controller")) {
+	    		try {
+	    			Object controller = springContext.getBean(controllerName);
+	    			
+	    			try {
+		    			Object grailsApp = springContext.getBean("grailsApplication");
+		    			Object controllerClass = grailsApp.getClass().getMethod("getArtefactForFeature", String.class, Object.class).invoke(grailsApp, "Controller", requestPath);
+		    			
+		    			request.setAttribute("org.codehaus.groovy.grails.GRAILS_CONTROLLER_CLASS", controllerClass);
+		    			request.setAttribute("org.codehaus.groovy.grails.GRAILS_CONTROLLER_CLASS_AVAILABLE", true);
+	    			}
+	    			catch (Exception e) {
+	    				log.warn(e, "Could not find controller class");
+	    			}
+	    			
+	    			return controller;
+	    		}
+	        	catch (NoSuchBeanDefinitionException nexc2) {
+	        	}
+	    	}
     	}
     	
     	return null;    	
@@ -475,7 +507,10 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 		public ControllerRequestWrapper(boolean grails, HttpServletRequest request, String componentName, String componentPath, Object requestBody, Map<String, Object> requestMap, Map<String, Object> valueMap) {
 			super(request);
 			this.componentName = componentName;
-			this.componentPath = "/" + (componentName.endsWith("Controller") ? componentName.substring(0, componentName.length()-"Controller".length()) : componentName) + "/" + componentPath;
+			if (grails && componentName.endsWith("Controller") && componentName.lastIndexOf(".") > 0)
+				this.componentPath = "/" + componentName.substring(componentName.lastIndexOf(".")+1, componentName.length()-"Controller".length()) + "/" + componentPath;
+			else
+				this.componentPath = "/" + (componentName.endsWith("Controller") ? componentName.substring(0, componentName.length()-"Controller".length()) : componentName) + "/" + componentPath;
 			this.requestBody = requestBody;
 			this.requestMap = requestMap;
 			this.valueMap = valueMap;
