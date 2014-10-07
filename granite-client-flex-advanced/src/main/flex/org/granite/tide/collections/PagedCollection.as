@@ -504,13 +504,17 @@ package org.granite.tide.collections {
 		    
 		    if (dispatchRefresh) {
                 // Hack with tempSort to prevent from client sorting during refresh
+				_tempSort = new NullSort();
+				var saveLocalIndex:Array = localIndex;
 	        	saveThrowIpe = _throwIpe;
 				try {
 		            _throwIpe = false;
 			        super.refresh();
+					localIndex = saveLocalIndex;	// May have been cleared by super.refresh()
 				}
 				finally {
 			    	_throwIpe = saveThrowIpe;
+					_tempSort = null;
 				}
 		    }
 		    
@@ -520,6 +524,9 @@ package org.granite.tide.collections {
 		    if (dispatchReset)
 		    	dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE, false, false, CollectionEventKind.RESET));
 		}
+		
+		// Hack with tempSort to prevent from client sorting during refresh
+		private var _tempSort:NullSort = null;
 
 
 		// Override get/set list/dispatch/reset^M
@@ -568,6 +575,9 @@ package org.granite.tide.collections {
         CONFIG::flex40 {
 	        [Bindable("sortChanged")]
 	        public override function get sort():Sort {
+				// Ignore sort during refresh
+				if (_tempSort && !_tempSort.sorted)
+					return _tempSort;
 				// Ignore sort during merge
 				if (_context && _context.meta_merging)
 					return null;
@@ -583,15 +593,18 @@ package org.granite.tide.collections {
                 _sortFieldListenersSet = 0;
 				// Update wrapped sort
 				if (super.sort == null)
-					super.sort = new NullSort(newSort);
+					super.sort = new RemoteSort(newSort);
 				else
-					NullSort(super.sort).wrappedSort = newSort;
+					RemoteSort(super.sort).wrappedSort = newSort;
             }
         }
 		
         CONFIG::flex45 {
             [Bindable("sortChanged")]
             public override function get sort():ISort {
+				// Ignore sort during refresh
+				if (_tempSort && !_tempSort.sorted)
+					return _tempSort;
 				// Ignore sort during merge
 				if (_context && _context.meta_merging)
 					return null;
@@ -607,9 +620,9 @@ package org.granite.tide.collections {
                 _sortFieldListenersSet = 0;
 				// Update wrapped sort
 				if (super.sort == null)
-					super.sort = new NullSort(newSort);
+					super.sort = new RemoteSort(newSort);
 				else
-					NullSort(super.sort).wrappedSort = newSort;
+					RemoteSort(super.sort).wrappedSort = newSort;
             }
         }
 
@@ -862,12 +875,25 @@ package org.granite.tide.collections {
 
 import mx.collections.Sort;
 
+
 class NullSort extends Sort {
+	
+	private var _sorted:Boolean = false;
+	
+	public function get sorted():Boolean {
+		return _sorted;
+	}
+	
+	public override function sort(array:Array):void {
+		_sorted = true;
+	}
+}
+
+class RemoteSort extends Sort {
     
 	private var _wrappedSort:Object = null;
-    private var _sorted:Boolean = false;
 	
-	public function NullSort(sort:Object = null):void {
+	public function RemoteSort(sort:Object = null):void {
 		_wrappedSort = sort;
 	}
 	
@@ -897,12 +923,7 @@ class NullSort extends Sort {
 			_wrappedSort.fields = fields;
 	}
     
-    public function get sorted():Boolean {
-        return _sorted;
-    }
-    
     public override function sort(array:Array):void {
-        _sorted = true;
     }
 	
 	public override function reverse():void {		
