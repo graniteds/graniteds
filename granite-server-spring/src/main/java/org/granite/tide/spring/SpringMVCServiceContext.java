@@ -141,6 +141,8 @@ public class SpringMVCServiceContext extends SpringServiceContext {
 	    			controllerPath = componentName.substring(0, componentName.length()-"Controller".length());
 	    		}
 	    	}
+	    	else if (componentName != null)
+	    		controllerPath = componentName;
     		
     		final HttpServletRequest request = ((ServletGraniteContext)GraniteContext.getCurrentInstance()).getRequest();
     		final String requestPath = "/" + controllerPath + "/" + componentPath;
