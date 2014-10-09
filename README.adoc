@@ -24,14 +24,14 @@ See LICENSES.adoc.
 
 === Documentation
 
-* Java server http://www.graniteds.org/public/docs/3.0.0/docs/java/api/index.html[javadoc]
-* Flex client http://www.graniteds.org/public/docs/3.0.0/docs/flex-client/api/index.html[javadoc]
-* Java client http://www.graniteds.org/public/docs/3.0.0/docs/java-client/api/index.html[javadoc]
-* JavaFX client http://www.graniteds.org/public/docs/3.0.0/docs/javafx-client/api/index.html[javadoc]
-* Android client http://www.graniteds.org/public/docs/3.0.0/docs/android-client/api/index.html[javadoc]
+* Java server http://www.graniteds.org/public/docs/latest/docs/server/api/index.html[javadoc]
+* Flex client http://www.graniteds.org/public/docs/latest/docs/client-flex/api/index.html[javadoc]
+* Java client http://www.graniteds.org/public/docs/latest/docs/client-java/api/index.html[javadoc]
+* JavaFX client http://www.graniteds.org/public/docs/latest/docs/client-javafx/api/index.html[javadoc]
+* Android client http://www.graniteds.org/public/docs/latest/docs/client-android/api/index.html[javadoc]
 
-* Flex Reference documentation is http://www.graniteds.org/public/docs/3.0.0/docs/reference/flex/graniteds-refguide-flex.html[here].
-* JavaFX Reference documentation is http://www.graniteds.org/public/docs/3.0.0/docs/reference/java/graniteds-refguide-java.html[here].
+* Flex Reference documentation is http://www.graniteds.org/public/docs/latest/docs/reference/flex/graniteds-refguide-flex.html[here].
+* JavaFX Reference documentation is http://www.graniteds.org/public/docs/latest/docs/reference/java/graniteds-refguide-java.html[here].
 
 
 === Support
