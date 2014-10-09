@@ -155,7 +155,7 @@ public abstract class AbstractPagedCollection<E, F> implements List<E>, Componen
 	    log.debug("create collection");
 		first = 0;
 		last = 0;
-		updateCount(0);
+		count = 0;
 		initializing = true;
 		
 		initComponent();

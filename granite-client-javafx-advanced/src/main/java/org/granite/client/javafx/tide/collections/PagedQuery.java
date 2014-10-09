@@ -79,7 +79,7 @@ public class PagedQuery<E, F> extends AbstractPagedCollection<E, F> implements O
     private Map<String, Object> internalFilterMap;
     private ObservableMap<String, Object> filterMap;
     private ObjectProperty<F> filter;
-    private ReadOnlyIntegerWrapper count = new ReadOnlyIntegerWrapper(this, "count", 0);
+    private final ReadOnlyIntegerWrapper count = new ReadOnlyIntegerWrapper(this, "count", 0);
     
     
     protected PagedQuery() {
