@@ -34,17 +34,15 @@
  */
 package org.granite.client.javafx.tide.collections;
 
-import org.granite.client.tide.collection.SortAdapter;
-import org.granite.tide.data.model.SortInfo;
-
 import javafx.beans.property.ReadOnlyProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableView;
+
+import org.granite.client.tide.collection.SortAdapter;
+import org.granite.tide.data.model.SortInfo;
 
 /**
  * @author William DRAI

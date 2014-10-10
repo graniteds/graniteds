@@ -147,7 +147,7 @@ public class TestApplyRemoteChange {
         Assert.assertEquals("Version increased", Long.valueOf(2), person.getVersion());
 
         Person person1 = new Person(1L, 3L, "P1", null, null);
-        ((PersistentCollection)person1.getContacts()).uninitialize();
+        ((PersistentCollection<?>)person1.getContacts()).uninitialize();
         Contact contact2 = new Contact(2L, 0L, "C2", person1, "tutu@tutu.net");
 
         change = new Change(personAlias, 1L, 3L, "P1");
@@ -219,7 +219,7 @@ public class TestApplyRemoteChange {
 
 
         Person personb = new Person(person.getId(), person.getVersion(), person.getUid(), null, null);
-        ((PersistentCollection)personb.getContacts()).uninitialize();
+        ((PersistentCollection<?>)personb.getContacts()).uninitialize();
         Contact contact2b = new Contact(2L, 0L, "C2", personb, "toto2@toto.net");
 
         Change change = new Change(personAlias, person.getId(), 0L, person.getUid());
@@ -237,14 +237,14 @@ public class TestApplyRemoteChange {
     @Test
     public void testApplyRemoteChangeLazy() {
         Person person = new Person(1L, 0L, "P1", null, "Test");
-        ((PersistentCollection)person.getContacts()).uninitialize();
+        ((PersistentCollection<?>)person.getContacts()).uninitialize();
 
         person = (Person)entityManager.mergeExternalData(person);
         entityManager.clearCache();
 
 
         Person personb = new Person(person.getId(), person.getVersion(), person.getUid(), null, "Test");
-        ((PersistentCollection)personb.getContacts()).uninitialize();
+        ((PersistentCollection<?>)personb.getContacts()).uninitialize();
         Contact contact2b = new Contact(2L, 0L, "C2", personb, "toto2@toto.net");
 
         Change change = new Change(personAlias, person.getId(), 0L, person.getUid());
@@ -254,7 +254,7 @@ public class TestApplyRemoteChange {
         entityManager.handleUpdates(mergeContext, null, Collections.singletonList(UPDATE.of(new ChangeSet(change))));
 
         Assert.assertSame("Person em", entityManager, getEntityManager(person));
-        Assert.assertFalse("Contacts uninitialized", ((PersistentCollection)person.getContacts()).wasInitialized());
+        Assert.assertFalse("Contacts uninitialized", ((PersistentCollection<?>)person.getContacts()).wasInitialized());
     }
 
     @Test
@@ -321,10 +321,10 @@ public class TestApplyRemoteChange {
 
 
         Patient3 patientc = new Patient3(patient.getId(), patient.getVersion(), patient.getUid(), "Test");
-        ((PersistentCollection)patientc.getVisits()).uninitialize();
-        ((PersistentCollection)patientc.getTests()).uninitialize();
+        ((PersistentCollection<?>)patientc.getVisits()).uninitialize();
+        ((PersistentCollection<?>)patientc.getTests()).uninitialize();
         Visit visitc = new Visit(visit.getId(), visit.getVersion(), visit.getUid(), patientc, "Test");
-        ((PersistentCollection)visitc.getTests()).uninitialize();
+        ((PersistentCollection<?>)visitc.getTests()).uninitialize();
         VisitTest test2c = new VisitTest(2L, 0L, "T2", patientc, visitc, "Test2");
 
         Change change1 = new Change(patientAlias, patient.getId(), 0L, patient.getUid());
@@ -356,7 +356,7 @@ public class TestApplyRemoteChange {
         entityManager.clearCache();
         
         Patient3 patientc = new Patient3(patient.getId(), patient.getVersion(), patient.getUid(), "Test");
-        ((PersistentCollection)patientc.getVisits()).uninitialize();
+        ((PersistentCollection<?>)patientc.getVisits()).uninitialize();
         Visit visitc = new Visit(3L, 0L, "V3", patientc, "Test3");
         Visit visitd = new Visit(4L, 0L, "V4", patientc, "Test4");
         
@@ -550,9 +550,9 @@ public class TestApplyRemoteChange {
         entityManager.clearCache();
 
         Patient4 patientb = new Patient4(patient.getId(), patient.getVersion(), patient.getUid(), "Test");
-        ((PersistentCollection)patientb.getDiagnosis()).uninitialize();
+        ((PersistentCollection<?>)patientb.getDiagnosis()).uninitialize();
         PatientStatus statusb = new PatientStatus(status.getId(), status.getVersion()+1, status.getUid(), patientb, status.getName());
-        ((PersistentCollection)statusb.getDeathCauses()).uninitialize();
+        ((PersistentCollection<?>)statusb.getDeathCauses()).uninitialize();
         patientb.setStatus(statusb);
         
         Diagnosis diagnosis2b = new Diagnosis(2L, 0L, "D2", patientb, null, "Test2");
@@ -619,13 +619,13 @@ public class TestApplyRemoteChange {
 
         
         Patient4 patientb = new Patient4(patient.getId(), patient.getVersion(), patient.getUid(), "Test");
-        ((PersistentCollection)patientb.getDiagnosis()).uninitialize();
-        ((PersistentCollection)patientb.getVisits()).uninitialize();
+        ((PersistentCollection<?>)patientb.getDiagnosis()).uninitialize();
+        ((PersistentCollection<?>)patientb.getVisits()).uninitialize();
         PatientStatus statusb = new PatientStatus(status.getId(), status.getVersion()+1, status.getUid(), patientb, "Test");
-        ((PersistentCollection)statusb.getDeathCauses()).uninitialize();
+        ((PersistentCollection<?>)statusb.getDeathCauses()).uninitialize();
         patientb.setStatus(statusb);
         Visit2 visitb = new Visit2(visit.getId(), visit.getVersion(), visit.getUid(), patientb, "Test");
-        ((PersistentCollection)visitb.getAssessments()).uninitialize();
+        ((PersistentCollection<?>)visitb.getAssessments()).uninitialize();
 
         Diagnosis diagnosis2b = new Diagnosis(2L, 0L, "D2", patientb, visitb, "Test2");
 
@@ -691,8 +691,8 @@ public class TestApplyRemoteChange {
         //     Server: A B C => A C B :  add C (1) => remove C (3)
 
         Classification c4b = new Classification(4L, 0L, "C4", "4");
-        ((PersistentCollection)c4b.getSubclasses()).uninitialize();
-        ((PersistentCollection)c4b.getSuperclasses()).uninitialize();
+        ((PersistentCollection<?>)c4b.getSubclasses()).uninitialize();
+        ((PersistentCollection<?>)c4b.getSuperclasses()).uninitialize();
 
         Change change = new Change(classificationAlias, list.getId(), list.getVersion()+1, list.getUid());
         change.addCollectionChanges("subclasses", new CollectionChange(1, 2, c4b), new CollectionChange(-1, 4, c4b));
@@ -731,8 +731,8 @@ public class TestApplyRemoteChange {
         //     Server: A B C => A C B :  remove B (1) => add B (2)
 
         Classification c3b = new Classification(3L, 0L, "C3", "Test");
-        ((PersistentCollection)c3b.getSubclasses()).uninitialize();
-        ((PersistentCollection)c3b.getSuperclasses()).uninitialize();
+        ((PersistentCollection<?>)c3b.getSubclasses()).uninitialize();
+        ((PersistentCollection<?>)c3b.getSuperclasses()).uninitialize();
 
         Change change = new Change(classificationAlias, list.getId(), list.getVersion()+1, list.getUid());
         change.addCollectionChanges("subclasses", new CollectionChange(-1, 2, c3b), new CollectionChange(1, 3, c3b));
@@ -773,8 +773,8 @@ public class TestApplyRemoteChange {
         //     Server: A B C D => B C A D :  remove A (0) => add A (2)
         
         Classification c3b = new Classification(3L, 0L, "C3", "3");
-        ((PersistentCollection)c3b.getSubclasses()).uninitialize();
-        ((PersistentCollection)c3b.getSuperclasses()).uninitialize();
+        ((PersistentCollection<?>)c3b.getSubclasses()).uninitialize();
+        ((PersistentCollection<?>)c3b.getSuperclasses()).uninitialize();
         
         Change change = new Change(classificationAlias, list.getId(), list.getVersion()+1, list.getUid());
         change.addCollectionChanges("subclasses", 

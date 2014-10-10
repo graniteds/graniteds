@@ -100,7 +100,8 @@ public class GravityServletUtil {
 	
 	public static Message[] deserialize(GravityInternal gravity, HttpServletRequest request, InputStream is) throws ClassNotFoundException, IOException {
         if (ContentType.JMF_AMF.mimeType().equals(request.getContentType())) {
-            JMFDeserializer deserializer = new JMFDeserializer(is, gravity.getGraniteConfig().getSharedContext());
+            @SuppressWarnings("resource")
+			JMFDeserializer deserializer = new JMFDeserializer(is, gravity.getGraniteConfig().getSharedContext());
             return (Message[])deserializer.readObject();
         }
 

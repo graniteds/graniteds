@@ -41,13 +41,15 @@
 
 package org.granite.client.test.javafx.tide;
 
+import java.io.Serializable;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import org.granite.client.messaging.RemoteAlias;
 
 @RemoteAlias("org.granite.test.tide.Param")
-public class Param {
+public class Param implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
