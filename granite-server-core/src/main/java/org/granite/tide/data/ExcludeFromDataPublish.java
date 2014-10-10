@@ -32,4 +32,13 @@ import java.lang.annotation.Target;
 @Target({ ElementType.TYPE })
 @Inherited
 public @interface ExcludeFromDataPublish {
+	
+	ExcludeMode value() default ExcludeMode.ALL;
+	
+	enum ExcludeMode {
+		// Exclude everything and don't publish the update
+		ALL,
+		// Publish a simple REFRESH event without the content of the updated objects
+		CHANGES
+	}
 }

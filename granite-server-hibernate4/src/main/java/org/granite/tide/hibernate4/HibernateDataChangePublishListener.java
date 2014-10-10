@@ -42,6 +42,7 @@ import org.granite.tide.data.CollectionChange;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataContext.EntityUpdate;
 import org.granite.tide.data.DataContext.EntityUpdateType;
+import org.granite.tide.data.DataPublishListener;
 import org.granite.tide.data.ExcludeFromDataPublish;
 import org.granite.tide.data.Utils;
 import org.hibernate.HibernateException;
@@ -74,18 +75,14 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
 
 
     public void onPostInsert(PostInsertEvent event) {
-    	if (DataContext.get() == null)
-    		return;
-    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (DataPublishListener.handleExclude(event.getEntity()))
     		return;
     	
         DataContext.addUpdate(EntityUpdateType.PERSIST, event.getEntity());
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
-    	if (DataContext.get() == null)
-    		return;
-    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (DataPublishListener.handleExclude(event.getEntity()))
     		return;
     	
         if (event.getDirtyProperties() != null && event.getDirtyProperties().length > 0) {
@@ -106,9 +103,7 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
     }
 
     public void onPostDelete(PostDeleteEvent event) {
-    	if (DataContext.get() == null)
-    		return;
-    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (DataPublishListener.handleExclude(event.getEntity()))
     		return;
     	
     	String uid = getUid(event.getPersister(), event.getEntity());
@@ -161,18 +156,13 @@ public class HibernateDataChangePublishListener implements PostInsertEventListen
 
     @SuppressWarnings("unchecked")
 	public void onPreUpdateCollection(PreCollectionUpdateEvent event) {
-    	if (DataContext.get() == null)
-    		return;
-    	
     	Object owner = event.getAffectedOwnerOrNull();
-    	if (owner == null || owner.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (DataPublishListener.handleExclude(owner))
     		return;
     	
     	CollectionEntry collectionEntry = event.getSession().getPersistenceContext().getCollectionEntry(event.getCollection());
     	
     	String propertyName = collectionEntry.getRole().substring(collectionEntry.getLoadedPersister().getOwnerEntityPersister().getEntityName().length()+1);
-		if (AnnotationUtils.isAnnotatedWith(owner, propertyName, ExcludeFromDataPublish.class))
-			return;
     	
     	Object change = getChange(collectionEntry.getLoadedPersister().getOwnerEntityPersister(), event.getSession(), event.getAffectedOwnerEntityName(), event.getAffectedOwnerIdOrNull(), owner);
     	if (change == null || !(change instanceof Change))

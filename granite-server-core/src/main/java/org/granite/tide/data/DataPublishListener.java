@@ -26,28 +26,40 @@ import javax.persistence.PostRemove;
 import javax.persistence.PostUpdate;
 
 import org.granite.tide.data.DataContext.EntityUpdateType;
+import org.granite.tide.data.ExcludeFromDataPublish.ExcludeMode;
 
 
 public class DataPublishListener {
     
     @PostPersist
     public void onPostPersist(Object entity) {
-    	if (entity.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (handleExclude(entity))
     		return;
     	DataContext.addUpdate(EntityUpdateType.PERSIST, entity);
     }
     
     @PostRemove
     public void onPostRemove(Object entity) {
-    	if (entity.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (handleExclude(entity))
     		return;
     	DataContext.addUpdate(EntityUpdateType.REMOVE, entity);
     }
     
     @PostUpdate
     public void onPostUpdate(Object entity) {
-    	if (entity.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (handleExclude(entity))
     		return;
     	DataContext.addUpdate(EntityUpdateType.UPDATE, entity);
+    }
+    
+    public static boolean handleExclude(Object entity) {
+    	if (entity == null || DataContext.get() == null)
+    		return true;
+    	if (!entity.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    		return false;
+    	ExcludeFromDataPublish exclude = entity.getClass().getAnnotation(ExcludeFromDataPublish.class);
+    	if (exclude.value() == ExcludeMode.CHANGES)
+        	DataContext.addUpdate(EntityUpdateType.REFRESH, entity.getClass());
+    	return true;
     }
 }
