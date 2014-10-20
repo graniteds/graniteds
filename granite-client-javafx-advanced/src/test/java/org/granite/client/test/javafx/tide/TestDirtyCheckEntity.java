@@ -796,7 +796,7 @@ public class TestDirtyCheckEntity {
           
          Assert.assertFalse("Classification not dirty", entityManager.isDirty());
          
-         ((PersistentCollection)child.getSuperclasses()).uninitialize();
+         ((PersistentCollection<?>)child.getSuperclasses()).uninitialize();
           
          Assert.assertFalse("Classification not dirty after uninit", entityManager.isDirty());
      }
@@ -856,5 +856,28 @@ public class TestDirtyCheckEntity {
          entityManager.resetEntity(person);
          
          Assert.assertFalse("Context not dirty after item removed", entityManager.isDirty());
+     }
+     
+     @Test
+     public void testDeepDirty() {
+         Config config = new Config(1L, 0L, "P1", "toto");
+         Param param = new Param("toto");
+         config.getParamList().add(param);
+         config = (Config)entityManager.mergeExternalData(config);
+         
+         Config config2 = new Config(2L, 0L, "P2", "tata");
+         config2 = (Config)entityManager.mergeExternalData(config2);
+         
+         config2.setName("tutu");
+         
+         Assert.assertTrue(dataManager.isDirty());
+         
+    	 BooleanProperty dirty = new SimpleBooleanProperty(this, "dirty", false);
+    	 dirty.bind(dataManager.deepDirtyEntity(config));
+         Assert.assertFalse(dirty.get());
+         
+    	 config.getParamList().get(0).setName("tata");
+         
+         Assert.assertTrue(dirty.get());
      }
 }

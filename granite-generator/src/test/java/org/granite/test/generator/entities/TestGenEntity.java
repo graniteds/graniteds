@@ -468,7 +468,7 @@ public class TestGenEntity {
     public static class ArtifactFilenameFilter implements FilenameFilter {
         @Override
         public boolean accept(File dir, String name) {
-            return !name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar");
+            return name.endsWith(".jar") && (!name.endsWith("-sources.jar") && !name.endsWith("-javadoc.jar"));
         }
     }
 }

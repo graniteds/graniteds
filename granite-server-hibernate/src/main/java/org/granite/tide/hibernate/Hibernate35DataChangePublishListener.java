@@ -35,14 +35,13 @@ import java.util.Set;
 
 import javax.persistence.Entity;
 
-import org.granite.tide.data.AnnotationUtils;
 import org.granite.tide.data.Change;
 import org.granite.tide.data.ChangeRef;
 import org.granite.tide.data.CollectionChange;
 import org.granite.tide.data.DataContext;
 import org.granite.tide.data.DataContext.EntityUpdate;
 import org.granite.tide.data.DataContext.EntityUpdateType;
-import org.granite.tide.data.ExcludeFromDataPublish;
+import org.granite.tide.data.DataPublishListener;
 import org.granite.tide.data.Utils;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
@@ -73,18 +72,14 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
 
 
     public void onPostInsert(PostInsertEvent event) {
-    	if (DataContext.get() == null)
-    		return;
-    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (DataPublishListener.handleExclude(event.getEntity()))
     		return;
     	
         DataContext.addUpdate(EntityUpdateType.PERSIST, event.getEntity());
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
-    	if (DataContext.get() == null)
-    		return;
-    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (DataPublishListener.handleExclude(event.getEntity()))
     		return;
     	
     	int[] dirtyProperties = (int[])DataContext.getEntityExtraData(event.getEntity());
@@ -94,9 +89,6 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
         		for (int i = 0; i < dirtyProperties.length; i++) {
         			int pidx = dirtyProperties[i];
         			String pname = event.getPersister().getPropertyNames()[pidx];
-        			if (AnnotationUtils.isAnnotatedWith(event.getEntity(), pname, ExcludeFromDataPublish.class))
-        				continue;
-        			
     				((Change)change).getChanges().put(pname, event.getState()[pidx]);
         		}
         	}
@@ -106,9 +98,7 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
     }
 
     public void onPostDelete(PostDeleteEvent event) {
-    	if (DataContext.get() == null)
-    		return;
-    	if (event.getEntity().getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (DataPublishListener.handleExclude(event.getEntity()))
     		return;
     	
     	String uid = getUid(event.getPersister(), event.getEntity());
@@ -163,14 +153,12 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
     @SuppressWarnings("unchecked")
 	public void onPreUpdateCollection(PreCollectionUpdateEvent event) {
     	Object owner = event.getAffectedOwnerOrNull();
-    	if (owner == null || owner.getClass().isAnnotationPresent(ExcludeFromDataPublish.class))
+    	if (DataPublishListener.handleExclude(owner))
     		return;
     	
     	CollectionEntry collectionEntry = event.getSession().getPersistenceContext().getCollectionEntry(event.getCollection());
     	
     	String propertyName = collectionEntry.getRole().substring(collectionEntry.getLoadedPersister().getOwnerEntityPersister().getEntityName().length()+1);
-		if (AnnotationUtils.isAnnotatedWith(owner, propertyName, ExcludeFromDataPublish.class))
-			return;
     	
     	Object change = getChange(collectionEntry.getLoadedPersister().getOwnerEntityPersister(), event.getAffectedOwnerEntityName(), event.getAffectedOwnerIdOrNull(), owner);
     	if (change == null || !(change instanceof Change))

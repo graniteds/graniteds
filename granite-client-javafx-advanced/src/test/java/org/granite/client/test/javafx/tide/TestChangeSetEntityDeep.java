@@ -174,10 +174,10 @@ public class TestChangeSetEntityDeep {
         		Prescription prescription = medication.getPrescriptionList().iterator().next();
         		
         		Patient p1 = new Patient(patient.getId(), patient.getVersion(), patient.getUid(), patient.getName());
-        		((PersistentCollection)p1.getMedicationList()).uninitialize();
+        		((PersistentCollection<?>)p1.getMedicationList()).uninitialize();
         		
         		Medication m1 = new Medication(1L, 0L, medication.getUid(), p1, medication.getName());
-        		((PersistentCollection)m1.getPrescriptionList()).uninitialize();
+        		((PersistentCollection<?>)m1.getPrescriptionList()).uninitialize();
         		
         		Prescription pr1 = new Prescription(1L, 0L, prescription.getUid(), m1, prescription.getName());
         		
@@ -190,7 +190,7 @@ public class TestChangeSetEntityDeep {
         		updates[1] = new Object[] { UpdateKind.UPDATE.name(), p2 };
         		
         		Patient p3 = new Patient(patient.getId(), patient.getVersion(), patient.getUid(), patient.getName());
-        		((PersistentCollection)p3.getMedicationList()).uninitialize();
+        		((PersistentCollection<?>)p3.getMedicationList()).uninitialize();
         		
         		Medication m3 = new Medication(1L, 0L, medication.getUid(), p3, medication.getName());
         		Prescription pr3 = new Prescription(1L, 0L, prescription.getUid(), m3, prescription.getName());
@@ -200,13 +200,13 @@ public class TestChangeSetEntityDeep {
 
         		Patient p4 = new Patient(patient.getId(), patient.getVersion(), patient.getUid(), patient.getName());
         		Medication m4 = new Medication(1L, 0L, medication.getUid(), p4, medication.getName());
-        		((PersistentCollection)m4.getPrescriptionList()).uninitialize();
+        		((PersistentCollection<?>)m4.getPrescriptionList()).uninitialize();
         		p4.getMedicationList().add(m4);
         		
         		updates[3] = new Object[] { UpdateKind.UPDATE.name(), p4 };
 
         		Patient p5 = new Patient(patient.getId(), patient.getVersion(), patient.getUid(), patient.getName());
-        		((PersistentCollection)p5.getMedicationList()).uninitialize();
+        		((PersistentCollection<?>)p5.getMedicationList()).uninitialize();
         		
         		Medication m5 = new Medication(1L, 0L, medication.getUid(), p5, medication.getName());
         		Prescription pr5 = new Prescription(1L, 0L, prescription.getUid(), m5, prescription.getName());
@@ -216,7 +216,7 @@ public class TestChangeSetEntityDeep {
 
         		Patient p6 = new Patient(patient.getId(), patient.getVersion(), patient.getUid(), patient.getName());
         		Medication m6 = new Medication(1L, 0L, medication.getUid(), p5, medication.getName());
-        		((PersistentCollection)m6.getPrescriptionList()).uninitialize();
+        		((PersistentCollection<?>)m6.getPrescriptionList()).uninitialize();
         		p6.getMedicationList().add(m6);
         		
         		InvocationResult result = new InvocationResult(p6);
@@ -263,8 +263,8 @@ public class TestChangeSetEntityDeep {
 		Assert.assertEquals("ChangeSet with one add", 1, changeSet.size());
 		Assert.assertEquals("ChangeSet contains the new entity", 1, changeSet.getChange(0).getCollectionChange("prescriptionList").size());
 		Assert.assertTrue("Change contains prescription", ObjectUtil.objectEquals(dataManager, prescription3, changeSet.getChange(0).getCollectionChange("prescriptionList").getChangeValue(0)));
-		Assert.assertFalse("ChangeSet prescription list uninitialized", ((PersistentCollection)changeSet.getChange(0).getCollectionChange("prescriptionList").getChangeValue(0, Prescription.class).getMedication().getPrescriptionList()).wasInitialized());
-		Assert.assertFalse("ChangeSet medication list uninitialized", ((PersistentCollection)changeSet.getChange(0).getCollectionChange("prescriptionList").getChangeValue(0, Prescription.class).getMedication().getPatient().getMedicationList()).wasInitialized()); 
+		Assert.assertFalse("ChangeSet prescription list uninitialized", ((PersistentCollection<?>)changeSet.getChange(0).getCollectionChange("prescriptionList").getChangeValue(0, Prescription.class).getMedication().getPrescriptionList()).wasInitialized());
+		Assert.assertFalse("ChangeSet medication list uninitialized", ((PersistentCollection<?>)changeSet.getChange(0).getCollectionChange("prescriptionList").getChangeValue(0, Prescription.class).getMedication().getPatient().getMedicationList()).wasInitialized()); 
 	}
 	
 	@Test
@@ -293,7 +293,7 @@ public class TestChangeSetEntityDeep {
 		Assert.assertEquals("ChangeSet with one add", 1, changeSet.size());
 		Assert.assertEquals("ChangeSet contains the new entity", 1, changeSet.getChange(0).getCollectionChange("medicationList").size());
 		Assert.assertTrue("Change contains prescription", ObjectUtil.objectEquals(dataManager, prescription3, changeSet.getChange(0).getCollectionChange("medicationList").getChangeValue(0, Medication.class).getPrescriptionList().iterator().next()));
-		Assert.assertFalse("ChangeSet medication list uninitialized", ((PersistentCollection)changeSet.getChange(0).getCollectionChange("medicationList").getChangeValue(0, Medication.class).getPatient().getMedicationList()).wasInitialized()); 
+		Assert.assertFalse("ChangeSet medication list uninitialized", ((PersistentCollection<?>)changeSet.getChange(0).getCollectionChange("medicationList").getChangeValue(0, Medication.class).getPatient().getMedicationList()).wasInitialized()); 
 	}
 	
 	@Test
@@ -316,7 +316,7 @@ public class TestChangeSetEntityDeep {
 		
 		Assert.assertEquals("ChangeSet with one add", 1, changeSet.size());
 		Assert.assertEquals("ChangeSet contains the new entity", 1, changeSet.getChange(0).getCollectionChange("medicationList").size());
-		Assert.assertTrue("ChangeSet collection with init elts", ((PersistentCollection)changeSet.getChange(0).getCollectionChange("medicationList").getChangeValue(0, Medication.class).getPrescriptionList()).wasInitialized());
+		Assert.assertTrue("ChangeSet collection with init elts", ((PersistentCollection<?>)changeSet.getChange(0).getCollectionChange("medicationList").getChangeValue(0, Medication.class).getPrescriptionList()).wasInitialized());
 	}
 	
 	@Test
@@ -348,7 +348,7 @@ public class TestChangeSetEntityDeep {
     public void testChangeSetEntityRemote() {
     	Person person = new Person(1L, 0L, "P1", null, null);
     	dataManager.initProxy(person, 1L, true, "bla");
-    	((PersistentCollection)person.getContacts()).uninitialize();
+    	((PersistentCollection<?>)person.getContacts()).uninitialize();
     	
     	person = (Person)entityManager.mergeExternalData(person);
     	entityManager.clearCache();
