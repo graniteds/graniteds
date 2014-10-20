@@ -155,7 +155,7 @@ public class ServerFilterBeanDefinitionParser extends AbstractSingleBeanDefiniti
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void registerHandlerMappings(Element parent, ParserContext parserContext, String urlPattern) {
-        if (urlPattern == null)
+        if (urlPattern == null || urlPattern.trim().length() == 0)
         	return;
         
         BeanDefinitionBuilder handlerMappingBuilder = BeanDefinitionBuilder.genericBeanDefinition(DEFAULT_HANDLER_MAPPING_CLASS_NAME);
