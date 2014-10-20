@@ -155,15 +155,17 @@ public class ServerFilterBeanDefinitionParser extends AbstractSingleBeanDefiniti
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void registerHandlerMappings(Element parent, ParserContext parserContext, String urlPattern) {
+        if (urlPattern == null)
+        	return;
+        
         BeanDefinitionBuilder handlerMappingBuilder = BeanDefinitionBuilder.genericBeanDefinition(DEFAULT_HANDLER_MAPPING_CLASS_NAME);
         
         Map mappings = new HashMap();
-        if (urlPattern != null)
             mappings.put(urlPattern, parent.getAttribute(ID_ATTRIBUTE));
-
+            
         handlerMappingBuilder.addPropertyValue("urlMap", mappings);
         registerInfrastructureComponent(parent, parserContext, handlerMappingBuilder, 
-        		parent.getAttribute(ID_ATTRIBUTE) + "_handlerMapping");
+    		parent.getAttribute(ID_ATTRIBUTE) + "_handlerMapping");
     }
 
     
