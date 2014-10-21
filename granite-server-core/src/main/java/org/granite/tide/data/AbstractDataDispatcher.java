@@ -135,7 +135,7 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 			if (paramsProvider != null) {
 				for (Object[] dataUpdate : dataUpdates) {
 					DataPublishParams params = new DataPublishParams();
-					paramsProvider.publishes(params, dataUpdate[1]);
+					paramsProvider.publishes(params, dataUpdate[2]);
 					
 					Map<String, Object> headers = params.getHeaders();
 					List<Object> list = updates.get(headers);
@@ -143,7 +143,7 @@ public abstract class AbstractDataDispatcher implements DataDispatcher {
 						list = new ArrayList<Object>();
 						updates.put(headers, list);
 					}
-					list.add(dataUpdate);
+					list.add(new Object[] { dataUpdate[0], dataUpdate[1] });
 				}
 			}
 			

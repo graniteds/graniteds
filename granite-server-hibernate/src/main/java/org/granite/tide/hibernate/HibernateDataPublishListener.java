@@ -38,14 +38,14 @@ public class HibernateDataPublishListener implements PostInsertEventListener, Po
     
 
 	public void onPostInsert(PostInsertEvent event) {
-    	DataContext.addUpdate(EntityUpdateType.PERSIST, event.getEntity());
+    	DataContext.addUpdate(EntityUpdateType.PERSIST, event.getEntity(), event.getEntity());
 	}
 	
 	public void onPostDelete(PostDeleteEvent event) {
-    	DataContext.addUpdate(EntityUpdateType.REMOVE, event.getEntity());
+    	DataContext.addUpdate(EntityUpdateType.REMOVE, event.getEntity(), event.getEntity());
     }
 
 	public void onPostUpdate(PostUpdateEvent event) throws HibernateException {
-		DataContext.addUpdate(EntityUpdateType.UPDATE, event.getEntity());
+		DataContext.addUpdate(EntityUpdateType.UPDATE, event.getEntity(), event.getEntity());
 	}
 }

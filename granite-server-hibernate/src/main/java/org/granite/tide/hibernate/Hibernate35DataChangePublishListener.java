@@ -75,7 +75,7 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
     	if (DataPublishListener.handleExclude(event.getEntity()))
     		return;
     	
-        DataContext.addUpdate(EntityUpdateType.PERSIST, event.getEntity());
+        DataContext.addUpdate(EntityUpdateType.PERSIST, event.getEntity(), event.getEntity());
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
@@ -93,7 +93,7 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
         		}
         	}
         	else if (change == null)
-        		DataContext.addUpdate(EntityUpdateType.UPDATE, event.getEntity());
+        		DataContext.addUpdate(EntityUpdateType.UPDATE, event.getEntity(), event.getEntity());
         }
     }
 
@@ -104,10 +104,10 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
     	String uid = getUid(event.getPersister(), event.getEntity());
     	if (uid != null) {
 			ChangeRef deleteRef = new ChangeRef(event.getPersister().getEntityName(), uid, event.getId());
-    		DataContext.addUpdate(EntityUpdateType.REMOVE, deleteRef);
+    		DataContext.addUpdate(EntityUpdateType.REMOVE, deleteRef, event.getEntity());
     	}
     	else
-    		DataContext.addUpdate(EntityUpdateType.REMOVE, event.getEntity());
+    		DataContext.addUpdate(EntityUpdateType.REMOVE, event.getEntity(), event.getEntity());
     }
     
     @SuppressWarnings("deprecation")
@@ -135,7 +135,7 @@ public class Hibernate35DataChangePublishListener implements PostInsertEventList
     	}
     	if (change == null) {
     		change = new Change(entityName, id, version, uid);
-    		DataContext.addUpdate(EntityUpdateType.UPDATE, change, 1);
+    		DataContext.addUpdate(EntityUpdateType.UPDATE, change, entity, 1);
     	}
     	else if (change instanceof Change)
     		((Change)change).updateVersion(version);

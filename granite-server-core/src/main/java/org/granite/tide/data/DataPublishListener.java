@@ -35,21 +35,21 @@ public class DataPublishListener {
     public void onPostPersist(Object entity) {
     	if (handleExclude(entity))
     		return;
-    	DataContext.addUpdate(EntityUpdateType.PERSIST, entity);
+    	DataContext.addUpdate(EntityUpdateType.PERSIST, entity, entity);
     }
     
     @PostRemove
     public void onPostRemove(Object entity) {
     	if (handleExclude(entity))
     		return;
-    	DataContext.addUpdate(EntityUpdateType.REMOVE, entity);
+    	DataContext.addUpdate(EntityUpdateType.REMOVE, entity, entity);
     }
     
     @PostUpdate
     public void onPostUpdate(Object entity) {
     	if (handleExclude(entity))
     		return;
-    	DataContext.addUpdate(EntityUpdateType.UPDATE, entity);
+    	DataContext.addUpdate(EntityUpdateType.UPDATE, entity, entity);
     }
     
     public static boolean handleExclude(Object entity) {
@@ -59,7 +59,7 @@ public class DataPublishListener {
     		return false;
     	ExcludeFromDataPublish exclude = entity.getClass().getAnnotation(ExcludeFromDataPublish.class);
     	if (exclude.value() == ExcludeMode.CHANGES)
-        	DataContext.addUpdate(EntityUpdateType.REFRESH, entity.getClass());
+        	DataContext.addUpdate(EntityUpdateType.REFRESH, entity.getClass(), entity.getClass());
     	return true;
     }
 }

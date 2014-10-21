@@ -133,9 +133,15 @@ public class DataContext {
     }
     
     public static void addUpdate(EntityUpdateType type, Object entity) {
-    	addUpdate(type, entity, 0);    	
+    	addUpdate(type, entity, entity, 0);    	
     }
     public static void addUpdate(EntityUpdateType type, Object entity, int priority) {
+    	addUpdate(type, entity, entity, priority);    	
+    }
+    public static void addUpdate(EntityUpdateType type, Object entity, Object source) {
+    	addUpdate(type, entity, source, 0);    	
+    }
+    public static void addUpdate(EntityUpdateType type, Object entity, Object source, int priority) {
     	DataContext dc = get();
     	if (dc != null && dc.dataDispatcher != null) {
     		if (entity instanceof Class<?>)
@@ -147,7 +153,7 @@ public class DataContext {
     				return;
     			}
     		}
-    		dc.dataUpdates.add(new EntityUpdate(type, entity, priority));
+    		dc.dataUpdates.add(new EntityUpdate(type, entity, source, priority));
     		dc.updates = null;
     	}
     }
@@ -196,11 +202,13 @@ public class DataContext {
     public static class EntityUpdate implements Comparable<EntityUpdate> {
     	public EntityUpdateType type;
     	public Object entity;
+    	public Object source;
     	public int priority = 0;
 
-    	public EntityUpdate(EntityUpdateType type, Object entity, int priority) {
+    	public EntityUpdate(EntityUpdateType type, Object entity, Object source, int priority) {
     		this.type = type;
     		this.entity = entity;
+    		this.source = source;
     		this.priority = priority;
     	}
 
@@ -217,7 +225,7 @@ public class DataContext {
 		}
 		
 		public Object[] toArray() {
-			return new Object[] { type.name(), entity };
+			return new Object[] { type.name(), entity, source };
 		}
     }
     
