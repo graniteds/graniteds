@@ -43,7 +43,7 @@ public class TestEntityUpdate {
             for (int i = 0; i < 10000; i++) {
                 EntityUpdateType type = EntityUpdateType.UPDATE;
                 Object entity = random.nextBoolean() ? new Patient(random.nextLong(), 0L, UUIDUtil.randomUUID()) : new Medication(random.nextLong(), 0L, UUIDUtil.randomUUID());
-                updates.add(new EntityUpdate(type, entity, 0));
+                updates.add(new EntityUpdate(type, entity, entity, 0));
             }
 
             try {

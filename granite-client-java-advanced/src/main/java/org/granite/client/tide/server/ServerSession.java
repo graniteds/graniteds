@@ -1041,7 +1041,7 @@ public class ServerSession implements ContextAware {
 
                             new FaultHandler<Object>(ServerSession.this, null, "logout").handleFault(context, null, null);
 							
-					        Fault fault = new Fault(Code.SERVER_CALL_FAILED, event.getType().name(), "");
+					        Fault fault = new Fault(Code.SERVER_CALL_FAILED, event.getType().name(), "", null);
 							logoutState.loggedOut(new TideFaultEvent(context, ServerSession.this, null, fault, null));
 						}
 					});
