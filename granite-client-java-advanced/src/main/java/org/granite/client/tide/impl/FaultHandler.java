@@ -171,25 +171,25 @@ public class FaultHandler<T> implements Runnable {
         
         Fault fault = null;
         if (event instanceof FaultEvent) {
-        	fault = new Fault(emsg.getCode(), emsg.getDescription(), emsg.getDetails());
+        	fault = new Fault(emsg.getCode(), emsg.getDescription(), emsg.getDetails(), emsg.getUnknownCode());
 	        fault.setContent(((FaultEvent)event).getMessage());
 	        fault.setCause(((FaultEvent)event).getCause());
         }
         else if (event != null && event.getType() == Type.FAILURE) {
-        	fault = new Fault(Code.CLIENT_CALL_FAILED, null, ((FailureEvent)event).getCause() != null ? ((FailureEvent)event).getCause().getMessage() : null);
+        	fault = new Fault(Code.CLIENT_CALL_FAILED, null, ((FailureEvent)event).getCause() != null ? ((FailureEvent)event).getCause().getMessage() : null, emsg.getUnknownCode());
         	fault.setCause(((FailureEvent)event).getCause());
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_FAILED, null, null, null, null);
         }
         else if (event != null && event.getType() == Type.TIMEOUT) {
-        	fault = new Fault(Code.CLIENT_CALL_TIMED_OUT, null, String.valueOf(((TimeoutEvent)event).getTime()));
+        	fault = new Fault(Code.CLIENT_CALL_TIMED_OUT, null, String.valueOf(((TimeoutEvent)event).getTime()), emsg.getUnknownCode());
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_TIMED_OUT, null, null, null, null);
         }
         else if (event != null && event.getType() == Type.CANCELLED) {
-        	fault = new Fault(Code.CLIENT_CALL_CANCELLED, null, null);
+        	fault = new Fault(Code.CLIENT_CALL_CANCELLED, null, null, emsg.getUnknownCode());
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_CANCELLED, null, null, null, null);
         }
         else {
-        	fault = new Fault(Code.UNKNOWN, null, null);
+        	fault = new Fault(Code.UNKNOWN, emsg.getDescription(), emsg.getDetails(), emsg.getUnknownCode());
         	emsg = new FaultMessage(null, null, Code.UNKNOWN, null, null, null, null);
         }
         

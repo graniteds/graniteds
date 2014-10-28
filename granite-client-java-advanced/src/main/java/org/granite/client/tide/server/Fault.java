@@ -42,6 +42,7 @@ import org.granite.client.messaging.messages.responses.FaultMessage.Code;
 public class Fault {
 
     private Code faultCode;
+    private String unknownCode;
     private String faultDescription;
     private String faultDetails;
     
@@ -49,14 +50,19 @@ public class Fault {
     
     private Object cause;
     
-    public Fault(Code faultCode, String faultDescription, String faultDetails) {
+    public Fault(Code faultCode, String faultDescription, String faultDetails, String unknownCode) {
         this.faultCode = faultCode;
+        this.unknownCode = unknownCode;
         this.faultDescription = faultDescription;
         this.faultDetails = faultDetails;
     }
     
     public Code getCode() {
         return faultCode;
+    }
+    
+    public String getUnknownCode() {
+    	return unknownCode;
     }
     
     public String getFaultDescription() {

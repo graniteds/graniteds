@@ -125,7 +125,7 @@ public class IssueHandler<T> implements Runnable {
         handleIssue(context, emsg);
         
         boolean handled = false;
-        Fault fault = new Fault(emsg.getCode(), emsg.getDescription(), emsg.getDetails());
+        Fault fault = new Fault(emsg.getCode(), emsg.getDescription(), emsg.getDetails(), emsg.getUnknownCode());
         fault.setContent(event.getMessage());
         fault.setCause(event.getCause());
         
