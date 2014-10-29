@@ -176,16 +176,16 @@ public class FaultHandler<T> implements Runnable {
 	        fault.setCause(((FaultEvent)event).getCause());
         }
         else if (event != null && event.getType() == Type.FAILURE) {
-        	fault = new Fault(Code.CLIENT_CALL_FAILED, null, ((FailureEvent)event).getCause() != null ? ((FailureEvent)event).getCause().getMessage() : null, emsg.getUnknownCode());
+        	fault = new Fault(Code.CLIENT_CALL_FAILED, null, ((FailureEvent)event).getCause() != null ? ((FailureEvent)event).getCause().getMessage() : null, null);
         	fault.setCause(((FailureEvent)event).getCause());
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_FAILED, null, null, null, null);
         }
         else if (event != null && event.getType() == Type.TIMEOUT) {
-        	fault = new Fault(Code.CLIENT_CALL_TIMED_OUT, null, String.valueOf(((TimeoutEvent)event).getTime()), emsg.getUnknownCode());
+        	fault = new Fault(Code.CLIENT_CALL_TIMED_OUT, null, String.valueOf(((TimeoutEvent)event).getTime()), null);
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_TIMED_OUT, null, null, null, null);
         }
         else if (event != null && event.getType() == Type.CANCELLED) {
-        	fault = new Fault(Code.CLIENT_CALL_CANCELLED, null, null, emsg.getUnknownCode());
+        	fault = new Fault(Code.CLIENT_CALL_CANCELLED, null, null, null);
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_CANCELLED, null, null, null, null);
         }
         else {
