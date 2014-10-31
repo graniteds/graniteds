@@ -215,14 +215,14 @@ public class FaultHandler<T> implements Runnable {
                     }
                 }
                 if (!handled)
-                    log.error("Unhandled fault: " + emsg.getCode() + ": " + emsg.getDescription());
+                    log.error("Unhandled fault msg: %s", emsg);
             }
             else if (exceptionHandlers != null && exceptionHandlers.length > 0 && event instanceof FaultEvent) {
                 // Handle fault with default exception handler
                 exceptionHandlers[0].handle(context, ((FaultEvent)event).getMessage(), faultEvent);
             }
             else {
-                log.error("Unknown fault: " + event.toString());
+                log.error("Unknown fault event: %s, msg: %s", event, emsg);
             }
         }
         
