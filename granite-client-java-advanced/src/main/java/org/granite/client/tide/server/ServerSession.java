@@ -565,6 +565,15 @@ public class ServerSession implements ContextAware {
 				listener.authenticatedChanged(channel, authenticated);
 		}
 		
+		@Override
+		public void fault(Channel channel, final FaultMessage faultMessage) {
+			context.callLater(new Runnable() {
+				public void run() {
+                    new FaultHandler<Object>(ServerSession.this, null, "channel").handleFault(context, faultMessage, null);
+				}
+			});
+		}
+		
 	}
 	
 	private ChannelStatusBinder channelStatusBinder = new ChannelStatusBinder();
@@ -821,7 +830,7 @@ public class ServerSession implements ContextAware {
 			sessionExpirationFuture.cancel(false);
 				
         String oldSessionId = sessionId;
-
+        
 		sessionId = (String)event.getMessage().getHeader(SESSION_ID_TAG);
 		if (sessionId != null) {
 			long serverTime = (Long)event.getMessage().getHeader(SERVER_TIME_TAG);

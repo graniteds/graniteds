@@ -188,6 +188,9 @@ public class FaultHandler<T> implements Runnable {
         	fault = new Fault(Code.CLIENT_CALL_CANCELLED, null, null, null);
         	emsg = new FaultMessage(null, null, Code.CLIENT_CALL_CANCELLED, null, null, null, null);
         }
+        else if (event == null && emsg != null) {
+        	fault = new Fault(emsg.getCode(), emsg.getDescription(), emsg.getDetails(), emsg.getUnknownCode());
+        }
         else {
         	fault = new Fault(Code.UNKNOWN, emsg.getDescription(), emsg.getDetails(), emsg.getUnknownCode());
         	emsg = new FaultMessage(null, null, Code.UNKNOWN, null, null, null, null);

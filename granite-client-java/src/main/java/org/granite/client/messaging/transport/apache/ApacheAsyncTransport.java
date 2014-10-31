@@ -81,6 +81,10 @@ public class ApacheAsyncTransport extends AbstractTransport<Object> {
         return true;
     }
 
+    public boolean isDisconnectAfterAuthenticationFailure() {
+        return false;
+    }
+
 	@Override
 	public synchronized boolean start() {
 		if (httpClient != null)

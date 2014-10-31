@@ -44,6 +44,11 @@ public class MockTransport implements Transport {
     }
 
     @Override
+    public boolean isDisconnectAfterAuthenticationFailure() {
+        return false;
+    }
+
+    @Override
     public Object getContext() {
         return null;
     }

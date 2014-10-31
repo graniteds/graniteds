@@ -57,6 +57,11 @@ public abstract class AbstractTransport<C> implements Transport {
 	}
 
 	@Override
+    public boolean isDisconnectAfterAuthenticationFailure() {
+        return false;
+    }
+
+	@Override
 	public void setStatusHandler(TransportStatusHandler statusHandler) {
 		if (statusHandler == null)
 			statusHandler = new NoopEngineStatusHandler();

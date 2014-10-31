@@ -76,6 +76,10 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
     public boolean isReconnectAfterReceive() {
         return false;
     }
+
+    public boolean isDisconnectAfterAuthenticationFailure() {
+        return true;
+    }
     
     public void setMaxMessageSize(int maxMessageSize) {
     	this.maxMessageSize = maxMessageSize;

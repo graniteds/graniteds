@@ -45,6 +45,7 @@ import org.granite.client.messaging.messages.Message.Type;
 import org.granite.client.messaging.messages.RequestMessage;
 import org.granite.client.messaging.messages.ResponseMessage;
 import org.granite.client.messaging.messages.requests.DisconnectMessage;
+import org.granite.client.messaging.messages.requests.LoginMessage;
 import org.granite.client.messaging.messages.responses.AbstractResponseMessage;
 import org.granite.client.messaging.messages.responses.FaultMessage;
 import org.granite.client.messaging.messages.responses.ResultMessage;
@@ -71,6 +72,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	protected String sessionId = null;
 	protected final ConcurrentMap<String, Consumer> consumersMap = new ConcurrentHashMap<String, Consumer>();	
 	protected final AtomicReference<String> connectMessageId = new AtomicReference<String>(null);
+	protected final AtomicReference<String> loginMessageId = new AtomicReference<String>(null);
 	protected final AtomicReference<ReconnectTimerTask> reconnectTimerTask = new AtomicReference<ReconnectTimerTask>();
 	protected final List<ChannelResponseListener> responseListeners = new ArrayList<ChannelResponseListener>();
 	
@@ -122,6 +124,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		catch (Exception e) {
 			// Connect immediately failed, release the message id and schedule a reconnect.
 			connectMessageId.set(null);
+			loginMessageId.set(null);
 			scheduleReconnectTimerTask();
 			
 			return false;
@@ -182,6 +185,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		consumersMap.clear();
 		
 		connectMessageId.set(null);
+		loginMessageId.set(null);
 		reconnectAttempts = 0L;
 		
 		return send(new DisconnectMessage(clientId), listeners);
@@ -218,6 +222,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 								requestType = request.getType();
 							else if (response.getCorrelationId().equals(connectMessageId.get())) // Reconnect
 								requestType = Type.PING;
+							else if (response.getCorrelationId().equals(loginMessageId.get()))
+								requestType = Type.LOGIN;
 							
 							if (requestType != null) {
 								ResultMessage result = (ResultMessage)response;
@@ -236,15 +242,20 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	                                if (messages[0].getHeaders().containsKey("JSESSIONID"))
 	                                    setSessionId((String)messages[0].getHeader("JSESSIONID"));
 	                                
-	                                if (clientId != null && clientId.equals(result.getClientId()))
-	                                	log.warn("Received PING result for unknown clientId %s", request != null ? request.getClientId() : "(no request)");
-	                                else {
-	                                    log.debug("Channel %s pinged clientId %s", id, clientId);
-	                                	clientId = result.getClientId();
-	                                	setPinged(true);
-	            						
-	            						authenticate(null);
+	                                if (clientId != null && !clientId.equals(result.getClientId())) {
+	                                	log.warn("Channel %s pinged new clientId %s  requested %s", id, result != null ? result.getClientId() : "(no request)", clientId);
+	                                	// Should resubscribe ?
 	                                }
+	                                else
+	                                    log.debug("Channel %s pinged clientId %s", id, clientId);
+	                                
+                                	clientId = result.getClientId();
+                                	setPinged(true);
+            						
+            						LoginMessage loginMessage = authenticate(null);
+            						if (loginMessage != null)
+            							loginMessageId.set(loginMessage.getId());
+	                                
 	                                break;
 	                                
 								case LOGIN:
@@ -267,6 +278,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 								requestType = request.getType();
 							else if (response.getCorrelationId().equals(connectMessageId.get())) // Reconnect
 								requestType = Type.PING;
+							else if (response.getCorrelationId().equals(loginMessageId.get())) // Login after reconnect
+								requestType = Type.LOGIN;
 							
 							if (requestType != null) {
 								switch (requestType) {
@@ -274,18 +287,21 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 								case PING:
 									clientId = null;
 									setPinged(false);
-									
-									setAuthenticated(false);
-	                                break;
 	                                
 								case LOGIN:
 									setAuthenticated(false);
+									
+									if (transport.isDisconnectAfterAuthenticationFailure())
+										disconnect();
+									
 									break;
 								
 								default:
 									break;
 								}
 							}
+							
+							dispatchFault((FaultMessage)response);
 						}
 						
 						if (responseChain == null)
@@ -324,6 +340,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		finally {
 			if (reconnect) {
 				connectMessageId.set(null);
+				loginMessageId.set(null);
 				connect();
 			}
 		}
@@ -347,8 +364,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		
 		// Mark consumers as unsubscribed
 		// Should maybe not do it once consumers auto resubscribe after disconnect
-		for (Consumer consumer : consumersMap.values())
-			consumer.onDisconnect();
+//		for (Consumer consumer : consumersMap.values())
+//			consumer.onDisconnect();
 		
 		if (message != null && connectMessageId.compareAndSet(message.getId(), null)) {
 			scheduleReconnectTimerTask();

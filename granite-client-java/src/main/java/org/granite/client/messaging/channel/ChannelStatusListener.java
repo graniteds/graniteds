@@ -21,7 +21,11 @@
  */
 package org.granite.client.messaging.channel;
 
+import org.granite.client.messaging.messages.responses.FaultMessage;
+
 public interface ChannelStatusListener {
+	
+	public void fault(Channel channel, FaultMessage faultMessage);
 	
 	public void pingedChanged(Channel channel, boolean pinged);
 	

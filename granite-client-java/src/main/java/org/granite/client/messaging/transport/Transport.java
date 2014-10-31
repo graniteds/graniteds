@@ -71,6 +71,12 @@ public interface Transport {
      * @return true if the transport should reconnect
      */
     boolean isReconnectAfterReceive();
+    
+    /**
+     * Indicates to the calling Channel that the transport should be closed after an authentication failure 
+     * @return true if the transport should close
+     */
+    boolean isDisconnectAfterAuthenticationFailure();
 
     /**
      * Attach a status handler that will be notified of network activity and errors

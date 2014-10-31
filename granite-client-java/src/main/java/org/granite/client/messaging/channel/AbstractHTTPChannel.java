@@ -210,20 +210,20 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
     }
 
 
-    protected void authenticate(AsyncToken dependentToken) {
+    protected LoginMessage authenticate(AsyncToken dependentToken) {
 		if (authenticating || authenticated)
-			return;
+			return null;
 		
 		Credentials credentials = this.credentials;
 		if (credentials == null)
-			return;
+			return null;
 		
 		LoginMessage loginMessage = new LoginMessage(clientId, credentials);
 		if (dependentToken != null) {
 			log.debug("Channel %s blocking authentication %s clientId %s", id, loginMessage.getId(), clientId);
 			ResultMessage result = sendBlockingToken(loginMessage, dependentToken);
 			if (result == null)
-				return;
+				return loginMessage;
 			authenticated = true;
 			authenticating = false;
 		}
@@ -232,6 +232,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			send(loginMessage);
 			authenticating = true;
 		}
+		return loginMessage;
     }
     
 	@Override
@@ -249,6 +250,11 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 				if (token.isDone())
 					continue;
 
+				if (token.isDisconnectRequest()) {
+					sendToken(token);
+					continue;
+				}
+				
 				if (!pinged) {
                     PingMessage pingMessage = new PingMessage(clientId);
                     log.debug("Channel %s send ping %s with clientId %s", id, pingMessage.getId(), clientId);
@@ -615,6 +621,11 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			listener.authenticatedChanged(this, authenticated);
 	}
 	
+	protected void dispatchFault(FaultMessage faultMessage) {
+		for (ChannelStatusListener listener : statusListeners)
+			listener.fault(this, faultMessage);
+	}
+	
 	public void bindStatus(ChannelStatusNotifier notifier) {
 		notifier.addListener(statusListener);
 	}
@@ -624,6 +635,10 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	}	
 	
 	private ChannelStatusListener statusListener = new ChannelStatusListener() {
+		
+		@Override
+		public void fault(Channel channel, FaultMessage faultMessage) {
+		}
 
 		@Override
 		public void pingedChanged(Channel channel, boolean pinged) {
