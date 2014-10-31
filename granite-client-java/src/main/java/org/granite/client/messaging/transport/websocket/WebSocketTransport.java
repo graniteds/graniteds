@@ -54,6 +54,11 @@ public abstract class WebSocketTransport extends AbstractWebSocketTransport<Sess
 	private static final Logger log = Logger.getLogger(WebSocketTransport.class);
 
 	private WebSocketContainer webSocketContainer;
+	private Map<String, Object> userProperties = null;
+	
+	public void setUserProperties(Map<String, Object> userProperties) {
+		this.userProperties = userProperties;
+	}
 
 	@Override
 	public synchronized boolean start() {
@@ -100,6 +105,9 @@ public abstract class WebSocketTransport extends AbstractWebSocketTransport<Sess
 
             this.channel = channel;
             this.transportMessage = transportMessage;
+            
+            if (WebSocketTransport.this.userProperties != null)
+            	this.userProperties.putAll(WebSocketTransport.this.userProperties);
         }
 
         @Override

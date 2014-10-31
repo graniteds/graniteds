@@ -22,6 +22,7 @@
 package org.granite.client.messaging.transport.jetty9;
 
 import org.eclipse.jetty.util.HttpCookieStore;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
@@ -33,6 +34,7 @@ import org.granite.client.messaging.transport.websocket.AbstractWebSocketTranspo
 import org.granite.logging.Logger;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.HttpCookie;
 import java.nio.ByteBuffer;
 
@@ -45,6 +47,11 @@ public class JettyWebSocketTransport extends AbstractWebSocketTransport<Session>
 	private static final Logger log = Logger.getLogger(JettyWebSocketTransport.class);
 
 	private WebSocketClient webSocketClient = null;
+	private SslContextFactory sslContextFactory = null;
+	
+	public void setSslContextFactory(SslContextFactory sslContextFactory) {
+		this.sslContextFactory = sslContextFactory;
+	}
 
 	@Override
 	public synchronized boolean start() {
@@ -54,7 +61,12 @@ public class JettyWebSocketTransport extends AbstractWebSocketTransport<Session>
 		log.info("Starting Jetty 9 WebSocketClient transport...");
 		
 		try {
-			webSocketClient = new WebSocketClient();
+			if (sslContextFactory == null)
+				webSocketClient = new WebSocketClient();			
+			else {
+				Constructor<WebSocketClient> c = WebSocketClient.class.getConstructor(SslContextFactory.class);
+				webSocketClient = c.newInstance(sslContextFactory);
+			}
             webSocketClient.setMaxIdleTimeout(getMaxIdleTime());
             webSocketClient.setMaxTextMessageBufferSize(1024);
             webSocketClient.setMaxBinaryMessageBufferSize(getMaxMessageSize());

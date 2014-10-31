@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.WebSocket.Connection;
 import org.eclipse.jetty.websocket.WebSocket.OnBinaryMessage;
 import org.eclipse.jetty.websocket.WebSocketClient;
@@ -42,7 +43,12 @@ public class JettyWebSocketTransport extends AbstractWebSocketTransport<Connecti
 	
 	private static final Logger log = Logger.getLogger(JettyWebSocketTransport.class);
 
-	private WebSocketClientFactory webSocketClientFactory = null;
+	private WebSocketClientFactory webSocketClientFactory = new WebSocketClientFactory();
+	
+	
+	public SslContextFactory getSetSslContextFactory() {
+		return webSocketClientFactory.getSslContextFactory();
+	}
 
 	@Override
 	public synchronized boolean start() {
@@ -52,7 +58,6 @@ public class JettyWebSocketTransport extends AbstractWebSocketTransport<Connecti
 		log.info("Starting Jetty WebSocketClient transport...");
 		
 		try {
-			webSocketClientFactory = new WebSocketClientFactory();
 			webSocketClientFactory.setBufferSize(4096);
 			webSocketClientFactory.start();
 			
@@ -128,8 +133,6 @@ public class JettyWebSocketTransport extends AbstractWebSocketTransport<Connecti
             log.error(e, "Jetty WebSocketClient failed to stop properly.");
         }
         finally {
-            webSocketClientFactory = null;
-
             setStopping(false);
         }
 
