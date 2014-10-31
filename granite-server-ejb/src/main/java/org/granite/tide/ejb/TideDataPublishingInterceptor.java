@@ -51,7 +51,7 @@ public class TideDataPublishingInterceptor {
     	}
     	
     	DataEnabled dataEnabled = invocationContext.getTarget().getClass().getAnnotation(DataEnabled.class);
-    	if (dataEnabled == null || !dataEnabled.useInterceptor())
+    	if (dataEnabled == null || dataEnabled.topic().equals("") || !dataEnabled.useInterceptor())
     		return invocationContext.proceed();
     	
     	boolean shouldRemoveContextAtEnd = DataContext.get() == null;

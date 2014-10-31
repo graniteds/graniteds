@@ -69,7 +69,8 @@ public class TideDataPublishingAdvisor extends AbstractPointcutAdvisor {
 		private static final long serialVersionUID = 1L;
 
 		public boolean matches(Method method, Class<?> targetClass) {
-			return targetClass.isAnnotationPresent(DataEnabled.class) && targetClass.getAnnotation(DataEnabled.class).useInterceptor();
+			return targetClass.isAnnotationPresent(DataEnabled.class) 
+					&& !targetClass.getAnnotation(DataEnabled.class).topic().equals("") && targetClass.getAnnotation(DataEnabled.class).useInterceptor();
 		}
 	}
 

@@ -69,7 +69,7 @@ public class TideDataPublishingInterceptor implements MethodInterceptor, Initial
 
     public Object invoke(final MethodInvocation invocation) throws Throwable {
     	DataEnabled dataEnabled = invocation.getThis().getClass().getAnnotation(DataEnabled.class);
-    	if (dataEnabled == null || !dataEnabled.useInterceptor())
+    	if (dataEnabled == null || dataEnabled.topic().equals("") || !dataEnabled.useInterceptor())
     		return invocation.proceed();
 
         return tideDataPublishingWrapper.execute(dataEnabled, new ThrowableCallable<Object>() {

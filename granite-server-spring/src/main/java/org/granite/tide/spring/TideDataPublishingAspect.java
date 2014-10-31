@@ -77,7 +77,7 @@ public class TideDataPublishingAspect implements Ordered, InitializingBean {
 
 	@Around("@within(dataEnabled)")
     public Object invoke(final ProceedingJoinPoint pjp, DataEnabled dataEnabled) throws Throwable {
-    	if (dataEnabled == null || !dataEnabled.useInterceptor())
+    	if (dataEnabled == null || dataEnabled.topic().equals("") || !dataEnabled.useInterceptor())
     		return pjp.proceed();
 
         return tideDataPublishingWrapper.execute(dataEnabled, new ThrowableCallable<Object>() {
