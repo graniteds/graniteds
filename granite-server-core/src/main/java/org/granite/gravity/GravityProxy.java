@@ -52,7 +52,12 @@ public class GravityProxy implements Gravity {
 	public GravityProxy(ServletContext servletContext) {
 		this.servletContext = servletContext;
 		
-		servletContext.addListener(gravityListener);
+		try {
+			servletContext.addListener(gravityListener);
+		}
+		catch (Throwable t) {
+			// Not Servlet 3.0 compatible
+		}
 	}
 	
 	protected Gravity getGravity() {
