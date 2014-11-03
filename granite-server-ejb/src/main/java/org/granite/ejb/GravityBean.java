@@ -95,8 +95,8 @@ public class GravityBean implements Gravity {
         return getGravity().findConnectedChannelsByUser(name);
     }
     @Override
-    public Channel findConnectedChannelByClientId(String clientId) {
-        return getGravity().findConnectedChannelByClientId(clientId);
+    public Channel findChannelByClientId(String clientId) {
+        return getGravity().findChannelByClientId(clientId);
     }
     @Override
     public Channel findCurrentChannel(String destination) {
@@ -137,5 +137,15 @@ public class GravityBean implements Gravity {
 
         return getGravity().sendRequest(fromChannel, message);
     }
+
+	@Override
+	public void registerListener(Listener listener) {
+		getGravity().registerListener(listener);
+	}
+
+	@Override
+	public void unregisterListener(Listener listener) {
+		getGravity().unregisterListener(listener);
+	}
 
 }

@@ -21,14 +21,14 @@
  */
 package org.granite.gravity.jetty9;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.granite.gravity.GravityInternal;
 import org.granite.gravity.websocket.AbstractWebSocketChannel;
 import org.granite.logging.Logger;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
 
 public class JettyWebSocketChannel extends AbstractWebSocketChannel implements WebSocketListener {
@@ -52,6 +52,8 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
 		setMaxBinaryMessageBufferSize(socketSession.getPolicy().getMaxBinaryMessageBufferSize());
 
         connect();
+		
+		gravity.notifyConnected(this);
 
         log.debug("Channel %s websocket connected %s", getId(), socketSession.isOpen() ? "(open)" : "(closed)");
 	}
@@ -66,6 +68,8 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
         log.debug("Channel %s websocket connection onClose %d, %s", getId(), closeCode, message);
 
         this.socketSession = null;
+		
+		gravity.notifyDisconnected(this);
     }
 
     @Override
@@ -79,7 +83,7 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
     }
 
     @Override
-    protected boolean isConnected() {
+    public boolean isConnected() {
         log.debug("Channel %s websocket connection %s", getId(), socketSession == null ? "(null)" : (socketSession.isOpen() ? "(open)" : "(not open)"));
         return socketSession != null && socketSession.isOpen();
     }
@@ -94,6 +98,8 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
 		if (socketSession != null) {
             socketSession.close(1000, "Channel closed");
             socketSession = null;
+    		
+    		gravity.notifyDisconnected(this);
 		}
 	}
 }

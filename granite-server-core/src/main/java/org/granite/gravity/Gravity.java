@@ -93,6 +93,18 @@ public interface Gravity {
      * @throws Exception
      */
     public void stop(boolean now) throws Exception;
+    
+    /**
+     * Registers a listener which will be notified of channel events (connect/disconnect/subscription/unsubscription)
+     * @param listener 
+     */
+    public void registerListener(Listener listener);
+    
+    /**
+     * Unregisters a listener which will be notified of channel events (connect/disconnect/subscription/unsubscription)
+     * @param listener 
+     */
+    public void unregisterListener(Listener listener);
 
     /**
      * Currently connected channels
@@ -132,7 +144,7 @@ public interface Gravity {
      * @param clientId client id
      * @return channel
      */
-    public Channel findConnectedChannelByClientId(String clientId);
+    public Channel findChannelByClientId(String clientId);
     
     /**
      * Current channel for the specified destination
@@ -178,4 +190,17 @@ public interface Gravity {
      * @return response
      */
     public Message sendRequest(Channel fromChannel, AsyncMessage message);
+    
+    
+    
+    public interface Listener {
+    	
+    	public void connected(Channel channel);
+    	
+    	public void disconnected(Channel channel);
+    	
+    	public void subscribed(Channel channel, String subscriptionId);
+    	
+    	public void unsubscribed(Channel channel, String subscriptionId);
+    }
 }

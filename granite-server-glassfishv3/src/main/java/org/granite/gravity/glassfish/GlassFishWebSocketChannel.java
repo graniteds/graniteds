@@ -21,12 +21,13 @@
  */
 package org.granite.gravity.glassfish;
 
-import com.sun.grizzly.websockets.DataFrame;
-import com.sun.grizzly.websockets.WebSocket;
-import com.sun.grizzly.websockets.WebSocketListener;
 import org.granite.gravity.GravityInternal;
 import org.granite.gravity.websocket.AbstractWebSocketChannel;
 import org.granite.logging.Logger;
+
+import com.sun.grizzly.websockets.DataFrame;
+import com.sun.grizzly.websockets.WebSocket;
+import com.sun.grizzly.websockets.WebSocketListener;
 
 
 public class GlassFishWebSocketChannel extends AbstractWebSocketChannel implements WebSocketListener {
@@ -44,6 +45,8 @@ public class GlassFishWebSocketChannel extends AbstractWebSocketChannel implemen
 		this.websocket.add(this);
 
         connect();
+		
+		gravity.notifyConnected(this);
 	}
 
 	public void onConnect(WebSocket websocket) {
@@ -54,6 +57,8 @@ public class GlassFishWebSocketChannel extends AbstractWebSocketChannel implemen
         log.debug("Channel %s onClose", getId());
 
         this.websocket = null;
+		
+		gravity.notifyDisconnected(this);
 	}
 	
 	public void onMessage(WebSocket websocket, byte[] data) {
@@ -81,7 +86,7 @@ public class GlassFishWebSocketChannel extends AbstractWebSocketChannel implemen
     }
 
     @Override
-    protected boolean isConnected() {
+    public boolean isConnected() {
         return websocket != null && websocket.isConnected();
     }
 
@@ -94,6 +99,8 @@ public class GlassFishWebSocketChannel extends AbstractWebSocketChannel implemen
 		if (websocket != null) {
 			websocket.close(1000, "Channel closed");
 			websocket = null;
+			
+			gravity.notifyDisconnected(this);
 		}
 	}
 

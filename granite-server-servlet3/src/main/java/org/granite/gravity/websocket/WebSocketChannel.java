@@ -53,12 +53,16 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
         connect();
 		
         session.addMessageHandler(this);
+        
+        gravity.notifyConnected(this);
 	}
 
     public void onWebSocketClose(int closeCode, String message) {
         log.debug("Channel %s websocket connection onClose %d, %s", getId(), closeCode, message);
 
         this.session = null;
+        
+        gravity.notifyDisconnected(this);
     }
 
     public void onWebSocketError(Throwable throwable) {
@@ -70,7 +74,7 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
     }
 
     @Override
-    protected boolean isConnected() {
+    public boolean isConnected() {
         log.debug("Channel %s websocket connection %s", getId(), session == null ? "(null)" : (session.isOpen() ? "(open)" : "(not open)"));
         return session != null && session.isOpen();
     }
@@ -103,6 +107,8 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
                 throw new RuntimeException("Channel close error " + getId(), e);
             }
             session = null;
+            
+            gravity.notifyDisconnected(this);
 		}
 	}
 }

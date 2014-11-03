@@ -190,7 +190,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
         GraniteContext.release();
     }
 
-    protected abstract boolean isConnected();
+    public abstract boolean isConnected();
 
     protected abstract void sendBytes(byte[] msg) throws IOException;
 

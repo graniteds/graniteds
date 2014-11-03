@@ -24,8 +24,11 @@ package org.granite.gravity;
 import java.security.Principal;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextAttributeEvent;
+import javax.servlet.ServletContextAttributeListener;
 
 import org.granite.config.GraniteConfig;
 import org.granite.config.flex.ServicesConfig;
@@ -40,18 +43,22 @@ import flex.messaging.messages.Message;
 public class GravityProxy implements Gravity {
 
 	private ServletContext servletContext;
+	
+	private Set<Listener> listeners = new CopyOnWriteArraySet<Listener>();
 
     public GravityProxy() {
     }
 
 	public GravityProxy(ServletContext servletContext) {
 		this.servletContext = servletContext;
+		
+		servletContext.addListener(gravityListener);
 	}
 	
 	protected Gravity getGravity() {
 		return GravityManager.getGravity(servletContext);
 	}
-
+	
     ///////////////////////////////////////////////////////////////////////////
     // Granite/Services configs access.
 
@@ -117,8 +124,8 @@ public class GravityProxy implements Gravity {
     }
 
     @Override
-    public Channel findConnectedChannelByClientId(String clientId) {
-        return getGravity().findConnectedChannelByClientId(clientId);
+    public Channel findChannelByClientId(String clientId) {
+        return getGravity().findChannelByClientId(clientId);
     }
     @Override
     public Channel findCurrentChannel(String destination) {
@@ -155,4 +162,45 @@ public class GravityProxy implements Gravity {
 
         return getGravity().sendRequest(fromChannel, message);
     }
+
+	@Override
+	public void registerListener(Listener listener) {
+		if (getGravity() == null) {
+			listeners.add(listener);
+			return;
+		}
+		
+        getGravity().registerListener(listener);
+	}
+
+	@Override
+	public void unregisterListener(Listener listener) {
+		if (getGravity() == null) {
+			listeners.remove(listener);
+			return;
+		}
+		
+        getGravity().unregisterListener(listener);
+	}
+	
+	private ServletContextAttributeListener gravityListener = new ServletContextAttributeListener() {
+		
+		@Override
+		public void attributeReplaced(ServletContextAttributeEvent event) {
+		}
+		
+		@Override
+		public void attributeRemoved(ServletContextAttributeEvent event) {
+		}
+		
+		@Override
+		public void attributeAdded(ServletContextAttributeEvent event) {
+			if (event.getName().equals(GravityManager.GRAVITY_KEY)) {
+				Gravity gravity = (Gravity)event.getValue();
+				for (Listener listener : listeners)
+					gravity.registerListener(listener);
+				listeners.clear();
+			}
+		}
+	};
 }

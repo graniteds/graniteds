@@ -59,6 +59,8 @@ public class TomcatWebSocketChannel extends AbstractWebSocketChannel {
 			connection = outbound;
 
             connect();
+            
+			gravity.notifyConnected(TomcatWebSocketChannel.this);
 		}
 
 		@Override
@@ -66,6 +68,8 @@ public class TomcatWebSocketChannel extends AbstractWebSocketChannel {
 			log.debug("WebSocket connection onClose %d", closeCode);
 			
 			connection = null;
+			
+			gravity.notifyDisconnected(TomcatWebSocketChannel.this);
 		}
 		
 		@Override
@@ -82,7 +86,7 @@ public class TomcatWebSocketChannel extends AbstractWebSocketChannel {
 	}
 
     @Override
-    protected boolean isConnected() {
+    public boolean isConnected() {
         return connection != null;
     }
 
@@ -100,6 +104,8 @@ public class TomcatWebSocketChannel extends AbstractWebSocketChannel {
 				log.error("Could not close WebSocket connection", e);
 			}
 			connection = null;
+			
+			gravity.notifyDisconnected(this);
 		}
 	}
 }

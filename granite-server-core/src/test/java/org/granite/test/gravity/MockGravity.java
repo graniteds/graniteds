@@ -136,15 +136,23 @@ public class MockGravity implements Gravity {
     public List<Channel> findConnectedChannelsByUser(String name) {
         return null;
     }
-
-    @Override
-    public Channel findConnectedChannelByClientId(String clientId) {
-        return null;
-    }
     
     @Override
     public Channel findCurrentChannel(String destination) {
         return null;
     }
+
+	@Override
+	public void registerListener(Listener listener) {
+	}
+
+	@Override
+	public void unregisterListener(Listener listener) {
+	}
+
+	@Override
+	public Channel findChannelByClientId(String clientId) {
+		return null;
+	}
 
 }

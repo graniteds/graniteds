@@ -36,6 +36,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -84,6 +85,8 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 
     private final Map<String, Object> applicationMap = new HashMap<String, Object>();
     private final ConcurrentHashMap<String, TimeChannel<?>> channels = new ConcurrentHashMap<String, TimeChannel<?>>();
+    
+    private final CopyOnWriteArraySet<Listener> listeners = new CopyOnWriteArraySet<Listener>();
     
     private GravityConfig gravityConfig = null;
     private ServicesConfig servicesConfig = null;
@@ -629,11 +632,40 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     public void releaseThread() {
     	GraniteContext.release();
 	}
+    
+    public void registerListener(Listener listener) {
+    	listeners.add(listener);
+    }
+    
+    public void unregisterListener(Listener listener) {
+    	listeners.remove(listener);
+    }
+    
+    public void notifyConnected(Channel channel) {
+    	for (Listener listener : listeners)
+    		listener.connected(channel);
+    }
+    
+    public void notifyDisconnected(Channel channel) {
+    	for (Listener listener : listeners)
+    		listener.disconnected(channel);
+    }
+    
+    private void notifySubscribed(Channel channel, String subscriptionId) {
+    	for (Listener listener : listeners)
+    		listener.subscribed(channel, subscriptionId);
+    }
+    
+    private void notifyUnsubscribed(Channel channel, String subscriptionId) {
+    	for (Listener listener : listeners)
+    		listener.unsubscribed(channel, subscriptionId);
+    }
 
     public List<Channel> getConnectedChannels() {
         List<Channel> channels = new ArrayList<Channel>();
         for (TimeChannel<? extends Channel> timeChannel : this.channels.values()) {
-            channels.add(timeChannel.getChannel());
+        	if (timeChannel.getChannel().isConnected())
+        		channels.add(timeChannel.getChannel());
         }
         return channels;
     }
@@ -641,7 +673,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     public Set<Principal> getConnectedUsers() {
         Set<Principal> userPrincipals =  new HashSet<Principal>();
         for (TimeChannel<? extends Channel> timeChannel : this.channels.values()) {
-            if (timeChannel.getChannel().getUserPrincipal() != null)
+            if (timeChannel.getChannel().isConnected() && timeChannel.getChannel().getUserPrincipal() != null)
                 userPrincipals.add(timeChannel.getChannel().getUserPrincipal());
         }
         return userPrincipals;
@@ -650,6 +682,8 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     public List<Channel> getConnectedChannelsByDestination(String destination) {
         List<Channel> channels = new ArrayList<Channel>();
         for (TimeChannel<? extends Channel> timeChannel : this.channels.values()) {
+        	if (!timeChannel.getChannel().isConnected())
+        		continue;
             for (Subscription subscription : timeChannel.getChannel().getSubscriptions()) {
                 if (destination.equals(subscription.getDestination())) {
                     channels.add(timeChannel.getChannel());
@@ -663,6 +697,8 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     public Set<Principal> getConnectedUsersByDestination(String destination) {
         Set<Principal> userPrincipals = new HashSet<Principal>();
         for (TimeChannel<? extends Channel> timeChannel : this.channels.values()) {
+        	if (!timeChannel.getChannel().isConnected())
+        		continue;
             for (Subscription subscription : timeChannel.getChannel().getSubscriptions()) {
                 if (destination.equals(subscription.getDestination())) {
                     userPrincipals.add(timeChannel.getChannel().getUserPrincipal());
@@ -676,13 +712,15 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     public List<Channel> findConnectedChannelsByUser(String name) {
         List<Channel> channels = new ArrayList<Channel>();
         for (TimeChannel<? extends Channel> timeChannel : this.channels.values()) {
+        	if (!timeChannel.getChannel().isConnected())
+        		continue;
             if (timeChannel.getChannel().getUserPrincipal() != null && timeChannel.getChannel().getUserPrincipal().getName().equals(name))
                 channels.add(timeChannel.getChannel());
         }
         return channels;
     }
 
-    public Channel findConnectedChannelByClientId(String clientId) {
+    public Channel findChannelByClientId(String clientId) {
         if (clientId == null)
             return null;
 
@@ -696,7 +734,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     	DistributedData gdd = getGraniteConfig().getDistributedDataFactory().getInstance();
     	if (gdd != null) {
     		String clientId = gdd.getDestinationClientId(destination);
-    		return findConnectedChannelByClientId(clientId);
+    		return findChannelByClientId(clientId);
     	}
     	return null;
     }
@@ -994,7 +1032,10 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 		        		log.error(e, "Could not add subscription in distributed data: %s - %s", channel.getId(), subscriptionId);
 		        	}
 		        }
-
+	        
+		        if (!(reply instanceof ErrorMessage))
+		        	notifySubscribed(channel, subscriptionId);
+		        
 		        reply.setDestination(message.getDestination());
 		        reply.setClientId(channel.getId());
 		        reply.getHeaders().putAll(message.getHeaders());
@@ -1036,11 +1077,12 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
         postManage(channel);
         
         if (!(reply instanceof ErrorMessage)) {
+        	String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
+        	
         	// Remove subscription message in distributed data (clustering).
         	try {
 		        DistributedData gdd = graniteConfig.getDistributedDataFactory().getInstance();
 		        if (gdd != null) {
-		        	String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
 		        	log.debug("Removing subscription message from channel info: %s - %s", channel.getId(), subscriptionId);
 	    			gdd.removeSubcription(channel.getId(), subscriptionId);
 		        }
@@ -1051,8 +1093,10 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
         			channel.getId(), message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER)
         		);
         	}
+        	
+        	notifyUnsubscribed(channel, subscriptionId);
         }
-
+        
         reply.setDestination(message.getDestination());
         reply.setClientId(channel.getId());
         reply.getHeaders().putAll(message.getHeaders());

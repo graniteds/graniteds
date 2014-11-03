@@ -69,7 +69,7 @@ public interface Channel extends ChannelStatusNotifier {
      * @return client id
      */
 	String getClientId();
-
+	
     /**
      * Default time to live for messages sent from this channel
      * @return default time to live in milliseconds
@@ -117,7 +117,7 @@ public interface Channel extends ChannelStatusNotifier {
      * @return true if authenticated
      */
 	boolean isAuthenticated();
-
+	
     /**
      * Send a message on this channel
      * @param request message to send

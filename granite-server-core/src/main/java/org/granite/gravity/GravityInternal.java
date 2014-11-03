@@ -75,6 +75,9 @@ public interface GravityInternal extends ShutdownListener {
     public boolean access(String clientId);
     public void execute(AsyncChannelRunner runnable);
     public boolean cancel(AsyncChannelRunner runnable);
+    
+    public void notifyConnected(Channel channel);
+    public void notifyDisconnected(Channel channel);
 
     public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message);
     public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message, boolean skipInterceptor);

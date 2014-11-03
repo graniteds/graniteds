@@ -35,6 +35,9 @@ public interface Channel {
     public String getId();
     
     public String getClientType();
+    
+    public boolean isAuthenticated();
+    public boolean isConnected();
 
     public Principal getUserPrincipal();
     public void setUserPrincipal(Principal principal);

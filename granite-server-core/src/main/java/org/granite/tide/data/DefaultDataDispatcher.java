@@ -131,7 +131,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 		
 		Message resultMessage = null;
 		if (clientId != null) {
-			Channel channel = gravity.findConnectedChannelByClientId(clientId);
+			Channel channel = gravity.findChannelByClientId(clientId);
 			message.setClientId(clientId);
 			resultMessage = gravity.publishMessage(channel, message);
 		}

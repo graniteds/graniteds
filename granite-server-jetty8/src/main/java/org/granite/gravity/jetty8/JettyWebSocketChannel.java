@@ -21,13 +21,13 @@
  */
 package org.granite.gravity.jetty8;
 
+import java.io.IOException;
+
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocket.OnBinaryMessage;
 import org.granite.gravity.GravityInternal;
 import org.granite.gravity.websocket.AbstractWebSocketChannel;
 import org.granite.logging.Logger;
-
-import java.io.IOException;
 
 
 public class JettyWebSocketChannel extends AbstractWebSocketChannel implements WebSocket, OnBinaryMessage {
@@ -48,12 +48,16 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
 		setMaxBinaryMessageBufferSize(connection.getMaxBinaryMessageSize());
 
         connect();
+		
+		gravity.notifyConnected(this);
 	}
 
 	public void onClose(int closeCode, String message) {
 		log.debug("Channel %s websocket connection onClose %d, %s", getId(), closeCode, message);
 
         this.connection = null;
+		
+		gravity.notifyDisconnected(this);
 	}
 
 	public void onMessage(byte[] data, int offset, int length) {
@@ -61,7 +65,7 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
 	}
 
     @Override
-    protected boolean isConnected() {
+    public boolean isConnected() {
 		return connection != null && connection.isOpen();
     }
 
@@ -75,6 +79,8 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
 		if (connection != null) {
 			connection.close(1000, "Channel closed");
 			connection = null;
+			
+			gravity.notifyDisconnected(this);
 		}
 	}
 }

@@ -135,6 +135,14 @@ public abstract class AbstractChannel implements Channel {
     public Subscription removeSubscription(String subscriptionId) {
     	return subscriptions.remove(subscriptionId);
     }
+    
+    public boolean isConnected() {
+    	return true;
+    }
+    
+    public boolean isAuthenticated() {
+    	return userPrincipal != null;
+    }
 
     public Principal getUserPrincipal() {
         return userPrincipal;

@@ -172,6 +172,14 @@ public class GAEChannel implements Channel, Serializable {
     public Subscription removeSubscription(String subscriptionId) {
     	return subscriptions.remove(subscriptionId);
     }
+    
+    public boolean isConnected() {
+    	return true;
+    }
+    
+    public boolean isAuthenticated() {
+    	return userPrincipal != null;
+    }
 
     public Principal getUserPrincipal() {
         return userPrincipal;

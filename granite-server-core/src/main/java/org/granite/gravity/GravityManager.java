@@ -39,7 +39,7 @@ import org.granite.util.TypeUtil;
  */
 public class GravityManager {
 
-	private static final String GRAVITY_KEY = Gravity.class.getName();
+	static final String GRAVITY_KEY = Gravity.class.getName();
 	
 	/**
 	 * Parse gravity configuration (granite-config.xml), start gravity by using the specified factory and put it
