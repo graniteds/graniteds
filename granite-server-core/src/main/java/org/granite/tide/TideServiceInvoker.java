@@ -315,7 +315,7 @@ public class TideServiceInvoker<T extends ServiceFactory> extends ServiceInvoker
 	    	
 	    	for (Class<?> cClass : componentClasses) {
 	        	DataEnabled dataEnabled = cClass.getAnnotation(DataEnabled.class);
-	        	if (dataEnabled != null && !dataEnabled.topic().equals("") && !dataEnabled.useInterceptor()) {
+	        	if (dataEnabled != null && !dataEnabled.useInterceptor()) {
 	        		graniteContext.getRequestMap().put(DATAENABLED_HANDLED, true);
 	        		DataContext.init(dataEnabled.topic(), dataEnabled.params(), dataEnabled.publish());
 	    			prepareDataObserver(dataEnabled);
