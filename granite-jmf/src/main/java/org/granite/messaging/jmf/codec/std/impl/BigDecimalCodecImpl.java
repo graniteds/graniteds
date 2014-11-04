@@ -57,14 +57,15 @@ public class BigDecimalCodecImpl extends AbstractStandardCodec<BigDecimal> imple
 		os.write((count << LENGTH_BYTE_COUNT_OFFSET) | JMF_BIG_DECIMAL);
 		IntegerUtil.encodeInteger(ctx, magnitude.length, count);
 		
-		os.write(scale);
+		IntegerUtil.encodeInteger(ctx, scale);	// scale can be negative
+		
 		os.write(magnitude);
 	}
 
 	public BigDecimal decode(InputContext ctx, int parameterizedJmfType) throws IOException {
 		int magnitudeLength = IntegerUtil.decodeInteger(ctx, parameterizedJmfType >>> LENGTH_BYTE_COUNT_OFFSET);
-		int scale = ctx.safeRead();
-
+		int scale = IntegerUtil.decodeInteger(ctx);
+		
 		byte[] magnitude = new byte[magnitudeLength];
 		ctx.safeReadFully(magnitude);
 		

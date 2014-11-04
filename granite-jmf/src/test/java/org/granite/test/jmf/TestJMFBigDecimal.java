@@ -92,6 +92,12 @@ public class TestJMFBigDecimal implements JMFConstants {
 //		byte[] bytes = Util.serializeJava(bigDecimal);
 //		System.out.println("Serialization Java: " + bytes.length + "B.");
 	}
+
+	@Test
+	public void testBigDecimalGDS1355() throws ClassNotFoundException, IOException {
+		BigDecimal bigDecimal = new BigDecimal("1e5");
+		Assert.assertEquals(bigDecimal, serializeDeserialize(bigDecimal));
+	}
 	
 	private BigDecimal serializeDeserialize(BigDecimal v) throws ClassNotFoundException, IOException {
 		return serializeDeserialize(v, false);
