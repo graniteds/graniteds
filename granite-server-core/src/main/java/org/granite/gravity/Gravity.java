@@ -197,9 +197,11 @@ public interface Gravity {
     	
     	public void connected(Channel channel);
     	
-    	public void disconnected(Channel channel);
-    	
     	public void subscribed(Channel channel, String subscriptionId);
+    	
+    	public void authenticated(Channel channel, Principal principal);
+    	
+    	public void disconnected(Channel channel);
     	
     	public void unsubscribed(Channel channel, String subscriptionId);
     }

@@ -21,6 +21,8 @@
  */
 package org.granite.gravity;
 
+import java.security.Principal;
+
 import org.granite.config.GraniteConfig;
 import org.granite.config.ShutdownListener;
 import org.granite.config.flex.ServicesConfig;
@@ -78,7 +80,8 @@ public interface GravityInternal extends ShutdownListener {
     
     public void notifyConnected(Channel channel);
     public void notifyDisconnected(Channel channel);
-
+    public void notifyAuthenticated(Channel channel, Principal principal);
+    
     public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message);
     public Message handleMessage(ChannelFactory<? extends Channel> channelFactory, Message message, boolean skipInterceptor);
 }

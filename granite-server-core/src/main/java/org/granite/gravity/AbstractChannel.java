@@ -149,6 +149,8 @@ public abstract class AbstractChannel implements Channel {
     }
     public void setUserPrincipal(Principal principal) {
         this.userPrincipal = principal;
+        
+        gravity.notifyAuthenticated(this, principal);
     }
 
 	public void publish(AsyncPublishedMessage message) throws MessagePublishingException {

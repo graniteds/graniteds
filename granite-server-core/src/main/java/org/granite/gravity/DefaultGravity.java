@@ -651,6 +651,11 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     		listener.disconnected(channel);
     }
     
+    public void notifyAuthenticated(Channel channel, Principal principal) {
+    	for (Listener listener : listeners)
+    		listener.authenticated(channel, principal);
+    }
+    
     private void notifySubscribed(Channel channel, String subscriptionId) {
     	for (Listener listener : listeners)
     		listener.subscribed(channel, subscriptionId);
