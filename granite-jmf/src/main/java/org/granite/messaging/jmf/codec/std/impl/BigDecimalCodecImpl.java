@@ -65,7 +65,7 @@ public class BigDecimalCodecImpl extends AbstractStandardCodec<BigDecimal> imple
 	public BigDecimal decode(InputContext ctx, int parameterizedJmfType) throws IOException {
 		int magnitudeLength = IntegerUtil.decodeInteger(ctx, parameterizedJmfType >>> LENGTH_BYTE_COUNT_OFFSET);
 		int scale = IntegerUtil.decodeInteger(ctx);
-		
+
 		byte[] magnitude = new byte[magnitudeLength];
 		ctx.safeReadFully(magnitude);
 		
