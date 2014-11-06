@@ -192,7 +192,10 @@ public class FaultHandler<T> implements Runnable {
         	fault = new Fault(emsg.getCode(), emsg.getDescription(), emsg.getDetails(), emsg.getUnknownCode());
         }
         else {
-        	fault = new Fault(Code.UNKNOWN, emsg.getDescription(), emsg.getDetails(), emsg.getUnknownCode());
+        	if (emsg != null)
+        		fault = new Fault(Code.UNKNOWN, emsg.getDescription(), emsg.getDetails(), emsg.getUnknownCode());
+        	else
+        		fault = new Fault(Code.UNKNOWN, null, null, null);
         	emsg = new FaultMessage(null, null, Code.UNKNOWN, null, null, null, null);
         }
         
