@@ -732,6 +732,10 @@ package org.granite.tide.data {
       	}
 		
 		
+		private function qnameToString(item:*, index:int, array:Array):String { 
+			return item.toString(); 
+		}
+		
 		/**
 		 *  @private 
 		 *  Check if dirty properties of an object are the same than those of another entity
@@ -751,8 +755,13 @@ package org.granite.tide.data {
 			var oldDirty:Boolean = _dirtyCount > 0;			
 			var oldDirtyEntity:Boolean = isEntityChanged(entity);
 			
+			var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
+			var transientProperties:Array = ObjectUtil.getClassInfo(entity, cinfo.properties.map(qnameToString), 
+				{ includeTransient: true, includeReadOnly: false }).properties.map(qnameToString);
+			
+			var merged:Array = transientProperties;
+			
 			var desc:EntityDescriptor = _context.meta_tide.getEntityDescriptor(IEntity(entity));
-			var merged:Array = [];
 			
 			for (var propName:String in save) {
 				if (propName == desc.versionPropertyName)
