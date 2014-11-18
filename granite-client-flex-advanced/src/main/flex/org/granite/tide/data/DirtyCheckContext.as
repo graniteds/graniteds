@@ -40,8 +40,8 @@ package org.granite.tide.data {
     import flash.utils.getQualifiedClassName;
     
     import mx.collections.ArrayCollection;
-    import mx.collections.IList;
     import mx.collections.ICollectionView;
+    import mx.collections.IList;
     import mx.collections.ListCollectionView;
     import mx.core.IUID;
     import mx.events.CollectionEvent;
@@ -822,11 +822,15 @@ package org.granite.tide.data {
 			var oldDirty:Boolean = _dirtyCount > 0;			
 			var oldDirtyEntity:Boolean = isEntityChanged(owner);
 			
-			var merged:Array = [];
-			
 			var cinfo:Object = ObjectUtil.getClassInfo(entity, null, { includeTransient: false, includeReadOnly: false });
 			var propName:String;
 			var localValue:Object, sourceValue:Object, saveval:*;
+			
+			var toString:Function = function(item:*, index:int, array:Array):String { return item.toString() };
+			var transientProperties:Array = ObjectUtil.getClassInfo(entity, cinfo.properties.map(toString), 
+				{ includeTransient: true, includeReadOnly: false }).properties.map(toString);
+			
+			var merged:Array = transientProperties;
 			
 			var desc:EntityDescriptor = entity is IEntity ? _context.meta_tide.getEntityDescriptor(entity) : null;
 			var versionPropertyName:String = desc != null ? desc.versionPropertyName : null;
