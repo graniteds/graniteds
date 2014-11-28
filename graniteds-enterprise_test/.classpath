@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/graniteds-enterprise"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/graniteds_test"/>
+	<classpathentry kind="src" path="resources"/>
+	<classpathentry kind="src" path="java"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-annotations-ejb3.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-ejb3x.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-el.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jsf-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/dom4j.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jta.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/el-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-container.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-common.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/commons-collections.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/cglib.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jnpserver.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-embedded-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/build/granite.jar"/>
+	<classpathentry kind="lib" path="/graniteds/build/granite-hibernate.jar"/>
+	<classpathentry kind="lib" path="/graniteds/build/granite-seam21.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jboss-seam.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/graniteds"/>
+	<classpathentry kind="lib" path="/graniteds/lib/javax.servlet.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate3.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jpa-2.0-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/eclipselink.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-test.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.aop.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.asm.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.beans.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.context.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.core.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.expression.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.instrument.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.instrument.tomcat.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.jdbc.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.jms.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.orm.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.transaction.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.web.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/org.springframework.web.servlet.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-acl-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-config-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-core-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/spring-security-web-3.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/javax.inject.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/cdi-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-api.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-core.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-servlet.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-spi.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-se-core.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/weld-core-test.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/jdo2-api-2.3-eb.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/datanucleus-core.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate-validator-4.2.0.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/antlr-2.7.7.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/h2.jar"/>
+	<classpathentry kind="lib" path="/graniteds/lib/hibernate-core-4.0.1.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

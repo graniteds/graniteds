@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  GRANITE DATA SERVICES
+  Copyright (C) 2011 GRANITE DATA SERVICES S.A.S.
+
+  This file is part of Granite Data Services.
+
+  Granite Data Services is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Library General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or (at your
+  option) any later version.
+
+  Granite Data Services is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE. See the GNU Library General Public License
+  for more details.
+
+  You should have received a copy of the GNU Library General Public License
+  along with this library; if not, see <http://www.gnu.org/licenses/>.
+-->
+
+<project name="graniteds-enterprise-test" default="tests" basedir=".">
+	
+    <!--
+     ! Properties: EDIT THE 'test/env.properties' FILE TO REFLECT YOUR ENVIRONMENT.
+     !-->
+	<dirname property="gds.dir" file="../." />
+	<dirname property="gds.ep.dir" file="."/>
+
+    <property file="env.properties"/>
+	<property name="gds.lib" value="${gds.dir}/lib"/>
+	<property name="gds.build" value="${gds.dir}/build"/>
+	<property name="gds.test" value="${gds.dir}/test/graniteds_test"/>
+	
+    <path id="main.jar">
+        <fileset dir="${gds.lib}">
+            <include name="javax.servlet.jar"/>
+        </fileset>
+    </path>
+    <path id="granite.jar">
+        <fileset dir="${gds.build}">
+            <include name="granite.jar"/>
+        </fileset>
+    </path>
+    <path id="log4j.jar">
+        <fileset dir="${gds.lib}">
+            <include name="slf4j-api.jar"/>
+            <include name="slf4j-log4j12.jar"/>
+            <include name="log4j.jar"/>
+        </fileset>
+    </path>
+    <path id="hibernate.jar">
+        <fileset dir="${gds.lib}">
+            <include name="jpa-2.0-api.jar"/>
+            <include name="hibernate3.jar"/>
+            <include name="dom4j.jar"/>
+            <include name="antlr-2.7.7.jar"/>
+            <include name="asm-1.5.3.jar"/>
+            <include name="cglib-2.1_3.jar"/>
+            <include name="javassist.jar"/>
+            <include name="jta.jar"/>
+            <include name="commons-collections.jar"/>
+        </fileset>
+    </path>
+    <path id="hibernate4.jar">
+        <fileset dir="${gds.lib}">
+            <include name="jpa-2.0-api.jar"/>
+            <include name="hibernate-core-4.0.1.jar"/>
+            <include name="hibernate-entitymanager-4.0.1.jar"/>
+            <include name="hibernate-commons-annotations-3.2.0.Final.jar"/>
+            <include name="dom4j.jar"/>
+            <include name="antlr-2.7.7.jar"/>
+            <include name="asm-1.5.3.jar"/>
+            <include name="cglib-2.1_3.jar"/>
+            <include name="javassist.jar"/>
+            <include name="jta.jar"/>
+            <include name="commons-collections.jar"/>
+            <include name="jboss-logging.jar"/>
+        </fileset>
+    </path>
+    <path id="hibernate-validator.jar">
+        <fileset dir="${gds.lib}">
+            <include name="hibernate-validator.jar"/>
+            <include name="hibernate-commons-annotations.jar"/>
+            <include name="slf4j-api.jar"/>
+            <include name="slf4j-jboss-logging.jar"/>
+        </fileset>
+    </path>
+    <path id="granite-hibernate.jar">
+        <fileset dir="${gds.build}">
+            <include name="granite-hibernate.jar"/>
+        </fileset>
+    </path>
+    <path id="granite-hibernate4.jar">
+        <fileset dir="${gds.build}">
+            <include name="granite-hibernate4.jar"/>
+        </fileset>
+    </path>
+	
+    <path id="spring.jar">
+        <fileset dir="${gds.lib}">
+        	<include name="aopalliance-1.0.jar"/>
+            <include name="asm-3.0.jar"/>
+            <include name="commons-collections.jar"/>
+            <include name="commons-logging.jar"/>
+        	<include name="javax.inject.jar"/>
+        	<include name="javax.servlet.jar"/>
+        	<include name="apache-activemq.jar"/>
+        	<include name="org.springframework.*.jar"/>
+        	<include name="spring-*-3.0.jar"/>
+        	<include name="spring-test.jar"/>
+    	</fileset>
+    </path>
+    <path id="granite-spring.jar">
+        <fileset dir="${gds.build}">
+            <include name="granite-spring.jar"/>
+        </fileset>
+    </path>
+    
+    <path id="gds.classpath">
+        <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+        <path refid="main.jar"/>
+        <path refid="log4j.jar"/>
+        <path refid="hibernate.jar"/>
+        <path refid="hibernate-validator.jar"/>
+        <path refid="granite.jar"/>
+        <path refid="granite-hibernate.jar"/>
+    </path>
+    <path id="gds.test.classpath">
+        <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+        <path refid="main.jar"/>
+        <path refid="log4j.jar"/>
+        <path refid="granite.jar"/>
+    </path>
+    <path id="gds.spring.classpath">
+        <path refid="spring.jar"/>
+        <path refid="granite-spring.jar"/>
+    </path>
+    <path id="test.classpath">
+        <pathelement location="${gds.lib}/hsqldb.jar"/>
+        <pathelement location="${gds.lib}/h2.jar"/>
+    </path>
+	
+	<!--
+     ! Build Message.
+     !-->
+    <echo message="==============================================================================="/>
+    <echo message="  Testing GraniteDS ${GDS_VERSION}"/>
+    <echo message="  "/>
+    <echo message="  $FLEX_HOME = ${FLEX_HOME_TESTS}"/>
+    <echo message="  "/>
+    <echo message="  $gds.dir = ${gds.dir}"/>
+    <echo message="  $gds.ep.dir = ${gds.ep.dir}"/>
+    <echo message="  $gds.lib = ${gds.lib}"/>
+    <echo message="  $gds.build = ${gds.build}"/>
+    <echo message="==============================================================================="/>
+
+    <!--
+     ! Flex SDK tasks (mxmlc, compc, html-wrapper, flexunit).
+     !-->
+    <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME_TESTS}/ant/lib/flexTasks.jar" />
+	
+	<taskdef resource="flexUnitTasks.tasks" classpath="${gds.test}/lib/flexUnitTasks-4.1.0.jar"/>
+	
+	
+    <!--
+     ! Build swf (if swf is out of date).
+     !-->
+    <target name="build.mxmlc" description="Build Flex tests swf">
+    	<mkdir dir="${gds.test}/swf"/>
+        <mxmlc
+            output="${gds.test}/swf/tests-enterprise.swf"
+        	file="${gds.test}/flex/TestRunnerEnterprise.mxml"
+            use-network="true"
+            debug="true">
+
+            <load-config filename="${FLEX_HOME_TESTS}/frameworks/flex-config.xml"/>
+
+            <source-path path-element="${FLEX_HOME_TESTS}/frameworks"/>
+            <source-path path-element="${gds.test}/flex"/>
+        	
+        	<!-- Standard annotations -->
+			<keep-as3-metadata name="Bindable"/>
+		    <keep-as3-metadata name="Managed"/>
+		    <keep-as3-metadata name="ChangeEvent"/>
+		    <keep-as3-metadata name="NonCommittingChangeEvent"/>
+		    <keep-as3-metadata name="Transient"/>
+
+        	<!-- Tide annotations -->
+        	<keep-as3-metadata name="Id"/>
+        	<keep-as3-metadata name="Version"/>
+        	<keep-as3-metadata name="Name"/>
+        	<keep-as3-metadata name="In"/>
+        	<keep-as3-metadata name="Inject"/>
+        	<keep-as3-metadata name="Out"/>
+        	<keep-as3-metadata name="Produces"/>
+        	<keep-as3-metadata name="ManagedEvent"/>
+        	<keep-as3-metadata name="Observer"/>
+        	<keep-as3-metadata name="PostConstruct"/>
+        	<keep-as3-metadata name="Destroy"/>
+        	<keep-as3-metadata name="Test"/>
+        	<keep-as3-metadata name="Ignore"/>
+        	<keep-as3-metadata name="Suite"/>
+        	<keep-as3-metadata name="RunWith"/>
+
+        	<!-- All granite-essentials.swc classes are included in the output swf -->
+            <compiler.include-libraries dir="${gds.build}" append="true">
+                <include name="granite-essentials.swc" />
+            </compiler.include-libraries>
+
+        	<!-- Actually used only granite.swc classes are included in the output swf -->
+        	<compiler.library-path dir="${gds.build}" append="true">
+        		<include name="granite.swc"/>
+        	</compiler.library-path>
+        	
+        	<compiler.library-path dir="${gds.test}/libs" append="true">
+        		<include name="flexunit*-4.1.0.swc"/>
+        	</compiler.library-path>
+            
+            <compiler.headless-server>true</compiler.headless-server>
+        </mxmlc>
+    </target>
+	
+	<target name="tests.flex" depends="build.mxmlc" description="Run Flex tests">
+		<mkdir dir="${gds.test}/test-reports/flex"/>
+		<flexunit swf="${gds.test}/swf/tests-enterprise.swf" todir="${gds.test}/test-reports/flex" headless="true" localTrusted="true" verbose="true"/>
+		
+		<junitreport todir="${gds.test}/test-reports/flex">
+		  	<fileset dir="${gds.test}/test-reports/flex">
+		    	<include name="TEST-*.xml"/>
+		  	</fileset>
+		  	<report todir="${gds.test}/test-reports/flex"/>
+		</junitreport>	
+	</target>
+	
+    <!--
+     ! Compile Java sources (unless this script is launched from Eclipse).
+     !-->
+    <target name="build.javac">
+        <mkdir dir="classes"/>
+        <mkdir dir="test-reports/java"/>
+    	
+        <javac destdir="classes" srcdir="java" debug="true"
+            target="1.5" source="1.5">
+            <classpath>
+                <path refid="gds.classpath"/>
+                <path refid="gds.spring.classpath"/>
+            	<pathelement path="${gds.ep.dir}/classes/tide/classes"/>
+                <pathelement path="${gds.ep.dir}/classes/hibernate/classes"/>
+                <pathelement path="${gds.ep.dir}/classes/spring/classes"/>
+                <path refid="test.classpath"/>
+            </classpath>
+        </javac>
+        <copy todir="classes">
+            <fileset dir="resources">
+                <include name="*.xml"/>
+                <include name="*.properties"/>
+                <include name="WEB-INF/**"/>
+                <include name="META-INF/**"/>
+            </fileset>
+        	<fileset dir="java">
+        		<include name="**/*.xml"/>
+        	</fileset>
+        </copy>
+    </target>
+    
+    <target name="tests.java" depends="build.javac" description="Run Java tests">
+        <junit printsummary="yes" showoutput="false">
+            <classpath>
+                <path refid="gds.classpath"/>
+                <path refid="test.classpath"/>
+            	<pathelement path="${gds.ep.dir}/classes/tide/classes"/>
+                <pathelement path="${gds.ep.dir}/classes/hibernate/classes"/>
+                <pathelement path="${gds.ep.dir}/classes/spring/classes"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                	<include name="**/*Test.java"/>
+                    <exclude name="**/*Hibernate*.java"/>
+                    <exclude name="**/Abstract*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    	
+        <antcall target="tests.hibernate"/>
+        
+    	<antcall target="tests.reports"/>
+    </target>
+	
+    <target name="tests.hibernate" depends="build.javac">        
+        <junit printsummary="yes" showoutput="false" fork="true">
+            <classpath>
+                <pathelement location="${gds.test}/lib/junit-4.8.2.jar"/>
+                <path refid="main.jar"/>
+                <path refid="log4j.jar"/>
+                <path refid="hibernate.jar"/>
+                <path refid="granite.jar"/>
+                <path refid="granite-hibernate.jar"/>
+                <pathelement location="${gds.lib}/h2.jar"/>
+                <pathelement location="${gds.lib}/hqsldb.jar"/>
+                <pathelement path="${gds.ep.dir}/classes/hibernate/classes"/>
+                <pathelement path="${gds.ep.dir}/classes/spring/classes"/>
+            	<pathelement path="${gds.ep.dir}/classes/tide/classes"/>
+                <pathelement path="classes"/>
+            </classpath>
+            
+            <formatter type="xml"/>
+            
+            <batchtest todir="test-reports/java" fork="true">
+                <fileset dir="java">
+                    <include name="**/*Hibernate*Test.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+	
+	<target name="tests" depends="tests.flex" description="Run tests"/>
+
+</project>
