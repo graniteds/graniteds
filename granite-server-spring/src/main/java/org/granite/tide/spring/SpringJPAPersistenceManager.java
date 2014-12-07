@@ -21,10 +21,13 @@
  */
 package org.granite.tide.spring;
 
+import javax.persistence.EntityManagerFactory;
+
 import org.granite.tide.TideTransactionManager;
 import org.granite.tide.data.JPAPersistenceManager;
 import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 
 /**
@@ -37,6 +40,10 @@ public class SpringJPAPersistenceManager extends JPAPersistenceManager {
 	
 	public SpringJPAPersistenceManager(JpaTransactionManager transactionManager, TideTransactionManager tm) {
 		super(transactionManager.getEntityManagerFactory(), tm);
+	}
+	
+	public SpringJPAPersistenceManager(EntityManagerFactory emf, PlatformTransactionManager transactionManager) {
+		super(emf, new SpringTransactionManager(transactionManager));
 	}
 	
 	@Override
