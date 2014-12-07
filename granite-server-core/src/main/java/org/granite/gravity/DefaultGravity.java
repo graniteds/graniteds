@@ -847,8 +847,14 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     
     private Message authorize(GraniteConfig config, final Message message, final AbstractSecurityContext securityContext) {
         try {
-            if (config.hasSecurityService() && config.getSecurityService().acceptsContext())
+            if (securityContext.isSecured() && config.hasSecurityService()) {
+                if (!config.getSecurityService().acceptsContext()) {
+                    log.debug("Could not process security operation in non supported current context: %s", message);
+                    return new ErrorMessage(message, SecurityServiceException.newNotLoggedInException("Invalid context"), true);
+                }
+                
                 return (Message)config.getSecurityService().authorize(securityContext);
+            }
 
             return (Message)securityContext.invoke();
         }
@@ -1136,6 +1142,11 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
             message.setClientId(channel.getId());
         
         GravityInvocationContext invocationContext = new GravityInvocationContext(message, destination) {
+            @Override
+            public boolean isSecured() {
+            	return channel != serverChannel;
+            }
+        	
 			@Override
 			public Object invoke() throws Exception {
 		        // Publish...

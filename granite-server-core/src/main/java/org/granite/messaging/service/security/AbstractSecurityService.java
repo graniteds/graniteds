@@ -88,7 +88,7 @@ public abstract class AbstractSecurityService implements SecurityService {
         	try {
 	        	Long lastAccessedTime = (Long)session.getAttribute(GraniteContext.SESSION_LAST_ACCESSED_TIME_KEY);
 	        	if (lastAccessedTime != null && lastAccessedTime + session.getMaxInactiveInterval()*1000L + 1000L < serverTime) {
-	        		log.info("No user-initiated action since last access, force session invalidation");
+	        		log.info("No user-initiated action since last access, force session invalidation %s", session.getId());
 	        		session.invalidate();
 	        	}
         	}

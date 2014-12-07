@@ -45,6 +45,10 @@ public abstract class AbstractSecurityContext {
     public Destination getDestination() {
         return destination;
     }
+    
+    public boolean isSecured() {
+    	return true;
+    }
 
     public abstract Object invoke() throws Exception;
 }
