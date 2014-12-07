@@ -120,7 +120,8 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 	}
 	
 	public void addUnsaved(Object entity) {
-		unsavedEntities.put(entity, true);
+		if (dataManager.isInitialized(entity))
+			unsavedEntities.put(entity, true);
 	}
     
     public void clear(boolean notify) {
@@ -822,7 +823,8 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 				save.put(propName, sourceValue);
 			}
 			else if (isEntity(sourceValue)) {
-				save.put(propName, mergeContext.getFromCache(sourceValue));
+				if (dataManager.isInitialized(sourceValue))
+					save.put(propName, mergeContext.getFromCache(sourceValue));
 			}
 			else if (sourceValue instanceof Collection<?> && !(sourceValue instanceof PersistentCollection && !((PersistentCollection<?>)sourceValue).wasInitialized())) {
 				List<Object> snapshot = new ArrayList<Object>((Collection<?>)sourceValue);

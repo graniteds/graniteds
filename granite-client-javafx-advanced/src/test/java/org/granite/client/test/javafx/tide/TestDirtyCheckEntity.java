@@ -880,4 +880,33 @@ public class TestDirtyCheckEntity {
          
          Assert.assertTrue(dirty.get());
      }
+     
+     @Test
+     public void testDeepDirtyLazyGDS1381() {
+    	 Patient4 patient = new Patient4(1L, 0L, "P1", "Test");
+    	 PatientStatus status = new PatientStatus(1L, false, "bla");
+    	 patient.setStatus(status);
+    	 
+    	 patient = (Patient4)entityManager.mergeExternalData(patient);
+    	 
+    	 BooleanProperty dirty = new SimpleBooleanProperty(this, "dirty", false);
+    	 dirty.bind(dataManager.deepDirtyEntity(patient));
+         Assert.assertFalse(dataManager.isDirty());
+         Assert.assertFalse(dirty.get());
+         
+    	 patient.setName("Test2");
+    	 
+         Assert.assertTrue(dataManager.isDirty());
+    	 
+         Assert.assertTrue(dirty.get());
+         
+    	 Patient4 patientb = new Patient4(1L, 1L, "P1", "Test2");
+    	 PatientStatus statusb = new PatientStatus(1L, false, "bla");
+    	 patientb.setStatus(statusb);
+    	 
+    	 entityManager.mergeExternalData(patientb);
+    	 
+         Assert.assertFalse(dataManager.isDirty());
+         Assert.assertFalse(dirty.get());
+     }
 }
