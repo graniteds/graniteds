@@ -91,9 +91,16 @@ public class InvocationResult implements IInvocationResult {
         return updates;
     }
     public void setUpdates(Object[][] updates) {
-        this.updates = updates;
+    	if (updates == null) {
+    		this.updates = null;
+    		return;
+    	}
+    	
+        this.updates = new Object[updates.length][];
+        for (int i = 0; i < updates.length; i++)
+        	this.updates[i] = new Object[] { updates[i][0], updates[i][1] };
     }
-
+    
     public List<ContextUpdate> getResults() {
         return results;
     }
