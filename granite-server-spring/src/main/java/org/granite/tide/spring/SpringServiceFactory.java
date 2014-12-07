@@ -74,11 +74,12 @@ public class SpringServiceFactory extends ServiceFactory {
             super.configure(properties);
         
         try {
+        	TypeUtil.forName("javax.persistence.EntityManagerFactory");
             GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
         	config.registerExceptionConverter(PersistenceExceptionConverter.class);
         }
         catch (Throwable t) {
-	    	log.info(t, "JPA exception converter not registered (JPA not found on classpath)");
+	    	log.info("JPA exception converter not registered (JPA not found on classpath)");
         }
     }
 

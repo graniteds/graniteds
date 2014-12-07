@@ -29,6 +29,7 @@ import org.granite.config.GraniteConfig;
 import org.granite.config.flex.Destination;
 import org.granite.config.flex.ServicesConfig;
 import org.granite.context.GraniteContext;
+import org.granite.logging.Logger;
 import org.granite.messaging.service.ExtendedServiceExceptionHandler;
 import org.granite.messaging.service.ServiceException;
 import org.granite.messaging.service.ServiceFactory;
@@ -36,6 +37,7 @@ import org.granite.messaging.service.ServiceInvoker;
 import org.granite.scan.ScannedItemHandler;
 import org.granite.tide.TideServiceInvoker;
 import org.granite.tide.data.PersistenceExceptionConverter;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 
 import flex.messaging.messages.RemotingMessage;
@@ -45,6 +47,8 @@ import flex.messaging.messages.RemotingMessage;
  * @author William DRAI
  */
 public class EjbServiceFactory extends ServiceFactory {
+    
+	private static final Logger log = Logger.getLogger(EjbServiceFactory.class);
     
     public static final String ENTITY_MANAGER_FACTORY_JNDI_NAME = "entity-manager-factory-jndi-name";
     public static final String ENTITY_MANAGER_JNDI_NAME = "entity-manager-jndi-name";
@@ -77,8 +81,14 @@ public class EjbServiceFactory extends ServiceFactory {
             super.configure(properties);
         
         GraniteConfig config = GraniteContext.getCurrentInstance().getGraniteConfig();
-        config.registerExceptionConverter(PersistenceExceptionConverter.class);
         config.registerExceptionConverter(EJBAccessExceptionConverter.class);
+        try {
+        	TypeUtil.forName("javax.persistence.EntityManagerFactory");
+        	config.registerExceptionConverter(PersistenceExceptionConverter.class);
+        }
+        catch (Throwable t) {
+	    	log.info("JPA exception converter not registered (JPA not found on classpath)");
+        }
         
         this.lookup = properties.get("lookup");
     }

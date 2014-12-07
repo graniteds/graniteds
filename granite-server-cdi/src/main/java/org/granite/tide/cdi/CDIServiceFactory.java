@@ -39,6 +39,7 @@ import org.granite.messaging.webapp.HttpGraniteContext;
 import org.granite.messaging.webapp.ServletGraniteContext;
 import org.granite.tide.TideServiceInvoker;
 import org.granite.tide.data.PersistenceExceptionConverter;
+import org.granite.util.TypeUtil;
 import org.granite.util.XMap;
 
 import flex.messaging.messages.RemotingMessage;
@@ -74,10 +75,11 @@ public class CDIServiceFactory extends ServiceFactory {
         
         GraniteContext graniteContext = GraniteContext.getCurrentInstance();
         try {
+        	TypeUtil.forName("javax.persistence.EntityManagerFactory");
         	((GraniteConfig)graniteContext.getGraniteConfig()).registerExceptionConverter(PersistenceExceptionConverter.class);
         }
         catch (Throwable t) {
-	    	log.info(t, "JPA exception converter not registered (JPA not found on classpath)");
+	    	log.info("JPA exception converter not registered (JPA not found on classpath)");
         }
 
         try {
