@@ -89,6 +89,9 @@ package org.granite.tide.service {
 		}
 		
 		private function rescheduleSessionExpirationTask(serverTime:Number, sessionExpirationDelay:Number):void {
+			if (sessionExpirationDelay <= 0)	// Case of unlimited session on the server
+				return;
+			
 			var clientOffset:Number = serverTime - new Date().time;
 			_expirationTimer = new Timer(clientOffset + sessionExpirationDelay*1000 + 1500);
 			_expirationTimer.addEventListener(TimerEvent.TIMER, sessionExpirationHandler, false, 0, true);
