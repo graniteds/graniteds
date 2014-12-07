@@ -1003,7 +1003,10 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 		        Channel channel = getChannel(channelFactory, (String)message.getClientId());
 		        if (channel == null)
 		            return handleUnknownClientMessage(message);
-
+		        
+		        if (context.getPrincipal() != null)
+		        	channel.setUserPrincipal(context.getPrincipal());
+		        
 		        String subscriptionId = (String)message.getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
 		        if (subscriptionId == null) {
 		            subscriptionId = UUIDUtil.randomUUID();
