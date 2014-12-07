@@ -70,6 +70,7 @@ import org.granite.client.messaging.channel.ChannelFactory;
 import org.granite.client.messaging.channel.ChannelStatusListener;
 import org.granite.client.messaging.channel.ChannelStatusNotifier;
 import org.granite.client.messaging.channel.MessagingChannel;
+import org.granite.client.messaging.channel.ReauthenticateCallback;
 import org.granite.client.messaging.channel.RemotingChannel;
 import org.granite.client.messaging.channel.SessionAwareChannel;
 import org.granite.client.messaging.channel.UsernamePasswordCredentials;
@@ -79,6 +80,7 @@ import org.granite.client.messaging.events.FaultEvent;
 import org.granite.client.messaging.events.IncomingMessageEvent;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
+import org.granite.client.messaging.messages.ResponseMessage;
 import org.granite.client.messaging.messages.responses.FaultMessage;
 import org.granite.client.messaging.messages.responses.FaultMessage.Code;
 import org.granite.client.messaging.messages.responses.ResultMessage;
@@ -532,11 +534,15 @@ public class ServerSession implements ContextAware {
 	private void setupChannel(Channel channel) {
 		channel.addListener(channelStatusBinder);
 		channel.bindStatus(channelStatusBinder);
+		if (channel instanceof MessagingChannel)
+			((MessagingChannel)channel).setReauthenticateCallback(reauthenticateCallback);
 	}
 	
 	private void unsetupChannel(Channel channel) {
 		channel.removeListener(channelStatusBinder);
 		channel.unbindStatus(channelStatusBinder);
+		if (channel instanceof MessagingChannel)
+			((MessagingChannel)channel).setReauthenticateCallback(null);
 	}
 	
 	private class ChannelStatusBinder implements ChannelStatusListener, ChannelStatusNotifier {
@@ -560,9 +566,15 @@ public class ServerSession implements ContextAware {
 		}
 		
 		@Override
-		public void authenticatedChanged(Channel channel, boolean authenticated) {
+		public void authenticatedChanged(Channel channel, boolean authenticated, ResponseMessage response) {
 			for (ChannelStatusListener listener : listeners)
-				listener.authenticatedChanged(channel, authenticated);
+				listener.authenticatedChanged(channel, authenticated, response);
+			
+			if (response != null) {
+				String oldSessionId = ServerSession.this.sessionId;			
+				ServerSession.this.sessionId = (String)response.getHeader(SESSION_ID_TAG);		
+				updateSessionId(oldSessionId);
+			}
 		}
 		
 		@Override
@@ -577,6 +589,14 @@ public class ServerSession implements ContextAware {
 	}
 	
 	private ChannelStatusBinder channelStatusBinder = new ChannelStatusBinder();
+	
+	private ReauthenticateCallback reauthenticateCallback = new ReauthenticateCallback() {
+		@Override
+		public void reauthenticate() {
+			remotingChannel.reauthenticate();
+		}
+	};
+	
 
     /**
      * Returns remote service for the internal destination
@@ -809,13 +829,7 @@ public class ServerSession implements ContextAware {
 		else if (event instanceof IncomingMessageEvent<?>)
 			sessionId = (String)((IncomingMessageEvent<?>)event).getMessage().getHeader(SESSION_ID_TAG);
 		
-		if ((sessionId == null && oldSessionId != null) || (sessionId != null && !sessionId.equals(oldSessionId)))
-		    log.debug("Received new sessionId %s (!= %s)", sessionId, oldSessionId);
-		
-		if (oldSessionId != null || sessionId != null) {
-            for (MessagingChannel messagingChannel : messagingChannelsByType.values())
-			    messagingChannel.setSessionId(sessionId);
-        }
+		updateSessionId(oldSessionId);
 		
 		status.setConnected(true);
 	}
@@ -838,16 +852,20 @@ public class ServerSession implements ContextAware {
 			rescheduleSessionExpirationTask(serverTime, sessionExpirationDelay);
 		}
 		
-        if (sessionId == null || !sessionId.equals(oldSessionId))
-            log.info("Received new sessionId %s", sessionId);
-        
-		if (oldSessionId != null || sessionId != null) {
-            for (MessagingChannel messagingChannel : messagingChannelsByType.values())
-                messagingChannel.setSessionId(sessionId);
-        }
+		updateSessionId(oldSessionId);
 		
         if (emsg != null && emsg.getCode().equals(Code.SERVER_CALL_FAILED))
         	status.setConnected(false);            
+	}
+	
+	private void updateSessionId(String oldSessionId) {
+		if ((sessionId == null && oldSessionId != null) || (sessionId != null && !sessionId.equals(oldSessionId)))
+		    log.debug("Received new sessionId %s (!= %s)", sessionId, oldSessionId);
+		
+		if (oldSessionId != null || sessionId != null) {
+            for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+			    messagingChannel.setSessionId(sessionId);
+        }
 	}
 
     /**
@@ -902,6 +920,14 @@ public class ServerSession implements ContextAware {
      */
 	public Transport getMessagingTransport() {
 		return channelFactory != null ? channelFactory.getMessagingTransport() : messagingTransport;
+	}
+
+    /**
+     * Current messaging transport
+     * @return messaging transport
+     */
+	public Transport getMessagingTransport(String channelType) {
+		return channelFactory != null ? channelFactory.getMessagingTransport(channelType) : messagingTransports.get(channelType);
 	}
 	
 	

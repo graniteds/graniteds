@@ -33,6 +33,7 @@ public final class SubscribeMessage extends AbstractTopicRequestMessage {
     private static final long serialVersionUID = 1L;
 	
 	private String selector = null;
+	private String subscriptionId = null;
 	
 	public SubscribeMessage() {
 	}
@@ -68,6 +69,14 @@ public final class SubscribeMessage extends AbstractTopicRequestMessage {
 	public void setSelector(String selector) {
 		this.selector = selector;
 	}
+	
+	public String getSubscriptionId() {
+		return subscriptionId;
+	}
+	
+	public void setSubscriptionId(String subscriptionId) {
+		this.subscriptionId = subscriptionId;
+	}
 
 	@Override
 	public Type getType() {
@@ -81,6 +90,7 @@ public final class SubscribeMessage extends AbstractTopicRequestMessage {
 		copy(message);
 		
 		message.selector = selector;
+		message.subscriptionId = subscriptionId;
 		
 		return message;
 	}

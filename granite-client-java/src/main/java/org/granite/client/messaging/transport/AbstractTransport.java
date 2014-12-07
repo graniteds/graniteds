@@ -60,6 +60,11 @@ public abstract class AbstractTransport<C> implements Transport {
     public boolean isDisconnectAfterAuthenticationFailure() {
         return false;
     }
+	
+	@Override
+	public boolean isAuthenticationAfterReconnectWithRemoting() {
+		return false;
+	}
 
 	@Override
 	public void setStatusHandler(TransportStatusHandler statusHandler) {

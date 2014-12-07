@@ -39,6 +39,7 @@ import org.granite.client.messaging.ResponseListener;
 import org.granite.client.messaging.channel.AsyncToken;
 import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.channel.MessagingChannel;
+import org.granite.client.messaging.channel.ReauthenticateCallback;
 import org.granite.client.messaging.channel.ResponseMessageFuture;
 import org.granite.client.messaging.codec.MessagingCodec;
 import org.granite.client.messaging.messages.Message.Type;
@@ -70,11 +71,13 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	protected final MessagingCodec<Message[]> codec;
 	
 	protected String sessionId = null;
+	
 	protected final ConcurrentMap<String, Consumer> consumersMap = new ConcurrentHashMap<String, Consumer>();	
 	protected final AtomicReference<String> connectMessageId = new AtomicReference<String>(null);
 	protected final AtomicReference<String> loginMessageId = new AtomicReference<String>(null);
 	protected final AtomicReference<ReconnectTimerTask> reconnectTimerTask = new AtomicReference<ReconnectTimerTask>();
 	protected final List<ChannelResponseListener> responseListeners = new ArrayList<ChannelResponseListener>();
+	private ReauthenticateCallback reauthenticateCallback = null; 
 	
 	protected volatile long reconnectIntervalMillis = TimeUnit.SECONDS.toMillis(30L);
 	protected volatile long reconnectMaxAttempts = 60L;
@@ -93,6 +96,10 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		}				
 	}
 	
+	public void setReauthenticateCallback(ReauthenticateCallback callback) {
+		this.reauthenticateCallback = callback;
+	}
+	
 	protected boolean connect() {
 		
 		// Connecting: make sure we don't have an active reconnect timer task.
@@ -109,15 +116,13 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		
 		log.debug("Connecting channel with clientId %s", clientId);
 		
-		// Create and try to send the connect message.
-		CommandMessage connectMessage = new CommandMessage();
-		connectMessage.setOperation(CommandMessage.CONNECT_OPERATION);
-		connectMessage.setMessageId(id);
-		connectMessage.setTimestamp(System.currentTimeMillis());
-		connectMessage.setClientId(clientId);
-
+		// Force reauthentication from the remoting channel if this channel is not able to authenticate itself (i.e. websockets)
+		if (transport.isAuthenticationAfterReconnectWithRemoting() && reauthenticateCallback != null)
+			reauthenticateCallback.reauthenticate();
+		
+		// Create and try to send the connect message.		
 		try {
-			transport.send(this, new DefaultTransportMessage<Message[]>(id, true, false, clientId, sessionId, new Message[] { connectMessage }, codec));
+			transport.send(this, createConnectMessage(id, false));
 			
 			return true;
 		}
@@ -125,7 +130,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 			// Connect immediately failed, release the message id and schedule a reconnect.
 			connectMessageId.set(null);
 			loginMessageId.set(null);
-			scheduleReconnectTimerTask();
+			scheduleReconnectTimerTask(false);
 			
 			return false;
 		}
@@ -242,9 +247,10 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	                                if (messages[0].getHeaders().containsKey("JSESSIONID"))
 	                                    setSessionId((String)messages[0].getHeader("JSESSIONID"));
 	                                
+	                                boolean resubscribe = false;
 	                                if (clientId != null && !clientId.equals(result.getClientId())) {
 	                                	log.warn("Channel %s pinged new clientId %s  requested %s", id, result != null ? result.getClientId() : "(no request)", clientId);
-	                                	// Should resubscribe ?
+	                                	resubscribe = true;
 	                                }
 	                                else
 	                                    log.debug("Channel %s pinged clientId %s", id, clientId);
@@ -255,11 +261,19 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
             						LoginMessage loginMessage = authenticate(null);
             						if (loginMessage != null)
             							loginMessageId.set(loginMessage.getId());
+            						else if (resubscribe) {
+            							for (Consumer consumer : consumersMap.values())
+            								consumer.resubscribe();
+            						}
 	                                
 	                                break;
 	                                
 								case LOGIN:
-									setAuthenticated(true);
+									setAuthenticated(true, response);
+									
+									for (Consumer consumer : consumersMap.values())
+        								consumer.resubscribe();
+									
 									break;
 								
 								case SUBSCRIBE:
@@ -289,7 +303,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 									setPinged(false);
 	                                
 								case LOGIN:
-									setAuthenticated(false);
+									setAuthenticated(false, response);
 									
 									if (transport.isDisconnectAfterAuthenticationFailure())
 										disconnect();
@@ -367,8 +381,9 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 //		for (Consumer consumer : consumersMap.values())
 //			consumer.onDisconnect();
 		
+		// Don't reconnect here, there should be a following onClose
 		if (message != null && connectMessageId.compareAndSet(message.getId(), null)) {
-			scheduleReconnectTimerTask();
+			scheduleReconnectTimerTask(false);
 		}
 	}
 
@@ -378,11 +393,22 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 			reconnectAttempts = 0L;
 	}
 	
-	protected void scheduleReconnectTimerTask() {
+	@Override
+	public TransportMessage createConnectMessage(String id, boolean reconnect) {
+		CommandMessage connectMessage = new CommandMessage();
+		connectMessage.setOperation(CommandMessage.CONNECT_OPERATION);
+		connectMessage.setMessageId(id);
+		connectMessage.setTimestamp(System.currentTimeMillis());
+		connectMessage.setClientId(clientId);
+		
+		return new DefaultTransportMessage<Message[]>(id, !reconnect, false, clientId, sessionId, new Message[] { connectMessage }, codec);	
+	}
+	
+	protected void scheduleReconnectTimerTask(boolean immediate) {
         log.info("Channel %s schedule reconnect", getId());
         
         setPinged(false);
-        setAuthenticated(false);
+        setAuthenticated(false, null);
         
 		ReconnectTimerTask task = new ReconnectTimerTask();
 		
@@ -392,7 +418,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		
 		if (reconnectAttempts < reconnectMaxAttempts) {
 			reconnectAttempts++;
-			schedule(task, reconnectIntervalMillis);
+			schedule(task, immediate && reconnectAttempts == 1 ? 0L : reconnectIntervalMillis);
 		}
 	}
 	

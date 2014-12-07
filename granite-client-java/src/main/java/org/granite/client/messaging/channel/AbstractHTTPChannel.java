@@ -76,7 +76,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	private Semaphore connections;
 	private Timer timer = null;
 	
-	private List<ChannelStatusListener> statusListeners = new ArrayList<ChannelStatusListener>(); 
+	private List<ChannelStatusListener> statusListeners = new ArrayList<ChannelStatusListener>();
 	private volatile boolean pinged = false;
 	private volatile boolean authenticated = false;
 	private volatile boolean authenticating = false;
@@ -201,7 +201,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		
 		pinged = false;
 		clientId = null;
-		authenticated = false;
+		setAuthenticated(false, null);
 		
 		return true;
 	}
@@ -209,7 +209,26 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
     protected void internalStop() {
     }
 
-
+    
+    public void reauthenticate() {
+		if (authenticating || authenticated)
+			return;
+		
+		Credentials credentials = this.credentials;
+		if (credentials == null)
+			return;
+		
+		LoginMessage loginMessage = new LoginMessage(clientId, credentials);
+		try {
+			ResponseMessage response = sendSimpleBlockingToken(loginMessage);
+			if (response instanceof ResultMessage)
+				setAuthenticated(true, response);
+		}
+		catch (Exception e) {
+			log.warn(e, "Could not reauthenticate channel %s", clientId);
+		}
+    }
+    
     protected LoginMessage authenticate(AsyncToken dependentToken) {
 		if (authenticating || authenticated)
 			return null;
@@ -224,8 +243,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			ResultMessage result = sendBlockingToken(loginMessage, dependentToken);
 			if (result == null)
 				return loginMessage;
-			authenticated = true;
-			authenticating = false;
+			setAuthenticated(true, result);
 		}
 		else {
 			log.debug("Channel %s non blocking authentication %s clientId %s", id, loginMessage.getId(), clientId);
@@ -268,7 +286,8 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 				
 				authenticate(token);
 				
-				sendToken(token);
+				if (!(token.getRequest() instanceof PingMessage))
+					sendToken(token);
 			}
 			catch (InterruptedException e) {
 				log.info("Channel %s stopped.", id);
@@ -352,6 +371,44 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		}
 		
 		return null;
+	}
+	
+	private ResponseMessage sendSimpleBlockingToken(RequestMessage request) throws Exception {
+		
+		request.setTimestamp(System.currentTimeMillis());
+		if (request.getTimeToLive() <= 0L)
+			request.setTimeToLive(defaultTimeToLive);
+		
+		// Create the blocking token and schedule it with the dependent token timeout.
+		AsyncToken blockingToken = new AsyncToken(request);
+		try {
+			timer.schedule(blockingToken, blockingToken.getRequest().getRemainingTimeToLive());
+		}
+		catch (IllegalArgumentException e) {
+			return null;
+		}
+		catch (Exception e) {
+			return null;
+		}
+		
+		// Try to send the blocking token (can block if the connections semaphore can't be acquired
+		// immediately).
+		try {
+			if (!sendToken(blockingToken))
+				return null;
+		}
+		catch (Exception e) {
+			throw e;
+		}
+		
+		// Block until we get a server response (result or fault), a cancellation (unlikely), a timeout
+		// or any other execution exception.
+		try {
+			return blockingToken.get();			
+		}
+		catch (Exception e) {
+			throw e;
+		}
 	}
 	
 	private boolean sendToken(final AsyncToken token) {
@@ -454,7 +511,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
     @Override
     public ResponseMessageFuture logout(boolean sendLogout, ResponseListener... listeners) {
         credentials = null;
-        authenticated = false;
+        setAuthenticated(false, null);
         if (sendLogout)
             return send(new LogoutMessage(), listeners);
         return null;
@@ -612,13 +669,13 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			listener.pingedChanged(this, pinged);
 	}
 	
-	protected void setAuthenticated(boolean authenticated) {
+	protected void setAuthenticated(boolean authenticated, ResponseMessage response) {
 		if (!this.authenticating && this.authenticated == authenticated)
 			return;
 		this.authenticating = false;
 		this.authenticated = authenticated;
 		for (ChannelStatusListener listener : statusListeners)
-			listener.authenticatedChanged(this, authenticated);
+			listener.authenticatedChanged(this, authenticated, response);
 	}
 	
 	protected void dispatchFault(FaultMessage faultMessage) {
@@ -648,7 +705,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		}
 		
 		@Override
-		public void authenticatedChanged(Channel channel, boolean authenticated) {
+		public void authenticatedChanged(Channel channel, boolean authenticated, ResponseMessage response) {
 			if (channel == AbstractHTTPChannel.this)
 				return;
 			AbstractHTTPChannel.this.authenticating = false;

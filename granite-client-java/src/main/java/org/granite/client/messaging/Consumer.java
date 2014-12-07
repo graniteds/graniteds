@@ -111,15 +111,25 @@ public class Consumer extends AbstractTopicAgent {
      * @return future triggered when subscription is processed
      */
 	public ResponseMessageFuture subscribe(ResponseListener...listeners) {
+		return subscribe(null, listeners);
+	}
+	
+	public ResponseMessageFuture resubscribe(ResponseListener...listeners) {
+		return subscribe(subscriptionId, listeners);
+	}
+	
+	public ResponseMessageFuture subscribe(final String subscriptionId, ResponseListener...listeners) {
 		SubscribeMessage subscribeMessage = new SubscribeMessage(destination, topic, selector);
 		subscribeMessage.getHeaders().putAll(defaultHeaders);
+		if (subscriptionId != null)
+			subscribeMessage.setSubscriptionId(subscriptionId);
 		
 		final Consumer consumer = this;
 		ResponseListener listener = new ResultIssuesResponseListener() {
 			
 			@Override
 			public void onResult(ResultEvent event) {
-				subscriptionId = (String)event.getResult();
+				Consumer.this.subscriptionId = (String)event.getResult();
 				channel.addConsumer(consumer);
 				
 				for (TopicSubscriptionListener subscriptionListener : subscriptionListeners.keySet())

@@ -23,7 +23,12 @@ package org.granite.client.messaging.channel;
 
 import java.net.URI;
 
+import org.granite.client.messaging.transport.DefaultTransportMessage;
 import org.granite.client.messaging.transport.Transport;
+import org.granite.client.messaging.transport.TransportMessage;
+
+import flex.messaging.messages.CommandMessage;
+import flex.messaging.messages.Message;
 
 /**
  * @author Franck WOLFF
@@ -86,5 +91,15 @@ public abstract class AbstractChannel<T extends Transport> implements Channel {
 	@Override
 	public void setTransportData(Object data) {
 		this.transportData = data;
+	}
+	
+	public TransportMessage createConnectMessage(String id, boolean reconnect) {
+		CommandMessage connectMessage = new CommandMessage();
+		connectMessage.setOperation(CommandMessage.CONNECT_OPERATION);
+		connectMessage.setMessageId(id);
+		connectMessage.setTimestamp(System.currentTimeMillis());
+		connectMessage.setClientId(clientId);
+		
+		return new DefaultTransportMessage<Message[]>(id, !reconnect, false, clientId, null, new Message[] { connectMessage }, null);	
 	}
 }

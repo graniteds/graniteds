@@ -76,6 +76,12 @@ public interface MessagingChannel extends Channel, SessionAwareChannel {
 	 */
 	public void removeListener(ChannelResponseListener listener);
 	
+	/**
+	 * Define the callback to handle authentication for a channel (for use with channels that cannot authenticate themselves, such as websockets)
+	 * @param callback
+	 */
+	public void setReauthenticateCallback(ReauthenticateCallback callback);
+	
 	
 	public static interface ChannelResponseListener {
 		

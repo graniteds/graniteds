@@ -77,6 +77,12 @@ public interface Transport {
      * @return true if the transport should close
      */
     boolean isDisconnectAfterAuthenticationFailure();
+    
+    /**
+     * Indicates that authentication after reconnect should be delegated to a remoting channel 
+     * @return true if authentication delegated
+     */
+    boolean isAuthenticationAfterReconnectWithRemoting();
 
     /**
      * Attach a status handler that will be notified of network activity and errors

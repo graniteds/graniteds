@@ -48,6 +48,11 @@ public class MockTransport implements Transport {
         return false;
     }
 
+	@Override
+	public boolean isAuthenticationAfterReconnectWithRemoting() {
+		return false;
+	}
+
     @Override
     public Object getContext() {
         return null;

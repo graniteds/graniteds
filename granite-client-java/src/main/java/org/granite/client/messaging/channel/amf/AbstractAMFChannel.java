@@ -137,6 +137,8 @@ public abstract class AbstractAMFChannel extends AbstractHTTPChannel {
 				commandMessage.setHeaders(subscribe.getHeaders());
 				commandMessage.setDestination(subscribe.getDestination());
 				commandMessage.setHeader(AsyncMessage.SUBTOPIC_HEADER, subscribe.getTopic());
+				if (subscribe.getSubscriptionId() != null)
+					commandMessage.setHeader(CommandMessage.DESTINATION_CLIENT_ID_HEADER, subscribe.getSubscriptionId());
 				if (subscribe.getSelector() != null)
 					commandMessage.setHeader(CommandMessage.SELECTOR_HEADER, subscribe.getSelector());
 				messages = new Message[]{commandMessage};
@@ -219,19 +221,19 @@ public abstract class AbstractAMFChannel extends AbstractHTTPChannel {
 			else if (SecurityServiceException.CODE_ACCESS_DENIED.equals(flexCode))
 				code = Code.ACCESS_DENIED;
 			else if (SecurityServiceException.CODE_INVALID_CREDENTIALS.equals(flexCode)) {
-				setAuthenticated(false);
+				setAuthenticated(false, null);
 				code = Code.INVALID_CREDENTIALS;
 			}
 			else if (SecurityServiceException.CODE_AUTHENTICATION_FAILED.equals(flexCode)) {
-				setAuthenticated(false);
+				setAuthenticated(false, null);
 				code = Code.AUTHENTICATION_FAILED;
 			}
 			else if (SecurityServiceException.CODE_NOT_LOGGED_IN.equals(flexCode)) {
-				setAuthenticated(false);
+				setAuthenticated(false, null);
 				code = Code.NOT_LOGGED_IN;
 			}
 			else if (SecurityServiceException.CODE_SESSION_EXPIRED.equals(flexCode)) {
-				setAuthenticated(false);
+				setAuthenticated(false, null);
 				code = Code.SESSION_EXPIRED;
 			}
 			else if ("Validation.Failed".equals(flexCode))

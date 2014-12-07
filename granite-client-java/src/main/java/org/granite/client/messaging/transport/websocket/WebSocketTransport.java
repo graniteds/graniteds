@@ -69,6 +69,7 @@ public abstract class WebSocketTransport extends AbstractWebSocketTransport<Sess
 		
 		try {
             webSocketContainer = createContainer();
+            webSocketContainer.setDefaultMaxSessionIdleTimeout(getMaxIdleTime());
             webSocketContainer.setDefaultMaxBinaryMessageBufferSize(getMaxMessageSize());
             
 			log.info("WebSocket transport started.");
@@ -146,8 +147,8 @@ public abstract class WebSocketTransport extends AbstractWebSocketTransport<Sess
             public void beforeRequest(Map<String, List<String>> headers) {
                 if (transportMessage.getSessionId() != null)
                     headers.put("Cookie", Collections.singletonList("JSESSIONID=" + transportMessage.getSessionId()));
-
-                headers.put("connectId", Collections.singletonList(transportMessage.getId()));
+                
+            	headers.put("connectId", Collections.singletonList(transportMessage.getId()));
                 headers.put("GDSClientType", Collections.singletonList(transportMessage.getClientType().toString()));
                 String clientId = transportMessage.getClientId() != null ? transportMessage.getClientId() : channel.getClientId();
                 if (clientId != null)

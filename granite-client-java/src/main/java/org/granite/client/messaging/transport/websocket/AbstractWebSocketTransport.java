@@ -23,6 +23,7 @@ package org.granite.client.messaging.transport.websocket;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.LinkedList;
 
 import org.granite.client.messaging.channel.Channel;
@@ -80,6 +81,10 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
     public boolean isDisconnectAfterAuthenticationFailure() {
         return true;
     }
+    
+	public boolean isAuthenticationAfterReconnectWithRemoting() {
+		return true;
+	}
     
     public void setMaxMessageSize(int maxMessageSize) {
     	this.maxMessageSize = maxMessageSize;
@@ -162,12 +167,16 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
     protected void setStopping(boolean stopping) {
         this.stopping = stopping;
     }
-
-    @SuppressWarnings("unchecked")
+    
 	protected void onConnect(Channel channel, S connection) {
         synchronized (channel) {
             reconnectAttempts = 0;
-            ((TransportData<S>)channel.getTransportData()).connect(connection);
+            TransportData<S> transportData = channel.getTransportData();
+            if (transportData == null) {
+                transportData = newTransportData();
+                channel.setTransportData(transportData);
+            }
+            transportData.connect(connection);
         }
         send(channel, null);
     }
@@ -178,7 +187,7 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
 
     protected void onClose(Channel channel, int closeCode, String message) {
         log.info("Websocket connection closed %d %s channel %s", closeCode, message, channel.getClientId());
-        boolean waitBeforeReconnect = !(closeCode == CLOSE_NORMAL && message != null && message.startsWith("Idle"));
+        boolean waitBeforeReconnect = !((closeCode == CLOSE_NORMAL || closeCode == CLOSE_SHUTDOWN) && message != null && message.startsWith("Idle"));
 
         // Mark the connection as closed, the channel should reopen a connection if needed for the next message
         if (channel.getTransportData() != null) {
@@ -203,30 +212,30 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
         }
         
         if (connected) {
-            synchronized (channel) {
-                if (waitBeforeReconnect || reconnectAttempts >= reconnectMaxAttempts) {
-                    connected = false;
-                    
-                    // Notify the channel of disconnect so it can schedule a reconnect if needed
-                    log.debug("Websocket disconnected");
-                    channel.onError(connectMessage, new RuntimeException(message + " (code=" + closeCode + ")"));
-                    getStatusHandler().handleException(new TransportException("Transport disconnected"));
-                    return;
-                }
-
-                reconnectAttempts++;
-
-                // If the channel should be connected, try to reconnect
-                log.info("Connection lost (code %d, msg %s), reconnect channel (retry #%d)", closeCode, message, reconnectAttempts);
-                connected = true;
-                connect(channel, connectMessage);
+            if (waitBeforeReconnect || reconnectAttempts >= reconnectMaxAttempts) {
+                connected = false;
+                
+                // Notify the channel of disconnect so it can schedule a reconnect if needed
+                log.debug("Websocket disconnected");
+                channel.onError(connectMessage, new RuntimeException(message + " (code=" + closeCode + ")"));
+                getStatusHandler().handleException(new TransportException("Transport disconnected"));
+                return;
             }
+
+            reconnectAttempts++;
+
+            // If the channel should be connected, try to reconnect
+            log.info("Connection lost (code %d, msg %s), reconnect channel (retry #%d)", closeCode, message, reconnectAttempts);
+            connected = true;
+            connectMessage = channel.createConnectMessage(connectMessage.getId(), true);
+            connect(channel, connectMessage);
         }
     }
 
     protected void onError(Channel channel, Throwable throwable) {
         log.error(throwable, "Websocket connection error");
-        channel.onError(connectMessage, new RuntimeException("Websocket connection error", throwable));
+        if (throwable instanceof ConnectException)
+        	channel.onError(connectMessage, new RuntimeException("Websocket connection error", throwable));
         getStatusHandler().handleException(new TransportException("Websocket connection error: " + throwable.getMessage()));
     }
 }
