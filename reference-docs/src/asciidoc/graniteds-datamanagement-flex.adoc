@@ -1538,11 +1538,11 @@ org.granite.tide.hibernate4.Hibernate4ChangeSetIntegrator
 ----
 
 Once this is configured, it's also necessary to configure the client to be able to merge these incoming +ChangeSet+ objects
-correctly. This can be done easily by setting up a +ChangeSetMerger+ components in your client context.
+correctly. This can be done easily by setting up a +ChangeMerger+ components in your client context.
 
 [source,java]
 ----
-Tide.getInstance().addComponents([ChangeSetMerger]);
+Tide.getInstance().addComponents([ChangeMerger]);
 ----
 
 When all this is set up, *all* server to client updates will be sent as +ChangeSet+ objects.
