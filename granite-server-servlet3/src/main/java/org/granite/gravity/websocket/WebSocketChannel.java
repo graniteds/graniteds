@@ -66,9 +66,9 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
     }
 
     public void onWebSocketError(Throwable throwable) {
-        log.error(throwable, "Channel %s websocket error");
+        log.error(throwable, "Channel %s websocket error", getId());
     }
-
+    
     public void onMessage(byte[] data) {
         receiveBytes(data, 0, data.length);
     }
