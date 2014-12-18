@@ -672,6 +672,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	protected void setAuthenticated(boolean authenticated, ResponseMessage response) {
 		if (!this.authenticating && this.authenticated == authenticated)
 			return;
+		log.debug("Channel %s authenticated clientId %s (%s)", id, clientId, String.valueOf(authenticated));
 		this.authenticating = false;
 		this.authenticated = authenticated;
 		for (ChannelStatusListener listener : statusListeners)

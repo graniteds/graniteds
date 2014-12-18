@@ -60,6 +60,7 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 	protected AliasRegistry aliasRegistry = null;
 
 	protected Long defaultTimeToLive = null;
+	protected Long defaultMaxReconnectAttempts = null;
 
 	
 	protected AbstractChannelFactory(ContentType contentType) {
@@ -99,6 +100,10 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
 
 	public void setDefaultTimeToLive(long defaultTimeToLive) {
 		this.defaultTimeToLive = Long.valueOf(defaultTimeToLive);
+	}
+
+	public void setDefaultMaxReconnectAttempts(long maxReconnectAttempts) {
+		this.defaultMaxReconnectAttempts = Long.valueOf(maxReconnectAttempts);
 	}
 
 	public void setAliasRegistry(AliasRegistry aliasRegistry) {
@@ -301,6 +306,8 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
             if (channel != null) {
                 if (defaultTimeToLive != null)
                     channel.setDefaultTimeToLive(defaultTimeToLive);
+                if (defaultMaxReconnectAttempts != null)
+                	channel.setDefaultMaxReconnectAttempts(defaultMaxReconnectAttempts);
                 return channel;
             }
         }
@@ -309,6 +316,8 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
             throw new RuntimeException("Could not build channel for type " + channelType + " and uri " + uri);
 		if (defaultTimeToLive != null)
 			channel.setDefaultTimeToLive(defaultTimeToLive);
+        if (defaultMaxReconnectAttempts != null)
+        	channel.setDefaultMaxReconnectAttempts(defaultMaxReconnectAttempts);
 		return channel;
 	}
 
@@ -325,6 +334,8 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
             if (channel != null) {
                 if (defaultTimeToLive != null)
                     channel.setDefaultTimeToLive(defaultTimeToLive);
+                if (defaultMaxReconnectAttempts != null)
+                	channel.setDefaultMaxReconnectAttempts(defaultMaxReconnectAttempts);
                 return channel;
             }
         }
@@ -333,6 +344,8 @@ public abstract class AbstractChannelFactory implements ChannelFactory {
             throw new RuntimeException("Could not build channel for type " + channelType + " and server " + serverApp.getServerName());
         if (defaultTimeToLive != null)
             channel.setDefaultTimeToLive(defaultTimeToLive);
+        if (defaultMaxReconnectAttempts != null)
+        	channel.setDefaultMaxReconnectAttempts(defaultMaxReconnectAttempts);
         return channel;
     }
 

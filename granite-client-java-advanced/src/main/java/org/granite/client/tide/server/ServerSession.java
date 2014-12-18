@@ -144,6 +144,7 @@ public class ServerSession implements ContextAware {
 	private Status status = new DefaultStatus();
 	
 	private String sessionId = null;
+	private Long defaultMaxReconnectAttempts = null;
 
 	private LogoutState logoutState = new LogoutState(1500);
 		
@@ -252,6 +253,10 @@ public class ServerSession implements ContextAware {
 		logoutState.setTimeout(timeout);
 	}
 	
+	public void setDefaultMaxReconnectAttemps(long maxReconnectAttempts) {
+		this.defaultMaxReconnectAttempts = maxReconnectAttempts;
+	}
+	
     /**
      * Set the Tide context for this server session
      * (internal method, should be set by the context itself)
@@ -271,7 +276,7 @@ public class ServerSession implements ContextAware {
 	public Context getContext() {
 		return this.context;
 	}
-
+	
     /**
      * Set the platform context for this server session
      * @param platformContext
@@ -279,7 +284,7 @@ public class ServerSession implements ContextAware {
 	public void setPlatformContext(Object platformContext) {
 	    this.platformContext = platformContext;
 	}
-
+	
     /**
      * Set an implementation of the Status interface to be notified of server related information
      * @param status status
@@ -428,6 +433,9 @@ public class ServerSession implements ContextAware {
 		
 		if (defaultTimeToLive >= 0)
 		    channelFactory.setDefaultTimeToLive(defaultTimeToLive);
+		
+		if (defaultMaxReconnectAttempts != null)
+			channelFactory.setDefaultMaxReconnectAttempts(defaultMaxReconnectAttempts);
 		
 		channelFactory.start();
 		

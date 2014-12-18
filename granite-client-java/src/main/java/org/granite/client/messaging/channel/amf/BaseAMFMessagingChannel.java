@@ -80,6 +80,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	private ReauthenticateCallback reauthenticateCallback = null; 
 	
 	protected volatile long reconnectIntervalMillis = TimeUnit.SECONDS.toMillis(30L);
+	protected boolean reconnectMaxAttemptsSet = false;
 	protected volatile long reconnectMaxAttempts = 60L;
 	protected volatile long reconnectAttempts = 0L;
 
@@ -94,6 +95,11 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 			this.sessionId = sessionId;
 			log.info("Messaging channel %s set sessionId %s", clientId, sessionId);
 		}				
+	}
+	
+	public void setDefaultMaxReconnectAttempts(long reconnectMaxAttempts) {
+		this.reconnectMaxAttempts = reconnectMaxAttempts;
+		this.reconnectMaxAttemptsSet = true;
 	}
 	
 	public void setReauthenticateCallback(ReauthenticateCallback callback) {
@@ -241,9 +247,13 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 										if (reconnectIntervalMillis instanceof Number)
 											this.reconnectIntervalMillis = ((Number)reconnectIntervalMillis).longValue();
 										Object reconnectMaxAttempts = advices.get(Channel.RECONNECT_MAX_ATTEMPTS_KEY);
-										if (reconnectMaxAttempts instanceof Number)
+										if (reconnectMaxAttempts instanceof Number && !reconnectMaxAttemptsSet)
 											this.reconnectMaxAttempts = ((Number)reconnectMaxAttempts).longValue();
 									}
+									
+									// Successful ping, reinitialize reconnect counter
+									reconnectAttempts = 0L;
+									
 	                                if (messages[0].getHeaders().containsKey("JSESSIONID"))
 	                                    setSessionId((String)messages[0].getHeader("JSESSIONID"));
 	                                
@@ -405,8 +415,6 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	}
 	
 	protected void scheduleReconnectTimerTask(boolean immediate) {
-        log.info("Channel %s schedule reconnect", getId());
-        
         setPinged(false);
         setAuthenticated(false, null);
         
@@ -416,10 +424,15 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		if (previousTask != null)
 			previousTask.cancel();
 		
-		if (reconnectAttempts < reconnectMaxAttempts) {
+		if (reconnectMaxAttempts <= 0 || reconnectAttempts < reconnectMaxAttempts) {
 			reconnectAttempts++;
+			
+	        log.info("Channel %s schedule reconnect (retry #%d / %d)", getId(), reconnectAttempts, reconnectMaxAttempts);
+	        
 			schedule(task, immediate && reconnectAttempts == 1 ? 0L : reconnectIntervalMillis);
 		}
+		else
+			log.error("Channel %s max number of reconnects (%d) reached", getId(), reconnectMaxAttempts);
 	}
 	
 	class ReconnectTimerTask extends TimerTask {

@@ -43,6 +43,12 @@ public interface MessagingChannel extends Channel, SessionAwareChannel {
 	void setSessionId(String sessionId);
 
     /**
+     * Set the default time to live for messages sent from this channel
+     * @param defaultTimeToLive default time to live
+     */
+	void setDefaultMaxReconnectAttempts(long maxReconnectAttempts);
+	
+    /**
      * Register a consumer for this channel
      * @param consumer consumer
      * @see org.granite.client.messaging.Consumer

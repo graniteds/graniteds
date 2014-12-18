@@ -76,7 +76,10 @@ public class MockChannelFactory implements ChannelFactory {
 
     @Override
     public void setDefaultTimeToLive(long defaultTimeToLive) {
+    }
 
+    @Override
+    public void setDefaultMaxReconnectAttempts(long defaultTimeToLive) {
     }
 
     @Override

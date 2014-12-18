@@ -68,6 +68,12 @@ public interface ChannelFactory {
      * @param defaultTimeToLive time to live in milliseconds
      */
 	void setDefaultTimeToLive(long defaultTimeToLive);
+	
+	/**
+	 * Default max reconnect attempts for messaging channels
+	 * @param maxReconnectAttempts
+	 */
+	void setDefaultMaxReconnectAttempts(long maxReconnectAttempts);
 
     /**
      * A generic context object used to create transports (actual type of the context depends on the {@link org.granite.client.platform.Platform})
