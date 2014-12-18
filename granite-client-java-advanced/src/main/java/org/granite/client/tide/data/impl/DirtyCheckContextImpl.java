@@ -223,6 +223,9 @@ public class DirtyCheckContextImpl implements DirtyCheckContext {
 	}
 	
 	private boolean isEntityDeepChanged(Object entity, Object embedded, IdentityHashMap<Object, Boolean> cache) {
+		if (entity == null)
+			return false;
+		
 		if (cache == null)
 			cache = new IdentityHashMap<Object, Boolean>();
 		if (cache.containsKey(entity))
