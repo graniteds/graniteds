@@ -537,8 +537,9 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 				case FAULT:
 				    FaultMessage faultMessage = (FaultMessage)response;
 				    if (isAuthenticated() && (faultMessage.getCode() == FaultMessage.Code.NOT_LOGGED_IN || faultMessage.getCode() == FaultMessage.Code.SESSION_EXPIRED)) {
-				        authenticated = false;
-				        credentials = null;
+				        setAuthenticated(false, faultMessage);
+				        // TODO: Why clear credentials here ???
+				        // credentials = null;
 				    }
 				    
 					token.dispatchFault((FaultMessage)response);

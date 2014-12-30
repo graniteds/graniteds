@@ -145,6 +145,7 @@ public class ServerSession implements ContextAware {
 	
 	private String sessionId = null;
 	private Long defaultMaxReconnectAttempts = null;
+	private boolean logoutOnSessionExpiration = true;
 
 	private LogoutState logoutState = new LogoutState(1500);
 		
@@ -255,6 +256,10 @@ public class ServerSession implements ContextAware {
 	
 	public void setDefaultMaxReconnectAttemps(long maxReconnectAttempts) {
 		this.defaultMaxReconnectAttempts = maxReconnectAttempts;
+	}
+	
+	public void setLogoutOnSessionExpiration(boolean logout) {
+		this.logoutOnSessionExpiration = logout;
 	}
 	
     /**
@@ -983,12 +988,15 @@ public class ServerSession implements ContextAware {
 		
 		logoutState.sessionExpired();
 		
-		context.getEventBus().raiseEvent(context, SESSION_EXPIRED);		
-		context.getEventBus().raiseEvent(context, LOGOUT);		
-
-        remotingChannel.logout(false);
-        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
-            messagingChannel.logout(false);
+		context.getEventBus().raiseEvent(context, SESSION_EXPIRED);
+		
+		if (logoutOnSessionExpiration) {
+			context.getEventBus().raiseEvent(context, LOGOUT);		
+	
+	        remotingChannel.logout(false);
+	        for (MessagingChannel messagingChannel : messagingChannelsByType.values())
+	            messagingChannel.logout(false);
+		}
         
 		sessionId = null;
 		if (remotingChannel instanceof SessionAwareChannel)
