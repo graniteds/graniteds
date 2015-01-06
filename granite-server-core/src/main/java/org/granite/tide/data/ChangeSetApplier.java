@@ -30,6 +30,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +76,7 @@ public class ChangeSetApplier {
     }
 
 
-    protected Object mergeObject(Object entity, Set<Object> cache) {
+    protected Object mergeObject(Object entity, IdentityHashMap<Object, Object> cache) {
         if (entity == null)
             return null;
 
@@ -84,14 +85,14 @@ public class ChangeSetApplier {
         Converters converters = config.getConverters();
         
         if (entity != null && !classGetter.isInitialized(null, null, entity)) {
-            // cache.contains() cannot be called on un unintialized proxy because hashCode will fail !!
+            // cache.contains() cannot be called on an unintialized proxy because hashCode will fail !!
             Class<?> cls = classGetter.getClass(entity);
             Entity e = new Entity(cls);
             return persistenceAdapter.find(cls, (Serializable)converters.convert(classGetter.getIdentifier(entity), e.getIdentifierType()));
         }
         
-        if (cache.contains(entity))
-            return entity;
+        if (cache.containsKey(entity))
+            return cache.get(entity);
         
         if (entity instanceof ChangeRef) {
             ChangeRef ref = (ChangeRef)entity;
@@ -101,28 +102,33 @@ public class ChangeSetApplier {
                 Serializable refId = (Serializable)converters.convert(ref.getId(), e.getIdentifierType());
                 
                 // Lookup in current merge cache, if not found then lookup from persistence adapter
-                for (Object cached : cache) {
+                for (Object cached : cache.values()) {
                 	if (cached.getClass().equals(entityClass) && refId.equals(e.getIdentifier(cached)))
                 		return cached;
                 }
                 
-                return persistenceAdapter.find(entityClass, refId);
+                Object managedEntity = persistenceAdapter.find(entityClass, refId);
+                cache.put(entity, managedEntity);
+                return managedEntity;
             }
             catch (ClassNotFoundException cnfe) {
                 throw new ServiceException("Could not find class " + ref.getClassName(), cnfe);
             }
         }
 
-        cache.add(entity);
+        cache.put(entity, entity);
 
         if (entity != null && classGetter.isEntity(entity) && classGetter.isInitialized(null, null, entity)) {
             // If the entity has an id, we should get the managed instance
             Entity e = new Entity(entity);
             Object id = e.getIdentifier();
-            if (id != null)
-                return persistenceAdapter.find(entity.getClass(), (Serializable)id);
+            if (id != null) {
+                Object managedEntity = persistenceAdapter.find(entity.getClass(), (Serializable)id);
+                cache.put(entity, managedEntity);
+                return managedEntity;
+            }
 
-            cache.add(entity);
+            cache.put(entity, entity);
             
             // If there is no id, traverse the object graph to merge associated objects
             List<Object[]> fieldValues = classGetter.getFieldValues(entity);
@@ -141,7 +147,7 @@ public class ChangeSetApplier {
                     	Serializable valueId = classGetter.getIdentifier(value);
                     	Object newValue = null;
                     	Entity ve = new Entity(field.getType());
-                    	for (Object cached : cache) {
+                    	for (Object cached : cache.values()) {
                     		if (field.getType().isInstance(cached) && valueId.equals(ve.getIdentifier(cached))) {
                     			newValue = cached;
                     			break;
@@ -233,7 +239,7 @@ public class ChangeSetApplier {
     }
 
 	public Object[] applyChanges(ChangeSet changeSet) {
-		Set<Object> cache = new HashSet<Object>();
+		IdentityHashMap<Object, Object> cache = new IdentityHashMap<Object, Object>();
 		Object[] appliedChanges = new Object[changeSet.getChanges().length];
 		for (int i = 0; i < changeSet.getChanges().length; i++)
 			appliedChanges[i] = applyChange(changeSet.getChanges()[i], cache);
@@ -242,7 +248,7 @@ public class ChangeSetApplier {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private Object applyChange(Change change, Set<Object> cache) {
+	private Object applyChange(Change change, IdentityHashMap<Object, Object> cache) {
 		Converters converters = ((ConvertersConfig)GraniteContext.getCurrentInstance().getGraniteConfig()).getConverters();
 		
 		Object appliedChange = null;
@@ -325,12 +331,12 @@ public class ChangeSetApplier {
 											
 											Object value = converters.convert(mergeObject(collectionChange.getValue(), cache), elementType);
 											Object removed = ((Set<Object>)collection).remove(value);
-											cache.add(removed);
+											cache.put(removed, value);
 										}
 										else if (collection instanceof List<?>) {
 											int index = (Integer)collectionChange.getKey();
 											Object removed = ((List<Object>)collection).remove(index);
-											cache.add(removed);
+											cache.put(removed, removed);
 										}
 										else if (collection instanceof Map<?, ?>) {
 											Type mapType = propertyDescriptor.getReadMethod().getGenericReturnType();
@@ -340,7 +346,7 @@ public class ChangeSetApplier {
 											
 											Object key = converters.convert(mergeObject(collectionChange.getKey(), cache), keyType);
 											Object removed = ((Map<Object, Object>)collection).remove(key);
-											cache.add(removed);
+											cache.put(removed, key);
 										}
 									}
 									else if (collectionChange.getType() == 0) {

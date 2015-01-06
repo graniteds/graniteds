@@ -1089,6 +1089,72 @@ public abstract class AbstractTestChangeSetApplier {
 	
 	@SuppressWarnings("unchecked")
 	@Test
+	public void testMultipleSetAddNew2() throws Exception {
+		initPersistence();
+		
+		open();
+		
+		Patient3 p = new Patient3(null, null, "P1");
+		p.setName("Chuck Norris");
+		p.setMedications(new PersistentSet(null, new HashSet<Medication>()));
+		p.setAlerts(new PersistentSet(null, new HashSet<Alert>()));
+		Medication3 m = new Medication3(null, null, "M1");
+		m.setName("Visit");
+		m.setPatient(p);
+		p.getMedications().add(m);
+		Alert a = new Alert(null, null, "A1");
+		a.setName("Alert");
+		a.setPatient(p);
+		p.getAlerts().add(a);
+		
+		open();
+		p = save(p);
+		flush();
+		close();
+		
+		open();
+		
+		InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(GRANITE_CONFIG_PATH);
+		GraniteConfig graniteConfig = new GraniteConfig(null, is, null, "test");
+		ServicesConfig servicesConfig = new ServicesConfig(null, null, false);
+		SimpleGraniteContext.createThreadInstance(graniteConfig, servicesConfig, new HashMap<String, Object>());
+		DataContext.init(null, null, PublishMode.MANUAL);
+		
+		Change change = new Change(Patient3.class.getName(), p.getId(), p.getVersion(), p.getUid());
+		
+		Patient3 p2 = new Patient3(p.getId(), p.getVersion(), p.getUid());
+		p2.setName(p.getName());
+		p2.setMedications(new PersistentSet());
+		p2.setAlerts(new PersistentSet());
+		
+		Medication3 m2 = new Medication3(null, null, "M2");
+		m2.setName("Medic2");
+		m2.setPatient(p2);		
+		change.addCollectionChanges("medications", new CollectionChange(1, null, m2));
+		
+		Alert a2 = new Alert(null, null, "A2");
+		a2.setName("Alert2");
+		a2.setPatient(p2);		
+		change.addCollectionChanges("alerts", new CollectionChange(1, null, a2));
+		
+		ChangeSet changeSet = new ChangeSet(change);
+
+		Object[] result = new ChangeSetApplier(newPersistenceAdapter()).applyChanges(changeSet);
+		flush();
+		
+		Patient3 pr = (Patient3)result[0];
+		
+		for (Medication3 m3 : pr.getMedications())
+			Assert.assertSame(pr, m3.getPatient());
+		
+		for (Alert a3 : pr.getAlerts())
+			Assert.assertSame(pr, a3.getPatient());
+		
+		close();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
 	public void testReorderList() throws Exception {
 		initPersistence();
 		
