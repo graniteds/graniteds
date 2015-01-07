@@ -510,6 +510,8 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 
     @Override
     public ResponseMessageFuture logout(boolean sendLogout, ResponseListener... listeners) {
+		log.info("Logging out channel %s", clientId);
+		
         credentials = null;
         setAuthenticated(false, null);
         if (sendLogout)

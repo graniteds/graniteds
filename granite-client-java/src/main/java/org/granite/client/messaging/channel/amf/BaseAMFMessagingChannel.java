@@ -143,6 +143,27 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	}
 	
 	@Override
+	public void setAuthenticated(boolean authenticated, ResponseMessage response) {
+		boolean wasAuthenticated = isAuthenticated(); 
+		
+		super.setAuthenticated(authenticated, response);
+    	
+    		// Force disconnection for streaming transports to ensure next calls are in a new session/authentication context
+    		if (!authenticated && wasAuthenticated && response instanceof FaultMessage && transport.isDisconnectAfterAuthenticationFailure())
+    			disconnect();
+	}
+	
+	@Override
+	public ResponseMessageFuture logout(boolean sendLogout, ResponseListener... listeners) {
+		ResponseMessageFuture future = super.logout(sendLogout, listeners);
+		
+		// Force disconnection for streaming transports to ensure next calls are in a new session/authentication context
+		if (sendLogout)
+			disconnect();
+		
+		return future;
+	}	
+	@Override
 	public void addConsumer(Consumer consumer) {
 		consumersMap.putIfAbsent(consumer.getSubscriptionId(), consumer);
 		
@@ -174,18 +195,6 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	public void removeListener(ChannelResponseListener listener) {
 		responseListeners.remove(listener);
 	}
-	
-    @Override
-    public ResponseMessageFuture logout(boolean sendLogout, ResponseListener... listeners) {
-		log.info("Logging out channel %s", clientId);
-		
-    	ResponseMessageFuture future = super.logout(sendLogout, listeners);
-    	
-    	// Force disconnection for streaming transports to ensure next calls are in a new session/authentication context
-		disconnect();
-    	
-    	return future;
-    }
 	
 	public synchronized ResponseMessageFuture disconnect(ResponseListener...listeners) {
 		cancelReconnectTimerTask();
