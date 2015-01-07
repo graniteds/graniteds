@@ -85,9 +85,6 @@
         <class>org.granite.test.tide.data.LineItemList2</class>        
         <class>org.granite.test.tide.data.Patient</class>        
         <class>org.granite.test.tide.data.Medication</class>        
-        <class>org.granite.test.tide.data.Patient3</class>        
-        <class>org.granite.test.tide.data.Medication3</class>        
-        <class>org.granite.test.tide.data.Alert</class>        
         <class>org.granite.test.tide.data.Prescription</class>
         <class>org.granite.test.tide.hibernate4.data.Person1</class>        
         <class>org.granite.test.tide.hibernate4.data.Contact1</class>        
@@ -99,6 +96,9 @@
         <class>org.granite.test.tide.hibernate4.data.VitalSignObservation2</class>
         <class>org.granite.test.tide.hibernate4.data.VitalSignTest3</class>
         <class>org.granite.test.tide.hibernate4.data.VitalSignObservation3</class>
+        <class>org.granite.test.tide.hibernate4.data.Patient3</class>        
+        <class>org.granite.test.tide.hibernate4.data.Medication3</class>        
+        <class>org.granite.test.tide.hibernate4.data.Alert</class>        
         <class>org.granite.test.tide.hibernate4.data.AbstractEntitySoftDelete</class>
         <class>org.granite.test.tide.hibernate4.data.AddressSoftDelete</class>
         <class>org.granite.test.tide.hibernate4.data.ContactSoftDelete</class>
