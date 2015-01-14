@@ -218,6 +218,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		if (credentials == null)
 			return;
 		
+		log.debug("Channel %id client %id reauthenticating", getId(), clientId);
 		LoginMessage loginMessage = new LoginMessage(clientId, credentials);
 		try {
 			ResponseMessage response = sendSimpleBlockingToken(loginMessage);
@@ -539,6 +540,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 				case FAULT:
 				    FaultMessage faultMessage = (FaultMessage)response;
 				    if (isAuthenticated() && (faultMessage.getCode() == FaultMessage.Code.NOT_LOGGED_IN || faultMessage.getCode() == FaultMessage.Code.SESSION_EXPIRED)) {
+				    	log.info("Channel %s possible session expiration detected, mark as not logged in", getId());
 				        setAuthenticated(false, faultMessage);
 				        // TODO: Why clear credentials here ???
 				        // credentials = null;
@@ -675,7 +677,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	protected void setAuthenticated(boolean authenticated, ResponseMessage response) {
 		if (!this.authenticating && this.authenticated == authenticated)
 			return;
-		log.debug("Channel %s authenticated clientId %s (%s)", id, clientId, String.valueOf(authenticated));
+		log.debug("Channel %s authentication changed clientId %s (%s)", id,  clientId, String.valueOf(authenticated));
 		this.authenticating = false;
 		this.authenticated = authenticated;
 		for (ChannelStatusListener listener : statusListeners)

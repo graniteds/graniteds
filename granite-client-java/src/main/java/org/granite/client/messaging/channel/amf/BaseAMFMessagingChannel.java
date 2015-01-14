@@ -123,8 +123,10 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		log.debug("Connecting channel with clientId %s", clientId);
 		
 		// Force reauthentication from the remoting channel if this channel is not able to authenticate itself (i.e. websockets)
-		if (transport.isAuthenticationAfterReconnectWithRemoting() && reauthenticateCallback != null)
+		if (transport.isAuthenticationAfterReconnectWithRemoting() && reauthenticateCallback != null) {
+			log.debug("Channel clientId %s force reauthentication with remoting channel", clientId);
 			reauthenticateCallback.reauthenticate();
+		}
 		
 		// Create and try to send the connect message.		
 		try {
@@ -144,13 +146,16 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	
 	@Override
 	public void setAuthenticated(boolean authenticated, ResponseMessage response) {
-		boolean wasAuthenticated = isAuthenticated(); 
+		boolean wasAuthenticated = isAuthenticated();
+		String oldSessionId = this.sessionId;
 		
 		super.setAuthenticated(authenticated, response);
-    	
-    		// Force disconnection for streaming transports to ensure next calls are in a new session/authentication context
-    		if (!authenticated && wasAuthenticated && response instanceof FaultMessage && transport.isDisconnectAfterAuthenticationFailure())
-    			disconnect();
+		
+		// Force disconnection for streaming transports to ensure next calls are in a new session/authentication context
+		if (!authenticated && wasAuthenticated && response instanceof FaultMessage && transport.isDisconnectAfterAuthenticationFailure()) {
+			log.debug("Channel clientId %s force disconnection after unauthentication (old sessionId %d, new sessionId %s)", clientId, oldSessionId, sessionId);
+			disconnect();
+		}
 	}
 	
 	@Override
@@ -182,7 +187,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 			}
 		}
 		if (subscriptionId == null) {
-			log.warn("Trying to remove unexisting consumer for destination %s", consumer.getDestination());
+			log.warn("Channel %s trying to remove unexisting consumer for destination %s", id, consumer.getDestination());
 			return false;
 		}
 		return consumersMap.remove(subscriptionId) != null;
@@ -208,7 +213,9 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		loginMessageId.set(null);
 		reconnectAttempts = 0L;
 		
-		return send(new DisconnectMessage(clientId), listeners);
+		if (isStarted())
+			return send(new DisconnectMessage(clientId), listeners);
+		return null;
 	}
 
 	@Override
@@ -268,11 +275,11 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	                                
 	                                boolean resubscribe = false;
 	                                if (clientId != null && !clientId.equals(result.getClientId())) {
-	                                	log.warn("Channel %s pinged new clientId %s  requested %s", id, result != null ? result.getClientId() : "(no request)", clientId);
+	                                	log.warn("Channel %s ping successful new clientId %s current %s requested %s", id, result.getClientId(), clientId, request != null ? result.getClientId() : "(no request)");
 	                                	resubscribe = true;
 	                                }
 	                                else
-	                                    log.debug("Channel %s pinged clientId %s", id, clientId);
+	                                    log.debug("Channel %s ping successful clientId %s current %s requested %s", id, result.getClientId(), clientId, request != null ? result.getClientId() : "(no request)");
 	                                
                                 	clientId = result.getClientId();
                                 	setPinged(true);
@@ -288,6 +295,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	                                break;
 	                                
 								case LOGIN:
+                                    log.debug("Channel %s authentication successful clientId %s", id, clientId);
+                                    
 									setAuthenticated(true, response);
 									
 									for (Consumer consumer : consumersMap.values())
@@ -296,7 +305,11 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 									break;
 								
 								case SUBSCRIBE:
-									result.setResult(messages[0].getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER));
+									String subscriptionId = (String)messages[0].getHeader(AsyncMessage.DESTINATION_CLIENT_ID_HEADER);
+									
+                                    log.debug("Channel %s subscription successful clientId %s subscriptionId %s", id, clientId, subscriptionId);
+                                    
+									result.setResult(subscriptionId);
 									break;
 
 								default:
@@ -318,14 +331,20 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 								switch (requestType) {
 								
 								case PING:
+                                    log.warn("Channel %s ping failed current clientId %s requested %s", id, clientId, request != null ? request.getClientId() : "(no request)");
+									
 									clientId = null;
 									setPinged(false);
 	                                
 								case LOGIN:
+                                    log.warn("Channel %s authentication failed current clientId %s requested %s", id, clientId, request != null ? request.getClientId() : "(no request)");
+									
 									setAuthenticated(false, response);
 									
-									if (transport.isDisconnectAfterAuthenticationFailure())
+									if (transport.isDisconnectAfterAuthenticationFailure()) {
+										log.debug("Channel clientId %s force disconnection after authentication failure", clientId);
 										disconnect();
+									}
 									
 									break;
 								
@@ -445,9 +464,10 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	}
 	
 	class ReconnectTimerTask extends TimerTask {
-
+		
 		@Override
 		public void run() {
+	        log.info("Channel %s reconnecting (retry #%d / %d)", getId(), reconnectAttempts, reconnectMaxAttempts);
 			connect();
 		}
 	}
