@@ -94,13 +94,15 @@ public class ErrorMessage extends AcknowledgeMessage {
                 this.faultDetail = se.getDetail() + getStackTrace(t);
             
             this.extendedData = se.getExtendedData();
+            
+            t = se.getCause();
         }
         else if (t != null) {
             this.faultString = t.getMessage();
             this.faultDetail = t.getMessage();
         }
 
-        if (!(t instanceof SecurityServiceException)) {
+        if (t != null && !(t instanceof SecurityServiceException)) {
             for (Throwable root = t; root != null; root = root.getCause())
                 rootCause = root;
         }
