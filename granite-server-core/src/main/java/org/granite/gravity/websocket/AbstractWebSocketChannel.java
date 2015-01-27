@@ -356,7 +356,7 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
             super.destroy(timeout);
         }
         finally {
-            close();
+            close(timeout);
         }
     }
 

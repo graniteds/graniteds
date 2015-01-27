@@ -133,11 +133,11 @@ public class WebLogicChannel extends AbstractChannel {
 			super.destroy(timeout);
 		}
 		finally {
-			close();
+			close(timeout);
 		}
 	}
 	
-	public void close() {
+	public void close(boolean timeout) {
 		RequestResponseKey key = this.key.getAndSet(null);
 		if (key != null) {
 			try {

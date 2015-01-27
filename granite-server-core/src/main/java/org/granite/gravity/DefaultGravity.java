@@ -1241,7 +1241,7 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
 			return gravity;
 		}
 		
-		public void close() {
+		public void close(boolean timeout) {
 		}		
 
 		@Override

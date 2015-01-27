@@ -97,18 +97,16 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
         }
     }
 
-	public void close() {
-        log.debug("Channel %s close", getId());
+	public void close(boolean timeout) {
+        log.debug("Channel %s close%s", getId(), timeout ? "(timeout)" : "");
 		if (session != null) {
             try {
-                session.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Channel closed"));
+                session.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, timeout ? "Idle timeout" : "Channel closed"));
             }
             catch (IOException e) {
                 throw new RuntimeException("Channel close error " + getId(), e);
             }
             session = null;
-            
-            gravity.notifyDisconnected(this);
 		}
 	}
 }

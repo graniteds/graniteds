@@ -95,12 +95,11 @@ public class GlassFishWebSocketChannel extends AbstractWebSocketChannel implemen
         websocket.send(msg);
     }
 
-	public void close() {
+	public void close(boolean timeout) {
+        log.debug("Channel %s close%s", getId(), timeout ? "(timeout)" : "");
 		if (websocket != null) {
-			websocket.close(1000, "Channel closed");
+			websocket.close(1000, timeout ? "Idle timeout" : "Channel closed");
 			websocket = null;
-			
-			gravity.notifyDisconnected(this);
 		}
 	}
 

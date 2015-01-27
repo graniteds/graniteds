@@ -100,7 +100,7 @@ public class GAEChannel implements Channel, Serializable {
     }
     
     
-    public void close() {
+    public void close(boolean timeout) {
     }
     
 	public void destroy(boolean timeout) {

@@ -151,11 +151,11 @@ public class AsyncChannel extends AbstractChannel {
 			super.destroy(timeout);
 		}
 		finally {
-			close();
+			close(timeout);
 		}
 	}
 	
-	public void close() {
+	public void close(boolean timeout) {
 		AsyncContext asyncContext = this.asyncContext.getAndSet(null);
 		if (asyncContext != null) {
 			try {

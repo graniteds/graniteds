@@ -151,11 +151,11 @@ public class JBossWebChannel extends AbstractChannel {
 			super.destroy(timeout);
 		}
 		finally {
-			close();
+			close(timeout);
 		}
 	}
 	
-	public void close() {
+	public void close(boolean timeout) {
 		HttpEvent event = this.event.getAndSet(null);
 		if (event != null) {
 			try {

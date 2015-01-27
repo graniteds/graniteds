@@ -95,17 +95,16 @@ public class TomcatWebSocketChannel extends AbstractWebSocketChannel {
         connection.writeBinaryMessage(ByteBuffer.wrap(msg));
     }
 
-	public void close() {
+	public void close(boolean timeout) {
+        log.debug("Channel %s close%s", getId(), timeout ? "(timeout)" : "");
 		if (connection != null) {
 			try {
-				connection.close(1000, ByteBuffer.wrap("Channel closed".getBytes()));
+				connection.close(1000, ByteBuffer.wrap((timeout ? "Idle timeout" : "Channel closed").getBytes()));
 			}
 			catch (IOException e) {
 				log.error("Could not close WebSocket connection", e);
 			}
 			connection = null;
-			
-			gravity.notifyDisconnected(this);
 		}
 	}
 }

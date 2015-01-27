@@ -56,7 +56,7 @@ public class ContinuationChannel extends AbstractChannel {
         }
     }
     
-    public void close() {
+    public void close(boolean timeout) {
         this.continuation = null;
 //    	try {
 //            if (this.continuation != null)
@@ -127,7 +127,7 @@ public class ContinuationChannel extends AbstractChannel {
 		}
 		finally {
 			synchronized (this) {
-				close();
+				close(timeout);
 			}
 		}
 	}

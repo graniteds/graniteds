@@ -54,7 +54,7 @@ public class GenericChannel extends AbstractChannel {
         }
     }
     
-    public void close() {
+    public void close(boolean timeout) {
     	try {
             if (this.continuation != null)
                 this.continuation.reset();
@@ -123,7 +123,7 @@ public class GenericChannel extends AbstractChannel {
 		}
 		finally {
 			synchronized (this) {
-				close();
+				close(timeout);
 			}
 		}
 	}

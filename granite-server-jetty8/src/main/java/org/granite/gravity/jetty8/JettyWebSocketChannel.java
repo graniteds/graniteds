@@ -75,12 +75,11 @@ public class JettyWebSocketChannel extends AbstractWebSocketChannel implements W
     		connection.sendMessage(msg, 0, msg.length);
     }
 
-	public void close() {
+	public void close(boolean timeout) {
+        log.debug("Channel %s close%s", getId(), timeout ? "(timeout)" : "");
 		if (connection != null) {
-			connection.close(1000, "Channel closed");
+			connection.close(1000, timeout ? "Idle timeout" : "Channel closed");
 			connection = null;
-			
-			gravity.notifyDisconnected(this);
 		}
 	}
 }

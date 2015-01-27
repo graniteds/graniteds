@@ -39,7 +39,6 @@ import org.granite.client.messaging.ResponseListener;
 import org.granite.client.messaging.channel.AsyncToken;
 import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.channel.MessagingChannel;
-import org.granite.client.messaging.channel.ReauthenticateCallback;
 import org.granite.client.messaging.channel.ResponseMessageFuture;
 import org.granite.client.messaging.codec.MessagingCodec;
 import org.granite.client.messaging.messages.Message.Type;
@@ -70,14 +69,13 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	
 	protected final MessagingCodec<Message[]> codec;
 	
-	protected String sessionId = null;
+	protected volatile String sessionId = null;
 	
 	protected final ConcurrentMap<String, Consumer> consumersMap = new ConcurrentHashMap<String, Consumer>();	
 	protected final AtomicReference<String> connectMessageId = new AtomicReference<String>(null);
 	protected final AtomicReference<String> loginMessageId = new AtomicReference<String>(null);
 	protected final AtomicReference<ReconnectTimerTask> reconnectTimerTask = new AtomicReference<ReconnectTimerTask>();
 	protected final List<ChannelResponseListener> responseListeners = new ArrayList<ChannelResponseListener>();
-	private ReauthenticateCallback reauthenticateCallback = null; 
 	
 	protected volatile long reconnectIntervalMillis = TimeUnit.SECONDS.toMillis(30L);
 	protected boolean reconnectMaxAttemptsSet = false;
@@ -102,10 +100,6 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		this.reconnectMaxAttemptsSet = true;
 	}
 	
-	public void setReauthenticateCallback(ReauthenticateCallback callback) {
-		this.reauthenticateCallback = callback;
-	}
-	
 	protected boolean connect() {
 		
 		// Connecting: make sure we don't have an active reconnect timer task.
@@ -121,12 +115,6 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 			return false;
 		
 		log.debug("Connecting channel with clientId %s", clientId);
-		
-		// Force reauthentication from the remoting channel if this channel is not able to authenticate itself (i.e. websockets)
-		if (transport.isAuthenticationAfterReconnectWithRemoting() && reauthenticateCallback != null) {
-			log.debug("Channel clientId %s force reauthentication with remoting channel", clientId);
-			reauthenticateCallback.reauthenticate();
-		}
 		
 		// Create and try to send the connect message.		
 		try {
@@ -433,6 +421,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	
 	@Override
 	public TransportMessage createConnectMessage(String id, boolean reconnect) {
+		executeReauthenticateCallback();
+		
 		CommandMessage connectMessage = new CommandMessage();
 		connectMessage.setOperation(CommandMessage.CONNECT_OPERATION);
 		connectMessage.setMessageId(id);

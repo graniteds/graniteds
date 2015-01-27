@@ -80,6 +80,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	private volatile boolean pinged = false;
 	private volatile boolean authenticated = false;
 	private volatile boolean authenticating = false;
+	private ReauthenticateCallback reauthenticateCallback = null; 
 	protected volatile int maxConcurrentRequests;
 	protected volatile long defaultTimeToLive = DEFAULT_TIME_TO_LIVE; // 1 mn.
 	
@@ -114,6 +115,10 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 
 	public boolean isAuthenticated() {
 		return authenticated;
+	}
+	
+	public void setReauthenticateCallback(ReauthenticateCallback callback) {
+		this.reauthenticateCallback = callback;
 	}
 
 	public int getMaxConcurrentRequests() {
@@ -218,7 +223,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		if (credentials == null)
 			return;
 		
-		log.debug("Channel %id client %id reauthenticating", getId(), clientId);
+		log.debug("Channel %s client %s reauthenticating", getId(), clientId);
 		LoginMessage loginMessage = new LoginMessage(clientId, credentials);
 		try {
 			ResponseMessage response = sendSimpleBlockingToken(loginMessage);
@@ -254,6 +259,14 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		return loginMessage;
     }
     
+    protected void executeReauthenticateCallback() {
+		// Force reauthentication from the remoting channel before connecting if this channel is not able to authenticate itself (i.e. websockets)
+		if (transport.isAuthenticationAfterReconnectWithRemoting() && reauthenticateCallback != null) {
+			log.debug("Channel clientId %s force reauthentication with remoting channel", clientId);
+			reauthenticateCallback.reauthenticate();
+		}
+    }
+    
 	@Override
 	public void run() {
 
@@ -273,6 +286,8 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 					sendToken(token);
 					continue;
 				}
+				
+				executeReauthenticateCallback();
 				
 				if (!pinged) {
                     PingMessage pingMessage = new PingMessage(clientId);
@@ -538,14 +553,6 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 					token.dispatchResult((ResultMessage)response);
 					break;
 				case FAULT:
-				    FaultMessage faultMessage = (FaultMessage)response;
-				    if (isAuthenticated() && (faultMessage.getCode() == FaultMessage.Code.NOT_LOGGED_IN || faultMessage.getCode() == FaultMessage.Code.SESSION_EXPIRED)) {
-				    	log.info("Channel %s possible session expiration detected, mark as not logged in", getId());
-				        setAuthenticated(false, faultMessage);
-				        // TODO: Why clear credentials here ???
-				        // credentials = null;
-				    }
-				    
 					token.dispatchFault((FaultMessage)response);
 					break;
 				default:

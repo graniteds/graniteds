@@ -215,25 +215,27 @@ public abstract class AbstractAMFChannel extends AbstractHTTPChannel {
 			
 			Code code = Code.UNKNOWN;
 
+			boolean deauthenticate = false; 
+			
 			String flexCode = errorMessage.getFaultCode();
 			if (ErrorMessage.CODE_SERVER_CALL_FAILED.equals(flexCode))
 				code = Code.SERVER_CALL_FAILED;
 			else if (SecurityServiceException.CODE_ACCESS_DENIED.equals(flexCode))
 				code = Code.ACCESS_DENIED;
 			else if (SecurityServiceException.CODE_INVALID_CREDENTIALS.equals(flexCode)) {
-				setAuthenticated(false, null);
+				deauthenticate = true;
 				code = Code.INVALID_CREDENTIALS;
 			}
 			else if (SecurityServiceException.CODE_AUTHENTICATION_FAILED.equals(flexCode)) {
-				setAuthenticated(false, null);
+				deauthenticate = true;
 				code = Code.AUTHENTICATION_FAILED;
 			}
 			else if (SecurityServiceException.CODE_NOT_LOGGED_IN.equals(flexCode)) {
-				setAuthenticated(false, null);
+				deauthenticate = true;
 				code = Code.NOT_LOGGED_IN;
 			}
 			else if (SecurityServiceException.CODE_SESSION_EXPIRED.equals(flexCode)) {
-				setAuthenticated(false, null);
+				deauthenticate = true;
 				code = Code.SESSION_EXPIRED;
 			}
 			else if ("Validation.Failed".equals(flexCode))
@@ -257,6 +259,9 @@ public abstract class AbstractAMFChannel extends AbstractHTTPChannel {
 			
 			if (code == Code.UNKNOWN)
 				fault.setUnknownCode(flexCode);
+			
+			if (isAuthenticated() && deauthenticate)
+				setAuthenticated(false, fault);
 			
 			return fault;
 		}
