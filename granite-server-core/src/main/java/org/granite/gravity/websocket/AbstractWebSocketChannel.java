@@ -288,7 +288,9 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
             AsyncMessage[] messagesArray = messages.toArray(new AsyncMessage[messages.size()]);
 
             logFine.debug("<< [MESSAGES for channel=%s] %s", this, messagesArray);
-
+            
+            gravity.access(getId());	// Notify that the channel has been active
+            
             byte[] msg = serialize(gravity, messagesArray);
             if (msg.length <= maxBinaryMessageBufferSize) {
                 log.debug("Channel %s send binary message: %d msgs (%d bytes)", getId(), messagesArray.length, msg.length);
