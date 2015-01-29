@@ -642,28 +642,58 @@ public class DefaultGravity implements Gravity, GravityInternal, DefaultGravityM
     }
     
     public void notifyConnected(Channel channel) {
-    	for (Listener listener : listeners)
-    		listener.connected(channel);
+    	for (Listener listener : listeners) {
+    		try {
+    			listener.connected(channel);
+			}
+			catch (Throwable t) {
+				log.error(t, "Error calling connected listener");
+			}
+    	}
     }
     
     public void notifyDisconnected(Channel channel) {
-    	for (Listener listener : listeners)
-    		listener.disconnected(channel);
+    	for (Listener listener : listeners) {
+    		try {
+    			listener.disconnected(channel);
+			}
+			catch (Throwable t) {
+				log.error(t, "Error calling disconnected listener");
+			}
+    	}
     }
     
     public void notifyAuthenticated(Channel channel, Principal principal) {
-    	for (Listener listener : listeners)
-    		listener.authenticated(channel, principal);
+    	for (Listener listener : listeners) {
+    		try {
+    			listener.authenticated(channel, principal);
+    		}
+    		catch (Throwable t) {
+    			log.error(t, "Error calling authenticated listener");
+    		}
+    	}
     }
     
     private void notifySubscribed(Channel channel, String subscriptionId) {
-    	for (Listener listener : listeners)
-    		listener.subscribed(channel, subscriptionId);
+    	for (Listener listener : listeners) {
+    		try {
+    			listener.subscribed(channel, subscriptionId);
+    		}
+    		catch (Throwable t) {
+    			log.error(t, "Error calling subscribed listener");
+    		}
+    	}
     }
     
     private void notifyUnsubscribed(Channel channel, String subscriptionId) {
-    	for (Listener listener : listeners)
-    		listener.unsubscribed(channel, subscriptionId);
+    	for (Listener listener : listeners) {
+    		try {
+    			listener.unsubscribed(channel, subscriptionId);
+    		}
+    		catch (Throwable t) {
+    			log.error(t, "Error calling unsubscribed listener");
+    		}
+    	}
     }
 
     public List<Channel> getConnectedChannels() {
