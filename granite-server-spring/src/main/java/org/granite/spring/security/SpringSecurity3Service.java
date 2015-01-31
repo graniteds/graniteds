@@ -89,21 +89,10 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
 	private SessionAuthenticationStrategy sessionAuthenticationStrategy = new SessionFixationProtectionStrategy();
 	private PasswordEncoder passwordEncoder = null;
 	private boolean allowAnonymousAccess = false;
-	private Method getRequest = null;
-	private Method getResponse = null;
     
 	
 	public SpringSecurity3Service() {
 		log.debug("Starting Spring 3 Security Service");
-		try {
-	    	getRequest = HttpRequestResponseHolder.class.getDeclaredMethod("getRequest");
-	    	getRequest.setAccessible(true);
-	    	getResponse = HttpRequestResponseHolder.class.getDeclaredMethod("getResponse");
-	    	getResponse.setAccessible(true);
-		}
-		catch (Exception e) {
-			throw new RuntimeException("Could not get methods from HttpRequestResponseHolder", e);
-		}
     }
 	
 	public void setApplicationContext(ApplicationContext applicationContext) {
@@ -172,14 +161,17 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
         HttpServletRequest httpRequest = graniteContext.getRequest();
         boolean springFilterNotApplied = graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null;
 
+        String user = decodedCredentials.get(0);
+        String password = decodedCredentials.get(1);
+
+        log.debug("User %s logging in (sessionId %s)", user, graniteContext.getSessionId());
+
         ApplicationContext appContext = applicationContext != null ? applicationContext
                 : WebApplicationContextUtils.getWebApplicationContext(graniteContext.getServletContext());
         if (appContext == null)
             throw new IllegalStateException("No application context defined for Spring security service");
         authenticationExtension.setApplicationContext(appContext);
         
-        String user = decodedCredentials.get(0);
-        String password = decodedCredentials.get(1);
         if (passwordEncoder != null)
         	password = passwordEncoder.encodePassword(password, null);
         
@@ -212,7 +204,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
             graniteContext.setPrincipal(principal);
             
             try {
-                securityContextRepository.saveContext(securityContext, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
+                securityContextRepository.saveContext(securityContext, holder.getRequest(), holder.getResponse());
             }
             catch (Exception e) {
                 log.error(e, "Could not save context after authentication");
@@ -234,7 +226,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
             }
         }
 
-        log.debug("User %s logged in", user);
+        log.debug("User %s logged in (sessionId %s)", user, graniteContext.getSessionId());
 
         return principal;
     }
@@ -248,14 +240,14 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
 
     
     public Object authorize(AbstractSecurityContext context) throws Exception {
-        log.debug("Authorize %s on destination %s (secured: %b)", context, context.getDestination().getId(), context.getDestination().isSecured());
-        
         startAuthorization(context);
         
         ServletGraniteContext graniteContext = (ServletGraniteContext)GraniteContext.getCurrentInstance();
+        log.debug("Authorize %s on destination %s (secured: %b) sessionId", context, context.getDestination().getId(), context.getDestination().isSecured(), graniteContext.getSessionId());
         
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         HttpRequestResponseHolder holder = null;
+        boolean contextLoaded = false;
 
     	boolean springFilterNotApplied = graniteContext.getRequest().getAttribute(FILTER_APPLIED) == null;
         boolean reentrant = graniteContext.getRequest().getAttribute(SECURITY_SERVICE_APPLIED) != null;
@@ -263,20 +255,27 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
         try {
 	        if (springFilterNotApplied && !reentrant) {
 	        	holder = new HttpRequestResponseHolder(graniteContext.getRequest(), graniteContext.getResponse());
-                SecurityContext contextBeforeChainExecution = securityContextRepository.loadContext(holder);
-                SecurityContextHolder.setContext(contextBeforeChainExecution);
-                graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, true);
-                
-                if (isAuthenticated(authentication)) {
-                    log.debug("Thread was already authenticated: %s", authentication.getName());
-                    contextBeforeChainExecution.setAuthentication(authentication);
+                SecurityContext contextBeforeChainExecution = null;
+                try {
+                	contextBeforeChainExecution = securityContextRepository.loadContext(holder);
+	                contextLoaded = true;
+	                SecurityContextHolder.setContext(contextBeforeChainExecution);
+	                graniteContext.getRequest().setAttribute(SECURITY_SERVICE_APPLIED, true);
+	                
+	                if (isAuthenticated(authentication)) {
+	                    log.debug("Thread was already authenticated: %s", authentication.getName());
+	                    contextBeforeChainExecution.setAuthentication(authentication);
+	                }
+	                else {
+	                    authentication = contextBeforeChainExecution.getAuthentication();
+	                    log.debug("Restore authentication from repository: %s", authentication != null ? authentication.getName() : "none");
+	                }
+	                
+	                graniteContext.setPrincipal(authentication);
                 }
-                else {
-                    authentication = contextBeforeChainExecution.getAuthentication();
-                    log.debug("Restore authentication from repository: %s", authentication != null ? authentication.getName() : "none");
+                catch (Exception e) {
+                	log.error(e, "Could not extract context from repository");
                 }
-                
-                graniteContext.setPrincipal(authentication);
             }
 	        
 	        if (context.getDestination().isSecured()) {
@@ -306,16 +305,21 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
             handleAuthorizationExceptions(e);
             throw e;
         }
+        catch (Exception e) {
+        	// Case of other exceptions
+        	throw new RuntimeException("Unexpected error during authorize " + e.getMessage());
+        }
         finally {
             if (springFilterNotApplied && !reentrant) {
 	            SecurityContext contextAfterChainExecution = SecurityContextHolder.getContext();
         		log.debug("Clear authentication and save to repo: %s", contextAfterChainExecution.getAuthentication() != null ? contextAfterChainExecution.getAuthentication().getName() : "none");
 	            SecurityContextHolder.clearContext();
 	            try {
-	            	securityContextRepository.saveContext(contextAfterChainExecution, (HttpServletRequest)getRequest.invoke(holder), (HttpServletResponse)getResponse.invoke(holder));
+	            	if (contextLoaded)
+	            		securityContextRepository.saveContext(contextAfterChainExecution, holder.getRequest(), holder.getResponse());
 	            }
 	            catch (Exception e) {
-	            	log.error(e, "Could not extract wrapped context from holder");
+	            	log.error(e, "Could not save context in repository");
 	            }
 	            graniteContext.getRequest().removeAttribute(SECURITY_SERVICE_APPLIED);
             }
