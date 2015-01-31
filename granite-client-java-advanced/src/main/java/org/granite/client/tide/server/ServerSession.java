@@ -591,6 +591,12 @@ public class ServerSession implements ContextAware {
 		}
 		
 		@Override
+		public void credentialsCleared(Channel channel) {
+			for (ChannelStatusListener listener : listeners)
+				listener.credentialsCleared(channel);
+		}
+		
+		@Override
 		public void fault(Channel channel, final FaultMessage faultMessage) {
 			context.callLater(new Runnable() {
 				public void run() {
@@ -991,6 +997,8 @@ public class ServerSession implements ContextAware {
 		context.getEventBus().raiseEvent(context, SESSION_EXPIRED);
 		
 		if (logoutOnSessionExpiration) {
+			remotingChannel.clearCredentials();
+			
 			context.getEventBus().raiseEvent(context, LOGOUT);		
 	
 	        remotingChannel.logout(false);
