@@ -165,7 +165,10 @@ public class Consumer extends AbstractTopicAgent {
      * @param listeners array of listeners notified when the unsubscription is processed
      * @return future triggered when unsubscription is processed
      */
-	public ResponseMessageFuture unsubscribe(ResponseListener...listeners) {
+	public ResponseMessageFuture unsubscribe(ResponseListener... listeners) {
+		if (!isSubscribed())
+			return null;
+		
 		UnsubscribeMessage unsubscribeMessage = new UnsubscribeMessage(destination, topic, subscriptionId);
 		unsubscribeMessage.getHeaders().putAll(defaultHeaders);
 		

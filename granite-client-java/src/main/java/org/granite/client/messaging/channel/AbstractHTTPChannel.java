@@ -528,7 +528,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
     public ResponseMessageFuture logout(boolean sendLogout, ResponseListener... listeners) {
 		log.info("Logging out channel %s", clientId);
 		
-        credentials = null;
+		clearCredentials();
         setAuthenticated(false, null);
         if (sendLogout)
             return send(new LogoutMessage(), listeners);
@@ -684,11 +684,23 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	protected void setAuthenticated(boolean authenticated, ResponseMessage response) {
 		if (!this.authenticating && this.authenticated == authenticated)
 			return;
+		
 		log.debug("Channel %s authentication changed clientId %s (%s)", id,  clientId, String.valueOf(authenticated));
 		this.authenticating = false;
 		this.authenticated = authenticated;
 		for (ChannelStatusListener listener : statusListeners)
 			listener.authenticatedChanged(this, authenticated, response);
+		
+		postSetAuthenticated(authenticated, response);
+	}
+	
+	protected void postSetAuthenticated(boolean authenticated, ResponseMessage response) {		
+	}
+	
+	public void clearCredentials() {
+        this.credentials = null;
+		for (ChannelStatusListener listener : statusListeners)
+			listener.credentialsCleared(this);
 	}
 	
 	protected void dispatchFault(FaultMessage faultMessage) {
@@ -721,8 +733,20 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		public void authenticatedChanged(Channel channel, boolean authenticated, ResponseMessage response) {
 			if (channel == AbstractHTTPChannel.this)
 				return;
+			
+			boolean wasAuthenticated = AbstractHTTPChannel.this.authenticated; 
 			AbstractHTTPChannel.this.authenticating = false;
 			AbstractHTTPChannel.this.authenticated = authenticated;
+			
+			if (authenticated != wasAuthenticated)
+				AbstractHTTPChannel.this.postSetAuthenticated(authenticated, response);
 		}		
+		
+		@Override
+		public void credentialsCleared(Channel channel) {
+			if (channel == AbstractHTTPChannel.this)
+				return;
+			AbstractHTTPChannel.this.credentials = null;
+		}
 	};
 }

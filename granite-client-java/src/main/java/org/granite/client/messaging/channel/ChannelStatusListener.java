@@ -31,4 +31,6 @@ public interface ChannelStatusListener {
 	public void pingedChanged(Channel channel, boolean pinged);
 	
 	public void authenticatedChanged(Channel channel, boolean authenticated, ResponseMessage responseMessage);
+	
+	public void credentialsCleared(Channel channel);
 }

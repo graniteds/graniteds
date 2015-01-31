@@ -133,15 +133,10 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	}
 	
 	@Override
-	public void setAuthenticated(boolean authenticated, ResponseMessage response) {
-		boolean wasAuthenticated = isAuthenticated();
-		String oldSessionId = this.sessionId;
-		
-		super.setAuthenticated(authenticated, response);
-		
+	protected void postSetAuthenticated(boolean authenticated, ResponseMessage response) {
 		// Force disconnection for streaming transports to ensure next calls are in a new session/authentication context
-		if (!authenticated && wasAuthenticated && response instanceof FaultMessage && transport.isDisconnectAfterAuthenticationFailure()) {
-			log.debug("Channel clientId %s force disconnection after unauthentication (old sessionId %d, new sessionId %s)", clientId, oldSessionId, sessionId);
+		if (!authenticated && response instanceof FaultMessage && transport.isDisconnectAfterAuthenticationFailure()) {
+			log.debug("Channel clientId %s force disconnection after unauthentication (new sessionId %s)", clientId, sessionId);
 			disconnect();
 		}
 	}

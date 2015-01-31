@@ -23,7 +23,6 @@ package org.granite.client.messaging.transport.websocket;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.util.LinkedList;
 
 import org.granite.client.messaging.channel.Channel;
@@ -221,9 +220,9 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
                 getStatusHandler().handleException(new TransportException("Transport disconnected"));
                 return;
             }
-
+            
             reconnectAttempts++;
-
+            
             // If the channel should be connected, try to reconnect
             log.info("Connection lost (code %d, msg %s), reconnect channel (retry #%d)", closeCode, message, reconnectAttempts);
             connected = true;
@@ -234,7 +233,8 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
 
     protected void onError(Channel channel, Throwable throwable) {
         log.error(throwable, "Websocket connection error");
-        if (throwable instanceof ConnectException)
+        TransportData<S> transportData = channel.getTransportData();
+        if ((transportData == null || !transportData.isConnected()) && throwable instanceof IOException)	// Error during connection => schedule reconnect
         	channel.onError(connectMessage, new RuntimeException("Websocket connection error", throwable));
         getStatusHandler().handleException(new TransportException("Websocket connection error: " + throwable.getMessage()));
     }
