@@ -75,7 +75,7 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
 
     @Override
     public boolean isConnected() {
-        log.debug("Channel %s websocket connection %s", getId(), session == null ? "(null)" : (session.isOpen() ? "(open)" : "(not open)"));
+        log.debug("Channel %s websocket connection %s", getId(), session == null ? "(no session)" : (session.isOpen() ? "(open)" : "(not open)"));
         return session != null && session.isOpen();
     }
 
@@ -98,12 +98,13 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
     }
 
 	public void close(boolean timeout) {
-        log.debug("Channel %s close%s", getId(), timeout ? "(timeout)" : "");
+        log.debug("Channel %s close%s (was %s)", getId(), timeout ? " (timeout)" : "", session == null ? "(no session)" : (session.isOpen() ? "(open)" : "(not open)"));
 		if (session != null) {
             try {
                 session.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, timeout ? "Idle timeout" : "Channel closed"));
             }
-            catch (IOException e) {
+            catch (Exception e) {
+            	log.error(e, "Could not close channel %s", getId());
                 throw new RuntimeException("Channel close error " + getId(), e);
             }
             session = null;
