@@ -232,10 +232,14 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
     }
 
     protected void onError(Channel channel, Throwable throwable) {
-        log.error(throwable, "Websocket connection error");
         TransportData<S> transportData = channel.getTransportData();
-        if ((transportData == null || !transportData.isConnected()) && throwable instanceof IOException)	// Error during connection => schedule reconnect
+        if (transportData == null || !transportData.isConnected()) {	// Error during connection => schedule reconnect
+        	log.debug(throwable, "Websocket error during connection, schedule reconnect");
         	channel.onError(connectMessage, new RuntimeException("Websocket connection error", throwable));
+        }
+        else
+        	log.error(throwable, "Websocket error while connected");
+        
         getStatusHandler().handleException(new TransportException("Websocket connection error: " + throwable.getMessage()));
     }
 }
