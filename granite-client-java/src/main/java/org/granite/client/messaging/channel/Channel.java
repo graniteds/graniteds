@@ -182,6 +182,8 @@ public interface Channel extends ChannelStatusNotifier {
 	void onCancelled(TransportMessage message);
 	
 	
+	public void preconnect() throws ChannelException;
+	
 	public TransportMessage createConnectMessage(String id, boolean reconnect);
 	
 	

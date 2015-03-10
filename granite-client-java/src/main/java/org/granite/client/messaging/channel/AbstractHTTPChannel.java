@@ -215,7 +215,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
     }
 
     
-    public void reauthenticate() {
+    public void reauthenticate() throws ChannelException {
 		if (authenticating || authenticated)
 			return;
 		
@@ -225,14 +225,21 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		
 		log.debug("Channel %s client %s reauthenticating", getId(), clientId);
 		LoginMessage loginMessage = new LoginMessage(clientId, credentials);
+		ResponseMessage response;
 		try {
-			ResponseMessage response = sendSimpleBlockingToken(loginMessage);
-			if (response instanceof ResultMessage)
-				setAuthenticated(true, response);
+			response = sendSimpleBlockingToken(loginMessage);
 		}
 		catch (Exception e) {
-			log.warn(e, "Could not reauthenticate channel %s", clientId);
+			throw new ChannelException(clientId, "Could not reauthenticate channel " + clientId, e);
 		}
+		if (response instanceof ResultMessage)
+			setAuthenticated(true, response);
+		else if (response instanceof FaultMessage) {
+			FaultMessage fault = (FaultMessage)response;
+			throw new ChannelException(clientId, "Could not reauthenticate channel " + clientId + " , fault " + fault.getCode() + " " + fault.getDescription() + " " + fault.getDetails());
+		}
+		else
+			throw new ChannelException(clientId, "Could not reauthenticate channel " + clientId);
     }
     
     protected LoginMessage authenticate(AsyncToken dependentToken) {
@@ -259,7 +266,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		return loginMessage;
     }
     
-    protected void executeReauthenticateCallback() {
+    protected void executeReauthenticateCallback() throws ChannelException {
 		// Force reauthentication from the remoting channel before connecting if this channel is not able to authenticate itself (i.e. websockets)
 		if (transport.isAuthenticationAfterReconnectWithRemoting() && reauthenticateCallback != null) {
 			log.debug("Channel clientId %s force reauthentication with remoting channel", clientId);
@@ -540,6 +547,9 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		try {
 			ResponseMessage response = decodeResponse(is);			
 			if (response == null)
+				return;
+			
+			if (response.getCorrelationId() == null || response.isProcessed())
 				return;
 			
 			AsyncToken token = tokensMap.remove(response.getCorrelationId());

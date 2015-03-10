@@ -93,6 +93,9 @@ public abstract class AbstractChannel<T extends Transport> implements Channel {
 		this.transportData = data;
 	}
 	
+	public void preconnect() throws ChannelException {		
+	}
+	
 	public TransportMessage createConnectMessage(String id, boolean reconnect) {
 		CommandMessage connectMessage = new CommandMessage();
 		connectMessage.setOperation(CommandMessage.CONNECT_OPERATION);

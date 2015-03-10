@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 import org.granite.client.messaging.channel.Channel;
+import org.granite.client.messaging.channel.ChannelException;
 import org.granite.client.messaging.transport.AbstractTransport;
 import org.granite.client.messaging.transport.TransportException;
 import org.granite.client.messaging.transport.TransportFuture;
@@ -226,8 +227,21 @@ public abstract class AbstractWebSocketTransport<S> extends AbstractTransport<Ob
             // If the channel should be connected, try to reconnect
             log.info("Connection lost (code %d, msg %s), reconnect channel (retry #%d)", closeCode, message, reconnectAttempts);
             connected = true;
+            
+            boolean tryConnect = true;
+            try {
+            	channel.preconnect();
+            }
+            catch (ChannelException ex) {
+            	log.debug(ex, "Websocket error during preconnection, schedule reconnect");
+            	channel.onError(connectMessage, new RuntimeException("Websocket preconnection error", ex));
+            	tryConnect = false;
+            }
+                        
             connectMessage = channel.createConnectMessage(connectMessage.getId(), true);
-            connect(channel, connectMessage);
+            
+            if (tryConnect)
+            	connect(channel, connectMessage);
         }
     }
 

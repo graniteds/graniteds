@@ -38,6 +38,7 @@ import org.granite.client.messaging.Consumer;
 import org.granite.client.messaging.ResponseListener;
 import org.granite.client.messaging.channel.AsyncToken;
 import org.granite.client.messaging.channel.Channel;
+import org.granite.client.messaging.channel.ChannelException;
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.channel.ResponseMessageFuture;
 import org.granite.client.messaging.codec.MessagingCodec;
@@ -100,6 +101,11 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		this.reconnectMaxAttemptsSet = true;
 	}
 	
+	@Override
+	public void preconnect() throws ChannelException {
+		executeReauthenticateCallback();
+	}
+	
 	protected boolean connect() {
 		
 		// Connecting: make sure we don't have an active reconnect timer task.
@@ -118,6 +124,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 		
 		// Create and try to send the connect message.		
 		try {
+			preconnect();
+			
 			transport.send(this, createConnectMessage(id, false));
 			
 			return true;
@@ -299,6 +307,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 									break;
 								}
 							}
+							
+							response.setProcessed();
 						}
 						else if (response instanceof FaultMessage) {
 							Type requestType = null;
@@ -337,6 +347,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 							}
 							
 							dispatchFault((FaultMessage)response);
+							response.setProcessed();
 						}
 						
 						if (responseChain == null)
@@ -416,8 +427,6 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 	
 	@Override
 	public TransportMessage createConnectMessage(String id, boolean reconnect) {
-		executeReauthenticateCallback();
-		
 		CommandMessage connectMessage = new CommandMessage();
 		connectMessage.setOperation(CommandMessage.CONNECT_OPERATION);
 		connectMessage.setMessageId(id);

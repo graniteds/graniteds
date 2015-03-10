@@ -39,6 +39,7 @@ public abstract class AbstractResponseMessage extends AbstractMessage implements
 	private static final long serialVersionUID = 1L;
 	
 	private String correlationId;
+	private boolean processed = false;
 	private ResponseMessage next;
 	
 	public AbstractResponseMessage() {
@@ -69,6 +70,14 @@ public abstract class AbstractResponseMessage extends AbstractMessage implements
 
 	public void setCorrelationId(String correlationId) {
 		this.correlationId = correlationId;
+	}
+	
+	public boolean isProcessed() {
+		return processed;
+	}
+	
+	public void setProcessed() {
+		this.processed = true;
 	}
 	
 	@Override

@@ -66,6 +66,7 @@ import org.granite.client.messaging.TopicAgent;
 import org.granite.client.messaging.TopicSubscriptionListener;
 import org.granite.client.messaging.channel.Channel;
 import org.granite.client.messaging.channel.ChannelBuilder;
+import org.granite.client.messaging.channel.ChannelException;
 import org.granite.client.messaging.channel.ChannelFactory;
 import org.granite.client.messaging.channel.ChannelStatusListener;
 import org.granite.client.messaging.channel.ChannelStatusNotifier;
@@ -611,7 +612,7 @@ public class ServerSession implements ContextAware {
 	
 	private ReauthenticateCallback reauthenticateCallback = new ReauthenticateCallback() {
 		@Override
-		public void reauthenticate() {
+		public void reauthenticate() throws ChannelException {
 			remotingChannel.reauthenticate();
 		}
 	};

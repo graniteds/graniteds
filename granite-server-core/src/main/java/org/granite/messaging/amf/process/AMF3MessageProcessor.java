@@ -108,13 +108,13 @@ public abstract class AMF3MessageProcessor {
                     }
                     else
                         log.error(e, "Could not process security operation: %s", request);
-                    response = new ErrorMessage(request, e);
+                    response = new ErrorMessage(request, e, true);
                 }
             }
         }
 
         if (response == null) {
-            response = new AcknowledgeMessage(request);
+            response = new AcknowledgeMessage(request, true);
             // For SDK 2.0.1_Hotfix2.
             if (request.isSecurityOperation())
                 response.setBody("success");
@@ -140,7 +140,7 @@ public abstract class AMF3MessageProcessor {
             ServiceInvoker<?> service = factory.getServiceInstance(request);
             Object result = service.invoke(request);
 
-            response = new AcknowledgeMessage(request);
+            response = new AcknowledgeMessage(request, true);
             response.setBody(result);
         } catch (ServiceException e) {
             log.debug(e, "Could not process remoting message: %s", request);

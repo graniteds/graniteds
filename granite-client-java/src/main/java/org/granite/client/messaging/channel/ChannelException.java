@@ -21,16 +21,24 @@
  */
 package org.granite.client.messaging.channel;
 
-/**
- * SPI for remoting channels
- *
- * @author Franck WOLFF
- */
-public interface RemotingChannel extends Channel {
 
-	static final int DEFAULT_MAX_CONCURRENT_REQUESTS = 5;
+public class ChannelException extends Exception {
+
+	private static final long serialVersionUID = 1L;	
 	
-	public void clearCredentials();
+	private final String clientId;
 	
-	public void reauthenticate() throws ChannelException;
+	public ChannelException(String clientId, String message) {
+		super(message);
+		this.clientId = clientId;
+	}
+	
+	public ChannelException(String clientId, String message, Throwable cause) {
+		super(message, cause);
+		this.clientId = clientId;
+	}
+	
+	public String getClientId() {
+		return clientId;
+	}
 }
