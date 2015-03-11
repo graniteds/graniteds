@@ -238,8 +238,11 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 							RequestMessage request = getRequest(response.getCorrelationId());
 							if (request != null)
 								requestType = request.getType();
-							else if (response.getCorrelationId().equals(connectMessageId.get())) // Reconnect
+							else if (response.getCorrelationId().equals(connectMessageId.get())) { // Reconnect
 								requestType = Type.PING;
+								response.setProcessed();
+							}
+							
 							else if (response.getCorrelationId().equals(loginMessageId.get()))
 								requestType = Type.LOGIN;
 							
@@ -307,16 +310,16 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 									break;
 								}
 							}
-							
-							response.setProcessed();
 						}
 						else if (response instanceof FaultMessage) {
 							Type requestType = null;
 							RequestMessage request = getRequest(response.getCorrelationId());
 							if (request != null)
 								requestType = request.getType();
-							else if (response.getCorrelationId().equals(connectMessageId.get())) // Reconnect
+							else if (response.getCorrelationId().equals(connectMessageId.get())) { // Reconnect
 								requestType = Type.PING;
+								response.setProcessed();
+							}
 							else if (response.getCorrelationId().equals(loginMessageId.get())) // Login after reconnect
 								requestType = Type.LOGIN;
 							
@@ -347,7 +350,6 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 							}
 							
 							dispatchFault((FaultMessage)response);
-							response.setProcessed();
 						}
 						
 						if (responseChain == null)
