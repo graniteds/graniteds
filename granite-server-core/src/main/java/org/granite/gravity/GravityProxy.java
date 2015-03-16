@@ -81,6 +81,9 @@ public class GravityProxy implements Gravity {
     // Properties.
 
 	public boolean isStarted() {
+		if (getGravity() == null)
+			return false;
+		
 		return getGravity().isStarted();
 	}
 
@@ -96,11 +99,17 @@ public class GravityProxy implements Gravity {
 
     @Override
     public void stop() throws Exception {
+    	if (getGravity() == null)
+    		return;
+    	
         getGravity().stop();
     }
 
     @Override
     public void stop(boolean now) throws Exception {
+    	if (getGravity() == null)
+    		return;
+    	
         getGravity().stop(now);
     }
 
