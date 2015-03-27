@@ -43,7 +43,7 @@ public class FilterableJpaRepositoryImpl<T, ID extends Serializable> extends Sim
 	public FilterableJpaRepositoryImpl(Class<T> domainClass, EntityManager entityManager) {
 		super(domainClass, entityManager);
 		
-		this.entityInformation = JpaEntityInformationSupport.getMetadata(domainClass, entityManager);
+		this.entityInformation = JpaEntityInformationSupport.getEntityInformation(domainClass, entityManager);
 	    this.entityManager = entityManager;
 	}
 	
