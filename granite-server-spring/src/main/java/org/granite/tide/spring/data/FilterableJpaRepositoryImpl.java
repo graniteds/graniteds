@@ -22,6 +22,7 @@
 package org.granite.tide.spring.data;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -40,10 +41,28 @@ public class FilterableJpaRepositoryImpl<T, ID extends Serializable> extends Sim
 	private JpaEntityInformation<T, ?> entityInformation;
 	private EntityManager entityManager;
 
+	@SuppressWarnings("unchecked")
 	public FilterableJpaRepositoryImpl(Class<T> domainClass, EntityManager entityManager) {
 		super(domainClass, entityManager);
 		
-		this.entityInformation = JpaEntityInformationSupport.getEntityInformation(domainClass, entityManager);
+		Method getMetadata = null;
+		try {
+			getMetadata = JpaEntityInformationSupport.class.getMethod("getMetadata", Class.class, EntityManager.class);
+		}
+		catch (NoSuchMethodException e) {
+			try {
+				getMetadata = JpaEntityInformationSupport.class.getMethod("getEntityInformation", Class.class, EntityManager.class);
+			}
+			catch (NoSuchMethodException e2) {	
+				throw new RuntimeException("Could not find Spring JPA metadata method", e2);
+			}
+		}
+		try {
+			this.entityInformation = (JpaEntityInformation<T, ?>)getMetadata.invoke(null, domainClass, entityManager);
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Could not init entity metadata", e);
+		}
 	    this.entityManager = entityManager;
 	}
 	
