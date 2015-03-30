@@ -31,6 +31,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthorityImpl;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 
@@ -91,7 +92,7 @@ public class Identity {
             String role = authority.trim();
             role = StringUtils.deleteAny(role, "\t\n\r\f");
 
-            requiredAuthorities.add(new GrantedAuthorityImpl(role));
+            requiredAuthorities.add(new SimpleGrantedAuthority(role));
         }
 
         return requiredAuthorities;
