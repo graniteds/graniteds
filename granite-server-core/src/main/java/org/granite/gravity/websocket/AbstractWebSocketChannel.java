@@ -304,7 +304,8 @@ public abstract class AbstractWebSocketChannel extends AbstractChannel {
                     sendBytes(msg);
             	}
             }
-
+            log.debug("Channel %s binary messages sent");
+            
             return true; // Messages were delivered, http context isn't valid anymore.
         }
         catch (IOException e) {

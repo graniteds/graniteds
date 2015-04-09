@@ -101,7 +101,10 @@ public class WebSocketChannel extends AbstractWebSocketChannel implements Messag
         log.debug("Channel %s close%s (was %s)", getId(), timeout ? " (timeout)" : "", session == null ? "(no session)" : (session.isOpen() ? "(open)" : "(not open)"));
 		if (session != null) {
             try {
-                session.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, timeout ? "Idle timeout" : "Channel closed"));
+            	if (timeout)
+            		session.close(new CloseReason(CloseReason.CloseCodes.GOING_AWAY, "Idle timeout"));
+            	else
+                	session.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Channel closed"));
             }
             catch (Exception e) {
             	log.error(e, "Could not close channel %s", getId());
