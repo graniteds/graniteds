@@ -63,7 +63,7 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 		if (gravity == null && (graniteContext == null || !(graniteContext instanceof ServletGraniteContext)))
 			return;
 
-		DistributedDataFactory distributedDataFactory = gravity != null
+		DistributedDataFactory distributedDataFactory = gravity != null && gravity.isStarted()
                 ? gravity.getGraniteConfig().getDistributedDataFactory()
                 : ((GraniteConfig)graniteContext.getGraniteConfig()).getDistributedDataFactory();
 		DistributedData gdd = distributedDataFactory.getInstance();
