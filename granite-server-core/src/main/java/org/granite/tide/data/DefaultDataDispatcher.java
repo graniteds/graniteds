@@ -63,10 +63,12 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 		if (gravity == null && (graniteContext == null || !(graniteContext instanceof ServletGraniteContext)))
 			return;
 
-		DistributedDataFactory distributedDataFactory = gravity != null && gravity.isStarted()
-                ? gravity.getGraniteConfig().getDistributedDataFactory()
-                : ((GraniteConfig)graniteContext.getGraniteConfig()).getDistributedDataFactory();
-		DistributedData gdd = distributedDataFactory.getInstance();
+		DistributedData gdd = null;
+		if (gravity != null && gravity.isStarted())
+			gdd = gravity.getGraniteConfig().getDistributedDataFactory().getInstance();
+		else if (graniteContext != null && graniteContext.getGraniteConfig() != null)
+			gdd = ((GraniteConfig)graniteContext.getGraniteConfig()).getDistributedDataFactory().getInstance();
+		
 		if (gdd != null) {
 			this.gravity = GravityManager.getGravity(((ServletGraniteContext)graniteContext).getServletContext());
 			
@@ -80,9 +82,9 @@ public class DefaultDataDispatcher extends AbstractDataDispatcher {
 			sessionId = graniteContext.getSessionId();
 		}
 		else {
-            if (gravity == null)
+            if (gravity == null && graniteContext instanceof ServletGraniteContext)
                 gravity = GravityManager.getGravity(((ServletGraniteContext)graniteContext).getServletContext());
-
+            
 			if (gravity == null) {
 				log.debug("Gravity not defined, data dispatch disabled");
 				return;

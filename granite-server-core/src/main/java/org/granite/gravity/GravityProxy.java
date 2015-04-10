@@ -68,12 +68,21 @@ public class GravityProxy implements Gravity {
     // Granite/Services configs access.
 
 	public GravityConfig getGravityConfig() {
+        if (!isStarted())
+        	return null;
+        
     	return getGravity().getGravityConfig();
     }
     public ServicesConfig getServicesConfig() {
+        if (!isStarted())
+        	return null;
+        
     	return getGravity().getServicesConfig();
     }
     public GraniteConfig getGraniteConfig() {
+        if (!isStarted())
+        	return null;
+        
     	return getGravity().getGraniteConfig();
     }
 
@@ -94,21 +103,24 @@ public class GravityProxy implements Gravity {
 
     @Override
     public void reconfigure(GravityConfig gravityConfig, GraniteConfig graniteConfig) {
+        if (!isStarted())
+        	return;
+        
         getGravity().reconfigure(gravityConfig, graniteConfig);
     }
 
     @Override
     public void stop() throws Exception {
-    	if (getGravity() == null)
-    		return;
+        if (!isStarted())
+        	return;
     	
         getGravity().stop();
     }
 
     @Override
     public void stop(boolean now) throws Exception {
-    	if (getGravity() == null)
-    		return;
+        if (!isStarted())
+        	return;
     	
         getGravity().stop(now);
     }
@@ -161,8 +173,7 @@ public class GravityProxy implements Gravity {
     }
     public Message publishMessage(Channel fromChannel, AsyncMessage message) {
         // Should probably throw an exception, not intended to be used through the proxy
-        Gravity gravity = getGravity();
-        if (gravity == null)
+        if (!isStarted())
             return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
 
     	return getGravity().publishMessage(fromChannel, message);
@@ -170,8 +181,7 @@ public class GravityProxy implements Gravity {
 
     @Override
     public Message sendRequest(Channel fromChannel, AsyncMessage message) {
-        Gravity gravity = getGravity();
-        if (gravity == null)
+        if (!isStarted())
             return new ErrorMessage(message, new IllegalStateException("Gravity not initialized"));
 
         return getGravity().sendRequest(fromChannel, message);
