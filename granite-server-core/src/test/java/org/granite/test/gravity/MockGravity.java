@@ -83,7 +83,7 @@ public class MockGravity implements Gravity {
     }
 
 	public boolean isStarted() {
-		return false;
+		return true;
 	}
 
 	public Message publishMessage(AsyncMessage message) {
