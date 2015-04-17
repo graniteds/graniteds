@@ -40,11 +40,14 @@ import org.granite.client.messaging.messages.ResponseMessage;
 import org.granite.client.messaging.messages.requests.DisconnectMessage;
 import org.granite.client.messaging.messages.responses.FaultMessage;
 import org.granite.client.messaging.messages.responses.ResultMessage;
+import org.granite.logging.Logger;
 
 /**
  * @author Franck WOLFF
  */
 public class AsyncToken extends TimerTask implements ResponseMessageFuture {
+	
+	private static final Logger log = Logger.getLogger(AsyncToken.class);
 	
 	private final RequestMessage request;
 	private final List<ResponseListener> listeners = new ArrayList<ResponseListener>();
@@ -95,8 +98,13 @@ public class AsyncToken extends TimerTask implements ResponseMessageFuture {
 
 	@Override
 	public void run() {
-		// Try to dispatch a TimeoutEvent.
-		dispatchTimeout(System.currentTimeMillis());
+		try {
+			// Try to dispatch a TimeoutEvent.
+			dispatchTimeout(System.currentTimeMillis());
+		}
+		catch (Throwable e) {
+			log.error(e, "Error while executing token task for request " + request);
+		}
 	}
 
 	@Override

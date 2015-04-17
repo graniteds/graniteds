@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.granite.client.messaging.channel.MessagingChannel;
 import org.granite.client.messaging.channel.ResponseMessageFuture;
+import org.granite.client.messaging.events.FailureEvent;
 import org.granite.client.messaging.events.IssueEvent;
 import org.granite.client.messaging.events.ResultEvent;
 import org.granite.client.messaging.events.TopicMessageEvent;
@@ -119,6 +120,7 @@ public class Consumer extends AbstractTopicAgent {
 	}
 	
 	public ResponseMessageFuture subscribe(final String subscriptionId, ResponseListener...listeners) {
+		log.debug("Subscribing consumer on channel %s with subcriptionId %s", channel.getClientId(), subscriptionId);
 		SubscribeMessage subscribeMessage = new SubscribeMessage(destination, topic, selector);
 		subscribeMessage.getHeaders().putAll(defaultHeaders);
 		if (subscriptionId != null)
@@ -130,10 +132,21 @@ public class Consumer extends AbstractTopicAgent {
 			@Override
 			public void onResult(ResultEvent event) {
 				Consumer.this.subscriptionId = (String)event.getResult();
-				channel.addConsumer(consumer);
 				
-				for (TopicSubscriptionListener subscriptionListener : subscriptionListeners.keySet())
-					subscriptionListener.onSubscriptionSuccess(Consumer.this, event, subscriptionId);
+				if (Consumer.this.subscriptionId != null) {
+					log.debug("Subscription successful %s: %s", consumer, event);
+					channel.addConsumer(consumer);
+					
+					for (TopicSubscriptionListener subscriptionListener : subscriptionListeners.keySet())
+						subscriptionListener.onSubscriptionSuccess(Consumer.this, event, subscriptionId);
+				}
+				else {
+					log.error("Subscription failed %s: %s", consumer, event);
+					
+					IssueEvent failureEvent = new FailureEvent(event.getRequest(), new IllegalStateException("Received null subscriptionId"));
+					for (TopicSubscriptionListener subscriptionListener : subscriptionListeners.keySet())
+						subscriptionListener.onSubscriptionFault(Consumer.this, failureEvent);
+				}
 			}
 			
 			@Override

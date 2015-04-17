@@ -234,6 +234,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 						AbstractResponseMessage response = convertFromAmf((AcknowledgeMessage)message);
 						
 						if (response instanceof ResultMessage) {
+							log.debug("Channel %s received result %s of type %s correlationId %s", clientId, response.getId(), response.getType().name(), response.getCorrelationId());
+							
 							Type requestType = null;
 							RequestMessage request = getRequest(response.getCorrelationId());
 							if (request != null)
@@ -241,8 +243,7 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 							else if (response.getCorrelationId().equals(connectMessageId.get())) { // Reconnect
 								requestType = Type.PING;
 								response.setProcessed();
-							}
-							
+							}							
 							else if (response.getCorrelationId().equals(loginMessageId.get()))
 								requestType = Type.LOGIN;
 							
@@ -312,6 +313,8 @@ public class BaseAMFMessagingChannel extends AbstractAMFChannel implements Messa
 							}
 						}
 						else if (response instanceof FaultMessage) {
+							log.debug("Channel %s received fault %s of type %s correlationId %s", clientId, response.getId(), response.getType().name(), response.getCorrelationId());
+							
 							Type requestType = null;
 							RequestMessage request = getRequest(response.getCorrelationId());
 							if (request != null)

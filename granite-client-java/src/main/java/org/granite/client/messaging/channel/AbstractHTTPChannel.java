@@ -224,22 +224,28 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			return;
 		
 		log.debug("Channel %s client %s reauthenticating", getId(), clientId);
-		LoginMessage loginMessage = new LoginMessage(clientId, credentials);
-		ResponseMessage response;
+		ChannelException channelException = null;
 		try {
-			response = sendSimpleBlockingToken(loginMessage);
+			authenticating = true;
+			LoginMessage loginMessage = new LoginMessage(clientId, credentials);
+			ResponseMessage response = sendSimpleBlockingToken(loginMessage);
+			if (response instanceof ResultMessage)
+				setAuthenticated(true, response);
+			else if (response instanceof FaultMessage) {
+				FaultMessage fault = (FaultMessage)response;
+				channelException = new ChannelException(clientId, "Could not reauthenticate channel " + clientId + " , fault " + fault.getCode() + " " + fault.getDescription() + " " + fault.getDetails());
+			}
+			else
+				channelException = new ChannelException(clientId, "Could not reauthenticate channel " + clientId);
 		}
 		catch (Exception e) {
 			throw new ChannelException(clientId, "Could not reauthenticate channel " + clientId, e);
 		}
-		if (response instanceof ResultMessage)
-			setAuthenticated(true, response);
-		else if (response instanceof FaultMessage) {
-			FaultMessage fault = (FaultMessage)response;
-			throw new ChannelException(clientId, "Could not reauthenticate channel " + clientId + " , fault " + fault.getCode() + " " + fault.getDescription() + " " + fault.getDetails());
+		finally {
+			authenticating = false;
 		}
-		else
-			throw new ChannelException(clientId, "Could not reauthenticate channel " + clientId);
+		if (channelException != null)
+			throw channelException;
     }
     
     protected LoginMessage authenticate(AsyncToken dependentToken) {
@@ -253,15 +259,20 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		LoginMessage loginMessage = new LoginMessage(clientId, credentials);
 		if (dependentToken != null) {
 			log.debug("Channel %s blocking authentication %s clientId %s", id, loginMessage.getId(), clientId);
-			ResultMessage result = sendBlockingToken(loginMessage, dependentToken);
-			if (result == null)
-				return loginMessage;
-			setAuthenticated(true, result);
+			try {
+				authenticating = true;
+				ResultMessage result = sendBlockingToken(loginMessage, dependentToken);
+				if (result == null)
+					return loginMessage;
+				setAuthenticated(true, result);
+			}
+			finally {
+				authenticating = false;
+			}
 		}
 		else {
 			log.debug("Channel %s non blocking authentication %s clientId %s", id, loginMessage.getId(), clientId);
 			send(loginMessage);
-			authenticating = true;
 		}
 		return loginMessage;
     }
@@ -465,6 +476,8 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 					throw new RuntimeException("MessageId isn't unique: " + token.getId());
 			}
 			
+			log.debug("Channel %s send message %s of type %s", clientId, token.getId(), token.getRequest().getId(), token.getRequest().getType().name());
+			
 	    	// Actually send the message content.
 		    TransportFuture transportFuture = transport.send(this, createTransportMessage(token));
 		    
@@ -514,6 +527,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			request.setTimeToLive(defaultTimeToLive);
 		
 		try {
+			log.debug("Client %s schedule request %s", clientId, request.getId());
 			timer.schedule(token, request.getRemainingTimeToLive());
 			tokensQueue.add(token);
 		}
@@ -736,6 +750,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		public void pingedChanged(Channel channel, boolean pinged) {
 			if (channel == AbstractHTTPChannel.this)
 				return;
+			log.debug("Channel %s pinged changed %s", channel.getClientId(), pinged);
 			AbstractHTTPChannel.this.pinged = pinged;
 		}
 		
@@ -744,6 +759,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			if (channel == AbstractHTTPChannel.this)
 				return;
 			
+			log.debug("Channel %s authenticated changed %s", channel.getClientId(), authenticated);
 			boolean wasAuthenticated = AbstractHTTPChannel.this.authenticated; 
 			AbstractHTTPChannel.this.authenticating = false;
 			AbstractHTTPChannel.this.authenticated = authenticated;
@@ -756,6 +772,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		public void credentialsCleared(Channel channel) {
 			if (channel == AbstractHTTPChannel.this)
 				return;
+			log.debug("Channel %s credentials cleared", channel.getClientId());
 			AbstractHTTPChannel.this.credentials = null;
 		}
 	};
