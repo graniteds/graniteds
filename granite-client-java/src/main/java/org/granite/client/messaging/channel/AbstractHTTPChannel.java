@@ -229,23 +229,27 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			if (authenticating || authenticated)
 				return;
 			
-			authenticating = true;
-			LoginMessage loginMessage = new LoginMessage(clientId, credentials);
-			ResponseMessage response = sendSimpleBlockingToken(loginMessage);
-			if (response instanceof ResultMessage)
-				setAuthenticated(true, response);
-			else if (response instanceof FaultMessage) {
-				FaultMessage fault = (FaultMessage)response;
-				channelException = new ChannelException(clientId, "Could not reauthenticate channel " + clientId + " , fault " + fault.getCode() + " " + fault.getDescription() + " " + fault.getDetails());
+			try {
+				authenticating = true;
+				LoginMessage loginMessage = new LoginMessage(clientId, credentials);
+				ResponseMessage response = sendSimpleBlockingToken(loginMessage);
+				if (response instanceof ResultMessage)
+					setAuthenticated(true, response);
+				else if (response instanceof FaultMessage) {
+					FaultMessage fault = (FaultMessage)response;
+					channelException = new ChannelException(clientId, "Could not reauthenticate channel " + clientId + " , fault " + fault.getCode() + " " + fault.getDescription() + " " + fault.getDetails());
+				}
+				else
+					channelException = new ChannelException(clientId, "Could not reauthenticate channel " + clientId);
 			}
-			else
-				channelException = new ChannelException(clientId, "Could not reauthenticate channel " + clientId);
+			finally {
+				authenticating = false;
+			}
 		}
 		catch (Exception e) {
 			channelException = new ChannelException(clientId, "Could not reauthenticate channel " + clientId, e);
 		}
 		finally {
-			authenticating = false;
 			authenticationLock.unlock();
 		}
 		if (channelException != null)
@@ -265,14 +269,18 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 				if (authenticating || authenticated)
 					return null;
 				
-				authenticating = true;
-				ResultMessage result = sendBlockingToken(loginMessage, dependentToken);
-				if (result == null)
-					return loginMessage;
-				setAuthenticated(true, result);
+				try {
+					authenticating = true;
+					ResultMessage result = sendBlockingToken(loginMessage, dependentToken);
+					if (result == null)
+						return loginMessage;
+					setAuthenticated(true, result);
+				}
+				finally {
+					authenticating = false;
+				}
 			}
 			finally {
-				authenticating = false;
 				authenticationLock.unlock();
 			}
 		}
