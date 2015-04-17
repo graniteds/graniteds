@@ -116,6 +116,7 @@ public class Consumer extends AbstractTopicAgent {
 	}
 	
 	public ResponseMessageFuture resubscribe(ResponseListener...listeners) {
+		log.debug("Resubscribing consumer on channel %s with subcriptionId %s", channel.getClientId(), subscriptionId);
 		return subscribe(subscriptionId, listeners);
 	}
 	

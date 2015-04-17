@@ -38,6 +38,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.granite.client.messaging.AllInOneResponseListener;
 import org.granite.client.messaging.ResponseListener;
@@ -79,6 +80,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 	private List<ChannelStatusListener> statusListeners = new ArrayList<ChannelStatusListener>();
 	private volatile boolean pinged = false;
 	private volatile boolean authenticated = false;
+	private ReentrantLock authenticationLock = new ReentrantLock();
 	private volatile boolean authenticating = false;
 	private ReauthenticateCallback reauthenticateCallback = null; 
 	protected volatile int maxConcurrentRequests;
@@ -216,9 +218,6 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 
     
     public void reauthenticate() throws ChannelException {
-		if (authenticating || authenticated)
-			return;
-		
 		Credentials credentials = this.credentials;
 		if (credentials == null)
 			return;
@@ -226,6 +225,10 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		log.debug("Channel %s client %s reauthenticating", getId(), clientId);
 		ChannelException channelException = null;
 		try {
+			authenticationLock.lock();	// Avoid multiple simultaneous blocking login calls			
+			if (authenticating || authenticated)
+				return;
+			
 			authenticating = true;
 			LoginMessage loginMessage = new LoginMessage(clientId, credentials);
 			ResponseMessage response = sendSimpleBlockingToken(loginMessage);
@@ -239,19 +242,17 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 				channelException = new ChannelException(clientId, "Could not reauthenticate channel " + clientId);
 		}
 		catch (Exception e) {
-			throw new ChannelException(clientId, "Could not reauthenticate channel " + clientId, e);
+			channelException = new ChannelException(clientId, "Could not reauthenticate channel " + clientId, e);
 		}
 		finally {
 			authenticating = false;
+			authenticationLock.unlock();
 		}
 		if (channelException != null)
 			throw channelException;
     }
     
     protected LoginMessage authenticate(AsyncToken dependentToken) {
-		if (authenticating || authenticated)
-			return null;
-		
 		Credentials credentials = this.credentials;
 		if (credentials == null)
 			return null;
@@ -260,6 +261,10 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		if (dependentToken != null) {
 			log.debug("Channel %s blocking authentication %s clientId %s", id, loginMessage.getId(), clientId);
 			try {
+				authenticationLock.lock();	// Avoid multiple simultaneous blocking login calls				
+				if (authenticating || authenticated)
+					return null;
+				
 				authenticating = true;
 				ResultMessage result = sendBlockingToken(loginMessage, dependentToken);
 				if (result == null)
@@ -268,9 +273,13 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 			}
 			finally {
 				authenticating = false;
+				authenticationLock.unlock();
 			}
 		}
 		else {
+			if (authenticating || authenticated)
+				return null;
+			
 			log.debug("Channel %s non blocking authentication %s clientId %s", id, loginMessage.getId(), clientId);
 			send(loginMessage);
 		}
@@ -476,7 +485,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 					throw new RuntimeException("MessageId isn't unique: " + token.getId());
 			}
 			
-			log.debug("Channel %s send message %s of type %s", clientId, token.getId(), token.getRequest().getId(), token.getRequest().getType().name());
+			log.debug("Channel %s send %s message id %s", clientId, token.getRequest().getType().name(), token.getRequest().getId());
 			
 	    	// Actually send the message content.
 		    TransportFuture transportFuture = transport.send(this, createTransportMessage(token));
