@@ -101,7 +101,15 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 
 	protected boolean schedule(TimerTask timerTask, long delay) {
 		if (timer != null) {
-			timer.schedule(timerTask, delay);
+			try {
+				timer.schedule(timerTask, delay);
+			}
+			catch (IllegalStateException e) {
+				log.error(e, "Timer has been cancelled, starting new timer");
+				timer = null;
+				timer = new Timer(id + "_timer", true);
+				timer.schedule(timerTask, delay);
+			}
 			return true;
 		}
 		return false;
@@ -359,7 +367,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		// Create the blocking token and schedule it with the dependent token timeout.
 		AsyncToken blockingToken = new AsyncToken(request);
 		try {
-			timer.schedule(blockingToken, blockingToken.getRequest().getRemainingTimeToLive());
+			schedule(blockingToken, blockingToken.getRequest().getRemainingTimeToLive());
 		}
 		catch (IllegalArgumentException e) {
 			dependentToken.dispatchTimeout(System.currentTimeMillis());
@@ -433,7 +441,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		// Create the blocking token and schedule it with the dependent token timeout.
 		AsyncToken blockingToken = new AsyncToken(request);
 		try {
-			timer.schedule(blockingToken, blockingToken.getRequest().getRemainingTimeToLive());
+			schedule(blockingToken, blockingToken.getRequest().getRemainingTimeToLive());
 		}
 		catch (IllegalArgumentException e) {
 			return null;
@@ -545,7 +553,7 @@ public abstract class AbstractHTTPChannel extends AbstractChannel<Transport> imp
 		
 		try {
 			log.debug("Client %s schedule request %s", clientId, request.getId());
-			timer.schedule(token, request.getRemainingTimeToLive());
+			schedule(token, request.getRemainingTimeToLive());
 			tokensQueue.add(token);
 		}
 		catch (Exception e) {
