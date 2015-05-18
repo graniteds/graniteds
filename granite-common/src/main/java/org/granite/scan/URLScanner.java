@@ -36,10 +36,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import org.granite.logging.Logger;
+
 /**
  * @author Franck WOLFF
  */
 public class URLScanner implements Scanner {
+	
+	private static final Logger log = Logger.getLogger(URLScanner.class);
 
     ///////////////////////////////////////////////////////////////////////////
     // Fields.
@@ -144,8 +148,16 @@ public class URLScanner implements Scanner {
 
 
     public void handleArchive(File file) throws ZipException, IOException {
-        ZipFile zip = new ZipFile(file);
-
+    	log.debug("Scanning archive %s", file != null ? file.getName() : "");
+    	ZipFile zip = null;
+    	try {
+        	zip = new ZipFile(file);
+    	}
+    	catch (IOException e) {
+    		log.debug(e, "Ignored non archive or corrupt file");
+    		return;
+    	}
+        
         ZipScannedItem markerItem = null;
         if (marker != null) {
             ZipEntry markerEntry = zip.getEntry(marker);
@@ -167,6 +179,7 @@ public class URLScanner implements Scanner {
     }
 
     public void handleDirectory(File root, File path) {
+    	log.debug("Scanning directory %s, %s", root != null ? root.getName() : "", path != null ? path.getName() : "");
         FileScannedItem markerItem = null;
         if (marker != null) {
             File markerFile = new File(root, marker);
