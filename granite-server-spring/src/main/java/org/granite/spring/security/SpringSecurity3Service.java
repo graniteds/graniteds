@@ -206,7 +206,7 @@ public class SpringSecurity3Service extends AbstractSecurityService implements A
             try {
                 securityContextRepository.saveContext(securityContext, holder.getRequest(), holder.getResponse());
             }
-            catch (Exception e) {
+            catch (Throwable e) {
                 log.error(e, "Could not save context after authentication");
             }
 

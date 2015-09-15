@@ -28,6 +28,7 @@ import javax.persistence.EntityManager;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean;
+import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
@@ -48,10 +49,14 @@ public class FilterableJpaRepositoryFactoryBean<R extends JpaRepository<T, I>, T
 			this.entityManager = entityManager;
 		}
 		
-		@SuppressWarnings("unchecked")
-		@Override
+		@SuppressWarnings({ "unchecked" })
 		protected Object getTargetRepository(RepositoryMetadata metadata) {
 			return new FilterableJpaRepositoryImpl<T, I>((Class<T>)metadata.getDomainType(), entityManager);
+		}
+		
+		@SuppressWarnings({ "unchecked", "unused" })
+		protected Object getTargetRepository(RepositoryInformation info) {
+			return new FilterableJpaRepositoryImpl<T, I>((Class<T>)info.getDomainType(), entityManager);
 		}
 
 		@Override
