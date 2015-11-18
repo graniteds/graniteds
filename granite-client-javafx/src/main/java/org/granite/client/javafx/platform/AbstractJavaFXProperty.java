@@ -48,7 +48,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
-
 import org.granite.client.javafx.persistence.collection.FXPersistentCollections;
 import org.granite.client.persistence.collection.PersistentBag;
 import org.granite.client.persistence.collection.PersistentList;
@@ -334,7 +333,14 @@ public abstract class AbstractJavaFXProperty implements JavaFXProperty {
 					value = FXCollections.observableMap((Map<Object, Object>)value);
 			}
 			
-			writableValue.setValue(value);
+			/**
+			* 
+			* A bound property cannot be set!!!
+			* 
+			* 
+			*/
+			if(!((javafx.beans.property.Property)writableValue).isBound())
+				writableValue.setValue(value);
 		}
 		else
 			property.setObject(holder, value);
