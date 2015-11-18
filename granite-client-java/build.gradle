@@ -326,7 +326,7 @@ task testGlassFishv4JWS(type: Test, dependsOn: [ ':granite-server-core:jar', ':g
 }
 
 test {
-	it.dependsOn 'testTomcat7', 'testJetty8', 'testJetty9', 'testTomcat7JWS', 'testJetty9JWS', 'testGlassFishv4JWS'
+	it.dependsOn 'testTomcat7', 'testJetty8', 'testJetty9', 'testTomcat7JWS', 'testJetty9JWS'
 
 	excludes = [ 'org/granite/client/test/server/Test*' ]
 }
