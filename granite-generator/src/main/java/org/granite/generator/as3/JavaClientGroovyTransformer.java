@@ -231,6 +231,8 @@ public abstract class JavaClientGroovyTransformer
 			try {
 		        JavaImport javaImport = property ? javaPropertyImports.get(className) : javaImports.get(className);
 		        if (javaImport == null) {
+			    //Remove [] from className for array types (temporary fix)
+			    className = className.replaceAll("\\[\\]", "");
 		            javaImport = new ClientImport(this, className, property);
 		            if (property)
 		            	javaPropertyImports.put(className, javaImport);
